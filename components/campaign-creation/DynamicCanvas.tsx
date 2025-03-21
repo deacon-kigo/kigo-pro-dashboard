@@ -286,22 +286,42 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = ({ initialView = 'business-i
       id: 'social-facebook',
       type: 'social',
       format: 'facebook',
-      url: '/logos/facebook.svg',
-      dimensions: '1200x630'
+      url: '/images/pizza promo 1.png',
+      dimensions: '1200x630',
+      placeholder: 'Family dinner time just got better! 20% OFF our Family Weekday Special. Use code FAMILY24 at checkout.'
     },
     {
       id: 'social-instagram',
       type: 'social',
       format: 'instagram',
-      url: '/logos/instagram.svg',
-      dimensions: '1080x1080'
+      url: '/images/pizza promo 2.png',
+      dimensions: '1080x1080',
+      placeholder: 'Make weeknights special with our Family Dinner Deal! 🍕 Limited time offer - 20% OFF! #DeaconsPizza #FamilyDinner'
     },
     {
       id: 'promotional-email',
       type: 'promotional',
       format: 'email',
       url: '/images/pizza 3.png',
-      dimensions: '600x300'
+      dimensions: '600x300',
+      placeholder: `Subject: Weeknight Family Dinner Made Easy - 20% OFF Special Deal!
+
+Dear Valued Customer,
+
+Weeknights just got more delicious! Introducing our Family Weekday Special - the perfect dinner solution for busy families.
+
+🍕 Large 2-topping pizza
+🥖 Fresh-baked breadsticks
+🥤 2-liter soda
+
+All for just $24.99 (20% savings!)
+Use code: FAMILY24 at checkout
+
+Valid Monday-Thursday from 4pm-8pm. 
+Order online or call us at (555) 123-4567.
+
+Enjoy!
+Deacon's Pizza Team`
     }
   ];
   
@@ -374,8 +394,8 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = ({ initialView = 'business-i
     },
     assets: [
       { type: 'Banner Ad', url: '/images/pizza 1.png', status: 'ready' as 'ready' | 'pending' | 'failed' },
-      { type: 'Facebook Post', url: '/logos/facebook.svg', status: 'ready' as 'ready' | 'pending' | 'failed' },
-      { type: 'Instagram Post', url: '/logos/instagram.svg', status: 'ready' as 'ready' | 'pending' | 'failed' },
+      { type: 'Facebook Post', url: '/images/pizza promo 1.png', status: 'ready' as 'ready' | 'pending' | 'failed' },
+      { type: 'Instagram Post', url: '/images/pizza promo 2.png', status: 'ready' as 'ready' | 'pending' | 'failed' },
       { type: 'Email Template', url: '/images/pizza 3.png', status: 'ready' as 'ready' | 'pending' | 'failed' },
       { type: 'SMS Message', url: '', status: 'pending' as 'ready' | 'pending' | 'failed' }
     ],
