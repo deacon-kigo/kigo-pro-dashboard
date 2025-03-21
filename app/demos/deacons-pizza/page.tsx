@@ -235,30 +235,32 @@ export default function DeaconsPizzaDashboard() {
                 'border-gray-200'
               }`}
             >
-              <div>
+              <div className="flex-grow mr-4">
                 <h4 className="font-medium">{campaign.name}</h4>
                 <p className="text-sm text-gray-500">Target: {campaign.audience}</p>
               </div>
-              <div className="hidden md:flex items-center space-x-6">
-                <div>
-                  <div className="text-sm text-gray-500">Budget</div>
-                  <div className="font-medium">${campaign.budget}</div>
+              <div className="hidden md:grid grid-cols-4 gap-6 items-center">
+                <div className="w-24 text-right">
+                  <div className="text-sm text-gray-500 mb-1">Budget</div>
+                  <div className="font-medium">${campaign.budget.toLocaleString()}</div>
                 </div>
-                <div>
-                  <div className="text-sm text-gray-500">Spend</div>
-                  <div className="font-medium">${campaign.spend}</div>
+                <div className="w-24 text-right">
+                  <div className="text-sm text-gray-500 mb-1">Spend</div>
+                  <div className="font-medium">${campaign.spend.toLocaleString()}</div>
                 </div>
-                <div>
-                  <div className="text-sm text-gray-500">ROI</div>
+                <div className="w-16 text-right">
+                  <div className="text-sm text-gray-500 mb-1">ROI</div>
                   <div className="font-medium">{campaign.roi}x</div>
                 </div>
-                <span className={`px-2 py-1 rounded-md text-xs font-medium ${
-                  campaign.status === 'Active' ? 'bg-green-100 text-green-800' :
-                  campaign.status === 'Scheduled' ? 'bg-blue-100 text-blue-800' :
-                  'bg-yellow-100 text-yellow-800'
-                }`}>
-                  {campaign.status}
-                </span>
+                <div className="flex justify-end">
+                  <span className={`px-2 py-1 rounded-md text-xs font-medium min-w-[80px] text-center ${
+                    campaign.status === 'Active' ? 'bg-green-100 text-green-800' :
+                    campaign.status === 'Scheduled' ? 'bg-blue-100 text-blue-800' :
+                    'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {campaign.status}
+                  </span>
+                </div>
               </div>
             </div>
           ))}

@@ -46,6 +46,11 @@ export default function Sidebar() {
   }, [isCollapsed]);
   
   const isLinkActive = (path: string) => {
+    // Special case for demo pages
+    if (path === '/' && pathname.startsWith('/demos/deacons-pizza')) {
+      return true;
+    }
+    
     return pathname === path || pathname.startsWith(`${path}/`);
   };
 
