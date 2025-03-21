@@ -138,12 +138,12 @@ const PerformancePredictionDashboard: React.FC<PerformancePredictionDashboardPro
   const colors = getClientColors();
   
   return (
-    <div className="h-full flex flex-col overflow-hidden">
+    <div className="h-full flex flex-col p-6">
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="mb-4 px-6 pt-4 flex-shrink-0"
+        className="mb-4 flex-shrink-0"
       >
         <h3 className="text-xl font-semibold mb-1">Performance Analysis</h3>
         <p className="text-gray-600 text-sm">
@@ -153,7 +153,7 @@ const PerformancePredictionDashboard: React.FC<PerformancePredictionDashboardPro
       </motion.div>
       
       {/* Main scrollable content */}
-      <div className="flex-1 overflow-y-auto pb-6 px-6">
+      <div className="flex-1 overflow-y-auto pb-4">
         {/* Metrics Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
           <MetricCard
