@@ -446,7 +446,7 @@ Deacon's Pizza Team`
       case 'asset-creation':
         return 'Creative Assets';
       case 'performance-prediction':
-        return 'Performance Predictions';
+        return 'Performance Analysis';
       case 'launch-control':
         return 'Launch Control';
     }
@@ -468,7 +468,7 @@ Deacon's Pizza Team`
         className="flex-shrink-0"
       />
       
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentView}
@@ -477,7 +477,7 @@ Deacon's Pizza Team`
             exit="exit"
             variants={viewVariants}
             transition={{ duration: 0.3 }}
-            className="p-6 pb-12"
+            className="h-full"
           >
             {currentView === 'business-intelligence' && (
               <BusinessIntelligenceView 
@@ -571,14 +571,14 @@ const CanvasHeader: React.FC<{
 }> = ({ title, currentStep, totalSteps, className }) => {
   return (
     <div className={`px-6 py-4 border-b border-gray-200 ${className || ''}`}>
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-3">
         <h2 className="text-xl font-semibold">{title}</h2>
-        <span className="text-sm text-gray-500">Step {currentStep} of {totalSteps}</span>
+        <span className="text-sm text-gray-500 bg-white px-2 py-1 rounded-md shadow-sm">Step {currentStep} of {totalSteps}</span>
       </div>
       
-      <div className="w-full bg-gray-200 h-1 rounded-full overflow-hidden">
+      <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
         <div 
-          className="h-full bg-blue-500 rounded-full"
+          className="h-full bg-blue-500 rounded-full transition-all duration-300 ease-in-out"
           style={{ width: `${(currentStep / totalSteps) * 100}%` }}
         ></div>
       </div>

@@ -138,201 +138,204 @@ const PerformancePredictionDashboard: React.FC<PerformancePredictionDashboardPro
   const colors = getClientColors();
   
   return (
-    <div className="h-full flex flex-col p-6 overflow-y-auto">
+    <div className="h-full flex flex-col overflow-hidden">
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="mb-6"
+        className="mb-4 px-6 pt-4 flex-shrink-0"
       >
-        <h3 className="text-xl font-semibold mb-2">Performance Predictions</h3>
-        <p className="text-gray-600">
+        <h3 className="text-xl font-semibold mb-1">Performance Analysis</h3>
+        <p className="text-gray-600 text-sm">
           Based on your campaign parameters, here's what you can expect.
           Try different scenarios to optimize your results.
         </p>
       </motion.div>
       
-      {/* Metrics Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
-        <MetricCard
-          label="Estimated Views"
-          value={`${predictions.views.min.toLocaleString()}-${predictions.views.max.toLocaleString()}`}
-          trend={predictions.viewsTrend}
-          icon="views"
-          color={colors.primary}
-        />
-        <MetricCard
-          label="Expected Redemptions"
-          value={`${predictions.redemptions.min.toLocaleString()}-${predictions.redemptions.max.toLocaleString()}`}
-          trend={predictions.redemptionsTrend}
-          icon="redemptions"
-          color={colors.accent}
-        />
-        <MetricCard
-          label="Projected Revenue"
-          value={`$${predictions.revenue.min.toLocaleString()}-$${predictions.revenue.max.toLocaleString()}`}
-          trend={predictions.revenueTrend}
-          icon="revenue"
-          color={colors.secondary}
-        />
-        <MetricCard
-          label="Acquisition Cost"
-          value={`$${predictions.costPerAcquisition.min.toFixed(2)}-$${predictions.costPerAcquisition.max.toFixed(2)}`}
-          trend={predictions.costTrend * -1} // Invert trend for cost (lower is better)
-          icon="cost"
-          color="#6B7280"
-          invertTrend={true}
-        />
-      </div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        {/* Revenue Timeline */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-          <h4 className="text-base font-medium mb-4">Revenue Impact</h4>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart
-                data={predictions.revenueTimeline}
-                margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-              >
-                <defs>
-                  <linearGradient id="colorWithCampaign" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={colors.secondary} stopOpacity={0.2} />
-                    <stop offset="95%" stopColor={colors.secondary} stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="colorWithoutCampaign" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={colors.primary} stopOpacity={0.1} />
-                    <stop offset="95%" stopColor={colors.primary} stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="date" />
-                <YAxis tickFormatter={(value) => `$${value}`} />
-                <Tooltip 
-                  formatter={(value) => [`$${value}`, '']}
-                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="withCampaign" 
-                  name="With Campaign"
-                  stroke={colors.secondary} 
-                  fillOpacity={1} 
-                  fill="url(#colorWithCampaign)" 
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="withoutCampaign" 
-                  name="Without Campaign"
-                  stroke={colors.primary} 
-                  fillOpacity={1} 
-                  fill="url(#colorWithoutCampaign)" 
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="mt-2 bg-gray-50 p-3 rounded-lg">
-            <p className="text-sm text-gray-700">
-              <span className="font-semibold">Key Insight:</span> This campaign is predicted to increase your monthly revenue by up to {Math.round((predictions.revenue.max / predictions.revenue.min - 1) * 100)}%.
-            </p>
-          </div>
+      {/* Main scrollable content */}
+      <div className="flex-1 overflow-y-auto pb-6 px-6">
+        {/* Metrics Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+          <MetricCard
+            label="Estimated Views"
+            value={`${predictions.views.min.toLocaleString()}-${predictions.views.max.toLocaleString()}`}
+            trend={predictions.viewsTrend}
+            icon="views"
+            color={colors.primary}
+          />
+          <MetricCard
+            label="Expected Redemptions"
+            value={`${predictions.redemptions.min.toLocaleString()}-${predictions.redemptions.max.toLocaleString()}`}
+            trend={predictions.redemptionsTrend}
+            icon="redemptions"
+            color={colors.accent}
+          />
+          <MetricCard
+            label="Projected Revenue"
+            value={`$${predictions.revenue.min.toLocaleString()}-$${predictions.revenue.max.toLocaleString()}`}
+            trend={predictions.revenueTrend}
+            icon="revenue"
+            color={colors.secondary}
+          />
+          <MetricCard
+            label="Acquisition Cost"
+            value={`$${predictions.costPerAcquisition.min.toFixed(2)}-$${predictions.costPerAcquisition.max.toFixed(2)}`}
+            trend={predictions.costTrend * -1} // Invert trend for cost (lower is better)
+            icon="cost"
+            color="#6B7280"
+            invertTrend={true}
+          />
         </div>
         
-        {/* Customer Flow */}
-        <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-          <h4 className="text-base font-medium mb-4">Customer Journey</h4>
-          <div className="h-64 flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={predictions.customerFlow}
-                layout="vertical"
-                margin={{ top: 10, right: 10, left: 75, bottom: 0 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-                <XAxis type="number" />
-                <YAxis dataKey="stage" type="category" />
-                <Tooltip 
-                  formatter={(value) => [`${value} customers`, '']}
-                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}
-                />
-                <Bar dataKey="count" fill={colors.accent} radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          {/* Revenue Timeline */}
+          <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-4 border border-gray-100">
+            <h4 className="text-base font-medium mb-3">Revenue Impact</h4>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={predictions.revenueTimeline}
+                  margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id="colorWithCampaign" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={colors.secondary} stopOpacity={0.2} />
+                      <stop offset="95%" stopColor={colors.secondary} stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="colorWithoutCampaign" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={colors.primary} stopOpacity={0.1} />
+                      <stop offset="95%" stopColor={colors.primary} stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="date" />
+                  <YAxis tickFormatter={(value) => `$${value}`} />
+                  <Tooltip 
+                    formatter={(value) => [`$${value}`, '']}
+                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="withCampaign" 
+                    name="With Campaign"
+                    stroke={colors.secondary} 
+                    fillOpacity={1} 
+                    fill="url(#colorWithCampaign)" 
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="withoutCampaign" 
+                    name="Without Campaign"
+                    stroke={colors.primary} 
+                    fillOpacity={1} 
+                    fill="url(#colorWithoutCampaign)" 
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="mt-2 bg-gray-50 p-3 rounded-lg">
+              <p className="text-sm text-gray-700">
+                <span className="font-semibold">Key Insight:</span> This campaign is predicted to increase your monthly revenue by up to {Math.round((predictions.revenue.max / predictions.revenue.min - 1) * 100)}%.
+              </p>
+            </div>
           </div>
-          <div className="mt-2 bg-gray-50 p-3 rounded-lg">
-            <p className="text-sm text-gray-700">
-              <span className="font-semibold">Key Insight:</span> About {Math.round((predictions.customerFlow[1].count / predictions.customerFlow[0].count) * 100)}% of users who view your offer are expected to redeem it.
-            </p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Competitive Comparison */}
-        <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-          <h4 className="text-base font-medium mb-4">Industry Benchmarks</h4>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={predictions.competitiveComparison}
-                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="metric" />
-                <YAxis tickFormatter={(value) => `${value}%`} />
-                <Tooltip 
-                  formatter={(value) => [`${value}%`, '']}
-                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}
-                />
-                <Bar name="Your Campaign" dataKey="value" fill={colors.primary} radius={[4, 4, 0, 0]} />
-                <Bar name="Industry Average" dataKey="benchmark" fill="#E5E7EB" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="mt-2 bg-gray-50 p-3 rounded-lg">
-            <p className="text-sm text-gray-700">
-              <span className="font-semibold">Key Insight:</span> Your campaign is expected to outperform industry averages in conversion rate by {Math.round(predictions.competitiveComparison[1].value - predictions.competitiveComparison[1].benchmark)}%.
-            </p>
-          </div>
-        </div>
-        
-        {/* Optimization Suggestions */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-          <h4 className="text-base font-medium mb-4">
-            Optimization Suggestions
-            <span className="text-xs font-normal text-gray-500 ml-2">Try these scenarios</span>
-          </h4>
           
-          <div className="space-y-4">
-            {predictions.suggestions.map(suggestion => (
-              <OptimizationCard 
-                key={suggestion.id}
-                suggestion={suggestion}
-                onApply={() => {
-                  // Apply the suggestion logic
-                  if (suggestion.id === 'add-friday') {
-                    handleScenarioToggle('includeFriday', !includeFriday);
-                  } else if (suggestion.id === 'increase-radius') {
-                    handleScenarioToggle('increasedRadius', !increasedRadius);
+          {/* Customer Flow */}
+          <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
+            <h4 className="text-base font-medium mb-3">Customer Journey</h4>
+            <div className="h-80 flex items-center justify-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={predictions.customerFlow}
+                  layout="vertical"
+                  margin={{ top: 10, right: 30, left: 100, bottom: 10 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
+                  <XAxis type="number" />
+                  <YAxis dataKey="stage" type="category" tick={{ fontSize: 13 }} />
+                  <Tooltip 
+                    formatter={(value) => [`${value} customers`, '']}
+                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}
+                  />
+                  <Bar dataKey="count" fill={colors.accent} radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="mt-2 bg-gray-50 p-3 rounded-lg">
+              <p className="text-sm text-gray-700">
+                <span className="font-semibold">Key Insight:</span> About {Math.round((predictions.customerFlow[2].count / predictions.customerFlow[0].count) * 100)}% of users who view your offer are expected to redeem it.
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Competitive Comparison */}
+          <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
+            <h4 className="text-base font-medium mb-4">Industry Benchmarks</h4>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={predictions.competitiveComparison}
+                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="metric" />
+                  <YAxis tickFormatter={(value) => `${value}%`} />
+                  <Tooltip 
+                    formatter={(value) => [`${value}%`, '']}
+                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}
+                  />
+                  <Bar name="Your Campaign" dataKey="value" fill={colors.primary} radius={[4, 4, 0, 0]} />
+                  <Bar name="Industry Average" dataKey="benchmark" fill="#E5E7EB" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="mt-2 bg-gray-50 p-3 rounded-lg">
+              <p className="text-sm text-gray-700">
+                <span className="font-semibold">Key Insight:</span> Your campaign is expected to outperform industry averages in conversion rate by {Math.round(predictions.competitiveComparison[1].value - predictions.competitiveComparison[1].benchmark)}%.
+              </p>
+            </div>
+          </div>
+          
+          {/* Optimization Suggestions */}
+          <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-4 border border-gray-100">
+            <h4 className="text-base font-medium mb-4">
+              Optimization Suggestions
+              <span className="text-xs font-normal text-gray-500 ml-2">Try these scenarios</span>
+            </h4>
+            
+            <div className="space-y-4">
+              {predictions.suggestions.map(suggestion => (
+                <OptimizationCard 
+                  key={suggestion.id}
+                  suggestion={suggestion}
+                  onApply={() => {
+                    // Apply the suggestion logic
+                    if (suggestion.id === 'add-friday') {
+                      handleScenarioToggle('includeFriday', !includeFriday);
+                    } else if (suggestion.id === 'increase-radius') {
+                      handleScenarioToggle('increasedRadius', !increasedRadius);
+                    }
+                  }}
+                  isActive={
+                    (suggestion.id === 'add-friday' && includeFriday) || 
+                    (suggestion.id === 'increase-radius' && increasedRadius)
                   }
-                }}
-                isActive={
-                  (suggestion.id === 'add-friday' && includeFriday) || 
-                  (suggestion.id === 'increase-radius' && increasedRadius)
-                }
-              />
-            ))}
-          </div>
-          
-          <div className="mt-4 flex justify-center">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="inline-flex items-center text-primary text-sm cursor-pointer"
-            >
-              <SparklesIcon className="w-4 h-4 mr-1" />
-              View More Optimization Ideas
-            </motion.div>
+                />
+              ))}
+            </div>
+            
+            <div className="mt-4 flex justify-center">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="inline-flex items-center text-primary text-sm cursor-pointer"
+              >
+                <SparklesIcon className="w-4 h-4 mr-1" />
+                View More Optimization Ideas
+              </motion.div>
+            </div>
           </div>
         </div>
       </div>
@@ -357,18 +360,18 @@ const MetricCard: React.FC<{
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="bg-white rounded-lg shadow-sm p-4 border border-gray-100"
+      className="bg-white rounded-lg shadow-sm p-4 border border-gray-100 h-full"
     >
       <div className="flex justify-between items-start">
-        <div>
+        <div className="flex-1 mr-3">
           <p className="text-sm text-gray-500 mb-1">{label}</p>
-          <h3 className="text-xl font-semibold">{value}</h3>
+          <h3 className="text-base font-semibold break-words" style={{ wordBreak: 'break-word' }}>{value}</h3>
         </div>
         <div 
-          className="w-10 h-10 rounded-full flex items-center justify-center"
+          className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: `${color}10` }}
         >
-          <svg className={`w-5 h-5`} style={{ color }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-5 h-5" style={{ color }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             {icon === 'views' && (
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             )}
@@ -385,12 +388,12 @@ const MetricCard: React.FC<{
         </div>
       </div>
       
-      <div className="mt-4 flex items-center">
+      <div className="mt-3 flex items-center">
         <div className={`flex items-center ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
           {isPositive ? (
-            <ArrowUpIcon className="w-4 h-4 mr-1" />
+            <ArrowUpIcon className="w-4 h-4 mr-1 flex-shrink-0" />
           ) : (
-            <ArrowDownIcon className="w-4 h-4 mr-1" />
+            <ArrowDownIcon className="w-4 h-4 mr-1 flex-shrink-0" />
           )}
           <span className="text-sm font-medium">{Math.abs(trend)}%</span>
         </div>
@@ -414,11 +417,11 @@ const OptimizationCard: React.FC<{
   return (
     <div className={`rounded-lg border p-3 ${isActive ? 'border-green-500 bg-green-50' : 'border-gray-100'}`}>
       <div className="flex justify-between items-start">
-        <div>
+        <div className="flex-1 min-w-0 mr-3">
           <h5 className="text-sm font-medium mb-1">{suggestion.title}</h5>
           <p className="text-xs text-gray-600">{suggestion.description}</p>
         </div>
-        <div className="flex items-center text-green-600 bg-green-50 px-2 py-0.5 rounded">
+        <div className="flex items-center text-green-600 bg-green-50 px-2 py-0.5 rounded flex-shrink-0 whitespace-nowrap">
           <ArrowUpIcon className="w-3 h-3 mr-1" />
           <span className="text-xs font-medium">{suggestion.impact}%</span>
         </div>
