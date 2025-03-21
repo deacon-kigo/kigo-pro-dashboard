@@ -3,6 +3,8 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDemo } from '../../contexts/DemoContext';
+import { useRouter } from 'next/navigation';
+import ReactConfetti from 'react-confetti';
 
 // Importing views statically to fix module not found errors
 import BusinessIntelligenceView from './views/BusinessIntelligenceView';
@@ -137,6 +139,7 @@ interface DynamicCanvasProps {
 
 const DynamicCanvas: React.FC<DynamicCanvasProps> = ({ initialView = 'business-intelligence' }) => {
   const { clientId } = useDemo();
+  const router = useRouter();
   const [currentView, setCurrentView] = useState<ViewType>(initialView);
   const [selectedCampaign, setSelectedCampaign] = useState<CampaignOption | null>(null);
   const [campaignAssets, setCampaignAssets] = useState<CampaignAsset[]>([]);
@@ -170,6 +173,11 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = ({ initialView = 'business-i
       items: ['Large Pizza', 'Breadsticks', '2-Liter Soda'],
       discountPercentage: 20
     }
+  });
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [windowSize, setWindowSize] = useState({
+    width: typeof window !== 'undefined' ? window.innerWidth : 0,
+    height: typeof window !== 'undefined' ? window.innerHeight : 0
   });
   
   // Step numbers for visual reference
@@ -418,6 +426,30 @@ Deacon's Pizza Team`
     }
   };
   
+  // Get window size for confetti
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    };
+
+    if (typeof window !== 'undefined') {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+      window.addEventListener('resize', handleResize);
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', handleResize);
+      }
+    };
+  }, []);
+  
   // Handle campaign selection
   const handleCampaignSelect = (campaign: CampaignOption) => {
     setSelectedCampaign(campaign);
@@ -445,7 +477,14 @@ Deacon's Pizza Team`
   // Handle campaign launch
   const handleLaunch = () => {
     console.log('Campaign launched!');
-    // In a real app, this would submit the campaign for processing
+    
+    // Show confetti
+    setShowConfetti(true);
+    
+    // Wait a bit then redirect to dashboard with new campaign added
+    setTimeout(() => {
+      router.push('/demos/deacons-pizza?from=campaign-launch');
+    }, 3000);
   };
   
   // Function to get view title
@@ -473,6 +512,16 @@ Deacon's Pizza Team`
   
   return (
     <div className="h-full flex flex-col overflow-hidden">
+      {showConfetti && (
+        <ReactConfetti
+          width={windowSize.width}
+          height={windowSize.height}
+          recycle={false}
+          numberOfPieces={500}
+          gravity={0.15}
+        />
+      )}
+      
       <CanvasHeader 
         title={getViewTitle(currentView)} 
         currentStep={viewSteps[currentView]} 

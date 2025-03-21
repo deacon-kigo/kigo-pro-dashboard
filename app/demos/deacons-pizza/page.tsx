@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Card from '../../../components/shared/Card';
 import { ChevronRightIcon, PlusIcon } from '@heroicons/react/24/outline';
 import {
@@ -22,8 +22,10 @@ import { useDemo } from '../../../contexts/DemoContext';
 
 export default function DeaconsPizzaDashboard() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { setClientId } = useDemo();
   const [greeting, setGreeting] = useState('Good morning');
+  const [newCampaignAdded, setNewCampaignAdded] = useState(false);
 
   // Use useCallback for getGreeting function to avoid recreating it on every render
   const getGreeting = useCallback(() => {
@@ -44,17 +46,43 @@ export default function DeaconsPizzaDashboard() {
     
     // Set greeting based on time of day
     setGreeting(getGreeting());
+
+    // Check if we're coming from campaign launch
+    const fromCampaignLaunch = searchParams.get('from') === 'campaign-launch';
+    if (fromCampaignLaunch) {
+      setNewCampaignAdded(true);
+      
+      // Clear the flag after 5 seconds
+      setTimeout(() => {
+        setNewCampaignAdded(false);
+      }, 5000);
+    }
     
-    // No need to include setClientId in the dependency array as it's now stable with useCallback
-  }, [setClientId, getGreeting]);
+  }, [setClientId, getGreeting, searchParams]);
 
   // Memoize sample data to prevent unnecessary recreations on each render
-  const campaignData = useMemo(() => [
-    { name: 'Family Friday', status: 'Active', audience: 'Families', budget: 1500, spend: 950, roi: 3.2 },
-    { name: 'Student Specials', status: 'Scheduled', audience: 'College Students', budget: 1200, spend: 0, roi: 0 },
-    { name: 'Game Day Bundle', status: 'Active', audience: 'Sports Fans', budget: 2000, spend: 1200, roi: 2.8 },
-    { name: 'Wing Wednesday', status: 'Paused', audience: 'Young Adults', budget: 800, spend: 600, roi: 1.9 }
-  ], []);
+  const campaignData = useMemo(() => {
+    const campaigns = [
+      { name: 'Family Friday', status: 'Active', audience: 'Families', budget: 1500, spend: 950, roi: 3.2 },
+      { name: 'Student Specials', status: 'Scheduled', audience: 'College Students', budget: 1200, spend: 0, roi: 0 },
+      { name: 'Game Day Bundle', status: 'Active', audience: 'Sports Fans', budget: 2000, spend: 1200, roi: 2.8 },
+      { name: 'Wing Wednesday', status: 'Paused', audience: 'Young Adults', budget: 800, spend: 600, roi: 1.9 }
+    ];
+    
+    // Add the new campaign if we just launched it
+    if (newCampaignAdded || searchParams.get('from') === 'campaign-launch') {
+      campaigns.unshift({ 
+        name: 'Family Weekday Special', 
+        status: 'Active', 
+        audience: 'Families within 5 miles', 
+        budget: 750, 
+        spend: 0, 
+        roi: 0 
+      });
+    }
+    
+    return campaigns;
+  }, [newCampaignAdded, searchParams]);
 
   const weekdayData = useMemo(() => [
     { name: 'Mon', sales: 7200, orders: 210 },
@@ -107,6 +135,13 @@ export default function DeaconsPizzaDashboard() {
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-6 text-white">
         <h2 className="text-2xl font-bold mb-2">{greeting}, Deacon!</h2>
         <p className="opacity-90 mb-4">Welcome to your personalized Deacon's Pizza dashboard.</p>
+        
+        {newCampaignAdded && (
+          <div className="bg-green-400/30 backdrop-blur-sm rounded-lg p-4 mb-4 border border-green-300/50 animate-pulse">
+            <p className="font-medium">🎉 Congratulations! Your new "Family Weekday Special" campaign has been launched successfully!</p>
+          </div>
+        )}
+        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
           <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4">
             <p className="text-sm font-medium opacity-90">Today's Sales</p>
@@ -126,7 +161,7 @@ export default function DeaconsPizzaDashboard() {
           </div>
           <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4">
             <p className="text-sm font-medium opacity-90">Active Campaigns</p>
-            <h3 className="text-2xl font-bold">2</h3>
+            <h3 className="text-2xl font-bold">{newCampaignAdded ? "3" : "2"}</h3>
             <p className="text-sm flex items-center mt-1">
               <span className="inline-block bg-blue-300 rounded-full w-2 h-2 mr-1"></span>
               <span>1 scheduled for next week</span>
@@ -192,7 +227,14 @@ export default function DeaconsPizzaDashboard() {
         <div className="mb-2 text-sm text-gray-600">Overview of your current marketing efforts</div>
         <div className="space-y-3">
           {campaignData.map((campaign, i) => (
-            <div key={i} className="p-3 border border-gray-200 rounded-lg flex justify-between items-center hover:bg-gray-50 transition-colors">
+            <div 
+              key={i} 
+              className={`p-3 border rounded-lg flex justify-between items-center hover:bg-gray-50 transition-colors ${
+                newCampaignAdded && i === 0 ? 
+                'border-green-500 bg-green-50 animate-pulse' : 
+                'border-gray-200'
+              }`}
+            >
               <div>
                 <h4 className="font-medium">{campaign.name}</h4>
                 <p className="text-sm text-gray-500">Target: {campaign.audience}</p>

@@ -333,56 +333,61 @@ const LaunchControlCenter: React.FC<LaunchControlCenterProps> = ({
       {/* Launch Button Section */}
       <div className="mt-auto pt-4">
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between">
-            <div className="mb-4 sm:mb-0">
-              <h4 className="text-lg font-semibold">Ready to Launch?</h4>
-              <p className="text-sm text-gray-600">
-                {allSectionsReviewed 
-                  ? "You've reviewed all sections! You're ready to launch your campaign."
-                  : "Please review all sections before launching your campaign."}
-              </p>
+          {launchStatus === 'launched' ? (
+            <div className="text-center py-6">
+              <div className="w-16 h-16 bg-green-100 rounded-full mx-auto flex items-center justify-center mb-4">
+                <CheckIcon className="w-10 h-10 text-green-600" />
+              </div>
+              <h3 className="text-xl font-bold text-green-600 mb-2">Campaign Successfully Launched!</h3>
+              <p className="text-gray-600 mb-4">Your "Family Weekday Special" campaign is now live.</p>
+              <p className="text-sm text-gray-500">Redirecting to dashboard...</p>
             </div>
-            
-            <motion.button
-              whileHover={{ scale: allSectionsReviewed ? 1.05 : 1 }}
-              whileTap={{ scale: allSectionsReviewed ? 0.95 : 1 }}
-              disabled={!allSectionsReviewed || launchStatus === 'pending' || launchStatus === 'launched'}
-              onClick={handleLaunch}
-              className={`px-6 py-3 rounded-lg font-medium flex items-center justify-center min-w-[150px] ${
-                allSectionsReviewed && launchStatus === 'ready'
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 text-white'
-                  : launchStatus === 'launched'
-                  ? 'bg-green-500 text-white'
-                  : launchStatus === 'pending'
-                  ? 'bg-blue-100 text-blue-700'
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              }`}
-            >
-              {launchStatus === 'pending' && (
-                <>
-                  <ArrowPathIcon className="w-5 h-5 mr-2 animate-spin" />
-                  Launching...
-                </>
-              )}
-              {launchStatus === 'launched' && (
-                <>
-                  <CheckIcon className="w-5 h-5 mr-2" />
-                  Launched!
-                </>
-              )}
-              {launchStatus === 'ready' && (
-                <>
-                  Launch Campaign
-                </>
-              )}
-              {launchStatus === 'failed' && (
-                <>
-                  <XCircleIcon className="w-5 h-5 mr-2" />
-                  Failed
-                </>
-              )}
-            </motion.button>
-          </div>
+          ) : (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between">
+              <div className="mb-4 sm:mb-0">
+                <h4 className="text-lg font-semibold">Ready to Launch?</h4>
+                <p className="text-sm text-gray-600">
+                  {allSectionsReviewed 
+                    ? "You've reviewed all sections! You're ready to launch your campaign."
+                    : "Please review all sections before launching your campaign."}
+                </p>
+              </div>
+              
+              <motion.button
+                whileHover={{ scale: allSectionsReviewed ? 1.05 : 1 }}
+                whileTap={{ scale: allSectionsReviewed ? 0.95 : 1 }}
+                disabled={!allSectionsReviewed || launchStatus === 'pending' || launchStatus === 'launched'}
+                onClick={handleLaunch}
+                className={`px-6 py-3 rounded-lg font-medium flex items-center justify-center min-w-[150px] ${
+                  allSectionsReviewed && launchStatus === 'ready'
+                    ? 'bg-gradient-to-r from-green-500 to-blue-500 text-white'
+                    : launchStatus === 'launched'
+                    ? 'bg-green-500 text-white'
+                    : launchStatus === 'pending'
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                {launchStatus === 'pending' && (
+                  <>
+                    <ArrowPathIcon className="w-5 h-5 mr-2 animate-spin" />
+                    Launching...
+                  </>
+                )}
+                {launchStatus === 'launched' && (
+                  <>
+                    <CheckIcon className="w-5 h-5 mr-2" />
+                    Launched!
+                  </>
+                )}
+                {launchStatus === 'ready' && (
+                  <>
+                    Launch Campaign
+                  </>
+                )}
+              </motion.button>
+            </div>
+          )}
         </div>
       </div>
     </div>
