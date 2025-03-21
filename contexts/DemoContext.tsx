@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import demoConfigs from '../config/demoConfigs';
 
@@ -28,6 +28,7 @@ export interface DemoState {
 interface DemoContextType extends DemoState {
   setDemoState: React.Dispatch<React.SetStateAction<DemoState>>;
   updateDemoState: (updates: Partial<DemoState>) => void;
+  setClientId: (clientId: ClientId) => void;
 }
 
 const DemoContext = createContext<DemoContextType | undefined>(undefined);
@@ -46,15 +47,24 @@ export const DemoProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     themeMode: 'light'
   });
   
-  // Function to update state partially
-  const updateDemoState = (updates: Partial<DemoState>) => {
+  // Function to update state partially - wrapped in useCallback
+  const updateDemoState = useCallback((updates: Partial<DemoState>) => {
     setDemoState(prev => ({
       ...prev,
       ...updates
     }));
-  };
+  }, []);
   
-  // Update state based on URL parameters
+  // Helper function to set client ID and update related state - wrapped in useCallback
+  const setClientId = useCallback((clientId: ClientId) => {
+    updateDemoState({
+      clientId,
+      clientName: demoConfigs.clients[clientId].name,
+      theme: demoConfigs.getThemeForClient(clientId)
+    });
+  }, [updateDemoState]);
+  
+  // Update state based on URL parameters - with stable dependency array
   useEffect(() => {
     if (searchParams) {
       const role = searchParams.get('role') as Role | null;
@@ -86,13 +96,15 @@ export const DemoProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         updateDemoState(updates);
       }
     }
-  }, [searchParams]);
+  }, [searchParams, updateDemoState]); // Stable dependency array
   
-  const contextValue = {
+  // Memoize the context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
     ...demoState,
     setDemoState,
-    updateDemoState
-  };
+    updateDemoState,
+    setClientId
+  }), [demoState, setDemoState, updateDemoState, setClientId]);
   
   return (
     <DemoContext.Provider value={contextValue}>
