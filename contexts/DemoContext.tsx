@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import demoConfigs from '../config/demoConfigs';
 import { usePathname as usePathnameInternal, useRouter as useRouterInternal, useSearchParams as useSearchParamsInternal } from 'next/navigation';
+import { MockUser, getUserForContext, getTimeBasedGreeting, getPersonalizedSuggestions, getWelcomeBackMessage } from '../lib/userProfileUtils';
 
 // Define types for our context
 export type Role = 'merchant' | 'support' | 'admin';
@@ -36,6 +37,7 @@ export interface DemoState {
   initialStep?: string;
   instanceHistory: DemoInstance[];
   currentInstanceIndex: number;
+  userProfile: MockUser;
 }
 
 interface DemoContextType extends DemoState {
@@ -70,7 +72,8 @@ export const DemoProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     themeMode: 'light',
     initialStep: undefined,
     instanceHistory: [],
-    currentInstanceIndex: -1
+    currentInstanceIndex: -1,
+    userProfile: getUserForContext('merchant', 'deacons-pizza')
   });
   
   // Function to update state partially - wrapped in useCallback
@@ -81,6 +84,13 @@ export const DemoProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // If we're updating scenario, also update initialStep if available
       if (updates.scenario && demoConfigs.scenarios[updates.scenario]?.initialStep) {
         newState.initialStep = demoConfigs.scenarios[updates.scenario].initialStep;
+      }
+
+      // If we're updating role or clientId, also update userProfile
+      if (updates.role || updates.clientId) {
+        const role = updates.role || prev.role;
+        const clientId = updates.clientId || prev.clientId;
+        newState.userProfile = getUserForContext(role, clientId);
       }
       
       return newState;
@@ -219,6 +229,13 @@ export const DemoProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
     
     if (Object.keys(updates).length > 0) {
+      // If role or clientId is changing, update the userProfile
+      if (updates.role || updates.clientId) {
+        const role = updates.role || demoState.role;
+        const clientId = updates.clientId || demoState.clientId;
+        updates.userProfile = getUserForContext(role, clientId);
+      }
+
       // Remember the current URL state
       lastUrlState.current = currentUrlState;
       
@@ -230,7 +247,7 @@ export const DemoProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         saveCurrentInstance();
       }, 100);
     }
-  }, [searchParams, updateDemoState, saveCurrentInstance]);
+  }, [searchParams, updateDemoState, saveCurrentInstance, demoState.role, demoState.clientId]);
   
   // Update URL when demo state changes
   useEffect(() => {

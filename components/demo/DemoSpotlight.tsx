@@ -13,9 +13,12 @@ import {
   XMarkIcon,
   ChartBarIcon,
   DocumentTextIcon,
-  PuzzlePieceIcon
+  PuzzlePieceIcon,
+  UserCircleIcon
 } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
+import { MockUser, getUserForContext } from '@/lib/userProfileUtils';
+import { getMockAvatarUrl } from '@/lib/avatarUtils';
 
 // Define instance type that combines role, client, and scenario
 interface DemoInstance {
@@ -28,6 +31,7 @@ interface DemoInstance {
   category: string;
   emoji: string;
   tags: string[];
+  userProfile?: MockUser;
 }
 
 // Generate focused demo instances based on our actual documentation
@@ -45,7 +49,8 @@ const generateDemoInstances = (): DemoInstance[] => {
     scenario: 'campaign-creation',
     category: 'Small Business Owner',
     emoji: '🍕',
-    tags: ['merchant', 'restaurant', 'campaign', 'ai assistant', 'marketing']
+    tags: ['merchant', 'restaurant', 'campaign', 'ai assistant', 'marketing'],
+    userProfile: getUserForContext('merchant', 'deacons-pizza')
   });
   
   // Support Agent - Token Management
@@ -58,7 +63,8 @@ const generateDemoInstances = (): DemoInstance[] => {
     scenario: 'support-flow',
     category: 'Support Agent',
     emoji: '🎫',
-    tags: ['support', 'token', 'customer service']
+    tags: ['support', 'token', 'customer service'],
+    userProfile: getUserForContext('support', 'generic')
   });
   
   // National Chain - CVS
@@ -71,7 +77,8 @@ const generateDemoInstances = (): DemoInstance[] => {
     scenario: 'campaign-creation',
     category: 'National Chain',
     emoji: '💊',
-    tags: ['merchant', 'pharmacy', 'chain', 'multiple locations']
+    tags: ['merchant', 'pharmacy', 'chain', 'multiple locations'],
+    userProfile: getUserForContext('merchant', 'cvs')
   });
   
   // Admin Analytics Dashboard
@@ -84,7 +91,8 @@ const generateDemoInstances = (): DemoInstance[] => {
     scenario: 'default',
     category: 'Platform Administration',
     emoji: '📊',
-    tags: ['admin', 'analytics', 'dashboard', 'reporting']
+    tags: ['admin', 'analytics', 'dashboard', 'reporting'],
+    userProfile: getUserForContext('admin', 'generic')
   });
   
   // Additional Deacon's Pizza flows
@@ -94,10 +102,11 @@ const generateDemoInstances = (): DemoInstance[] => {
     description: 'View merchant dashboard and performance',
     role: 'merchant',
     clientId: 'deacons-pizza',
-    scenario: 'default',
+    scenario: 'dashboard',
     category: 'Small Business Owner',
     emoji: '🍕',
-    tags: ['merchant', 'restaurant', 'dashboard', 'analytics']
+    tags: ['merchant', 'restaurant', 'dashboard', 'analytics'],
+    userProfile: getUserForContext('merchant', 'deacons-pizza')
   });
   
   return instances;
@@ -124,6 +133,7 @@ const DemoSpotlight: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [hoveredInstance, setHoveredInstance] = useState<DemoInstance | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -133,7 +143,13 @@ const DemoSpotlight: React.FC = () => {
     : demoInstances.current.filter(instance => 
         instance.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         instance.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        instance.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+        instance.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        // Also search user profile
+        (instance.userProfile && (
+          instance.userProfile.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          instance.userProfile.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          instance.userProfile.role.toLowerCase().includes(searchQuery.toLowerCase())
+        ))
       );
   
   useEffect(() => {
@@ -219,12 +235,14 @@ const DemoSpotlight: React.FC = () => {
   };
   
   const selectInstance = (instance: DemoInstance) => {
+    // Include userProfile in updates if available
     updateDemoState({
       role: instance.role,
       clientId: instance.clientId as any,
       clientName: demoConfigs.clients[instance.clientId].name,
       scenario: instance.scenario as any,
-      theme: demoConfigs.getThemeForClient(instance.clientId as any)
+      theme: demoConfigs.getThemeForClient(instance.clientId as any),
+      userProfile: instance.userProfile
     });
     
     setIsOpen(false);
@@ -297,10 +315,16 @@ const DemoSpotlight: React.FC = () => {
   
   // Render individual instance item
   const renderInstanceItem = (instance: DemoInstance, index: number) => {
+    const user = instance.userProfile;
+    const hasUserProfile = !!user;
+    const avatarUrl = hasUserProfile ? getMockAvatarUrl(user) : null;
+    
     return (
       <div
         key={instance.id}
         onClick={() => selectInstance(instance)}
+        onMouseEnter={() => setHoveredInstance(instance)}
+        onMouseLeave={() => setHoveredInstance(null)}
         className={`px-4 py-3 flex items-center cursor-pointer ${
           index === selectedIndex 
             ? 'bg-primary/10 dark:bg-primary/20' 
@@ -315,6 +339,12 @@ const DemoSpotlight: React.FC = () => {
           <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
             {instance.description}
           </div>
+          {hasUserProfile && (
+            <div className="text-xs text-primary truncate flex items-center mt-1">
+              <UserCircleIcon className="h-3 w-3 mr-1" />
+              {user.firstName} {user.lastName} • {user.title}
+            </div>
+          )}
         </div>
         <div className={`ml-3 p-1.5 rounded-full ${
           instance.role === 'merchant' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
@@ -324,6 +354,55 @@ const DemoSpotlight: React.FC = () => {
           {renderRoleIcon(instance.role)}
         </div>
       </div>
+    );
+  };
+  
+  // Render user profile preview
+  const renderUserProfilePreview = () => {
+    if (!hoveredInstance || !hoveredInstance.userProfile) return null;
+    
+    const user = hoveredInstance.userProfile;
+    const avatarUrl = getMockAvatarUrl(user);
+    
+    return (
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 10 }}
+        transition={{ duration: 0.2 }}
+        className="absolute bottom-[70px] right-4 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 z-50"
+      >
+        <div className="flex items-center mb-3">
+          <div className="w-12 h-12 rounded-full overflow-hidden mr-3">
+            <img src={avatarUrl} alt={user.firstName} className="w-full h-full object-cover" />
+          </div>
+          <div>
+            <p className="font-medium">{user.firstName} {user.lastName}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{user.title}</p>
+          </div>
+        </div>
+        
+        <div className="text-xs text-gray-600 dark:text-gray-300 mb-2">
+          <div className="grid grid-cols-3 gap-1 mb-1">
+            <span className="font-medium">Company:</span>
+            <span className="col-span-2">{user.company}</span>
+          </div>
+          
+          <div className="grid grid-cols-3 gap-1 mb-1">
+            <span className="font-medium">Tech Skill:</span>
+            <span className="col-span-2">{user.techProficiency}</span>
+          </div>
+        </div>
+        
+        <div className="text-xs text-gray-700 dark:text-gray-300">
+          <p className="font-medium mb-1">Goals:</p>
+          <ul className="list-disc pl-4 space-y-0.5">
+            {user.goals.slice(0, 2).map((goal, idx) => (
+              <li key={idx}>{goal}</li>
+            ))}
+          </ul>
+        </div>
+      </motion.div>
     );
   };
   
@@ -360,7 +439,7 @@ const DemoSpotlight: React.FC = () => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Search for demo instances..."
+                    placeholder="Search for demo instances or users..."
                     className="flex-1 bg-transparent border-none focus:ring-0 focus:outline-none text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                   />
                   {searchQuery && (
@@ -374,7 +453,12 @@ const DemoSpotlight: React.FC = () => {
                 </div>
                 
                 {/* Results */}
-                {renderGroupedInstances()}
+                <div className="relative">
+                  {renderGroupedInstances()}
+                  <AnimatePresence>
+                    {hoveredInstance && renderUserProfilePreview()}
+                  </AnimatePresence>
+                </div>
                 
                 {/* Keyboard shortcuts */}
                 <div className="px-4 py-2 border-t border-gray-200/70 dark:border-gray-700/70 text-xs text-gray-500 dark:text-gray-400 flex justify-between">

@@ -26,6 +26,11 @@ const demoConfigs: DemoConfigsType = {
       title: 'Default Dashboard',
       description: 'General dashboard view'
     },
+    'dashboard': {
+      title: 'Personalized Dashboard',
+      description: 'Dynamic dashboard with personalized content',
+      initialStep: 'dashboard'
+    },
     'campaign-creation': {
       title: 'AI Campaign Creation',
       description: 'Create a new campaign with AI assistance',
