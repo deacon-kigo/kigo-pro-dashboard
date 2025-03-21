@@ -141,51 +141,57 @@ export default function DemosPage() {
           </div>
           
           {/* CVS Demo (Coming Soon) */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
             <div className="p-6">
               <div className="flex items-center mb-4">
-                <div className="h-12 w-12 bg-gray-100 rounded-full overflow-hidden flex items-center justify-center mr-4">
+                <div className="h-12 w-12 bg-red-100 rounded-full overflow-hidden flex items-center justify-center mr-4">
                   <img 
-                    src="/logos/cvs.png" 
+                    src="/logos/cvs-logo.svg" 
                     alt="CVS" 
                     className="h-8 w-8 object-contain"
                   />
                 </div>
-                <h2 className="text-lg font-semibold text-gray-900">CVS Dashboard</h2>
+                <h2 className="text-lg font-semibold text-gray-900">CVS Token Management</h2>
               </div>
               
               <p className="text-gray-600 mb-6 h-20">
-                Coming soon: A personalized retail dashboard for CVS with inventory management, customer insights, and promotional campaign tools.
+                Explore a support interface for CVS ExtraCare customer token management. Troubleshoot and resolve customer reward and coupon issues in a user-friendly interface.
               </p>
               
               <div className="grid grid-cols-3 gap-2 mb-6">
                 <div className="bg-gray-50 p-3 rounded-lg text-center">
-                  <ShoppingCartIcon className="h-5 w-5 text-gray-400 mx-auto mb-1" />
-                  <span className="text-xs text-gray-500">Inventory</span>
+                  <svg className="h-5 w-5 text-red-500 mx-auto mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                  </svg>
+                  <span className="text-xs text-gray-600">Token Management</span>
                 </div>
                 <div className="bg-gray-50 p-3 rounded-lg text-center">
-                  <UserGroupIcon className="h-5 w-5 text-gray-400 mx-auto mb-1" />
-                  <span className="text-xs text-gray-500">Customer Data</span>
+                  <UserGroupIcon className="h-5 w-5 text-blue-500 mx-auto mb-1" />
+                  <span className="text-xs text-gray-600">Customer Support</span>
                 </div>
                 <div className="bg-gray-50 p-3 rounded-lg text-center">
-                  <SparklesIcon className="h-5 w-5 text-gray-400 mx-auto mb-1" />
-                  <span className="text-xs text-gray-500">AI Marketing</span>
+                  <SparklesIcon className="h-5 w-5 text-amber-500 mx-auto mb-1" />
+                  <span className="text-xs text-gray-600">Reward Management</span>
                 </div>
               </div>
               
               <div className="flex justify-between items-center">
                 <div className="space-x-1">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                    Retail
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    Pharmacy
                   </span>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                    Coming Soon
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    Customer Support
                   </span>
                 </div>
                 
-                <span className="inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-400 text-sm font-medium rounded-lg cursor-not-allowed">
-                  Coming Soon
-                </span>
+                <Link 
+                  href="/demos/cvs-token-management" 
+                  className="inline-flex items-center px-3 py-1.5 bg-[#CC0000] hover:bg-[#AA0000] text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  View Demo
+                  <ArrowRightIcon className="ml-1.5 h-4 w-4" />
+                </Link>
               </div>
             </div>
           </div>

@@ -32,6 +32,7 @@ interface DemoInstance {
   emoji: string;
   tags: string[];
   userProfile?: MockUser;
+  path?: string;
 }
 
 // Generate focused demo instances based on our actual documentation
@@ -65,6 +66,20 @@ const generateDemoInstances = (): DemoInstance[] => {
     emoji: '🎫',
     tags: ['support', 'token', 'customer service'],
     userProfile: getUserForContext('support', 'generic')
+  });
+  
+  // CVS Support Agent - ExtraCare Token Management
+  instances.push({
+    id: 'support-cvs-support-flow',
+    title: 'CVS Support - ExtraCare Token Management',
+    description: 'Manage CVS ExtraCare offer tokens for customers',
+    role: 'support',
+    clientId: 'cvs',
+    scenario: 'support-flow',
+    category: 'CVS Support',
+    emoji: '💊',
+    tags: ['support', 'pharmacy', 'extracare', 'token', 'customer service'],
+    userProfile: getUserForContext('support', 'cvs')
   });
   
   // National Chain - CVS
@@ -121,6 +136,21 @@ const generateDemoInstances = (): DemoInstance[] => {
     emoji: '💊',
     tags: ['merchant', 'pharmacy', 'dashboard', 'analytics'],
     userProfile: getUserForContext('merchant', 'cvs')
+  });
+  
+  // CVS Support Token Management
+  instances.push({
+    id: 'support-cvs-token-management',
+    title: 'CVS - ExtraCare Support',
+    description: 'Manage customer ExtraCare tokens and offers',
+    role: 'support',
+    clientId: 'cvs',
+    scenario: 'support-flow',
+    category: 'Customer Support',
+    emoji: '🎟️',
+    tags: ['support', 'pharmacy', 'extracare', 'token management'],
+    userProfile: getUserForContext('support', 'cvs'),
+    path: '/demos/cvs-token-management'
   });
   
   // Support Dashboard
@@ -267,14 +297,17 @@ const DemoSpotlight: React.FC = () => {
     updateDemoState({
       role: instance.role,
       clientId: instance.clientId as any,
-      clientName: demoConfigs.clients[instance.clientId].name,
       scenario: instance.scenario as any,
-      theme: demoConfigs.getThemeForClient(instance.clientId as any),
       userProfile: instance.userProfile
     });
     
     setIsOpen(false);
     setSearchQuery('');
+    
+    // Custom navigation if path exists
+    if (instance.path) {
+      window.location.href = instance.path;
+    }
   };
   
   // Helper function to render role icon
