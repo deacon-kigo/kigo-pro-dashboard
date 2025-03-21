@@ -58,9 +58,9 @@ export default function AICampaignCreation() {
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-gray-50">
       {/* Header */}
-      <div className="p-4 sm:p-6 flex-shrink-0">
+      <div className="p-3 sm:p-4 flex-shrink-0">
         <div className="max-w-screen-2xl mx-auto">
-          <Card className="flex justify-between items-center p-4">
+          <Card className="flex justify-between items-center p-3">
             <Link href="/demos/deacons-pizza" className="flex items-center text-gray-500 hover:text-primary transition-colors">
               <ChevronLeftIcon className="w-5 h-5 mr-1" />
               <span className="font-medium">Back to Dashboard</span>
@@ -75,11 +75,11 @@ export default function AICampaignCreation() {
       </div>
 
       {/* Dual Panel Layout */}
-      <div className="flex-1 max-w-screen-2xl mx-auto px-4 sm:px-6 pb-6 overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
+      <div className="flex-1 max-w-screen-2xl mx-auto px-3 sm:px-4 pb-3 overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 h-full">
           {/* AI Assistant Panel - Left Side */}
-          <div className="lg:col-span-4 h-full overflow-hidden">
-            <Card className="h-full p-0 overflow-hidden flex flex-col">
+          <div className="lg:col-span-4 h-full overflow-hidden flex flex-col">
+            <Card className="flex-1 p-0 overflow-hidden flex flex-col">
               <AIAssistantPanel 
                 onOptionSelected={handleOptionSelected}
               />
@@ -87,8 +87,8 @@ export default function AICampaignCreation() {
           </div>
 
           {/* Dynamic Canvas - Right Side */}
-          <div className="lg:col-span-8 h-full overflow-hidden">
-            <Card className="h-full p-0 overflow-hidden">
+          <div className="lg:col-span-8 h-full overflow-hidden flex flex-col">
+            <Card className="flex-1 p-0 overflow-hidden flex flex-col">
               <DynamicCanvas 
                 initialView={currentView}
               />

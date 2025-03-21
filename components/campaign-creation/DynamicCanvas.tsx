@@ -75,6 +75,10 @@ export interface OfferDetails {
   items: string[];
   terms: string;
   code: string;
+  budget?: {
+    total: number;
+    dailyAverage?: number;
+  };
 }
 
 export interface PerformancePredictions {
@@ -142,7 +146,11 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = ({ initialView = 'business-i
     discount: 0,
     items: [],
     terms: '',
-    code: ''
+    code: '',
+    budget: {
+      total: 750,
+      dailyAverage: 25
+    }
   });
   const [campaignParams, setCampaignParams] = useState({
     targeting: {
@@ -332,7 +340,11 @@ Deacon's Pizza Team`
     discount: 20,
     items: ['Large 2-topping pizza', 'Order of breadsticks', '2-liter soda'],
     terms: 'Valid Monday-Thursday from 4pm-8pm. Not valid with other offers.',
-    code: 'FAMILY24'
+    code: 'FAMILY24',
+    budget: {
+      total: 750,
+      dailyAverage: 25
+    }
   };
   
   // Mock performance predictions
@@ -468,7 +480,7 @@ Deacon's Pizza Team`
         className="flex-shrink-0"
       />
       
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-y-auto">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentView}

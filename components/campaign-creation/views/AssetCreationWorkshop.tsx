@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowPathIcon, PencilSquareIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useDemo } from '../../../contexts/DemoContext';
@@ -22,7 +22,18 @@ const AssetCreationWorkshop: React.FC<AssetCreationWorkshopProps> = ({
   const { clientId } = useDemo();
   const [selectedAsset, setSelectedAsset] = useState<CampaignAsset | null>(null);
   const [isCustomizing, setIsCustomizing] = useState(false);
-  const [editedDetails, setEditedDetails] = useState<OfferDetails>(offerDetails);
+  const [editedDetails, setEditedDetails] = useState<OfferDetails>({
+    ...offerDetails,
+    budget: offerDetails.budget || { total: 0 }
+  });
+  
+  // Update editedDetails when offerDetails changes
+  useEffect(() => {
+    setEditedDetails({
+      ...offerDetails,
+      budget: offerDetails.budget || { total: 0 }
+    });
+  }, [offerDetails]);
   
   // Group assets by type
   const assetsByType = assets.reduce((acc, asset) => {
@@ -110,6 +121,22 @@ const AssetCreationWorkshop: React.FC<AssetCreationWorkshopProps> = ({
               </div>
             </div>
             
+            {offerDetails.budget && (
+              <div className="flex space-x-4">
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-1">Total Budget</p>
+                  <p className="font-medium">${offerDetails.budget.total.toFixed(2)}</p>
+                </div>
+                
+                {offerDetails.budget.dailyAverage && (
+                  <div className="flex-1">
+                    <p className="text-xs text-gray-500 mb-1">Daily Average</p>
+                    <p className="font-medium">${offerDetails.budget.dailyAverage.toFixed(2)}</p>
+                  </div>
+                )}
+              </div>
+            )}
+            
             <div>
               <p className="text-xs text-gray-500 mb-1">Included Items</p>
               <ul className="list-disc pl-5 text-sm">
@@ -174,6 +201,50 @@ const AssetCreationWorkshop: React.FC<AssetCreationWorkshopProps> = ({
                   className="w-full p-2 border border-gray-300 rounded text-sm font-mono"
                 />
               </div>
+            </div>
+            
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Code</label>
+              <input
+                type="text"
+                value={editedDetails.code}
+                onChange={(e) => setEditedDetails({...editedDetails, code: e.target.value})}
+                className="w-full p-2 border border-gray-300 rounded text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Total Budget ($)</label>
+              <input
+                type="number"
+                min="0"
+                value={editedDetails.budget?.total || 0}
+                onChange={(e) => setEditedDetails({
+                  ...editedDetails, 
+                  budget: {
+                    ...editedDetails.budget || { total: 0 },
+                    total: parseFloat(e.target.value) || 0
+                  }
+                })}
+                className="w-full p-2 border border-gray-300 rounded text-sm"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Daily Budget ($)</label>
+              <input
+                type="number"
+                min="0"
+                value={editedDetails.budget?.dailyAverage || 0}
+                onChange={(e) => setEditedDetails({
+                  ...editedDetails, 
+                  budget: {
+                    ...editedDetails.budget || { total: 0 },
+                    dailyAverage: parseFloat(e.target.value) || 0
+                  }
+                })}
+                className="w-full p-2 border border-gray-300 rounded text-sm"
+              />
             </div>
             
             <div>
