@@ -63,12 +63,12 @@ const CampaignSelectionGallery: React.FC<CampaignSelectionGalleryProps> = ({
   }, []);
   
   return (
-    <div className="h-full flex flex-col p-6 overflow-hidden">
+    <div className="h-full flex flex-col p-6 overflow-y-auto">
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="mb-6"
+        className="mb-6 flex-shrink-0"
       >
         <h3 className="text-xl font-semibold mb-2">Campaign Options</h3>
         <p className="text-gray-600">
@@ -78,50 +78,54 @@ const CampaignSelectionGallery: React.FC<CampaignSelectionGalleryProps> = ({
         </p>
       </motion.div>
       
-      {/* Gallery Navigation */}
-      <div className="relative mb-6">
+      {/* Campaign Gallery with embedded navigation buttons */}
+      <div className="relative flex-shrink-0 mb-4">
+        {/* Left navigation button */}
         <button 
           onClick={() => handleScroll('left')}
           disabled={!canScrollLeft}
-          className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full flex items-center justify-center ${
+          className={`absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center ${
             canScrollLeft 
               ? 'bg-white text-gray-700 shadow-md hover:bg-gray-100' 
               : 'bg-gray-100 text-gray-400 cursor-not-allowed'
           }`}
+          style={{ transform: 'translateY(-50%)', marginLeft: '-5px' }}
         >
           <ChevronLeftIcon className="w-6 h-6" />
         </button>
         
+        {/* Right navigation button */}
         <button 
           onClick={() => handleScroll('right')}
           disabled={!canScrollRight}
-          className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full flex items-center justify-center ${
+          className={`absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center ${
             canScrollRight 
               ? 'bg-white text-gray-700 shadow-md hover:bg-gray-100' 
               : 'bg-gray-100 text-gray-400 cursor-not-allowed'
           }`}
+          style={{ transform: 'translateY(-50%)', marginRight: '-5px' }}
         >
           <ChevronRightIcon className="w-6 h-6" />
         </button>
-      </div>
-      
-      {/* Campaign Gallery */}
-      <div 
-        ref={galleryRef}
-        className="flex overflow-x-auto pb-4 gap-6 hide-scrollbar"
-        style={{ scrollbarWidth: 'none' }}
-      >
-        {options.map((campaign) => (
-          <CampaignCard 
-            key={campaign.id}
-            campaign={campaign}
-            onSelect={() => onSelect(campaign)}
-          />
-        ))}
+        
+        {/* Campaign cards row */}
+        <div 
+          ref={galleryRef}
+          className="flex overflow-x-auto pb-4 gap-6 hide-scrollbar"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {options.map((campaign) => (
+            <CampaignCard 
+              key={campaign.id}
+              campaign={campaign}
+              onSelect={() => onSelect(campaign)}
+            />
+          ))}
+        </div>
       </div>
       
       {/* Description Section */}
-      <div className="mt-auto pt-6 border-t border-gray-200">
+      <div className="mt-auto pt-6 border-t border-gray-200 flex-shrink-0">
         <h4 className="text-base font-medium mb-3">Recommended Approach</h4>
         <p className="text-gray-600 mb-4">
           {clientId === 'deacons-pizza' 
@@ -151,6 +155,8 @@ const CampaignCard: React.FC<{
   campaign: CampaignOption;
   onSelect: () => void;
 }> = ({ campaign, onSelect }) => {
+  const [imageError, setImageError] = useState(false);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -161,20 +167,21 @@ const CampaignCard: React.FC<{
     >
       {/* Image */}
       <div className="h-40 bg-gray-100 relative">
-        {campaign.primaryImage ? (
+        {campaign.primaryImage && !imageError ? (
           <img 
             src={campaign.primaryImage} 
             alt={campaign.name}
             className="w-full h-full object-cover"
+            onError={() => setImageError(true)}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-400">
-            Campaign Image
+            {campaign.name}
           </div>
         )}
         
         {campaign.recommended && (
-          <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
+          <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded z-10">
             Recommended
           </div>
         )}

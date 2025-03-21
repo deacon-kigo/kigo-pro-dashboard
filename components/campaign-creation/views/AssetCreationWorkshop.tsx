@@ -67,7 +67,7 @@ const AssetCreationWorkshop: React.FC<AssetCreationWorkshopProps> = ({
   };
   
   return (
-    <div className="h-full flex flex-col p-6 overflow-y-auto">
+    <div className="h-full flex flex-col overflow-y-auto p-6">
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
