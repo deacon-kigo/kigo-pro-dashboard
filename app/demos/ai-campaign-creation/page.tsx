@@ -66,7 +66,7 @@ export default function AICampaignCreation() {
               <span className="font-medium">Back to Dashboard</span>
             </Link>
             <div className="text-center">
-              <h2 className="text-xl font-bold text-gray-800">{greeting}, Deacon</h2>
+              <h2 className="text-xl font-bold bg-gradient-to-r from-blue-500 via-indigo-400 to-purple-500 text-transparent bg-clip-text">{greeting}, Deacon</h2>
               <p className="text-sm text-gray-500">Let's create a new marketing campaign</p>
             </div>
             <div className="w-32"></div> {/* Empty div for alignment */}

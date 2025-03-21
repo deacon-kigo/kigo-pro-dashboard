@@ -570,16 +570,19 @@ const CanvasHeader: React.FC<{
   className?: string;
 }> = ({ title, currentStep, totalSteps, className }) => {
   return (
-    <div className={`px-6 py-4 border-b border-gray-200 ${className || ''}`}>
-      <div className="flex justify-between items-center mb-3">
+    <div className={`px-6 py-3 border-b border-gray-200 ${className || ''}`}>
+      <div className="flex justify-between items-center mb-2">
         <h2 className="text-xl font-semibold">{title}</h2>
         <span className="text-sm text-gray-500 bg-white px-2 py-1 rounded-md shadow-sm">Step {currentStep} of {totalSteps}</span>
       </div>
       
       <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
         <div 
-          className="h-full bg-blue-500 rounded-full transition-all duration-300 ease-in-out"
-          style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+          className="h-full rounded-full transition-all duration-300 ease-in-out"
+          style={{ 
+            width: `${(currentStep / totalSteps) * 100}%`,
+            background: 'linear-gradient(to right, #4460F0, #9F7AEA)'
+          }}
         ></div>
       </div>
     </div>

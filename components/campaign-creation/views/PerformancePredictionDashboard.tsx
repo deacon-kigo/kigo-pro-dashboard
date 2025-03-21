@@ -187,72 +187,78 @@ const PerformancePredictionDashboard: React.FC<PerformancePredictionDashboardPro
           />
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          {/* Revenue Timeline */}
-          <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-            <h4 className="text-base font-medium mb-3">Revenue Impact</h4>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={predictions.revenueTimeline}
-                  margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-                >
-                  <defs>
-                    <linearGradient id="colorWithCampaign" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={colors.secondary} stopOpacity={0.2} />
-                      <stop offset="95%" stopColor={colors.secondary} stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="colorWithoutCampaign" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={colors.primary} stopOpacity={0.1} />
-                      <stop offset="95%" stopColor={colors.primary} stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="date" />
-                  <YAxis tickFormatter={(value) => `$${value}`} />
-                  <Tooltip 
-                    formatter={(value) => [`$${value}`, '']}
-                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="withCampaign" 
-                    name="With Campaign"
-                    stroke={colors.secondary} 
-                    fillOpacity={1} 
-                    fill="url(#colorWithCampaign)" 
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="withoutCampaign" 
-                    name="Without Campaign"
-                    stroke={colors.primary} 
-                    fillOpacity={1} 
-                    fill="url(#colorWithoutCampaign)" 
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="mt-2 bg-gray-50 p-3 rounded-lg">
-              <p className="text-sm text-gray-700">
-                <span className="font-semibold">Key Insight:</span> This campaign is predicted to increase your monthly revenue by up to {Math.round((predictions.revenue.max / predictions.revenue.min - 1) * 100)}%.
-              </p>
-            </div>
+        {/* Revenue Timeline - Full width first row */}
+        <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100 mb-6">
+          <h4 className="text-base font-medium mb-3">Revenue Impact</h4>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={predictions.revenueTimeline}
+                margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+              >
+                <defs>
+                  <linearGradient id="colorWithCampaign" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={colors.secondary} stopOpacity={0.2} />
+                    <stop offset="95%" stopColor={colors.secondary} stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="colorWithoutCampaign" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={colors.primary} stopOpacity={0.1} />
+                    <stop offset="95%" stopColor={colors.primary} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="date" />
+                <YAxis tickFormatter={(value) => `$${value}`} />
+                <Tooltip 
+                  formatter={(value) => [`$${value}`, '']}
+                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="withCampaign" 
+                  name="With Campaign"
+                  stroke={colors.secondary} 
+                  fillOpacity={1} 
+                  fill="url(#colorWithCampaign)" 
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="withoutCampaign" 
+                  name="Without Campaign"
+                  stroke={colors.primary} 
+                  fillOpacity={1} 
+                  fill="url(#colorWithoutCampaign)" 
+                />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
-          
+          <div className="mt-2 bg-gray-50 p-3 rounded-lg">
+            <p className="text-sm text-gray-700">
+              <span className="font-semibold">Key Insight:</span> This campaign is predicted to increase your monthly revenue by up to {Math.round((predictions.revenue.max / predictions.revenue.min - 1) * 100)}%.
+            </p>
+          </div>
+        </div>
+        
+        {/* Customer Journey and Industry Benchmarks side by side in second row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Customer Flow */}
           <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
             <h4 className="text-base font-medium mb-3">Customer Journey</h4>
-            <div className="h-80 flex items-center justify-center">
+            <div className="h-64 flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={predictions.customerFlow}
                   layout="vertical"
-                  margin={{ top: 10, right: 30, left: 100, bottom: 10 }}
+                  margin={{ top: 5, right: 10, left: 60, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                   <XAxis type="number" />
-                  <YAxis dataKey="stage" type="category" tick={{ fontSize: 13 }} />
+                  <YAxis 
+                    dataKey="stage" 
+                    type="category" 
+                    width={60}
+                    tick={{ fontSize: 11 }} 
+                  />
                   <Tooltip 
                     formatter={(value) => [`${value} customers`, '']}
                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}
@@ -267,20 +273,18 @@ const PerformancePredictionDashboard: React.FC<PerformancePredictionDashboardPro
               </p>
             </div>
           </div>
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
           {/* Competitive Comparison */}
           <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-            <h4 className="text-base font-medium mb-4">Industry Benchmarks</h4>
+            <h4 className="text-base font-medium mb-3">Industry Benchmarks</h4>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={predictions.competitiveComparison}
-                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                  margin={{ top: 10, right: 10, left: 0, bottom: 20 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="metric" />
+                  <XAxis dataKey="metric" tick={{ fontSize: 11 }} />
                   <YAxis tickFormatter={(value) => `${value}%`} />
                   <Tooltip 
                     formatter={(value) => [`${value}%`, '']}
@@ -297,45 +301,45 @@ const PerformancePredictionDashboard: React.FC<PerformancePredictionDashboardPro
               </p>
             </div>
           </div>
+        </div>
+        
+        {/* Optimization Suggestions on its own row at the bottom */}
+        <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
+          <h4 className="text-base font-medium mb-4">
+            Optimization Suggestions
+            <span className="text-xs font-normal text-gray-500 ml-2">Try these scenarios</span>
+          </h4>
           
-          {/* Optimization Suggestions */}
-          <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-            <h4 className="text-base font-medium mb-4">
-              Optimization Suggestions
-              <span className="text-xs font-normal text-gray-500 ml-2">Try these scenarios</span>
-            </h4>
-            
-            <div className="space-y-4">
-              {predictions.suggestions.map(suggestion => (
-                <OptimizationCard 
-                  key={suggestion.id}
-                  suggestion={suggestion}
-                  onApply={() => {
-                    // Apply the suggestion logic
-                    if (suggestion.id === 'add-friday') {
-                      handleScenarioToggle('includeFriday', !includeFriday);
-                    } else if (suggestion.id === 'increase-radius') {
-                      handleScenarioToggle('increasedRadius', !increasedRadius);
-                    }
-                  }}
-                  isActive={
-                    (suggestion.id === 'add-friday' && includeFriday) || 
-                    (suggestion.id === 'increase-radius' && increasedRadius)
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {predictions.suggestions.map(suggestion => (
+              <OptimizationCard 
+                key={suggestion.id}
+                suggestion={suggestion}
+                onApply={() => {
+                  // Apply the suggestion logic
+                  if (suggestion.id === 'add-friday') {
+                    handleScenarioToggle('includeFriday', !includeFriday);
+                  } else if (suggestion.id === 'increase-radius') {
+                    handleScenarioToggle('increasedRadius', !increasedRadius);
                   }
-                />
-              ))}
-            </div>
-            
-            <div className="mt-4 flex justify-center">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="inline-flex items-center text-primary text-sm cursor-pointer"
-              >
-                <SparklesIcon className="w-4 h-4 mr-1" />
-                View More Optimization Ideas
-              </motion.div>
-            </div>
+                }}
+                isActive={
+                  (suggestion.id === 'add-friday' && includeFriday) || 
+                  (suggestion.id === 'increase-radius' && increasedRadius)
+                }
+              />
+            ))}
+          </div>
+          
+          <div className="mt-4 flex justify-center">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="inline-flex items-center text-primary text-sm cursor-pointer"
+            >
+              <SparklesIcon className="w-4 h-4 mr-1" />
+              View More Optimization Ideas
+            </motion.div>
           </div>
         </div>
       </div>

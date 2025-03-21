@@ -183,7 +183,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="space-y-6 pt-6 transition-all duration-300 ease-in-out">
+    <div className="space-y-4 pt-4 transition-all duration-300 ease-in-out">
       <div className="relative overflow-hidden rounded-xl shadow-sm">
         {/* Mesh Gradient Background */}
         <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-primary-light/50 to-pastel-purple/30"></div>
@@ -196,12 +196,12 @@ export default function DashboardPage() {
                backgroundSize: '100px 100px' 
              }}></div>
         
-        <div className="relative p-6 z-10">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="relative p-5 z-10">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center">
-              <span className="text-4xl mr-4">{weatherEmoji}</span>
+              <span className="text-3xl mr-3">{weatherEmoji}</span>
               <div>
-                <h1 className="text-3xl font-bold pb-1 transition-transform duration-300 bg-gradient-to-r from-primary via-blue-500 to-purple-600 text-transparent bg-clip-text">
+                <h1 className="text-2xl font-bold pb-1 transition-transform duration-300 bg-gradient-to-r from-blue-500 via-indigo-400 to-purple-500 text-transparent bg-clip-text">
                   {greeting}, {userData.name}!
                 </h1>
                 <p className="text-sm text-text-dark/75">
@@ -214,7 +214,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard 
           title="Active Campaigns"
           value={8}
