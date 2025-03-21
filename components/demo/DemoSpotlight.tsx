@@ -88,7 +88,7 @@ const generateDemoInstances = (): DemoInstance[] => {
     description: 'Overview of system-wide performance metrics',
     role: 'admin',
     clientId: 'generic',
-    scenario: 'default',
+    scenario: 'dashboard',
     category: 'Platform Administration',
     emoji: '📊',
     tags: ['admin', 'analytics', 'dashboard', 'reporting'],
@@ -107,6 +107,34 @@ const generateDemoInstances = (): DemoInstance[] => {
     emoji: '🍕',
     tags: ['merchant', 'restaurant', 'dashboard', 'analytics'],
     userProfile: getUserForContext('merchant', 'deacons-pizza')
+  });
+  
+  // CVS Dashboard
+  instances.push({
+    id: 'merchant-cvs-dashboard',
+    title: 'CVS - Pharmacy Dashboard',
+    description: 'View pharmacy chain dashboard and metrics',
+    role: 'merchant',
+    clientId: 'cvs',
+    scenario: 'dashboard',
+    category: 'National Chain',
+    emoji: '💊',
+    tags: ['merchant', 'pharmacy', 'dashboard', 'analytics'],
+    userProfile: getUserForContext('merchant', 'cvs')
+  });
+  
+  // Support Dashboard
+  instances.push({
+    id: 'support-generic-dashboard',
+    title: 'Support - Agent Dashboard',
+    description: 'Customer support dashboard and ticket overview',
+    role: 'support',
+    clientId: 'generic',
+    scenario: 'dashboard',
+    category: 'Support Agent',
+    emoji: '🎫',
+    tags: ['support', 'tickets', 'dashboard', 'customer service'],
+    userProfile: getUserForContext('support', 'generic')
   });
   
   return instances;
@@ -270,7 +298,7 @@ const DemoSpotlight: React.FC = () => {
         return <DocumentTextIcon className="h-5 w-5" />;
       case 'support-flow':
         return <PhoneIcon className="h-5 w-5" />;
-      case 'default':
+      case 'dashboard':
         return <ChartBarIcon className="h-5 w-5" />;
       default:
         return <PuzzlePieceIcon className="h-5 w-5" />;
@@ -284,7 +312,7 @@ const DemoSpotlight: React.FC = () => {
       return (
         <div className="max-h-[60vh] overflow-y-auto py-2">
           {filteredInstances.length === 0 ? (
-            <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+            <div className="px-4 py-8 text-center text-gray-600 dark:text-gray-200">
               No results found. Try a different search term.
             </div>
           ) : (
@@ -299,7 +327,7 @@ const DemoSpotlight: React.FC = () => {
       <div className="max-h-[60vh] overflow-y-auto py-2">
         {Object.entries(instanceGroups.current).map(([category, instances]) => (
           <div key={category} className="mb-2">
-            <div className="px-4 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            <div className="px-4 py-1 text-xs font-semibold text-gray-600 dark:text-gray-200 uppercase tracking-wider">
               {category}
             </div>
             {instances.map((instance, index) => {
@@ -335,21 +363,21 @@ const DemoSpotlight: React.FC = () => {
           <span className="text-xl" aria-hidden="true">{instance.emoji}</span>
         </div>
         <div className="flex-1 min-w-0">
-          <div className="font-medium truncate">{instance.title}</div>
-          <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
+          <div className="font-medium truncate text-gray-900 dark:text-gray-100">{instance.title}</div>
+          <div className="text-sm text-gray-600 dark:text-gray-300 truncate">
             {instance.description}
           </div>
           {hasUserProfile && (
-            <div className="text-xs text-primary truncate flex items-center mt-1">
+            <div className="text-xs text-blue-600 dark:text-blue-300 truncate flex items-center mt-1">
               <UserCircleIcon className="h-3 w-3 mr-1" />
               {user.firstName} {user.lastName} • {user.title}
             </div>
           )}
         </div>
         <div className={`ml-3 p-1.5 rounded-full ${
-          instance.role === 'merchant' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
-          instance.role === 'support' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
-          'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+          instance.role === 'merchant' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300' :
+          instance.role === 'support' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
+          'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300'
         }`}>
           {renderRoleIcon(instance.role)}
         </div>
@@ -377,12 +405,12 @@ const DemoSpotlight: React.FC = () => {
             <img src={avatarUrl} alt={user.firstName} className="w-full h-full object-cover" />
           </div>
           <div>
-            <p className="font-medium">{user.firstName} {user.lastName}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">{user.title}</p>
+            <p className="font-medium text-gray-900 dark:text-gray-100">{user.firstName} {user.lastName}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">{user.title}</p>
           </div>
         </div>
         
-        <div className="text-xs text-gray-600 dark:text-gray-300 mb-2">
+        <div className="text-xs text-gray-700 dark:text-gray-200 mb-2">
           <div className="grid grid-cols-3 gap-1 mb-1">
             <span className="font-medium">Company:</span>
             <span className="col-span-2">{user.company}</span>
@@ -394,7 +422,7 @@ const DemoSpotlight: React.FC = () => {
           </div>
         </div>
         
-        <div className="text-xs text-gray-700 dark:text-gray-300">
+        <div className="text-xs text-gray-800 dark:text-gray-200">
           <p className="font-medium mb-1">Goals:</p>
           <ul className="list-disc pl-4 space-y-0.5">
             {user.goals.slice(0, 2).map((goal, idx) => (
@@ -432,7 +460,7 @@ const DemoSpotlight: React.FC = () => {
               <div className="glass-intense rounded-xl">
                 {/* Search input */}
                 <div className="px-4 pt-4 pb-2 border-b border-gray-200/70 dark:border-gray-700/70 flex items-center">
-                  <MagnifyingGlassIcon className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-2" />
+                  <MagnifyingGlassIcon className="h-5 w-5 text-gray-600 dark:text-gray-300 mr-2" />
                   <input
                     ref={inputRef}
                     type="text"
@@ -440,12 +468,12 @@ const DemoSpotlight: React.FC = () => {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Search for demo instances or users..."
-                    className="flex-1 bg-transparent border-none focus:ring-0 focus:outline-none text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+                    className="flex-1 bg-transparent border-none focus:ring-0 focus:outline-none text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-300"
                   />
                   {searchQuery && (
                     <button 
                       onClick={() => setSearchQuery('')}
-                      className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                      className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100"
                     >
                       <XMarkIcon className="h-5 w-5" />
                     </button>
@@ -461,21 +489,21 @@ const DemoSpotlight: React.FC = () => {
                 </div>
                 
                 {/* Keyboard shortcuts */}
-                <div className="px-4 py-2 border-t border-gray-200/70 dark:border-gray-700/70 text-xs text-gray-500 dark:text-gray-400 flex justify-between">
+                <div className="px-4 py-2 border-t border-gray-200/70 dark:border-gray-700/70 text-xs text-gray-600 dark:text-gray-300 flex justify-between">
                   <div>
                     <span className="inline-flex items-center mr-3">
-                      <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-gray-900 dark:text-gray-300 font-mono text-xs mr-1">↑</kbd>
-                      <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-gray-900 dark:text-gray-300 font-mono text-xs mr-1">↓</kbd>
+                      <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-gray-900 dark:text-gray-200 font-mono text-xs mr-1">↑</kbd>
+                      <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-gray-900 dark:text-gray-200 font-mono text-xs mr-1">↓</kbd>
                       to navigate
                     </span>
                     <span className="inline-flex items-center mr-3">
-                      <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-gray-900 dark:text-gray-300 font-mono text-xs mr-1">Enter</kbd>
+                      <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-gray-900 dark:text-gray-200 font-mono text-xs mr-1">Enter</kbd>
                       to select
                     </span>
                   </div>
                   <div>
                     <span className="inline-flex items-center">
-                      <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-gray-900 dark:text-gray-300 font-mono text-xs mr-1">Esc</kbd>
+                      <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-gray-900 dark:text-gray-200 font-mono text-xs mr-1">Esc</kbd>
                       to close
                     </span>
                   </div>
@@ -488,7 +516,7 @@ const DemoSpotlight: React.FC = () => {
       
       {/* Keyboard shortcut indicator */}
       <div className="fixed right-6 bottom-20 z-40 glass-subtle px-3 py-1.5 rounded-full text-sm pointer-events-none select-none opacity-70 hover:opacity-100 transition-opacity duration-200">
-        Press <kbd className="px-1.5 py-0.5 bg-gray-700 text-gray-300 font-mono text-xs mx-1">⌘</kbd>+<kbd className="px-1.5 py-0.5 bg-gray-700 text-gray-300 font-mono text-xs mx-1">K</kbd> for demo switcher
+        Press <kbd className="px-1.5 py-0.5 bg-gray-700 text-gray-200 font-mono text-xs mx-1">⌘</kbd>+<kbd className="px-1.5 py-0.5 bg-gray-700 text-gray-200 font-mono text-xs mx-1">K</kbd> for demo switcher
       </div>
     </>
   );

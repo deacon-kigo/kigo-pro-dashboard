@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { useDemo } from '@/contexts/DemoContext';
-import { getTimeBasedGreeting, getWelcomeBackMessage } from '@/lib/userProfileUtils';
-import { getMockAvatarUrl } from '@/lib/avatarUtils';
+import { getPersonalizedGreeting } from '@/lib/userProfileUtils';
+import { motion } from 'framer-motion';
 
 interface UserGreetingProps {
   showRole?: boolean;
@@ -12,50 +12,75 @@ interface UserGreetingProps {
 }
 
 const UserGreeting: React.FC<UserGreetingProps> = ({
-  showRole = true,
+  showRole = false,
   showWelcomeMessage = false,
   className = ''
 }) => {
-  const { userProfile } = useDemo();
-  const greeting = getTimeBasedGreeting();
-  const welcomeMessage = showWelcomeMessage ? getWelcomeBackMessage(userProfile) : null;
-  const avatarUrl = getMockAvatarUrl(userProfile);
+  const { userProfile, role, clientId } = useDemo();
+  const greeting = getPersonalizedGreeting(userProfile);
+
+  // Animation variants
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
 
   return (
-    <div className={`user-greeting ${className}`}>
-      <div className="flex items-center gap-3">
-        {/* User Avatar */}
-        <div className="avatar h-12 w-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center overflow-hidden">
-          <img 
-            src={avatarUrl} 
-            alt={`${userProfile.firstName} ${userProfile.lastName}`} 
-            className="h-full w-full object-cover" 
-          />
-        </div>
-        
-        <div className="user-info">
-          {/* Greeting */}
-          <h1 className="text-2xl font-bold">
-            {greeting}, {userProfile.firstName}!
-          </h1>
-          
-          {/* Role/Title */}
-          {showRole && (
-            <p className="text-gray-600 dark:text-gray-300">
-              {userProfile.title}{userProfile.company !== 'Kigo' ? ` at ${userProfile.company}` : ''}
-            </p>
-          )}
-          
-          {/* Welcome Back Message */}
-          {showWelcomeMessage && welcomeMessage && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 italic">
-              {welcomeMessage}
-            </p>
-          )}
-        </div>
-      </div>
-    </div>
+    <motion.div 
+      className={`user-greeting ${className}`}
+      variants={container}
+      initial="hidden"
+      animate="show"
+    >
+      <motion.h1 
+        className="text-3xl font-bold text-gray-900 dark:text-white"
+        variants={item}
+      >
+        {greeting}
+      </motion.h1>
+      
+      {showRole && userProfile && (
+        <motion.p 
+          className="text-lg text-gray-600 dark:text-gray-300 mt-1"
+          variants={item}
+        >
+          {userProfile.role} {clientId !== 'default' && `at ${userProfile.businessName}`}
+        </motion.p>
+      )}
+      
+      {showWelcomeMessage && (
+        <motion.p 
+          className="text-sm text-gray-500 dark:text-gray-400 mt-2"
+          variants={item}
+        >
+          {getWelcomeMessage(role)}
+        </motion.p>
+      )}
+    </motion.div>
   );
 };
+
+function getWelcomeMessage(role: string): string {
+  switch (role) {
+    case 'merchant':
+      return "Here's what's happening with your business today";
+    case 'support':
+      return "Here's an overview of your support queue and recent activity";
+    case 'admin':
+      return "Here's your platform overview and administrative tasks";
+    default:
+      return "Welcome to your personalized dashboard";
+  }
+}
 
 export default UserGreeting; 

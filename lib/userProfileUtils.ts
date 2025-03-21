@@ -5,6 +5,8 @@
  * personalized content based on the current demo context.
  */
 
+import { UserProfile } from '@/types/demo';
+
 // Mock user profiles based on docs/demo/mock-users.md
 export interface MockUser {
   id: string;
@@ -169,28 +171,90 @@ const mockUsers: Record<string, MockUser> = {
 };
 
 /**
- * Get the mock user based on role and client
+ * Get a specific user profile based on role and client
  */
-export function getUserForContext(role: string, clientId: string): MockUser {
-  // Special case for admin analytics scenario
-  if (role === 'admin' && clientId === 'generic' && Math.random() > 0.5) {
-    return mockUsers['admin-analytics'];
+export function getUserForContext(role: string, clientId: string): UserProfile {
+  interface UserProfiles {
+    [role: string]: {
+      [client: string]: UserProfile;
+    };
   }
-  
-  // Try to find an exact match
-  const key = `${role}-${clientId}`;
-  if (mockUsers[key]) {
-    return mockUsers[key];
-  }
-  
-  // Fall back to generic user for the role
-  const genericKey = `${role}-generic`;
-  if (mockUsers[genericKey]) {
-    return mockUsers[genericKey];
-  }
-  
-  // Ultimate fallback
-  return mockUsers['merchant-generic'];
+
+  const users: UserProfiles = {
+    merchant: {
+      'deacons-pizza': {
+        name: 'Marco Deacon',
+        role: 'Owner',
+        businessName: 'Deacon\'s Pizza',
+        avatar: '/images/avatars/marco-deacon.jpg',
+        technicalProficiency: 'moderate',
+        goals: ['Increase customer loyalty', 'Streamline operations', 'Expand to new locations'],
+        painPoints: ['Limited time for marketing', 'Competition from national chains', 'Staff turnover']
+      },
+      'cvs': {
+        name: 'Jennifer Williams',
+        role: 'Regional Marketing Director',
+        businessName: 'CVS Pharmacy',
+        avatar: '/images/avatars/jennifer-williams.jpg',
+        technicalProficiency: 'high',
+        goals: ['Improve customer retention', 'Coordinate multi-location campaigns', 'Increase prescriptions filled'],
+        painPoints: ['Complex approval processes', 'Inconsistent results across locations', 'Compliance requirements']
+      },
+      'default': {
+        name: 'Sam Merchant',
+        role: 'Owner',
+        businessName: 'Local Business',
+        avatar: '/images/avatars/default-merchant.jpg',
+        technicalProficiency: 'moderate',
+        goals: ['Grow customer base', 'Increase revenue', 'Improve efficiency'],
+        painPoints: ['Limited marketing budget', 'Competition', 'Time constraints']
+      }
+    },
+    support: {
+      'default': {
+        name: 'Alex Chen',
+        role: 'Customer Support Agent',
+        businessName: 'Kigo',
+        avatar: '/images/avatars/alex-chen.jpg',
+        technicalProficiency: 'high',
+        goals: ['Resolve issues quickly', 'Improve customer satisfaction', 'Reduce ticket volume'],
+        painPoints: ['Complex customer issues', 'Limited documentation', 'System limitations']
+      },
+      'tier2': {
+        name: 'Sarah Johnson',
+        role: 'Senior Support Specialist',
+        businessName: 'Kigo',
+        avatar: '/images/avatars/sarah-johnson.jpg',
+        technicalProficiency: 'very high',
+        goals: ['Solve complex technical issues', 'Support tier 1 agents', 'Improve system reliability'],
+        painPoints: ['Escalating bugs', 'Client-specific customizations', 'Time-sensitive requests']
+      }
+    },
+    admin: {
+      'default': {
+        name: 'David Garcia',
+        role: 'Platform Operations Manager',
+        businessName: 'Kigo',
+        avatar: '/images/avatars/david-garcia.jpg',
+        technicalProficiency: 'expert',
+        goals: ['Ensure system stability', 'Improve merchant onboarding', 'Reduce support tickets'],
+        painPoints: ['System scaling challenges', 'Security concerns', 'Performance optimization']
+      },
+      'analytics': {
+        name: 'Jane Foster',
+        role: 'Marketing Analytics Director',
+        businessName: 'Kigo',
+        avatar: '/images/avatars/jane-foster.jpg',
+        technicalProficiency: 'expert',
+        goals: ['Improve campaign performance', 'Identify growth opportunities', 'Optimize customer engagement'],
+        painPoints: ['Data inconsistencies', 'Complex reporting needs', 'Integration challenges']
+      }
+    }
+  };
+
+  // Get the specified user or default for that role
+  const roleUsers = users[role] || users.merchant;
+  return (roleUsers[clientId] || roleUsers.default);
 }
 
 /**
@@ -200,40 +264,82 @@ export function getTimeBasedGreeting(): string {
   const hour = new Date().getHours();
   
   if (hour < 12) {
-    return 'Good morning';
+    return "Good morning";
   } else if (hour < 18) {
-    return 'Good afternoon';
+    return "Good afternoon";
   } else {
-    return 'Good evening';
+    return "Good evening";
   }
 }
 
 /**
  * Get personalized content suggestions based on user profile
  */
-export function getPersonalizedSuggestions(user: MockUser): string[] {
-  const suggestions: string[] = [];
-  
-  // Based on technical proficiency
-  if (user.techProficiency === 'Low' || user.techProficiency === 'Moderate') {
-    suggestions.push('Try our guided campaign setup for a simpler experience.');
-  } else if (user.techProficiency === 'High' || user.techProficiency === 'Expert') {
-    suggestions.push('Use our advanced segmentation tools for targeted campaigns.');
+export function getPersonalizedSuggestions(userProfile?: UserProfile): string[] {
+  if (!userProfile) {
+    return [
+      "Create your first campaign",
+      "Set up your account preferences",
+      "Explore the analytics dashboard"
+    ];
   }
-  
-  // Based on role
-  if (user.role.includes('Owner') || user.role.includes('Manager')) {
-    suggestions.push('Check the ROI dashboard for your recent campaigns.');
-  } else if (user.role.includes('Support')) {
-    suggestions.push('Review recent customer tickets requiring attention.');
-  } else if (user.role.includes('Analytics')) {
-    suggestions.push('Export the latest customer segmentation data for your report.');
+
+  // Base suggestions on role
+  const roleSuggestions: Record<string, string[]> = {
+    'Owner': [
+      "Create a new loyalty campaign",
+      "Review your weekly performance report",
+      "Set up automatic customer targeting"
+    ],
+    'Regional Marketing Director': [
+      "Compare performance across locations",
+      "Create a regional marketing campaign",
+      "Review compliance settings for all stores"
+    ],
+    'Customer Support Agent': [
+      "View open support tickets",
+      "Check knowledge base updates",
+      "Review merchant onboarding status"
+    ],
+    'Senior Support Specialist': [
+      "Check system health dashboard",
+      "Review escalated technical issues",
+      "Audit recent merchant configurations"
+    ],
+    'Platform Operations Manager': [
+      "Review system performance metrics",
+      "Check new merchant applications",
+      "View security alert dashboard"
+    ],
+    'Marketing Analytics Director': [
+      "Review campaign performance metrics",
+      "Analyze customer engagement trends",
+      "Generate executive summary report"
+    ]
+  };
+
+  // Get role-specific suggestions or defaults
+  const suggestions = roleSuggestions[userProfile.role] || [
+    "Review your dashboard",
+    "Update your account settings",
+    "Explore new features"
+  ];
+
+  // Add goal-related suggestions
+  if (userProfile.goals && userProfile.goals.length > 0) {
+    const randomGoal = userProfile.goals[Math.floor(Math.random() * userProfile.goals.length)];
+    suggestions.push(`Goal: ${randomGoal}`);
   }
-  
-  // Generic fallbacks
-  suggestions.push('View your performance metrics for this week.');
-  suggestions.push('Try our new AI-powered campaign recommendation tool.');
-  
+
+  // Add tech-level appropriate suggestions
+  if (userProfile.technicalProficiency === 'high' || userProfile.technicalProficiency === 'expert') {
+    suggestions.push("Configure API integration settings");
+  } else if (userProfile.technicalProficiency === 'moderate') {
+    suggestions.push("Try our guided campaign creator");
+  } else {
+    suggestions.push("View beginner-friendly tutorials");
+  }
+
   return suggestions;
 }
 
@@ -254,4 +360,14 @@ export function getWelcomeBackMessage(user: MockUser): string {
   } else {
     return `Welcome back, ${user.firstName}! Hope you're having a productive day.`;
   }
+}
+
+// Generate personalized greeting
+export function getPersonalizedGreeting(userProfile?: UserProfile): string {
+  if (!userProfile) {
+    return "Welcome";
+  }
+  
+  const timeGreeting = getTimeBasedGreeting();
+  return `${timeGreeting}, ${userProfile.name.split(' ')[0]}`;
 } 

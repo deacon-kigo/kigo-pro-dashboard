@@ -1,307 +1,258 @@
+/**
+ * DemoContext.tsx
+ * 
+ * This context provides a way to manage the demo state across the application.
+ * It allows for switching between different personas, clients, and scenarios.
+ */
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo, useRef } from 'react';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import demoConfigs from '../config/demoConfigs';
-import { usePathname as usePathnameInternal, useRouter as useRouterInternal, useSearchParams as useSearchParamsInternal } from 'next/navigation';
-import { MockUser, getUserForContext, getTimeBasedGreeting, getPersonalizedSuggestions, getWelcomeBackMessage } from '../lib/userProfileUtils';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { getUserForContext } from '@/lib/userProfileUtils';
+import { UserProfile, DemoState, ThemeColors } from '@/types/demo';
 
-// Define types for our context
-export type Role = 'merchant' | 'support' | 'admin';
-export type Scenario = keyof typeof demoConfigs.scenarios;
-export type ClientId = keyof typeof demoConfigs.clients;
-export type ThemeMode = 'light' | 'dark';
+// Default theme
+const defaultTheme: ThemeColors = {
+  primaryColor: '#3b82f6', // blue-500
+  secondaryColor: '#10b981', // emerald-500
+  accentColor: '#f97316', // orange-500
+  backgroundColor: '#ffffff',
+  textColor: '#1f2937',
+};
 
-export interface Theme {
-  primaryColor: string;
-  secondaryColor: string;
-  logo: string;
-}
+// Client-specific themes
+const clientThemes: Record<string, { light: ThemeColors; dark: ThemeColors }> = {
+  'deacons-pizza': {
+    light: {
+      primaryColor: '#ef4444', // red-500 (pizza theme)
+      secondaryColor: '#84cc16', // lime-500 (for fresh ingredients)
+      accentColor: '#f97316', // orange-500
+      backgroundColor: '#ffffff',
+      textColor: '#1f2937',
+    },
+    dark: {
+      primaryColor: '#f87171', // red-400 (pizza theme)
+      secondaryColor: '#a3e635', // lime-400 (for fresh ingredients)
+      accentColor: '#fb923c', // orange-400
+      backgroundColor: '#1f2937',
+      textColor: '#f9fafb',
+    }
+  },
+  'cvs': {
+    light: {
+      primaryColor: '#c42032', // CVS red
+      secondaryColor: '#3268cc', // CVS blue
+      accentColor: '#f97316', // orange-500
+      backgroundColor: '#ffffff',
+      textColor: '#1f2937',
+    },
+    dark: {
+      primaryColor: '#dc4251', // Lighter CVS red for dark mode
+      secondaryColor: '#5b85d6', // Lighter CVS blue for dark mode
+      accentColor: '#fb923c', // orange-400
+      backgroundColor: '#1f2937',
+      textColor: '#f9fafb',
+    }
+  },
+  // Default theme for any other client
+  'default': {
+    light: {
+      ...defaultTheme
+    },
+    dark: {
+      primaryColor: '#60a5fa', // blue-400
+      secondaryColor: '#34d399', // emerald-400
+      accentColor: '#fb923c', // orange-400
+      backgroundColor: '#1f2937',
+      textColor: '#f9fafb',
+    }
+  }
+};
 
-export interface DemoInstance {
-  id: string;
-  role: Role;
-  scenario: Scenario;
-  clientId: ClientId;
-  clientName: string;
-  themeMode: ThemeMode;
-}
-
-export interface DemoState {
-  role: Role;
-  scenario: Scenario;
-  clientId: ClientId;
-  clientName: string;
-  theme: Theme;
-  themeMode: ThemeMode;
-  initialStep?: string;
-  instanceHistory: DemoInstance[];
-  currentInstanceIndex: number;
-  userProfile: MockUser;
-}
-
-interface DemoContextType extends DemoState {
-  setDemoState: React.Dispatch<React.SetStateAction<DemoState>>;
+// Interface for the context
+interface DemoContextType {
+  role: string;
+  clientId: string;
+  scenario: string;
+  themeMode: 'light' | 'dark';
+  theme: ThemeColors;
+  userProfile: UserProfile;
+  history: DemoState[];
+  setRole: (role: string) => void;
+  setClientId: (clientId: string) => void;
+  setScenario: (scenario: string) => void;
+  setThemeMode: (themeMode: 'light' | 'dark') => void;
   updateDemoState: (updates: Partial<DemoState>) => void;
-  setClientId: (clientId: ClientId) => void;
-  getCurrentInstance: () => DemoInstance;
-  saveCurrentInstance: () => void;
-  loadInstance: (instanceId: string) => void;
-  goToInstance: (index: number) => void;
-  createInstanceUrl: (instance: Partial<DemoInstance>) => string;
+  resetToDefault: () => void;
 }
 
+// Default state
+const defaultDemoState: DemoState = {
+  role: 'merchant',
+  clientId: 'deacons-pizza',
+  scenario: 'dashboard',
+  themeMode: 'light',
+};
+
+// Create context with a default undefined value
 const DemoContext = createContext<DemoContextType | undefined>(undefined);
 
-export const DemoProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const pathname = usePathnameInternal();
-  const searchParams = useSearchParamsInternal();
-  const router = useRouterInternal();
-  
-  // Ref to prevent loop between URL and state updates
-  const isUpdatingFromUrl = useRef(false);
-  const lastUrlState = useRef('');
-  
-  // Initial state with defaults
+// Provider component
+export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [demoState, setDemoState] = useState<DemoState>({
-    role: 'merchant',
-    scenario: 'default',
-    clientId: 'deacons-pizza',
-    clientName: 'Deacon\'s Pizza',
-    theme: demoConfigs.getThemeForClient('deacons-pizza'),
-    themeMode: 'light',
-    initialStep: undefined,
-    instanceHistory: [],
-    currentInstanceIndex: -1,
-    userProfile: getUserForContext('merchant', 'deacons-pizza')
+    ...defaultDemoState,
   });
+  const [history, setHistory] = useState<DemoState[]>([]);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   
-  // Function to update state partially - wrapped in useCallback
-  const updateDemoState = useCallback((updates: Partial<DemoState>) => {
-    setDemoState(prev => {
-      const newState = { ...prev, ...updates };
-      
-      // If we're updating scenario, also update initialStep if available
-      if (updates.scenario && demoConfigs.scenarios[updates.scenario]?.initialStep) {
-        newState.initialStep = demoConfigs.scenarios[updates.scenario].initialStep;
-      }
+  // Refs to track URL updates
+  const isUpdatingFromUrl = useRef(false);
+  const lastUrlState = useRef<DemoState | null>(null);
+  
+  // Get user profile based on current role and client
+  const userProfile = getUserForContext(demoState.role, demoState.clientId);
+  
+  // Get theme based on client and theme mode
+  const theme = clientThemes[demoState.clientId]?.[demoState.themeMode] || 
+                clientThemes.default[demoState.themeMode];
 
-      // If we're updating role or clientId, also update userProfile
-      if (updates.role || updates.clientId) {
-        const role = updates.role || prev.role;
-        const clientId = updates.clientId || prev.clientId;
-        newState.userProfile = getUserForContext(role, clientId);
-      }
-      
-      return newState;
-    });
-  }, []);
-  
-  // Helper function to set client ID and update related state - wrapped in useCallback
-  const setClientId = useCallback((clientId: ClientId) => {
-    updateDemoState({
-      clientId,
-      clientName: demoConfigs.clients[clientId].name,
-      theme: demoConfigs.getThemeForClient(clientId)
-    });
-  }, [updateDemoState]);
-  
-  // Get current instance as a serializable object
-  const getCurrentInstance = useCallback((): DemoInstance => {
-    return {
-      id: `${demoState.role}-${demoState.clientId}-${demoState.scenario}`,
-      role: demoState.role,
-      scenario: demoState.scenario,
-      clientId: demoState.clientId,
-      clientName: demoState.clientName,
-      themeMode: demoState.themeMode
-    };
-  }, [demoState]);
-  
-  // Save current instance to history
-  const saveCurrentInstance = useCallback(() => {
-    const currentInstance = getCurrentInstance();
-    
-    setDemoState(prev => {
-      // Don't add duplicate consecutive instances
-      if (prev.currentInstanceIndex >= 0 && 
-          prev.instanceHistory[prev.currentInstanceIndex].id === currentInstance.id) {
-        return prev;
-      }
-      
-      // Remove any future history if we're not at the end
-      const newHistory = prev.instanceHistory.slice(0, prev.currentInstanceIndex + 1);
-      newHistory.push(currentInstance);
-      
-      return {
-        ...prev,
-        instanceHistory: newHistory,
-        currentInstanceIndex: newHistory.length - 1
-      };
-    });
-  }, [getCurrentInstance]);
-  
-  // Load a specific instance by ID
-  const loadInstance = useCallback((instanceId: string) => {
-    setDemoState(prev => {
-      const instance = prev.instanceHistory.find(inst => inst.id === instanceId);
-      if (!instance) return prev;
-      
-      return {
-        ...prev,
-        role: instance.role,
-        scenario: instance.scenario,
-        clientId: instance.clientId,
-        clientName: instance.clientName,
-        themeMode: instance.themeMode,
-        theme: demoConfigs.getThemeForClient(instance.clientId),
-        initialStep: demoConfigs.scenarios[instance.scenario]?.initialStep
-      };
-    });
-  }, []);
-  
-  // Navigate to a specific instance in history by index
-  const goToInstance = useCallback((index: number) => {
-    setDemoState(prev => {
-      if (index < 0 || index >= prev.instanceHistory.length) return prev;
-      
-      const instance = prev.instanceHistory[index];
-      return {
-        ...prev,
-        role: instance.role,
-        scenario: instance.scenario,
-        clientId: instance.clientId,
-        clientName: instance.clientName,
-        themeMode: instance.themeMode,
-        theme: demoConfigs.getThemeForClient(instance.clientId),
-        initialStep: demoConfigs.scenarios[instance.scenario]?.initialStep,
-        currentInstanceIndex: index
-      };
-    });
-  }, []);
-  
-  // Create a URL for a specific instance configuration
-  const createInstanceUrl = useCallback((instance: Partial<DemoInstance>): string => {
-    const params = new URLSearchParams();
-    
-    if (instance.role) params.set('role', instance.role);
-    if (instance.scenario) params.set('scenario', instance.scenario);
-    if (instance.clientId) params.set('client', instance.clientId);
-    if (instance.themeMode) params.set('theme', instance.themeMode);
-    
-    return `${pathname}?${params.toString()}`;
-  }, [pathname]);
-  
-  // Update state based on URL parameters
+  // Parse URL params
   useEffect(() => {
     if (!searchParams) return;
     
-    // Create a string representation of the current URL parameters to check for changes
-    const currentUrlState = searchParams.toString();
-    
-    // Skip if we're in the middle of a programmatic URL update or if URL hasn't actually changed
-    if (isUpdatingFromUrl.current || currentUrlState === lastUrlState.current) return;
-    
-    const role = searchParams.get('role') as Role | null;
-    const scenario = searchParams.get('scenario') as Scenario | null;
-    const clientId = searchParams.get('client') as ClientId | null;
-    const themeMode = searchParams.get('theme') as ThemeMode | null;
+    const role = searchParams.get('role');
+    const clientId = searchParams.get('client');
+    const scenario = searchParams.get('scenario');
+    const themeMode = searchParams.get('theme') as 'light' | 'dark';
     
     const updates: Partial<DemoState> = {};
+    let hasUpdates = false;
     
-    if (role && ['merchant', 'support', 'admin'].includes(role)) {
+    if (role && role !== demoState.role) {
       updates.role = role;
+      hasUpdates = true;
     }
     
-    if (scenario && demoConfigs.scenarios[scenario]) {
-      updates.scenario = scenario;
-      updates.initialStep = demoConfigs.scenarios[scenario].initialStep;
-    }
-    
-    if (clientId && demoConfigs.clients[clientId]) {
+    if (clientId && clientId !== demoState.clientId) {
       updates.clientId = clientId;
-      updates.clientName = demoConfigs.clients[clientId].name;
-      updates.theme = demoConfigs.getThemeForClient(clientId);
+      hasUpdates = true;
     }
     
-    if (themeMode && ['light', 'dark'].includes(themeMode)) {
+    if (scenario && scenario !== demoState.scenario) {
+      updates.scenario = scenario;
+      hasUpdates = true;
+    }
+    
+    if (themeMode && (themeMode === 'light' || themeMode === 'dark') && themeMode !== demoState.themeMode) {
       updates.themeMode = themeMode;
+      hasUpdates = true;
     }
     
-    if (Object.keys(updates).length > 0) {
-      // If role or clientId is changing, update the userProfile
-      if (updates.role || updates.clientId) {
-        const role = updates.role || demoState.role;
-        const clientId = updates.clientId || demoState.clientId;
-        updates.userProfile = getUserForContext(role, clientId);
-      }
-
-      // Remember the current URL state
-      lastUrlState.current = currentUrlState;
-      
-      // Update state
-      updateDemoState(updates);
-      
-      // After a small delay, save this URL-based instance to history
-      setTimeout(() => {
-        saveCurrentInstance();
-      }, 100);
-    }
-  }, [searchParams, updateDemoState, saveCurrentInstance, demoState.role, demoState.clientId]);
-  
-  // Update URL when demo state changes
-  useEffect(() => {
-    if (!demoState.role || !demoState.scenario || !demoState.clientId) return;
-    
-    // Create URL parameters
-    const params = new URLSearchParams();
-    params.set('role', demoState.role);
-    params.set('scenario', demoState.scenario);
-    params.set('client', demoState.clientId);
-    params.set('theme', demoState.themeMode);
-    
-    const newUrlState = params.toString();
-    
-    // Only update URL if it's actually different and not triggered by a URL change
-    if (newUrlState !== lastUrlState.current) {
-      // Set flag to prevent update loop
+    if (hasUpdates) {
       isUpdatingFromUrl.current = true;
+      setDemoState(prev => ({
+        ...prev,
+        ...updates,
+      }));
+      
+      // Store this state to avoid circular updates
+      lastUrlState.current = {
+        ...demoState,
+        ...updates,
+      };
+    }
+  }, [searchParams]);
+  
+  // Update URL params when demo state changes
+  useEffect(() => {
+    // Skip if this state change was triggered by URL
+    if (isUpdatingFromUrl.current) {
+      isUpdatingFromUrl.current = false;
+      return;
+    }
+    
+    // Check if the URL needs updating (compare with last URL state)
+    const needsUpdate = !lastUrlState.current || 
+      lastUrlState.current.role !== demoState.role ||
+      lastUrlState.current.clientId !== demoState.clientId ||
+      lastUrlState.current.scenario !== demoState.scenario ||
+      lastUrlState.current.themeMode !== demoState.themeMode;
+    
+    if (needsUpdate) {
+      // Create the new URL with updated params
+      const params = new URLSearchParams();
+      params.set('role', demoState.role);
+      params.set('client', demoState.clientId);
+      params.set('scenario', demoState.scenario);
+      params.set('theme', demoState.themeMode);
+      
+      // Store current state to avoid circular updates
+      lastUrlState.current = { ...demoState };
       
       // Update the URL
-      router.replace(`${pathname}?${newUrlState}`, { scroll: false });
+      router.replace(`${pathname}?${params.toString()}`);
       
-      // Store the new URL state
-      lastUrlState.current = newUrlState;
+      // Add to history if not a duplicate
+      const isDuplicate = history.some(item => 
+        item.role === demoState.role && 
+        item.clientId === demoState.clientId && 
+        item.scenario === demoState.scenario
+      );
       
-      // Reset the flag after a short delay
-      setTimeout(() => {
-        isUpdatingFromUrl.current = false;
-      }, 100);
+      if (!isDuplicate) {
+        setHistory(prev => [demoState, ...prev].slice(0, 5));
+      }
     }
-  }, [demoState.role, demoState.scenario, demoState.clientId, demoState.themeMode, pathname, router]);
+  }, [demoState, pathname, router]);
   
-  // Memoize the context value to prevent unnecessary re-renders
-  const contextValue = useMemo(() => ({
+  // Update demo state
+  const updateDemoState = (updates: Partial<DemoState>) => {
+    setDemoState(prev => ({
+      ...prev,
+      ...updates,
+    }));
+  };
+  
+  // Role setter
+  const setRole = (role: string) => {
+    updateDemoState({ role });
+  };
+  
+  // Client setter
+  const setClientId = (clientId: string) => {
+    updateDemoState({ clientId });
+  };
+  
+  // Scenario setter
+  const setScenario = (scenario: string) => {
+    updateDemoState({ scenario });
+  };
+  
+  // Theme mode setter
+  const setThemeMode = (themeMode: 'light' | 'dark') => {
+    updateDemoState({ themeMode });
+  };
+  
+  // Reset to default demo state
+  const resetToDefault = () => {
+    setDemoState(defaultDemoState);
+  };
+  
+  // Provide context value
+  const contextValue: DemoContextType = {
     ...demoState,
-    setDemoState,
-    updateDemoState,
-    setClientId,
-    getCurrentInstance,
-    saveCurrentInstance,
-    loadInstance,
-    goToInstance,
-    createInstanceUrl
-  }), [
-    demoState, 
-    setDemoState, 
-    updateDemoState, 
+    theme,
+    userProfile,
+    history,
+    setRole,
     setClientId, 
-    getCurrentInstance,
-    saveCurrentInstance,
-    loadInstance,
-    goToInstance,
-    createInstanceUrl
-  ]);
+    setScenario,
+    setThemeMode,
+    updateDemoState,
+    resetToDefault,
+  };
   
   return (
     <DemoContext.Provider value={contextValue}>
@@ -310,6 +261,7 @@ export const DemoProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   );
 };
 
+// Hook to use the context
 export const useDemo = () => {
   const context = useContext(DemoContext);
   if (context === undefined) {
