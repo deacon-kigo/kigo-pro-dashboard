@@ -65,6 +65,9 @@ const BusinessIntelligenceView: React.FC<BusinessIntelligenceViewProps> = ({ dat
     return `$${value.toLocaleString()}`;
   };
   
+  // Note: We're now using the data passed in from props instead of defining mockBusinessData
+  // The component receives the already formatted data with concise insights
+  
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

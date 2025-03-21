@@ -205,10 +205,10 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = ({ initialView = 'business-i
       { segment: 'Seniors', value: 15 }
     ],
     insights: {
-      salesByDay: "Your weekday dinner sales (Mon-Thu) are significantly lower than weekend sales. This presents an opportunity for a targeted promotion.",
-      performanceTrend: "There's a noticeable dip in the middle of each month. A targeted promotion during this period could help smooth revenue.",
-      competitorActivity: "Competitors are increasing promotional activity, especially chain restaurants. A unique offer could help differentiate your business.",
-      customerSegments: "Families represent your largest customer segment but could be targeted more effectively during weekdays."
+      salesByDay: "Weekday dinner sales (Mon-Thu) are 55% lower than weekends. Perfect opportunity for targeted promotion.",
+      performanceTrend: "Monthly dip noted. Timely promotion could smooth revenue curve.",
+      competitorActivity: "Competitor promos increasing. Unique offer needed to stand out.",
+      customerSegments: "Families: 45% of weekend customers, only 22% of weekdays. Major opportunity."
     },
     marketingOpportunities: [
       {
@@ -440,14 +440,15 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = ({ initialView = 'business-i
   };
   
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col overflow-hidden">
       <CanvasHeader 
         title={getViewTitle(currentView)} 
         currentStep={viewSteps[currentView]} 
         totalSteps={5}
+        className="flex-shrink-0"
       />
       
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-y-auto">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentView}
@@ -456,7 +457,7 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = ({ initialView = 'business-i
             exit="exit"
             variants={viewVariants}
             transition={{ duration: 0.3 }}
-            className="h-full"
+            className="p-6 pb-12"
           >
             {currentView === 'business-intelligence' && (
               <BusinessIntelligenceView 
@@ -498,7 +499,7 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = ({ initialView = 'business-i
         </AnimatePresence>
       </div>
       
-      <div className="p-4 flex justify-between border-t border-gray-200">
+      <div className="p-4 flex justify-between border-t border-gray-200 flex-shrink-0">
         <button
           onClick={() => {
             const views: ViewType[] = ['business-intelligence', 'campaign-selection', 'asset-creation', 'performance-prediction', 'launch-control'];
@@ -546,9 +547,10 @@ const CanvasHeader: React.FC<{
   title: string;
   currentStep: number;
   totalSteps: number;
-}> = ({ title, currentStep, totalSteps }) => {
+  className?: string;
+}> = ({ title, currentStep, totalSteps, className }) => {
   return (
-    <div className="px-6 py-4 border-b border-gray-200">
+    <div className={`px-6 py-4 border-b border-gray-200 ${className || ''}`}>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">{title}</h2>
         <span className="text-sm text-gray-500">Step {currentStep} of {totalSteps}</span>

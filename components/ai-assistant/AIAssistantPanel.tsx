@@ -37,7 +37,7 @@ const campaignCreationInitialMessages: Message[] = [
   {
     id: '1',
     type: 'ai',
-    content: "Welcome back to Kigo Pro! I've been analyzing your Deacon's Pizza data and noticed an opportunity to boost your weekday dinner sales. Looking at your business data, your Tuesday-Thursday dinner orders are significantly lower than weekend sales, but they represent a growth opportunity.",
+    content: "I've analyzed your restaurant data and found an opportunity to boost weekday dinner sales. Your Tue-Thu dinner orders are significantly lower than weekends, representing a solid growth opportunity.",
     timestamp: new Date(Date.now() - 60000),
     responseOptions: [
       { text: "Tell me more about this opportunity", value: "tell-more" },
@@ -47,7 +47,7 @@ const campaignCreationInitialMessages: Message[] = [
   {
     id: '2',
     type: 'ai',
-    content: "I recommend creating a targeted campaign for weekday family dinners. Your data shows families make up 45% of your weekend business but only 22% of weekday orders. A weekday family dinner special could drive significant growth without requiring additional staff or equipment.",
+    content: "I recommend a targeted campaign for weekday family dinners. Families make up 45% of your weekend business but only 22% of weekday orders. A weekday family special could drive growth without requiring additional resources.",
     timestamp: new Date(),
     responseOptions: [
       { text: "Create a weekday dinner campaign", value: "create-campaign" },
@@ -136,7 +136,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
             aiResponse = {
               id: Date.now().toString(),
               type: 'ai',
-              content: "Your weekday dinner business represents a big opportunity. While weekend sales average $3,833 per day, weekday sales are only $1,862. By targeting families with a weekday special, you could potentially increase weekday revenue by 35-40%.",
+              content: "Your weekday dinner sales average $1,862 vs. weekend sales of $3,833. A family-focused weekday promotion could increase weekday revenue by 35-40% based on our analysis.",
               timestamp: new Date(),
               responseOptions: [
                 { text: "Let's create a campaign", value: "create-campaign" },
@@ -149,7 +149,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
             aiResponse = {
               id: Date.now().toString(),
               type: 'ai',
-              content: "I recommend a 'Family Weekday Special' campaign. Based on your sales data and customer segments, this could drive significant growth. I can generate complete campaign options with creative assets, targeting strategies, and performance predictions tailored to your business.",
+              content: "I recommend a 'Family Weekday Special' campaign. I can generate complete options with creative assets, targeting strategies, and performance predictions tailored to your business.",
               timestamp: new Date(),
               responseOptions: [
                 { text: "Generate campaign options", value: "create-campaign" },
@@ -162,7 +162,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
             aiResponse = {
               id: Date.now().toString(),
               type: 'ai',
-              content: "Great! I've created three complete campaign options for you. Each includes the offer structure, promotional copy, visual designs, and targeting strategy. You can view and compare them in the canvas.",
+              content: "I've created three campaign options for you, each with offer structure, promo copy, visuals, and targeting. View them in the canvas to compare.",
               timestamp: new Date(),
               responseOptions: [
                 { text: "Select the Family Dinner Bundle", value: "select-campaign" },
@@ -176,7 +176,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
             aiResponse = {
               id: Date.now().toString(),
               type: 'ai',
-              content: "I'm showing you the business intelligence data in the canvas. You can see the sales by day of week, performance trends, competitor activity, and customer segments. The data clearly shows the weekday dinner opportunity.",
+              content: "Here's your business intelligence data showing sales by day, performance trends, competitor activity, and customer segments. The weekday dinner opportunity is clear.",
               timestamp: new Date(),
               responseOptions: [
                 { text: "Let's create a campaign", value: "create-campaign" },
@@ -189,7 +189,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
             aiResponse = {
               id: Date.now().toString(),
               type: 'ai',
-              content: "You've selected the Family Dinner Bundle campaign. I've prepared all the creative assets you'll need including social media graphics, email templates, and in-store materials. You can customize any of these assets to perfectly match your brand.",
+              content: "Family Dinner Bundle selected. All creative assets are ready: social media, email templates, and in-store materials. Customize any asset to match your brand.",
               timestamp: new Date(),
               responseOptions: [
                 { text: "Customize these assets", value: "customize-assets" },
@@ -203,7 +203,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
             aiResponse = {
               id: Date.now().toString(),
               type: 'ai',
-              content: "Based on your selections, I've updated all assets and calculated performance predictions. You can see the expected views, redemptions, revenue, and ROI in the performance dashboard.",
+              content: "Assets updated based on your selections. Performance predictions are ready with expected views, redemptions, revenue, and ROI.",
               timestamp: new Date(),
               responseOptions: [
                 { text: "Review performance details", value: "review-performance" },
@@ -217,7 +217,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
             aiResponse = {
               id: Date.now().toString(),
               type: 'ai',
-              content: "Your campaign is ready to launch! I've prepared everything you need including distribution schedule, performance tracking, and a one-click launch option.",
+              content: "Your campaign is ready to launch with distribution schedule, performance tracking, and one-click launch option.",
               timestamp: new Date(),
               responseOptions: [
                 { text: "Launch campaign", value: "launch-campaign" },
@@ -231,7 +231,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
             aiResponse = {
               id: Date.now().toString(),
               type: 'ai',
-              content: "I understand. Let me know how else I can help with your marketing campaign.",
+              content: "I understand. Let me know how else I can help with your campaign.",
               timestamp: new Date()
             };
         }
@@ -251,7 +251,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200 flex-shrink-0">
         <h3 className="text-lg font-semibold">AI Marketing Assistant</h3>
         <p className="text-sm text-gray-500">Ask me anything about creating your campaign</p>
       </div>
@@ -259,7 +259,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
       {/* Chat Container */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin">
           {messages.map((message) => (
             <ChatMessage 
               key={message.id} 
@@ -274,7 +274,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
         </div>
         
         {/* Input */}
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-gray-200 flex-shrink-0">
           <form 
             className="flex items-center space-x-2"
             onSubmit={handleFormSubmit}

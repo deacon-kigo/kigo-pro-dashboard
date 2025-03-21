@@ -56,46 +56,30 @@ export default function AICampaignCreation() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col overflow-hidden bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-4 py-3">
-        <div className="flex items-center justify-between max-w-screen-2xl mx-auto">
-          <div className="flex items-center gap-4">
-            <Link href="/demos/deacons-pizza" className="flex items-center text-gray-500 hover:text-gray-700">
+      <div className="p-4 sm:p-6 flex-shrink-0">
+        <div className="max-w-screen-2xl mx-auto">
+          <Card className="flex justify-between items-center p-4">
+            <Link href="/demos/deacons-pizza" className="flex items-center text-gray-500 hover:text-primary transition-colors">
               <ChevronLeftIcon className="w-5 h-5 mr-1" />
-              Back to Dashboard
+              <span className="font-medium">Back to Dashboard</span>
             </Link>
-            <div className="h-6 w-px bg-gray-200"></div>
-            <div className="flex items-center">
-              <div 
-                className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-sm mr-2"
-              >
-                DP
-              </div>
-              <span className="font-medium text-gray-700">Deacon's Pizza</span>
+            <div className="text-center">
+              <h2 className="text-xl font-bold text-gray-800">{greeting}, Deacon</h2>
+              <p className="text-sm text-gray-500">Let's create a new marketing campaign</p>
             </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-500">Campaign Creation</span>
-          </div>
+            <div className="w-32"></div> {/* Empty div for alignment */}
+          </Card>
         </div>
-      </header>
+      </div>
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col">
-        {/* Greeting Banner */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 py-6 px-4">
-          <div className="max-w-screen-2xl mx-auto">
-            <h1 className="text-2xl font-bold text-white">{greeting}, Jane!</h1>
-            <p className="text-white/90 mt-1">Let's create a new marketing campaign together</p>
-          </div>
-        </div>
-
-        {/* Dual Panel Layout */}
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-screen-2xl mx-auto p-6">
+      {/* Dual Panel Layout */}
+      <div className="flex-1 max-w-screen-2xl mx-auto px-4 sm:px-6 pb-6 overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
           {/* AI Assistant Panel - Left Side */}
-          <div className="lg:col-span-4 flex flex-col">
-            <Card className="flex-1 p-0 overflow-hidden flex flex-col">
+          <div className="lg:col-span-4 h-full overflow-hidden">
+            <Card className="h-full p-0 overflow-hidden flex flex-col">
               <AIAssistantPanel 
                 onOptionSelected={handleOptionSelected}
               />
@@ -103,8 +87,8 @@ export default function AICampaignCreation() {
           </div>
 
           {/* Dynamic Canvas - Right Side */}
-          <div className="lg:col-span-8 flex flex-col">
-            <Card className="flex-1 p-0 overflow-hidden">
+          <div className="lg:col-span-8 h-full overflow-hidden">
+            <Card className="h-full p-0 overflow-hidden">
               <DynamicCanvas 
                 initialView={currentView}
               />
