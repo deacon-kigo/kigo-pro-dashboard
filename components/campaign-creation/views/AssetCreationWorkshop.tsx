@@ -72,23 +72,23 @@ const AssetCreationWorkshop: React.FC<AssetCreationWorkshopProps> = ({
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="mb-6"
+        className="mb-4"
       >
-        <h3 className="text-xl font-semibold mb-2">Campaign Assets</h3>
-        <p className="text-gray-600">
-          Review and customize your campaign's creative assets before launching.
+        <h3 className="text-xl font-semibold mb-1">Campaign Assets</h3>
+        <p className="text-gray-600 text-sm">
+          Review and customize campaign assets before launching.
         </p>
       </motion.div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Asset Gallery */}
         <div className="lg:col-span-2">
-          <div className="mb-6">
-            <h4 className="text-base font-medium mb-4">Assets Gallery</h4>
+          <div className="mb-4">
+            <h4 className="text-base font-medium mb-3">Assets Gallery</h4>
             
             {/* Asset Types Tabs */}
             <div className="border-b border-gray-200">
-              <nav className="flex -mb-px space-x-8">
+              <nav className="flex -mb-px space-x-6">
                 {Object.keys(assetsByType).map(type => (
                   <button
                     key={type}
@@ -112,12 +112,12 @@ const AssetCreationWorkshop: React.FC<AssetCreationWorkshopProps> = ({
             </div>
             
             {/* Asset Grid */}
-            <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
               {selectedAsset && assetsByType[selectedAsset.type].map(asset => (
                 <motion.div
                   key={asset.id}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
                   className={`cursor-pointer rounded-lg overflow-hidden border-2 ${
                     asset.id === selectedAsset.id 
                       ? 'border-blue-500' 
@@ -130,7 +130,7 @@ const AssetCreationWorkshop: React.FC<AssetCreationWorkshopProps> = ({
                       <img 
                         src={asset.url} 
                         alt={`${asset.format} asset`}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                       />
                     ) : (
                       <div className="text-gray-400 text-center p-4">
@@ -151,7 +151,7 @@ const AssetCreationWorkshop: React.FC<AssetCreationWorkshopProps> = ({
           {/* Selected Asset Preview */}
           {selectedAsset && (
             <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex justify-between items-center mb-3">
                 <h4 className="text-base font-medium">
                   {selectedAsset.format.charAt(0).toUpperCase() + selectedAsset.format.slice(1)} Preview
                 </h4>
@@ -174,59 +174,68 @@ const AssetCreationWorkshop: React.FC<AssetCreationWorkshopProps> = ({
               </div>
               
               <div className="bg-gray-50 rounded-lg p-3 flex justify-center">
-                <div className="max-w-full max-h-96 overflow-hidden rounded">
+                <div className="max-w-full max-h-80 overflow-hidden rounded">
                   {selectedAsset.url ? (
                     <img 
                       src={selectedAsset.url} 
                       alt={`${selectedAsset.format} preview`}
-                      className="max-w-full max-h-80 object-contain"
+                      className="max-w-full max-h-72 object-contain"
                     />
                   ) : (
-                    <div className="w-full h-80 bg-gray-200 flex items-center justify-center text-gray-400">
+                    <div className="w-full h-72 bg-gray-200 flex items-center justify-center text-gray-400">
                       Asset Preview Placeholder
                     </div>
                   )}
                 </div>
               </div>
               
-              <div className="mt-4 text-sm text-gray-600">
+              <div className="mt-3 text-sm text-gray-600">
                 <p className="mb-1">
                   <span className="font-medium text-gray-700">Format:</span> {selectedAsset.format}
+                  {selectedAsset.dimensions && (
+                    <span className="ml-4">
+                      <span className="font-medium text-gray-700">Size:</span> {selectedAsset.dimensions}
+                    </span>
+                  )}
                 </p>
-                {selectedAsset.dimensions && (
-                  <p className="mb-1">
-                    <span className="font-medium text-gray-700">Dimensions:</span> {selectedAsset.dimensions}
-                  </p>
-                )}
               </div>
             </div>
           )}
         </div>
         
         {/* Offer Details Panel */}
-        <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100 h-fit">
-          <h4 className="text-base font-medium mb-4">Campaign Details</h4>
+        <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100 max-h-[650px] overflow-y-auto">
+          <h4 className="text-base font-medium mb-3">Campaign Details</h4>
           
           {!isCustomizing ? (
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <p className="text-sm text-gray-500 mb-1">Offer Title</p>
+                <p className="text-xs text-gray-500 mb-1">Offer Title</p>
                 <p className="font-medium">{offerDetails.title}</p>
               </div>
               
               <div>
-                <p className="text-sm text-gray-500 mb-1">Description</p>
-                <p>{offerDetails.description}</p>
+                <p className="text-xs text-gray-500 mb-1">Description</p>
+                <p className="text-sm">{offerDetails.description}</p>
+              </div>
+              
+              <div className="flex space-x-4">
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-1">Discount</p>
+                  <p className="font-medium">{offerDetails.discount}% OFF</p>
+                </div>
+                
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-1">Promo Code</p>
+                  <div className="inline-block px-2 py-1 bg-gray-100 rounded font-mono text-sm">
+                    {offerDetails.code}
+                  </div>
+                </div>
               </div>
               
               <div>
-                <p className="text-sm text-gray-500 mb-1">Discount</p>
-                <p className="font-medium">{offerDetails.discount}% OFF</p>
-              </div>
-              
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Included Items</p>
-                <ul className="list-disc pl-5">
+                <p className="text-xs text-gray-500 mb-1">Included Items</p>
+                <ul className="list-disc pl-5 text-sm">
                   {offerDetails.items.map((item, index) => (
                     <li key={index}>{item}</li>
                   ))}
@@ -234,59 +243,64 @@ const AssetCreationWorkshop: React.FC<AssetCreationWorkshopProps> = ({
               </div>
               
               <div>
-                <p className="text-sm text-gray-500 mb-1">Terms & Conditions</p>
-                <p className="text-sm">{offerDetails.terms}</p>
-              </div>
-              
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Promo Code</p>
-                <div className="inline-block px-3 py-1 bg-gray-100 rounded font-mono">
-                  {offerDetails.code}
-                </div>
+                <p className="text-xs text-gray-500 mb-1">Terms & Conditions</p>
+                <p className="text-xs text-gray-600">{offerDetails.terms}</p>
               </div>
               
               <button
                 onClick={() => setIsCustomizing(true)}
-                className="w-full mt-4 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 font-medium flex items-center justify-center"
+                className="w-full mt-3 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 font-medium flex items-center justify-center"
               >
                 <PencilSquareIcon className="w-5 h-5 mr-2" />
                 Customize Offer
               </button>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <label className="block text-sm text-gray-500 mb-1">Offer Title</label>
+                <label className="block text-xs text-gray-500 mb-1">Offer Title</label>
                 <input
                   type="text"
                   value={editedDetails.title}
                   onChange={(e) => setEditedDetails({...editedDetails, title: e.target.value})}
-                  className="w-full p-2 border border-gray-300 rounded"
+                  className="w-full p-2 border border-gray-300 rounded text-sm"
                 />
               </div>
               
               <div>
-                <label className="block text-sm text-gray-500 mb-1">Description</label>
+                <label className="block text-xs text-gray-500 mb-1">Description</label>
                 <textarea
                   value={editedDetails.description}
                   onChange={(e) => setEditedDetails({...editedDetails, description: e.target.value})}
-                  className="w-full p-2 border border-gray-300 rounded"
-                  rows={3}
+                  className="w-full p-2 border border-gray-300 rounded text-sm"
+                  rows={2}
                 />
               </div>
               
-              <div>
-                <label className="block text-sm text-gray-500 mb-1">Discount (%)</label>
-                <input
-                  type="number"
-                  value={editedDetails.discount}
-                  onChange={(e) => setEditedDetails({...editedDetails, discount: Number(e.target.value)})}
-                  className="w-full p-2 border border-gray-300 rounded"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Discount (%)</label>
+                  <input
+                    type="number"
+                    value={editedDetails.discount}
+                    onChange={(e) => setEditedDetails({...editedDetails, discount: Number(e.target.value)})}
+                    className="w-full p-2 border border-gray-300 rounded text-sm"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Promo Code</label>
+                  <input
+                    type="text"
+                    value={editedDetails.code}
+                    onChange={(e) => setEditedDetails({...editedDetails, code: e.target.value})}
+                    className="w-full p-2 border border-gray-300 rounded text-sm font-mono"
+                  />
+                </div>
               </div>
               
               <div>
-                <label className="block text-sm text-gray-500 mb-1">Included Items</label>
+                <label className="block text-xs text-gray-500 mb-1">Included Items</label>
                 <div className="space-y-2">
                   {editedDetails.items.map((item, index) => (
                     <div key={index} className="flex">
@@ -298,16 +312,16 @@ const AssetCreationWorkshop: React.FC<AssetCreationWorkshopProps> = ({
                           newItems[index] = e.target.value;
                           setEditedDetails({...editedDetails, items: newItems});
                         }}
-                        className="flex-1 p-2 border border-gray-300 rounded-l"
+                        className="flex-1 p-2 border border-gray-300 rounded-l text-sm"
                       />
                       <button
                         onClick={() => {
                           const newItems = editedDetails.items.filter((_, i) => i !== index);
                           setEditedDetails({...editedDetails, items: newItems});
                         }}
-                        className="px-3 py-2 bg-red-50 text-red-500 border border-gray-300 border-l-0 rounded-r"
+                        className="px-2 py-1 bg-red-50 text-red-500 border border-gray-300 border-l-0 rounded-r"
                       >
-                        <XMarkIcon className="w-5 h-5" />
+                        <XMarkIcon className="w-4 h-4" />
                       </button>
                     </div>
                   ))}
@@ -315,7 +329,7 @@ const AssetCreationWorkshop: React.FC<AssetCreationWorkshopProps> = ({
                     onClick={() => {
                       setEditedDetails({...editedDetails, items: [...editedDetails.items, '']});
                     }}
-                    className="w-full px-4 py-2 border border-dashed border-gray-300 rounded text-gray-500 hover:bg-gray-50"
+                    className="w-full px-3 py-1 border border-dashed border-gray-300 rounded text-gray-500 hover:bg-gray-50 text-sm"
                   >
                     + Add Item
                   </button>
@@ -323,38 +337,28 @@ const AssetCreationWorkshop: React.FC<AssetCreationWorkshopProps> = ({
               </div>
               
               <div>
-                <label className="block text-sm text-gray-500 mb-1">Terms & Conditions</label>
+                <label className="block text-xs text-gray-500 mb-1">Terms & Conditions</label>
                 <textarea
                   value={editedDetails.terms}
                   onChange={(e) => setEditedDetails({...editedDetails, terms: e.target.value})}
-                  className="w-full p-2 border border-gray-300 rounded"
+                  className="w-full p-2 border border-gray-300 rounded text-sm"
                   rows={2}
                 />
               </div>
               
-              <div>
-                <label className="block text-sm text-gray-500 mb-1">Promo Code</label>
-                <input
-                  type="text"
-                  value={editedDetails.code}
-                  onChange={(e) => setEditedDetails({...editedDetails, code: e.target.value})}
-                  className="w-full p-2 border border-gray-300 rounded font-mono"
-                />
-              </div>
-              
-              <div className="flex space-x-3">
+              <div className="flex space-x-2 pt-1">
                 <button
                   onClick={handleSaveCustomization}
-                  className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium flex items-center justify-center"
+                  className="flex-1 px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium flex items-center justify-center text-sm"
                 >
-                  <CheckIcon className="w-5 h-5 mr-2" />
-                  Save Changes
+                  <CheckIcon className="w-4 h-4 mr-1" />
+                  Save
                 </button>
                 <button
                   onClick={handleCancelCustomization}
-                  className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium flex items-center justify-center"
+                  className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium flex items-center justify-center text-sm"
                 >
-                  <XMarkIcon className="w-5 h-5 mr-2" />
+                  <XMarkIcon className="w-4 h-4 mr-1" />
                   Cancel
                 </button>
               </div>

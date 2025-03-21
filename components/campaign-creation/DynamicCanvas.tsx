@@ -239,7 +239,7 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = ({ initialView = 'business-i
       name: 'Family Weekday Special',
       description: 'Boost your weekday dinner sales with this family-focused promotion, offering a complete meal at a special price.',
       targetAudience: 'Families within 5 miles',
-      primaryImage: '/campaigns/family-special.jpg',
+      primaryImage: '/images/pizza 1.png',
       estimatedReach: { min: 3500, max: 5000 },
       conversionRate: { min: 2.5, max: 4.2 },
       recommended: true
@@ -249,7 +249,7 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = ({ initialView = 'business-i
       name: 'Two-for-Tuesday Deal',
       description: 'Drive traffic on your slowest day with a buy-one-get-one pizza offer that\'s hard to resist.',
       targetAudience: 'Value-seeking customers',
-      primaryImage: '/campaigns/two-for-tuesday.jpg',
+      primaryImage: '/images/pizza 2.png',
       estimatedReach: { min: 2800, max: 4200 },
       conversionRate: { min: 3.0, max: 5.5 },
       recommended: false
@@ -259,7 +259,7 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = ({ initialView = 'business-i
       name: 'Lunch Rush Special',
       description: 'Capture the lunch crowd with a quick-service personal pizza and drink combo at a competitive price.',
       targetAudience: 'Office workers, students',
-      primaryImage: '/campaigns/lunch-special.jpg',
+      primaryImage: '/images/pizza 3.png',
       estimatedReach: { min: 4000, max: 6500 },
       conversionRate: { min: 1.8, max: 3.2 },
       recommended: false
@@ -272,35 +272,35 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = ({ initialView = 'business-i
       id: 'primary-banner',
       type: 'primary',
       format: 'banner',
-      url: '/assets/family-banner.jpg',
+      url: '/images/pizza 1.png',
       dimensions: '1200x600'
     },
     {
       id: 'primary-square',
       type: 'primary',
       format: 'square',
-      url: '/assets/family-square.jpg',
+      url: '/images/pizza 2.png',
       dimensions: '800x800'
     },
     {
       id: 'social-facebook',
       type: 'social',
       format: 'facebook',
-      url: '/assets/family-facebook.jpg',
+      url: '/logos/facebook.svg',
       dimensions: '1200x630'
     },
     {
       id: 'social-instagram',
       type: 'social',
       format: 'instagram',
-      url: '/assets/family-instagram.jpg',
+      url: '/logos/instagram.svg',
       dimensions: '1080x1080'
     },
     {
       id: 'promotional-email',
       type: 'promotional',
       format: 'email',
-      url: '/assets/family-email.jpg',
+      url: '/images/pizza 3.png',
       dimensions: '600x300'
     }
   ];
@@ -373,10 +373,10 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = ({ initialView = 'business-i
       dailyAverage: 25
     },
     assets: [
-      { type: 'Banner Ad', url: '/assets/family-banner.jpg', status: 'ready' as 'ready' | 'pending' | 'failed' },
-      { type: 'Facebook Post', url: '/assets/family-facebook.jpg', status: 'ready' as 'ready' | 'pending' | 'failed' },
-      { type: 'Instagram Post', url: '/assets/family-instagram.jpg', status: 'ready' as 'ready' | 'pending' | 'failed' },
-      { type: 'Email Template', url: '/assets/family-email.jpg', status: 'ready' as 'ready' | 'pending' | 'failed' },
+      { type: 'Banner Ad', url: '/images/pizza 1.png', status: 'ready' as 'ready' | 'pending' | 'failed' },
+      { type: 'Facebook Post', url: '/logos/facebook.svg', status: 'ready' as 'ready' | 'pending' | 'failed' },
+      { type: 'Instagram Post', url: '/logos/instagram.svg', status: 'ready' as 'ready' | 'pending' | 'failed' },
+      { type: 'Email Template', url: '/images/pizza 3.png', status: 'ready' as 'ready' | 'pending' | 'failed' },
       { type: 'SMS Message', url: '', status: 'pending' as 'ready' | 'pending' | 'failed' }
     ],
     metrics: {
