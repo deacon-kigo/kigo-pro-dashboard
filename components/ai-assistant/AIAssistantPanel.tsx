@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { motion } from 'framer-motion';
 import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
 import { useDemo } from '../../contexts/DemoContext';
+import ReactMarkdown from 'react-markdown';
 
 interface Message {
   id: string;
@@ -91,14 +92,48 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
     setNewMessage('');
     setIsThinking(true);
     
+    // Check for specific competitor query
+    const isCompetitorQuery = newMessage.toLowerCase().includes('competitor') || 
+                             newMessage.toLowerCase().includes('competition');
+    
     // Simulate AI response after a delay
     setTimeout(() => {
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        type: 'ai',
-        content: "I'm analyzing your request and generating a response based on your marketing data...",
-        timestamp: new Date()
-      };
+      let aiResponse: Message;
+      
+      if (isCompetitorQuery) {
+        aiResponse = {
+          id: (Date.now() + 1).toString(),
+          type: 'ai',
+          content: `Based on my analysis of the local pizza market, here's what I can tell you about your competitors:
+
+1. **Competitive Landscape**: There are 3 major competitors within your 5-mile radius: Pizza Palace, Little Italy, and Crust & Co. Pizza Palace is your most aggressive competitor, accounting for approximately 45% of competitor promotions in your area.
+
+2. **Promotion Trends**: I've noticed a significant increase in competitor promotional activity over the past 5 months. In January, competitors ran 3 promotions while you ran 2. By May, they've ramped up to 6 promotions while you've decreased to just 1. This explains some of the pressure on your weekday dinner sales.
+
+3. **Key Differentiators**:
+• Pizza Palace: Focuses on value deals (2 medium pizzas for $18)
+• Little Italy: Emphasizes authentic ingredients and premium pricing
+• Crust & Co: Targets the lunch crowd with rapid service guarantees
+
+4. **Competitive Advantages**: Your customer satisfaction scores (4.7/5) exceed all competitors (avg 4.2/5). Your family-size portions are also 15% larger than competitors at a similar price point, representing an under-marketed advantage.
+
+5. **Recommended Strategy**: Your weekday family dinner special directly counters Pizza Palace's primary value proposition while leveraging your portion size advantage. I suggest emphasizing the "more food for your family" angle in marketing materials.
+
+Would you like me to analyze any specific competitor in more detail, or would you prefer recommendations on how to better position against them?`,
+          timestamp: new Date(),
+          responseOptions: [
+            { text: "Tell me about Pizza Palace", value: "pizza-palace" },
+            { text: "How should we compete?", value: "compete-strategy" }
+          ]
+        };
+      } else {
+        aiResponse = {
+          id: (Date.now() + 1).toString(),
+          type: 'ai',
+          content: "I'm analyzing your request and generating a response based on your marketing data...",
+          timestamp: new Date()
+        };
+      }
       
       setMessages(prev => [...prev, aiResponse]);
       setIsThinking(false);
@@ -226,6 +261,144 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
             };
             if (onOptionSelected) onOptionSelected('review-performance');
             break;
+            
+          case 'pizza-palace':
+            aiResponse = {
+              id: Date.now().toString(),
+              type: 'ai',
+              content: `Pizza Palace has been your strongest competitor for the past 18 months. Here's my detailed analysis:
+
+1. **Pricing Strategy**: They operate at an average 12% lower price point than your menu, focusing on volume over margins.
+
+2. **Target Audience**: Primarily budget-conscious families and students; 65% of their customer base consists of these two segments.
+
+3. **Marketing Approach**: Heavy emphasis on limited-time offers and flash sales. They run twice as many promotions as the industry average.
+
+4. **Weaknesses**:
+• Customer satisfaction scores (3.9/5) are below yours (4.7/5)
+• Portion sizes are 15% smaller than yours for comparable menu items
+• Limited premium options for higher-end customers
+
+5. **Recent Changes**: They've just launched a new mobile app with loyalty program, which has boosted their repeat customer rate by approximately 8% in the test areas.
+
+Your family weekday special effectively counters their main value proposition while highlighting your superior portion sizes and quality.`,
+              timestamp: new Date(),
+              responseOptions: [
+                { text: "Let's create our campaign", value: "create-campaign" },
+                { text: "Tell me about other competitors", value: "other-competitors" }
+              ]
+            };
+            break;
+            
+          case 'compete-strategy':
+            aiResponse = {
+              id: Date.now().toString(),
+              type: 'ai',
+              content: `Based on my competitive analysis, here are my recommended strategies to position against your competitors:
+
+1. **Value Messaging**: Emphasize "family-sized portions" at competitive prices. Your portions are 15% larger than Pizza Palace's at only a slightly higher price point.
+
+2. **Quality Differentiation**: Highlight your superior customer satisfaction scores (4.7/5 vs. competitor average of 4.2/5) in marketing materials.
+
+3. **Targeting Opportunity**: Focus on families during weekday dinners - this segment is underserved by competitors who focus primarily on weekend business.
+
+4. **Promotional Calendar**: Increase your promotional frequency to match competitors (currently they run 6 promotions to your 1). A consistent weekday family special would be ideal.
+
+5. **Digital Strategy**: Develop a more visible online ordering experience; competitors are gaining ground through enhanced digital presence.
+
+The Family Weekday Special campaign addresses most of these strategies, focusing on your strengths while targeting a competitive gap in the market.`,
+              timestamp: new Date(),
+              responseOptions: [
+                { text: "Create this campaign now", value: "create-campaign" },
+                { text: "What creative assets do you suggest?", value: "creative-assets" }
+              ]
+            };
+            break;
+            
+          case 'other-competitors':
+            aiResponse = {
+              id: Date.now().toString(),
+              type: 'ai',
+              content: `Let me share insights on your other key competitors:
+
+**Little Italy**
+• Positioning: Authentic, premium Italian pizza with imported ingredients
+• Price Point: 20-25% higher than your menu
+• Target Audience: Higher-income families and professionals, 35-55 age range
+• Strengths: Strong brand perception of authenticity and quality
+• Weaknesses: Limited appeal to value-conscious customers; slower delivery times
+
+**Crust & Co**
+• Positioning: Fast, convenient lunch option with express service guarantee
+• Price Point: Similar to yours for individual items, fewer family/group deals
+• Target Audience: Office workers, professionals on lunch breaks
+• Strengths: 10-minute service guarantee drives loyalty for lunch crowd
+• Weaknesses: Lower dinner traffic; limited weekend business
+
+Neither of these competitors directly targets the weekday family dinner segment, which represents your biggest opportunity. Little Italy is too premium-focused, while Crust & Co is lunch-oriented.`,
+              timestamp: new Date(),
+              responseOptions: [
+                { text: "Create our family dinner campaign", value: "create-campaign" },
+                { text: "What other opportunities do you see?", value: "more-opportunities" }
+              ]
+            };
+            break;
+            
+          case 'creative-assets':
+            aiResponse = {
+              id: Date.now().toString(),
+              type: 'ai',
+              content: `For your Family Weekday Special campaign, I recommend these creative approaches:
+
+1. **Primary Visual**: Family-centered imagery showing abundant food portions that emphasize the "more food" value proposition.
+
+2. **Key Messaging**: 
+   • Headline: "Family Dinner, Sized for REAL Families"
+   • Subheading: "15% More Food at a Price Your Family Will Love"
+
+3. **Creative Elements**:
+   • Show side-by-side portion comparison with generic "competitor" pizza
+   • Use bright, warm colors that convey freshness and abundance
+   • Include authentic customer testimonials about portion sizes
+
+4. **Channel-Specific Adaptations**:
+   • Social Media: Short video showing family reactions to the portion sizes
+   • Email: Personalized offers with family name when possible
+   • In-store: Large format posters emphasizing the size difference
+
+I've prepared draft assets for all these formats that you can customize in the Asset Creation Workshop.`,
+              timestamp: new Date(),
+              responseOptions: [
+                { text: "Show me the assets", value: "customize-assets" },
+                { text: "Create the campaign", value: "create-campaign" }
+              ]
+            };
+            break;
+            
+          case 'more-opportunities':
+            aiResponse = {
+              id: Date.now().toString(),
+              type: 'ai',
+              content: `Beyond the Family Weekday Special, I see these additional opportunities:
+
+1. **Weekend Lunch Gap**: Your weekend business is strong for dinner but underperforms at lunch compared to competitors. A weekend lunch bundle could drive incremental revenue.
+
+2. **Online Ordering Enhancement**: Your online ordering flow has 15% higher abandonment than industry average. Streamlining this could improve conversion by 8-10%.
+
+3. **Loyalty Program**: Your repeat customer rate (22%) lags behind the industry average (27%). A simple points-based system could close this gap.
+
+4. **Student Special**: With 3 colleges within your delivery radius, there's potential to develop a student-focused offering for the upcoming semester.
+
+5. **Premium Ingredients Line**: For targeting Little Italy's customer segment, a premium specialty pizza line could capture higher-end customers and increase average order value.
+
+Would you like me to develop a campaign strategy for any of these opportunities after we complete the Family Weekday Special?`,
+              timestamp: new Date(),
+              responseOptions: [
+                { text: "Let's focus on the family campaign first", value: "create-campaign" },
+                { text: "Tell me more about the loyalty program", value: "loyalty-program" }
+              ]
+            };
+            break;
           
           default:
             aiResponse = {
@@ -318,7 +491,34 @@ const ChatMessage = React.memo<{
             : 'bg-gray-100 text-gray-800 rounded-tl-none'
         }`}
       >
-        <p className="text-sm">{message.content}</p>
+        <div className={`${
+          message.type === 'user' 
+            ? 'text-sm text-white' 
+            : 'text-sm prose prose-sm prose-strong:font-bold prose-strong:text-gray-900 prose-ul:pl-5 prose-ul:my-1 prose-li:my-0 max-w-none'
+        }`}>
+          {message.type === 'user' ? (
+            <p>{message.content}</p>
+          ) : (
+            <ReactMarkdown 
+              components={{
+                // Remove default margin from paragraphs
+                p: ({node, ...props}) => <p className="mb-2" {...props} />,
+                // Customize list styles
+                ul: ({node, ...props}) => <ul className="list-disc ml-4 my-1" {...props} />,
+                li: ({node, ...props}) => <li className="mb-1" {...props} />,
+                // Make headings look better
+                h1: ({node, ...props}) => <h1 className="text-base font-bold mt-2 mb-1" {...props} />,
+                h2: ({node, ...props}) => <h2 className="text-base font-bold mt-2 mb-1" {...props} />,
+                h3: ({node, ...props}) => <h3 className="text-base font-bold mt-2 mb-1" {...props} />,
+                h4: ({node, ...props}) => <h4 className="text-base font-bold mt-2 mb-1" {...props} />,
+                h5: ({node, ...props}) => <h5 className="text-base font-bold mt-2 mb-1" {...props} />,
+                h6: ({node, ...props}) => <h6 className="text-base font-bold mt-2 mb-1" {...props} />,
+              }}
+            >
+              {message.content}
+            </ReactMarkdown>
+          )}
+        </div>
         
         {/* Response Options */}
         {message.responseOptions && (
