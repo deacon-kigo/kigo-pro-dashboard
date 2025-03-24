@@ -329,6 +329,8 @@ export default function CVSTokenManagement() {
   const [caseNotes, setCaseNotes] = useState('');
   // Update customers array to include the sample customers
   const [customers, setCustomers] = useState([...mockCustomers, ...additionalSampleCustomers]);
+  // Add view state to control which view is displayed
+  const [viewState, setViewState] = useState<'main' | 'detail'>('main');
 
   // CVS ExtraCare branding colors
   const cvsRed = '#CC0000';
@@ -379,11 +381,19 @@ export default function CVSTokenManagement() {
     setCustomerResults(filteredCustomers);
   };
 
-  // Handle selecting a customer from search results
+  // Modified selectCustomer to also switch to detail view
   const selectCustomer = (customer: CustomerInfo) => {
     setSelectedCustomer(customer);
     setCustomerResults([]);
     setSearchQuery('');
+    setViewState('detail');
+  };
+
+  // Function to go back to main view
+  const backToMainView = () => {
+    setViewState('main');
+    // Optionally clear selected customer or leave it set
+    // setSelectedCustomer(null);
   };
 
   // Add a token to the selected customer
@@ -584,368 +594,418 @@ export default function CVSTokenManagement() {
           </div>
         )}
 
-        {/* Customer Search */}
-        <div className="mb-8 bg-white p-6 rounded-lg shadow-sm">
-          <h2 className="text-xl font-semibold mb-4">Customer Lookup</h2>
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Search for customer..."
-                className="w-full p-3 pl-10 pr-4 border border-gray-300 rounded-lg"
-              />
-              <MagnifyingGlassIcon className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-            </div>
-            
-            <div className="w-44">
-              <select
-                value={searchField}
-                onChange={(e) => setSearchField(e.target.value as any)}
-                className="w-full p-3 border border-gray-300 rounded-lg"
+        {/* Breadcrumbs navigation */}
+        <nav className="mb-4">
+          <ol className="flex items-center space-x-2 text-sm">
+            <li>
+              <button 
+                onClick={backToMainView} 
+                className="text-blue-600 hover:text-blue-800 font-medium"
               >
-                <option value="email">Email</option>
-                <option value="name">Name</option>
-                <option value="phone">Phone</option>
-                <option value="extraCareId">ExtraCare ID</option>
-              </select>
-            </div>
-            
-            <button 
-              onClick={handleSearch}
-              className="px-6 py-3 bg-[#CC0000] hover:bg-[#AA0000] text-white rounded-lg"
-            >
-              Search
-            </button>
-          </div>
+                Customer Lookup
+              </button>
+            </li>
+            {viewState === 'detail' && selectedCustomer && (
+              <>
+                <li className="text-gray-500">/</li>
+                <li className="text-gray-700 font-medium">
+                  {selectedCustomer.firstName} {selectedCustomer.lastName}
+                </li>
+              </>
+            )}
+          </ol>
+        </nav>
 
-          {/* Search Results */}
-          {customerResults.length > 0 && (
-            <div className="mt-4">
-              <h3 className="text-sm font-semibold mb-2">Results ({customerResults.length})</h3>
-              <div className="bg-gray-50 rounded-lg overflow-hidden">
-                {customerResults.map((customer) => (
-                  <div 
-                    key={customer.id}
-                    className="border-b border-gray-200 last:border-0 p-4 cursor-pointer hover:bg-gray-100"
-                    onClick={() => selectCustomer(customer)}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="font-medium">{customer.firstName} {customer.lastName}</p>
-                        <p className="text-sm text-gray-500">{customer.email} • {customer.phone}</p>
-                        <p className="text-xs text-gray-500">ExtraCare ID: {customer.extraCareId}</p>
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        Account Created: {formatDate(customer.accountCreated)}
+        {viewState === 'main' ? (
+          /* Main View: Customer Search & Table */
+          <div className="mb-8 bg-white p-6 rounded-lg shadow-sm">
+            <h2 className="text-xl font-semibold mb-4">Customer Lookup</h2>
+            <div className="flex items-center gap-4">
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Search for customer..."
+                  className="w-full p-3 pl-10 pr-4 border border-gray-300 rounded-lg"
+                />
+                <MagnifyingGlassIcon className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+              </div>
+              
+              <div className="w-44">
+                <select
+                  value={searchField}
+                  onChange={(e) => setSearchField(e.target.value as any)}
+                  className="w-full p-3 border border-gray-300 rounded-lg"
+                >
+                  <option value="email">Email</option>
+                  <option value="name">Name</option>
+                  <option value="phone">Phone</option>
+                  <option value="extraCareId">ExtraCare ID</option>
+                </select>
+              </div>
+              
+              <button 
+                onClick={handleSearch}
+                className="px-6 py-3 bg-[#CC0000] hover:bg-[#AA0000] text-white rounded-lg"
+              >
+                Search
+              </button>
+            </div>
+
+            {/* Search Results */}
+            {customerResults.length > 0 && (
+              <div className="mt-4">
+                <h3 className="text-sm font-semibold mb-2">Results ({customerResults.length})</h3>
+                <div className="bg-gray-50 rounded-lg overflow-hidden">
+                  {customerResults.map((customer) => (
+                    <div 
+                      key={customer.id}
+                      className="border-b border-gray-200 last:border-0 p-4 cursor-pointer hover:bg-gray-100"
+                      onClick={() => selectCustomer(customer)}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="font-medium">{customer.firstName} {customer.lastName}</p>
+                          <p className="text-sm text-gray-500">{customer.email} • {customer.phone}</p>
+                          <p className="text-xs text-gray-500">ExtraCare ID: {customer.extraCareId}</p>
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          Account Created: {formatDate(customer.accountCreated)}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {searchQuery && customerResults.length === 0 && (
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg text-center">
-              No customers found. Try a different search term.
-            </div>
-          )}
-          
-          {/* Default Customer Table - Show when no search is performed */}
-          {!searchQuery && (
-            <div className="mt-6">
-              <h3 className="text-sm font-semibold mb-3">Recent Customers</h3>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ExtraCare ID</th>
-                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tokens</th>
-                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account Status</th>
-                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {customers.map((customer) => (
-                      <tr 
-                        key={customer.id} 
-                        className="hover:bg-gray-50 cursor-pointer"
-                        onClick={() => selectCustomer(customer)}
-                      >
-                        <td className="px-4 py-4">
-                          <div className="flex items-center">
-                            <div className={`flex-shrink-0 h-10 w-10 ${
-                              customer.id === 'cust004' ? 'bg-purple-500' : 
-                              customer.id === 'cust005' ? 'bg-pink-500' : 
-                              customer.id === 'cust006' ? 'bg-yellow-500' : 
-                              'bg-[#2563EB]'
-                            } rounded-full flex items-center justify-center text-white`}>
-                              {customer.firstName.charAt(0)}{customer.lastName.charAt(0)}
-                            </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">{customer.firstName} {customer.lastName}</div>
-                              <div className="text-sm text-gray-500">{customer.email}</div>
-                              <div className="text-sm text-gray-500">{customer.phone}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="text-sm text-gray-900">{customer.extraCareId}</div>
-                          <div className="text-xs text-gray-500">Created: {formatDate(customer.accountCreated)}</div>
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="flex flex-wrap gap-1">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                              Active: {customer.tokens.filter(t => t.state === 'Active').length}
-                            </span>
-                            {customer.tokens.filter(t => t.state === 'Expired').length > 0 && (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                Expired: {customer.tokens.filter(t => t.state === 'Expired').length}
-                              </span>
-                            )}
-                            {customer.tokens.filter(t => t.state === 'Used').length > 0 && (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                Used: {customer.tokens.filter(t => t.state === 'Used').length}
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-4 py-4">
-                          <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            customer.tokens.length > 0 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {customer.tokens.length > 0 ? 'Active' : 'No Tokens'}
-                          </span>
-                        </td>
-                        <td className="px-4 py-4 text-sm text-blue-600 hover:text-blue-800">
-                          <button 
-                            className="font-medium"
-                            onClick={(e) => {
-                              e.stopPropagation(); // Prevent row click from firing
-                              selectCustomer(customer);
-                            }}
-                          >
-                            View Details
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            {searchQuery && customerResults.length === 0 && (
+              <div className="mt-4 p-4 bg-gray-50 rounded-lg text-center">
+                No customers found. Try a different search term.
               </div>
-            </div>
-          )}
-        </div>
-
-        {/* Customer Profile and Token Management */}
-        {selectedCustomer && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Customer Info */}
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <h2 className="text-xl font-semibold mb-4">Customer Information</h2>
-              <div className="space-y-4">
-                <div className="flex justify-between">
-                  <span className="font-medium">Name:</span>
-                  <span className="text-gray-700">{selectedCustomer.firstName} {selectedCustomer.lastName}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">Email:</span>
-                  <span className="text-gray-700">{selectedCustomer.email}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">Phone:</span>
-                  <span className="text-gray-700">{selectedCustomer.phone}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">ExtraCare ID:</span>
-                  <span className="text-gray-700">{selectedCustomer.extraCareId}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">Account Created:</span>
-                  <span className="text-gray-700">{formatDate(selectedCustomer.accountCreated)}</span>
-                </div>
-                <hr className="border-gray-200" />
-                <div className="pt-2">
-                  <span className="font-medium">Active Tokens:</span>
-                  <span className="ml-2 px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 text-xs font-medium">
-                    {selectedCustomer.tokens.filter(t => t.state === 'Active').length}
-                  </span>
-                </div>
-                <div>
-                  <span className="font-medium">Used Tokens:</span>
-                  <span className="ml-2 px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-800 text-xs font-medium">
-                    {selectedCustomer.tokens.filter(t => t.state === 'Used').length}
-                  </span>
-                </div>
-                <div>
-                  <span className="font-medium">Expired Tokens:</span>
-                  <span className="ml-2 px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 text-xs font-medium">
-                    {selectedCustomer.tokens.filter(t => t.state === 'Expired').length}
-                  </span>
-                </div>
-              </div>
-              
-              {/* Case Notes */}
-              <div className="mt-6">
-                <h3 className="text-md font-semibold mb-2">Case Notes</h3>
-                <textarea
-                  value={caseNotes}
-                  onChange={(e) => setCaseNotes(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-lg h-32"
-                  placeholder="Add notes about this case..."
-                ></textarea>
-                <button
-                  onClick={handleSaveNotes}
-                  className="mt-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg text-sm"
-                >
-                  Save Notes
-                </button>
-              </div>
-            </div>
+            )}
             
-            {/* Token Management */}
-            <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">Token Management</h2>
+            {/* Default Customer Table - Show when no search is performed */}
+            {!searchQuery && (
+              <div className="mt-6">
+                <h3 className="text-sm font-semibold mb-3">Recent Customers</h3>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ExtraCare ID</th>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tokens</th>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account Status</th>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {customers.map((customer) => (
+                        <tr 
+                          key={customer.id} 
+                          className="hover:bg-gray-50 cursor-pointer"
+                          onClick={() => selectCustomer(customer)}
+                        >
+                          <td className="px-4 py-4">
+                            <div className="flex items-center">
+                              <div className={`flex-shrink-0 h-10 w-10 ${
+                                customer.id === 'cust004' ? 'bg-purple-500' : 
+                                customer.id === 'cust005' ? 'bg-pink-500' : 
+                                customer.id === 'cust006' ? 'bg-yellow-500' : 
+                                'bg-[#2563EB]'
+                              } rounded-full flex items-center justify-center text-white`}>
+                                {customer.firstName.charAt(0)}{customer.lastName.charAt(0)}
+                              </div>
+                              <div className="ml-4">
+                                <div className="text-sm font-medium text-gray-900">{customer.firstName} {customer.lastName}</div>
+                                <div className="text-sm text-gray-500">{customer.email}</div>
+                                <div className="text-sm text-gray-500">{customer.phone}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="text-sm text-gray-900">{customer.extraCareId}</div>
+                            <div className="text-xs text-gray-500">Created: {formatDate(customer.accountCreated)}</div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="flex flex-wrap gap-1">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Active: {customer.tokens.filter(t => t.state === 'Active').length}
+                              </span>
+                              {customer.tokens.filter(t => t.state === 'Expired').length > 0 && (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                  Expired: {customer.tokens.filter(t => t.state === 'Expired').length}
+                                </span>
+                              )}
+                              {customer.tokens.filter(t => t.state === 'Used').length > 0 && (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                  Used: {customer.tokens.filter(t => t.state === 'Used').length}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              customer.tokens.length > 0 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {customer.tokens.length > 0 ? 'Active' : 'No Tokens'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 text-sm text-blue-600 hover:text-blue-800">
+                            <button 
+                              className="font-medium"
+                              onClick={(e) => {
+                                e.stopPropagation(); // Prevent row click from firing
+                                selectCustomer(customer);
+                              }}
+                            >
+                              View Details
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          /* Detail View: Customer Details and Token Management */
+          selectedCustomer && (
+            <div>
+              {/* Header with back button */}
+              <div className="flex justify-between items-center mb-6">
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Customer Profile: {selectedCustomer.firstName} {selectedCustomer.lastName}
+                </h1>
                 <button
-                  onClick={() => setShowTokenCatalog(!showTokenCatalog)}
-                  className="px-4 py-2 flex items-center gap-2 bg-[#CC0000] hover:bg-[#AA0000] text-white rounded-lg text-sm"
+                  onClick={backToMainView}
+                  className="flex items-center text-sm text-blue-600 hover:text-blue-800"
                 >
-                  <PlusCircleIcon className="w-5 h-5" />
-                  Add Token
+                  <svg className="w-4 h-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </svg>
+                  Back to Customer List
                 </button>
               </div>
-              
-              {/* Token Catalog Dialog */}
-              {showTokenCatalog && (
-                <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="font-medium">Token Catalog</h3>
+
+              {/* Customer profile and token management content */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Customer Info */}
+                <div className="bg-white p-6 rounded-lg shadow-sm">
+                  <div className="flex items-center mb-6">
+                    <div className={`flex-shrink-0 h-16 w-16 ${
+                      selectedCustomer.id === 'cust004' ? 'bg-purple-500' : 
+                      selectedCustomer.id === 'cust005' ? 'bg-pink-500' : 
+                      selectedCustomer.id === 'cust006' ? 'bg-yellow-500' : 
+                      'bg-[#2563EB]'
+                    } rounded-full flex items-center justify-center text-white text-xl`}>
+                      {selectedCustomer.firstName.charAt(0)}{selectedCustomer.lastName.charAt(0)}
+                    </div>
+                    <div className="ml-4">
+                      <h2 className="text-xl font-semibold">{selectedCustomer.firstName} {selectedCustomer.lastName}</h2>
+                      <p className="text-sm text-gray-600">{selectedCustomer.email}</p>
+                    </div>
+                  </div>
+
+                  <h3 className="text-md font-semibold mb-4">Customer Information</h3>
+                  <div className="space-y-4">
+                    <div className="flex justify-between">
+                      <span className="font-medium">Phone:</span>
+                      <span className="text-gray-700">{selectedCustomer.phone}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">ExtraCare ID:</span>
+                      <span className="text-gray-700">{selectedCustomer.extraCareId}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">Account Created:</span>
+                      <span className="text-gray-700">{formatDate(selectedCustomer.accountCreated)}</span>
+                    </div>
+                    <hr className="border-gray-200" />
+                    <div className="pt-2">
+                      <span className="font-medium">Active Tokens:</span>
+                      <span className="ml-2 px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 text-xs font-medium">
+                        {selectedCustomer.tokens.filter(t => t.state === 'Active').length}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="font-medium">Used Tokens:</span>
+                      <span className="ml-2 px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-800 text-xs font-medium">
+                        {selectedCustomer.tokens.filter(t => t.state === 'Used').length}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="font-medium">Expired Tokens:</span>
+                      <span className="ml-2 px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 text-xs font-medium">
+                        {selectedCustomer.tokens.filter(t => t.state === 'Expired').length}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Case Notes */}
+                  <div className="mt-6">
+                    <h3 className="text-md font-semibold mb-2">Case Notes</h3>
+                    <textarea
+                      value={caseNotes}
+                      onChange={(e) => setCaseNotes(e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-lg h-32"
+                      placeholder="Add notes about this case..."
+                    ></textarea>
                     <button
-                      onClick={() => setShowTokenCatalog(false)}
-                      className="text-gray-500 hover:text-gray-700"
+                      onClick={handleSaveNotes}
+                      className="mt-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg text-sm"
                     >
-                      ×
+                      Save Notes
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Token Management */}
+                <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-semibold">Token Management</h2>
+                    <button
+                      onClick={() => setShowTokenCatalog(!showTokenCatalog)}
+                      className="px-4 py-2 flex items-center gap-2 bg-[#CC0000] hover:bg-[#AA0000] text-white rounded-lg text-sm"
+                    >
+                      <PlusCircleIcon className="w-5 h-5" />
+                      Add Token
                     </button>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {tokenCatalog.map((token) => (
-                      <div
-                        key={token.id}
-                        className="border border-gray-200 rounded-lg p-3 bg-white cursor-pointer hover:bg-gray-50"
-                        onClick={() => addTokenToCustomer(token)}
-                      >
-                        <div className="flex justify-between">
-                          <span className="font-medium">{token.name}</span>
-                          <span className={`px-2 py-0.5 rounded-full text-xs ${getTokenTypeBadgeColor(token.type)}`}>
-                            {token.type}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-600 mt-1">{token.description}</p>
-                        <div className="flex justify-between mt-2 text-xs text-gray-500">
-                          <span>Value: {token.value}</span>
-                          <span>Expires: {formatDate(token.expirationDate)}</span>
-                        </div>
+                  {/* Token Catalog Dialog */}
+                  {showTokenCatalog && (
+                    <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                      <div className="flex justify-between items-center mb-3">
+                        <h3 className="font-medium">Token Catalog</h3>
+                        <button
+                          onClick={() => setShowTokenCatalog(false)}
+                          className="text-gray-500 hover:text-gray-700"
+                        >
+                          ×
+                        </button>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {/* Customer Tokens */}
-              <div>
-                {selectedCustomer.tokens.length === 0 ? (
-                  <div className="text-center py-10 text-gray-500">
-                    <p>This customer has no tokens in their account.</p>
-                    <button
-                      onClick={() => setShowTokenCatalog(true)}
-                      className="mt-3 px-4 py-2 bg-[#CC0000] hover:bg-[#AA0000] text-white rounded-lg text-sm inline-flex items-center"
-                    >
-                      <PlusCircleIcon className="w-4 h-4 mr-2" />
-                      Add Their First Token
-                    </button>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-gray-200">
-                    {selectedCustomer.tokens.map((token) => (
-                      <div key={token.id} className="py-4 first:pt-0 last:pb-0">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-medium">{token.name}</h3>
-                              <span className={`px-2 py-0.5 rounded-full text-xs ${getTokenStateBadgeColor(token.state)}`}>
-                                {token.state}
-                              </span>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {tokenCatalog.map((token) => (
+                          <div
+                            key={token.id}
+                            className="border border-gray-200 rounded-lg p-3 bg-white cursor-pointer hover:bg-gray-50"
+                            onClick={() => addTokenToCustomer(token)}
+                          >
+                            <div className="flex justify-between">
+                              <span className="font-medium">{token.name}</span>
                               <span className={`px-2 py-0.5 rounded-full text-xs ${getTokenTypeBadgeColor(token.type)}`}>
                                 {token.type}
                               </span>
                             </div>
                             <p className="text-sm text-gray-600 mt-1">{token.description}</p>
-                          </div>
-                          <div className="text-lg font-semibold text-[#CC0000]">
-                            {token.value}
-                          </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3 text-xs text-gray-500">
-                          <div>
-                            <p className="font-medium">Claimed:</p>
-                            <p>{formatDate(token.claimDate)}</p>
-                          </div>
-                          <div>
-                            <p className="font-medium">Expires:</p>
-                            <p>{formatDate(token.expirationDate)}</p>
-                          </div>
-                          {token.useDate && (
-                            <div>
-                              <p className="font-medium">Used:</p>
-                              <p>{formatDate(token.useDate)}</p>
+                            <div className="flex justify-between mt-2 text-xs text-gray-500">
+                              <span>Value: {token.value}</span>
+                              <span>Expires: {formatDate(token.expirationDate)}</span>
                             </div>
-                          )}
-                          {token.shareDate && (
-                            <div>
-                              <p className="font-medium">Shared:</p>
-                              <p>{formatDate(token.shareDate)}</p>
-                            </div>
-                          )}
-                          {token.merchantLocation && (
-                            <div>
-                              <p className="font-medium">Location:</p>
-                              <p>{token.merchantLocation}</p>
-                            </div>
-                          )}
-                        </div>
-                        
-                        <div className="mt-3 flex gap-2">
-                          {(token.state === 'Expired' || token.state === 'Used') && (
-                            <button
-                              onClick={() => reissueToken(token)}
-                              className="px-3 py-1.5 flex items-center gap-1 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded text-xs"
-                            >
-                              <ArrowPathIcon className="w-3.5 h-3.5" />
-                              Reissue Token
-                            </button>
-                          )}
-                          <button
-                            onClick={() => removeTokenFromCustomer(token.id)}
-                            className="px-3 py-1.5 flex items-center gap-1 bg-red-100 hover:bg-red-200 text-red-800 rounded text-xs"
-                          >
-                            <TrashIcon className="w-3.5 h-3.5" />
-                            Remove
-                          </button>
-                        </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    </div>
+                  )}
+                  
+                  {/* Customer Tokens */}
+                  <div>
+                    {selectedCustomer.tokens.length === 0 ? (
+                      <div className="text-center py-10 text-gray-500">
+                        <p>This customer has no tokens in their account.</p>
+                        <button
+                          onClick={() => setShowTokenCatalog(true)}
+                          className="mt-3 px-4 py-2 bg-[#CC0000] hover:bg-[#AA0000] text-white rounded-lg text-sm inline-flex items-center"
+                        >
+                          <PlusCircleIcon className="w-4 h-4 mr-2" />
+                          Add Their First Token
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-gray-200">
+                        {selectedCustomer.tokens.map((token) => (
+                          <div key={token.id} className="py-4 first:pt-0 last:pb-0">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <h3 className="font-medium">{token.name}</h3>
+                                  <span className={`px-2 py-0.5 rounded-full text-xs ${getTokenStateBadgeColor(token.state)}`}>
+                                    {token.state}
+                                  </span>
+                                  <span className={`px-2 py-0.5 rounded-full text-xs ${getTokenTypeBadgeColor(token.type)}`}>
+                                    {token.type}
+                                  </span>
+                                </div>
+                                <p className="text-sm text-gray-600 mt-1">{token.description}</p>
+                              </div>
+                              <div className="text-lg font-semibold text-[#CC0000]">
+                                {token.value}
+                              </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3 text-xs text-gray-500">
+                              <div>
+                                <p className="font-medium">Claimed:</p>
+                                <p>{formatDate(token.claimDate)}</p>
+                              </div>
+                              <div>
+                                <p className="font-medium">Expires:</p>
+                                <p>{formatDate(token.expirationDate)}</p>
+                              </div>
+                              {token.useDate && (
+                                <div>
+                                  <p className="font-medium">Used:</p>
+                                  <p>{formatDate(token.useDate)}</p>
+                                </div>
+                              )}
+                              {token.shareDate && (
+                                <div>
+                                  <p className="font-medium">Shared:</p>
+                                  <p>{formatDate(token.shareDate)}</p>
+                                </div>
+                              )}
+                              {token.merchantLocation && (
+                                <div>
+                                  <p className="font-medium">Location:</p>
+                                  <p>{token.merchantLocation}</p>
+                                </div>
+                              )}
+                            </div>
+                            
+                            <div className="mt-3 flex gap-2">
+                              {(token.state === 'Expired' || token.state === 'Used') && (
+                                <button
+                                  onClick={() => reissueToken(token)}
+                                  className="px-3 py-1.5 flex items-center gap-1 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded text-xs"
+                                >
+                                  <ArrowPathIcon className="w-3.5 h-3.5" />
+                                  Reissue Token
+                                </button>
+                              )}
+                              <button
+                                onClick={() => removeTokenFromCustomer(token.id)}
+                                className="px-3 py-1.5 flex items-center gap-1 bg-red-100 hover:bg-red-200 text-red-800 rounded text-xs"
+                              >
+                                <TrashIcon className="w-3.5 h-3.5" />
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             </div>
-          </div>
+          )
         )}
       </main>
 
