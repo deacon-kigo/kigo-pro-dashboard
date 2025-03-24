@@ -1,12 +1,32 @@
 'use client';
 
 import React from 'react';
-import { VersionType, versionInfo } from '../../contexts/DemoContext';
+import { VersionType } from '@/lib/redux/slices/demoSlice';
 import { BeakerIcon, ClockIcon, RocketLaunchIcon, CommandLineIcon } from '@heroicons/react/24/outline';
 
 interface VersionBadgeProps {
   version: VersionType;
 }
+
+// Define version info here
+const versionInfo: Record<VersionType, { name: string, description: string }> = {
+  'current': {
+    name: 'Current Release',
+    description: 'Features currently implemented in production'
+  },
+  'upcoming': {
+    name: 'Next Release',
+    description: 'Features planned for the next release cycle'
+  },
+  'future': {
+    name: 'Future Roadmap',
+    description: 'Features in the long-term development roadmap'
+  },
+  'experimental': {
+    name: 'Experimental',
+    description: 'Experimental concepts and designs for feedback'
+  }
+};
 
 const versionIcons: Record<VersionType, React.ReactNode> = {
   'current': <ClockIcon className="w-4 h-4" />,

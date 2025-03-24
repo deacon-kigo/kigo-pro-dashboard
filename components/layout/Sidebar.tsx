@@ -18,21 +18,32 @@ import {
   TicketIcon,
   BuildingStorefrontIcon
 } from '@heroicons/react/24/outline';
-import { useDemo } from '../../contexts/DemoContext';
+import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
+import { toggleSidebar, setSidebarCollapsed } from '@/lib/redux/slices/uiSlice';
 import demoConfigs from '../../config/demoConfigs';
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const { role, clientId, clientName } = useDemo();
+  const dispatch = useAppDispatch();
+  const { role, clientId, clientName } = useAppSelector(state => state.demo);
+  const { sidebarCollapsed } = useAppSelector(state => state.ui);
   
-  // Store collapse state in localStorage
+  // Local state for backward compatibility during migration
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  
+  // Sync local state with Redux
+  useEffect(() => {
+    setIsCollapsed(sidebarCollapsed);
+  }, [sidebarCollapsed]);
+  
+  // Store collapse state in localStorage (will be handled by Redux in the future)
   useEffect(() => {
     const storedState = localStorage.getItem('sidebarCollapsed');
     if (storedState) {
       setIsCollapsed(storedState === 'true');
+      dispatch(setSidebarCollapsed(storedState === 'true'));
     }
-  }, []);
+  }, [dispatch]);
 
   // Update localStorage when state changes
   useEffect(() => {
@@ -44,6 +55,12 @@ export default function Sidebar() {
       isCollapsed ? '70px' : '225px'
     );
   }, [isCollapsed]);
+  
+  // Handle toggle sidebar click - update both local and Redux state
+  const handleToggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
+    dispatch(toggleSidebar());
+  };
   
   const isLinkActive = (path: string) => {
     // Special case for demo pages
@@ -291,7 +308,7 @@ export default function Sidebar() {
             <Link href="/" className="flex items-center justify-center w-full">
               <Image 
                 src="/kigo logo only.svg" 
-                alt={clientName} 
+                alt={clientName || 'Kigo'}
                 width={40} 
                 height={40} 
                 className="transition-all duration-300"
@@ -317,7 +334,7 @@ export default function Sidebar() {
         </div>
         
         <button 
-          onClick={() => setIsCollapsed(!isCollapsed)}
+          onClick={handleToggleSidebar}
           className="absolute top-24 -right-3 transform -translate-y-1/2 bg-white border border-border-light rounded-full p-1.5 shadow-sm hover:bg-gray-50 z-30 transition-colors"
         >
           {isCollapsed ? (

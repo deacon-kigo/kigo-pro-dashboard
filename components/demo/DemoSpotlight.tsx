@@ -14,12 +14,16 @@ import {
   ChartBarIcon,
   DocumentTextIcon,
   PuzzlePieceIcon,
-  UserCircleIcon
+  UserCircleIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MockUser, getUserForContext, convertMockUserToUserProfile } from '@/lib/userProfileUtils';
 import { getMockAvatarUrl } from '@/lib/avatarUtils';
 import { UserProfile } from '@/types/demo';
+import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
+import { toggleSpotlight, setDemoSelectorOpen } from '@/lib/redux/slices/uiSlice';
+import Link from 'next/link';
 
 // Define instance type that combines role, client, and scenario
 interface DemoInstance {
@@ -186,6 +190,9 @@ const groupInstancesByCategory = (instances: DemoInstance[]) => {
 };
 
 const DemoSpotlight: React.FC = () => {
+  const dispatch = useAppDispatch();
+  const { spotlightOpen } = useAppSelector(state => state.ui);
+  const { role, clientId, version } = useAppSelector(state => state.demo);
   const demoInstances = useRef(generateDemoInstances());
   const instanceGroups = useRef(groupInstancesByCategory(demoInstances.current));
   const { updateDemoState } = useDemo();
@@ -196,6 +203,11 @@ const DemoSpotlight: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
+  
+  // Sync local state with Redux state
+  useEffect(() => {
+    setIsOpen(spotlightOpen);
+  }, [spotlightOpen]);
   
   const filteredInstances = searchQuery.trim() === '' 
     ? demoInstances.current 
@@ -214,13 +226,20 @@ const DemoSpotlight: React.FC = () => {
   useEffect(() => {
     // Register the keyboard shortcut to open the spotlight (Command+K)
     shortcutManager.registerShortcut(['meta', 'k'], () => {
+      // Update both local and Redux state
       setIsOpen(true);
+      dispatch(toggleSpotlight());
+      
+      // Focus the input when opened via shortcut
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
     }, 'Open Demo Spotlight');
     
     return () => {
       shortcutManager.unregisterShortcut(['meta', 'k']);
     };
-  }, []);
+  }, [dispatch]);
   
   useEffect(() => {
     if (isOpen) {
@@ -265,6 +284,7 @@ const DemoSpotlight: React.FC = () => {
     const handleClickOutside = (event: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        dispatch(toggleSpotlight());
       }
     };
     
@@ -275,11 +295,12 @@ const DemoSpotlight: React.FC = () => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isOpen]);
+  }, [isOpen, dispatch]);
   
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
       setIsOpen(false);
+      dispatch(toggleSpotlight());
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
       setSelectedIndex(prev => 
@@ -299,6 +320,7 @@ const DemoSpotlight: React.FC = () => {
       convertMockUserToUserProfile(instance.userProfile) : 
       undefined;
       
+    // Update state in both context and Redux
     updateDemoState({
       role: instance.role,
       clientId: instance.clientId as any,
@@ -307,11 +329,33 @@ const DemoSpotlight: React.FC = () => {
     });
     
     setIsOpen(false);
+    dispatch(toggleSpotlight());
     setSearchQuery('');
     
     // Custom navigation if path exists
     if (instance.path) {
+      // Use Next.js router for client-side navigation when possible
       window.location.href = instance.path;
+    } else {
+      // Default path based on role, client, and scenario
+      let defaultPath = '/';
+      
+      // Construct path based on instance properties
+      if (instance.scenario === 'campaign-creation') {
+        defaultPath = '/campaigns/create';
+      } else if (instance.scenario === 'dashboard') {
+        defaultPath = '/';
+      } else if (instance.role === 'support' && instance.scenario === 'support-flow') {
+        defaultPath = '/tickets';
+      }
+      
+      // For specific client demos
+      if (instance.clientId === 'deacons-pizza' && instance.scenario === 'campaign-creation') {
+        defaultPath = '/demos/ai-campaign-creation';
+      }
+      
+      // Navigate to the constructed path
+      window.location.href = defaultPath;
     }
   };
   
@@ -472,6 +516,63 @@ const DemoSpotlight: React.FC = () => {
     );
   };
   
+  const handleToggle = () => {
+    // Toggle both local and Redux state
+    const newIsOpen = !isOpen;
+    setIsOpen(newIsOpen);
+    dispatch(toggleSpotlight());
+    
+    // Focus input when opening
+    if (newIsOpen) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
+    }
+  };
+  
+  const openDemoSelector = () => {
+    // Close spotlight first
+    setIsOpen(false);
+    dispatch(toggleSpotlight());
+    
+    // Give a small delay before opening the demo selector
+    // This prevents UI glitches when transitioning between modals
+    setTimeout(() => {
+      dispatch(setDemoSelectorOpen(true));
+    }, 100);
+  };
+  
+  const getRoleText = () => {
+    switch(role) {
+      case 'merchant': return 'Business Owner';
+      case 'support': return 'Support Agent';
+      case 'admin': return 'Administrator';
+      default: return 'User';
+    }
+  };
+  
+  const getClientName = () => {
+    switch(clientId) {
+      case 'deacons-pizza': return 'Deacon\'s Pizza';
+      case 'boutique-fitness': return 'Boutique Fitness';
+      case 'tech-solutions': return 'Tech Solutions';
+      default: return 'Default Client';
+    }
+  };
+  
+  // Map the Redux version types to the display names in the UI
+  const getVersionText = () => {
+    if (!version) return 'Default Version';
+    
+    switch(version) {
+      case 'current': return 'Current Version';
+      case 'upcoming': return 'Upcoming Version';
+      case 'future': return 'Future Version';
+      case 'experimental': return 'Experimental Version';
+      default: return 'Default Version';
+    }
+  };
+  
   return (
     <>
       {/* Backdrop element */}
@@ -479,7 +580,10 @@ const DemoSpotlight: React.FC = () => {
         <div 
           ref={backdropRef} 
           className="spotlight-backdrop"
-          onClick={() => setIsOpen(false)}
+          onClick={() => {
+            setIsOpen(false);
+            dispatch(toggleSpotlight());
+          }}
           aria-hidden="true"
         />
       )}
@@ -558,6 +662,19 @@ const DemoSpotlight: React.FC = () => {
       <div className="fixed right-6 bottom-20 z-40 glass-subtle px-3 py-1.5 rounded-full text-sm pointer-events-none select-none opacity-70 hover:opacity-100 transition-opacity duration-200">
         Press <kbd className="px-1.5 py-0.5 bg-gray-700 text-gray-200 font-mono text-xs mx-1">⌘</kbd>+<kbd className="px-1.5 py-0.5 bg-gray-700 text-gray-200 font-mono text-xs mx-1">K</kbd> for demo switcher
       </div>
+
+      {/* Spotlight button */}
+      <button
+        onClick={handleToggle}
+        className="fixed bottom-6 left-6 bg-indigo-600 text-white p-3 rounded-full shadow-lg hover:bg-indigo-700 transition-colors z-30"
+        aria-label="Toggle Demo Spotlight"
+      >
+        {isOpen ? (
+          <XMarkIcon className="h-6 w-6" />
+        ) : (
+          <SparklesIcon className="h-6 w-6" />
+        )}
+      </button>
     </>
   );
 };

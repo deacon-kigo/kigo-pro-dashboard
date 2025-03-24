@@ -9,17 +9,28 @@ import {
   PlusIcon,
   ShoppingBagIcon,
   PlusCircleIcon,
-  TicketIcon
+  TicketIcon,
+  UserIcon,
+  Bars3Icon,
+  ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { useDemo } from '../../contexts/DemoContext';
+import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
+import { toggleSidebar } from '@/lib/redux/slices/uiSlice';
+import { markAllNotificationsAsRead } from '@/lib/redux/slices/userSlice';
 
 export default function Header() {
+  const dispatch = useAppDispatch();
   const pathname = usePathname();
   const [searchQuery, setSearchQuery] = useState('');
   const [sidebarWidth, setSidebarWidth] = useState('225px');
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
-  const { role, clientId, theme, themeMode } = useDemo();
+  const { role, clientId, theme, themeMode, clientName } = useAppSelector(state => state.demo);
+  const { isMobileView } = useAppSelector(state => state.ui);
+  const { notifications } = useAppSelector(state => state.user);
+  const unreadNotificationsCount = notifications?.filter(n => !n.read).length || 0;
+  
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   
   // Mock search suggestions - role-based
   const getSearchSuggestions = () => {
@@ -57,24 +68,19 @@ export default function Header() {
   
   const searchSuggestions = getSearchSuggestions();
   
-  // Listen for changes to the sidebar width CSS variable
+  // Update sidebar width based on localStorage
   useEffect(() => {
-    const handleResize = () => {
-      const width = getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width') || '225px';
-      setSidebarWidth(width);
+    const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+    setSidebarWidth(isCollapsed ? '70px' : '225px');
+    
+    // Listen for sidebar toggle events
+    const handleStorageChange = () => {
+      const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+      setSidebarWidth(isCollapsed ? '70px' : '225px');
     };
     
-    // Initial setup
-    handleResize();
-    
-    // Setup a MutationObserver to watch for style attribute changes
-    const observer = new MutationObserver(handleResize);
-    observer.observe(document.documentElement, { 
-      attributes: true, 
-      attributeFilter: ['style'] 
-    });
-    
-    return () => observer.disconnect();
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
   
   // Close dropdown when clicking outside
@@ -161,6 +167,32 @@ export default function Header() {
   };
 
   const isDarkMode = themeMode === 'dark';
+
+  const handleToggleSidebar = () => {
+    dispatch(toggleSidebar());
+  };
+  
+  const handleToggleNotifications = () => {
+    setNotificationsOpen(!notificationsOpen);
+    
+    // Mark all as read when opening
+    if (!notificationsOpen && unreadNotificationsCount > 0) {
+      dispatch(markAllNotificationsAsRead());
+    }
+  };
+  
+  const getMobileHeaderTitle = () => {
+    switch(role) {
+      case 'merchant':
+        return clientName || 'Kigo Dashboard';
+      case 'support':
+        return 'Kigo Support Portal';
+      case 'admin':
+        return 'Kigo Admin Portal';
+      default:
+        return 'Kigo PRO';
+    }
+  };
 
   return (
     <header 

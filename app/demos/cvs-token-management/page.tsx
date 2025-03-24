@@ -13,7 +13,8 @@ import {
   PlusCircleIcon,
   TrashIcon,
   ArrowPathIcon,
-  ClipboardDocumentIcon
+  ClipboardDocumentIcon,
+  ExclamationCircleIcon
 } from '@heroicons/react/24/outline';
 
 // Types for the token management interface
@@ -317,20 +318,40 @@ const tokenCatalog: TokenInfo[] = [
   }
 ];
 
+// Add a new function to highlight matched text in search results
+const HighlightedText = ({ text, searchTerm }: { text: string, searchTerm: string }) => {
+  if (!searchTerm.trim()) {
+    return <>{text}</>;
+  }
+  
+  const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  const parts = text.split(regex);
+  
+  return (
+    <>
+      {parts.map((part, i) => 
+        regex.test(part) ? (
+          <span key={i} className="bg-yellow-200 px-0.5">{part}</span>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </>
+  );
+};
+
 export default function CVSTokenManagement() {
   const { userProfile, theme, themeMode } = useDemo();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchField, setSearchField] = useState<'email' | 'name' | 'phone' | 'extraCareId'>('email');
   const [customerResults, setCustomerResults] = useState<CustomerInfo[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerInfo | null>(null);
   const [showTokenCatalog, setShowTokenCatalog] = useState(false);
   const [actionMessage, setActionMessage] = useState<{text: string, type: 'success' | 'error' | 'info'} | null>(null);
   const [caseNotes, setCaseNotes] = useState('');
-  // Update customers array to include the sample customers
   const [customers, setCustomers] = useState([...mockCustomers, ...additionalSampleCustomers]);
-  // Add view state to control which view is displayed
   const [viewState, setViewState] = useState<'main' | 'detail'>('main');
+  const [hasSearched, setHasSearched] = useState(false); // Track if a search has been performed
 
   // CVS ExtraCare branding colors
   const cvsRed = '#CC0000';
@@ -355,8 +376,10 @@ export default function CVSTokenManagement() {
     router.replace('/demos/cvs-token-management?role=support&client=cvs&scenario=support-flow&theme=light');
   }, [userProfile, router]);
 
-  // Search customers based on query and field
+  // Updated search function to search across all fields
   const handleSearch = () => {
+    setHasSearched(true);
+    
     if (!searchQuery.trim()) {
       setCustomerResults([]);
       return;
@@ -364,18 +387,16 @@ export default function CVSTokenManagement() {
 
     const filteredCustomers = customers.filter(customer => {
       const query = searchQuery.toLowerCase();
-      switch (searchField) {
-        case 'email':
-          return customer.email.toLowerCase().includes(query);
-        case 'name':
-          return `${customer.firstName} ${customer.lastName}`.toLowerCase().includes(query);
-        case 'phone':
-          return customer.phone.includes(query);
-        case 'extraCareId':
-          return customer.extraCareId.includes(query);
-        default:
-          return false;
-      }
+      
+      // Search across all relevant customer fields
+      return (
+        customer.email.toLowerCase().includes(query) ||
+        customer.firstName.toLowerCase().includes(query) ||
+        customer.lastName.toLowerCase().includes(query) ||
+        `${customer.firstName} ${customer.lastName}`.toLowerCase().includes(query) ||
+        customer.phone.includes(query) ||
+        customer.extraCareId.includes(query)
+      );
     });
 
     setCustomerResults(filteredCustomers);
@@ -576,8 +597,9 @@ export default function CVSTokenManagement() {
       handleSearch();
     } else {
       setCustomerResults([]);
+      setHasSearched(false);
     }
-  }, [searchQuery, searchField]);
+  }, [searchQuery]); // Remove searchField dependency
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -627,28 +649,15 @@ export default function CVSTokenManagement() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Search for customer..."
+                  placeholder="Search by name, email, phone, or ExtraCare ID..."
                   className="w-full p-3 pl-10 pr-4 border border-gray-300 rounded-lg"
                 />
                 <MagnifyingGlassIcon className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
               </div>
               
-              <div className="w-44">
-                <select
-                  value={searchField}
-                  onChange={(e) => setSearchField(e.target.value as any)}
-                  className="w-full p-3 border border-gray-300 rounded-lg"
-                >
-                  <option value="email">Email</option>
-                  <option value="name">Name</option>
-                  <option value="phone">Phone</option>
-                  <option value="extraCareId">ExtraCare ID</option>
-                </select>
-              </div>
-              
               <button 
                 onClick={handleSearch}
-                className="px-6 py-3 bg-[#CC0000] hover:bg-[#AA0000] text-white rounded-lg"
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
               >
                 Search
               </button>
@@ -667,9 +676,27 @@ export default function CVSTokenManagement() {
                     >
                       <div className="flex justify-between items-center">
                         <div>
-                          <p className="font-medium">{customer.firstName} {customer.lastName}</p>
-                          <p className="text-sm text-gray-500">{customer.email} • {customer.phone}</p>
-                          <p className="text-xs text-gray-500">ExtraCare ID: {customer.extraCareId}</p>
+                          <p className="font-medium">
+                            <HighlightedText 
+                              text={`${customer.firstName} ${customer.lastName}`} 
+                              searchTerm={searchQuery} 
+                            />
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            <HighlightedText 
+                              text={customer.email} 
+                              searchTerm={searchQuery} 
+                            /> • <HighlightedText 
+                              text={customer.phone} 
+                              searchTerm={searchQuery} 
+                            />
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            ExtraCare ID: <HighlightedText 
+                              text={customer.extraCareId} 
+                              searchTerm={searchQuery} 
+                            />
+                          </p>
                         </div>
                         <div className="text-xs text-gray-500">
                           Account Created: {formatDate(customer.accountCreated)}
@@ -681,14 +708,20 @@ export default function CVSTokenManagement() {
               </div>
             )}
 
-            {searchQuery && customerResults.length === 0 && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg text-center">
-                No customers found. Try a different search term.
+            {/* Enhanced empty state */}
+            {hasSearched && searchQuery && customerResults.length === 0 && (
+              <div className="mt-6 p-8 bg-gray-50 rounded-lg text-center">
+                <ExclamationCircleIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                <h3 className="text-lg font-medium text-gray-900 mb-1">No customers found</h3>
+                <p className="text-gray-500 mb-4">We couldn't find any customers matching '{searchQuery}'</p>
+                <p className="text-sm text-gray-600">
+                  Try with a different search term or check for typos
+                </p>
               </div>
             )}
             
-            {/* Default Customer Table - Show when no search is performed */}
-            {!searchQuery && (
+            {/* Initial empty state */}
+            {!hasSearched && !searchQuery && (
               <div className="mt-6">
                 <h3 className="text-sm font-semibold mb-3">Recent Customers</h3>
                 <div className="overflow-x-auto">

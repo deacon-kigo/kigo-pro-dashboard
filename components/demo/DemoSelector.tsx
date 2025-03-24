@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useDemo, VersionType, versionInfo } from '../../contexts/DemoContext';
+import { useDemo } from '../../contexts/DemoContext';
+import { VersionType } from '@/lib/redux/slices/demoSlice';
 import demoConfigs from '../../config/demoConfigs';
 import { 
   UserIcon, 
@@ -28,6 +29,26 @@ const clientEmojis: Record<string, string> = {
   'deacons-pizza': '🍕',
   'cvs': '💊',
   'generic': '🏢'
+};
+
+// Define version info here since it's no longer exported from DemoContext
+const versionInfo: Record<VersionType, { name: string, description: string }> = {
+  'current': {
+    name: 'Current Release',
+    description: 'Features currently implemented in production'
+  },
+  'upcoming': {
+    name: 'Next Release',
+    description: 'Features planned for the next release cycle'
+  },
+  'future': {
+    name: 'Future Roadmap',
+    description: 'Features in the long-term development roadmap'
+  },
+  'experimental': {
+    name: 'Experimental',
+    description: 'Experimental concepts and designs for feedback'
+  }
 };
 
 // Map version types to icons
@@ -252,7 +273,7 @@ export default function DemoSelector() {
               ))}
             </div>
             <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 px-1">
-              {versionInfo[version]?.description}
+              {version && versionInfo[version as VersionType]?.description}
             </div>
           </div>
           
@@ -315,7 +336,7 @@ export default function DemoSelector() {
             <div className="mb-6">
               <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Recent Instances</h3>
               <div className="grid grid-cols-1 gap-2 max-h-36 overflow-y-auto">
-                {instanceHistory.map((instance, index) => (
+                {instanceHistory.map((instance: any, index: number) => (
                   <button
                     key={instance.id || index}
                     onClick={() => goToInstance(index)}
