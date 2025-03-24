@@ -50,18 +50,69 @@ export interface CustomerInfo {
   tokens: TokenInfo[];
 }
 
-// Helper function to generate random tokens
-const generateRandomTokens = (count: number = 0): TokenInfo[] => {
+export interface TokenFilters {
+  status: string[];
+  dateRange: {
+    start: string;
+    end: string;
+  };
+  types: string[];
+  merchant: string;
+  searchQuery: string;
+}
+
+// Add sorting interfaces
+export interface SortOptions {
+  field: 'name' | 'type' | 'state' | 'value' | 'expirationDate' | 'claimDate';
+  direction: 'asc' | 'desc';
+}
+
+export interface CVSTokenState {
+  customers: CustomerInfo[];
+  searchQuery: string;
+  customerResults: CustomerInfo[];
+  selectedCustomer: CustomerInfo | null;
+  selectedToken: TokenInfo | null;
+  showTokenCatalog: boolean;
+  actionMessage: {
+    text: string;
+    type: 'success' | 'error' | 'info';
+  } | null;
+  caseNotes: string;
+  viewState: 'main' | 'detail';
+  hasSearched: boolean;
+  tokenCatalog: TokenInfo[];
+  tokenFilters: TokenFilters;
+  // Sorting options
+  tokenSort: SortOptions;
+  // Pagination state
+  pagination: {
+    currentPage: number;
+    itemsPerPage: number;
+    totalPages: number;
+  };
+}
+
+// Modify the generateRandomTokens function to create more tokens
+const generateRandomTokens = (count: number = 0, moreVariety: boolean = false): TokenInfo[] => {
   if (count === 0) return [];
   
+  // Make token types, states, names, and descriptions more varied if needed
   const tokenTypes: ('Coupon' | 'Reward' | 'ExtraBucks' | 'Lightning')[] = ['Coupon', 'Reward', 'ExtraBucks', 'Lightning'];
   const tokenStates: ('Active' | 'Shared' | 'Used' | 'Expired')[] = ['Active', 'Shared', 'Used', 'Expired'];
+  
   const couponNames = [
     '$5 ExtraBucks Rewards', '$10 ExtraBucks Rewards', '20% Off Vitamins',
     '30% Off Contact Lenses', '40% Off Sunscreen', 'Buy 1 Get 1 Free',
     'Free Toothbrush', '$3 Off Shampoo', '50% Off Seasonal Items',
-    '25% Off Cosmetics', '$7 ExtraBucks Rewards', 'FREE Hand Sanitizer'
+    '25% Off Cosmetics', '$7 ExtraBucks Rewards', 'FREE Hand Sanitizer',
+    '$15 Off Prescription', '15% Off Health Products', 'FREE Greeting Card',
+    'BOGO 50% Vitamins', '30% Off Hair Care', '$5 Off $25 Purchase',
+    'FREE Gift Wrap', '$3 Off Allergy Medicine', '40% Off Photo Products',
+    '25% Off Beauty Products', 'FREE Delivery', '$2 Off Pain Relief',
+    'FREE Health Screening', '$10 Off Skin Care', '20% Off Home Health'
   ];
+  
   const couponDescriptions = [
     'Earn ExtraBucks when you spend $20 on beauty products',
     'Off your purchase of vitamins and supplements',
@@ -74,16 +125,61 @@ const generateRandomTokens = (count: number = 0): TokenInfo[] => {
     'For ExtraCare members',
     'Off cosmetics purchase',
     'One free photo print',
-    'Off first aid supplies'
+    'Off first aid supplies',
+    'On qualifying refills',
+    'For all health and wellness items',
+    'With any $5 card purchase',
+    'Mix and match vitamins and supplements',
+    'Shampoo, conditioner and styling products',
+    'Minimum purchase required',
+    'Holiday purchases only',
+    'On select allergy medications',
+    'Prints, cards, and photo gifts',
+    'Includes makeup and skin care',
+    'On orders over $15',
+    'On any pain relief medication',
+    'Schedule in-store for ExtraCare members',
+    'On select premium skin care products',
+    'Home health devices and supplies'
   ];
-  const merchants = ['CVS Pharmacy', 'CVS MinuteClinic', 'CVS HealthHUB'];
-  const locations = ['Downtown', 'Westside Mall', 'North Avenue', 'Eastside Plaza', 'South Center', 'University Plaza'];
+  
+  const merchants = ['CVS Pharmacy', 'CVS MinuteClinic', 'CVS HealthHUB', 'CVS y más', 'CVS Photo', 'CVS Specialty', 'Target CVS'];
+  const locations = ['Downtown', 'Westside Mall', 'North Avenue', 'Eastside Plaza', 'South Center', 'University Plaza', 
+                    'Riverfront', 'City Center', 'Medical District', 'Galleria Mall', 'Harbor View', 'Technology Park',
+                    'Central Plaza', 'Suburb Towne', 'Parkway Junction', 'Grand Boulevard', 'Airport Terminal'];
   
   const tokens: TokenInfo[] = [];
   
+  // Weight to make "Active" status more common (50%)
+  const stateWeights = {
+    'Active': 0.5,
+    'Expired': 0.2,
+    'Used': 0.2,
+    'Shared': 0.1
+  };
+  
+  // Generate at least 15 disputed tokens for the demo
+  const disputedTokens = Math.min(15, Math.floor(count * 0.3)); // 30% or at least 15
+  
+  // Generate a few support action tokens for the demo (15%)
+  const supportActionTokens = Math.min(10, Math.floor(count * 0.15)); // 15% or at least 10
+  
   for (let i = 0; i < count; i++) {
     const tokenType = tokenTypes[Math.floor(Math.random() * tokenTypes.length)];
-    const tokenState = tokenStates[Math.floor(Math.random() * tokenStates.length)];
+    
+    // Use weighted random for states to ensure a good balance
+    let tokenState: 'Active' | 'Shared' | 'Used' | 'Expired';
+    const rand = Math.random();
+    if (rand < stateWeights['Active']) {
+      tokenState = 'Active';
+    } else if (rand < stateWeights['Active'] + stateWeights['Expired']) {
+      tokenState = 'Expired';
+    } else if (rand < stateWeights['Active'] + stateWeights['Expired'] + stateWeights['Used']) {
+      tokenState = 'Used';
+    } else {
+      tokenState = 'Shared';
+    }
+    
     const name = couponNames[Math.floor(Math.random() * couponNames.length)];
     const description = couponDescriptions[Math.floor(Math.random() * couponDescriptions.length)];
     const merchantName = merchants[Math.floor(Math.random() * merchants.length)];
@@ -91,24 +187,36 @@ const generateRandomTokens = (count: number = 0): TokenInfo[] => {
     
     // Generate dates
     const now = new Date();
-    const pastDate = new Date();
-    pastDate.setDate(now.getDate() - Math.floor(Math.random() * 60)); // Up to 60 days ago
     
-    const futureDate = new Date();
-    futureDate.setDate(now.getDate() + Math.floor(Math.random() * 30)); // Up to 30 days in future
+    // Generate a claim date in the past (better distribution)
+    const claimDate = new Date();
+    const daysAgo = Math.floor(Math.random() * 180); // Up to 6 months ago
+    claimDate.setDate(now.getDate() - daysAgo);
     
-    const claimDate = pastDate.toISOString().split('T')[0];
-    const expirationDate = futureDate.toISOString().split('T')[0];
+    // Generate expiration date relative to claim date
+    const expirationDate = new Date(claimDate);
+    const expirationDays = Math.floor(Math.random() * 90) + 30; // 30-120 days validity
+    expirationDate.setDate(claimDate.getDate() + expirationDays);
+    
+    // If token is already expired, make sure expiration date is in the past
+    if (tokenState === 'Expired') {
+      expirationDate.setDate(now.getDate() - Math.floor(Math.random() * 30) - 1); // 1-30 days expired
+    } else if (tokenState === 'Active') {
+      // For active tokens, ensure expiration date is in the future
+      expirationDate.setDate(now.getDate() + Math.floor(Math.random() * 60) + 1); // 1-60 days until expiration
+    }
     
     let useDate, shareDate;
     if (tokenState === 'Used') {
-      const usedDate = new Date(pastDate);
-      usedDate.setDate(pastDate.getDate() + Math.floor(Math.random() * 10));
+      const usedDate = new Date(claimDate);
+      const daysToUse = Math.floor(Math.random() * (expirationDate.getTime() - claimDate.getTime()) / (1000 * 60 * 60 * 24));
+      usedDate.setDate(claimDate.getDate() + daysToUse);
       useDate = usedDate.toISOString().split('T')[0];
     }
     if (tokenState === 'Shared') {
-      const sharedDate = new Date(pastDate);
-      sharedDate.setDate(pastDate.getDate() + Math.floor(Math.random() * 5));
+      const sharedDate = new Date(claimDate);
+      const daysToShare = Math.floor(Math.random() * (expirationDate.getTime() - claimDate.getTime()) / (1000 * 60 * 60 * 24));
+      sharedDate.setDate(claimDate.getDate() + daysToShare);
       shareDate = sharedDate.toISOString().split('T')[0];
     }
     
@@ -122,27 +230,49 @@ const generateRandomTokens = (count: number = 0): TokenInfo[] => {
       value = 'FREE';
     }
     
-    tokens.push({
-      id: `tok${1000 + i}`,
+    const token: TokenInfo = {
+      id: `tok${3000 + i}`,
       name,
       description,
       type: tokenType,
       state: tokenState,
-      claimDate,
+      claimDate: claimDate.toISOString().split('T')[0],
       useDate,
       shareDate,
-      expirationDate,
+      expirationDate: expirationDate.toISOString().split('T')[0],
       merchantName,
       merchantLocation,
       value,
-      externalUrl: `https://www.cvs.com/extracare/token/view?id=tok${1000 + i}`
-    });
+      externalUrl: `https://www.cvs.com/extracare/token/view?id=tok${3000 + i}`
+    };
+    
+    // Add disputed flags to some tokens
+    if (i < disputedTokens) {
+      token.disputed = true;
+      token.disputeReason = Math.random() > 0.5 ? 'Store didn\'t honor' : 'Token not working';
+      token.disputeDate = new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      token.notHonored = Math.random() > 0.3; // 70% chance of not being honored
+    }
+    
+    // Add support actions to some tokens
+    if (i >= disputedTokens && i < disputedTokens + supportActionTokens) {
+      token.supportActions = {
+        isReissued: true,
+        reissuedDate: new Date(Date.now() - Math.floor(Math.random() * 15) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        reissuedBy: "Support Agent",
+        reissuedReason: Math.random() > 0.5 ? 'Store didn\'t honor' : 'Customer satisfaction',
+        originalTokenId: `tok${2000 + i}`,
+        comments: `Customer reported issue on ${new Date(Date.now() - Math.floor(Math.random() * 20) * 24 * 60 * 60 * 1000).toLocaleDateString()}`
+      }
+    }
+    
+    tokens.push(token);
   }
   
   return tokens;
 };
 
-// Helper function to generate random customers
+// Helper function to generate random customers with more tokens
 const generateMockCustomers = (count: number): CustomerInfo[] => {
   const firstNames = ['Emily', 'Michael', 'Sophia', 'John', 'Alice', 'Robert', 'Maria', 'David', 
                     'Lisa', 'James', 'Jennifer', 'Matthew', 'Sarah', 'Daniel', 'Jessica', 'Andrew', 
@@ -186,8 +316,22 @@ const generateMockCustomers = (count: number): CustomerInfo[] => {
     const state = states[Math.floor(Math.random() * states.length)];
     const zip = `${Math.floor(Math.random() * 90000) + 10000}`;
     
-    // Generate random number of tokens (0-8)
-    const tokenCount = Math.floor(Math.random() * 9);
+    // Generate more tokens per customer - weighted distribution
+    // Some customers have many tokens, some have few
+    const weightedRandom = Math.random();
+    let tokenCount;
+    
+    if (weightedRandom < 0.1) {
+      tokenCount = 0; // 10% of customers have no tokens
+    } else if (weightedRandom < 0.4) {
+      tokenCount = Math.floor(Math.random() * 3) + 1; // 30% have 1-3 tokens
+    } else if (weightedRandom < 0.7) {
+      tokenCount = Math.floor(Math.random() * 5) + 4; // 30% have 4-8 tokens
+    } else if (weightedRandom < 0.9) {
+      tokenCount = Math.floor(Math.random() * 7) + 9; // 20% have 9-15 tokens
+    } else {
+      tokenCount = Math.floor(Math.random() * 35) + 16; // 10% have 16-50 tokens (power users)
+    }
     
     customers.push({
       id: `cust${1000 + i}`,
@@ -204,7 +348,7 @@ const generateMockCustomers = (count: number): CustomerInfo[] => {
         state,
         zip
       },
-      tokens: generateRandomTokens(tokenCount)
+      tokens: generateRandomTokens(tokenCount, true)
     });
   }
   
@@ -481,41 +625,6 @@ const tokenCatalog: TokenInfo[] = [
   }
 ];
 
-export interface TokenFilters {
-  status: string[];
-  dateRange: {
-    start: string;
-    end: string;
-  };
-  types: string[];
-  merchant: string;
-  searchQuery: string;
-}
-
-export interface CVSTokenState {
-  customers: CustomerInfo[];
-  searchQuery: string;
-  customerResults: CustomerInfo[];
-  selectedCustomer: CustomerInfo | null;
-  selectedToken: TokenInfo | null;
-  showTokenCatalog: boolean;
-  actionMessage: {
-    text: string;
-    type: 'success' | 'error' | 'info';
-  } | null;
-  caseNotes: string;
-  viewState: 'main' | 'detail';
-  hasSearched: boolean;
-  tokenCatalog: TokenInfo[];
-  tokenFilters: TokenFilters;
-  // Pagination state
-  pagination: {
-    currentPage: number;
-    itemsPerPage: number;
-    totalPages: number;
-  };
-}
-
 const initialState: CVSTokenState = {
   customers: generatedCustomers,
   searchQuery: '',
@@ -537,6 +646,11 @@ const initialState: CVSTokenState = {
     types: [],
     merchant: '',
     searchQuery: ''
+  },
+  // Sorting options
+  tokenSort: {
+    field: 'name',
+    direction: 'asc'
   },
   // Initialize pagination
   pagination: {
@@ -850,6 +964,19 @@ export const cvsTokenSlice = createSlice({
         text: `Token marked as disputed${action.payload.notHonored ? ' and not honored by store' : ''}`,
         type: 'info'
       };
+    },
+    
+    // Add the new sorting reducer
+    setTokenSort: (state, action: PayloadAction<{ field: SortOptions['field']; direction?: SortOptions['direction'] }>) => {
+      const { field, direction } = action.payload;
+      
+      // If sorting by the same field, toggle direction
+      if (field === state.tokenSort.field && !direction) {
+        state.tokenSort.direction = state.tokenSort.direction === 'asc' ? 'desc' : 'asc';
+      } else {
+        state.tokenSort.field = field;
+        state.tokenSort.direction = direction || 'asc';
+      }
     }
   }
 });
@@ -870,7 +997,8 @@ export const {
   applyPresetFilter,
   setCurrentPage,
   setItemsPerPage,
-  markTokenDisputed
+  markTokenDisputed,
+  setTokenSort
 } = cvsTokenSlice.actions;
 
 export default cvsTokenSlice.reducer; 

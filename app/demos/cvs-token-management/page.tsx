@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useDemo } from '@/contexts/DemoContext';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
+import { searchObjects, sortObjects, highlightSearchTerms } from '@/lib/utils/search';
 import { 
   MagnifyingGlassIcon, 
   UserCircleIcon, 
@@ -23,6 +24,9 @@ import {
   BuildingStorefrontIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
+  FunnelIcon,
 } from '@heroicons/react/24/outline';
 
 // Import Redux actions
@@ -41,8 +45,10 @@ import {
   applyPresetFilter,
   setCurrentPage,
   setItemsPerPage,
-  initializeState,
-  markTokenDisputed
+  markTokenDisputed,
+  setTokenSort,
+  SortOptions,
+  initializeState
 } from '@/lib/redux/slices/cvsTokenSlice';
 
 // Types for the token management interface
@@ -398,22 +404,15 @@ const tokenCatalog: TokenInfo[] = [
 
 // Add a new function to highlight matched text in search results
 const HighlightedText = ({ text, searchTerm }: { text: string, searchTerm: string }) => {
-  if (!searchTerm.trim()) {
-    return <>{text}</>;
-  }
-  
-  const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-  const parts = text.split(regex);
+  const { parts } = highlightSearchTerms(text, searchTerm);
   
   return (
     <>
-      {parts.map((part, i) => 
-        regex.test(part) ? (
-          <span key={i} className="bg-yellow-200 px-0.5">{part}</span>
-        ) : (
-          <span key={i}>{part}</span>
-        )
-      )}
+      {parts.map((part, index) => (
+        <span key={index} className={part.highlight ? 'bg-yellow-200' : ''}>
+          {part.text}
+        </span>
+      ))}
     </>
   );
 };
@@ -483,7 +482,8 @@ export default function CVSTokenManagement() {
     hasSearched,
     tokenCatalog,
     tokenFilters,
-    pagination
+    pagination,
+    tokenSort
   } = useAppSelector(state => state.cvsToken);
 
   // Local state for UI elements that don't need to be in Redux
@@ -505,10 +505,14 @@ export default function CVSTokenManagement() {
   const [confirmComments, setConfirmComments] = useState('');
   const [notHonored, setNotHonored] = useState(false);
   
+  // Add state for token search UI
+  const [tokenSearchInput, setTokenSearchInput] = useState('');
+  const [isTokenSearchFocused, setIsTokenSearchFocused] = useState(false);
+  
   // Initialize Redux state only once on the client-side
   useEffect(() => {
-    dispatch(initializeState());
     setIsClient(true);
+    dispatch(initializeState());
   }, [dispatch]);
 
   // Force light mode for this component
@@ -650,44 +654,65 @@ export default function CVSTokenManagement() {
   const getFilteredTokens = () => {
     if (!selectedCustomer) return [];
     
-    return selectedCustomer.tokens.filter(token => {
-      // Filter by status
-      if (tokenFilters.status.length > 0 && !tokenFilters.status.includes(token.state)) {
-        return false;
-      }
-      
-      // Filter by date range (claim date)
-      const tokenDate = new Date(token.claimDate);
-      if (tokenFilters.dateRange.start && new Date(tokenFilters.dateRange.start) > tokenDate) {
-        return false;
-      }
-      if (tokenFilters.dateRange.end && new Date(tokenFilters.dateRange.end) < tokenDate) {
-        return false;
-      }
-      
-      // Filter by token type
-      if (tokenFilters.types.length > 0 && !tokenFilters.types.includes(token.type)) {
-        return false;
-      }
-      
-      // Filter by merchant
-      if (tokenFilters.merchant && token.merchantName && !token.merchantName.toLowerCase().includes(tokenFilters.merchant.toLowerCase())) {
-        return false;
-      }
-      
-      // Filter by search query (name or description)
-      if (tokenFilters.searchQuery) {
-        const query = tokenFilters.searchQuery.toLowerCase();
-        return token.name.toLowerCase().includes(query) || token.description.toLowerCase().includes(query);
-      }
-      
-      return true;
-    });
+    let filteredTokens = [...selectedCustomer.tokens];
+    
+    // Apply status filters
+    if (tokenFilters.status.length > 0) {
+      filteredTokens = filteredTokens.filter(token => tokenFilters.status.includes(token.state));
+    }
+    
+    // Apply type filters
+    if (tokenFilters.types.length > 0) {
+      filteredTokens = filteredTokens.filter(token => tokenFilters.types.includes(token.type));
+    }
+    
+    // Apply date range filters
+    if (tokenFilters.dateRange.start) {
+      filteredTokens = filteredTokens.filter(token => {
+        // Check against multiple date fields
+        const tokenDate = token.state === 'Used' ? token.useDate : 
+                         token.state === 'Shared' ? token.shareDate : 
+                         token.claimDate;
+        
+        return tokenDate && tokenDate >= tokenFilters.dateRange.start;
+      });
+    }
+    
+    if (tokenFilters.dateRange.end) {
+      filteredTokens = filteredTokens.filter(token => {
+        // For expiration dates
+        return token.expirationDate <= tokenFilters.dateRange.end;
+      });
+    }
+    
+    // Apply merchant filter
+    if (tokenFilters.merchant) {
+      filteredTokens = filteredTokens.filter(token => 
+        token.merchantName && token.merchantName.toLowerCase().includes(tokenFilters.merchant.toLowerCase())
+      );
+    }
+    
+    // Apply search query using our utility
+    if (tokenFilters.searchQuery) {
+      filteredTokens = searchObjects(
+        filteredTokens,
+        tokenFilters.searchQuery,
+        ['name', 'description', 'value', 'merchantName', 'merchantLocation']
+      );
+    }
+    
+    // Apply sorting using our utility
+    return sortObjects(filteredTokens, tokenSort.field, tokenSort.direction);
+  };
+  
+  // Add a function to handle sorting
+  const handleSort = (field: SortOptions['field']) => {
+    dispatch(setTokenSort({ field }));
   };
   
   // Get filtered tokens - memoize for better performance
   const filteredTokens = React.useMemo(() => getFilteredTokens(), [
-    selectedCustomer, tokenFilters
+    selectedCustomer, tokenFilters, tokenSort
   ]);
   
   // Handle filter changes
@@ -698,6 +723,113 @@ export default function CVSTokenManagement() {
   // Preset filters for common scenarios
   const handleApplyPresetFilter = (preset: string) => {
     dispatch(applyPresetFilter(preset));
+  };
+
+  // Function to get paginated customers
+  const getPaginatedCustomers = () => {
+    const { currentPage, itemsPerPage } = pagination;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return customers.slice(startIndex, endIndex);
+  };
+
+  // Render pagination controls
+  const renderPagination = () => {
+    const { currentPage, totalPages } = pagination;
+    
+    if (totalPages <= 1) return null;
+    
+    return (
+      <div className="flex items-center justify-between mt-4 px-4 py-3 bg-white border border-gray-200 rounded-md">
+        <div className="flex-1 flex justify-between sm:hidden">
+          <button
+            onClick={() => dispatch(setCurrentPage(currentPage - 1))}
+            disabled={currentPage === 1}
+            className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
+              currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Previous
+          </button>
+          <button
+            onClick={() => dispatch(setCurrentPage(currentPage + 1))}
+            disabled={currentPage === totalPages}
+            className={`ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
+              currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Next
+          </button>
+        </div>
+        <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm text-gray-700">
+              Showing <span className="font-medium">{((currentPage - 1) * pagination.itemsPerPage) + 1}</span> to{' '}
+              <span className="font-medium">
+                {Math.min(currentPage * pagination.itemsPerPage, customers.length)}
+              </span>{' '}
+              of <span className="font-medium">{customers.length}</span> customers
+            </p>
+          </div>
+          <div>
+            <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+              <button
+                onClick={() => dispatch(setCurrentPage(currentPage - 1))}
+                disabled={currentPage === 1}
+                className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 text-sm font-medium ${
+                  currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-500 hover:bg-gray-50'
+                }`}
+              >
+                <span className="sr-only">Previous</span>
+                <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
+              </button>
+              {[...Array(totalPages)].map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => dispatch(setCurrentPage(i + 1))}
+                  className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium ${
+                    currentPage === i + 1
+                      ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                      : 'bg-white text-gray-500 hover:bg-gray-50'
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button
+                onClick={() => dispatch(setCurrentPage(currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 text-sm font-medium ${
+                  currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-500 hover:bg-gray-50'
+                }`}
+              >
+                <span className="sr-only">Next</span>
+                <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
+              </button>
+            </nav>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Render items per page selector
+  const renderPerPageSelector = () => {
+    return (
+      <div className="flex items-center">
+        <span className="text-sm text-gray-500 mr-2">Items per page:</span>
+        <select
+          value={pagination.itemsPerPage}
+          onChange={(e) => dispatch(setItemsPerPage(Number(e.target.value)))}
+          className="border border-gray-300 rounded-md text-sm p-1"
+        >
+          <option value={5}>5</option>
+          <option value={10}>10</option>
+          <option value={20}>20</option>
+          <option value={50}>50</option>
+        </select>
+      </div>
+    );
   };
 
   // Render customer profile
@@ -837,532 +969,671 @@ export default function CVSTokenManagement() {
     );
   };
 
-  // Render token filtering UI - more compact version
-  const renderTokenFilters = () => {
+  // Replace the individual render functions with a combined function
+  const renderTokenManagement = () => {
+    const filteredTokens = getFilteredTokens();
+    
     return (
-      <div className="bg-white rounded-lg shadow-md mb-4">
-        <div className="p-4 border-b border-gray-200">
-          <div 
-            className="flex justify-between items-center cursor-pointer"
-            onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
-          >
+      <div className="bg-white rounded-lg shadow-md h-full">
+        {/* Token Filters Section */}
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex justify-between items-center mb-4">
             <div className="flex items-center">
-              <h3 className="text-lg font-semibold text-gray-900">Filter Tokens</h3>
-              {/* Display active filter count badge */}
-              {(tokenFilters.status.length > 0 || 
-                tokenFilters.types.length > 0 || 
-                tokenFilters.dateRange.start || 
-                tokenFilters.dateRange.end || 
-                tokenFilters.merchant || 
-                tokenFilters.searchQuery) && (
-                <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  {tokenFilters.status.length + tokenFilters.types.length + 
-                   (tokenFilters.dateRange.start ? 1 : 0) + 
-                   (tokenFilters.dateRange.end ? 1 : 0) + 
-                   (tokenFilters.merchant ? 1 : 0) + 
-                   (tokenFilters.searchQuery ? 1 : 0)
-                  } active
-                </span>
-              )}
+              <FunnelIcon className="h-5 w-5 mr-2 text-gray-500" />
+              <h3 className="text-lg font-medium text-gray-700">Token Filters</h3>
             </div>
-            <div className="flex items-center">
+            <div>
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleFilterChange('clearAll', null);
-                }}
-                className="text-sm text-blue-600 hover:text-blue-800 mr-3"
+                className="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 focus:outline-none"
+                onClick={() => dispatch(updateTokenFilters({ filterType: 'clearAll', value: null }))}
               >
                 Clear All
               </button>
-              <ChevronDownIcon 
-                className={`h-5 w-5 text-gray-500 transform transition-transform ${isFiltersExpanded ? 'rotate-180' : ''}`} 
-              />
+              <button
+                className="ml-2 bg-white p-1 rounded-md hover:bg-gray-100 focus:outline-none"
+                onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
+              >
+                <ChevronDownIcon
+                  className={`h-5 w-5 text-gray-500 transform transition-transform duration-200 ${isFiltersExpanded ? 'rotate-180' : ''}`}
+                />
+              </button>
             </div>
           </div>
           
           {/* Display active filters as tags */}
-          {!isFiltersExpanded && (tokenFilters.status.length > 0 || 
+          {(tokenFilters.status.length > 0 || 
             tokenFilters.types.length > 0 || 
             tokenFilters.dateRange.start || 
             tokenFilters.dateRange.end || 
             tokenFilters.merchant || 
             tokenFilters.searchQuery) && (
-            <div className="flex flex-wrap gap-2 mt-3 pb-1">
+            <div className="flex flex-wrap gap-2 mb-3">
               {tokenFilters.status.map(status => (
                 <span 
-                  key={`status-${status}`}
-                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700"
+                  key={status} 
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTokenStateBadgeColor(status)}`}
                 >
-                  Status: {status}
-                  <XMarkIcon 
-                    className="ml-1 h-3 w-3 cursor-pointer" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleFilterChange('status', status);
-                    }}
-                  />
+                  {status}
+                  <button
+                    type="button"
+                    className="ml-1 inline-flex flex-shrink-0"
+                    onClick={() => dispatch(updateTokenFilters({ filterType: 'status', value: status }))}
+                  >
+                    <XMarkIcon className="h-4 w-4" />
+                  </button>
                 </span>
               ))}
               
               {tokenFilters.types.map(type => (
                 <span 
-                  key={`type-${type}`}
-                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700"
+                  key={type} 
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTokenTypeBadgeColor(type)}`}
                 >
-                  Type: {type}
-                  <XMarkIcon 
-                    className="ml-1 h-3 w-3 cursor-pointer" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleFilterChange('type', type);
-                    }}
-                  />
+                  {type}
+                  <button
+                    type="button"
+                    className="ml-1 inline-flex flex-shrink-0"
+                    onClick={() => dispatch(updateTokenFilters({ filterType: 'type', value: type }))}
+                  >
+                    <XMarkIcon className="h-4 w-4" />
+                  </button>
                 </span>
               ))}
               
               {tokenFilters.dateRange.start && (
-                <span 
-                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700"
-                >
-                  From: {formatDate(tokenFilters.dateRange.start)}
-                  <XMarkIcon 
-                    className="ml-1 h-3 w-3 cursor-pointer" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleFilterChange('dateStart', '');
-                    }}
-                  />
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  From: {tokenFilters.dateRange.start}
+                  <button
+                    type="button"
+                    className="ml-1 inline-flex flex-shrink-0"
+                    onClick={() => dispatch(updateTokenFilters({ filterType: 'dateStart', value: '' }))}
+                  >
+                    <XMarkIcon className="h-4 w-4" />
+                  </button>
                 </span>
               )}
               
               {tokenFilters.dateRange.end && (
-                <span 
-                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700"
-                >
-                  To: {formatDate(tokenFilters.dateRange.end)}
-                  <XMarkIcon 
-                    className="ml-1 h-3 w-3 cursor-pointer" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleFilterChange('dateEnd', '');
-                    }}
-                  />
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  Until: {tokenFilters.dateRange.end}
+                  <button
+                    type="button"
+                    className="ml-1 inline-flex flex-shrink-0"
+                    onClick={() => dispatch(updateTokenFilters({ filterType: 'dateEnd', value: '' }))}
+                  >
+                    <XMarkIcon className="h-4 w-4" />
+                  </button>
                 </span>
               )}
               
               {tokenFilters.merchant && (
-                <span 
-                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-700"
-                >
-                  Merchant: {tokenFilters.merchant}
-                  <XMarkIcon 
-                    className="ml-1 h-3 w-3 cursor-pointer" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleFilterChange('merchant', '');
-                    }}
-                  />
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  Store: {tokenFilters.merchant}
+                  <button
+                    type="button"
+                    className="ml-1 inline-flex flex-shrink-0"
+                    onClick={() => dispatch(updateTokenFilters({ filterType: 'merchant', value: '' }))}
+                  >
+                    <XMarkIcon className="h-4 w-4" />
+                  </button>
                 </span>
               )}
               
               {tokenFilters.searchQuery && (
-                <span 
-                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700"
-                >
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                   Search: {tokenFilters.searchQuery}
-                  <XMarkIcon 
-                    className="ml-1 h-3 w-3 cursor-pointer" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleFilterChange('searchQuery', '');
+                  <button
+                    type="button"
+                    className="ml-1 inline-flex flex-shrink-0"
+                    onClick={() => {
+                      dispatch(updateTokenFilters({ filterType: 'searchQuery', value: '' }));
+                      setTokenSearchInput('');
                     }}
-                  />
+                  >
+                    <XMarkIcon className="h-4 w-4" />
+                  </button>
                 </span>
               )}
             </div>
           )}
-        </div>
-        
-        {isFiltersExpanded && (
-          <div className="p-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {/* Status Filter - Enhanced UI */}
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                <div className="flex flex-wrap gap-2">
-                  {['Active', 'Expired', 'Used', 'Shared'].map((status) => (
-                    <label key={status} className="inline-flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={tokenFilters.status.includes(status)}
-                        onChange={() => handleFilterChange('status', status)}
-                        className="h-4 w-4 text-blue-600 border-gray-300 rounded mr-1"
-                      />
-                      <span className={`text-sm px-2 py-0.5 rounded-md ${
-                        tokenFilters.status.includes(status) 
-                          ? status === 'Active' ? 'bg-green-100 text-green-800' 
-                          : status === 'Expired' ? 'bg-red-100 text-red-800'
-                          : status === 'Used' ? 'bg-gray-100 text-gray-800'
-                          : 'bg-blue-100 text-blue-800'
-                          : 'text-gray-700'
-                      }`}>
-                        {status}
-                      </span>
-                    </label>
-                  ))}
-                </div>
+          
+          {isFiltersExpanded && (
+            <div className="mt-4 space-y-4">
+              {/* Quick filter buttons */}
+              <div className="flex flex-wrap gap-2">
+                <button
+                  className="px-3 py-1 text-xs bg-white border border-gray-300 shadow-sm rounded-md hover:bg-gray-50"
+                  onClick={() => handleApplyPresetFilter('activeTokens')}
+                >
+                  Active Tokens
+                </button>
+                <button
+                  className="px-3 py-1 text-xs bg-white border border-gray-300 shadow-sm rounded-md hover:bg-gray-50"
+                  onClick={() => handleApplyPresetFilter('expiringSoon')}
+                >
+                  Expiring Soon
+                </button>
+                <button
+                  className="px-3 py-1 text-xs bg-white border border-gray-300 shadow-sm rounded-md hover:bg-gray-50"
+                  onClick={() => handleApplyPresetFilter('recentlyUsed')}
+                >
+                  Recently Used
+                </button>
+                <button
+                  className="px-3 py-1 text-xs bg-white border border-gray-300 shadow-sm rounded-md hover:bg-gray-50"
+                  onClick={() => handleApplyPresetFilter('highValue')}
+                >
+                  High Value
+                </button>
               </div>
               
-              {/* Token Type Filter - Enhanced UI */}
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Token Type</label>
-                <div className="flex flex-wrap gap-2">
-                  {['Coupon', 'Reward', 'ExtraBucks', 'Lightning'].map((type) => (
-                    <label key={type} className="inline-flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={tokenFilters.types.includes(type)}
-                        onChange={() => handleFilterChange('type', type)}
-                        className="h-4 w-4 text-blue-600 border-gray-300 rounded mr-1"
-                      />
-                      <span className={`text-sm px-2 py-0.5 rounded-md ${
-                        tokenFilters.types.includes(type)
-                          ? type === 'Coupon' ? 'bg-purple-100 text-purple-800'
-                          : type === 'Reward' ? 'bg-blue-100 text-blue-800'
-                          : type === 'ExtraBucks' ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-orange-100 text-orange-800'
-                          : 'text-gray-700'
-                      }`}>
-                        {type}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Date Range Filter - Enhanced UI */}
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">From</label>
-                    <input
-                      type="date"
-                      value={tokenFilters.dateRange.start}
-                      onChange={(e) => handleFilterChange('dateStart', e.target.value)}
-                      className={`w-full p-2 border rounded-md text-sm ${
-                        tokenFilters.dateRange.start 
-                          ? 'border-green-300 bg-green-50' 
-                          : 'border-gray-300'
-                      }`}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">To</label>
-                    <input
-                      type="date"
-                      value={tokenFilters.dateRange.end}
-                      onChange={(e) => handleFilterChange('dateEnd', e.target.value)}
-                      className={`w-full p-2 border rounded-md text-sm ${
-                        tokenFilters.dateRange.end 
-                          ? 'border-green-300 bg-green-50' 
-                          : 'border-gray-300'
-                      }`}
-                    />
+              {/* Filter sections */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Status filter */}
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-2">Status</p>
+                  <div className="space-y-2">
+                    {['Active', 'Used', 'Expired', 'Shared'].map((status) => (
+                      <label key={status} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          checked={tokenFilters.status.includes(status)}
+                          onChange={() => dispatch(updateTokenFilters({ filterType: 'status', value: status }))}
+                        />
+                        <span className="ml-2 text-sm text-gray-700">{status}</span>
+                      </label>
+                    ))}
                   </div>
                 </div>
+                
+                {/* Type filter */}
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-2">Type</p>
+                  <div className="space-y-2">
+                    {['Coupon', 'Reward', 'ExtraBucks', 'Lightning'].map((type) => (
+                      <label key={type} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          checked={tokenFilters.types.includes(type)}
+                          onChange={() => dispatch(updateTokenFilters({ filterType: 'type', value: type }))}
+                        />
+                        <span className="ml-2 text-sm text-gray-700">{type}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Date range filter */}
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-2">Date Range</p>
+                  <div className="space-y-2">
+                    <div>
+                      <label className="block text-xs text-gray-500">From:</label>
+                      <input
+                        type="date"
+                        className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                        value={tokenFilters.dateRange.start}
+                        onChange={(e) => dispatch(updateTokenFilters({ filterType: 'dateStart', value: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500">To:</label>
+                      <input
+                        type="date"
+                        className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                        value={tokenFilters.dateRange.end}
+                        onChange={(e) => dispatch(updateTokenFilters({ filterType: 'dateEnd', value: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
               
-              {/* Search and Merchant Filter - Enhanced UI */}
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <div className="mb-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Merchant</label>
-                  <div className="relative">
+              {/* Merchant filter & search */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Merchant</label>
+                  <div className="mt-1">
                     <input
                       type="text"
+                      className="focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      placeholder="Filter by store"
                       value={tokenFilters.merchant}
-                      onChange={(e) => handleFilterChange('merchant', e.target.value)}
-                      placeholder="Filter by merchant name"
-                      className={`w-full p-2 pl-8 border rounded-md text-sm ${
-                        tokenFilters.merchant 
-                          ? 'border-orange-300 bg-orange-50' 
-                          : 'border-gray-300'
-                      }`}
+                      onChange={(e) => dispatch(updateTokenFilters({ filterType: 'merchant', value: e.target.value }))}
                     />
-                    <BuildingStorefrontIcon className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-                    {tokenFilters.merchant && (
-                      <XMarkIcon 
-                        className="absolute right-2 top-2.5 h-4 w-4 text-gray-400 cursor-pointer"
-                        onClick={() => handleFilterChange('merchant', '')} 
-                      />
-                    )}
                   </div>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Search Tokens</label>
-                  <div className="relative">
+                  <label className="block text-sm font-medium text-gray-700">Search</label>
+                  <div className="mt-1">
                     <input
                       type="text"
-                      value={tokenFilters.searchQuery}
-                      onChange={(e) => handleFilterChange('searchQuery', e.target.value)}
-                      placeholder="Search by name or description"
-                      className={`w-full p-2 pl-8 border rounded-md text-sm ${
-                        tokenFilters.searchQuery 
-                          ? 'border-yellow-300 bg-yellow-50' 
-                          : 'border-gray-300'
-                      }`}
+                      className="focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      placeholder="Search by name, description..."
+                      value={tokenSearchInput}
+                      onChange={(e) => {
+                        setTokenSearchInput(e.target.value);
+                        dispatch(updateTokenFilters({ filterType: 'searchQuery', value: e.target.value }));
+                      }}
                     />
-                    <MagnifyingGlassIcon className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-                    {tokenFilters.searchQuery && (
-                      <XMarkIcon 
-                        className="absolute right-2 top-2.5 h-4 w-4 text-gray-400 cursor-pointer"
-                        onClick={() => handleFilterChange('searchQuery', '')} 
-                      />
-                    )}
                   </div>
                 </div>
               </div>
             </div>
-            
-            <div className="mt-4 border-t pt-4">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">Common Filters</h4>
-              <div className="flex flex-wrap gap-2">
+          )}
+        </div>
+        
+        {/* Token Search Section */}
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium text-gray-700">Search Tokens</h3>
+          </div>
+          <div className="relative rounded-md shadow-sm">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+            </div>
+            <input
+              type="text"
+              className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 pr-12 sm:text-sm border-gray-300 rounded-md"
+              placeholder="Search tokens by name, description, value..."
+              value={tokenSearchInput}
+              onChange={(e) => {
+                setTokenSearchInput(e.target.value);
+                dispatch(updateTokenFilters({ filterType: 'searchQuery', value: e.target.value }));
+              }}
+              onFocus={() => setIsTokenSearchFocused(true)}
+              onBlur={() => setIsTokenSearchFocused(false)}
+            />
+            {tokenSearchInput && (
+              <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                 <button
-                  onClick={() => handleApplyPresetFilter('activeTokens')}
-                  className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-md text-sm hover:bg-blue-100 flex items-center"
+                  type="button"
+                  onClick={() => {
+                    setTokenSearchInput('');
+                    dispatch(updateTokenFilters({ filterType: 'searchQuery', value: '' }));
+                  }}
+                  className="text-gray-400 hover:text-gray-500"
                 >
-                  <span className="w-2 h-2 bg-green-500 rounded-full mr-1.5"></span>
-                  Active Tokens
-                </button>
-                <button
-                  onClick={() => handleApplyPresetFilter('expiringSoon')}
-                  className="px-3 py-1.5 bg-yellow-50 text-yellow-700 rounded-md text-sm hover:bg-yellow-100 flex items-center"
-                >
-                  <CalendarIcon className="h-3.5 w-3.5 mr-1.5" />
-                  Expiring Soon
-                </button>
-                <button
-                  onClick={() => handleApplyPresetFilter('recentlyUsed')}
-                  className="px-3 py-1.5 bg-gray-50 text-gray-700 rounded-md text-sm hover:bg-gray-100 flex items-center"
-                >
-                  <span className="w-2 h-2 bg-gray-500 rounded-full mr-1.5"></span>
-                  Recently Used
-                </button>
-                <button
-                  onClick={() => handleApplyPresetFilter('highValue')}
-                  className="px-3 py-1.5 bg-green-50 text-green-700 rounded-md text-sm hover:bg-green-100 flex items-center"
-                >
-                  <span className="text-xs mr-1.5 font-bold">$</span>
-                  High Value Rewards
+                  <XMarkIcon className="h-5 w-5" aria-hidden="true" />
                 </button>
               </div>
+            )}
+          </div>
+          {isTokenSearchFocused && tokenSearchInput && getFilteredTokens().length > 0 && (
+            <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md py-1 text-sm">
+              <p className="px-4 py-2 text-xs text-gray-500">
+                {getFilteredTokens().length} tokens found
+              </p>
             </div>
-            
-            <div className="mt-4 flex justify-end">
+          )}
+        </div>
+        
+        {/* Token List Section */}
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium text-gray-700">Token List</h3>
+            <div className="text-sm text-gray-500">
+              {filteredTokens.length} tokens found
+            </div>
+          </div>
+          
+          {filteredTokens.length === 0 ? (
+            <div className="text-center text-gray-500 py-8">
+              <TicketIcon className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+              <p className="text-lg font-medium">No tokens found</p>
+              <p>Adjust your filters or add new tokens to this customer.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th 
+                      scope="col" 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleSort('name')}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>Name</span>
+                        {tokenSort.field === 'name' && (
+                          tokenSort.direction === 'asc' ? 
+                          <ArrowUpIcon className="h-4 w-4" /> : 
+                          <ArrowDownIcon className="h-4 w-4" />
+                        )}
+                      </div>
+                    </th>
+                    <th 
+                      scope="col" 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleSort('type')}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>Type</span>
+                        {tokenSort.field === 'type' && (
+                          tokenSort.direction === 'asc' ? 
+                          <ArrowUpIcon className="h-4 w-4" /> : 
+                          <ArrowDownIcon className="h-4 w-4" />
+                        )}
+                      </div>
+                    </th>
+                    <th 
+                      scope="col" 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleSort('state')}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>Status</span>
+                        {tokenSort.field === 'state' && (
+                          tokenSort.direction === 'asc' ? 
+                          <ArrowUpIcon className="h-4 w-4" /> : 
+                          <ArrowDownIcon className="h-4 w-4" />
+                        )}
+                      </div>
+                    </th>
+                    <th 
+                      scope="col" 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleSort('value')}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>Value</span>
+                        {tokenSort.field === 'value' && (
+                          tokenSort.direction === 'asc' ? 
+                          <ArrowUpIcon className="h-4 w-4" /> : 
+                          <ArrowDownIcon className="h-4 w-4" />
+                        )}
+                      </div>
+                    </th>
+                    <th 
+                      scope="col" 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleSort('expirationDate')}
+                    >
+                      <div className="flex items-center space-x-1">
+                        <span>Expires</span>
+                        {tokenSort.field === 'expirationDate' && (
+                          tokenSort.direction === 'asc' ? 
+                          <ArrowUpIcon className="h-4 w-4" /> : 
+                          <ArrowDownIcon className="h-4 w-4" />
+                        )}
+                      </div>
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredTokens.map(token => (
+                    <tr 
+                      key={token.id} 
+                      className={`${selectedToken?.id === token.id ? 'bg-blue-50' : 'hover:bg-gray-50'} cursor-pointer`}
+                      onClick={() => dispatch(selectToken(token.id))}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-blue-100 rounded-full">
+                            <TicketIcon className="h-6 w-6 text-blue-600" />
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">
+                              {token.name}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {token.description.length > 50 ? `${token.description.substring(0, 50)}...` : token.description}
+                            </div>
+                            {token.disputed && (
+                              <div className="text-xs text-red-600 font-medium mt-1 flex items-center">
+                                <ExclamationCircleIcon className="h-4 w-4 mr-1" />
+                                Disputed {token.notHonored && '(Not Honored)'}
+                              </div>
+                            )}
+                            {token.supportActions?.isReissued && (
+                              <div className="text-xs text-blue-600 font-medium mt-1 flex items-center">
+                                <ArrowPathIcon className="h-4 w-4 mr-1" />
+                                Reissued
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTokenTypeBadgeColor(token.type)}`}>
+                          {token.type}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTokenStateBadgeColor(token.state)}`}>
+                          {token.state}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {token.value}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatDate(token.expirationDate)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex justify-end space-x-2">
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewInExtraCare(token.externalUrl);
+                            }}
+                            className="text-blue-600 hover:text-blue-900"
+                            title="View in ExtraCare"
+                          >
+                            <ExternalLinkIcon className="h-5 w-5" />
+                          </button>
+                          {token.state === 'Active' && (
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                reissueTokenHandler(token.id);
+                              }}
+                              className="text-green-600 hover:text-green-900"
+                              title="Reissue token"
+                            >
+                              <ArrowPathIcon className="h-5 w-5" />
+                            </button>
+                          )}
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              markTokenDisputedHandler(token.id);
+                            }}
+                            className="text-yellow-600 hover:text-yellow-900"
+                            title="Mark as disputed"
+                          >
+                            <ExclamationCircleIcon className="h-5 w-5" />
+                          </button>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeTokenFromCustomerHandler(token.id);
+                            }}
+                            className="text-red-600 hover:text-red-900"
+                            title="Remove token"
+                          >
+                            <TrashIcon className="h-5 w-5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Update token search to use the utility
+  const renderTokenSearch = () => {
+    return (
+      <div className="bg-white rounded-lg shadow-md p-6 mb-4">
+        <div className="border-b pb-4 mb-4">
+          <h2 className="text-lg font-medium text-gray-700">Search Tokens</h2>
+        </div>
+        <div className="relative rounded-md shadow-sm">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+          </div>
+          <input
+            type="text"
+            className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 pr-12 sm:text-sm border-gray-300 rounded-md"
+            placeholder="Search tokens by name, description, value..."
+            value={tokenSearchInput}
+            onChange={(e) => {
+              setTokenSearchInput(e.target.value);
+              dispatch(updateTokenFilters({ filterType: 'searchQuery', value: e.target.value }));
+            }}
+            onFocus={() => setIsTokenSearchFocused(true)}
+            onBlur={() => setIsTokenSearchFocused(false)}
+          />
+          {tokenSearchInput && (
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
               <button
-                onClick={() => setIsFiltersExpanded(false)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+                type="button"
+                onClick={() => {
+                  setTokenSearchInput('');
+                  dispatch(updateTokenFilters({ filterType: 'searchQuery', value: '' }));
+                }}
+                className="text-gray-400 hover:text-gray-500"
               >
-                Apply Filters
+                <XMarkIcon className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
+          )}
+        </div>
+        {isTokenSearchFocused && tokenSearchInput && getFilteredTokens().length > 0 && (
+          <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md py-1 text-sm">
+            <p className="px-4 py-2 text-xs text-gray-500">
+              {getFilteredTokens().length} tokens found
+            </p>
           </div>
         )}
       </div>
     );
   };
 
-  // Update renderTokenDetail to show support action history and dispute info
+  // Replace the renderTokens section with a call to renderTokenList
+  const renderTokens = () => {
+    return (
+      <div className="space-y-4">
+        {renderTokenManagement()}
+      </div>
+    );
+  };
+
+  // Render token detail modal
   const renderTokenDetail = () => {
     if (!selectedToken) return null;
     
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-medium text-gray-900">Token Details</h3>
-              <button 
-                onClick={() => dispatch(selectToken(null))}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <XMarkIcon className="h-6 w-6" />
-              </button>
-            </div>
+      <div className={`fixed inset-0 overflow-y-auto ${selectedToken ? 'block' : 'hidden'}`}>
+        <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+          <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
           </div>
           
-          <div className="p-6">
-            <div className="mb-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h4 className="text-xl font-semibold text-gray-900">{selectedToken.name}</h4>
-                  <p className="text-sm text-gray-500 mt-1">{selectedToken.description}</p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getTokenStateBadgeColor(selectedToken.state)}`}>
-                    {selectedToken.state}
-                  </span>
-                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getTokenTypeBadgeColor(selectedToken.type)}`}>
-                    {selectedToken.type}
-                  </span>
-                  {selectedToken.disputed && (
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                      Disputed
-                    </span>
-                  )}
-                  {selectedToken.notHonored && (
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                      Not Honored
-                    </span>
-                  )}
-                </div>
-              </div>
-              
-              <div className="mt-4 text-lg font-bold text-green-600">
-                {selectedToken.value}
-              </div>
-            </div>
-            
-            <div className="border rounded-lg bg-gray-50 p-4 mb-6">
-              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                <div className="sm:col-span-2">
-                  <dt className="text-gray-500">Status</dt>
-                  <dd className="mt-1 text-gray-900 font-medium">{selectedToken.state}</dd>
-                </div>
-                <div>
-                  <dt className="text-gray-500">Claim Date</dt>
-                  <dd className="mt-1 text-gray-900">{formatDate(selectedToken.claimDate)}</dd>
-                </div>
-                <div>
-                  <dt className="text-gray-500">Expiration Date</dt>
-                  <dd className="mt-1 text-gray-900">{formatDate(selectedToken.expirationDate)}</dd>
-                </div>
-                {selectedToken.useDate && (
-                  <div>
-                    <dt className="text-gray-500">Used Date</dt>
-                    <dd className="mt-1 text-gray-900">{formatDate(selectedToken.useDate)}</dd>
-                  </div>
-                )}
-                {selectedToken.shareDate && (
-                  <div>
-                    <dt className="text-gray-500">Shared Date</dt>
-                    <dd className="mt-1 text-gray-900">{formatDate(selectedToken.shareDate)}</dd>
-                  </div>
-                )}
-                {selectedToken.merchantName && (
-                  <div>
-                    <dt className="text-gray-500">Merchant</dt>
-                    <dd className="mt-1 text-gray-900">{selectedToken.merchantName}</dd>
-                  </div>
-                )}
-                {selectedToken.merchantLocation && (
-                  <div>
-                    <dt className="text-gray-500">Location</dt>
-                    <dd className="mt-1 text-gray-900">{selectedToken.merchantLocation}</dd>
-                  </div>
-                )}
-              </dl>
-            </div>
-            
-            {/* Support actions history */}
-            {selectedToken.supportActions && (
-              <div className="border rounded-lg bg-blue-50 p-4 mb-6">
-                <h4 className="text-sm font-medium text-blue-800 mb-2">Support Actions</h4>
-                <dl className="grid grid-cols-1 gap-y-2 text-sm">
-                  {selectedToken.supportActions.isReissued && (
-                    <>
-                      <div>
-                        <dt className="text-blue-700">Reissued Date</dt>
-                        <dd className="mt-1 text-blue-900">{formatDate(selectedToken.supportActions.reissuedDate || '')}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-blue-700">Reissued By</dt>
-                        <dd className="mt-1 text-blue-900">{selectedToken.supportActions.reissuedBy}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-blue-700">Reason</dt>
-                        <dd className="mt-1 text-blue-900">{selectedToken.supportActions.reissuedReason}</dd>
-                      </div>
-                      {selectedToken.supportActions.comments && (
-                        <div>
-                          <dt className="text-blue-700">Comments</dt>
-                          <dd className="mt-1 text-blue-900">{selectedToken.supportActions.comments}</dd>
-                        </div>
-                      )}
-                      {selectedToken.supportActions.originalTokenId && (
-                        <div>
-                          <dt className="text-blue-700">Original Token ID</dt>
-                          <dd className="mt-1 text-blue-900">{selectedToken.supportActions.originalTokenId}</dd>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </dl>
-              </div>
-            )}
-            
-            {/* Dispute information */}
-            {selectedToken.disputed && (
-              <div className="border rounded-lg bg-orange-50 p-4 mb-6">
-                <h4 className="text-sm font-medium text-orange-800 mb-2">Dispute Information</h4>
-                <dl className="grid grid-cols-1 gap-y-2 text-sm">
-                  <div>
-                    <dt className="text-orange-700">Dispute Date</dt>
-                    <dd className="mt-1 text-orange-900">{formatDate(selectedToken.disputeDate || '')}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-orange-700">Reason</dt>
-                    <dd className="mt-1 text-orange-900">{selectedToken.disputeReason}</dd>
-                  </div>
-                  {selectedToken.notHonored && (
-                    <div>
-                      <dt className="text-orange-700">Store Status</dt>
-                      <dd className="mt-1 text-orange-900">Token not honored by store</dd>
-                    </div>
-                  )}
-                </dl>
-              </div>
-            )}
-            
-            <div className="flex flex-col sm:flex-row gap-3 mt-6">
-              {selectedToken.state === 'Active' && (
-                <>
-                  <button
-                    onClick={() => removeTokenFromCustomerHandler(selectedToken.id)}
-                    className="flex-1 px-4 py-2 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-md flex items-center justify-center"
-                  >
-                    <TrashIcon className="h-4 w-4 mr-1.5" />
-                    Remove Token
-                  </button>
+          <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+          
+          <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+              <div className="sm:flex sm:items-start">
+                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                    Token Details
+                  </h3>
                   
-                  <button
-                    onClick={() => markTokenDisputedHandler(selectedToken.id)}
-                    className="flex-1 px-4 py-2 text-sm font-medium text-orange-700 bg-orange-50 hover:bg-orange-100 rounded-md flex items-center justify-center"
-                  >
-                    <ExclamationCircleIcon className="h-4 w-4 mr-1.5" />
-                    Mark Disputed
-                  </button>
-                </>
-              )}
-              
-              {(selectedToken.state === 'Expired' || selectedToken.state === 'Used' || selectedToken.notHonored) && (
-                <button
-                  onClick={() => reissueTokenHandler(selectedToken.id)}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-md flex items-center justify-center"
-                >
-                  <ArrowPathIcon className="h-4 w-4 mr-1.5" />
-                  Reissue Token
-                </button>
-              )}
-              
+                  <div className="mt-2 space-y-3">
+                    <div>
+                      <p className="text-sm text-gray-500">Name</p>
+                      <p className="font-medium">{selectedToken.name}</p>
+                    </div>
+                    
+                    <div>
+                      <p className="text-sm text-gray-500">Description</p>
+                      <p>{selectedToken.description}</p>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-500">Type</p>
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTokenTypeBadgeColor(selectedToken.type)}`}>
+                          {selectedToken.type}
+                        </span>
+                      </div>
+                      
+                      <div>
+                        <p className="text-sm text-gray-500">Status</p>
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTokenStateBadgeColor(selectedToken.state)}`}>
+                          {selectedToken.state}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-500">Value</p>
+                        <p className="font-medium">{selectedToken.value}</p>
+                      </div>
+                      
+                      <div>
+                        <p className="text-sm text-gray-500">Merchant</p>
+                        <p>{selectedToken.merchantName || 'N/A'}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-500">Claim Date</p>
+                        <p>{formatDate(selectedToken.claimDate)}</p>
+                      </div>
+                      
+                      <div>
+                        <p className="text-sm text-gray-500">Expiration Date</p>
+                        <p>{formatDate(selectedToken.expirationDate)}</p>
+                      </div>
+                    </div>
+                    
+                    {selectedToken.useDate && (
+                      <div>
+                        <p className="text-sm text-gray-500">Used Date</p>
+                        <p>{formatDate(selectedToken.useDate)}</p>
+                      </div>
+                    )}
+                    
+                    {selectedToken.shareDate && (
+                      <div>
+                        <p className="text-sm text-gray-500">Shared Date</p>
+                        <p>{formatDate(selectedToken.shareDate)}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+              <button
+                type="button"
+                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                onClick={() => dispatch(selectToken(null))}
+              >
+                Close
+              </button>
               {selectedToken.externalUrl && (
                 <button
+                  type="button"
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
                   onClick={() => handleViewInExtraCare(selectedToken.externalUrl)}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md flex items-center justify-center"
                 >
-                  <ExternalLinkIcon className="h-4 w-4 mr-1.5" />
                   View in ExtraCare
                 </button>
               )}
@@ -1373,52 +1644,81 @@ export default function CVSTokenManagement() {
     );
   };
 
-  // Render Token Catalog Modal
+  // Render token catalog modal for adding tokens to customers
   const renderTokenCatalogModal = () => {
     if (!showTokenCatalog) return null;
     
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-medium text-gray-900">Add Token to Customer</h3>
-              <button 
-                onClick={() => dispatch(toggleTokenCatalog())}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <XMarkIcon className="h-6 w-6" />
-              </button>
-            </div>
+      <div className="fixed inset-0 overflow-y-auto">
+        <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+          <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
           </div>
           
-          <div className="p-6">
-            <p className="text-sm text-gray-500 mb-6">
-              Select a token to add to {selectedCustomer?.firstName} {selectedCustomer?.lastName}'s account.
-            </p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {tokenCatalog.map((token) => (
-                <div 
-                  key={token.id}
-                  className="border rounded-lg p-4 hover:border-blue-500 hover:bg-blue-50 cursor-pointer transition"
-                  onClick={() => addTokenToCustomerHandler(token.id)}
-                >
-                  <div className="flex justify-between mb-2">
-                    <h4 className="text-sm font-semibold text-gray-900">{token.name}</h4>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTokenTypeBadgeColor(token.type)}`}>
-                      {token.type}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-500 mb-2">{token.description}</p>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-bold text-green-600">{token.value}</span>
-                    <span className="text-xs text-gray-500">Expires in {
-                      Math.ceil((new Date(token.expirationDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
-                    } days</span>
+          <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+          
+          <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+              <div className="sm:flex sm:items-start">
+                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center justify-between">
+                    <span>Add Token to Customer</span>
+                    <button 
+                      onClick={() => dispatch(toggleTokenCatalog())}
+                      className="text-gray-400 hover:text-gray-500"
+                    >
+                      <XMarkIcon className="h-5 w-5" />
+                    </button>
+                  </h3>
+                  
+                  <div className="mt-4">
+                    <p className="text-sm text-gray-500 mb-4">
+                      Select a token to add to {selectedCustomer ? `${selectedCustomer.firstName} ${selectedCustomer.lastName}` : 'customer'}
+                    </p>
+                    
+                    <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+                      {tokenCatalog.map(token => (
+                        <div 
+                          key={token.id} 
+                          className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                          onClick={() => {
+                            addTokenToCustomerHandler(token.id);
+                            dispatch(toggleTokenCatalog());
+                          }}
+                        >
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-medium text-gray-900">{token.name}</h4>
+                              <p className="text-sm text-gray-600 mt-1">{token.description}</p>
+                              <div className="flex items-center mt-2 space-x-2">
+                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTokenTypeBadgeColor(token.type)}`}>
+                                  {token.type}
+                                </span>
+                                <span className="text-sm text-gray-700">Value: {token.value}</span>
+                              </div>
+                            </div>
+                            <span className="text-blue-600 flex items-center">
+                              <PlusCircleIcon className="h-5 w-5" />
+                            </span>
+                          </div>
+                          <div className="mt-2 text-xs text-gray-500">
+                            Expires: {formatDate(token.expirationDate)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              ))}
+              </div>
+            </div>
+            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+              <button
+                type="button"
+                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                onClick={() => dispatch(toggleTokenCatalog())}
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>
@@ -1426,121 +1726,157 @@ export default function CVSTokenManagement() {
     );
   };
 
-  // Add a confirmation modal
+  // Render confirmation modal for actions like reissue, remove, etc.
   const renderConfirmModal = () => {
     if (!showConfirmModal) return null;
     
     const getModalTitle = () => {
       switch (confirmAction) {
-        case 'reissue': return 'Confirm Token Reissue';
-        case 'remove': return 'Confirm Token Removal';
-        case 'dispute': return 'Mark Token as Disputed';
-        default: return 'Confirm Action';
+        case 'reissue':
+          return 'Reissue Token';
+        case 'remove':
+          return 'Remove Token';
+        case 'dispute':
+          return 'Mark Token as Disputed';
+        default:
+          return 'Confirm Action';
       }
     };
     
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-medium text-gray-900">{getModalTitle()}</h3>
-              <button 
-                onClick={() => setShowConfirmModal(false)}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <XMarkIcon className="h-6 w-6" />
-              </button>
-            </div>
+      <div className="fixed inset-0 overflow-y-auto">
+        <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+          <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
           </div>
           
-          <div className="p-6">
-            {confirmAction === 'remove' ? (
-              <p className="text-sm text-gray-500 mb-6">
-                Are you sure you want to remove this token? This action cannot be undone.
-              </p>
-            ) : (
-              <>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {confirmAction === 'reissue' ? 'Reissue Reason' : 'Dispute Reason'}
-                  </label>
-                  <select
-                    value={confirmReason}
-                    onChange={(e) => setConfirmReason(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    required
-                  >
-                    <option value="">Select a reason</option>
-                    {confirmAction === 'reissue' ? (
+          <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+          
+          <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+              <div className="sm:flex sm:items-start">
+                <div className={`mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full ${
+                  confirmAction === 'remove' ? 'bg-red-100' : 
+                  confirmAction === 'reissue' ? 'bg-green-100' : 
+                  'bg-yellow-100'
+                } sm:mx-0 sm:h-10 sm:w-10`}>
+                  {confirmAction === 'remove' && <TrashIcon className="h-6 w-6 text-red-600" />}
+                  {confirmAction === 'reissue' && <ArrowPathIcon className="h-6 w-6 text-green-600" />}
+                  {confirmAction === 'dispute' && <ExclamationCircleIcon className="h-6 w-6 text-yellow-600" />}
+                </div>
+                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900">
+                    {getModalTitle()}
+                  </h3>
+                  
+                  <div className="mt-4 space-y-4">
+                    {confirmAction === 'remove' && (
+                      <p className="text-sm text-gray-500">
+                        Are you sure you want to remove this token? This action cannot be undone.
+                      </p>
+                    )}
+                    
+                    {(confirmAction === 'reissue' || confirmAction === 'dispute') && (
                       <>
-                        <option value="Store didn't honor">Store didn't honor</option>
-                        <option value="Token expired prematurely">Token expired prematurely</option>
-                        <option value="Technical issue">Technical issue</option>
-                        <option value="Customer satisfaction">Customer satisfaction</option>
-                        <option value="Other">Other</option>
-                      </>
-                    ) : (
-                      <>
-                        <option value="Store didn't honor">Store didn't honor</option>
-                        <option value="Token not working">Token not working</option>
-                        <option value="Customer complaint">Customer complaint</option>
-                        <option value="Other">Other</option>
+                        <div>
+                          <label htmlFor="reason" className="block text-sm font-medium text-gray-700">
+                            Reason
+                          </label>
+                          <select
+                            id="reason"
+                            name="reason"
+                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            value={confirmReason}
+                            onChange={(e) => setConfirmReason(e.target.value)}
+                          >
+                            <option value="">Select a reason...</option>
+                            {confirmAction === 'reissue' ? (
+                              <>
+                                <option value="technical_error">Technical Error</option>
+                                <option value="expired_prematurely">Expired Prematurely</option>
+                                <option value="merchant_reported">Merchant Reported Issue</option>
+                                <option value="customer_assistance">Customer Assistance</option>
+                              </>
+                            ) : (
+                              <>
+                                <option value="not_honored">Not Honored by Merchant</option>
+                                <option value="error_on_receipt">Error on Receipt</option>
+                                <option value="display_issue">Display Issue in App</option>
+                                <option value="other">Other</option>
+                              </>
+                            )}
+                          </select>
+                        </div>
+
+                        {confirmAction === 'dispute' && (
+                          <div className="flex items-center">
+                            <input
+                              id="not-honored"
+                              name="not-honored"
+                              type="checkbox"
+                              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                              checked={notHonored}
+                              onChange={(e) => setNotHonored(e.target.checked)}
+                            />
+                            <label htmlFor="not-honored" className="ml-2 block text-sm text-gray-900">
+                              Token was not honored by merchant
+                            </label>
+                          </div>
+                        )}
+                        
+                        <div>
+                          <label htmlFor="comments" className="block text-sm font-medium text-gray-700">
+                            Additional Comments
+                          </label>
+                          <textarea
+                            id="comments"
+                            name="comments"
+                            rows={3}
+                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            placeholder="Enter any additional details..."
+                            value={confirmComments}
+                            onChange={(e) => setConfirmComments(e.target.value)}
+                          />
+                        </div>
                       </>
                     )}
-                  </select>
-                </div>
-                
-                {confirmAction === 'dispute' && (
-                  <div className="mb-4">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={notHonored}
-                        onChange={(e) => setNotHonored(e.target.checked)}
-                        className="h-4 w-4 text-blue-600 border-gray-300 rounded mr-2"
-                      />
-                      <span className="text-sm text-gray-700">Store didn't honor the token</span>
-                    </label>
                   </div>
-                )}
-                
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Agent Comments
-                  </label>
-                  <textarea
-                    value={confirmComments}
-                    onChange={(e) => setConfirmComments(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    rows={4}
-                    placeholder="Add any additional comments here..."
-                    required={confirmAction === 'reissue'}
-                  />
                 </div>
-              </>
-            )}
-            
-            <div className="flex justify-end space-x-3">
+              </div>
+            </div>
+            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
               <button
-                onClick={() => setShowConfirmModal(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                type="button"
+                className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 ${
+                  confirmAction === 'remove' ? 'bg-red-600 hover:bg-red-700' : 
+                  confirmAction === 'reissue' ? 'bg-green-600 hover:bg-green-700' : 
+                  'bg-yellow-600 hover:bg-yellow-700'
+                } text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                  confirmAction === 'remove' ? 'focus:ring-red-500' : 
+                  confirmAction === 'reissue' ? 'focus:ring-green-500' : 
+                  'focus:ring-yellow-500'
+                } sm:ml-3 sm:w-auto sm:text-sm`}
+                onClick={handleConfirmAction}
+                disabled={(confirmAction === 'reissue' || confirmAction === 'dispute') && !confirmReason}
+              >
+                {confirmAction === 'remove' ? 'Remove' : 
+                 confirmAction === 'reissue' ? 'Reissue' : 
+                 'Mark as Disputed'}
+              </button>
+              <button
+                type="button"
+                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                onClick={() => {
+                  setShowConfirmModal(false);
+                  setConfirmAction(null);
+                  setConfirmTokenId(null);
+                  setConfirmReason('');
+                  setConfirmComments('');
+                  setNotHonored(false);
+                }}
               >
                 Cancel
               </button>
-              <button
-                onClick={handleConfirmAction}
-                disabled={confirmAction !== 'remove' && !confirmReason}
-                className={`px-4 py-2 text-sm font-medium text-white rounded-md ${
-                  confirmAction === 'remove' 
-                    ? 'bg-red-600 hover:bg-red-700'
-                    : !confirmReason
-                    ? 'bg-blue-400 cursor-not-allowed' 
-                    : 'bg-blue-600 hover:bg-blue-700'
-                }`}
-              >
-                {confirmAction === 'remove' ? 'Remove' : confirmAction === 'reissue' ? 'Reissue' : 'Submit'}
-              </button>
             </div>
           </div>
         </div>
@@ -1548,130 +1884,11 @@ export default function CVSTokenManagement() {
     );
   };
 
-  // Get the paginated customers for the current page
-  const getPaginatedCustomers = () => {
-    if (!customers.length) return [];
-    
-    const startIndex = (pagination.currentPage - 1) * pagination.itemsPerPage;
-    const endIndex = Math.min(startIndex + pagination.itemsPerPage, customers.length);
-    
-    return customers.slice(startIndex, endIndex);
-  };
-  
-  // Helper function to generate page numbers for pagination
-  const getPageNumbers = () => {
-    const totalPages = pagination.totalPages;
-    const currentPage = pagination.currentPage;
-    const pageNumbers = [];
-    
-    // Always show first page
-    pageNumbers.push(1);
-    
-    // Show ellipsis if needed
-    if (currentPage > 3) {
-      pageNumbers.push('...');
-    }
-    
-    // Show current page and 1 page before and after (if they exist)
-    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
-      pageNumbers.push(i);
-    }
-    
-    // Show ellipsis if needed
-    if (currentPage < totalPages - 2) {
-      pageNumbers.push('...');
-    }
-    
-    // Always show last page if there's more than 1 page
-    if (totalPages > 1) {
-      pageNumbers.push(totalPages);
-    }
-    
-    return pageNumbers;
-  };
-  
-  // Handle page change
-  const handlePageChange = (page: number) => {
-    dispatch(setCurrentPage(page));
-  };
-  
-  // Render Pagination controls
-  const renderPagination = () => {
-    if (pagination.totalPages <= 1) return null;
-    
-    const pageNumbers = getPageNumbers();
-    
-    return (
-      <div className="mt-6 flex items-center justify-between">
-        <div className="text-sm text-gray-500">
-          Showing {((pagination.currentPage - 1) * pagination.itemsPerPage) + 1} to {Math.min(pagination.currentPage * pagination.itemsPerPage, customers.length)} of {customers.length} customers
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => handlePageChange(pagination.currentPage - 1)}
-            disabled={pagination.currentPage === 1}
-            className={`p-2 rounded-md border ${
-              pagination.currentPage === 1 ? 'text-gray-300 border-gray-200 cursor-not-allowed' : 'text-gray-500 border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            <ChevronLeftIcon className="h-5 w-5" />
-          </button>
-          
-          {pageNumbers.map((number, index) => (
-            <button
-              key={index}
-              onClick={() => typeof number === 'number' && handlePageChange(number)}
-              disabled={typeof number !== 'number'}
-              className={`min-w-[40px] h-10 px-3.5 rounded-md ${
-                pagination.currentPage === number
-                ? 'bg-blue-600 text-white'
-                : typeof number === 'number'
-                  ? 'text-gray-700 border border-gray-300 hover:bg-gray-50'
-                  : 'text-gray-400 border-none'
-              }`}
-            >
-              {number}
-            </button>
-          ))}
-          
-          <button
-            onClick={() => handlePageChange(pagination.currentPage + 1)}
-            disabled={pagination.currentPage === pagination.totalPages}
-            className={`p-2 rounded-md border ${
-              pagination.currentPage === pagination.totalPages ? 'text-gray-300 border-gray-200 cursor-not-allowed' : 'text-gray-500 border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            <ChevronRightIcon className="h-5 w-5" />
-          </button>
-        </div>
-      </div>
-    );
-  };
-  
-  // Render per page selector
-  const renderPerPageSelector = () => {
-    return (
-      <div className="flex items-center space-x-2 text-sm text-gray-500">
-        <span>Show</span>
-        <select 
-          value={pagination.itemsPerPage}
-          onChange={(e) => dispatch(setItemsPerPage(Number(e.target.value)))}
-          className="border border-gray-300 rounded-md px-2 py-1 text-gray-700"
-        >
-          {[10, 20, 50].map(value => (
-            <option key={value} value={value}>{value}</option>
-          ))}
-        </select>
-        <span>per page</span>
-      </div>
-    );
-  };
-
+  // Make sure the main component returns the UI
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-6">
+      <main className="px-8 py-6">
         {/* Action Message */}
         {actionMessage && (
           <div className={`mb-4 p-3 rounded-lg ${
@@ -1890,9 +2107,9 @@ export default function CVSTokenManagement() {
             )}
           </div>
         ) : (
-          /* Detail View: Customer Details and Token Management - REDESIGNED */
+          /* Detail View: Customer Details and Token Management */
           selectedCustomer && (
-            <div className="p-6 pt-0">
+            <div>
               <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center">
                   <button
@@ -1926,91 +2143,7 @@ export default function CVSTokenManagement() {
                 
                 {/* Right Column: Token Management */}
                 <div className="lg:col-span-2">
-                  {/* Token Filters */}
-                  {renderTokenFilters()}
-                  
-                  {/* Token List */}
-                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                    <div className="border-b border-gray-200 p-4">
-                      <div className="flex justify-between items-center">
-                        <h2 className="text-lg font-semibold text-gray-900">
-                          Token Inventory
-                          {tokenFilters.status.length > 0 || tokenFilters.types.length > 0 || 
-                           tokenFilters.dateRange.start || tokenFilters.dateRange.end || 
-                           tokenFilters.merchant || tokenFilters.searchQuery ? (
-                            <span className="ml-2 text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-                              Filtered
-                            </span>
-                          ) : null}
-                        </h2>
-                        <span className="text-sm text-gray-500">
-                          Showing {filteredTokens.length} of {selectedCustomer.tokens.length} tokens
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div className="divide-y divide-gray-200 px-4">
-                      {filteredTokens.length === 0 ? (
-                        <div className="py-8 text-center">
-                          <ExclamationCircleIcon className="mx-auto h-12 w-12 text-gray-400" />
-                          <h3 className="mt-2 text-sm font-medium text-gray-900">No tokens found</h3>
-                          <p className="mt-1 text-sm text-gray-500">
-                            {selectedCustomer.tokens.length === 0 
-                              ? "This customer has no tokens in their account." 
-                              : "No tokens match the current filter criteria."}
-                          </p>
-                          {selectedCustomer.tokens.length > 0 && (
-                            <div className="mt-6">
-                              <button
-                                onClick={() => handleFilterChange('clearAll', null)}
-                                className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                              >
-                                Clear Filters
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        filteredTokens.map((token) => (
-                          <div key={token.id} className="py-4">
-                            <div className="flex justify-between items-start">
-                              <div className="flex-1 min-w-0">
-                                <h3 className="text-sm font-semibold text-gray-900 truncate">{token.name}</h3>
-                                <p className="mt-1 text-xs text-gray-500 truncate">{token.description}</p>
-                                <div className="mt-2 flex items-center text-xs text-gray-500">
-                                  <CalendarIcon className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
-                                  <span>Expires: {formatDate(token.expirationDate)}</span>
-                                  {token.merchantName && (
-                                    <>
-                                      <span className="mx-2">&middot;</span>
-                                      <BuildingStorefrontIcon className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
-                                      <span>{token.merchantName}</span>
-                                    </>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="ml-4 flex flex-col items-end space-y-2">
-                                <span className={`px-2 py-0.5 rounded-full text-xs ${getTokenStateBadgeColor(token.state)}`}>
-                                  {token.state}
-                                </span>
-                                <span className="inline-flex items-center text-sm">
-                                  <span className={`font-medium ${token.value.includes('$') ? 'text-green-600' : 'text-blue-600'}`}>
-                                    {token.value}
-                                  </span>
-                                </span>
-                                <button
-                                  onClick={() => dispatch(selectToken(token.id))}
-                                  className="text-xs text-blue-600 hover:text-blue-800"
-                                >
-                                  View details
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
+                  {renderTokenManagement()}
                 </div>
               </div>
             </div>
@@ -2020,7 +2153,7 @@ export default function CVSTokenManagement() {
 
       {/* Footer */}
       <footer className="bg-white shadow-inner border-t border-gray-200 py-4 mt-8">
-        <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
+        <div className="px-8 flex justify-between items-center">
           <div>
             <p className="text-xs text-gray-500">
               &copy; 2023 Kigo + CVS Pharmacy. All rights reserved.
