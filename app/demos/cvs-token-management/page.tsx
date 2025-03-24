@@ -417,45 +417,6 @@ export default function CVSTokenManagement() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Co-branded Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center">
-            {/* Kigo x CVS Co-branding */}
-            <div className="flex items-center">
-              <div className="w-8 h-8 mr-2 bg-[#2563EB] rounded-md flex items-center justify-center text-white font-bold">
-                K
-              </div>
-              <span className="text-lg font-semibold mr-2">Kigo</span>
-              <span className="text-gray-500 mx-2">×</span>
-              <Image 
-                src="/logos/cvs-logo.svg" 
-                alt="CVS Logo" 
-                width={60} 
-                height={24} 
-                className="h-6 w-auto"
-              />
-            </div>
-            <div className="ml-4 pl-4 border-l border-gray-300">
-              <span className="text-sm font-medium text-gray-600">ExtraCare Token Management</span>
-            </div>
-          </div>
-          
-          <div className="flex items-center">
-            {/* Support Agent Info */}
-            <div className="flex items-center">
-              <div className="mr-4 text-right">
-                <p className="text-sm font-medium">{userProfile.firstName} {userProfile.lastName}</p>
-                <p className="text-xs text-gray-500">{userProfile.role}</p>
-              </div>
-              <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
-                <UserCircleIcon className="w-6 h-6 text-gray-600" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-6">
         {/* Action Message */}
@@ -536,6 +497,190 @@ export default function CVSTokenManagement() {
           {searchQuery && customerResults.length === 0 && (
             <div className="mt-4 p-4 bg-gray-50 rounded-lg text-center">
               No customers found. Try a different search term.
+            </div>
+          )}
+          
+          {/* Default Customer Table - Show when no search is performed */}
+          {!searchQuery && (
+            <div className="mt-6">
+              <h3 className="text-sm font-semibold mb-3">Recent Customers</h3>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ExtraCare ID</th>
+                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tokens</th>
+                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account Status</th>
+                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {customers.map((customer) => (
+                      <tr 
+                        key={customer.id} 
+                        className="hover:bg-gray-50 cursor-pointer"
+                        onClick={() => selectCustomer(customer)}
+                      >
+                        <td className="px-4 py-4">
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 h-10 w-10 bg-[#2563EB] rounded-full flex items-center justify-center text-white">
+                              {customer.firstName.charAt(0)}{customer.lastName.charAt(0)}
+                            </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900">{customer.firstName} {customer.lastName}</div>
+                              <div className="text-sm text-gray-500">{customer.email}</div>
+                              <div className="text-sm text-gray-500">{customer.phone}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className="text-sm text-gray-900">{customer.extraCareId}</div>
+                          <div className="text-xs text-gray-500">Created: {formatDate(customer.accountCreated)}</div>
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className="flex flex-wrap gap-1">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              Active: {customer.tokens.filter(t => t.state === 'Active').length}
+                            </span>
+                            {customer.tokens.filter(t => t.state === 'Expired').length > 0 && (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                Expired: {customer.tokens.filter(t => t.state === 'Expired').length}
+                              </span>
+                            )}
+                            {customer.tokens.filter(t => t.state === 'Used').length > 0 && (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                Used: {customer.tokens.filter(t => t.state === 'Used').length}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-4">
+                          <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            customer.tokens.length > 0 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {customer.tokens.length > 0 ? 'Active' : 'No Tokens'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4 text-sm text-blue-600 hover:text-blue-800">
+                          <button className="font-medium">
+                            View Details
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {/* Additional sample customers for better UI fill */}
+                    <tr className="hover:bg-gray-50 cursor-pointer">
+                      <td className="px-4 py-4">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10 bg-purple-500 rounded-full flex items-center justify-center text-white">
+                            JD
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">John Doe</div>
+                            <div className="text-sm text-gray-500">john.doe@example.com</div>
+                            <div className="text-sm text-gray-500">(555) 432-1098</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="text-sm text-gray-900">5134982760</div>
+                        <div className="text-xs text-gray-500">Created: Jan 12, 2022</div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex flex-wrap gap-1">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            Active: 2
+                          </span>
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            Used: 4
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Active
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-sm text-blue-600 hover:text-blue-800">
+                        <button className="font-medium">
+                          View Details
+                        </button>
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-gray-50 cursor-pointer">
+                      <td className="px-4 py-4">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10 bg-pink-500 rounded-full flex items-center justify-center text-white">
+                            AS
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">Alice Smith</div>
+                            <div className="text-sm text-gray-500">alice.smith@example.com</div>
+                            <div className="text-sm text-gray-500">(555) 789-6543</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="text-sm text-gray-900">7892136540</div>
+                        <div className="text-xs text-gray-500">Created: Mar 23, 2023</div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex flex-wrap gap-1">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                            Lightning: 1
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Active
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-sm text-blue-600 hover:text-blue-800">
+                        <button className="font-medium">
+                          View Details
+                        </button>
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-gray-50 cursor-pointer">
+                      <td className="px-4 py-4">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10 bg-yellow-500 rounded-full flex items-center justify-center text-white">
+                            RJ
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">Robert Johnson</div>
+                            <div className="text-sm text-gray-500">robert.j@example.com</div>
+                            <div className="text-sm text-gray-500">(555) 321-7890</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="text-sm text-gray-900">3698521470</div>
+                        <div className="text-xs text-gray-500">Created: Nov 5, 2021</div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex flex-wrap gap-1">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            Expired: 3
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                          Inactive
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-sm text-blue-600 hover:text-blue-800">
+                        <button className="font-medium">
+                          View Details
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>
