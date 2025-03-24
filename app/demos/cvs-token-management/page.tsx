@@ -116,6 +116,159 @@ const mockCustomers: CustomerInfo[] = [
   }
 ];
 
+// Add these additional sample customers to the mockCustomers array at the top of the file, before the export default function
+const additionalSampleCustomers: CustomerInfo[] = [
+  {
+    id: 'cust004',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'john.doe@example.com',
+    phone: '(555) 432-1098',
+    extraCareId: '5134982760',
+    accountCreated: '2022-01-12',
+    tokens: [
+      {
+        id: 'tok004',
+        name: '$7 ExtraBucks Rewards',
+        description: '$7 ExtraBucks Rewards for beauty purchases',
+        type: 'ExtraBucks',
+        state: 'Active',
+        claimDate: '2023-05-20',
+        expirationDate: '2023-06-20',
+        merchantName: 'CVS Pharmacy',
+        merchantLocation: 'Eastside Plaza',
+        value: '$7.00'
+      },
+      {
+        id: 'tok005',
+        name: '25% Off Cosmetics',
+        description: '25% off cosmetics purchase',
+        type: 'Coupon',
+        state: 'Active',
+        claimDate: '2023-05-01',
+        expirationDate: '2023-06-01',
+        merchantName: 'CVS Pharmacy',
+        merchantLocation: 'Eastside Plaza',
+        value: '25%'
+      },
+      {
+        id: 'tok006',
+        name: 'BOGO Vitamins',
+        description: 'Buy one get one free on select vitamins',
+        type: 'Coupon',
+        state: 'Used',
+        claimDate: '2023-04-01',
+        useDate: '2023-04-15',
+        expirationDate: '2023-05-01',
+        merchantName: 'CVS Pharmacy',
+        value: 'BOGO'
+      },
+      {
+        id: 'tok007',
+        name: 'Free Photo Print',
+        description: 'One free 4x6 photo print',
+        type: 'Coupon',
+        state: 'Used',
+        claimDate: '2023-03-20',
+        useDate: '2023-04-10',
+        expirationDate: '2023-04-20',
+        merchantName: 'CVS Pharmacy',
+        value: 'FREE'
+      },
+      {
+        id: 'tok008',
+        name: 'First Aid Kit Discount',
+        description: '20% off first aid supplies',
+        type: 'Coupon',
+        state: 'Used',
+        claimDate: '2023-02-15',
+        useDate: '2023-03-01',
+        expirationDate: '2023-03-15',
+        merchantName: 'CVS Pharmacy',
+        value: '20%'
+      },
+      {
+        id: 'tok009',
+        name: '$3 Seasonal Items',
+        description: '$3 off seasonal merchandise',
+        type: 'Coupon',
+        state: 'Used',
+        claimDate: '2023-01-25',
+        useDate: '2023-02-10',
+        expirationDate: '2023-02-25',
+        merchantName: 'CVS Pharmacy',
+        value: '$3.00'
+      }
+    ]
+  },
+  {
+    id: 'cust005',
+    firstName: 'Alice',
+    lastName: 'Smith',
+    email: 'alice.smith@example.com',
+    phone: '(555) 789-6543',
+    extraCareId: '7892136540',
+    accountCreated: '2023-03-23',
+    tokens: [
+      {
+        id: 'tok010',
+        name: 'Flash Sale: $5 ExtraBucks',
+        description: 'Limited time $5 offer - Today only!',
+        type: 'Lightning',
+        state: 'Active',
+        claimDate: '2023-05-25',
+        expirationDate: '2023-05-26',
+        merchantName: 'CVS Pharmacy',
+        value: '$5.00'
+      }
+    ]
+  },
+  {
+    id: 'cust006',
+    firstName: 'Robert',
+    lastName: 'Johnson',
+    email: 'robert.j@example.com',
+    phone: '(555) 321-7890',
+    extraCareId: '3698521470',
+    accountCreated: '2021-11-05',
+    tokens: [
+      {
+        id: 'tok011',
+        name: '40% Off Sunscreen',
+        description: '40% off all sunscreen products',
+        type: 'Coupon',
+        state: 'Expired',
+        claimDate: '2023-03-01',
+        expirationDate: '2023-04-01',
+        merchantName: 'CVS Pharmacy',
+        value: '40%'
+      },
+      {
+        id: 'tok012',
+        name: '$10 Off $40 Purchase',
+        description: '$10 off when you spend $40 or more',
+        type: 'Coupon',
+        state: 'Expired',
+        claimDate: '2023-02-15',
+        expirationDate: '2023-03-15',
+        merchantName: 'CVS Pharmacy',
+        value: '$10.00'
+      },
+      {
+        id: 'tok013',
+        name: '30% Off Allergy Relief',
+        description: '30% off allergy medication',
+        type: 'Coupon',
+        state: 'Expired',
+        claimDate: '2023-01-01',
+        expirationDate: '2023-02-01',
+        merchantName: 'CVS Pharmacy',
+        value: '30%'
+      }
+    ]
+  }
+];
+
 // Mock token catalog for adding to customers
 const tokenCatalog: TokenInfo[] = [
   {
@@ -174,7 +327,8 @@ export default function CVSTokenManagement() {
   const [showTokenCatalog, setShowTokenCatalog] = useState(false);
   const [actionMessage, setActionMessage] = useState<{text: string, type: 'success' | 'error' | 'info'} | null>(null);
   const [caseNotes, setCaseNotes] = useState('');
-  const [customers, setCustomers] = useState(mockCustomers);
+  // Update customers array to include the sample customers
+  const [customers, setCustomers] = useState([...mockCustomers, ...additionalSampleCustomers]);
 
   // CVS ExtraCare branding colors
   const cvsRed = '#CC0000';
@@ -524,7 +678,12 @@ export default function CVSTokenManagement() {
                       >
                         <td className="px-4 py-4">
                           <div className="flex items-center">
-                            <div className="flex-shrink-0 h-10 w-10 bg-[#2563EB] rounded-full flex items-center justify-center text-white">
+                            <div className={`flex-shrink-0 h-10 w-10 ${
+                              customer.id === 'cust004' ? 'bg-purple-500' : 
+                              customer.id === 'cust005' ? 'bg-pink-500' : 
+                              customer.id === 'cust006' ? 'bg-yellow-500' : 
+                              'bg-[#2563EB]'
+                            } rounded-full flex items-center justify-center text-white`}>
                               {customer.firstName.charAt(0)}{customer.lastName.charAt(0)}
                             </div>
                             <div className="ml-4">
@@ -563,121 +722,18 @@ export default function CVSTokenManagement() {
                           </span>
                         </td>
                         <td className="px-4 py-4 text-sm text-blue-600 hover:text-blue-800">
-                          <button className="font-medium">
+                          <button 
+                            className="font-medium"
+                            onClick={(e) => {
+                              e.stopPropagation(); // Prevent row click from firing
+                              selectCustomer(customer);
+                            }}
+                          >
                             View Details
                           </button>
                         </td>
                       </tr>
                     ))}
-                    {/* Additional sample customers for better UI fill */}
-                    <tr className="hover:bg-gray-50 cursor-pointer">
-                      <td className="px-4 py-4">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10 bg-purple-500 rounded-full flex items-center justify-center text-white">
-                            JD
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">John Doe</div>
-                            <div className="text-sm text-gray-500">john.doe@example.com</div>
-                            <div className="text-sm text-gray-500">(555) 432-1098</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="text-sm text-gray-900">5134982760</div>
-                        <div className="text-xs text-gray-500">Created: Jan 12, 2022</div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex flex-wrap gap-1">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            Active: 2
-                          </span>
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                            Used: 4
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          Active
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 text-sm text-blue-600 hover:text-blue-800">
-                        <button className="font-medium">
-                          View Details
-                        </button>
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-gray-50 cursor-pointer">
-                      <td className="px-4 py-4">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10 bg-pink-500 rounded-full flex items-center justify-center text-white">
-                            AS
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">Alice Smith</div>
-                            <div className="text-sm text-gray-500">alice.smith@example.com</div>
-                            <div className="text-sm text-gray-500">(555) 789-6543</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="text-sm text-gray-900">7892136540</div>
-                        <div className="text-xs text-gray-500">Created: Mar 23, 2023</div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex flex-wrap gap-1">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                            Lightning: 1
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          Active
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 text-sm text-blue-600 hover:text-blue-800">
-                        <button className="font-medium">
-                          View Details
-                        </button>
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-gray-50 cursor-pointer">
-                      <td className="px-4 py-4">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10 bg-yellow-500 rounded-full flex items-center justify-center text-white">
-                            RJ
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">Robert Johnson</div>
-                            <div className="text-sm text-gray-500">robert.j@example.com</div>
-                            <div className="text-sm text-gray-500">(555) 321-7890</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="text-sm text-gray-900">3698521470</div>
-                        <div className="text-xs text-gray-500">Created: Nov 5, 2021</div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex flex-wrap gap-1">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                            Expired: 3
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                          Inactive
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 text-sm text-blue-600 hover:text-blue-800">
-                        <button className="font-medium">
-                          View Details
-                        </button>
-                      </td>
-                    </tr>
                   </tbody>
                 </table>
               </div>
