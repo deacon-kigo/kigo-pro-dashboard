@@ -40,11 +40,13 @@ import {
   updateTokenFilters,
   applyPresetFilter,
   setCurrentPage,
-  setItemsPerPage
+  setItemsPerPage,
+  initializeState
 } from '@/lib/redux/slices/cvsTokenSlice';
 
 // Types for the token management interface
-interface TokenInfo {
+// Keep these exported so they can be used in the Redux slice
+export interface TokenInfo {
   id: string;
   name: string;
   description: string;
@@ -60,7 +62,7 @@ interface TokenInfo {
   externalUrl?: string;
 }
 
-interface CustomerInfo {
+export interface CustomerInfo {
   id: string;
   firstName: string;
   lastName: string;
@@ -415,10 +417,56 @@ const HighlightedText = ({ text, searchTerm }: { text: string, searchTerm: strin
   );
 };
 
+// Format date for display - move outside component for SSR
+const formatDate = (dateString: string) => {
+  if (!dateString) return '';
+  try {
+    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString('en-US', options);
+  } catch (e) {
+    return dateString;
+  }
+};
+
+// Get badge color based on token state - move outside component for SSR
+const getTokenStateBadgeColor = (state: string) => {
+  switch (state) {
+    case 'Active':
+      return 'bg-green-100 text-green-800';
+    case 'Used':
+      return 'bg-gray-100 text-gray-800';
+    case 'Expired':
+      return 'bg-red-100 text-red-800';
+    case 'Shared':
+      return 'bg-blue-100 text-blue-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
+  }
+};
+
+// Get badge color based on token type - move outside component for SSR
+const getTokenTypeBadgeColor = (type: string) => {
+  switch (type) {
+    case 'ExtraBucks':
+      return 'bg-yellow-100 text-yellow-800';
+    case 'Coupon':
+      return 'bg-purple-100 text-purple-800';
+    case 'Reward':
+      return 'bg-blue-100 text-blue-800';
+    case 'Lightning':
+      return 'bg-orange-100 text-orange-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
+  }
+};
+
 export default function CVSTokenManagement() {
   const { userProfile, theme, themeMode } = useDemo();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  
+  // Add this state to prevent hydration errors
+  const [isClient, setIsClient] = useState(false);
   
   // Get state from Redux
   const {
@@ -439,12 +487,20 @@ export default function CVSTokenManagement() {
 
   // Local state for UI elements that don't need to be in Redux
   const [caseNotesInput, setCaseNotesInput] = useState(caseNotes);
+  // Move isExpanded state to component level to avoid Rules of Hooks violation
+  const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
   
   // CVS ExtraCare branding colors
   const cvsRed = '#CC0000';
   const cvsDarkBlue = '#0077C8';
   const cvsLightBlue = '#009FDA';
   const kigoBlue = '#2563EB';
+
+  // Initialize Redux state only once on the client-side
+  useEffect(() => {
+    dispatch(initializeState());
+    setIsClient(true);
+  }, [dispatch]);
 
   // Force light mode for this component
   useEffect(() => {
@@ -508,44 +564,6 @@ export default function CVSTokenManagement() {
     
     // Clear action message after 3 seconds
     setTimeout(() => dispatch(clearActionMessage()), 3000);
-  };
-
-  // Get badge color based on token state
-  const getTokenStateBadgeColor = (state: string) => {
-    switch (state) {
-      case 'Active':
-        return 'bg-green-100 text-green-800';
-      case 'Used':
-        return 'bg-gray-100 text-gray-800';
-      case 'Expired':
-        return 'bg-red-100 text-red-800';
-      case 'Shared':
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  // Get badge color based on token type
-  const getTokenTypeBadgeColor = (type: string) => {
-    switch (type) {
-      case 'ExtraBucks':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'Coupon':
-        return 'bg-purple-100 text-purple-800';
-      case 'Reward':
-        return 'bg-blue-100 text-blue-800';
-      case 'Lightning':
-        return 'bg-orange-100 text-orange-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  // Format date for display
-  const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString('en-US', options);
   };
 
   // Search on enter key
@@ -617,8 +635,10 @@ export default function CVSTokenManagement() {
     });
   };
   
-  // Get filtered tokens
-  const filteredTokens = getFilteredTokens();
+  // Get filtered tokens - memoize for better performance
+  const filteredTokens = React.useMemo(() => getFilteredTokens(), [
+    selectedCustomer, tokenFilters
+  ]);
   
   // Handle filter changes
   const handleFilterChange = (filterType: string, value: any) => {
@@ -769,14 +789,12 @@ export default function CVSTokenManagement() {
 
   // Render token filtering UI - more compact version
   const renderTokenFilters = () => {
-    const [isExpanded, setIsExpanded] = useState(false);
-    
     return (
       <div className="bg-white rounded-lg shadow-md mb-4">
         <div className="p-4 border-b border-gray-200">
           <div 
             className="flex justify-between items-center cursor-pointer"
-            onClick={() => setIsExpanded(!isExpanded)}
+            onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
           >
             <h3 className="text-lg font-semibold text-gray-900">Filter Tokens</h3>
             <div className="flex items-center">
@@ -790,13 +808,13 @@ export default function CVSTokenManagement() {
                 Clear All
               </button>
               <ChevronDownIcon 
-                className={`h-5 w-5 text-gray-500 transform transition-transform ${isExpanded ? 'rotate-180' : ''}`} 
+                className={`h-5 w-5 text-gray-500 transform transition-transform ${isFiltersExpanded ? 'rotate-180' : ''}`} 
               />
             </div>
           </div>
         </div>
         
-        {isExpanded && (
+        {isFiltersExpanded && (
           <div className="p-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {/* Status Filter */}
@@ -1339,88 +1357,98 @@ export default function CVSTokenManagement() {
                   <h3 className="text-sm font-semibold">Customers</h3>
                   {renderPerPageSelector()}
                 </div>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ExtraCare ID</th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tokens</th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account Status</th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {getPaginatedCustomers().map((customer) => (
-                        <tr 
-                          key={customer.id} 
-                          className="hover:bg-gray-50 cursor-pointer"
-                          onClick={() => selectCustomerHandler(customer.id)}
-                        >
-                          <td className="px-4 py-4">
-                            <div className="flex items-center">
-                              <div className={`flex-shrink-0 h-10 w-10 ${
-                                customer.id === 'cust004' ? 'bg-purple-500' : 
-                                customer.id === 'cust005' ? 'bg-pink-500' : 
-                                customer.id === 'cust006' ? 'bg-yellow-500' : 
-                                'bg-[#2563EB]'
-                              } rounded-full flex items-center justify-center text-white`}>
-                                {customer.firstName.charAt(0)}{customer.lastName.charAt(0)}
-                              </div>
-                              <div className="ml-4">
-                                <div className="text-sm font-medium text-gray-900">{customer.firstName} {customer.lastName}</div>
-                                <div className="text-sm text-gray-500">{customer.email}</div>
-                                <div className="text-sm text-gray-500">{customer.phone}</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-4 py-4">
-                            <div className="text-sm text-gray-900">{customer.extraCareId}</div>
-                            <div className="text-xs text-gray-500">Created: {formatDate(customer.accountCreated)}</div>
-                          </td>
-                          <td className="px-4 py-4">
-                            <div className="flex flex-wrap gap-1">
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                Active: {customer.tokens.filter(t => t.state === 'Active').length}
-                              </span>
-                              {customer.tokens.filter(t => t.state === 'Expired').length > 0 && (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                  Expired: {customer.tokens.filter(t => t.state === 'Expired').length}
-                                </span>
-                              )}
-                              {customer.tokens.filter(t => t.state === 'Used').length > 0 && (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                  Used: {customer.tokens.filter(t => t.state === 'Used').length}
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-4 py-4">
-                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              customer.tokens.length > 0 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {customer.tokens.length > 0 ? 'Active' : 'No Tokens'}
-                            </span>
-                          </td>
-                          <td className="px-4 py-4 text-sm text-blue-600 hover:text-blue-800">
-                            <button 
-                              className="font-medium"
-                              onClick={(e) => {
-                                e.stopPropagation(); // Prevent row click from firing
-                                selectCustomerHandler(customer.id);
-                              }}
-                            >
-                              View Details
-                            </button>
-                          </td>
+                {isClient ? (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ExtraCare ID</th>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tokens</th>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account Status</th>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {getPaginatedCustomers().map((customer) => (
+                          <tr 
+                            key={customer.id} 
+                            className="hover:bg-gray-50 cursor-pointer"
+                            onClick={() => selectCustomerHandler(customer.id)}
+                          >
+                            <td className="px-4 py-4">
+                              <div className="flex items-center">
+                                <div className={`flex-shrink-0 h-10 w-10 ${
+                                  customer.id === 'cust004' ? 'bg-purple-500' : 
+                                  customer.id === 'cust005' ? 'bg-pink-500' : 
+                                  customer.id === 'cust006' ? 'bg-yellow-500' : 
+                                  'bg-[#2563EB]'
+                                } rounded-full flex items-center justify-center text-white`}>
+                                  {customer.firstName.charAt(0)}{customer.lastName.charAt(0)}
+                                </div>
+                                <div className="ml-4">
+                                  <div className="text-sm font-medium text-gray-900">{customer.firstName} {customer.lastName}</div>
+                                  <div className="text-sm text-gray-500">{customer.email}</div>
+                                  <div className="text-sm text-gray-500">{customer.phone}</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="text-sm text-gray-900">{customer.extraCareId}</div>
+                              <div className="text-xs text-gray-500">Created: {formatDate(customer.accountCreated)}</div>
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="flex flex-wrap gap-1">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  Active: {customer.tokens.filter(t => t.state === 'Active').length}
+                                </span>
+                                {customer.tokens.filter(t => t.state === 'Expired').length > 0 && (
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    Expired: {customer.tokens.filter(t => t.state === 'Expired').length}
+                                  </span>
+                                )}
+                                {customer.tokens.filter(t => t.state === 'Used').length > 0 && (
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    Used: {customer.tokens.filter(t => t.state === 'Used').length}
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-4 py-4">
+                              <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                customer.tokens.length > 0 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {customer.tokens.length > 0 ? 'Active' : 'No Tokens'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-4 text-sm text-blue-600 hover:text-blue-800">
+                              <button 
+                                className="font-medium"
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent row click from firing
+                                  selectCustomerHandler(customer.id);
+                                }}
+                              >
+                                View Details
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  /* Show a loading/skeleton state until client is ready */
+                  <div className="animate-pulse">
+                    <div className="h-10 bg-gray-200 rounded mb-4"></div>
+                    <div className="h-16 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-16 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-16 bg-gray-200 rounded mb-2"></div>
+                  </div>
+                )}
                 
-                {/* Pagination */}
-                {renderPagination()}
+                {/* Pagination - only show when client-side */}
+                {isClient && renderPagination()}
               </div>
             )}
           </div>

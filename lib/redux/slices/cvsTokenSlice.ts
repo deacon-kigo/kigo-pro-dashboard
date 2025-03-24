@@ -535,6 +535,22 @@ export const cvsTokenSlice = createSlice({
   name: 'cvsToken',
   initialState,
   reducers: {
+    // Initialize state with mock data - helps with SSR & hydration
+    initializeState: (state) => {
+      // Only initialize if not already set
+      if (state.customers.length === 0) {
+        state.customers = generateMockCustomers(10);
+        
+        // Generate token catalog if empty
+        if (state.tokenCatalog.length === 0) {
+          state.tokenCatalog = generateRandomTokens(5);
+        }
+        
+        // Update pagination total pages
+        state.pagination.totalPages = Math.ceil(state.customers.length / state.pagination.itemsPerPage);
+      }
+    },
+    
     setSearchQuery: (state, action: PayloadAction<string>) => {
       state.searchQuery = action.payload;
       
@@ -780,6 +796,7 @@ export const cvsTokenSlice = createSlice({
 });
 
 export const {
+  initializeState,
   setSearchQuery,
   selectCustomer,
   setViewState,
