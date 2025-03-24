@@ -7,6 +7,19 @@
 
 import { UserProfile } from '@/types/demo';
 
+// Function to convert MockUser to UserProfile
+export function convertMockUserToUserProfile(mockUser: MockUser): UserProfile {
+  return {
+    name: `${mockUser.firstName} ${mockUser.lastName}`,
+    role: mockUser.role,
+    businessName: mockUser.company,
+    avatar: mockUser.avatar,
+    technicalProficiency: mockUser.techProficiency.toLowerCase() as 'low' | 'moderate' | 'high' | 'very high' | 'expert',
+    goals: mockUser.goals,
+    painPoints: mockUser.painPoints
+  };
+}
+
 // Mock user profiles based on docs/demo/mock-users.md
 export interface MockUser {
   id: string;
@@ -173,88 +186,21 @@ const mockUsers: Record<string, MockUser> = {
 /**
  * Get a specific user profile based on role and client
  */
-export function getUserForContext(role: string, clientId: string): UserProfile {
-  interface UserProfiles {
-    [role: string]: {
-      [client: string]: UserProfile;
-    };
-  }
-
-  const users: UserProfiles = {
-    merchant: {
-      'deacons-pizza': {
-        name: 'Marco Deacon',
-        role: 'Owner',
-        businessName: 'Deacon\'s Pizza',
-        avatar: '/images/avatars/marco-deacon.jpg',
-        technicalProficiency: 'moderate',
-        goals: ['Increase customer loyalty', 'Streamline operations', 'Expand to new locations'],
-        painPoints: ['Limited time for marketing', 'Competition from national chains', 'Staff turnover']
-      },
-      'cvs': {
-        name: 'Jennifer Williams',
-        role: 'Regional Marketing Director',
-        businessName: 'CVS Pharmacy',
-        avatar: '/images/avatars/jennifer-williams.jpg',
-        technicalProficiency: 'high',
-        goals: ['Improve customer retention', 'Coordinate multi-location campaigns', 'Increase prescriptions filled'],
-        painPoints: ['Complex approval processes', 'Inconsistent results across locations', 'Compliance requirements']
-      },
-      'default': {
-        name: 'Sam Merchant',
-        role: 'Owner',
-        businessName: 'Local Business',
-        avatar: '/images/avatars/default-merchant.jpg',
-        technicalProficiency: 'moderate',
-        goals: ['Grow customer base', 'Increase revenue', 'Improve efficiency'],
-        painPoints: ['Limited marketing budget', 'Competition', 'Time constraints']
-      }
-    },
-    support: {
-      'default': {
-        name: 'Alex Chen',
-        role: 'Customer Support Agent',
-        businessName: 'Kigo',
-        avatar: '/images/avatars/alex-chen.jpg',
-        technicalProficiency: 'high',
-        goals: ['Resolve issues quickly', 'Improve customer satisfaction', 'Reduce ticket volume'],
-        painPoints: ['Complex customer issues', 'Limited documentation', 'System limitations']
-      },
-      'tier2': {
-        name: 'Sarah Johnson',
-        role: 'Senior Support Specialist',
-        businessName: 'Kigo',
-        avatar: '/images/avatars/sarah-johnson.jpg',
-        technicalProficiency: 'very high',
-        goals: ['Solve complex technical issues', 'Support tier 1 agents', 'Improve system reliability'],
-        painPoints: ['Escalating bugs', 'Client-specific customizations', 'Time-sensitive requests']
-      }
-    },
-    admin: {
-      'default': {
-        name: 'David Garcia',
-        role: 'Platform Operations Manager',
-        businessName: 'Kigo',
-        avatar: '/images/avatars/david-garcia.jpg',
-        technicalProficiency: 'expert',
-        goals: ['Ensure system stability', 'Improve merchant onboarding', 'Reduce support tickets'],
-        painPoints: ['System scaling challenges', 'Security concerns', 'Performance optimization']
-      },
-      'analytics': {
-        name: 'Jane Foster',
-        role: 'Marketing Analytics Director',
-        businessName: 'Kigo',
-        avatar: '/images/avatars/jane-foster.jpg',
-        technicalProficiency: 'expert',
-        goals: ['Improve campaign performance', 'Identify growth opportunities', 'Optimize customer engagement'],
-        painPoints: ['Data inconsistencies', 'Complex reporting needs', 'Integration challenges']
-      }
-    }
-  };
-
-  // Get the specified user or default for that role
-  const roleUsers = users[role] || users.merchant;
-  return (roleUsers[clientId] || roleUsers.default);
+export function getUserForContext(role: string, clientId: string): MockUser {
+  // Combine role and clientId to look up in mockUsers
+  const key = `${role}-${clientId}`;
+  
+  // Log the lookup key and available keys to help debug
+  console.log('Looking up user profile with key:', key, 'Available keys:', Object.keys(mockUsers));
+  
+  // Try to get the specific user, fall back to default for that role
+  const user = mockUsers[key] || 
+               mockUsers[`${role}-generic`] || 
+               mockUsers['merchant-generic'];
+  
+  console.log('Resolved user profile:', user.firstName, user.lastName, 'for role:', role, 'client:', clientId);
+  
+  return user;
 }
 
 /**

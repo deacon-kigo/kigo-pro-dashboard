@@ -182,7 +182,13 @@ export default function CVSTokenManagement() {
   const cvsLightBlue = '#009FDA';
   const kigoBlue = '#2563EB';
 
-  const isDarkMode = themeMode === 'dark';
+  // Force light mode for this component
+  useEffect(() => {
+    // Set theme to light mode
+    if (themeMode !== 'light') {
+      router.replace('/demos/cvs-token-management?role=support&client=cvs&scenario=support-flow&theme=light');
+    }
+  }, [themeMode, router]);
 
   // Ensure we're using the correct demo context
   useEffect(() => {
@@ -359,15 +365,15 @@ export default function CVSTokenManagement() {
   const getTokenStateBadgeColor = (state: TokenInfo['state']) => {
     switch (state) {
       case 'Active':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+        return 'bg-green-100 text-green-800';
       case 'Used':
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+        return 'bg-gray-100 text-gray-800';
       case 'Expired':
-        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+        return 'bg-red-100 text-red-800';
       case 'Shared':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+        return 'bg-blue-100 text-blue-800';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -375,15 +381,15 @@ export default function CVSTokenManagement() {
   const getTokenTypeBadgeColor = (type: TokenInfo['type']) => {
     switch (type) {
       case 'ExtraBucks':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+        return 'bg-yellow-100 text-yellow-800';
       case 'Coupon':
-        return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
+        return 'bg-purple-100 text-purple-800';
       case 'Reward':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+        return 'bg-blue-100 text-blue-800';
       case 'Lightning':
-        return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400';
+        return 'bg-orange-100 text-orange-800';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -410,9 +416,9 @@ export default function CVSTokenManagement() {
   }, [searchQuery, searchField]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50">
       {/* Co-branded Header */}
-      <header className="bg-white dark:bg-gray-800 shadow">
+      <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center">
             {/* Kigo x CVS Co-branding */}
@@ -430,8 +436,8 @@ export default function CVSTokenManagement() {
                 className="h-6 w-auto"
               />
             </div>
-            <div className="ml-4 pl-4 border-l border-gray-300 dark:border-gray-600">
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">ExtraCare Token Management</span>
+            <div className="ml-4 pl-4 border-l border-gray-300">
+              <span className="text-sm font-medium text-gray-600">ExtraCare Token Management</span>
             </div>
           </div>
           
@@ -440,10 +446,10 @@ export default function CVSTokenManagement() {
             <div className="flex items-center">
               <div className="mr-4 text-right">
                 <p className="text-sm font-medium">{userProfile.firstName} {userProfile.lastName}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{userProfile.role}</p>
+                <p className="text-xs text-gray-500">{userProfile.role}</p>
               </div>
               <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
-                <UserCircleIcon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+                <UserCircleIcon className="w-6 h-6 text-gray-600" />
               </div>
             </div>
           </div>
@@ -455,16 +461,16 @@ export default function CVSTokenManagement() {
         {/* Action Message */}
         {actionMessage && (
           <div className={`mb-4 p-3 rounded-lg ${
-            actionMessage.type === 'success' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' :
-            actionMessage.type === 'error' ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' :
-            'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
+            actionMessage.type === 'success' ? 'bg-green-100 text-green-800' :
+            actionMessage.type === 'error' ? 'bg-red-100 text-red-800' :
+            'bg-blue-100 text-blue-800'
           }`}>
             {actionMessage.text}
           </div>
         )}
 
         {/* Customer Search */}
-        <div className="mb-8 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+        <div className="mb-8 bg-white p-6 rounded-lg shadow-sm">
           <h2 className="text-xl font-semibold mb-4">Customer Lookup</h2>
           <div className="flex items-center gap-4">
             <div className="relative flex-1">
@@ -474,7 +480,7 @@ export default function CVSTokenManagement() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Search for customer..."
-                className="w-full p-3 pl-10 pr-4 border border-gray-300 dark:border-gray-700 rounded-lg dark:bg-gray-700 dark:text-white"
+                className="w-full p-3 pl-10 pr-4 border border-gray-300 rounded-lg"
               />
               <MagnifyingGlassIcon className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
             </div>
@@ -483,7 +489,7 @@ export default function CVSTokenManagement() {
               <select
                 value={searchField}
                 onChange={(e) => setSearchField(e.target.value as any)}
-                className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg dark:bg-gray-700 dark:text-white"
+                className="w-full p-3 border border-gray-300 rounded-lg"
               >
                 <option value="email">Email</option>
                 <option value="name">Name</option>
@@ -504,20 +510,20 @@ export default function CVSTokenManagement() {
           {customerResults.length > 0 && (
             <div className="mt-4">
               <h3 className="text-sm font-semibold mb-2">Results ({customerResults.length})</h3>
-              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden">
+              <div className="bg-gray-50 rounded-lg overflow-hidden">
                 {customerResults.map((customer) => (
                   <div 
                     key={customer.id}
-                    className="border-b border-gray-200 dark:border-gray-600 last:border-0 p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="border-b border-gray-200 last:border-0 p-4 cursor-pointer hover:bg-gray-100"
                     onClick={() => selectCustomer(customer)}
                   >
                     <div className="flex justify-between items-center">
                       <div>
                         <p className="font-medium">{customer.firstName} {customer.lastName}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{customer.email} • {customer.phone}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">ExtraCare ID: {customer.extraCareId}</p>
+                        <p className="text-sm text-gray-500">{customer.email} • {customer.phone}</p>
+                        <p className="text-xs text-gray-500">ExtraCare ID: {customer.extraCareId}</p>
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                      <div className="text-xs text-gray-500">
                         Account Created: {formatDate(customer.accountCreated)}
                       </div>
                     </div>
@@ -528,7 +534,7 @@ export default function CVSTokenManagement() {
           )}
 
           {searchQuery && customerResults.length === 0 && (
-            <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
+            <div className="mt-4 p-4 bg-gray-50 rounded-lg text-center">
               No customers found. Try a different search term.
             </div>
           )}
@@ -538,45 +544,45 @@ export default function CVSTokenManagement() {
         {selectedCustomer && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Customer Info */}
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+            <div className="bg-white p-6 rounded-lg shadow-sm">
               <h2 className="text-xl font-semibold mb-4">Customer Information</h2>
               <div className="space-y-4">
                 <div className="flex justify-between">
                   <span className="font-medium">Name:</span>
-                  <span className="text-gray-700 dark:text-gray-300">{selectedCustomer.firstName} {selectedCustomer.lastName}</span>
+                  <span className="text-gray-700">{selectedCustomer.firstName} {selectedCustomer.lastName}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="font-medium">Email:</span>
-                  <span className="text-gray-700 dark:text-gray-300">{selectedCustomer.email}</span>
+                  <span className="text-gray-700">{selectedCustomer.email}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="font-medium">Phone:</span>
-                  <span className="text-gray-700 dark:text-gray-300">{selectedCustomer.phone}</span>
+                  <span className="text-gray-700">{selectedCustomer.phone}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="font-medium">ExtraCare ID:</span>
-                  <span className="text-gray-700 dark:text-gray-300">{selectedCustomer.extraCareId}</span>
+                  <span className="text-gray-700">{selectedCustomer.extraCareId}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="font-medium">Account Created:</span>
-                  <span className="text-gray-700 dark:text-gray-300">{formatDate(selectedCustomer.accountCreated)}</span>
+                  <span className="text-gray-700">{formatDate(selectedCustomer.accountCreated)}</span>
                 </div>
-                <hr className="border-gray-200 dark:border-gray-700" />
+                <hr className="border-gray-200" />
                 <div className="pt-2">
                   <span className="font-medium">Active Tokens:</span>
-                  <span className="ml-2 px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-xs font-medium">
+                  <span className="ml-2 px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 text-xs font-medium">
                     {selectedCustomer.tokens.filter(t => t.state === 'Active').length}
                   </span>
                 </div>
                 <div>
                   <span className="font-medium">Used Tokens:</span>
-                  <span className="ml-2 px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 text-xs font-medium">
+                  <span className="ml-2 px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-800 text-xs font-medium">
                     {selectedCustomer.tokens.filter(t => t.state === 'Used').length}
                   </span>
                 </div>
                 <div>
                   <span className="font-medium">Expired Tokens:</span>
-                  <span className="ml-2 px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-xs font-medium">
+                  <span className="ml-2 px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 text-xs font-medium">
                     {selectedCustomer.tokens.filter(t => t.state === 'Expired').length}
                   </span>
                 </div>
@@ -588,12 +594,12 @@ export default function CVSTokenManagement() {
                 <textarea
                   value={caseNotes}
                   onChange={(e) => setCaseNotes(e.target.value)}
-                  className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg dark:bg-gray-700 dark:text-white h-32"
+                  className="w-full p-2 border border-gray-300 rounded-lg h-32"
                   placeholder="Add notes about this case..."
                 ></textarea>
                 <button
                   onClick={handleSaveNotes}
-                  className="mt-2 px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg text-sm"
+                  className="mt-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg text-sm"
                 >
                   Save Notes
                 </button>
@@ -601,7 +607,7 @@ export default function CVSTokenManagement() {
             </div>
             
             {/* Token Management */}
-            <div className="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+            <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold">Token Management</h2>
                 <button
@@ -615,12 +621,12 @@ export default function CVSTokenManagement() {
               
               {/* Token Catalog Dialog */}
               {showTokenCatalog && (
-                <div className="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700">
+                <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
                   <div className="flex justify-between items-center mb-3">
                     <h3 className="font-medium">Token Catalog</h3>
                     <button
                       onClick={() => setShowTokenCatalog(false)}
-                      className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                      className="text-gray-500 hover:text-gray-700"
                     >
                       ×
                     </button>
@@ -630,7 +636,7 @@ export default function CVSTokenManagement() {
                     {tokenCatalog.map((token) => (
                       <div
                         key={token.id}
-                        className="border border-gray-200 dark:border-gray-600 rounded-lg p-3 bg-white dark:bg-gray-800 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
+                        className="border border-gray-200 rounded-lg p-3 bg-white cursor-pointer hover:bg-gray-50"
                         onClick={() => addTokenToCustomer(token)}
                       >
                         <div className="flex justify-between">
@@ -639,8 +645,8 @@ export default function CVSTokenManagement() {
                             {token.type}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{token.description}</p>
-                        <div className="flex justify-between mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        <p className="text-sm text-gray-600 mt-1">{token.description}</p>
+                        <div className="flex justify-between mt-2 text-xs text-gray-500">
                           <span>Value: {token.value}</span>
                           <span>Expires: {formatDate(token.expirationDate)}</span>
                         </div>
@@ -653,7 +659,7 @@ export default function CVSTokenManagement() {
               {/* Customer Tokens */}
               <div>
                 {selectedCustomer.tokens.length === 0 ? (
-                  <div className="text-center py-10 text-gray-500 dark:text-gray-400">
+                  <div className="text-center py-10 text-gray-500">
                     <p>This customer has no tokens in their account.</p>
                     <button
                       onClick={() => setShowTokenCatalog(true)}
@@ -664,7 +670,7 @@ export default function CVSTokenManagement() {
                     </button>
                   </div>
                 ) : (
-                  <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                  <div className="divide-y divide-gray-200">
                     {selectedCustomer.tokens.map((token) => (
                       <div key={token.id} className="py-4 first:pt-0 last:pb-0">
                         <div className="flex justify-between items-start">
@@ -678,14 +684,14 @@ export default function CVSTokenManagement() {
                                 {token.type}
                               </span>
                             </div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{token.description}</p>
+                            <p className="text-sm text-gray-600 mt-1">{token.description}</p>
                           </div>
-                          <div className="text-lg font-semibold text-[#CC0000] dark:text-red-400">
+                          <div className="text-lg font-semibold text-[#CC0000]">
                             {token.value}
                           </div>
                         </div>
                         
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3 text-xs text-gray-500 dark:text-gray-400">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3 text-xs text-gray-500">
                           <div>
                             <p className="font-medium">Claimed:</p>
                             <p>{formatDate(token.claimDate)}</p>
@@ -718,7 +724,7 @@ export default function CVSTokenManagement() {
                           {(token.state === 'Expired' || token.state === 'Used') && (
                             <button
                               onClick={() => reissueToken(token)}
-                              className="px-3 py-1.5 flex items-center gap-1 bg-blue-100 hover:bg-blue-200 text-blue-800 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 dark:text-blue-400 rounded text-xs"
+                              className="px-3 py-1.5 flex items-center gap-1 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded text-xs"
                             >
                               <ArrowPathIcon className="w-3.5 h-3.5" />
                               Reissue Token
@@ -726,7 +732,7 @@ export default function CVSTokenManagement() {
                           )}
                           <button
                             onClick={() => removeTokenFromCustomer(token.id)}
-                            className="px-3 py-1.5 flex items-center gap-1 bg-red-100 hover:bg-red-200 text-red-800 dark:bg-red-900/20 dark:hover:bg-red-900/30 dark:text-red-400 rounded text-xs"
+                            className="px-3 py-1.5 flex items-center gap-1 bg-red-100 hover:bg-red-200 text-red-800 rounded text-xs"
                           >
                             <TrashIcon className="w-3.5 h-3.5" />
                             Remove
@@ -743,15 +749,15 @@ export default function CVSTokenManagement() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white dark:bg-gray-800 shadow-inner border-t border-gray-200 dark:border-gray-700 py-4 mt-8">
+      <footer className="bg-white shadow-inner border-t border-gray-200 py-4 mt-8">
         <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
           <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-gray-500">
               &copy; 2023 Kigo + CVS Pharmacy. All rights reserved.
             </p>
           </div>
           <div className="flex items-center gap-4">
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-gray-500">
               Support Portal v1.2.3
             </p>
           </div>

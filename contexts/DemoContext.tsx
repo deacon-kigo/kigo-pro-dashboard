@@ -2,14 +2,23 @@
  * DemoContext.tsx
  * 
  * This context provides a way to manage the demo state across the application.
- * It allows for switching between different personas, clients, and scenarios.
+ * It allows for switching between different personas, clients, scenarios, and versions.
  */
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { getUserForContext } from '@/lib/userProfileUtils';
-import { UserProfile, DemoState, ThemeColors } from '@/types/demo';
+import { getUserForContext, MockUser, convertMockUserToUserProfile } from '@/lib/userProfileUtils';
+import { UserProfile, ThemeColors } from '@/types/demo';
+
+// Define DemoState with version included
+export interface DemoState {
+  role: string;
+  clientId: string;
+  scenario: string;
+  themeMode: 'light' | 'dark';
+  version: VersionType;
+}
 
 // Default theme
 const defaultTheme: ThemeColors = {
@@ -34,8 +43,8 @@ const clientThemes: Record<string, { light: ThemeColors; dark: ThemeColors }> = 
       primaryColor: '#f87171', // red-400 (pizza theme)
       secondaryColor: '#a3e635', // lime-400 (for fresh ingredients)
       accentColor: '#fb923c', // orange-400
-      backgroundColor: '#1f2937',
-      textColor: '#f9fafb',
+      backgroundColor: '#f8fafc', // Very light gray instead of dark
+      textColor: '#334155',
     }
   },
   'cvs': {
@@ -50,8 +59,8 @@ const clientThemes: Record<string, { light: ThemeColors; dark: ThemeColors }> = 
       primaryColor: '#dc4251', // Lighter CVS red for dark mode
       secondaryColor: '#5b85d6', // Lighter CVS blue for dark mode
       accentColor: '#fb923c', // orange-400
-      backgroundColor: '#1f2937',
-      textColor: '#f9fafb',
+      backgroundColor: '#f8fafc', // Very light gray instead of dark
+      textColor: '#334155',
     }
   },
   // Default theme for any other client
@@ -63,35 +72,87 @@ const clientThemes: Record<string, { light: ThemeColors; dark: ThemeColors }> = 
       primaryColor: '#60a5fa', // blue-400
       secondaryColor: '#34d399', // emerald-400
       accentColor: '#fb923c', // orange-400
-      backgroundColor: '#1f2937',
-      textColor: '#f9fafb',
+      backgroundColor: '#f8fafc', // Very light gray instead of dark
+      textColor: '#334155',
     }
   }
 };
+
+// Default client theme
+clientThemes.default = {
+  light: {
+    ...defaultTheme,
+  },
+  dark: {
+    primaryColor: '#60a5fa', // blue-400
+    secondaryColor: '#34d399', // emerald-400
+    accentColor: '#fb923c', // orange-400
+    backgroundColor: '#f8fafc', // Very light gray instead of dark
+    textColor: '#334155',
+  }
+};
+
+// Available versions of the application
+export type VersionType = 'current' | 'upcoming' | 'future' | 'experimental';
+
+// Version metadata
+export const versionInfo: Record<VersionType, { name: string, description: string }> = {
+  'current': {
+    name: 'Current Release',
+    description: 'Features currently implemented in production'
+  },
+  'upcoming': {
+    name: 'Next Release',
+    description: 'Features planned for the next release cycle'
+  },
+  'future': {
+    name: 'Future Roadmap',
+    description: 'Features in the long-term development roadmap'
+  },
+  'experimental': {
+    name: 'Experimental',
+    description: 'Experimental concepts and designs for feedback'
+  }
+};
+
+// Extended demo state
+export interface ExtendedDemoState extends DemoState {
+  id?: string;
+  clientName?: string;
+}
 
 // Interface for the context
 interface DemoContextType {
   role: string;
   clientId: string;
+  clientName?: string;
   scenario: string;
   themeMode: 'light' | 'dark';
+  version: VersionType;
   theme: ThemeColors;
-  userProfile: UserProfile;
+  userProfile: MockUser;
   history: DemoState[];
+  instanceHistory: ExtendedDemoState[];
+  currentInstanceIndex: number;
   setRole: (role: string) => void;
   setClientId: (clientId: string) => void;
   setScenario: (scenario: string) => void;
   setThemeMode: (themeMode: 'light' | 'dark') => void;
-  updateDemoState: (updates: Partial<DemoState>) => void;
+  setVersion: (version: VersionType) => void;
+  updateDemoState: (updates: Partial<ExtendedDemoState>) => void;
   resetToDefault: () => void;
+  goToInstance: (index: number) => void;
+  saveCurrentInstance: () => void;
 }
 
 // Default state
-const defaultDemoState: DemoState = {
+const defaultDemoState: ExtendedDemoState = {
   role: 'merchant',
   clientId: 'deacons-pizza',
+  clientName: 'Deacon\'s Pizza',
   scenario: 'dashboard',
   themeMode: 'light',
+  version: 'current',
 };
 
 // Create context with a default undefined value
@@ -99,17 +160,20 @@ const DemoContext = createContext<DemoContextType | undefined>(undefined);
 
 // Provider component
 export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [demoState, setDemoState] = useState<DemoState>({
+  const [demoState, setDemoState] = useState<ExtendedDemoState>({
     ...defaultDemoState,
   });
   const [history, setHistory] = useState<DemoState[]>([]);
+  const [instanceHistory, setInstanceHistory] = useState<ExtendedDemoState[]>([]);
+  const [currentInstanceIndex, setCurrentInstanceIndex] = useState<number>(-1);
+  
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   
   // Refs to track URL updates
   const isUpdatingFromUrl = useRef(false);
-  const lastUrlState = useRef<DemoState | null>(null);
+  const lastUrlState = useRef<ExtendedDemoState | null>(null);
   
   // Get user profile based on current role and client
   const userProfile = getUserForContext(demoState.role, demoState.clientId);
@@ -126,10 +190,15 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const clientId = searchParams.get('client');
     const scenario = searchParams.get('scenario');
     const themeMode = searchParams.get('theme') as 'light' | 'dark';
+    const version = searchParams.get('version') as VersionType;
     
-    const updates: Partial<DemoState> = {};
+    // Debug log to help us track URL parameter parsing
+    console.log('URL Params:', { role, clientId, scenario, themeMode, version });
+    
+    const updates: Partial<ExtendedDemoState> = {};
     let hasUpdates = false;
     
+    // Only update if the parameter exists and is different from current state
     if (role && role !== demoState.role) {
       updates.role = role;
       hasUpdates = true;
@@ -150,7 +219,13 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
       hasUpdates = true;
     }
     
+    if (version && version !== demoState.version && ['current', 'upcoming', 'future', 'experimental'].includes(version)) {
+      updates.version = version;
+      hasUpdates = true;
+    }
+    
     if (hasUpdates) {
+      console.log('Updating state with:', updates);
       isUpdatingFromUrl.current = true;
       setDemoState(prev => ({
         ...prev,
@@ -173,46 +248,112 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
     
-    // Check if the URL needs updating (compare with last URL state)
-    const needsUpdate = !lastUrlState.current || 
-      lastUrlState.current.role !== demoState.role ||
-      lastUrlState.current.clientId !== demoState.clientId ||
-      lastUrlState.current.scenario !== demoState.scenario ||
-      lastUrlState.current.themeMode !== demoState.themeMode;
+    // Get current URL params to compare with state
+    const currentRole = searchParams?.get('role');
+    const currentClientId = searchParams?.get('client');
+    const currentScenario = searchParams?.get('scenario');
+    const currentThemeMode = searchParams?.get('theme');
+    const currentVersion = searchParams?.get('version');
+    
+    // Check if URL actually needs updating by comparing with current params
+    const needsUpdate = 
+      currentRole !== demoState.role ||
+      currentClientId !== demoState.clientId ||
+      currentScenario !== demoState.scenario ||
+      currentThemeMode !== demoState.themeMode ||
+      currentVersion !== demoState.version;
     
     if (needsUpdate) {
+      console.log('URL needs updating, current state:', demoState);
+      
       // Create the new URL with updated params
       const params = new URLSearchParams();
       params.set('role', demoState.role);
       params.set('client', demoState.clientId);
       params.set('scenario', demoState.scenario);
       params.set('theme', demoState.themeMode);
+      params.set('version', demoState.version);
       
       // Store current state to avoid circular updates
       lastUrlState.current = { ...demoState };
       
-      // Update the URL
+      // Update the URL without triggering another navigation
       router.replace(`${pathname}?${params.toString()}`);
       
       // Add to history if not a duplicate
       const isDuplicate = history.some(item => 
         item.role === demoState.role && 
         item.clientId === demoState.clientId && 
-        item.scenario === demoState.scenario
+        item.scenario === demoState.scenario &&
+        item.version === demoState.version
       );
       
       if (!isDuplicate) {
         setHistory(prev => [demoState, ...prev].slice(0, 5));
       }
     }
-  }, [demoState, pathname, router]);
+  }, [demoState.role, demoState.clientId, demoState.scenario, demoState.themeMode, demoState.version, pathname, router, history, searchParams]);
   
   // Update demo state
-  const updateDemoState = (updates: Partial<DemoState>) => {
+  const updateDemoState = (updates: Partial<ExtendedDemoState>) => {
+    // Skip update if no actual changes
+    const hasChanges = Object.entries(updates).some(([key, value]) => {
+      return demoState[key as keyof ExtendedDemoState] !== value;
+    });
+    
+    if (!hasChanges) {
+      console.log('Skipping updateDemoState - no changes detected');
+      return;
+    }
+    
+    console.log('updateDemoState called with:', updates);
     setDemoState(prev => ({
       ...prev,
       ...updates,
     }));
+  };
+  
+  // Go to a specific instance in history
+  const goToInstance = (index: number) => {
+    if (index >= 0 && index < instanceHistory.length) {
+      setCurrentInstanceIndex(index);
+      const instance = instanceHistory[index];
+      updateDemoState({
+        role: instance.role,
+        clientId: instance.clientId,
+        clientName: instance.clientName,
+        scenario: instance.scenario,
+        themeMode: instance.themeMode,
+        version: instance.version,
+      });
+    }
+  };
+  
+  // Save current instance to history
+  const saveCurrentInstance = () => {
+    const instanceId = `instance-${Date.now()}`;
+    const newInstance: ExtendedDemoState = {
+      ...demoState,
+      id: instanceId,
+    };
+    
+    // Check if this instance already exists to prevent duplicate entries
+    const isDuplicate = instanceHistory.some(instance => 
+      instance.role === demoState.role && 
+      instance.clientId === demoState.clientId && 
+      instance.scenario === demoState.scenario && 
+      instance.themeMode === demoState.themeMode &&
+      instance.version === demoState.version
+    );
+    
+    // Only update if it's not a duplicate
+    if (!isDuplicate) {
+      setInstanceHistory(prev => {
+        const newHistory = [...prev, newInstance];
+        setCurrentInstanceIndex(newHistory.length - 1);
+        return newHistory;
+      });
+    }
   };
   
   // Role setter
@@ -235,6 +376,11 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
     updateDemoState({ themeMode });
   };
   
+  // Version setter
+  const setVersion = (version: VersionType) => {
+    updateDemoState({ version });
+  };
+  
   // Reset to default demo state
   const resetToDefault = () => {
     setDemoState(defaultDemoState);
@@ -246,12 +392,17 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
     theme,
     userProfile,
     history,
+    instanceHistory,
+    currentInstanceIndex,
     setRole,
     setClientId, 
     setScenario,
     setThemeMode,
+    setVersion,
     updateDemoState,
     resetToDefault,
+    goToInstance,
+    saveCurrentInstance
   };
   
   return (

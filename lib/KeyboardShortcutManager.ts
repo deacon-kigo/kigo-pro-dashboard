@@ -41,6 +41,24 @@ class KeyboardShortcutManager {
     }));
   }
 
+  /**
+   * Manually trigger a shortcut by its key combination
+   * @param keys Array of keys that define the shortcut
+   * @returns boolean indicating if a shortcut was triggered
+   */
+  public triggerShortcut(keys: string[]): boolean {
+    const normalizedKeys = keys.map(key => key.toLowerCase());
+    
+    for (const shortcut of this.shortcuts) {
+      if (this.arraysEqual(shortcut.keys, normalizedKeys)) {
+        shortcut.handler();
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
   private startListening(): void {
     if (this.isListening) return;
 
@@ -104,9 +122,7 @@ class KeyboardShortcutManager {
 
   private arraysEqual(a: string[], b: string[]): boolean {
     if (a.length !== b.length) return false;
-    const sortedA = [...a].sort();
-    const sortedB = [...b].sort();
-    return sortedA.every((val, idx) => val === sortedB[idx]);
+    return a.every((val, index) => val === b[index]);
   }
 }
 

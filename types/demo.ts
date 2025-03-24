@@ -29,9 +29,10 @@ export interface DemoInstance {
 export interface DemoState {
   role: string;
   clientId: string;
+  clientName?: string;
   scenario: string;
   themeMode: 'light' | 'dark';
-  userProfile?: UserProfile;
+  userProfile?: any; // Make compatible with both types
 }
 
 export interface ThemeColors {

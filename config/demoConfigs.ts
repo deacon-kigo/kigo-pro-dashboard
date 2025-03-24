@@ -1,4 +1,9 @@
-import { Theme } from '../contexts/DemoContext';
+// Define Theme interface locally instead of importing it
+export interface Theme {
+  primaryColor: string;
+  secondaryColor: string;
+  logo: string;
+}
 
 export interface ScenarioConfig {
   title: string;
@@ -14,9 +19,17 @@ export interface ClientConfig {
   secondaryColor: string;
 }
 
+export interface VersionConfig {
+  name: string;
+  description: string;
+  badge?: string;
+  badgeColor?: string;
+}
+
 interface DemoConfigsType {
   scenarios: Record<string, ScenarioConfig>;
   clients: Record<string, ClientConfig>;
+  versions: Record<string, VersionConfig>;
   getThemeForClient: (clientId: string) => Theme;
 }
 
@@ -64,6 +77,33 @@ const demoConfigs: DemoConfigsType = {
       logo: '/logos/generic.png',
       primaryColor: '#3B82F6',
       secondaryColor: '#8B5CF6'
+    }
+  },
+  
+  versions: {
+    'current': {
+      name: 'Current Release',
+      description: 'Features currently implemented in production',
+      badge: 'PRODUCTION',
+      badgeColor: '#10b981' // emerald-500
+    },
+    'upcoming': {
+      name: 'Next Release',
+      description: 'Features planned for the next release cycle',
+      badge: 'UPCOMING',
+      badgeColor: '#3b82f6' // blue-500
+    },
+    'future': {
+      name: 'Future Roadmap',
+      description: 'Long-term vision and planned features',
+      badge: 'FUTURE',
+      badgeColor: '#8b5cf6' // purple-500
+    },
+    'experimental': {
+      name: 'Experimental',
+      description: 'Experimental concepts and designs for feedback',
+      badge: 'EXPERIMENTAL',
+      badgeColor: '#f59e0b' // amber-500
     }
   },
   

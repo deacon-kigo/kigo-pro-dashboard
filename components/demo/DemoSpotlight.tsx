@@ -17,8 +17,9 @@ import {
   UserCircleIcon
 } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MockUser, getUserForContext } from '@/lib/userProfileUtils';
+import { MockUser, getUserForContext, convertMockUserToUserProfile } from '@/lib/userProfileUtils';
 import { getMockAvatarUrl } from '@/lib/avatarUtils';
+import { UserProfile } from '@/types/demo';
 
 // Define instance type that combines role, client, and scenario
 interface DemoInstance {
@@ -51,7 +52,7 @@ const generateDemoInstances = (): DemoInstance[] => {
     category: 'Small Business Owner',
     emoji: '🍕',
     tags: ['merchant', 'restaurant', 'campaign', 'ai assistant', 'marketing'],
-    userProfile: getUserForContext('merchant', 'deacons-pizza')
+    userProfile: getUserForContext('merchant', 'deacons-pizza') as MockUser
   });
   
   // Support Agent - Token Management
@@ -65,7 +66,7 @@ const generateDemoInstances = (): DemoInstance[] => {
     category: 'Support Agent',
     emoji: '🎫',
     tags: ['support', 'token', 'customer service'],
-    userProfile: getUserForContext('support', 'generic')
+    userProfile: getUserForContext('support', 'generic') as MockUser
   });
   
   // CVS Support Agent - ExtraCare Token Management
@@ -79,7 +80,7 @@ const generateDemoInstances = (): DemoInstance[] => {
     category: 'CVS Support',
     emoji: '💊',
     tags: ['support', 'pharmacy', 'extracare', 'token', 'customer service'],
-    userProfile: getUserForContext('support', 'cvs')
+    userProfile: getUserForContext('support', 'cvs') as MockUser
   });
   
   // National Chain - CVS
@@ -93,7 +94,7 @@ const generateDemoInstances = (): DemoInstance[] => {
     category: 'National Chain',
     emoji: '💊',
     tags: ['merchant', 'pharmacy', 'chain', 'multiple locations'],
-    userProfile: getUserForContext('merchant', 'cvs')
+    userProfile: getUserForContext('merchant', 'cvs') as MockUser
   });
   
   // Admin Analytics Dashboard
@@ -107,7 +108,7 @@ const generateDemoInstances = (): DemoInstance[] => {
     category: 'Platform Administration',
     emoji: '📊',
     tags: ['admin', 'analytics', 'dashboard', 'reporting'],
-    userProfile: getUserForContext('admin', 'generic')
+    userProfile: getUserForContext('admin', 'generic') as MockUser
   });
   
   // Additional Deacon's Pizza flows
@@ -121,7 +122,7 @@ const generateDemoInstances = (): DemoInstance[] => {
     category: 'Small Business Owner',
     emoji: '🍕',
     tags: ['merchant', 'restaurant', 'dashboard', 'analytics'],
-    userProfile: getUserForContext('merchant', 'deacons-pizza')
+    userProfile: getUserForContext('merchant', 'deacons-pizza') as MockUser
   });
   
   // CVS Dashboard
@@ -135,7 +136,7 @@ const generateDemoInstances = (): DemoInstance[] => {
     category: 'National Chain',
     emoji: '💊',
     tags: ['merchant', 'pharmacy', 'dashboard', 'analytics'],
-    userProfile: getUserForContext('merchant', 'cvs')
+    userProfile: getUserForContext('merchant', 'cvs') as MockUser
   });
   
   // CVS Support Token Management
@@ -149,7 +150,7 @@ const generateDemoInstances = (): DemoInstance[] => {
     category: 'Customer Support',
     emoji: '🎟️',
     tags: ['support', 'pharmacy', 'extracare', 'token management'],
-    userProfile: getUserForContext('support', 'cvs'),
+    userProfile: getUserForContext('support', 'cvs') as MockUser,
     path: '/demos/cvs-token-management'
   });
   
@@ -164,7 +165,7 @@ const generateDemoInstances = (): DemoInstance[] => {
     category: 'Support Agent',
     emoji: '🎫',
     tags: ['support', 'tickets', 'dashboard', 'customer service'],
-    userProfile: getUserForContext('support', 'generic')
+    userProfile: getUserForContext('support', 'generic') as MockUser
   });
   
   return instances;
@@ -294,11 +295,15 @@ const DemoSpotlight: React.FC = () => {
   
   const selectInstance = (instance: DemoInstance) => {
     // Include userProfile in updates if available
+    const userProfile = instance.userProfile ? 
+      convertMockUserToUserProfile(instance.userProfile) : 
+      undefined;
+      
     updateDemoState({
       role: instance.role,
       clientId: instance.clientId as any,
       scenario: instance.scenario as any,
-      userProfile: instance.userProfile
+      userProfile
     });
     
     setIsOpen(false);
@@ -474,6 +479,7 @@ const DemoSpotlight: React.FC = () => {
         <div 
           ref={backdropRef} 
           className="spotlight-backdrop"
+          onClick={() => setIsOpen(false)}
           aria-hidden="true"
         />
       )}
@@ -487,7 +493,8 @@ const DemoSpotlight: React.FC = () => {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: -10 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="w-[700px] max-w-[90vw] overflow-hidden rounded-xl shadow-2xl"
+              className="w-[700px] max-w-[90vw] overflow-hidden rounded-xl shadow-2xl spotlight-modal-content"
+              onClick={(e) => e.stopPropagation()}
             >
               {/* Glassmorphism container */}
               <div className="glass-intense rounded-xl">

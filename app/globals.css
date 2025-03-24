@@ -107,13 +107,20 @@ body.spotlight-open {
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
-  z-index: 90;
+  z-index: 99;
   opacity: 0;
   transition: opacity 0.2s ease-out;
 }
 
 .spotlight-backdrop.active {
   opacity: 1;
+}
+
+/* Improve z-index for header & sidebar */
+body.spotlight-open header,
+body.spotlight-open .sidebar,
+body.spotlight-open nav {
+  z-index: 10 !important;
 }
 
 /* Smooth transitions */
@@ -151,4 +158,10 @@ body.spotlight-open {
 @keyframes scaleOut {
   from { transform: scale(1); opacity: 1; }
   to { transform: scale(0.95); opacity: 0; }
+}
+
+/* Ensure modal content is above the backdrop */
+.spotlight-modal-content {
+  z-index: 101;
+  position: relative;
 }

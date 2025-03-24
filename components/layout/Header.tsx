@@ -164,7 +164,7 @@ export default function Header() {
 
   return (
     <header 
-      className={`h-[72px] flex items-center px-8 fixed top-0 right-0 z-[100] transition-all duration-300 ease-in-out`}
+      className={`h-[72px] flex items-center px-8 fixed top-0 right-0 z-[40] transition-all duration-300 ease-in-out`}
       style={{ left: sidebarWidth }}
     >
       <div className={`absolute inset-0 ${isDarkMode ? 'bg-gradient-to-r from-gray-900/90 via-gray-800/5 to-gray-700/10' : 'bg-gradient-to-r from-white/90 via-pastel-blue/5 to-pastel-purple/10'} backdrop-blur-md border-b border-border-light`}></div>

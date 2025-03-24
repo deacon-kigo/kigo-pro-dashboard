@@ -4,6 +4,7 @@ import "./globals.css";
 import Sidebar from "../components/layout/Sidebar";
 import Header from "../components/layout/Header";
 import AIChat from "../components/shared/AIChat";
+import DemoSpotlight from "../components/demo/DemoSpotlight";
 import { DemoProvider } from "../contexts/DemoContext";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -34,6 +35,7 @@ export default function RootLayout({
               </main>
             </div>
             <AIChat />
+            <DemoSpotlight />
           </div>
         </DemoProvider>
       </body>

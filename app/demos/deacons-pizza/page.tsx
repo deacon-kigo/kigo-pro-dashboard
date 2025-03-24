@@ -58,7 +58,7 @@ export default function DeaconsPizzaDashboard() {
       }, 5000);
     }
     
-  }, [setClientId, getGreeting, searchParams]);
+  }, [getGreeting, searchParams]);
 
   // Memoize sample data to prevent unnecessary recreations on each render
   const campaignData = useMemo(() => {

@@ -277,7 +277,7 @@ export default function Sidebar() {
     <aside 
       className={`
         fixed top-0 left-0 h-screen border-r border-border-light bg-white
-        transition-all duration-300 ease-in-out z-20
+        transition-all duration-300 ease-in-out z-40
         ${isCollapsed ? 'w-[70px]' : 'w-[225px]'}
       `}
       style={{
