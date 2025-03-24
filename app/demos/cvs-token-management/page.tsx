@@ -630,141 +630,7 @@ export default function CVSTokenManagement() {
     dispatch(applyPresetFilter(preset));
   };
 
-  // Render token filtering UI
-  const renderTokenFilters = () => {
-    return (
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Filter Tokens</h3>
-          <button
-            onClick={() => handleFilterChange('clearAll', null)}
-            className="text-sm text-blue-600 hover:text-blue-800"
-          >
-            Clear All
-          </button>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Status Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-            <div className="space-y-2">
-              {['Active', 'Expired', 'Used', 'Shared'].map((status) => (
-                <div key={status} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={tokenFilters.status.includes(status)}
-                    onChange={() => handleFilterChange('status', status)}
-                    className="h-4 w-4 text-blue-600 border-gray-300 rounded"
-                  />
-                  <label className="ml-2 text-sm text-gray-700">{status}</label>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Date Range Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
-            <div className="space-y-2">
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">From</label>
-                <input
-                  type="date"
-                  value={tokenFilters.dateRange.start}
-                  onChange={(e) => handleFilterChange('dateStart', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">To</label>
-                <input
-                  type="date"
-                  value={tokenFilters.dateRange.end}
-                  onChange={(e) => handleFilterChange('dateEnd', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                />
-              </div>
-            </div>
-          </div>
-          
-          {/* Token Type Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Token Type</label>
-            <div className="space-y-2">
-              {['Coupon', 'Reward', 'ExtraBucks', 'Lightning'].map((type) => (
-                <div key={type} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={tokenFilters.types.includes(type)}
-                    onChange={() => handleFilterChange('type', type)}
-                    className="h-4 w-4 text-blue-600 border-gray-300 rounded"
-                  />
-                  <label className="ml-2 text-sm text-gray-700">{type}</label>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Search and Merchant Filter */}
-          <div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Merchant</label>
-              <input
-                type="text"
-                value={tokenFilters.merchant}
-                onChange={(e) => handleFilterChange('merchant', e.target.value)}
-                placeholder="Filter by merchant name"
-                className="w-full p-2 border border-gray-300 rounded-md text-sm"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Search Tokens</label>
-              <input
-                type="text"
-                value={tokenFilters.searchQuery}
-                onChange={(e) => handleFilterChange('searchQuery', e.target.value)}
-                placeholder="Search by name or description"
-                className="w-full p-2 border border-gray-300 rounded-md text-sm"
-              />
-            </div>
-          </div>
-        </div>
-        
-        <div className="mt-6 border-t pt-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Common Filters</h4>
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => handleApplyPresetFilter('activeTokens')}
-              className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-md text-sm hover:bg-blue-100"
-            >
-              Active Tokens
-            </button>
-            <button
-              onClick={() => handleApplyPresetFilter('expiringSoon')}
-              className="px-3 py-1.5 bg-yellow-50 text-yellow-700 rounded-md text-sm hover:bg-yellow-100"
-            >
-              Expiring Soon
-            </button>
-            <button
-              onClick={() => handleApplyPresetFilter('recentlyUsed')}
-              className="px-3 py-1.5 bg-gray-50 text-gray-700 rounded-md text-sm hover:bg-gray-100"
-            >
-              Recently Used
-            </button>
-            <button
-              onClick={() => handleApplyPresetFilter('highValue')}
-              className="px-3 py-1.5 bg-green-50 text-green-700 rounded-md text-sm hover:bg-green-100"
-            >
-              High Value Rewards
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
+  // Render customer profile
   const renderCustomerProfile = () => {
     if (!selectedCustomer) return null;
     
@@ -790,12 +656,12 @@ export default function CVSTokenManagement() {
     const tokenCounts = getTokenCountByState();
     
     return (
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-white rounded-lg shadow-md p-6 h-full">
         <div className="border-b pb-4 mb-6">
           <h2 className="text-xl font-semibold text-gray-900">Customer Information</h2>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="space-y-6">
           <div>
             <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Customer Details</h3>
             <div className="space-y-3">
@@ -849,32 +715,208 @@ export default function CVSTokenManagement() {
               </div>
             </div>
           </div>
-        </div>
-        
-        <div className="mt-6">
-          <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Token Summary</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-2">
-            <div className="bg-blue-50 rounded-lg p-4">
-              <p className="text-sm text-blue-700 font-medium">Total Tokens</p>
-              <p className="text-2xl font-bold text-blue-800">{tokenCounts.total}</p>
+          
+          <div>
+            <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Token Summary</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 mt-2">
+              <div className="bg-blue-50 rounded-lg p-4">
+                <p className="text-sm text-blue-700 font-medium">Total Tokens</p>
+                <p className="text-2xl font-bold text-blue-800">{tokenCounts.total}</p>
+              </div>
+              
+              <div className="bg-green-50 rounded-lg p-4">
+                <p className="text-sm text-green-700 font-medium">Active</p>
+                <p className="text-2xl font-bold text-green-800">{tokenCounts.active}</p>
+              </div>
+              
+              <div className="bg-yellow-50 rounded-lg p-4">
+                <p className="text-sm text-yellow-700 font-medium">Expired</p>
+                <p className="text-2xl font-bold text-yellow-800">{tokenCounts.expired}</p>
+              </div>
+              
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p className="text-sm text-gray-700 font-medium">Used</p>
+                <p className="text-2xl font-bold text-gray-800">{tokenCounts.used}</p>
+              </div>
             </div>
-            
-            <div className="bg-green-50 rounded-lg p-4">
-              <p className="text-sm text-green-700 font-medium">Active</p>
-              <p className="text-2xl font-bold text-green-800">{tokenCounts.active}</p>
-            </div>
-            
-            <div className="bg-yellow-50 rounded-lg p-4">
-              <p className="text-sm text-yellow-700 font-medium">Expired</p>
-              <p className="text-2xl font-bold text-yellow-800">{tokenCounts.expired}</p>
-            </div>
-            
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-700 font-medium">Used</p>
-              <p className="text-2xl font-bold text-gray-800">{tokenCounts.used}</p>
+          </div>
+          
+          {/* Case Notes Section */}
+          <div>
+            <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Case Notes</h3>
+            <div className="mt-2">
+              <textarea
+                value={caseNotesInput}
+                onChange={(e) => setCaseNotesInput(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-md"
+                rows={4}
+                placeholder="Add case notes here..."
+              />
+              <div className="mt-2 text-right">
+                <button
+                  onClick={handleSaveNotes}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                >
+                  Save Notes
+                </button>
+              </div>
             </div>
           </div>
         </div>
+      </div>
+    );
+  };
+
+  // Render token filtering UI - more compact version
+  const renderTokenFilters = () => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    
+    return (
+      <div className="bg-white rounded-lg shadow-md mb-4">
+        <div className="p-4 border-b border-gray-200">
+          <div 
+            className="flex justify-between items-center cursor-pointer"
+            onClick={() => setIsExpanded(!isExpanded)}
+          >
+            <h3 className="text-lg font-semibold text-gray-900">Filter Tokens</h3>
+            <div className="flex items-center">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleFilterChange('clearAll', null);
+                }}
+                className="text-sm text-blue-600 hover:text-blue-800 mr-3"
+              >
+                Clear All
+              </button>
+              <ChevronDownIcon 
+                className={`h-5 w-5 text-gray-500 transform transition-transform ${isExpanded ? 'rotate-180' : ''}`} 
+              />
+            </div>
+          </div>
+        </div>
+        
+        {isExpanded && (
+          <div className="p-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* Status Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                <div className="flex flex-wrap gap-2">
+                  {['Active', 'Expired', 'Used', 'Shared'].map((status) => (
+                    <label key={status} className="inline-flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={tokenFilters.status.includes(status)}
+                        onChange={() => handleFilterChange('status', status)}
+                        className="h-4 w-4 text-blue-600 border-gray-300 rounded mr-1"
+                      />
+                      <span className="text-sm text-gray-700">{status}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Token Type Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Token Type</label>
+                <div className="flex flex-wrap gap-2">
+                  {['Coupon', 'Reward', 'ExtraBucks', 'Lightning'].map((type) => (
+                    <label key={type} className="inline-flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={tokenFilters.types.includes(type)}
+                        onChange={() => handleFilterChange('type', type)}
+                        className="h-4 w-4 text-blue-600 border-gray-300 rounded mr-1"
+                      />
+                      <span className="text-sm text-gray-700">{type}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Date Range Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">From</label>
+                    <input
+                      type="date"
+                      value={tokenFilters.dateRange.start}
+                      onChange={(e) => handleFilterChange('dateStart', e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">To</label>
+                    <input
+                      type="date"
+                      value={tokenFilters.dateRange.end}
+                      onChange={(e) => handleFilterChange('dateEnd', e.target.value)}
+                      className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Search and Merchant Filter */}
+              <div>
+                <div className="mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Merchant</label>
+                  <input
+                    type="text"
+                    value={tokenFilters.merchant}
+                    onChange={(e) => handleFilterChange('merchant', e.target.value)}
+                    placeholder="Filter by merchant name"
+                    className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Search Tokens</label>
+                  <input
+                    type="text"
+                    value={tokenFilters.searchQuery}
+                    onChange={(e) => handleFilterChange('searchQuery', e.target.value)}
+                    placeholder="Search by name or description"
+                    className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-4 border-t pt-4">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">Common Filters</h4>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => handleApplyPresetFilter('activeTokens')}
+                  className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-md text-sm hover:bg-blue-100"
+                >
+                  Active Tokens
+                </button>
+                <button
+                  onClick={() => handleApplyPresetFilter('expiringSoon')}
+                  className="px-3 py-1.5 bg-yellow-50 text-yellow-700 rounded-md text-sm hover:bg-yellow-100"
+                >
+                  Expiring Soon
+                </button>
+                <button
+                  onClick={() => handleApplyPresetFilter('recentlyUsed')}
+                  className="px-3 py-1.5 bg-gray-50 text-gray-700 rounded-md text-sm hover:bg-gray-100"
+                >
+                  Recently Used
+                </button>
+                <button
+                  onClick={() => handleApplyPresetFilter('highValue')}
+                  className="px-3 py-1.5 bg-green-50 text-green-700 rounded-md text-sm hover:bg-green-100"
+                >
+                  High Value Rewards
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   };
@@ -1383,7 +1425,7 @@ export default function CVSTokenManagement() {
             )}
           </div>
         ) : (
-          /* Detail View: Customer Details and Token Management */
+          /* Detail View: Customer Details and Token Management - REDESIGNED */
           selectedCustomer && (
             <div className="p-6 pt-0">
               <div className="flex justify-between items-center mb-6">
@@ -1410,92 +1452,100 @@ export default function CVSTokenManagement() {
                 </div>
               </div>
               
-              {/* Customer profile */}
-              {renderCustomerProfile()}
-              
-              {/* Token Filters */}
-              {renderTokenFilters()}
-              
-              {/* Token List */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="border-b border-gray-200 p-6">
-                  <div className="flex justify-between items-center">
-                    <h2 className="text-lg font-semibold text-gray-900">
-                      Token Inventory
-                      {tokenFilters.status.length > 0 || tokenFilters.types.length > 0 || 
-                       tokenFilters.dateRange.start || tokenFilters.dateRange.end || 
-                       tokenFilters.merchant || tokenFilters.searchQuery ? (
-                        <span className="ml-2 text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-                          Filtered
-                        </span>
-                      ) : null}
-                    </h2>
-                    <span className="text-sm text-gray-500">
-                      Showing {filteredTokens.length} of {selectedCustomer.tokens.length} tokens
-                    </span>
-                  </div>
+              {/* Two Column Layout */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Left Column: Customer Profile */}
+                <div className="lg:col-span-1">
+                  {renderCustomerProfile()}
                 </div>
                 
-                <div className="divide-y divide-gray-200 px-6">
-                  {filteredTokens.length === 0 ? (
-                    <div className="py-8 text-center">
-                      <ExclamationCircleIcon className="mx-auto h-12 w-12 text-gray-400" />
-                      <h3 className="mt-2 text-sm font-medium text-gray-900">No tokens found</h3>
-                      <p className="mt-1 text-sm text-gray-500">
-                        {selectedCustomer.tokens.length === 0 
-                          ? "This customer has no tokens in their account." 
-                          : "No tokens match the current filter criteria."}
-                      </p>
-                      {selectedCustomer.tokens.length > 0 && (
-                        <div className="mt-6">
-                          <button
-                            onClick={() => handleFilterChange('clearAll', null)}
-                            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                          >
-                            Clear Filters
-                          </button>
-                        </div>
-                      )}
+                {/* Right Column: Token Management */}
+                <div className="lg:col-span-2">
+                  {/* Token Filters */}
+                  {renderTokenFilters()}
+                  
+                  {/* Token List */}
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div className="border-b border-gray-200 p-4">
+                      <div className="flex justify-between items-center">
+                        <h2 className="text-lg font-semibold text-gray-900">
+                          Token Inventory
+                          {tokenFilters.status.length > 0 || tokenFilters.types.length > 0 || 
+                           tokenFilters.dateRange.start || tokenFilters.dateRange.end || 
+                           tokenFilters.merchant || tokenFilters.searchQuery ? (
+                            <span className="ml-2 text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                              Filtered
+                            </span>
+                          ) : null}
+                        </h2>
+                        <span className="text-sm text-gray-500">
+                          Showing {filteredTokens.length} of {selectedCustomer.tokens.length} tokens
+                        </span>
+                      </div>
                     </div>
-                  ) : (
-                    filteredTokens.map((token) => (
-                      <div key={token.id} className="py-4">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-sm font-semibold text-gray-900 truncate">{token.name}</h3>
-                            <p className="mt-1 text-xs text-gray-500 truncate">{token.description}</p>
-                            <div className="mt-2 flex items-center text-xs text-gray-500">
-                              <CalendarIcon className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
-                              <span>Expires: {formatDate(token.expirationDate)}</span>
-                              {token.merchantName && (
-                                <>
-                                  <span className="mx-2">&middot;</span>
-                                  <BuildingStorefrontIcon className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
-                                  <span>{token.merchantName}</span>
-                                </>
-                              )}
+                    
+                    <div className="divide-y divide-gray-200 px-4">
+                      {filteredTokens.length === 0 ? (
+                        <div className="py-8 text-center">
+                          <ExclamationCircleIcon className="mx-auto h-12 w-12 text-gray-400" />
+                          <h3 className="mt-2 text-sm font-medium text-gray-900">No tokens found</h3>
+                          <p className="mt-1 text-sm text-gray-500">
+                            {selectedCustomer.tokens.length === 0 
+                              ? "This customer has no tokens in their account." 
+                              : "No tokens match the current filter criteria."}
+                          </p>
+                          {selectedCustomer.tokens.length > 0 && (
+                            <div className="mt-6">
+                              <button
+                                onClick={() => handleFilterChange('clearAll', null)}
+                                className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                              >
+                                Clear Filters
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        filteredTokens.map((token) => (
+                          <div key={token.id} className="py-4">
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-sm font-semibold text-gray-900 truncate">{token.name}</h3>
+                                <p className="mt-1 text-xs text-gray-500 truncate">{token.description}</p>
+                                <div className="mt-2 flex items-center text-xs text-gray-500">
+                                  <CalendarIcon className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
+                                  <span>Expires: {formatDate(token.expirationDate)}</span>
+                                  {token.merchantName && (
+                                    <>
+                                      <span className="mx-2">&middot;</span>
+                                      <BuildingStorefrontIcon className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
+                                      <span>{token.merchantName}</span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="ml-4 flex flex-col items-end space-y-2">
+                                <span className={`px-2 py-0.5 rounded-full text-xs ${getTokenStateBadgeColor(token.state)}`}>
+                                  {token.state}
+                                </span>
+                                <span className="inline-flex items-center text-sm">
+                                  <span className={`font-medium ${token.value.includes('$') ? 'text-green-600' : 'text-blue-600'}`}>
+                                    {token.value}
+                                  </span>
+                                </span>
+                                <button
+                                  onClick={() => dispatch(selectToken(token.id))}
+                                  className="text-xs text-blue-600 hover:text-blue-800"
+                                >
+                                  View details
+                                </button>
+                              </div>
                             </div>
                           </div>
-                          <div className="ml-4 flex flex-col items-end space-y-2">
-                            <span className={`px-2 py-0.5 rounded-full text-xs ${getTokenStateBadgeColor(token.state)}`}>
-                              {token.state}
-                            </span>
-                            <span className="inline-flex items-center text-sm">
-                              <span className={`font-medium ${token.value.includes('$') ? 'text-green-600' : 'text-blue-600'}`}>
-                                {token.value}
-                              </span>
-                            </span>
-                            <button
-                              onClick={() => dispatch(selectToken(token.id))}
-                              className="text-xs text-blue-600 hover:text-blue-800"
-                            >
-                              View details
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
+                        ))
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
