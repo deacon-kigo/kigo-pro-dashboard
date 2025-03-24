@@ -15,6 +15,21 @@ export interface TokenInfo {
   merchantLocation?: string;
   value: string;
   externalUrl?: string;
+  // New fields for support agent actions
+  supportActions?: {
+    isReissued?: boolean;
+    reissuedDate?: string;
+    reissuedBy?: string;
+    reissuedReason?: string;
+    originalTokenId?: string;
+    comments?: string;
+  };
+  // Track if this token was disputed
+  disputed?: boolean;
+  disputeReason?: string;
+  disputeDate?: string;
+  // Flag to indicate if store didn't honor the token
+  notHonored?: boolean;
 }
 
 export interface CustomerInfo {
@@ -635,10 +650,10 @@ export const cvsTokenSlice = createSlice({
       };
     },
     
-    reissueToken: (state, action: PayloadAction<string>) => {
+    reissueToken: (state, action: PayloadAction<{ tokenId: string; reason: string; comments: string }>) => {
       if (!state.selectedCustomer) return;
       
-      const token = state.selectedCustomer.tokens.find(t => t.id === action.payload);
+      const token = state.selectedCustomer.tokens.find(t => t.id === action.payload.tokenId);
       if (!token) return;
       
       // First remove the old token
@@ -654,7 +669,20 @@ export const cvsTokenSlice = createSlice({
         expirationDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         useDate: undefined,
         shareDate: undefined,
-        externalUrl: `https://www.cvs.com/extracare/token/view?id=tok${Date.now()}`
+        externalUrl: `https://www.cvs.com/extracare/token/view?id=tok${Date.now()}`,
+        // Add support action information
+        supportActions: {
+          isReissued: true,
+          reissuedDate: new Date().toISOString().split('T')[0],
+          reissuedBy: "Support Agent", // In a real app, this would come from the user context
+          reissuedReason: action.payload.reason,
+          originalTokenId: token.id,
+          comments: action.payload.comments
+        },
+        // If the token was disputed or not honored, mark the new token
+        disputed: token.disputed,
+        disputeReason: token.disputeReason,
+        notHonored: token.notHonored
       };
       
       // Add new token
@@ -791,6 +819,37 @@ export const cvsTokenSlice = createSlice({
       if (state.pagination.currentPage > state.pagination.totalPages) {
         state.pagination.currentPage = state.pagination.totalPages > 0 ? state.pagination.totalPages : 1;
       }
+    },
+    
+    // Add a new reducer for marking a token as disputed or not honored
+    markTokenDisputed: (state, action: PayloadAction<{ tokenId: string; reason: string; notHonored: boolean }>) => {
+      if (!state.selectedCustomer) return;
+      
+      const customerIndex = state.customers.findIndex(c => c.id === state.selectedCustomer?.id);
+      if (customerIndex === -1) return;
+      
+      const tokenIndex = state.customers[customerIndex].tokens.findIndex(t => t.id === action.payload.tokenId);
+      if (tokenIndex === -1) return;
+      
+      // Update the token
+      state.customers[customerIndex].tokens[tokenIndex] = {
+        ...state.customers[customerIndex].tokens[tokenIndex],
+        disputed: true,
+        disputeReason: action.payload.reason,
+        disputeDate: new Date().toISOString().split('T')[0],
+        notHonored: action.payload.notHonored
+      };
+      
+      // Update selected customer and token if necessary
+      state.selectedCustomer = state.customers[customerIndex];
+      if (state.selectedToken && state.selectedToken.id === action.payload.tokenId) {
+        state.selectedToken = state.customers[customerIndex].tokens[tokenIndex];
+      }
+      
+      state.actionMessage = {
+        text: `Token marked as disputed${action.payload.notHonored ? ' and not honored by store' : ''}`,
+        type: 'info'
+      };
     }
   }
 });
@@ -810,7 +869,8 @@ export const {
   updateTokenFilters,
   applyPresetFilter,
   setCurrentPage,
-  setItemsPerPage
+  setItemsPerPage,
+  markTokenDisputed
 } = cvsTokenSlice.actions;
 
 export default cvsTokenSlice.reducer; 

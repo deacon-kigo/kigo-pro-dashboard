@@ -41,7 +41,8 @@ import {
   applyPresetFilter,
   setCurrentPage,
   setItemsPerPage,
-  initializeState
+  initializeState,
+  markTokenDisputed
 } from '@/lib/redux/slices/cvsTokenSlice';
 
 // Types for the token management interface
@@ -496,6 +497,14 @@ export default function CVSTokenManagement() {
   const cvsLightBlue = '#009FDA';
   const kigoBlue = '#2563EB';
 
+  // Add state for confirm modal
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<'remove' | 'reissue' | 'dispute' | null>(null);
+  const [confirmTokenId, setConfirmTokenId] = useState<string | null>(null);
+  const [confirmReason, setConfirmReason] = useState('');
+  const [confirmComments, setConfirmComments] = useState('');
+  const [notHonored, setNotHonored] = useState(false);
+  
   // Initialize Redux state only once on the client-side
   useEffect(() => {
     dispatch(initializeState());
@@ -542,20 +551,61 @@ export default function CVSTokenManagement() {
     setTimeout(() => dispatch(clearActionMessage()), 3000);
   };
 
-  // Remove a token from the selected customer
-  const removeTokenFromCustomerHandler = (tokenId: string) => {
-    dispatch(removeTokenFromCustomer(tokenId));
-    
-    // Clear action message after 3 seconds
-    setTimeout(() => dispatch(clearActionMessage()), 3000);
-  };
-
-  // Reissue an expired or used token
+  // Updated reissueTokenHandler to show confirmation modal
   const reissueTokenHandler = (tokenId: string) => {
-    dispatch(reissueToken(tokenId));
+    setConfirmAction('reissue');
+    setConfirmTokenId(tokenId);
+    setShowConfirmModal(true);
+  };
+  
+  // Updated removeTokenFromCustomerHandler to show confirmation modal
+  const removeTokenFromCustomerHandler = (tokenId: string) => {
+    setConfirmAction('remove');
+    setConfirmTokenId(tokenId);
+    setShowConfirmModal(true);
+  };
+  
+  // New handler for marking a token as disputed
+  const markTokenDisputedHandler = (tokenId: string) => {
+    setConfirmAction('dispute');
+    setConfirmTokenId(tokenId);
+    setShowConfirmModal(true);
+  };
+  
+  // Handle confirm action
+  const handleConfirmAction = () => {
+    if (!confirmTokenId) return;
+    
+    switch (confirmAction) {
+      case 'reissue':
+        dispatch(reissueToken({ 
+          tokenId: confirmTokenId, 
+          reason: confirmReason, 
+          comments: confirmComments 
+        }));
+        break;
+      case 'remove':
+        dispatch(removeTokenFromCustomer(confirmTokenId));
+        break;
+      case 'dispute':
+        dispatch(markTokenDisputed({ 
+          tokenId: confirmTokenId, 
+          reason: confirmReason, 
+          notHonored: notHonored 
+        }));
+        break;
+    }
     
     // Clear action message after 3 seconds
     setTimeout(() => dispatch(clearActionMessage()), 3000);
+    
+    // Reset confirm modal state
+    setShowConfirmModal(false);
+    setConfirmAction(null);
+    setConfirmTokenId(null);
+    setConfirmReason('');
+    setConfirmComments('');
+    setNotHonored(false);
   };
 
   // Save case notes
@@ -796,7 +846,25 @@ export default function CVSTokenManagement() {
             className="flex justify-between items-center cursor-pointer"
             onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
           >
-            <h3 className="text-lg font-semibold text-gray-900">Filter Tokens</h3>
+            <div className="flex items-center">
+              <h3 className="text-lg font-semibold text-gray-900">Filter Tokens</h3>
+              {/* Display active filter count badge */}
+              {(tokenFilters.status.length > 0 || 
+                tokenFilters.types.length > 0 || 
+                tokenFilters.dateRange.start || 
+                tokenFilters.dateRange.end || 
+                tokenFilters.merchant || 
+                tokenFilters.searchQuery) && (
+                <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {tokenFilters.status.length + tokenFilters.types.length + 
+                   (tokenFilters.dateRange.start ? 1 : 0) + 
+                   (tokenFilters.dateRange.end ? 1 : 0) + 
+                   (tokenFilters.merchant ? 1 : 0) + 
+                   (tokenFilters.searchQuery ? 1 : 0)
+                  } active
+                </span>
+              )}
+            </div>
             <div className="flex items-center">
               <button
                 onClick={(e) => {
@@ -812,13 +880,115 @@ export default function CVSTokenManagement() {
               />
             </div>
           </div>
+          
+          {/* Display active filters as tags */}
+          {!isFiltersExpanded && (tokenFilters.status.length > 0 || 
+            tokenFilters.types.length > 0 || 
+            tokenFilters.dateRange.start || 
+            tokenFilters.dateRange.end || 
+            tokenFilters.merchant || 
+            tokenFilters.searchQuery) && (
+            <div className="flex flex-wrap gap-2 mt-3 pb-1">
+              {tokenFilters.status.map(status => (
+                <span 
+                  key={`status-${status}`}
+                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700"
+                >
+                  Status: {status}
+                  <XMarkIcon 
+                    className="ml-1 h-3 w-3 cursor-pointer" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleFilterChange('status', status);
+                    }}
+                  />
+                </span>
+              ))}
+              
+              {tokenFilters.types.map(type => (
+                <span 
+                  key={`type-${type}`}
+                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700"
+                >
+                  Type: {type}
+                  <XMarkIcon 
+                    className="ml-1 h-3 w-3 cursor-pointer" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleFilterChange('type', type);
+                    }}
+                  />
+                </span>
+              ))}
+              
+              {tokenFilters.dateRange.start && (
+                <span 
+                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700"
+                >
+                  From: {formatDate(tokenFilters.dateRange.start)}
+                  <XMarkIcon 
+                    className="ml-1 h-3 w-3 cursor-pointer" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleFilterChange('dateStart', '');
+                    }}
+                  />
+                </span>
+              )}
+              
+              {tokenFilters.dateRange.end && (
+                <span 
+                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700"
+                >
+                  To: {formatDate(tokenFilters.dateRange.end)}
+                  <XMarkIcon 
+                    className="ml-1 h-3 w-3 cursor-pointer" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleFilterChange('dateEnd', '');
+                    }}
+                  />
+                </span>
+              )}
+              
+              {tokenFilters.merchant && (
+                <span 
+                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-700"
+                >
+                  Merchant: {tokenFilters.merchant}
+                  <XMarkIcon 
+                    className="ml-1 h-3 w-3 cursor-pointer" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleFilterChange('merchant', '');
+                    }}
+                  />
+                </span>
+              )}
+              
+              {tokenFilters.searchQuery && (
+                <span 
+                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700"
+                >
+                  Search: {tokenFilters.searchQuery}
+                  <XMarkIcon 
+                    className="ml-1 h-3 w-3 cursor-pointer" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleFilterChange('searchQuery', '');
+                    }}
+                  />
+                </span>
+              )}
+            </div>
+          )}
         </div>
         
         {isFiltersExpanded && (
           <div className="p-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {/* Status Filter */}
-              <div>
+              {/* Status Filter - Enhanced UI */}
+              <div className="bg-gray-50 p-3 rounded-lg">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
                 <div className="flex flex-wrap gap-2">
                   {['Active', 'Expired', 'Used', 'Shared'].map((status) => (
@@ -829,14 +999,23 @@ export default function CVSTokenManagement() {
                         onChange={() => handleFilterChange('status', status)}
                         className="h-4 w-4 text-blue-600 border-gray-300 rounded mr-1"
                       />
-                      <span className="text-sm text-gray-700">{status}</span>
+                      <span className={`text-sm px-2 py-0.5 rounded-md ${
+                        tokenFilters.status.includes(status) 
+                          ? status === 'Active' ? 'bg-green-100 text-green-800' 
+                          : status === 'Expired' ? 'bg-red-100 text-red-800'
+                          : status === 'Used' ? 'bg-gray-100 text-gray-800'
+                          : 'bg-blue-100 text-blue-800'
+                          : 'text-gray-700'
+                      }`}>
+                        {status}
+                      </span>
                     </label>
                   ))}
                 </div>
               </div>
               
-              {/* Token Type Filter */}
-              <div>
+              {/* Token Type Filter - Enhanced UI */}
+              <div className="bg-gray-50 p-3 rounded-lg">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Token Type</label>
                 <div className="flex flex-wrap gap-2">
                   {['Coupon', 'Reward', 'ExtraBucks', 'Lightning'].map((type) => (
@@ -847,14 +1026,23 @@ export default function CVSTokenManagement() {
                         onChange={() => handleFilterChange('type', type)}
                         className="h-4 w-4 text-blue-600 border-gray-300 rounded mr-1"
                       />
-                      <span className="text-sm text-gray-700">{type}</span>
+                      <span className={`text-sm px-2 py-0.5 rounded-md ${
+                        tokenFilters.types.includes(type)
+                          ? type === 'Coupon' ? 'bg-purple-100 text-purple-800'
+                          : type === 'Reward' ? 'bg-blue-100 text-blue-800'
+                          : type === 'ExtraBucks' ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-orange-100 text-orange-800'
+                          : 'text-gray-700'
+                      }`}>
+                        {type}
+                      </span>
                     </label>
                   ))}
                 </div>
               </div>
               
-              {/* Date Range Filter */}
-              <div>
+              {/* Date Range Filter - Enhanced UI */}
+              <div className="bg-gray-50 p-3 rounded-lg">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
@@ -863,7 +1051,11 @@ export default function CVSTokenManagement() {
                       type="date"
                       value={tokenFilters.dateRange.start}
                       onChange={(e) => handleFilterChange('dateStart', e.target.value)}
-                      className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                      className={`w-full p-2 border rounded-md text-sm ${
+                        tokenFilters.dateRange.start 
+                          ? 'border-green-300 bg-green-50' 
+                          : 'border-gray-300'
+                      }`}
                     />
                   </div>
                   <div>
@@ -872,34 +1064,64 @@ export default function CVSTokenManagement() {
                       type="date"
                       value={tokenFilters.dateRange.end}
                       onChange={(e) => handleFilterChange('dateEnd', e.target.value)}
-                      className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                      className={`w-full p-2 border rounded-md text-sm ${
+                        tokenFilters.dateRange.end 
+                          ? 'border-green-300 bg-green-50' 
+                          : 'border-gray-300'
+                      }`}
                     />
                   </div>
                 </div>
               </div>
               
-              {/* Search and Merchant Filter */}
-              <div>
+              {/* Search and Merchant Filter - Enhanced UI */}
+              <div className="bg-gray-50 p-3 rounded-lg">
                 <div className="mb-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Merchant</label>
-                  <input
-                    type="text"
-                    value={tokenFilters.merchant}
-                    onChange={(e) => handleFilterChange('merchant', e.target.value)}
-                    placeholder="Filter by merchant name"
-                    className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={tokenFilters.merchant}
+                      onChange={(e) => handleFilterChange('merchant', e.target.value)}
+                      placeholder="Filter by merchant name"
+                      className={`w-full p-2 pl-8 border rounded-md text-sm ${
+                        tokenFilters.merchant 
+                          ? 'border-orange-300 bg-orange-50' 
+                          : 'border-gray-300'
+                      }`}
+                    />
+                    <BuildingStorefrontIcon className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+                    {tokenFilters.merchant && (
+                      <XMarkIcon 
+                        className="absolute right-2 top-2.5 h-4 w-4 text-gray-400 cursor-pointer"
+                        onClick={() => handleFilterChange('merchant', '')} 
+                      />
+                    )}
+                  </div>
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Search Tokens</label>
-                  <input
-                    type="text"
-                    value={tokenFilters.searchQuery}
-                    onChange={(e) => handleFilterChange('searchQuery', e.target.value)}
-                    placeholder="Search by name or description"
-                    className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={tokenFilters.searchQuery}
+                      onChange={(e) => handleFilterChange('searchQuery', e.target.value)}
+                      placeholder="Search by name or description"
+                      className={`w-full p-2 pl-8 border rounded-md text-sm ${
+                        tokenFilters.searchQuery 
+                          ? 'border-yellow-300 bg-yellow-50' 
+                          : 'border-gray-300'
+                      }`}
+                    />
+                    <MagnifyingGlassIcon className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+                    {tokenFilters.searchQuery && (
+                      <XMarkIcon 
+                        className="absolute right-2 top-2.5 h-4 w-4 text-gray-400 cursor-pointer"
+                        onClick={() => handleFilterChange('searchQuery', '')} 
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -909,29 +1131,42 @@ export default function CVSTokenManagement() {
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => handleApplyPresetFilter('activeTokens')}
-                  className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-md text-sm hover:bg-blue-100"
+                  className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-md text-sm hover:bg-blue-100 flex items-center"
                 >
+                  <span className="w-2 h-2 bg-green-500 rounded-full mr-1.5"></span>
                   Active Tokens
                 </button>
                 <button
                   onClick={() => handleApplyPresetFilter('expiringSoon')}
-                  className="px-3 py-1.5 bg-yellow-50 text-yellow-700 rounded-md text-sm hover:bg-yellow-100"
+                  className="px-3 py-1.5 bg-yellow-50 text-yellow-700 rounded-md text-sm hover:bg-yellow-100 flex items-center"
                 >
+                  <CalendarIcon className="h-3.5 w-3.5 mr-1.5" />
                   Expiring Soon
                 </button>
                 <button
                   onClick={() => handleApplyPresetFilter('recentlyUsed')}
-                  className="px-3 py-1.5 bg-gray-50 text-gray-700 rounded-md text-sm hover:bg-gray-100"
+                  className="px-3 py-1.5 bg-gray-50 text-gray-700 rounded-md text-sm hover:bg-gray-100 flex items-center"
                 >
+                  <span className="w-2 h-2 bg-gray-500 rounded-full mr-1.5"></span>
                   Recently Used
                 </button>
                 <button
                   onClick={() => handleApplyPresetFilter('highValue')}
-                  className="px-3 py-1.5 bg-green-50 text-green-700 rounded-md text-sm hover:bg-green-100"
+                  className="px-3 py-1.5 bg-green-50 text-green-700 rounded-md text-sm hover:bg-green-100 flex items-center"
                 >
+                  <span className="text-xs mr-1.5 font-bold">$</span>
                   High Value Rewards
                 </button>
               </div>
+            </div>
+            
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => setIsFiltersExpanded(false)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+              >
+                Apply Filters
+              </button>
             </div>
           </div>
         )}
@@ -939,7 +1174,7 @@ export default function CVSTokenManagement() {
     );
   };
 
-  // Implement the missing renderTokenDetail function
+  // Update renderTokenDetail to show support action history and dispute info
   const renderTokenDetail = () => {
     if (!selectedToken) return null;
     
@@ -972,6 +1207,16 @@ export default function CVSTokenManagement() {
                   <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getTokenTypeBadgeColor(selectedToken.type)}`}>
                     {selectedToken.type}
                   </span>
+                  {selectedToken.disputed && (
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                      Disputed
+                    </span>
+                  )}
+                  {selectedToken.notHonored && (
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                      Not Honored
+                    </span>
+                  )}
                 </div>
               </div>
               
@@ -1021,18 +1266,88 @@ export default function CVSTokenManagement() {
               </dl>
             </div>
             
+            {/* Support actions history */}
+            {selectedToken.supportActions && (
+              <div className="border rounded-lg bg-blue-50 p-4 mb-6">
+                <h4 className="text-sm font-medium text-blue-800 mb-2">Support Actions</h4>
+                <dl className="grid grid-cols-1 gap-y-2 text-sm">
+                  {selectedToken.supportActions.isReissued && (
+                    <>
+                      <div>
+                        <dt className="text-blue-700">Reissued Date</dt>
+                        <dd className="mt-1 text-blue-900">{formatDate(selectedToken.supportActions.reissuedDate || '')}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-blue-700">Reissued By</dt>
+                        <dd className="mt-1 text-blue-900">{selectedToken.supportActions.reissuedBy}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-blue-700">Reason</dt>
+                        <dd className="mt-1 text-blue-900">{selectedToken.supportActions.reissuedReason}</dd>
+                      </div>
+                      {selectedToken.supportActions.comments && (
+                        <div>
+                          <dt className="text-blue-700">Comments</dt>
+                          <dd className="mt-1 text-blue-900">{selectedToken.supportActions.comments}</dd>
+                        </div>
+                      )}
+                      {selectedToken.supportActions.originalTokenId && (
+                        <div>
+                          <dt className="text-blue-700">Original Token ID</dt>
+                          <dd className="mt-1 text-blue-900">{selectedToken.supportActions.originalTokenId}</dd>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </dl>
+              </div>
+            )}
+            
+            {/* Dispute information */}
+            {selectedToken.disputed && (
+              <div className="border rounded-lg bg-orange-50 p-4 mb-6">
+                <h4 className="text-sm font-medium text-orange-800 mb-2">Dispute Information</h4>
+                <dl className="grid grid-cols-1 gap-y-2 text-sm">
+                  <div>
+                    <dt className="text-orange-700">Dispute Date</dt>
+                    <dd className="mt-1 text-orange-900">{formatDate(selectedToken.disputeDate || '')}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-orange-700">Reason</dt>
+                    <dd className="mt-1 text-orange-900">{selectedToken.disputeReason}</dd>
+                  </div>
+                  {selectedToken.notHonored && (
+                    <div>
+                      <dt className="text-orange-700">Store Status</dt>
+                      <dd className="mt-1 text-orange-900">Token not honored by store</dd>
+                    </div>
+                  )}
+                </dl>
+              </div>
+            )}
+            
             <div className="flex flex-col sm:flex-row gap-3 mt-6">
               {selectedToken.state === 'Active' && (
-                <button
-                  onClick={() => removeTokenFromCustomerHandler(selectedToken.id)}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-md flex items-center justify-center"
-                >
-                  <TrashIcon className="h-4 w-4 mr-1.5" />
-                  Remove Token
-                </button>
+                <>
+                  <button
+                    onClick={() => removeTokenFromCustomerHandler(selectedToken.id)}
+                    className="flex-1 px-4 py-2 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-md flex items-center justify-center"
+                  >
+                    <TrashIcon className="h-4 w-4 mr-1.5" />
+                    Remove Token
+                  </button>
+                  
+                  <button
+                    onClick={() => markTokenDisputedHandler(selectedToken.id)}
+                    className="flex-1 px-4 py-2 text-sm font-medium text-orange-700 bg-orange-50 hover:bg-orange-100 rounded-md flex items-center justify-center"
+                  >
+                    <ExclamationCircleIcon className="h-4 w-4 mr-1.5" />
+                    Mark Disputed
+                  </button>
+                </>
               )}
               
-              {(selectedToken.state === 'Expired' || selectedToken.state === 'Used') && (
+              {(selectedToken.state === 'Expired' || selectedToken.state === 'Used' || selectedToken.notHonored) && (
                 <button
                   onClick={() => reissueTokenHandler(selectedToken.id)}
                   className="flex-1 px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-md flex items-center justify-center"
@@ -1104,6 +1419,128 @@ export default function CVSTokenManagement() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Add a confirmation modal
+  const renderConfirmModal = () => {
+    if (!showConfirmModal) return null;
+    
+    const getModalTitle = () => {
+      switch (confirmAction) {
+        case 'reissue': return 'Confirm Token Reissue';
+        case 'remove': return 'Confirm Token Removal';
+        case 'dispute': return 'Mark Token as Disputed';
+        default: return 'Confirm Action';
+      }
+    };
+    
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-medium text-gray-900">{getModalTitle()}</h3>
+              <button 
+                onClick={() => setShowConfirmModal(false)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </div>
+          </div>
+          
+          <div className="p-6">
+            {confirmAction === 'remove' ? (
+              <p className="text-sm text-gray-500 mb-6">
+                Are you sure you want to remove this token? This action cannot be undone.
+              </p>
+            ) : (
+              <>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {confirmAction === 'reissue' ? 'Reissue Reason' : 'Dispute Reason'}
+                  </label>
+                  <select
+                    value={confirmReason}
+                    onChange={(e) => setConfirmReason(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    required
+                  >
+                    <option value="">Select a reason</option>
+                    {confirmAction === 'reissue' ? (
+                      <>
+                        <option value="Store didn't honor">Store didn't honor</option>
+                        <option value="Token expired prematurely">Token expired prematurely</option>
+                        <option value="Technical issue">Technical issue</option>
+                        <option value="Customer satisfaction">Customer satisfaction</option>
+                        <option value="Other">Other</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="Store didn't honor">Store didn't honor</option>
+                        <option value="Token not working">Token not working</option>
+                        <option value="Customer complaint">Customer complaint</option>
+                        <option value="Other">Other</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+                
+                {confirmAction === 'dispute' && (
+                  <div className="mb-4">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={notHonored}
+                        onChange={(e) => setNotHonored(e.target.checked)}
+                        className="h-4 w-4 text-blue-600 border-gray-300 rounded mr-2"
+                      />
+                      <span className="text-sm text-gray-700">Store didn't honor the token</span>
+                    </label>
+                  </div>
+                )}
+                
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Agent Comments
+                  </label>
+                  <textarea
+                    value={confirmComments}
+                    onChange={(e) => setConfirmComments(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    rows={4}
+                    placeholder="Add any additional comments here..."
+                    required={confirmAction === 'reissue'}
+                  />
+                </div>
+              </>
+            )}
+            
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmAction}
+                disabled={confirmAction !== 'remove' && !confirmReason}
+                className={`px-4 py-2 text-sm font-medium text-white rounded-md ${
+                  confirmAction === 'remove' 
+                    ? 'bg-red-600 hover:bg-red-700'
+                    : !confirmReason
+                    ? 'bg-blue-400 cursor-not-allowed' 
+                    : 'bg-blue-600 hover:bg-blue-700'
+                }`}
+              >
+                {confirmAction === 'remove' ? 'Remove' : confirmAction === 'reissue' ? 'Reissue' : 'Submit'}
+              </button>
             </div>
           </div>
         </div>
@@ -1602,6 +2039,9 @@ export default function CVSTokenManagement() {
 
       {/* Token Catalog Modal */}
       {renderTokenCatalogModal()}
+
+      {/* Confirmation Modal */}
+      {renderConfirmModal()}
     </div>
   );
 } 
