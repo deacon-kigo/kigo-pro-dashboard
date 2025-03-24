@@ -2,6 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import demoReducer from './slices/demoSlice';
 import uiReducer from './slices/uiSlice';
 import userReducer from './slices/userSlice';
+import cvsTokenReducer from './slices/cvsTokenSlice';
 import { useDispatch } from 'react-redux';
 
 export const store = configureStore({
@@ -9,6 +10,7 @@ export const store = configureStore({
     demo: demoReducer,
     ui: uiReducer,
     user: userReducer,
+    cvsToken: cvsTokenReducer
   },
   // Enable Redux DevTools in development
   devTools: process.env.NODE_ENV !== 'production',

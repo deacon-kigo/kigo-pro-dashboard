@@ -23,10 +23,9 @@ export default function Header() {
   const dispatch = useAppDispatch();
   const pathname = usePathname();
   const [searchQuery, setSearchQuery] = useState('');
-  const [sidebarWidth, setSidebarWidth] = useState('225px');
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const { role, clientId, theme, themeMode, clientName } = useAppSelector(state => state.demo);
-  const { isMobileView } = useAppSelector(state => state.ui);
+  const { isMobileView, sidebarCollapsed, sidebarWidth } = useAppSelector(state => state.ui);
   const { notifications } = useAppSelector(state => state.user);
   const unreadNotificationsCount = notifications?.filter(n => !n.read).length || 0;
   
@@ -67,21 +66,6 @@ export default function Header() {
   };
   
   const searchSuggestions = getSearchSuggestions();
-  
-  // Update sidebar width based on localStorage
-  useEffect(() => {
-    const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-    setSidebarWidth(isCollapsed ? '70px' : '225px');
-    
-    // Listen for sidebar toggle events
-    const handleStorageChange = () => {
-      const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-      setSidebarWidth(isCollapsed ? '70px' : '225px');
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
   
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -197,7 +181,10 @@ export default function Header() {
   return (
     <header 
       className={`h-[72px] flex items-center px-8 fixed top-0 right-0 z-[40] transition-all duration-300 ease-in-out`}
-      style={{ left: sidebarWidth }}
+      style={{ 
+        left: sidebarWidth,
+        width: `calc(100% - ${sidebarWidth})`
+      }}
     >
       <div className={`absolute inset-0 ${isDarkMode ? 'bg-gradient-to-r from-gray-900/90 via-gray-800/5 to-gray-700/10' : 'bg-gradient-to-r from-white/90 via-pastel-blue/5 to-pastel-purple/10'} backdrop-blur-md border-b border-border-light`}></div>
       
