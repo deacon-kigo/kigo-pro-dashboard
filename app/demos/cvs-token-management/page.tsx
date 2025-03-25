@@ -438,7 +438,7 @@ const generateTokenDescription = (type: 'Coupon' | 'Reward' | 'ExtraBucks' | 'Li
 };
 
 // Replace the previous static tokenCatalog with our generator
-const tokenCatalog: TokenInfo[] = generateTokenCatalog();
+const generatedTokenCatalog: TokenInfo[] = generateTokenCatalog();
 
 // Add a new function to highlight matched text in search results
 const HighlightedText = ({ text, searchTerm }: { text: string, searchTerm: string }) => {
@@ -549,7 +549,7 @@ export default function CVSTokenManagement() {
   
   // Add state for token catalog search
   const [catalogSearchInput, setCatalogSearchInput] = useState('');
-  const [filteredCatalogTokens, setFilteredCatalogTokens] = useState(tokenCatalog);
+  const [filteredCatalogTokens, setFilteredCatalogTokens] = useState<TokenInfo[]>(generatedTokenCatalog);
   
   // Initialize Redux state only once on the client-side
   useEffect(() => {
@@ -1616,11 +1616,11 @@ export default function CVSTokenManagement() {
   // Function to filter catalog tokens based on search input
   const filterCatalogTokens = (searchTerm: string) => {
     if (!searchTerm.trim()) {
-      setFilteredCatalogTokens(tokenCatalog);
+      setFilteredCatalogTokens(generatedTokenCatalog);
       return;
     }
     
-    const filtered = tokenCatalog.filter(token => 
+    const filtered = generatedTokenCatalog.filter(token => 
       token.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       token.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       token.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -1631,9 +1631,10 @@ export default function CVSTokenManagement() {
   };
   
   // Initialize the filtered token catalog on load
-  useEffect(() => {
-    setFilteredCatalogTokens(tokenCatalog);
-  }, []);
+  // Removing this effect since we're already initializing the state directly
+  // useEffect(() => {
+  //   setFilteredCatalogTokens(generatedTokenCatalog);
+  // }, []);
 
   // Render token catalog modal for adding tokens to customers
   const renderTokenCatalogModal = () => {
