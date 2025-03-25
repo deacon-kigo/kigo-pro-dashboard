@@ -295,17 +295,23 @@ export default function SSOSignIn() {
               {/* Single orbiting element */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="relative w-60 h-60">
-                  <div className="absolute w-14 h-8 animate-orbit">
-                    <div className="bg-white/90 backdrop-blur-md p-2 rounded-full shadow-sm">
-                      <div className="w-10 h-6 relative">
-                        <Image 
-                          src="/logos/cvs-logo.svg" 
-                          alt="CVS" 
-                          fill
-                          style={{ objectFit: 'contain' }}
-                        />
-                      </div>
-                    </div>
+                  {/* Orbiting blue dot */}
+                  <div className="absolute w-5 h-5 animate-orbit">
+                    <div className="bg-blue-500/70 rounded-full w-full h-full shadow-sm blur-[1px]"></div>
+                  </div>
+                  
+                  {/* Orbiting red dot */}
+                  <div className="absolute w-4 h-4 animate-orbit-reverse animation-delay-500">
+                    <div className="bg-red-500/70 rounded-full w-full h-full shadow-sm blur-[1px]"></div>
+                  </div>
+                  
+                  {/* Additional smaller orbiting dots */}
+                  <div className="absolute w-3 h-3 animate-orbit-inner animation-delay-300">
+                    <div className="bg-blue-400/60 rounded-full w-full h-full shadow-sm blur-[1px]"></div>
+                  </div>
+                  
+                  <div className="absolute w-2 h-2 animate-orbit-inner-reverse animation-delay-700">
+                    <div className="bg-red-400/60 rounded-full w-full h-full shadow-sm blur-[1px]"></div>
                   </div>
                 </div>
               </div>
@@ -316,10 +322,10 @@ export default function SSOSignIn() {
               A seamless integration between Kigo Pro and CVS ExtraCare
             </p>
             
-            {/* Simple feature pills */}
+            {/* Token management focused feature pills */}
             <div className="flex flex-wrap justify-center gap-3 text-xs">
-              <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full">Integrated Platform</span>
-              <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full">Real-time Updates</span>
+              <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full">Token Management</span>
+              <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full">ExtraCare Benefits</span>
             </div>
             
             {/* Footer */}
