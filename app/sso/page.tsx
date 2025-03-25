@@ -231,30 +231,30 @@ export default function SSOSignIn() {
 
       {/* Illustration Section - Right Side */}
       <div className="hidden lg:block relative w-0 flex-1 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 overflow-hidden">
-        {/* Subtle mesh gradient overlay */}
-        <div className="absolute inset-0 opacity-30 mix-blend-soft-light">
-          <div className="absolute top-0 right-0 w-full h-full bg-gradient-radial from-blue-200/20 at-tr to-transparent"></div>
-          <div className="absolute bottom-0 left-0 w-full h-full bg-gradient-radial from-purple-200/20 at-bl to-transparent"></div>
+        {/* Playful gradient overlay */}
+        <div className="absolute inset-0 opacity-40 mix-blend-soft-light">
+          <div className="absolute top-0 right-0 w-full h-full bg-gradient-radial from-blue-300/20 at-tr to-transparent"></div>
+          <div className="absolute bottom-0 left-0 w-full h-full bg-gradient-radial from-red-300/20 at-bl to-transparent"></div>
         </div>
         
-        {/* Brand logos as background elements - refined animations */}
-        <div className="absolute inset-0 overflow-hidden opacity-8">
-          {/* Kigo logo - large floating in background */}
-          <div className="absolute -top-20 -right-20 w-96 h-96 animate-gentle-float">
-            <div className="relative w-full h-full opacity-30">
+        {/* Brand logos as background elements with more playful animations */}
+        <div className="absolute inset-0 overflow-hidden">
+          {/* Kigo logo only - large floating in background */}
+          <div className="absolute -top-10 right-20 w-72 h-72 animate-gentle-float">
+            <div className="relative w-full h-full opacity-15">
               <Image 
-                src="/kigo logo.svg" 
+                src="/kigo logo only.svg" 
                 alt="Kigo Background"
                 fill
                 style={{ objectFit: 'contain' }}
-                className="filter blur-[1px]"
+                className="filter blur-[1px] text-blue-500"
               />
             </div>
           </div>
           
           {/* CVS logo - smaller floating in background */}
-          <div className="absolute bottom-10 left-10 w-80 h-80 animate-gentle-float-reverse">
-            <div className="relative w-full h-full opacity-25">
+          <div className="absolute bottom-20 left-20 w-64 h-64 animate-gentle-float-reverse">
+            <div className="relative w-full h-full opacity-15">
               <Image 
                 src="/logos/cvs-logo.svg" 
                 alt="CVS Background"
@@ -264,118 +264,131 @@ export default function SSOSignIn() {
               />
             </div>
           </div>
-          
-          {/* Additional Kigo logo with different animation */}
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 animate-gentle-pulse">
-            <div className="relative w-full h-full opacity-15">
-              <Image 
-                src="/kigo logo.svg" 
-                alt="Kigo Background"
-                fill
-                style={{ objectFit: 'contain' }}
-                className="filter blur-[1px]"
-              />
-            </div>
-          </div>
         </div>
 
-        {/* Content Overlay */}
+        {/* Content Overlay - More playful co-branded design */}
         <div className="absolute inset-0 flex justify-center items-center z-10">
-          <div className="max-w-md p-8 text-center">
-            {/* Logo Container - Simplified */}
-            <div className="mb-10 relative">
-              {/* Subtle Ring */}
+          <div className="max-w-md text-center">
+            {/* Dynamic Logo Animation Container */}
+            <div className="relative h-80 mb-8">
+              {/* Orbital rings */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-56 h-56 rounded-full border border-blue-200/40"></div>
+                <div className="w-64 h-64 rounded-full border border-blue-300/30 animate-spin-slow"></div>
+                <div className="absolute w-48 h-48 rounded-full border border-red-300/30 animate-spin-reverse-slow"></div>
               </div>
               
-              {/* Logos Container - Streamlined */}
-              <div className="relative bg-white/90 backdrop-blur-md rounded-2xl p-8 border border-blue-100/50 mb-10">
-                <div className="flex flex-col items-center gap-6">
-                  {/* Kigo Logo */}
-                  <div className="bg-white rounded-xl">
-                    <Image 
-                      src="/kigo logo.svg" 
-                      alt="Kigo" 
-                      width={160} 
-                      height={50} 
-                      className="h-10 w-auto" 
-                    />
-                  </div>
+              {/* Central container with brand colors */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="bg-gradient-to-br from-blue-50 to-red-50 rounded-full w-40 h-40 flex items-center justify-center shadow-lg border border-white/50">
+                  <div className="absolute w-full h-full rounded-full bg-gradient-to-br from-blue-500/10 to-red-500/10 animate-pulse-gentle"></div>
                   
-                  {/* Connection Line */}
-                  <div className="w-px h-6 bg-gradient-to-b from-blue-300/50 to-purple-300/50"></div>
-                  
-                  {/* CVS Logo */}
-                  <div className="bg-white rounded-xl">
-                    <Image 
-                      src="/logos/cvs-logo.svg" 
-                      alt="CVS" 
-                      width={110} 
-                      height={30} 
-                      className="h-7 w-auto" 
-                    />
+                  {/* Kigo and CVS logos in an interlinked design */}
+                  <div className="relative w-32 h-32">
+                    {/* Kigo logo only - positioned for interaction */}
+                    <div className="absolute top-0 left-0 w-20 h-20 animate-float-micro">
+                      <Image 
+                        src="/kigo logo only.svg" 
+                        alt="Kigo" 
+                        width={60} 
+                        height={60} 
+                        className="filter drop-shadow"
+                      />
+                    </div>
+                    
+                    {/* CVS logo - positioned for interaction */}
+                    <div className="absolute bottom-0 right-0 w-20 h-16 animate-float-micro-reverse">
+                      <Image 
+                        src="/logos/cvs-logo.svg" 
+                        alt="CVS" 
+                        width={70} 
+                        height={20} 
+                        className="filter drop-shadow"
+                      />
+                    </div>
+                    
+                    {/* Connection line between logos */}
+                    <svg className="absolute inset-0 w-full h-full" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path 
+                        d="M30 30 L98 98" 
+                        stroke="url(#gradient)" 
+                        strokeWidth="2" 
+                        strokeDasharray="6 4"
+                        className="animate-dash-slow"
+                      />
+                      <defs>
+                        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#4B55FD" />
+                          <stop offset="100%" stopColor="#CC0000" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
                   </div>
                 </div>
-                
-                {/* Minimal Particle Effect */}
-                <div className="absolute -top-2 -right-2 w-4 h-4 bg-blue-200/60 rounded-full blur-lg"></div>
-                <div className="absolute -bottom-2 -left-2 w-4 h-4 bg-purple-200/60 rounded-full blur-lg"></div>
+              </div>
+              
+              {/* Orbiting elements */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="relative w-64 h-64">
+                  {/* Orbiting Kigo mini logo */}
+                  <div className="absolute w-10 h-10 animate-orbit">
+                    <div className="bg-white/80 backdrop-blur-sm p-1.5 rounded-full shadow-sm">
+                      <Image 
+                        src="/kigo logo only.svg" 
+                        alt="Kigo" 
+                        width={28} 
+                        height={28} 
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Orbiting CVS mini logo */}
+                  <div className="absolute w-10 h-10 animate-orbit-reverse animation-delay-500">
+                    <div className="bg-white/80 backdrop-blur-sm p-1.5 rounded-full shadow-sm">
+                      <div className="w-8 h-5 relative">
+                        <Image 
+                          src="/logos/cvs-logo.svg" 
+                          alt="CVS" 
+                          fill
+                          style={{ objectFit: 'contain' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Additional orbiting elements with brand colors */}
+                  <div className="absolute w-4 h-4 bg-blue-400/70 rounded-full blur-sm animate-orbit-inner animation-delay-700"></div>
+                  <div className="absolute w-4 h-4 bg-red-400/70 rounded-full blur-sm animate-orbit-inner-reverse animation-delay-300"></div>
+                </div>
+              </div>
+              
+              {/* Particle effects */}
+              <div className="absolute w-full h-full pointer-events-none">
+                <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-blue-400 rounded-full blur-sm animate-pulse"></div>
+                <div className="absolute bottom-1/4 right-1/4 w-2 h-2 bg-red-400 rounded-full blur-sm animate-pulse animation-delay-500"></div>
+                <div className="absolute top-3/4 right-1/3 w-1 h-1 bg-blue-300 rounded-full blur-sm animate-pulse animation-delay-700"></div>
+                <div className="absolute bottom-1/3 left-1/3 w-1 h-1 bg-red-300 rounded-full blur-sm animate-pulse animation-delay-300"></div>
               </div>
             </div>
             
             <h2 className="text-xl font-medium text-gray-800 mb-2">Unified Support Experience</h2>
-            <p className="text-gray-600 mb-8">
+            <p className="text-gray-600 mb-6">
               A seamless integration between Kigo Pro and CVS ExtraCare
             </p>
             
-            {/* Streamlined features - single row with icons */}
-            <div className="flex justify-between items-center gap-3 mb-8">
-              <div className="text-blue-500">
-                <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-                </svg>
-              </div>
-              
-              <div className="text-purple-500">
-                <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <polyline points="12 6 12 12 16 14"></polyline>
-                </svg>
-              </div>
-              
-              <div className="text-blue-500">
-                <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="9" cy="7" r="4"></circle>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                </svg>
-              </div>
-              
-              <div className="text-purple-500">
-                <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                  <polyline points="21 15 16 10 5 21"></polyline>
-                </svg>
-              </div>
+            {/* Streamlined feature pills */}
+            <div className="flex flex-wrap justify-center gap-2 text-xs mb-4">
+              <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full">Integrated Platform</span>
+              <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full">Real-time Updates</span>
+              <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full">Customer-Centric</span>
+              <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full">Visual Analytics</span>
             </div>
             
-            {/* Simple pill badges instead of cards */}
-            <div className="flex flex-wrap justify-center gap-2 text-sm">
-              <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full">Integrated</span>
-              <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full">Real-time</span>
-              <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full">Customer-Centric</span>
-              <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full">Visual Analytics</span>
+            {/* Footer with brand colors */}
+            <div className="mt-6 text-center">
+              <div className="text-gray-500 text-xs">
+                © 2023 Kigo + CVS Pharmacy Partnership
+              </div>
             </div>
-          </div>
-        </div>
-        
-        {/* Bottom Copyright */}
-        <div className="absolute bottom-6 left-0 right-0 flex justify-center">
-          <div className="text-gray-500 text-xs">
-            © 2023 Kigo + CVS Pharmacy Partnership
           </div>
         </div>
       </div>

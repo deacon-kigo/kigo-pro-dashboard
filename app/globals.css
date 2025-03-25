@@ -313,3 +313,131 @@ body.spotlight-open nav {
 .at-bl {
   background-position: bottom left;
 }
+
+/* Playful co-branded animation keyframes */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin-reverse-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes orbit {
+  from {
+    transform: translate(32px, 0) rotate(0deg) translateX(70px) rotate(0deg);
+  }
+  to {
+    transform: translate(32px, 0) rotate(360deg) translateX(70px) rotate(-360deg);
+  }
+}
+
+@keyframes orbit-reverse {
+  from {
+    transform: translate(32px, 0) rotate(0deg) translateX(70px) rotate(0deg);
+  }
+  to {
+    transform: translate(32px, 0) rotate(-360deg) translateX(70px) rotate(360deg);
+  }
+}
+
+@keyframes orbit-inner {
+  from {
+    transform: translate(32px, 0) rotate(0deg) translateX(40px) rotate(0deg);
+  }
+  to {
+    transform: translate(32px, 0) rotate(360deg) translateX(40px) rotate(-360deg);
+  }
+}
+
+@keyframes orbit-inner-reverse {
+  from {
+    transform: translate(32px, 0) rotate(0deg) translateX(40px) rotate(0deg);
+  }
+  to {
+    transform: translate(32px, 0) rotate(-360deg) translateX(40px) rotate(360deg);
+  }
+}
+
+@keyframes pulse-gentle {
+  0%, 100% {
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+
+@keyframes float-micro {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes float-micro-reverse {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+}
+
+@keyframes dash-slow {
+  to {
+    stroke-dashoffset: 20;
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 24s linear infinite;
+}
+
+.animate-spin-reverse-slow {
+  animation: spin-reverse-slow 20s linear infinite;
+}
+
+.animate-orbit {
+  animation: orbit 20s linear infinite;
+}
+
+.animate-orbit-reverse {
+  animation: orbit-reverse 15s linear infinite;
+}
+
+.animate-orbit-inner {
+  animation: orbit-inner 12s linear infinite;
+}
+
+.animate-orbit-inner-reverse {
+  animation: orbit-inner-reverse 10s linear infinite;
+}
+
+.animate-pulse-gentle {
+  animation: pulse-gentle 4s ease-in-out infinite;
+}
+
+.animate-float-micro {
+  animation: float-micro 3s ease-in-out infinite;
+}
+
+.animate-float-micro-reverse {
+  animation: float-micro-reverse 3s ease-in-out infinite;
+}
+
+.animate-dash-slow {
+  animation: dash-slow 40s linear infinite;
+}
