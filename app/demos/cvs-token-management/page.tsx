@@ -1016,9 +1016,9 @@ export default function CVSTokenManagement() {
     const filteredTokens = getFilteredTokens();
     
     return (
-      <div className="bg-white rounded-lg shadow-md h-full">
+      <div className="bg-white rounded-lg shadow-md h-full flex flex-col">
         {/* Token Filters and List Section - Combined for cohesiveness */}
-        <div className="p-6">
+        <div className="p-6 flex-grow flex flex-col">
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center">
               <FunnelIcon className="h-5 w-5 mr-2 text-gray-500" />
@@ -1269,7 +1269,7 @@ export default function CVSTokenManagement() {
 
           {/* Token List - Integrated directly with filters */}
           {filteredTokens.length > 0 ? (
-            <div className="mt-4">
+            <div className="mt-4 flex-grow flex flex-col">
               <div className="flex justify-between items-center mb-4">
                 <p className="text-sm text-gray-500">{filteredTokens.length} tokens</p>
                 <div className="flex items-center space-x-2">
@@ -1309,7 +1309,7 @@ export default function CVSTokenManagement() {
                   </button>
                 </div>
               </div>
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto flex-grow">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
@@ -1474,7 +1474,7 @@ export default function CVSTokenManagement() {
               </div>
             </div>
           ) : (
-            <div className="text-center text-gray-500 py-8">
+            <div className="text-center text-gray-500 py-8 flex-grow flex flex-col justify-center">
               <TicketIcon className="h-12 w-12 mx-auto mb-2 text-gray-400" />
               <p className="text-lg font-medium">No tokens found</p>
               <p>Adjust your filters or add new tokens to this customer.</p>
@@ -1491,10 +1491,10 @@ export default function CVSTokenManagement() {
     );
   };
 
-  // Add the renderTokens function here
+  // Modify the renderTokens function to have full height
   const renderTokens = () => {
     return (
-      <div className="space-y-4">
+      <div className="h-full">
         {renderTokenManagement()}
       </div>
     );
