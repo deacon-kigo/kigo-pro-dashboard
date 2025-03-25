@@ -230,73 +230,78 @@ export default function SSOSignIn() {
       </div>
 
       {/* Illustration Section - Right Side */}
-      <div className="hidden lg:block relative w-0 flex-1 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 overflow-hidden">
-        {/* Subtle gradient overlay */}
-        <div className="absolute inset-0 opacity-20 mix-blend-soft-light">
-          <div className="absolute top-0 right-0 w-full h-full bg-gradient-radial from-blue-200/10 at-tr to-transparent"></div>
-          <div className="absolute bottom-0 left-0 w-full h-full bg-gradient-radial from-red-200/10 at-bl to-transparent"></div>
+      <div className="hidden lg:block relative w-0 flex-1 overflow-hidden">
+        {/* Soft pastel gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50/20 to-pink-50/20">
+          {/* Much more subtle dot pattern */}
+          <div className="absolute inset-0 opacity-[0.015]" style={{ backgroundImage: 'radial-gradient(#94A3B8 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
         </div>
         
-        {/* Floating elements - more subtle and spaced out */}
+        {/* Floating elements more widely spaced */}
         <div className="absolute inset-0 overflow-hidden">
-          {/* Kigo logo - floating in background */}
-          <div className="absolute top-1/6 right-1/6 w-64 h-64 animate-gentle-float animation-delay-300">
-            <div className="relative w-full h-full opacity-15">
+          {/* Kigo logo - positioned further in the corner */}
+          <div className="absolute top-[5%] right-[5%] w-64 h-64 animate-gentle-float animation-delay-500">
+            <div className="relative w-full h-full opacity-10">
               <Image 
                 src="/kigo logo only.svg" 
                 alt="Kigo Background"
                 fill
                 style={{ objectFit: 'contain' }}
-                className="filter blur-[1px]"
               />
             </div>
           </div>
           
-          {/* CVS logo - floating in background */}
-          <div className="absolute bottom-1/6 left-1/6 w-56 h-56 animate-gentle-float-reverse animation-delay-700">
-            <div className="relative w-full h-full opacity-15">
+          {/* CVS logo - positioned further in the opposite corner */}
+          <div className="absolute bottom-[5%] left-[5%] w-56 h-56 animate-gentle-float-reverse animation-delay-700">
+            <div className="relative w-full h-full opacity-10">
               <Image 
                 src="/logos/cvs-logo.svg" 
                 alt="CVS Background"
                 fill
                 style={{ objectFit: 'contain' }}
-                className="filter blur-[1px]"
               />
             </div>
           </div>
           
-          {/* Subtle floating circles - more spaced out */}
-          <div className="absolute top-1/4 left-1/2 w-24 h-24 rounded-full bg-blue-500/5 animate-gentle-float-slow"></div>
-          <div className="absolute bottom-1/5 right-1/5 w-32 h-32 rounded-full bg-red-500/5 animate-gentle-float-reverse-slow animation-delay-500"></div>
-          <div className="absolute top-3/4 left-1/5 w-16 h-16 rounded-full bg-blue-500/5 animate-gentle-float-slow animation-delay-700"></div>
-          <div className="absolute bottom-1/3 right-1/2 w-20 h-20 rounded-full bg-red-500/5 animate-gentle-float-reverse-slow animation-delay-300"></div>
+          {/* More widely spaced circle elements */}
+          {/* Outlined circles - moved to corners */}
+          <div className="absolute top-[8%] left-[40%] w-32 h-32 rounded-full border border-blue-200 animate-gentle-float-slow"></div>
+          <div className="absolute bottom-[8%] right-[30%] w-44 h-44 rounded-full border border-red-200 animate-gentle-float-reverse-slow animation-delay-300"></div>
           
-          {/* Additional bubbles for more spacious feel */}
-          <div className="absolute top-2/3 right-1/4 w-14 h-14 rounded-full bg-purple-500/5 animate-gentle-float-slow animation-delay-200"></div>
-          <div className="absolute bottom-2/3 left-1/3 w-28 h-28 rounded-full bg-pink-500/5 animate-gentle-float-reverse-slow animation-delay-800"></div>
+          {/* Solid circles with softer shadows - spread wider */}
+          <div className="absolute top-[65%] left-[20%] w-24 h-24 rounded-full bg-blue-100/20 shadow-[0_4px_20px_rgba(0,0,0,0.01)] animate-gentle-float-slow animation-delay-700"></div>
+          <div className="absolute top-[15%] right-[25%] w-16 h-16 rounded-full bg-pink-100/20 shadow-[0_4px_15px_rgba(0,0,0,0.01)] animate-gentle-float-reverse-slow animation-delay-500"></div>
+          <div className="absolute bottom-[35%] right-[8%] w-28 h-28 rounded-full bg-purple-100/15 shadow-[0_4px_20px_rgba(0,0,0,0.01)] animate-gentle-float-slow animation-delay-200"></div>
+          
+          {/* Additional elements to fill the canvas better */}
+          <div className="absolute top-[40%] left-[8%] w-20 h-20 rounded-full border border-blue-100 animate-gentle-float-slow animation-delay-600"></div>
+          <div className="absolute bottom-[55%] right-[12%] w-18 h-18 rounded-full bg-blue-50/20 animate-gentle-float-reverse-slow animation-delay-100"></div>
+          
+          {/* Depth elements - more spread out */}
+          <div className="absolute top-[80%] right-[35%] w-36 h-36 rounded-full bg-blue-100/5 blur-sm animate-gentle-float-reverse-slow animation-delay-800"></div>
+          <div className="absolute top-[30%] left-[65%] w-40 h-40 rounded-full bg-red-100/5 blur-sm animate-gentle-float-slow animation-delay-400"></div>
         </div>
 
-        {/* Content Overlay - Minimalist design with more spacing */}
+        {/* Content Overlay - Simplified design */}
         <div className="absolute inset-0 flex justify-center items-center z-10">
           <div className="max-w-md text-center px-10">
-            {/* Removed orbiting animation container */}
-            <div className="relative mb-20">
-              {/* Simple headline */}
-              <h2 className="text-5xl font-extrabold mb-8 bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent">Unified Support Experience</h2>
+            <div className="relative mb-16">
+              {/* Softer pastel gradient typography */}
+              <h2 className="text-5xl font-extrabold mb-8 bg-gradient-to-r from-blue-400 to-blue-300 bg-clip-text text-transparent">Unified Support <span className="bg-gradient-to-r from-red-400 to-red-300 bg-clip-text text-transparent">Experience</span></h2>
               
-              <p className="text-gray-600 mb-12 text-lg">
+              <p className="text-gray-600 mb-10 text-lg">
                 A seamless integration between Kigo Pro and CVS ExtraCare
               </p>
               
-              {/* Larger feature tags in one line with more spacing */}
+              {/* Simplified feature tags */}
               <div className="flex justify-center gap-8 text-base">
-                <span className="bg-blue-100/70 text-blue-700 px-8 py-3 rounded-md">Token Management</span>
-                <span className="bg-red-100/70 text-red-700 px-8 py-3 rounded-md">ExtraCare Benefits</span>
+                <span className="bg-white/80 text-blue-400 px-6 py-2 rounded-md shadow-[0_2px_5px_rgba(0,0,0,0.01)]">Token Management</span>
+                <span className="bg-white/80 text-red-400 px-6 py-2 rounded-md shadow-[0_2px_5px_rgba(0,0,0,0.01)]">ExtraCare Benefits</span>
               </div>
             </div>
             
             {/* Footer */}
-            <div className="mt-24 text-center">
+            <div className="mt-20 text-center">
               <div className="text-gray-400 text-xs">
                 © 2023 Kigo + CVS Pharmacy Partnership
               </div>
