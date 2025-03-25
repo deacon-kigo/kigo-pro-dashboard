@@ -230,12 +230,18 @@ export default function SSOSignIn() {
       </div>
 
       {/* Illustration Section - Right Side */}
-      <div className="hidden lg:block relative w-0 flex-1 bg-gradient-to-br from-blue-50 to-purple-100 overflow-hidden">
-        {/* Brand logos as background elements */}
-        <div className="absolute inset-0 overflow-hidden opacity-10">
+      <div className="hidden lg:block relative w-0 flex-1 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 overflow-hidden">
+        {/* Subtle mesh gradient overlay */}
+        <div className="absolute inset-0 opacity-30 mix-blend-soft-light">
+          <div className="absolute top-0 right-0 w-full h-full bg-gradient-radial from-blue-200/20 at-tr to-transparent"></div>
+          <div className="absolute bottom-0 left-0 w-full h-full bg-gradient-radial from-purple-200/20 at-bl to-transparent"></div>
+        </div>
+        
+        {/* Brand logos as background elements - refined animations */}
+        <div className="absolute inset-0 overflow-hidden opacity-8">
           {/* Kigo logo - large floating in background */}
-          <div className="absolute -top-20 -right-20 w-96 h-96 animate-float-slow">
-            <div className="relative w-full h-full opacity-40">
+          <div className="absolute -top-20 -right-20 w-96 h-96 animate-gentle-float">
+            <div className="relative w-full h-full opacity-30">
               <Image 
                 src="/kigo logo.svg" 
                 alt="Kigo Background"
@@ -247,33 +253,7 @@ export default function SSOSignIn() {
           </div>
           
           {/* CVS logo - smaller floating in background */}
-          <div className="absolute bottom-10 left-10 w-80 h-80 animate-float-slower rotate-6">
-            <div className="relative w-full h-full opacity-30">
-              <Image 
-                src="/logos/cvs-logo.svg" 
-                alt="CVS Background"
-                fill
-                style={{ objectFit: 'contain' }}
-                className="filter blur-[1px]"
-              />
-            </div>
-          </div>
-          
-          {/* Additional Kigo logo - different position and animation */}
-          <div className="absolute top-1/3 left-1/4 w-64 h-64 animate-float-medium rotate-12">
-            <div className="relative w-full h-full opacity-20">
-              <Image 
-                src="/kigo logo.svg" 
-                alt="Kigo Background"
-                fill
-                style={{ objectFit: 'contain' }}
-                className="filter blur-[1px]"
-              />
-            </div>
-          </div>
-          
-          {/* Additional CVS logo - different position and animation */}
-          <div className="absolute top-2/3 right-1/4 w-48 h-48 animate-float-fast -rotate-12">
+          <div className="absolute bottom-10 left-10 w-80 h-80 animate-gentle-float-reverse">
             <div className="relative w-full h-full opacity-25">
               <Image 
                 src="/logos/cvs-logo.svg" 
@@ -284,112 +264,118 @@ export default function SSOSignIn() {
               />
             </div>
           </div>
+          
+          {/* Additional Kigo logo with different animation */}
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 animate-gentle-pulse">
+            <div className="relative w-full h-full opacity-15">
+              <Image 
+                src="/kigo logo.svg" 
+                alt="Kigo Background"
+                fill
+                style={{ objectFit: 'contain' }}
+                className="filter blur-[1px]"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Content Overlay */}
         <div className="absolute inset-0 flex justify-center items-center z-10">
-          <div className="max-w-lg p-8 text-center">
-            {/* Logo Animation Container */}
+          <div className="max-w-md p-8 text-center">
+            {/* Logo Container - Simplified */}
             <div className="mb-10 relative">
-              {/* Animated Ring */}
+              {/* Subtle Ring */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-64 h-64 rounded-full border-4 border-blue-200/30 animate-pulse"></div>
-                <div className="absolute w-56 h-56 rounded-full border-2 border-purple-200/40 animate-ping animation-delay-1000"></div>
+                <div className="w-56 h-56 rounded-full border border-blue-200/40"></div>
               </div>
               
-              {/* Logos Container */}
-              <div className="relative bg-white backdrop-blur-lg rounded-2xl p-8 border border-blue-100 shadow-lg mb-10 hover:shadow-xl transition-shadow duration-300">
+              {/* Logos Container - Streamlined */}
+              <div className="relative bg-white/90 backdrop-blur-md rounded-2xl p-8 border border-blue-100/50 mb-10">
                 <div className="flex flex-col items-center gap-6">
-                  {/* Kigo Logo with proper color background and subtle hover effect */}
-                  <div className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                  {/* Kigo Logo */}
+                  <div className="bg-white rounded-xl">
                     <Image 
                       src="/kigo logo.svg" 
                       alt="Kigo" 
-                      width={180} 
-                      height={60} 
-                      className="h-12 w-auto" 
+                      width={160} 
+                      height={50} 
+                      className="h-10 w-auto" 
                     />
                   </div>
                   
-                  {/* Connection Line with animation */}
-                  <div className="w-px h-8 bg-gradient-to-b from-blue-300 to-purple-300 animate-pulse"></div>
+                  {/* Connection Line */}
+                  <div className="w-px h-6 bg-gradient-to-b from-blue-300/50 to-purple-300/50"></div>
                   
-                  {/* CVS Logo with proper color background and subtle hover effect */}
-                  <div className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                  {/* CVS Logo */}
+                  <div className="bg-white rounded-xl">
                     <Image 
                       src="/logos/cvs-logo.svg" 
                       alt="CVS" 
-                      width={120} 
+                      width={110} 
                       height={30} 
-                      className="h-8 w-auto" 
+                      className="h-7 w-auto" 
                     />
                   </div>
                 </div>
                 
-                {/* Enhanced Particle Effects */}
-                <div className="absolute -top-4 -right-4 w-8 h-8 bg-blue-200 rounded-full blur-xl opacity-70 animate-pulse"></div>
-                <div className="absolute -bottom-4 -left-4 w-8 h-8 bg-red-200 rounded-full blur-xl opacity-70 animate-pulse animation-delay-500"></div>
-                <div className="absolute top-1/2 right-0 w-4 h-4 bg-purple-200 rounded-full blur-lg opacity-60 animate-ping animation-delay-700"></div>
-                <div className="absolute bottom-1/2 left-0 w-4 h-4 bg-blue-300 rounded-full blur-lg opacity-60 animate-ping animation-delay-300"></div>
+                {/* Minimal Particle Effect */}
+                <div className="absolute -top-2 -right-2 w-4 h-4 bg-blue-200/60 rounded-full blur-lg"></div>
+                <div className="absolute -bottom-2 -left-2 w-4 h-4 bg-purple-200/60 rounded-full blur-lg"></div>
               </div>
             </div>
             
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Unified Support Experience</h2>
-            <p className="text-gray-600 text-lg mb-8">
-              A seamless integration between Kigo Pro and CVS ExtraCare systems
+            <h2 className="text-xl font-medium text-gray-800 mb-2">Unified Support Experience</h2>
+            <p className="text-gray-600 mb-8">
+              A seamless integration between Kigo Pro and CVS ExtraCare
             </p>
             
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-5 border border-blue-100 hover:bg-white/90 transition shadow-sm hover:shadow-md transform hover:-translate-y-1 transition-all duration-300">
-                <div className="text-red-400 mb-2">
-                  <svg className="w-6 h-6 inline-block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-                  </svg>
-                </div>
-                <h3 className="text-gray-800 font-semibold mb-1">Integrated Platform</h3>
-                <p className="text-gray-600 text-sm">Unified experience across all systems</p>
+            {/* Streamlined features - single row with icons */}
+            <div className="flex justify-between items-center gap-3 mb-8">
+              <div className="text-blue-500">
+                <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                </svg>
               </div>
-              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-5 border border-blue-100 hover:bg-white/90 transition shadow-sm hover:shadow-md transform hover:-translate-y-1 transition-all duration-300">
-                <div className="text-blue-400 mb-2">
-                  <svg className="w-6 h-6 inline-block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polyline points="12 6 12 12 16 14"></polyline>
-                  </svg>
-                </div>
-                <h3 className="text-gray-800 font-semibold mb-1">Real-time Updates</h3>
-                <p className="text-gray-600 text-sm">Instant access to customer information</p>
+              
+              <div className="text-purple-500">
+                <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
               </div>
-              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-5 border border-blue-100 hover:bg-white/90 transition shadow-sm hover:shadow-md transform hover:-translate-y-1 transition-all duration-300">
-                <div className="text-blue-400 mb-2">
-                  <svg className="w-6 h-6 inline-block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                  </svg>
-                </div>
-                <h3 className="text-gray-800 font-semibold mb-1">Customer-Centric</h3>
-                <p className="text-gray-600 text-sm">Designed around customer needs</p>
+              
+              <div className="text-blue-500">
+                <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
               </div>
-              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-5 border border-blue-100 hover:bg-white/90 transition shadow-sm hover:shadow-md transform hover:-translate-y-1 transition-all duration-300">
-                <div className="text-red-400 mb-2">
-                  <svg className="w-6 h-6 inline-block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                    <polyline points="21 15 16 10 5 21"></polyline>
-                  </svg>
-                </div>
-                <h3 className="text-gray-800 font-semibold mb-1">Visual Analytics</h3>
-                <p className="text-gray-600 text-sm">Smart insights for better support</p>
+              
+              <div className="text-purple-500">
+                <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
               </div>
+            </div>
+            
+            {/* Simple pill badges instead of cards */}
+            <div className="flex flex-wrap justify-center gap-2 text-sm">
+              <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full">Integrated</span>
+              <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full">Real-time</span>
+              <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full">Customer-Centric</span>
+              <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full">Visual Analytics</span>
             </div>
           </div>
         </div>
         
         {/* Bottom Copyright */}
-        <div className="absolute bottom-8 left-0 right-0 flex justify-center">
-          <div className="text-gray-500 text-sm">
-            © 2023 Kigo + CVS Pharmacy Partnership | All rights reserved
+        <div className="absolute bottom-6 left-0 right-0 flex justify-center">
+          <div className="text-gray-500 text-xs">
+            © 2023 Kigo + CVS Pharmacy Partnership
           </div>
         </div>
       </div>
