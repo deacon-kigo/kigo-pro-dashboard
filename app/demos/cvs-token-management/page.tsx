@@ -509,6 +509,10 @@ export default function CVSTokenManagement() {
   const [tokenSearchInput, setTokenSearchInput] = useState('');
   const [isTokenSearchFocused, setIsTokenSearchFocused] = useState(false);
   
+  // Add state for token catalog search
+  const [catalogSearchInput, setCatalogSearchInput] = useState('');
+  const [filteredCatalogTokens, setFilteredCatalogTokens] = useState(tokenCatalog);
+  
   // Initialize Redux state only once on the client-side
   useEffect(() => {
     setIsClient(true);
@@ -1170,19 +1174,19 @@ export default function CVSTokenManagement() {
                   <p className="text-sm font-medium text-gray-700 mb-2">Date Range</p>
                   <div className="space-y-2">
                     <div>
-                      <label className="block text-xs text-gray-500">From:</label>
+                      <label className="block text-xs text-gray-500 mb-1">From:</label>
                       <input
                         type="date"
-                        className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                        className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full py-2 px-3 shadow-sm sm:text-sm border-gray-300 rounded-md"
                         value={tokenFilters.dateRange.start}
                         onChange={(e) => dispatch(updateTokenFilters({ filterType: 'dateStart', value: e.target.value }))}
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500">To:</label>
+                      <label className="block text-xs text-gray-500 mb-1">To:</label>
                       <input
                         type="date"
-                        className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                        className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full py-2 px-3 shadow-sm sm:text-sm border-gray-300 rounded-md"
                         value={tokenFilters.dateRange.end}
                         onChange={(e) => dispatch(updateTokenFilters({ filterType: 'dateEnd', value: e.target.value }))}
                       />
@@ -1192,13 +1196,13 @@ export default function CVSTokenManagement() {
               </div>
               
               {/* Merchant filter & search */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Merchant</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Merchant</label>
                   <div className="mt-1">
                     <input
                       type="text"
-                      className="focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      className="focus:ring-blue-500 focus:border-blue-500 block w-full py-2 px-3 shadow-sm sm:text-sm border-gray-300 rounded-md"
                       placeholder="Filter by store"
                       value={tokenFilters.merchant}
                       onChange={(e) => dispatch(updateTokenFilters({ filterType: 'merchant', value: e.target.value }))}
@@ -1207,11 +1211,11 @@ export default function CVSTokenManagement() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Search</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
                   <div className="mt-1">
                     <input
                       type="text"
-                      className="focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      className="focus:ring-blue-500 focus:border-blue-500 block w-full py-2 px-3 shadow-sm sm:text-sm border-gray-300 rounded-md"
                       placeholder="Search by name, description..."
                       value={tokenSearchInput}
                       onChange={(e) => {
@@ -1228,7 +1232,7 @@ export default function CVSTokenManagement() {
           {/* Token List - Integrated directly with filters */}
           {filteredTokens.length > 0 ? (
             <div className="mt-4">
-              <div className="flex justify-between items-center mb-2">
+              <div className="flex justify-between items-center mb-4">
                 <p className="text-sm text-gray-500">{filteredTokens.length} tokens</p>
                 <div className="flex items-center space-x-2">
                   <span className="text-sm text-gray-500">Sort by:</span>
@@ -1267,72 +1271,178 @@ export default function CVSTokenManagement() {
                   </button>
                 </div>
               </div>
-              <div className="border divide-y rounded-lg overflow-hidden">
-                {filteredTokens.map(token => (
-                  <div key={token.id} className="p-4 hover:bg-gray-50">
-                    <div className="flex justify-between">
-                      <div onClick={() => dispatch(selectToken(token.id))} className="cursor-pointer flex-1">
-                        <h4 className="font-medium text-gray-900 flex items-center">
-                          <span className="mr-2">
-                            {token.name}
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('name')}>
+                        <div className="flex items-center space-x-1">
+                          <span>Name</span>
+                          {tokenSort.field === 'name' && (
+                            tokenSort.direction === 'asc' ? 
+                              <ArrowUpIcon className="h-4 w-4" /> : 
+                              <ArrowDownIcon className="h-4 w-4" />
+                          )}
+                        </div>
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('type')}>
+                        <div className="flex items-center space-x-1">
+                          <span>Type</span>
+                          {tokenSort.field === 'type' && (
+                            tokenSort.direction === 'asc' ? 
+                              <ArrowUpIcon className="h-4 w-4" /> : 
+                              <ArrowDownIcon className="h-4 w-4" />
+                          )}
+                        </div>
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('state')}>
+                        <div className="flex items-center space-x-1">
+                          <span>Status</span>
+                          {tokenSort.field === 'state' && (
+                            tokenSort.direction === 'asc' ? 
+                              <ArrowUpIcon className="h-4 w-4" /> : 
+                              <ArrowDownIcon className="h-4 w-4" />
+                          )}
+                        </div>
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('value')}>
+                        <div className="flex items-center space-x-1">
+                          <span>Value</span>
+                          {tokenSort.field === 'value' && (
+                            tokenSort.direction === 'asc' ? 
+                              <ArrowUpIcon className="h-4 w-4" /> : 
+                              <ArrowDownIcon className="h-4 w-4" />
+                          )}
+                        </div>
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => handleSort('expirationDate')}>
+                        <div className="flex items-center space-x-1">
+                          <span>Expires</span>
+                          {tokenSort.field === 'expirationDate' && (
+                            tokenSort.direction === 'asc' ? 
+                              <ArrowUpIcon className="h-4 w-4" /> : 
+                              <ArrowDownIcon className="h-4 w-4" />
+                          )}
+                        </div>
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredTokens.map(token => (
+                      <tr 
+                        key={token.id} 
+                        className={`${selectedToken?.id === token.id ? 'bg-blue-50' : 'hover:bg-gray-50'} cursor-pointer`}
+                        onClick={() => dispatch(selectToken(token.id))}
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-blue-100 rounded-full">
+                              <TicketIcon className="h-6 w-6 text-blue-600" />
+                            </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900">
+                                {token.name}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {token.description.length > 50 ? `${token.description.substring(0, 50)}...` : token.description}
+                              </div>
+                              {token.disputed && (
+                                <div className="text-xs text-red-600 font-medium mt-1 flex items-center">
+                                  <ExclamationCircleIcon className="h-4 w-4 mr-1" />
+                                  Disputed {token.notHonored && '(Not Honored)'}
+                                </div>
+                              )}
+                              {token.supportActions?.isReissued && (
+                                <div className="text-xs text-blue-600 font-medium mt-1 flex items-center">
+                                  <ArrowPathIcon className="h-4 w-4 mr-1" />
+                                  Reissued
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTokenTypeBadgeColor(token.type)}`}>
+                            {token.type}
                           </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTokenStateBadgeColor(token.state)}`}>
                             {token.state}
                           </span>
-                          <span className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTokenTypeBadgeColor(token.type)}`}>
-                            {token.type}
-                          </span>
-                        </h4>
-                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                          {token.description}
-                        </p>
-                        <div className="mt-2 flex flex-wrap gap-2 text-xs text-gray-500">
-                          <span>Value: <span className="font-medium">{token.value}</span></span>
-                          <span>•</span>
-                          <span>Expires: {formatDate(token.expirationDate)}</span>
-                          {token.merchantName && (
-                            <>
-                              <span>•</span>
-                              <span>Merchant: {token.merchantName}</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex flex-col justify-center space-y-2 ml-4">
-                        <button
-                          onClick={() => reissueTokenHandler(token.id)}
-                          className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center"
-                          disabled={token.state !== 'Expired'}
-                        >
-                          <ArrowPathIcon className="h-3 w-3 mr-1" />
-                          Reissue
-                        </button>
-                        <button
-                          onClick={() => markTokenDisputedHandler(token.id)}
-                          className="text-xs text-yellow-600 hover:text-yellow-800 font-medium flex items-center"
-                        >
-                          <ExclamationCircleIcon className="h-3 w-3 mr-1" />
-                          Dispute
-                        </button>
-                        <button
-                          onClick={() => removeTokenFromCustomerHandler(token.id)}
-                          className="text-xs text-red-600 hover:text-red-800 font-medium flex items-center"
-                        >
-                          <TrashIcon className="h-3 w-3 mr-1" />
-                          Remove
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {token.value}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {formatDate(token.expirationDate)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex justify-end space-x-2">
+                            <a
+                              href="https://www.cvs.com/extracare/home/"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewInExtraCare(token.externalUrl || "https://www.cvs.com/extracare/home/");
+                              }}
+                              className="text-blue-600 hover:text-blue-900"
+                              title="View in ExtraCare"
+                            >
+                              <ExternalLinkIcon className="h-5 w-5" />
+                            </a>
+                            {token.state === 'Expired' && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  reissueTokenHandler(token.id);
+                                }}
+                                className="text-green-600 hover:text-green-900"
+                                title="Reissue token"
+                              >
+                                <ArrowPathIcon className="h-5 w-5" />
+                              </button>
+                            )}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                markTokenDisputedHandler(token.id);
+                              }}
+                              className="text-yellow-600 hover:text-yellow-900"
+                              title="Mark as disputed"
+                            >
+                              <ExclamationCircleIcon className="h-5 w-5" />
+                            </button>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeTokenFromCustomerHandler(token.id);
+                              }}
+                              className="text-red-600 hover:text-red-900"
+                              title="Remove token"
+                            >
+                              <TrashIcon className="h-5 w-5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           ) : (
-            <div className="py-8 text-center">
-              <p className="text-gray-500 mb-2">No tokens match your filters</p>
+            <div className="text-center text-gray-500 py-8">
+              <TicketIcon className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+              <p className="text-lg font-medium">No tokens found</p>
+              <p>Adjust your filters or add new tokens to this customer.</p>
               <button
                 onClick={() => dispatch(updateTokenFilters({ filterType: 'clearAll', value: null }))}
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                className="mt-4 text-blue-600 hover:text-blue-800 text-sm font-medium"
               >
                 Clear all filters
               </button>
@@ -1465,24 +1575,45 @@ export default function CVSTokenManagement() {
     );
   };
 
+  // Add this function to filter catalog tokens based on search input
+  const filterCatalogTokens = (searchTerm: string) => {
+    if (!searchTerm.trim()) {
+      setFilteredCatalogTokens(tokenCatalog);
+      return;
+    }
+    
+    const filtered = tokenCatalog.filter(token => 
+      token.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      token.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      token.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      token.value.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
+    setFilteredCatalogTokens(filtered);
+  };
+  
+  // Initialize the filtered token catalog on load
+  useEffect(() => {
+    setFilteredCatalogTokens(tokenCatalog);
+  }, [tokenCatalog]);
+
   // Render token catalog modal for adding tokens to customers
   const renderTokenCatalogModal = () => {
     if (!showTokenCatalog) return null;
     
     return (
-      <div className="fixed inset-0 overflow-y-auto">
-        <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-          <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-            <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
-          </div>
-          
+      <div className="fixed inset-0 overflow-y-auto z-50">
+        {/* Full page overlay */}
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        
+        <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
           <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
           
-          <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+          <div className="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
             <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
               <div className="sm:flex sm:items-start">
                 <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center justify-between">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center justify-between border-b pb-3 mb-4">
                     <span>Add Token to Customer</span>
                     <button 
                       onClick={() => dispatch(toggleTokenCatalog())}
@@ -1497,36 +1628,102 @@ export default function CVSTokenManagement() {
                       Select a token to add to {selectedCustomer ? `${selectedCustomer.firstName} ${selectedCustomer.lastName}` : 'customer'}
                     </p>
                     
-                    <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
-                      {tokenCatalog.map(token => (
-                        <div 
-                          key={token.id} 
-                          className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
-                          onClick={() => {
-                            addTokenToCustomerHandler(token.id);
-                            dispatch(toggleTokenCatalog());
-                          }}
-                        >
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h4 className="font-medium text-gray-900">{token.name}</h4>
-                              <p className="text-sm text-gray-600 mt-1">{token.description}</p>
-                              <div className="flex items-center mt-2 space-x-2">
-                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTokenTypeBadgeColor(token.type)}`}>
-                                  {token.type}
-                                </span>
-                                <span className="text-sm text-gray-700">Value: {token.value}</span>
-                              </div>
-                            </div>
-                            <span className="text-blue-600 flex items-center">
-                              <PlusCircleIcon className="h-5 w-5" />
-                            </span>
-                          </div>
-                          <div className="mt-2 text-xs text-gray-500">
-                            Expires: {formatDate(token.expirationDate)}
-                          </div>
+                    {/* Add search input for token catalog */}
+                    <div className="mb-4">
+                      <div className="relative rounded-md shadow-sm">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
                         </div>
-                      ))}
+                        <input
+                          type="text"
+                          className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 pr-12 sm:text-sm border-gray-300 rounded-md py-2"
+                          placeholder="Search tokens by name, description, type or value..."
+                          value={catalogSearchInput}
+                          onChange={(e) => {
+                            setCatalogSearchInput(e.target.value);
+                            filterCatalogTokens(e.target.value);
+                          }}
+                        />
+                        {catalogSearchInput && (
+                          <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setCatalogSearchInput('');
+                                filterCatalogTokens('');
+                              }}
+                              className="text-gray-400 hover:text-gray-500"
+                            >
+                              <XMarkIcon className="h-5 w-5" aria-hidden="true" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Table display for tokens */}
+                    <div className="overflow-x-auto max-h-96 border rounded-md">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50 sticky top-0">
+                          <tr>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expires</th>
+                            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {filteredCatalogTokens.length > 0 ? (
+                            filteredCatalogTokens.map(token => (
+                              <tr 
+                                key={token.id} 
+                                className="hover:bg-gray-50 cursor-pointer"
+                                onClick={() => {
+                                  addTokenToCustomerHandler(token.id);
+                                  dispatch(toggleTokenCatalog());
+                                }}
+                              >
+                                <td className="px-6 py-4">
+                                  <div className="flex items-center">
+                                    <div className="flex-shrink-0 h-8 w-8 flex items-center justify-center bg-blue-100 rounded-full">
+                                      <TicketIcon className="h-4 w-4 text-blue-600" />
+                                    </div>
+                                    <div className="ml-4">
+                                      <div className="text-sm font-medium text-gray-900">{token.name}</div>
+                                      <div className="text-xs text-gray-500 line-clamp-1">{token.description}</div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTokenTypeBadgeColor(token.type)}`}>
+                                    {token.type}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                  {token.value}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  {formatDate(token.expirationDate)}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right">
+                                  <button className="text-blue-600 hover:text-blue-900 text-sm font-medium flex items-center justify-end">
+                                    <PlusCircleIcon className="h-4 w-4 mr-1" />
+                                    Add
+                                  </button>
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                                <p className="text-base font-medium">No tokens found</p>
+                                <p className="text-sm mt-1">Try with a different search term</p>
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
                 </div>
@@ -1945,7 +2142,7 @@ export default function CVSTokenManagement() {
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => dispatch(toggleTokenCatalog())}
-                    className="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
                     <span className="flex items-center">
                       <PlusCircleIcon className="h-4 w-4 mr-1" />
@@ -1958,12 +2155,12 @@ export default function CVSTokenManagement() {
               {/* Two Column Layout */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 {/* Left Column: Customer Profile - make narrower */}
-                <div className="lg:col-span-4">
+                <div className="lg:col-span-3">
                   {renderCustomerProfile()}
                 </div>
                 
                 {/* Right Column: Token Management - make wider */}
-                <div className="lg:col-span-8">
+                <div className="lg:col-span-9">
                   {renderTokens()}
                 </div>
               </div>
