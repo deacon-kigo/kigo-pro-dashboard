@@ -230,18 +230,18 @@ export default function SSOSignIn() {
       </div>
 
       {/* Illustration Section - Right Side */}
-      <div className="hidden lg:block relative w-0 flex-1 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 overflow-hidden">
-        {/* Simplified gradient overlay */}
-        <div className="absolute inset-0 opacity-30 mix-blend-soft-light">
-          <div className="absolute top-0 right-0 w-full h-full bg-gradient-radial from-blue-200/20 at-tr to-transparent"></div>
-          <div className="absolute bottom-0 left-0 w-full h-full bg-gradient-radial from-red-200/20 at-bl to-transparent"></div>
+      <div className="hidden lg:block relative w-0 flex-1 bg-gradient-to-br from-gray-50 to-slate-100 overflow-hidden">
+        {/* Subtle gradient overlay */}
+        <div className="absolute inset-0 opacity-20 mix-blend-soft-light">
+          <div className="absolute top-0 right-0 w-full h-full bg-gradient-radial from-blue-100/10 at-tr to-transparent"></div>
+          <div className="absolute bottom-0 left-0 w-full h-full bg-gradient-radial from-red-100/10 at-bl to-transparent"></div>
         </div>
         
-        {/* Brand logos as background elements */}
+        {/* Floating elements - more subtle and cohesive */}
         <div className="absolute inset-0 overflow-hidden">
-          {/* Kigo logo only - floating in background */}
-          <div className="absolute -top-10 right-10 w-80 h-80 animate-gentle-float">
-            <div className="relative w-full h-full opacity-10">
+          {/* Kigo logo - floating in background */}
+          <div className="absolute top-1/4 right-1/4 w-64 h-64 animate-gentle-float animation-delay-300">
+            <div className="relative w-full h-full opacity-15">
               <Image 
                 src="/kigo logo only.svg" 
                 alt="Kigo Background"
@@ -253,8 +253,8 @@ export default function SSOSignIn() {
           </div>
           
           {/* CVS logo - floating in background */}
-          <div className="absolute bottom-10 left-10 w-64 h-64 animate-gentle-float-reverse">
-            <div className="relative w-full h-full opacity-10">
+          <div className="absolute bottom-1/4 left-1/4 w-56 h-56 animate-gentle-float-reverse animation-delay-700">
+            <div className="relative w-full h-full opacity-15">
               <Image 
                 src="/logos/cvs-logo.svg" 
                 alt="CVS Background"
@@ -264,71 +264,35 @@ export default function SSOSignIn() {
               />
             </div>
           </div>
+          
+          {/* Subtle floating circles */}
+          <div className="absolute top-1/3 left-1/3 w-24 h-24 rounded-full bg-blue-500/5 animate-gentle-float-slow"></div>
+          <div className="absolute bottom-1/3 right-1/3 w-32 h-32 rounded-full bg-red-500/5 animate-gentle-float-reverse-slow animation-delay-500"></div>
+          <div className="absolute top-2/3 left-1/4 w-16 h-16 rounded-full bg-blue-500/5 animate-gentle-float-slow animation-delay-700"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-20 h-20 rounded-full bg-red-500/5 animate-gentle-float-reverse-slow animation-delay-300"></div>
         </div>
 
-        {/* Content Overlay - Simplified co-branded design */}
+        {/* Content Overlay - Minimalist design */}
         <div className="absolute inset-0 flex justify-center items-center z-10">
           <div className="max-w-md text-center">
-            {/* Simplified Logo Animation Container */}
-            <div className="relative h-72 mb-10">
-              {/* Single orbital ring */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-60 h-60 rounded-full border border-gray-200/40 animate-spin-slow"></div>
-              </div>
+            {/* Removed orbiting animation container */}
+            <div className="relative mb-16">
+              {/* Simple headline */}
+              <h2 className="text-5xl font-extrabold mb-6 bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent">Unified Support Experience</h2>
               
-              {/* Central container - simplified and neutral */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="bg-white/80 backdrop-blur-md rounded-full w-32 h-32 flex items-center justify-center shadow-sm border border-white/80">
-                  {/* Minimal shape-based design instead of K+C text */}
-                  <div className="relative w-full h-full flex items-center justify-center">
-                    <div className="absolute w-full h-full rounded-full bg-gradient-to-br from-blue-50 to-red-50 opacity-50"></div>
-                    <div className="absolute w-16 h-16 rounded-full border-2 border-blue-500/40"></div>
-                    <div className="absolute w-20 h-20 rounded-full border-2 border-red-500/40"></div>
-                    <div className="absolute w-10 h-10 rounded-full bg-gradient-to-r from-blue-400/20 to-red-400/20"></div>
-                  </div>
-                </div>
-              </div>
+              <p className="text-gray-600 mb-10 text-lg">
+                A seamless integration between Kigo Pro and CVS ExtraCare
+              </p>
               
-              {/* Orbiting elements */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="relative w-60 h-60">
-                  {/* Orbiting blue dot */}
-                  <div className="absolute w-5 h-5 animate-orbit">
-                    <div className="bg-blue-500/70 rounded-full w-full h-full shadow-sm blur-[1px]"></div>
-                  </div>
-                  
-                  {/* Orbiting red dot */}
-                  <div className="absolute w-4 h-4 animate-orbit-reverse animation-delay-500">
-                    <div className="bg-red-500/70 rounded-full w-full h-full shadow-sm blur-[1px]"></div>
-                  </div>
-                  
-                  {/* Additional smaller orbiting dots */}
-                  <div className="absolute w-3 h-3 animate-orbit-inner animation-delay-300">
-                    <div className="bg-blue-400/60 rounded-full w-full h-full shadow-sm blur-[1px]"></div>
-                  </div>
-                  
-                  <div className="absolute w-2 h-2 animate-orbit-inner-reverse animation-delay-700">
-                    <div className="bg-red-400/60 rounded-full w-full h-full shadow-sm blur-[1px]"></div>
-                  </div>
-                </div>
+              {/* Larger feature tags in one line */}
+              <div className="flex justify-center gap-6 text-base">
+                <span className="bg-blue-50 text-blue-700 px-6 py-3 rounded-md">Token Management</span>
+                <span className="bg-red-50 text-red-700 px-6 py-3 rounded-md">ExtraCare Benefits</span>
               </div>
-            </div>
-            
-            {/* Emphasized heading with more prominence - no box or underline */}
-            <h2 className="text-4xl font-extrabold mb-3 bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent">Unified Support Experience</h2>
-            
-            <p className="text-gray-600 mb-6">
-              A seamless integration between Kigo Pro and CVS ExtraCare
-            </p>
-            
-            {/* Larger feature tags in one line */}
-            <div className="flex justify-center gap-4 text-sm">
-              <span className="bg-blue-100 text-blue-700 px-5 py-2 rounded-lg">Token Management</span>
-              <span className="bg-red-100 text-red-700 px-5 py-2 rounded-lg">ExtraCare Benefits</span>
             </div>
             
             {/* Footer */}
-            <div className="mt-10 text-center">
+            <div className="mt-20 text-center">
               <div className="text-gray-400 text-xs">
                 © 2023 Kigo + CVS Pharmacy Partnership
               </div>

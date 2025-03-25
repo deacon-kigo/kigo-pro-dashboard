@@ -441,3 +441,42 @@ body.spotlight-open nav {
 .animate-dash-slow {
   animation: dash-slow 40s linear infinite;
 }
+
+/* Gentle floating animations with longer duration */
+@keyframes gentle-float-slow {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+  }
+  25% {
+    transform: translateY(-20px) translateX(10px);
+  }
+  50% {
+    transform: translateY(-10px) translateX(-10px);
+  }
+  75% {
+    transform: translateY(-5px) translateX(5px);
+  }
+}
+
+@keyframes gentle-float-reverse-slow {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+  }
+  25% {
+    transform: translateY(15px) translateX(-10px);
+  }
+  50% {
+    transform: translateY(5px) translateX(15px);
+  }
+  75% {
+    transform: translateY(10px) translateX(-5px);
+  }
+}
+
+.animate-gentle-float-slow {
+  animation: gentle-float-slow 25s ease-in-out infinite;
+}
+
+.animate-gentle-float-reverse-slow {
+  animation: gentle-float-reverse-slow 30s ease-in-out infinite;
+}
