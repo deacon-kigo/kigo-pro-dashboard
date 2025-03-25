@@ -975,19 +975,19 @@ export default function CVSTokenManagement() {
     
     return (
       <div className="bg-white rounded-lg shadow-md h-full">
-        {/* Token Filters Section */}
-        <div className="p-6 border-b border-gray-200">
+        {/* Token Filters and List Section - Combined for cohesiveness */}
+        <div className="p-6">
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center">
               <FunnelIcon className="h-5 w-5 mr-2 text-gray-500" />
-              <h3 className="text-lg font-medium text-gray-700">Token Filters</h3>
+              <h3 className="text-lg font-medium text-gray-700">Token Management</h3>
             </div>
-            <div>
+            <div className="flex items-center">
               <button
                 className="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 focus:outline-none"
                 onClick={() => dispatch(updateTokenFilters({ filterType: 'clearAll', value: null }))}
               >
-                Clear All
+                Clear Filters
               </button>
               <button
                 className="ml-2 bg-white p-1 rounded-md hover:bg-gray-100 focus:outline-none"
@@ -1007,7 +1007,7 @@ export default function CVSTokenManagement() {
             tokenFilters.dateRange.end || 
             tokenFilters.merchant || 
             tokenFilters.searchQuery) && (
-            <div className="flex flex-wrap gap-2 mb-3">
+            <div className="flex flex-wrap gap-2 mb-4">
               {tokenFilters.status.map(status => (
                 <span 
                   key={status} 
@@ -1098,9 +1098,9 @@ export default function CVSTokenManagement() {
           )}
           
           {isFiltersExpanded && (
-            <div className="mt-4 space-y-4">
+            <div className="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-100">
               {/* Quick filter buttons */}
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 mb-4">
                 <button
                   className="px-3 py-1 text-xs bg-white border border-gray-300 shadow-sm rounded-md hover:bg-gray-50"
                   onClick={() => handleApplyPresetFilter('activeTokens')}
@@ -1224,305 +1224,126 @@ export default function CVSTokenManagement() {
               </div>
             </div>
           )}
-        </div>
-        
-        {/* Token Search Section */}
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium text-gray-700">Search Tokens</h3>
-          </div>
-          <div className="relative rounded-md shadow-sm">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-            </div>
-            <input
-              type="text"
-              className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 pr-12 sm:text-sm border-gray-300 rounded-md"
-              placeholder="Search tokens by name, description, value..."
-              value={tokenSearchInput}
-              onChange={(e) => {
-                setTokenSearchInput(e.target.value);
-                dispatch(updateTokenFilters({ filterType: 'searchQuery', value: e.target.value }));
-              }}
-              onFocus={() => setIsTokenSearchFocused(true)}
-              onBlur={() => setIsTokenSearchFocused(false)}
-            />
-            {tokenSearchInput && (
-              <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setTokenSearchInput('');
-                    dispatch(updateTokenFilters({ filterType: 'searchQuery', value: '' }));
-                  }}
-                  className="text-gray-400 hover:text-gray-500"
-                >
-                  <XMarkIcon className="h-5 w-5" aria-hidden="true" />
-                </button>
+
+          {/* Token List - Integrated directly with filters */}
+          {filteredTokens.length > 0 ? (
+            <div className="mt-4">
+              <div className="flex justify-between items-center mb-2">
+                <p className="text-sm text-gray-500">{filteredTokens.length} tokens</p>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-500">Sort by:</span>
+                  <button
+                    className={`text-sm px-2 py-1 rounded ${tokenSort.field === 'name' ? 'bg-gray-100 font-medium' : ''}`}
+                    onClick={() => handleSort('name')}
+                  >
+                    Name
+                    {tokenSort.field === 'name' && (
+                      tokenSort.direction === 'asc' ? 
+                        <ArrowUpIcon className="inline h-3 w-3 ml-1" /> : 
+                        <ArrowDownIcon className="inline h-3 w-3 ml-1" />
+                    )}
+                  </button>
+                  <button
+                    className={`text-sm px-2 py-1 rounded ${tokenSort.field === 'expirationDate' ? 'bg-gray-100 font-medium' : ''}`}
+                    onClick={() => handleSort('expirationDate')}
+                  >
+                    Expiration
+                    {tokenSort.field === 'expirationDate' && (
+                      tokenSort.direction === 'asc' ? 
+                        <ArrowUpIcon className="inline h-3 w-3 ml-1" /> : 
+                        <ArrowDownIcon className="inline h-3 w-3 ml-1" />
+                    )}
+                  </button>
+                  <button
+                    className={`text-sm px-2 py-1 rounded ${tokenSort.field === 'value' ? 'bg-gray-100 font-medium' : ''}`}
+                    onClick={() => handleSort('value')}
+                  >
+                    Value
+                    {tokenSort.field === 'value' && (
+                      tokenSort.direction === 'asc' ? 
+                        <ArrowUpIcon className="inline h-3 w-3 ml-1" /> : 
+                        <ArrowDownIcon className="inline h-3 w-3 ml-1" />
+                    )}
+                  </button>
+                </div>
               </div>
-            )}
-          </div>
-          {isTokenSearchFocused && tokenSearchInput && getFilteredTokens().length > 0 && (
-            <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md py-1 text-sm">
-              <p className="px-4 py-2 text-xs text-gray-500">
-                {getFilteredTokens().length} tokens found
-              </p>
-            </div>
-          )}
-        </div>
-        
-        {/* Token List Section */}
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium text-gray-700">Token List</h3>
-            <div className="text-sm text-gray-500">
-              {filteredTokens.length} tokens found
-            </div>
-          </div>
-          
-          {filteredTokens.length === 0 ? (
-            <div className="text-center text-gray-500 py-8">
-              <TicketIcon className="h-12 w-12 mx-auto mb-2 text-gray-400" />
-              <p className="text-lg font-medium">No tokens found</p>
-              <p>Adjust your filters or add new tokens to this customer.</p>
+              <div className="border divide-y rounded-lg overflow-hidden">
+                {filteredTokens.map(token => (
+                  <div key={token.id} className="p-4 hover:bg-gray-50">
+                    <div className="flex justify-between">
+                      <div onClick={() => dispatch(selectToken(token.id))} className="cursor-pointer flex-1">
+                        <h4 className="font-medium text-gray-900 flex items-center">
+                          <span className="mr-2">
+                            {token.name}
+                          </span>
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTokenStateBadgeColor(token.state)}`}>
+                            {token.state}
+                          </span>
+                          <span className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTokenTypeBadgeColor(token.type)}`}>
+                            {token.type}
+                          </span>
+                        </h4>
+                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                          {token.description}
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-2 text-xs text-gray-500">
+                          <span>Value: <span className="font-medium">{token.value}</span></span>
+                          <span>•</span>
+                          <span>Expires: {formatDate(token.expirationDate)}</span>
+                          {token.merchantName && (
+                            <>
+                              <span>•</span>
+                              <span>Merchant: {token.merchantName}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex flex-col justify-center space-y-2 ml-4">
+                        <button
+                          onClick={() => reissueTokenHandler(token.id)}
+                          className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center"
+                          disabled={token.state !== 'Expired'}
+                        >
+                          <ArrowPathIcon className="h-3 w-3 mr-1" />
+                          Reissue
+                        </button>
+                        <button
+                          onClick={() => markTokenDisputedHandler(token.id)}
+                          className="text-xs text-yellow-600 hover:text-yellow-800 font-medium flex items-center"
+                        >
+                          <ExclamationCircleIcon className="h-3 w-3 mr-1" />
+                          Dispute
+                        </button>
+                        <button
+                          onClick={() => removeTokenFromCustomerHandler(token.id)}
+                          className="text-xs text-red-600 hover:text-red-800 font-medium flex items-center"
+                        >
+                          <TrashIcon className="h-3 w-3 mr-1" />
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th 
-                      scope="col" 
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                      onClick={() => handleSort('name')}
-                    >
-                      <div className="flex items-center space-x-1">
-                        <span>Name</span>
-                        {tokenSort.field === 'name' && (
-                          tokenSort.direction === 'asc' ? 
-                          <ArrowUpIcon className="h-4 w-4" /> : 
-                          <ArrowDownIcon className="h-4 w-4" />
-                        )}
-                      </div>
-                    </th>
-                    <th 
-                      scope="col" 
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                      onClick={() => handleSort('type')}
-                    >
-                      <div className="flex items-center space-x-1">
-                        <span>Type</span>
-                        {tokenSort.field === 'type' && (
-                          tokenSort.direction === 'asc' ? 
-                          <ArrowUpIcon className="h-4 w-4" /> : 
-                          <ArrowDownIcon className="h-4 w-4" />
-                        )}
-                      </div>
-                    </th>
-                    <th 
-                      scope="col" 
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                      onClick={() => handleSort('state')}
-                    >
-                      <div className="flex items-center space-x-1">
-                        <span>Status</span>
-                        {tokenSort.field === 'state' && (
-                          tokenSort.direction === 'asc' ? 
-                          <ArrowUpIcon className="h-4 w-4" /> : 
-                          <ArrowDownIcon className="h-4 w-4" />
-                        )}
-                      </div>
-                    </th>
-                    <th 
-                      scope="col" 
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                      onClick={() => handleSort('value')}
-                    >
-                      <div className="flex items-center space-x-1">
-                        <span>Value</span>
-                        {tokenSort.field === 'value' && (
-                          tokenSort.direction === 'asc' ? 
-                          <ArrowUpIcon className="h-4 w-4" /> : 
-                          <ArrowDownIcon className="h-4 w-4" />
-                        )}
-                      </div>
-                    </th>
-                    <th 
-                      scope="col" 
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                      onClick={() => handleSort('expirationDate')}
-                    >
-                      <div className="flex items-center space-x-1">
-                        <span>Expires</span>
-                        {tokenSort.field === 'expirationDate' && (
-                          tokenSort.direction === 'asc' ? 
-                          <ArrowUpIcon className="h-4 w-4" /> : 
-                          <ArrowDownIcon className="h-4 w-4" />
-                        )}
-                      </div>
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredTokens.map(token => (
-                    <tr 
-                      key={token.id} 
-                      className={`${selectedToken?.id === token.id ? 'bg-blue-50' : 'hover:bg-gray-50'} cursor-pointer`}
-                      onClick={() => dispatch(selectToken(token.id))}
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-blue-100 rounded-full">
-                            <TicketIcon className="h-6 w-6 text-blue-600" />
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">
-                              {token.name}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {token.description.length > 50 ? `${token.description.substring(0, 50)}...` : token.description}
-                            </div>
-                            {token.disputed && (
-                              <div className="text-xs text-red-600 font-medium mt-1 flex items-center">
-                                <ExclamationCircleIcon className="h-4 w-4 mr-1" />
-                                Disputed {token.notHonored && '(Not Honored)'}
-                              </div>
-                            )}
-                            {token.supportActions?.isReissued && (
-                              <div className="text-xs text-blue-600 font-medium mt-1 flex items-center">
-                                <ArrowPathIcon className="h-4 w-4 mr-1" />
-                                Reissued
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTokenTypeBadgeColor(token.type)}`}>
-                          {token.type}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTokenStateBadgeColor(token.state)}`}>
-                          {token.state}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {token.value}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(token.expirationDate)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex justify-end space-x-2">
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleViewInExtraCare(token.externalUrl);
-                            }}
-                            className="text-blue-600 hover:text-blue-900"
-                            title="View in ExtraCare"
-                          >
-                            <ExternalLinkIcon className="h-5 w-5" />
-                          </button>
-                          {token.state === 'Active' && (
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                reissueTokenHandler(token.id);
-                              }}
-                              className="text-green-600 hover:text-green-900"
-                              title="Reissue token"
-                            >
-                              <ArrowPathIcon className="h-5 w-5" />
-                            </button>
-                          )}
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              markTokenDisputedHandler(token.id);
-                            }}
-                            className="text-yellow-600 hover:text-yellow-900"
-                            title="Mark as disputed"
-                          >
-                            <ExclamationCircleIcon className="h-5 w-5" />
-                          </button>
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeTokenFromCustomerHandler(token.id);
-                            }}
-                            className="text-red-600 hover:text-red-900"
-                            title="Remove token"
-                          >
-                            <TrashIcon className="h-5 w-5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  // Update token search to use the utility
-  const renderTokenSearch = () => {
-    return (
-      <div className="bg-white rounded-lg shadow-md p-6 mb-4">
-        <div className="border-b pb-4 mb-4">
-          <h2 className="text-lg font-medium text-gray-700">Search Tokens</h2>
-        </div>
-        <div className="relative rounded-md shadow-sm">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-          </div>
-          <input
-            type="text"
-            className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 pr-12 sm:text-sm border-gray-300 rounded-md"
-            placeholder="Search tokens by name, description, value..."
-            value={tokenSearchInput}
-            onChange={(e) => {
-              setTokenSearchInput(e.target.value);
-              dispatch(updateTokenFilters({ filterType: 'searchQuery', value: e.target.value }));
-            }}
-            onFocus={() => setIsTokenSearchFocused(true)}
-            onBlur={() => setIsTokenSearchFocused(false)}
-          />
-          {tokenSearchInput && (
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+            <div className="py-8 text-center">
+              <p className="text-gray-500 mb-2">No tokens match your filters</p>
               <button
-                type="button"
-                onClick={() => {
-                  setTokenSearchInput('');
-                  dispatch(updateTokenFilters({ filterType: 'searchQuery', value: '' }));
-                }}
-                className="text-gray-400 hover:text-gray-500"
+                onClick={() => dispatch(updateTokenFilters({ filterType: 'clearAll', value: null }))}
+                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
               >
-                <XMarkIcon className="h-5 w-5" aria-hidden="true" />
+                Clear all filters
               </button>
             </div>
           )}
         </div>
-        {isTokenSearchFocused && tokenSearchInput && getFilteredTokens().length > 0 && (
-          <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md py-1 text-sm">
-            <p className="px-4 py-2 text-xs text-gray-500">
-              {getFilteredTokens().length} tokens found
-            </p>
-          </div>
-        )}
       </div>
     );
   };
 
-  // Replace the renderTokens section with a call to renderTokenList
+  // Add the renderTokens function here
   const renderTokens = () => {
     return (
       <div className="space-y-4">
@@ -2024,7 +1845,7 @@ export default function CVSTokenManagement() {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {getPaginatedCustomers().map((customer) => (
+                        {Array.isArray(getPaginatedCustomers()) && getPaginatedCustomers().map((customer) => (
                           <tr 
                             key={customer.id} 
                             className="hover:bg-gray-50 cursor-pointer"
@@ -2135,15 +1956,15 @@ export default function CVSTokenManagement() {
               </div>
               
               {/* Two Column Layout */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Left Column: Customer Profile */}
-                <div className="lg:col-span-1">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* Left Column: Customer Profile - make narrower */}
+                <div className="lg:col-span-4">
                   {renderCustomerProfile()}
                 </div>
                 
-                {/* Right Column: Token Management */}
-                <div className="lg:col-span-2">
-                  {renderTokenManagement()}
+                {/* Right Column: Token Management - make wider */}
+                <div className="lg:col-span-8">
+                  {renderTokens()}
                 </div>
               </div>
             </div>
