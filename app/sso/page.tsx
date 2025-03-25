@@ -230,17 +230,17 @@ export default function SSOSignIn() {
       </div>
 
       {/* Illustration Section - Right Side */}
-      <div className="hidden lg:block relative w-0 flex-1 bg-gradient-to-br from-gray-50 to-slate-100 overflow-hidden">
+      <div className="hidden lg:block relative w-0 flex-1 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 overflow-hidden">
         {/* Subtle gradient overlay */}
         <div className="absolute inset-0 opacity-20 mix-blend-soft-light">
-          <div className="absolute top-0 right-0 w-full h-full bg-gradient-radial from-blue-100/10 at-tr to-transparent"></div>
-          <div className="absolute bottom-0 left-0 w-full h-full bg-gradient-radial from-red-100/10 at-bl to-transparent"></div>
+          <div className="absolute top-0 right-0 w-full h-full bg-gradient-radial from-blue-200/10 at-tr to-transparent"></div>
+          <div className="absolute bottom-0 left-0 w-full h-full bg-gradient-radial from-red-200/10 at-bl to-transparent"></div>
         </div>
         
-        {/* Floating elements - more subtle and cohesive */}
+        {/* Floating elements - more subtle and spaced out */}
         <div className="absolute inset-0 overflow-hidden">
           {/* Kigo logo - floating in background */}
-          <div className="absolute top-1/4 right-1/4 w-64 h-64 animate-gentle-float animation-delay-300">
+          <div className="absolute top-1/6 right-1/6 w-64 h-64 animate-gentle-float animation-delay-300">
             <div className="relative w-full h-full opacity-15">
               <Image 
                 src="/kigo logo only.svg" 
@@ -253,7 +253,7 @@ export default function SSOSignIn() {
           </div>
           
           {/* CVS logo - floating in background */}
-          <div className="absolute bottom-1/4 left-1/4 w-56 h-56 animate-gentle-float-reverse animation-delay-700">
+          <div className="absolute bottom-1/6 left-1/6 w-56 h-56 animate-gentle-float-reverse animation-delay-700">
             <div className="relative w-full h-full opacity-15">
               <Image 
                 src="/logos/cvs-logo.svg" 
@@ -265,34 +265,38 @@ export default function SSOSignIn() {
             </div>
           </div>
           
-          {/* Subtle floating circles */}
-          <div className="absolute top-1/3 left-1/3 w-24 h-24 rounded-full bg-blue-500/5 animate-gentle-float-slow"></div>
-          <div className="absolute bottom-1/3 right-1/3 w-32 h-32 rounded-full bg-red-500/5 animate-gentle-float-reverse-slow animation-delay-500"></div>
-          <div className="absolute top-2/3 left-1/4 w-16 h-16 rounded-full bg-blue-500/5 animate-gentle-float-slow animation-delay-700"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-20 h-20 rounded-full bg-red-500/5 animate-gentle-float-reverse-slow animation-delay-300"></div>
+          {/* Subtle floating circles - more spaced out */}
+          <div className="absolute top-1/4 left-1/2 w-24 h-24 rounded-full bg-blue-500/5 animate-gentle-float-slow"></div>
+          <div className="absolute bottom-1/5 right-1/5 w-32 h-32 rounded-full bg-red-500/5 animate-gentle-float-reverse-slow animation-delay-500"></div>
+          <div className="absolute top-3/4 left-1/5 w-16 h-16 rounded-full bg-blue-500/5 animate-gentle-float-slow animation-delay-700"></div>
+          <div className="absolute bottom-1/3 right-1/2 w-20 h-20 rounded-full bg-red-500/5 animate-gentle-float-reverse-slow animation-delay-300"></div>
+          
+          {/* Additional bubbles for more spacious feel */}
+          <div className="absolute top-2/3 right-1/4 w-14 h-14 rounded-full bg-purple-500/5 animate-gentle-float-slow animation-delay-200"></div>
+          <div className="absolute bottom-2/3 left-1/3 w-28 h-28 rounded-full bg-pink-500/5 animate-gentle-float-reverse-slow animation-delay-800"></div>
         </div>
 
-        {/* Content Overlay - Minimalist design */}
+        {/* Content Overlay - Minimalist design with more spacing */}
         <div className="absolute inset-0 flex justify-center items-center z-10">
-          <div className="max-w-md text-center">
+          <div className="max-w-md text-center px-10">
             {/* Removed orbiting animation container */}
-            <div className="relative mb-16">
+            <div className="relative mb-20">
               {/* Simple headline */}
-              <h2 className="text-5xl font-extrabold mb-6 bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent">Unified Support Experience</h2>
+              <h2 className="text-5xl font-extrabold mb-8 bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent">Unified Support Experience</h2>
               
-              <p className="text-gray-600 mb-10 text-lg">
+              <p className="text-gray-600 mb-12 text-lg">
                 A seamless integration between Kigo Pro and CVS ExtraCare
               </p>
               
-              {/* Larger feature tags in one line */}
-              <div className="flex justify-center gap-6 text-base">
-                <span className="bg-blue-50 text-blue-700 px-6 py-3 rounded-md">Token Management</span>
-                <span className="bg-red-50 text-red-700 px-6 py-3 rounded-md">ExtraCare Benefits</span>
+              {/* Larger feature tags in one line with more spacing */}
+              <div className="flex justify-center gap-8 text-base">
+                <span className="bg-blue-100/70 text-blue-700 px-8 py-3 rounded-md">Token Management</span>
+                <span className="bg-red-100/70 text-red-700 px-8 py-3 rounded-md">ExtraCare Benefits</span>
               </div>
             </div>
             
             {/* Footer */}
-            <div className="mt-20 text-center">
+            <div className="mt-24 text-center">
               <div className="text-gray-400 text-xs">
                 © 2023 Kigo + CVS Pharmacy Partnership
               </div>
