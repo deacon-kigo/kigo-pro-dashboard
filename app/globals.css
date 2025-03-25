@@ -165,3 +165,87 @@ body.spotlight-open nav {
   z-index: 101;
   position: relative;
 }
+
+/* Floating animations for logos with different speeds for depth effect */
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+  50% {
+    transform: translateY(5px) rotate(-1deg);
+  }
+  75% {
+    transform: translateY(-5px) rotate(0.5deg);
+  }
+}
+
+@keyframes float-slower {
+  0%, 100% {
+    transform: translateY(0) rotate(6deg);
+  }
+  33% {
+    transform: translateY(-15px) rotate(8deg);
+  }
+  66% {
+    transform: translateY(8px) rotate(4deg);
+  }
+}
+
+@keyframes float-medium {
+  0%, 100% {
+    transform: translateY(0) rotate(12deg);
+  }
+  40% {
+    transform: translateY(-12px) rotate(14deg);
+  }
+  70% {
+    transform: translateY(7px) rotate(10deg);
+  }
+}
+
+@keyframes float-fast {
+  0%, 100% {
+    transform: translateY(0) rotate(-12deg);
+  }
+  30% {
+    transform: translateY(-8px) rotate(-10deg);
+  }
+  60% {
+    transform: translateY(5px) rotate(-14deg);
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 12s ease-in-out infinite;
+}
+
+.animate-float-slower {
+  animation: float-slower 18s ease-in-out infinite;
+}
+
+.animate-float-medium {
+  animation: float-medium 10s ease-in-out infinite;
+}
+
+.animate-float-fast {
+  animation: float-fast 8s ease-in-out infinite;
+}
+
+.animation-delay-300 {
+  animation-delay: 300ms;
+}
+
+.animation-delay-500 {
+  animation-delay: 500ms;
+}
+
+.animation-delay-700 {
+  animation-delay: 700ms;
+}
+
+.animation-delay-1000 {
+  animation-delay: 1000ms;
+}
