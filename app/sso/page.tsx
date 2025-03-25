@@ -212,63 +212,122 @@ export default function SSOSignIn() {
       </div>
 
       {/* Illustration Section - Right Side */}
-      <div className="hidden lg:block relative w-0 flex-1 bg-gradient-to-br from-blue-500 to-indigo-600">
-        <div className="absolute inset-0 flex justify-center items-center">
-          <div className="max-w-md p-8 text-center">
-            <div className="mb-8 flex justify-center">
-              {/* Placeholder for illustration animation */}
-              <div className="p-8 rounded-full bg-white/10 backdrop-blur-sm border border-white/20">
-                <div className="w-40 h-40 flex items-center justify-center text-white">
-                  <div className="relative">
-                    <svg className="absolute -top-6 -left-6 animate-pulse" width="120" height="120" viewBox="0 0 88 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M7.71179 0.0305557C6.9033 0.0305557 6.09482 0.336111 5.50401 0.947222L1.05737 5.31667C-0.155353 6.50833 -0.155353 8.46389 1.05737 9.68611L13.6199 22L26.1514 9.65555C27.3641 8.46389 27.3641 6.50833 26.1514 5.28611L21.7047 0.947222C21.0828 0.336111 20.2743 0.0305557 19.4969 0.0305557C18.6885 0.0305557 17.88 0.336111 17.2581 0.947222L13.6199 4.55278L9.95065 0.947222C9.32875 0.336111 8.52027 0.0305557 7.71179 0.0305557Z" fill="#ffffff"/>
-                    </svg>
-                    <div className="w-28 h-28 rounded-full bg-blue-100 shadow-xl flex items-center justify-center">
-                      <svg className="w-16 h-16 text-blue-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clipRule="evenodd"></path>
-                      </svg>
-                    </div>
+      <div className="hidden lg:block relative w-0 flex-1 bg-gradient-to-br from-gray-900 to-gray-800">
+        {/* Abstract shapes for background */}
+        <div className="absolute inset-0 overflow-hidden opacity-20">
+          <svg className="absolute -top-24 -right-20 w-96 h-96 text-red-600 opacity-50" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="40" fill="currentColor" />
+          </svg>
+          <svg className="absolute bottom-0 left-0 w-80 h-80 text-blue-600 opacity-30" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="10" width="80" height="80" rx="10" fill="currentColor" />
+          </svg>
+          <svg className="absolute top-1/2 left-1/4 w-64 h-64 text-white opacity-10" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="50,10 90,90 10,90" fill="currentColor" />
+          </svg>
+        </div>
+
+        {/* Content Overlay */}
+        <div className="absolute inset-0 flex justify-center items-center z-10">
+          <div className="max-w-lg p-8 text-center">
+            {/* Logo Animation Container */}
+            <div className="mb-10 relative">
+              {/* Animated Ring */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-64 h-64 rounded-full border-4 border-white/10 animate-pulse"></div>
+                <div className="absolute w-56 h-56 rounded-full border-2 border-white/20 animate-ping animation-delay-1000"></div>
+              </div>
+              
+              {/* Logos Container */}
+              <div className="relative bg-white/5 backdrop-blur-lg rounded-2xl p-8 border border-white/10 shadow-2xl mb-10">
+                <div className="flex flex-col items-center gap-6">
+                  {/* Kigo Logo with proper color background */}
+                  <div className="bg-white p-4 rounded-xl shadow-xl">
+                    <Image 
+                      src="/kigo logo.svg" 
+                      alt="Kigo" 
+                      width={180} 
+                      height={60} 
+                      className="h-12 w-auto" 
+                    />
+                  </div>
+                  
+                  {/* Connection Line */}
+                  <div className="w-px h-8 bg-gradient-to-b from-blue-500 to-red-500"></div>
+                  
+                  {/* CVS Logo with proper color background */}
+                  <div className="bg-white p-4 rounded-xl shadow-xl">
+                    <Image 
+                      src="/logos/cvs-logo.svg" 
+                      alt="CVS" 
+                      width={120} 
+                      height={30} 
+                      className="h-8 w-auto" 
+                    />
                   </div>
                 </div>
+                
+                {/* Particle Effects */}
+                <div className="absolute -top-4 -right-4 w-8 h-8 bg-blue-500 rounded-full blur-xl opacity-60 animate-pulse"></div>
+                <div className="absolute -bottom-4 -left-4 w-8 h-8 bg-red-500 rounded-full blur-xl opacity-60 animate-pulse animation-delay-500"></div>
               </div>
             </div>
             
-            <h2 className="text-2xl font-bold text-white mb-2">Seamless Support Portal</h2>
-            <p className="text-indigo-100 text-lg mb-8">
-              Manage customer tokens and support cases efficiently with our integrated platform
+            <h2 className="text-2xl font-bold text-white mb-2">Unified Support Experience</h2>
+            <p className="text-gray-300 text-lg mb-8">
+              A seamless integration between Kigo Pro and CVS ExtraCare systems
             </p>
             
-            <div className="flex space-x-4 justify-center">
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-                <h3 className="text-white font-semibold mb-1">Fast Resolution</h3>
-                <p className="text-indigo-100 text-sm">Access customer information in seconds</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white/5 backdrop-blur-sm rounded-lg p-5 border border-white/10 hover:bg-white/10 transition">
+                <div className="text-red-400 mb-2">
+                  <svg className="w-6 h-6 inline-block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                  </svg>
+                </div>
+                <h3 className="text-white font-semibold mb-1">Integrated Platform</h3>
+                <p className="text-gray-300 text-sm">Unified experience across all systems</p>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-                <h3 className="text-white font-semibold mb-1">Integrated Tools</h3>
-                <p className="text-indigo-100 text-sm">Manage tokens and support cases in one place</p>
+              <div className="bg-white/5 backdrop-blur-sm rounded-lg p-5 border border-white/10 hover:bg-white/10 transition">
+                <div className="text-blue-400 mb-2">
+                  <svg className="w-6 h-6 inline-block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                </div>
+                <h3 className="text-white font-semibold mb-1">Real-time Updates</h3>
+                <p className="text-gray-300 text-sm">Instant access to customer information</p>
+              </div>
+              <div className="bg-white/5 backdrop-blur-sm rounded-lg p-5 border border-white/10 hover:bg-white/10 transition">
+                <div className="text-blue-400 mb-2">
+                  <svg className="w-6 h-6 inline-block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                </div>
+                <h3 className="text-white font-semibold mb-1">Customer-Centric</h3>
+                <p className="text-gray-300 text-sm">Designed around customer needs</p>
+              </div>
+              <div className="bg-white/5 backdrop-blur-sm rounded-lg p-5 border border-white/10 hover:bg-white/10 transition">
+                <div className="text-red-400 mb-2">
+                  <svg className="w-6 h-6 inline-block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                  </svg>
+                </div>
+                <h3 className="text-white font-semibold mb-1">Visual Analytics</h3>
+                <p className="text-gray-300 text-sm">Smart insights for better support</p>
               </div>
             </div>
           </div>
         </div>
         
-        {/* Client logos */}
+        {/* Bottom Copyright */}
         <div className="absolute bottom-8 left-0 right-0 flex justify-center">
-          <div className="flex items-center space-x-8">
-            <Image 
-              src="/kigo logo only.svg" 
-              alt="Kigo" 
-              width={60} 
-              height={60} 
-              className="h-10 w-auto" 
-            />
-            <div className="h-8 w-px bg-white/20"></div>
-            <Image 
-              src="/logos/cvs-logo.svg" 
-              alt="CVS" 
-              width={88} 
-              height={22} 
-              className="h-8 w-auto brightness-0 invert" 
-            />
+          <div className="text-gray-400 text-sm">
+            © 2023 Kigo + CVS Pharmacy Partnership | All rights reserved
           </div>
         </div>
       </div>
