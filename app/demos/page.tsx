@@ -155,7 +155,7 @@ export default function DemosPage() {
               </div>
               
               <p className="text-gray-600 mb-6 h-20">
-                Explore a support interface for CVS ExtraCare customer token management. Troubleshoot and resolve customer reward and coupon issues in a user-friendly interface.
+                Experience a comprehensive support portal for CVS ExtraCare with integrated ticketing and token management. Navigate from the agent dashboard to customer token management to resolve rewards and coupon issues.
               </p>
               
               <div className="grid grid-cols-3 gap-2 mb-6">
@@ -186,7 +186,7 @@ export default function DemosPage() {
                 </div>
                 
                 <Link 
-                  href="/demos/cvs-token-management" 
+                  href="/demos/cvs-dashboard" 
                   className="inline-flex items-center px-3 py-1.5 bg-[#CC0000] hover:bg-[#AA0000] text-white text-sm font-medium rounded-lg transition-colors"
                 >
                   View Demo
