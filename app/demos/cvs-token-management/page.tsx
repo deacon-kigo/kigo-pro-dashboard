@@ -355,52 +355,90 @@ const additionalSampleCustomers: CustomerInfo[] = [
 ];
 
 // Mock token catalog for adding to customers
-const tokenCatalog: TokenInfo[] = [
-  {
-    id: 'cat001',
-    name: '$10 ExtraBucks Rewards',
-    description: '$10 ExtraBucks Rewards for ExtraCare members',
-    type: 'ExtraBucks',
-    state: 'Active',
-    claimDate: new Date().toISOString().split('T')[0],
-    expirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    merchantName: 'CVS Pharmacy',
-    value: '$10.00'
-  },
-  {
-    id: 'cat002',
-    name: '40% Off Photo',
-    description: '40% off photo prints and gifts',
-    type: 'Coupon',
-    state: 'Active',
-    claimDate: new Date().toISOString().split('T')[0],
-    expirationDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    merchantName: 'CVS Pharmacy',
-    value: '40%'
-  },
-  {
-    id: 'cat003',
-    name: 'FREE Hand Sanitizer',
-    description: 'Free CVS Health Hand Sanitizer with any purchase of $10 or more',
-    type: 'Reward',
-    state: 'Active',
-    claimDate: new Date().toISOString().split('T')[0],
-    expirationDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    merchantName: 'CVS Pharmacy',
-    value: 'FREE'
-  },
-  {
-    id: 'cat004',
-    name: 'Lightning: $3 ExtraBucks',
-    description: 'Limited time $3 ExtraBucks offer - Today only!',
-    type: 'Lightning',
-    state: 'Active',
-    claimDate: new Date().toISOString().split('T')[0],
-    expirationDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    merchantName: 'CVS Pharmacy',
-    value: '$3.00'
+const generateTokenCatalog = () => {
+  const tokens: TokenInfo[] = [];
+  const tokenTypes = ['ExtraBucks', 'Coupon', 'Reward', 'Lightning'];
+  const categories = ['Beauty', 'Pharmacy', 'Health', 'Vitamins', 'Baby', 'Personal Care', 'Seasonal', 'Photo', 'Grocery', 'Electronics'];
+  const merchants = ['CVS Pharmacy', 'CVS MinuteClinic', 'CVS HealthHUB', 'CVS Photo', 'CVS Pharmacy y más'];
+  
+  // Generate 50 tokens with diverse attributes
+  for (let i = 1; i <= 50; i++) {
+    const type = tokenTypes[Math.floor(Math.random() * tokenTypes.length)] as 'Coupon' | 'Reward' | 'ExtraBucks' | 'Lightning';
+    const category = categories[Math.floor(Math.random() * categories.length)];
+    const merchant = merchants[Math.floor(Math.random() * merchants.length)];
+    
+    // Generate different types of values
+    let value;
+    if (type === 'ExtraBucks' || (type === 'Reward' && Math.random() > 0.5)) {
+      // Dollar values for ExtraBucks and some Rewards
+      const amount = Math.floor(Math.random() * 50) + 1;
+      value = `$${amount}.00`;
+    } else if (type === 'Coupon') {
+      // Percentage discounts for coupons
+      const percentage = (Math.floor(Math.random() * 10) + 1) * 5; // 5%, 10%, ..., 50%
+      value = `${percentage}%`;
+    } else if (type === 'Lightning') {
+      // Flash deals are typically lower value but urgent
+      const amount = Math.floor(Math.random() * 10) + 1;
+      value = `$${amount}.00`;
+    } else {
+      // Other rewards like BOGO or free items
+      const specialOffers = ['BOGO', 'FREE', '2for1', 'Buy2Get1'];
+      value = specialOffers[Math.floor(Math.random() * specialOffers.length)];
+    }
+    
+    // Generate varied expiration dates
+    const daysToExpire = type === 'Lightning' 
+      ? Math.floor(Math.random() * 3) + 1 // 1-3 days for Lightning deals
+      : Math.floor(Math.random() * 90) + 7; // 7-97 days for other tokens
+    
+    const expirationDate = new Date(Date.now() + daysToExpire * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const claimDate = new Date().toISOString().split('T')[0];
+    
+    tokens.push({
+      id: `cat${i.toString().padStart(3, '0')}`,
+      name: generateTokenName(type, category, value),
+      description: generateTokenDescription(type, category, value),
+      type,
+      state: 'Active',
+      claimDate,
+      expirationDate,
+      merchantName: merchant,
+      value
+    });
   }
-];
+  
+  return tokens;
+};
+
+// Helper functions for generating token content
+const generateTokenName = (type: 'Coupon' | 'Reward' | 'ExtraBucks' | 'Lightning', category: string, value: string) => {
+  if (type === 'ExtraBucks') {
+    return `${value} ExtraBucks Rewards on ${category}`;
+  } else if (type === 'Coupon') {
+    return `${value} off ${category} products`;
+  } else if (type === 'Lightning') {
+    return `Flash Deal: ${value} off ${category} - Today Only!`;
+  } else {
+    return `${category} Reward: ${value}`;
+  }
+};
+
+const generateTokenDescription = (type: 'Coupon' | 'Reward' | 'ExtraBucks' | 'Lightning', category: string, value: string) => {
+  const descriptions = [
+    `Save ${value} when you purchase any ${category} product.`,
+    `Get ${value} discount on your next ${category} purchase.`,
+    `Special offer: ${value} on all ${category} items in store and online.`,
+    `Member-exclusive savings of ${value} in the ${category} department.`,
+    `Limited time offer: ${value} savings on ${category} products.`,
+    `ExtraCare members save ${value} on select ${category} items.`
+  ];
+  
+  return descriptions[Math.floor(Math.random() * descriptions.length)];
+};
+
+// Replace the previous static tokenCatalog with our generator
+const tokenCatalog: TokenInfo[] = generateTokenCatalog();
 
 // Add a new function to highlight matched text in search results
 const HighlightedText = ({ text, searchTerm }: { text: string, searchTerm: string }) => {
@@ -1575,7 +1613,7 @@ export default function CVSTokenManagement() {
     );
   };
 
-  // Add this function to filter catalog tokens based on search input
+  // Function to filter catalog tokens based on search input
   const filterCatalogTokens = (searchTerm: string) => {
     if (!searchTerm.trim()) {
       setFilteredCatalogTokens(tokenCatalog);
@@ -1595,7 +1633,7 @@ export default function CVSTokenManagement() {
   // Initialize the filtered token catalog on load
   useEffect(() => {
     setFilteredCatalogTokens(tokenCatalog);
-  }, [tokenCatalog]);
+  }, []);
 
   // Render token catalog modal for adding tokens to customers
   const renderTokenCatalogModal = () => {
