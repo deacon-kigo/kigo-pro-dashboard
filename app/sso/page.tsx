@@ -19,6 +19,8 @@ export default function SSOSignIn() {
     setError('');
     setIsLoading(true);
 
+    console.log("Login form submitted");
+    
     // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
@@ -29,8 +31,24 @@ export default function SSOSignIn() {
         return;
       }
       
-      // For demo, any credentials will work
-      router.push('/demos/cvs-dashboard');
+      console.log("Redirecting to dashboard...");
+      
+      try {
+        // For demo, any credentials will work - try router first
+        router.push('/demos/cvs-dashboard');
+        
+        // As a fallback, use direct navigation after a short delay
+        setTimeout(() => {
+          if (window.location.pathname === '/sso') {
+            console.log("Router navigation may have failed, using direct navigation");
+            window.location.href = '/demos/cvs-dashboard';
+          }
+        }, 500);
+      } catch (error) {
+        console.error("Navigation error:", error);
+        // Fallback to direct navigation
+        window.location.href = '/demos/cvs-dashboard';
+      }
     }, 1500);
   };
 
