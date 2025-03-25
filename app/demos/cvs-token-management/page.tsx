@@ -1729,18 +1729,22 @@ export default function CVSTokenManagement() {
                                       <TicketIcon className="h-4 w-4 text-blue-600" />
                                     </div>
                                     <div className="ml-4">
-                                      <div className="text-sm font-medium text-gray-900">{token.name}</div>
-                                      <div className="text-xs text-gray-500 line-clamp-1">{token.description}</div>
+                                      <div className="text-sm font-medium text-gray-900">
+                                        <HighlightedText text={token.name} searchTerm={catalogSearchInput} />
+                                      </div>
+                                      <div className="text-xs text-gray-500 line-clamp-1">
+                                        <HighlightedText text={token.description} searchTerm={catalogSearchInput} />
+                                      </div>
                                     </div>
                                   </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTokenTypeBadgeColor(token.type)}`}>
-                                    {token.type}
+                                    <HighlightedText text={token.type} searchTerm={catalogSearchInput} />
                                   </span>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                  {token.value}
+                                  <HighlightedText text={token.value} searchTerm={catalogSearchInput} />
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                   {formatDate(token.expirationDate)}
