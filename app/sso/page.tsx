@@ -278,11 +278,13 @@ export default function SSOSignIn() {
               
               {/* Central container - simplified and neutral */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="bg-white/90 backdrop-blur-md rounded-full w-32 h-32 flex items-center justify-center shadow-sm border border-white/90">
-                  {/* Co-branded neutral element */}
+                <div className="bg-white/80 backdrop-blur-md rounded-full w-32 h-32 flex items-center justify-center shadow-sm border border-white/80">
+                  {/* Minimal shape-based design instead of K+C text */}
                   <div className="relative w-full h-full flex items-center justify-center">
                     <div className="absolute w-full h-full rounded-full bg-gradient-to-br from-blue-50 to-red-50 opacity-50"></div>
-                    <div className="z-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-red-500 font-bold text-3xl">K+C</div>
+                    <div className="absolute w-16 h-16 rounded-full border-2 border-blue-500/40"></div>
+                    <div className="absolute w-20 h-20 rounded-full border-2 border-red-500/40"></div>
+                    <div className="absolute w-10 h-10 rounded-full bg-gradient-to-r from-blue-400/20 to-red-400/20"></div>
                   </div>
                 </div>
               </div>
@@ -312,20 +314,17 @@ export default function SSOSignIn() {
               </div>
             </div>
             
-            {/* Emphasized heading with more prominence */}
-            <div className="mb-2 bg-gradient-to-r from-blue-500/20 to-red-500/20 py-3 px-5 rounded-lg border border-gray-100/30 shadow-md">
-              <h2 className="text-3xl font-extrabold text-gray-800 mb-1 bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent">Unified Support Experience</h2>
-              <div className="h-1 w-40 mx-auto bg-gradient-to-r from-blue-400 to-red-400 rounded-full"></div>
-            </div>
+            {/* Emphasized heading with more prominence - no box or underline */}
+            <h2 className="text-4xl font-extrabold mb-3 bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent">Unified Support Experience</h2>
             
-            <p className="text-gray-600 mb-8">
+            <p className="text-gray-600 mb-6">
               A seamless integration between Kigo Pro and CVS ExtraCare
             </p>
             
-            {/* Token management focused feature pills */}
-            <div className="flex flex-wrap justify-center gap-3 text-xs">
-              <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full">Token Management</span>
-              <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full">ExtraCare Benefits</span>
+            {/* Larger feature tags in one line */}
+            <div className="flex justify-center gap-4 text-sm">
+              <span className="bg-blue-100 text-blue-700 px-5 py-2 rounded-lg">Token Management</span>
+              <span className="bg-red-100 text-red-700 px-5 py-2 rounded-lg">ExtraCare Benefits</span>
             </div>
             
             {/* Footer */}
