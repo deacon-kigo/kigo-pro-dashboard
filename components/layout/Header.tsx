@@ -31,6 +31,9 @@ export default function Header() {
   
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   
+  // Check if we're in the CVS context
+  const isCVSContext = clientId === 'cvs';
+  
   // Mock search suggestions - role-based
   const getSearchSuggestions = () => {
     switch(role) {
@@ -95,9 +98,22 @@ export default function Header() {
     return '';
   };
 
-  // Get the appropriate action button based on role
+  // Get the appropriate action button based on role and client
   const getActionButton = () => {
     if (pathname.includes('/create')) return null;
+    
+    // Special handling for CVS context
+    if (isCVSContext) {
+      return (
+        <Link 
+          href="/demos/cvs-token-management"
+          className="bg-red-600 text-white font-medium rounded-lg px-4 py-2 flex items-center space-x-1 shadow-md hover:bg-red-700 transition-colors"
+        >
+          <TicketIcon className="w-5 h-5" />
+          <span>Manage Tokens</span>
+        </Link>
+      );
+    }
     
     switch(role) {
       case 'merchant':
@@ -186,10 +202,10 @@ export default function Header() {
         width: `calc(100% - ${sidebarWidth})`
       }}
     >
-      <div className={`absolute inset-0 ${isDarkMode ? 'bg-gradient-to-r from-gray-900/90 via-gray-800/5 to-gray-700/10' : 'bg-gradient-to-r from-white/90 via-pastel-blue/5 to-pastel-purple/10'} backdrop-blur-md border-b border-border-light`}></div>
+      <div className={`absolute inset-0 ${isDarkMode ? 'bg-gradient-to-r from-gray-900/90 via-gray-800/5 to-gray-700/10' : (isCVSContext ? 'bg-gradient-to-r from-white/90 via-red-50/5 to-blue-50/10' : 'bg-gradient-to-r from-white/90 via-pastel-blue/5 to-pastel-purple/10')} backdrop-blur-md border-b border-border-light`}></div>
       
       <div className="relative z-10 flex items-center w-full">
-        <h1 className={`text-2xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{getPageTitle()}</h1>
+        <h1 className={`text-2xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{isCVSContext ? 'CVS Support Portal' : getPageTitle()}</h1>
         
         <div id="search-container" className="relative ml-8 flex-1 max-w-md">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -236,10 +252,26 @@ export default function Header() {
         <div className="ml-auto flex items-center gap-4">
           <button className={`w-10 h-10 rounded-full flex items-center justify-center ${isDarkMode ? 'hover:bg-gray-800/80' : 'hover:bg-white/80'}`}>
             <BellIcon className={`h-5 w-5 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
+            {unreadNotificationsCount > 0 && (
+              <span className="absolute top-2 right-2 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center text-xs text-white">{unreadNotificationsCount}</span>
+            )}
           </button>
           <button className={`w-10 h-10 rounded-full flex items-center justify-center ${isDarkMode ? 'hover:bg-gray-800/80' : 'hover:bg-white/80'}`}>
             <ChatBubbleLeftEllipsisIcon className={`h-5 w-5 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
           </button>
+          
+          {/* Display user info for CVS context */}
+          {isCVSContext && (
+            <div className="ml-3 flex items-center">
+              <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white">
+                SJ
+              </div>
+              <div className="ml-3 hidden md:block">
+                <p className="text-sm font-medium text-gray-700">Sarah Johnson</p>
+                <p className="text-xs text-gray-500">Agent ID: CVS-2358</p>
+              </div>
+            </div>
+          )}
           
           {getActionButton()}
         </div>

@@ -101,7 +101,8 @@ export default function CVSDashboard() {
   
   // CVS branding colors
   const cvsRed = '#CC0000';
-  const kigoBlue = '#2563EB';
+  const cvsBlue = '#2563EB';
+  const kigoBlue = '#3268cc';
   
   // Set up client-side rendering
   useEffect(() => {
@@ -139,84 +140,29 @@ export default function CVSDashboard() {
   
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Top Navigation */}
-      <nav className="bg-white shadow-sm">
-        <div className="mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex">
-              <div className="flex-shrink-0 flex items-center">
-                {/* CVS + Kigo co-branding */}
-                <div className="flex items-center">
-                  <div className="h-8 w-8 bg-red-600 rounded-md flex items-center justify-center text-white font-bold">
-                    CVS
-                  </div>
-                  <span className="ml-2 text-xl font-semibold text-gray-900">Support Portal</span>
-                  <span className="ml-2 text-sm text-gray-500">powered by</span>
-                  <span className="ml-1 text-sm font-medium text-blue-600">Kigo</span>
-                </div>
-              </div>
-              <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                <a href="#" className="border-b-2 border-blue-500 text-gray-900 inline-flex items-center px-1 pt-1 text-sm font-medium">
-                  <HomeIcon className="h-5 w-5 mr-1" />
-                  Dashboard
-                </a>
-                <a href="#" className="border-transparent border-b-2 hover:border-gray-300 text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 text-sm font-medium">
-                  <UserGroupIcon className="h-5 w-5 mr-1" />
-                  Customers
-                </a>
-                <a href="#" className="border-transparent border-b-2 hover:border-gray-300 text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 text-sm font-medium">
-                  <TicketIcon className="h-5 w-5 mr-1" />
-                  Tickets
-                </a>
-                <a href="#" className="border-transparent border-b-2 hover:border-gray-300 text-gray-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 text-sm font-medium">
-                  <ChartBarIcon className="h-5 w-5 mr-1" />
-                  Reports
-                </a>
-              </div>
-            </div>
-            <div className="flex items-center">
-              <button className="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none">
-                <span className="sr-only">View notifications</span>
-                <div className="relative">
-                  <BellIcon className="h-6 w-6" aria-hidden="true" />
-                  <span className="absolute -top-1 -right-1 bg-red-500 rounded-full h-4 w-4 flex items-center justify-center text-xs text-white">3</span>
-                </div>
-              </button>
-              <div className="ml-3 relative flex items-center">
-                <div className="flex items-center">
-                  <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white">
-                    SJ
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-700">Sarah Johnson</p>
-                    <p className="text-xs text-gray-500">Agent ID: CVS-2358</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-      
       {/* Main Content */}
       <main className="py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Welcome Banner */}
-          <div className="bg-white shadow rounded-lg mb-6 p-6">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-              <div>
-                <h1 className="text-2xl font-semibold text-gray-900">{greeting}, Sarah</h1>
-                <p className="text-gray-600">{getTodayDate()} • {currentTime}</p>
-                <p className="text-sm text-blue-600 mt-1">You have 3 high-priority tickets needing attention today</p>
-              </div>
-              <div className="mt-4 md:mt-0">
-                <button 
-                  onClick={() => router.push('/demos/cvs-token-management')}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
-                >
-                  Manage Customer Tokens
-                  <ArrowRightIcon className="ml-2 h-4 w-4" />
-                </button>
+          <div className="bg-white rounded-lg mb-6 overflow-hidden shadow-sm">
+            <div className="bg-gradient-to-r from-red-50 via-blue-50 to-indigo-50 border-b border-gray-100 p-1">
+              <div className="bg-gradient-to-r from-red-600/10 via-blue-500/10 to-indigo-500/5 px-6 py-5">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+                  <div>
+                    <h1 className="text-2xl font-semibold text-gray-900">{greeting}, Sarah</h1>
+                    <p className="text-gray-600">{getTodayDate()} • {currentTime}</p>
+                    <p className="text-sm text-blue-600 mt-1">You have 3 high-priority tickets needing attention today</p>
+                  </div>
+                  <div className="mt-4 md:mt-0">
+                    <button 
+                      onClick={() => router.push('/demos/cvs-token-management')}
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gradient-to-r from-red-600 to-blue-600 hover:from-red-700 hover:to-blue-700"
+                    >
+                      Manage Customer Tokens
+                      <ArrowRightIcon className="ml-2 h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -226,7 +172,7 @@ export default function CVSDashboard() {
             {/* Left Column */}
             <div className="col-span-2 space-y-6">
               {/* Stats Overview */}
-              <div className="bg-white shadow rounded-lg p-6">
+              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
                 <h2 className="text-lg font-medium text-gray-900 mb-4">Support Overview</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {dashboardStats.map((stat) => (
@@ -240,10 +186,12 @@ export default function CVSDashboard() {
               </div>
 
               {/* Tickets From External System */}
-              <div className="bg-white shadow rounded-lg p-6">
+              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-lg font-medium text-gray-900">Recent Tickets</h2>
-                  <span className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer">View all tickets</span>
+                  <Link href="/demos/cvs-tickets" className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer">
+                    View all tickets
+                  </Link>
                 </div>
                 <div className="overflow-hidden">
                   <div className="overflow-x-auto">
@@ -291,7 +239,9 @@ export default function CVSDashboard() {
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <button className="text-blue-600 hover:text-blue-900">View details</button>
+                              <Link href={`/demos/cvs-tickets/${ticket.id}`} className="text-blue-600 hover:text-blue-900">
+                                View details
+                              </Link>
                             </td>
                           </tr>
                         ))}
@@ -305,10 +255,12 @@ export default function CVSDashboard() {
             {/* Right Column */}
             <div className="space-y-6">
               {/* Favorites Section */}
-              <div className="bg-white shadow rounded-lg p-6">
+              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-lg font-medium text-gray-900">Favorite Customers</h2>
-                  <span className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer">Manage favorites</span>
+                  <Link href="/demos/cvs-customers/favorites" className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer">
+                    Manage favorites
+                  </Link>
                 </div>
                 <div className="space-y-4">
                   {favoriteCustomers.map((customer) => (
@@ -333,20 +285,26 @@ export default function CVSDashboard() {
                           Manage tokens
                         </Link>
                         <span className="mx-2 text-gray-300">|</span>
-                        <button className="text-xs text-gray-600 hover:text-gray-800">
+                        <Link 
+                          href={`/demos/cvs-customers/${customer.id}`}
+                          className="text-xs text-gray-600 hover:text-gray-800"
+                        >
                           View profile
-                        </button>
+                        </Link>
                       </div>
                     </div>
                   ))}
-                  <button className="w-full flex justify-center items-center py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+                  <Link 
+                    href="/demos/cvs-customers/add"
+                    className="w-full flex justify-center items-center py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50"
+                  >
                     Add customer to favorites
-                  </button>
+                  </Link>
                 </div>
               </div>
 
               {/* Onboarding Checklist */}
-              <div className="bg-white shadow rounded-lg p-6">
+              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-lg font-medium text-gray-900">Getting Started</h2>
                   <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">{actionItems.filter(item => item.completed).length}/{actionItems.length} completed</span>
@@ -370,33 +328,45 @@ export default function CVSDashboard() {
                   ))}
                 </div>
                 <div className="mt-4 pt-4 border-t border-gray-200">
-                  <a href="#" className="text-sm text-blue-600 hover:text-blue-800 flex items-center">
+                  <Link href="/demos/cvs-training" className="text-sm text-blue-600 hover:text-blue-800 flex items-center">
                     <QuestionMarkCircleIcon className="h-4 w-4 mr-1" />
                     View all training resources
-                  </a>
+                  </Link>
                 </div>
               </div>
 
               {/* Quick Actions */}
-              <div className="bg-white shadow rounded-lg p-6">
+              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
                 <h2 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h2>
                 <div className="grid grid-cols-2 gap-3">
-                  <button className="flex flex-col items-center justify-center p-3 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                  <Link 
+                    href="/demos/cvs-customers/new"
+                    className="flex flex-col items-center justify-center p-3 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                  >
                     <UserCircleIcon className="h-6 w-6 text-blue-500 mb-2" />
                     <span className="text-xs text-gray-700">New Customer</span>
-                  </button>
-                  <button className="flex flex-col items-center justify-center p-3 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                  </Link>
+                  <Link 
+                    href="/demos/cvs-tickets/new"
+                    className="flex flex-col items-center justify-center p-3 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                  >
                     <TicketIcon className="h-6 w-6 text-blue-500 mb-2" />
                     <span className="text-xs text-gray-700">Create Ticket</span>
-                  </button>
-                  <button className="flex flex-col items-center justify-center p-3 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                  </Link>
+                  <Link 
+                    href="/demos/cvs-calls/log"
+                    className="flex flex-col items-center justify-center p-3 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                  >
                     <PhoneIcon className="h-6 w-6 text-blue-500 mb-2" />
                     <span className="text-xs text-gray-700">Log Call</span>
-                  </button>
-                  <button className="flex flex-col items-center justify-center p-3 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                  </Link>
+                  <Link 
+                    href="/demos/cvs-email/compose"
+                    className="flex flex-col items-center justify-center p-3 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                  >
                     <EnvelopeIcon className="h-6 w-6 text-blue-500 mb-2" />
                     <span className="text-xs text-gray-700">Send Email</span>
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -418,9 +388,9 @@ export default function CVSDashboard() {
             </p>
             <div className="flex items-center">
               <WrenchScrewdriverIcon className="h-4 w-4 text-gray-400 mr-1" />
-              <button className="text-xs text-blue-600 hover:text-blue-800">
+              <Link href="/demos/cvs-support" className="text-xs text-blue-600 hover:text-blue-800">
                 Report an issue
-              </button>
+              </Link>
             </div>
           </div>
         </div>

@@ -31,6 +31,9 @@ export default function Sidebar() {
   // Local state for backward compatibility during migration
   const [isCollapsed, setIsCollapsed] = useState(false);
   
+  // Check if we're in the CVS context
+  const isCVSContext = clientId === 'cvs';
+  
   // Sync local state with Redux
   useEffect(() => {
     setIsCollapsed(sidebarCollapsed);
@@ -68,6 +71,16 @@ export default function Sidebar() {
       return true;
     }
     
+    // Special case for CVS pages
+    if (isCVSContext) {
+      if (path === '/demos/cvs-dashboard' && pathname.startsWith('/demos/cvs-dashboard')) {
+        return true;
+      }
+      if (path === '/demos/cvs-token-management' && pathname.startsWith('/demos/cvs-token-management')) {
+        return true;
+      }
+    }
+    
     return pathname === path || pathname.startsWith(`${path}/`);
   };
 
@@ -76,8 +89,95 @@ export default function Sidebar() {
   const clientLogo = client?.logo || '/kigo logo.svg';
   const clientLogoIconOnly = client?.logo || '/kigo logo only.svg';
   
+  // Get CVS-specific navigation items
+  const getCVSNavigationItems = () => {
+    return (
+      <>
+        <li className="nav-item px-3 py-1">
+          <Link 
+            href="/demos/cvs-dashboard" 
+            className={`
+              flex items-center py-2 text-sm font-medium rounded-md
+              ${isCollapsed ? 'justify-center px-2' : 'px-3'}
+              ${isLinkActive('/demos/cvs-dashboard') 
+                ? 'text-red-600 bg-red-50' 
+                : 'text-text-dark hover:text-red-600 hover:bg-gray-100'
+              }
+            `}
+            title="Dashboard"
+          >
+            <HomeIcon className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${isLinkActive('/demos/cvs-dashboard') ? 'text-red-600' : 'text-text-muted'}`} />
+            {!isCollapsed && (
+              <span className={`${isLinkActive('/demos/cvs-dashboard') ? 'font-semibold' : ''}`}>
+                Dashboard
+              </span>
+            )}
+          </Link>
+        </li>
+        <li className="nav-item px-3 py-1">
+          <Link 
+            href="/demos/cvs-customers" 
+            className={`
+              flex items-center py-2 text-sm font-medium rounded-md
+              ${isCollapsed ? 'justify-center px-2' : 'px-3'}
+              ${isLinkActive('/demos/cvs-customers') 
+                ? 'text-red-600 bg-red-50' 
+                : 'text-text-dark hover:text-red-600 hover:bg-gray-100'
+              }
+            `}
+            title="Customers"
+          >
+            <UserGroupIcon className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${isLinkActive('/demos/cvs-customers') ? 'text-red-600' : 'text-text-muted'}`} />
+            {!isCollapsed && <span>Customers</span>}
+          </Link>
+        </li>
+        <li className="nav-item px-3 py-1">
+          <Link 
+            href="/demos/cvs-token-management" 
+            className={`
+              flex items-center py-2 text-sm font-medium rounded-md
+              ${isCollapsed ? 'justify-center px-2' : 'px-3'}
+              ${isLinkActive('/demos/cvs-token-management') 
+                ? 'text-red-600 bg-red-50' 
+                : 'text-text-dark hover:text-red-600 hover:bg-gray-100'
+              }
+            `}
+            title="Token Management"
+          >
+            <svg className="w-5 h-5 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+            </svg>
+            {!isCollapsed && <span>Tokens</span>}
+          </Link>
+        </li>
+        <li className="nav-item px-3 py-1">
+          <Link 
+            href="/demos/cvs-tickets" 
+            className={`
+              flex items-center py-2 text-sm font-medium rounded-md
+              ${isCollapsed ? 'justify-center px-2' : 'px-3'}
+              ${isLinkActive('/demos/cvs-tickets') 
+                ? 'text-red-600 bg-red-50' 
+                : 'text-text-dark hover:text-red-600 hover:bg-gray-100'
+              }
+            `}
+            title="Support Tickets"
+          >
+            <TicketIcon className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${isLinkActive('/demos/cvs-tickets') ? 'text-red-600' : 'text-text-muted'}`} />
+            {!isCollapsed && <span>Tickets</span>}
+          </Link>
+        </li>
+      </>
+    );
+  };
+  
   // Role-specific navigation items
   const getNavigationItems = () => {
+    // If in CVS context, show CVS-specific navigation
+    if (isCVSContext) {
+      return getCVSNavigationItems();
+    }
+    
     switch(role) {
       case 'merchant':
         return (
@@ -307,7 +407,7 @@ export default function Sidebar() {
           {isCollapsed ? (
             <Link href="/" className="flex items-center justify-center w-full">
               <Image 
-                src="/kigo logo only.svg" 
+                src={isCVSContext ? "/logos/cvs-logo.svg" : "/kigo logo only.svg"}
                 alt={clientName || 'Kigo'}
                 width={40} 
                 height={40} 
@@ -316,7 +416,14 @@ export default function Sidebar() {
             </Link>
           ) : (
             <Link href="/" className="flex items-center">
-              {role === 'merchant' ? (
+              {isCVSContext ? (
+                <div className="flex items-center">
+                  <div className="h-8 w-8 bg-red-600 rounded-md flex items-center justify-center text-white font-bold">
+                    CVS
+                  </div>
+                  <span className="ml-2 text-xl font-semibold text-gray-900">Support Portal</span>
+                </div>
+              ) : role === 'merchant' ? (
                 <div className="text-lg font-bold text-gray-800">
                   {clientName}
                 </div>
@@ -360,18 +467,18 @@ export default function Sidebar() {
           <ul className="nav-items">
             <li className="nav-item px-3 py-1">
               <Link 
-                href="/settings" 
+                href={isCVSContext ? "/demos/cvs-settings" : "/settings"} 
                 className={`
                   flex items-center py-2 text-sm font-medium rounded-md
                   ${isCollapsed ? 'justify-center px-2' : 'px-3'}
-                  ${isLinkActive('/settings') 
-                    ? 'text-primary bg-primary-light' 
+                  ${isLinkActive(isCVSContext ? '/demos/cvs-settings' : '/settings') 
+                    ? (isCVSContext ? 'text-red-600 bg-red-50' : 'text-primary bg-primary-light')
                     : 'text-text-dark hover:text-primary hover:bg-gray-100'
                   }
                 `}
                 title="Settings"
               >
-                <Cog6ToothIcon className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${isLinkActive('/settings') ? 'text-primary' : 'text-text-muted'}`} />
+                <Cog6ToothIcon className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${isLinkActive(isCVSContext ? '/demos/cvs-settings' : '/settings') ? (isCVSContext ? 'text-red-600' : 'text-primary') : 'text-text-muted'}`} />
                 {!isCollapsed && <span>Settings</span>}
               </Link>
             </li>
@@ -416,14 +523,14 @@ export default function Sidebar() {
         <div className={`mt-auto pt-4 ${isCollapsed ? 'px-3' : 'px-5'} border-t border-border-light`}>
           <div className={`flex items-center ${isCollapsed ? 'justify-center' : ''} pb-6`}>
             <div className="w-9 h-9 bg-pastel-purple rounded-full flex items-center justify-center text-indigo-500 font-semibold text-sm shadow-sm">
-              {role === 'merchant' ? 'DP' : (role === 'support' ? 'SA' : 'AD')}
+              {isCVSContext ? 'SJ' : (role === 'merchant' ? 'DP' : (role === 'support' ? 'SA' : 'AD'))}
             </div>
             {!isCollapsed && (
               <div className="ml-3 overflow-hidden">
                 <p className="font-semibold text-sm whitespace-nowrap overflow-hidden text-ellipsis">
-                  {role === 'merchant' ? 'Deacon Poon' : (role === 'support' ? 'Support Agent' : 'Admin User')}
+                  {isCVSContext ? 'Sarah Johnson' : (role === 'merchant' ? 'Deacon Poon' : (role === 'support' ? 'Support Agent' : 'Admin User'))}
                 </p>
-                <p className="text-xs text-text-muted">{getRoleTitle()}</p>
+                <p className="text-xs text-text-muted">{isCVSContext ? 'CVS Agent ID: 2358' : getRoleTitle()}</p>
               </div>
             )}
           </div>
