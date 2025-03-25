@@ -276,23 +276,18 @@ export default function SSOSignIn() {
                 <div className="w-60 h-60 rounded-full border border-gray-200/40 animate-spin-slow"></div>
               </div>
               
-              {/* Central container - simplified */}
+              {/* Central container - simplified and neutral */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="bg-white/80 backdrop-blur-md rounded-full w-32 h-32 flex items-center justify-center shadow-sm border border-white/80">
-                  {/* Simplified logo container */}
-                  <div className="w-20 h-20 relative">
-                    <Image 
-                      src="/kigo logo only.svg" 
-                      alt="Kigo" 
-                      fill
-                      style={{ objectFit: 'contain' }}
-                      className="filter drop-shadow"
-                    />
+                <div className="bg-white/90 backdrop-blur-md rounded-full w-32 h-32 flex items-center justify-center shadow-sm border border-white/90">
+                  {/* Co-branded neutral element */}
+                  <div className="relative w-full h-full flex items-center justify-center">
+                    <div className="absolute w-full h-full rounded-full bg-gradient-to-br from-blue-50 to-red-50 opacity-50"></div>
+                    <div className="z-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-red-500 font-bold text-3xl">K+C</div>
                   </div>
                 </div>
               </div>
               
-              {/* Single orbiting element */}
+              {/* Orbiting elements */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="relative w-60 h-60">
                   {/* Orbiting blue dot */}
@@ -317,7 +312,12 @@ export default function SSOSignIn() {
               </div>
             </div>
             
-            <h2 className="text-xl font-medium text-gray-800 mb-2">Unified Support Experience</h2>
+            {/* Emphasized heading with more prominence */}
+            <div className="mb-2 bg-gradient-to-r from-blue-500/20 to-red-500/20 py-3 px-5 rounded-lg border border-gray-100/30 shadow-md">
+              <h2 className="text-3xl font-extrabold text-gray-800 mb-1 bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent">Unified Support Experience</h2>
+              <div className="h-1 w-40 mx-auto bg-gradient-to-r from-blue-400 to-red-400 rounded-full"></div>
+            </div>
+            
             <p className="text-gray-600 mb-8">
               A seamless integration between Kigo Pro and CVS ExtraCare
             </p>
