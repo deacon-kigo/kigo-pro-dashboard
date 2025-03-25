@@ -230,16 +230,16 @@ export default function SSOSignIn() {
       </div>
 
       {/* Illustration Section - Right Side */}
-      <div className="hidden lg:block relative w-0 flex-1 bg-gradient-to-br from-gray-900 to-gray-800">
+      <div className="hidden lg:block relative w-0 flex-1 bg-gradient-to-br from-blue-50 to-purple-100">
         {/* Abstract shapes for background */}
-        <div className="absolute inset-0 overflow-hidden opacity-20">
-          <svg className="absolute -top-24 -right-20 w-96 h-96 text-red-600 opacity-50" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <div className="absolute inset-0 overflow-hidden opacity-40">
+          <svg className="absolute -top-24 -right-20 w-96 h-96 text-red-200 opacity-70" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <circle cx="50" cy="50" r="40" fill="currentColor" />
           </svg>
-          <svg className="absolute bottom-0 left-0 w-80 h-80 text-blue-600 opacity-30" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <svg className="absolute bottom-0 left-0 w-80 h-80 text-blue-200 opacity-60" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <rect x="10" y="10" width="80" height="80" rx="10" fill="currentColor" />
           </svg>
-          <svg className="absolute top-1/2 left-1/4 w-64 h-64 text-white opacity-10" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <svg className="absolute top-1/2 left-1/4 w-64 h-64 text-purple-200 opacity-50" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <polygon points="50,10 90,90 10,90" fill="currentColor" />
           </svg>
         </div>
@@ -251,15 +251,15 @@ export default function SSOSignIn() {
             <div className="mb-10 relative">
               {/* Animated Ring */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-64 h-64 rounded-full border-4 border-white/10 animate-pulse"></div>
-                <div className="absolute w-56 h-56 rounded-full border-2 border-white/20 animate-ping animation-delay-1000"></div>
+                <div className="w-64 h-64 rounded-full border-4 border-blue-200/30 animate-pulse"></div>
+                <div className="absolute w-56 h-56 rounded-full border-2 border-purple-200/40 animate-ping animation-delay-1000"></div>
               </div>
               
               {/* Logos Container */}
-              <div className="relative bg-white/5 backdrop-blur-lg rounded-2xl p-8 border border-white/10 shadow-2xl mb-10">
+              <div className="relative bg-white backdrop-blur-lg rounded-2xl p-8 border border-blue-100 shadow-lg mb-10">
                 <div className="flex flex-col items-center gap-6">
                   {/* Kigo Logo with proper color background */}
-                  <div className="bg-white p-4 rounded-xl shadow-xl">
+                  <div className="bg-white p-4 rounded-xl shadow-md">
                     <Image 
                       src="/kigo logo.svg" 
                       alt="Kigo" 
@@ -270,10 +270,10 @@ export default function SSOSignIn() {
                   </div>
                   
                   {/* Connection Line */}
-                  <div className="w-px h-8 bg-gradient-to-b from-blue-500 to-red-500"></div>
+                  <div className="w-px h-8 bg-gradient-to-b from-blue-300 to-purple-300"></div>
                   
                   {/* CVS Logo with proper color background */}
-                  <div className="bg-white p-4 rounded-xl shadow-xl">
+                  <div className="bg-white p-4 rounded-xl shadow-md">
                     <Image 
                       src="/logos/cvs-logo.svg" 
                       alt="CVS" 
@@ -285,37 +285,37 @@ export default function SSOSignIn() {
                 </div>
                 
                 {/* Particle Effects */}
-                <div className="absolute -top-4 -right-4 w-8 h-8 bg-blue-500 rounded-full blur-xl opacity-60 animate-pulse"></div>
-                <div className="absolute -bottom-4 -left-4 w-8 h-8 bg-red-500 rounded-full blur-xl opacity-60 animate-pulse animation-delay-500"></div>
+                <div className="absolute -top-4 -right-4 w-8 h-8 bg-blue-200 rounded-full blur-xl opacity-70 animate-pulse"></div>
+                <div className="absolute -bottom-4 -left-4 w-8 h-8 bg-red-200 rounded-full blur-xl opacity-70 animate-pulse animation-delay-500"></div>
               </div>
             </div>
             
-            <h2 className="text-2xl font-bold text-white mb-2">Unified Support Experience</h2>
-            <p className="text-gray-300 text-lg mb-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Unified Support Experience</h2>
+            <p className="text-gray-600 text-lg mb-8">
               A seamless integration between Kigo Pro and CVS ExtraCare systems
             </p>
             
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white/5 backdrop-blur-sm rounded-lg p-5 border border-white/10 hover:bg-white/10 transition">
+              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-5 border border-blue-100 hover:bg-white/90 transition shadow-sm">
                 <div className="text-red-400 mb-2">
                   <svg className="w-6 h-6 inline-block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
                   </svg>
                 </div>
-                <h3 className="text-white font-semibold mb-1">Integrated Platform</h3>
-                <p className="text-gray-300 text-sm">Unified experience across all systems</p>
+                <h3 className="text-gray-800 font-semibold mb-1">Integrated Platform</h3>
+                <p className="text-gray-600 text-sm">Unified experience across all systems</p>
               </div>
-              <div className="bg-white/5 backdrop-blur-sm rounded-lg p-5 border border-white/10 hover:bg-white/10 transition">
+              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-5 border border-blue-100 hover:bg-white/90 transition shadow-sm">
                 <div className="text-blue-400 mb-2">
                   <svg className="w-6 h-6 inline-block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <polyline points="12 6 12 12 16 14"></polyline>
                   </svg>
                 </div>
-                <h3 className="text-white font-semibold mb-1">Real-time Updates</h3>
-                <p className="text-gray-300 text-sm">Instant access to customer information</p>
+                <h3 className="text-gray-800 font-semibold mb-1">Real-time Updates</h3>
+                <p className="text-gray-600 text-sm">Instant access to customer information</p>
               </div>
-              <div className="bg-white/5 backdrop-blur-sm rounded-lg p-5 border border-white/10 hover:bg-white/10 transition">
+              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-5 border border-blue-100 hover:bg-white/90 transition shadow-sm">
                 <div className="text-blue-400 mb-2">
                   <svg className="w-6 h-6 inline-block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -324,10 +324,10 @@ export default function SSOSignIn() {
                     <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                   </svg>
                 </div>
-                <h3 className="text-white font-semibold mb-1">Customer-Centric</h3>
-                <p className="text-gray-300 text-sm">Designed around customer needs</p>
+                <h3 className="text-gray-800 font-semibold mb-1">Customer-Centric</h3>
+                <p className="text-gray-600 text-sm">Designed around customer needs</p>
               </div>
-              <div className="bg-white/5 backdrop-blur-sm rounded-lg p-5 border border-white/10 hover:bg-white/10 transition">
+              <div className="bg-white/80 backdrop-blur-sm rounded-lg p-5 border border-blue-100 hover:bg-white/90 transition shadow-sm">
                 <div className="text-red-400 mb-2">
                   <svg className="w-6 h-6 inline-block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
@@ -335,8 +335,8 @@ export default function SSOSignIn() {
                     <polyline points="21 15 16 10 5 21"></polyline>
                   </svg>
                 </div>
-                <h3 className="text-white font-semibold mb-1">Visual Analytics</h3>
-                <p className="text-gray-300 text-sm">Smart insights for better support</p>
+                <h3 className="text-gray-800 font-semibold mb-1">Visual Analytics</h3>
+                <p className="text-gray-600 text-sm">Smart insights for better support</p>
               </div>
             </div>
           </div>
@@ -344,7 +344,7 @@ export default function SSOSignIn() {
         
         {/* Bottom Copyright */}
         <div className="absolute bottom-8 left-0 right-0 flex justify-center">
-          <div className="text-gray-400 text-sm">
+          <div className="text-gray-500 text-sm">
             © 2023 Kigo + CVS Pharmacy Partnership | All rights reserved
           </div>
         </div>
