@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useDemo } from '@/contexts/DemoContext';
+import { useAppSelector } from '@/lib/redux/hooks';
 import { 
   UserCircleIcon, 
   BellIcon, 
@@ -111,6 +112,9 @@ export default function CVSDashboard() {
   const [currentTime, setCurrentTime] = useState('');
   const [greeting, setGreeting] = useState('');
   
+  // Get the sidebar width from Redux state
+  const { sidebarWidth } = useAppSelector(state => state.ui);
+  
   // CVS branding colors
   const cvsRed = '#CC0000';
   const cvsBlue = '#2563EB';
@@ -154,7 +158,14 @@ export default function CVSDashboard() {
     <div className="min-h-screen bg-gray-50">
       {/* Main Content */}
       <main className="py-6">
-        <div className="max-w-7xl mx-auto px-8">
+        <div 
+          className="transition-all duration-300 ease-in-out px-8"
+          style={{ 
+            marginLeft: 'auto',
+            marginRight: 'auto',
+            width: `calc(100% - ${sidebarWidth})`
+          }}
+        >
           {/* Welcome Banner */}
           <div className="bg-white rounded-lg mb-6 overflow-hidden shadow-sm border border-gray-100">
             <div className="bg-gradient-to-r from-red-50 via-blue-50 to-indigo-50 px-6 py-5">
@@ -203,59 +214,61 @@ export default function CVSDashboard() {
                     View all tickets
                   </Link>
                 </div>
-                <div>
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket</th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/3">Issue</th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {recentTickets.map((ticket) => (
-                        <tr key={ticket.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            <div className="flex items-center">
-                              {ticket.flagged && (
-                                <ExclamationCircleIcon className="h-5 w-5 text-red-500 mr-2" />
-                              )}
-                              <span className={`text-sm font-medium ${ticket.flagged ? 'text-red-600' : 'text-gray-900'}`}>{ticket.id}</span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            <div className="text-sm text-gray-900">{ticket.customer}</div>
-                            <div className="text-xs text-gray-500">{ticket.timeCreated}</div>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="text-sm text-gray-900 truncate max-w-xs">{ticket.issue}</div>
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              ticket.priority === 'High' ? 'bg-red-100 text-red-800' :
-                              ticket.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-green-100 text-green-800'
-                            }`}>
-                              {ticket.priority}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              {ticket.status}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
-                            <Link href={`/demos/cvs-tickets/${ticket.id}`} className="text-blue-600 hover:text-blue-900">
-                              View details
-                            </Link>
-                          </td>
+                <div className="overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket</th>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Issue</th>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                          <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {recentTickets.map((ticket) => (
+                          <tr key={ticket.id} className="hover:bg-gray-50">
+                            <td className="px-4 py-3 whitespace-nowrap">
+                              <div className="flex items-center">
+                                {ticket.flagged && (
+                                  <ExclamationCircleIcon className="h-5 w-5 text-red-500 mr-2" />
+                                )}
+                                <span className={`text-sm font-medium ${ticket.flagged ? 'text-red-600' : 'text-gray-900'}`}>{ticket.id}</span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">{ticket.customer}</div>
+                              <div className="text-xs text-gray-500">{ticket.timeCreated}</div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="text-sm text-gray-900 truncate max-w-[200px]">{ticket.issue}</div>
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap">
+                              <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                ticket.priority === 'High' ? 'bg-red-100 text-red-800' :
+                                ticket.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-green-100 text-green-800'
+                              }`}>
+                                {ticket.priority}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap">
+                              <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {ticket.status}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
+                              <Link href={`/demos/cvs-tickets/${ticket.id}`} className="text-blue-600 hover:text-blue-900">
+                                View details
+                              </Link>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </div>
@@ -335,7 +348,14 @@ export default function CVSDashboard() {
 
       {/* Footer */}
       <footer className="bg-white shadow-inner border-t border-gray-200 py-4 mt-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+        <div
+          className="px-8 flex justify-between items-center transition-all duration-300 ease-in-out"
+          style={{ 
+            marginLeft: 'auto',
+            marginRight: 'auto',
+            width: `calc(100% - ${sidebarWidth})`
+          }}
+        >
           <div>
             <p className="text-xs text-gray-500">
               &copy; 2023 CVS Health + Kigo. All rights reserved.
