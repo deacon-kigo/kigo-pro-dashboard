@@ -1,5 +1,31 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
+// Tier level for token support
+export type SupportTier = 'Tier1' | 'Tier2';
+
+// Ticket status options
+export type TicketStatus = 'Open' | 'In Progress' | 'Escalated' | 'Resolved' | 'Closed';
+
+// Ticket priority levels
+export type TicketPriority = 'Low' | 'Medium' | 'High';
+
+// Ticket integration with CVS support system
+export interface TicketInfo {
+  id: string;
+  customerId: string;
+  tokenId?: string;
+  subject: string;
+  description: string;
+  status: TicketStatus;
+  priority: TicketPriority;
+  createdDate: string;
+  updatedDate: string;
+  assignedTo?: string;
+  tier: SupportTier;
+  notes?: string[];
+  resolutionSummary?: string;
+}
+
 // Types for the token management interface
 export interface TokenInfo {
   id: string;
@@ -23,6 +49,11 @@ export interface TokenInfo {
     reissuedReason?: string;
     originalTokenId?: string;
     comments?: string;
+    // New fields for tiered support
+    tier?: SupportTier;
+    escalationReason?: string;
+    escalationDate?: string;
+    ticketId?: string;
   };
   // Track if this token was disputed
   disputed?: boolean;
@@ -91,6 +122,11 @@ export interface CVSTokenState {
     itemsPerPage: number;
     totalPages: number;
   };
+  // Ticket management integration
+  tickets: TicketInfo[];
+  selectedTicket: TicketInfo | null;
+  // Flag to show the create/update ticket modal
+  showTicketModal: boolean;
 }
 
 // Modify the generateRandomTokens function to create more tokens
@@ -625,6 +661,61 @@ const tokenCatalog: TokenInfo[] = [
   }
 ];
 
+// Mock ticket data for demo purposes
+const mockTickets: TicketInfo[] = [
+  {
+    id: 'TK-3829',
+    customerId: 'cust001', // Emily Johnson
+    tokenId: 'tok001',
+    subject: 'Unable to redeem ExtraBucks',
+    description: 'Customer reports ExtraBucks reward is showing in their account but cannot be redeemed at checkout.',
+    status: 'Open',
+    priority: 'High',
+    createdDate: '2023-07-15T10:30:00Z',
+    updatedDate: '2023-07-15T10:30:00Z',
+    tier: 'Tier1',
+    notes: [
+      'Initial contact: Customer called about difficulty redeeming their ExtraBucks reward.',
+      'Verified account details and confirmed reward is active in system.'
+    ]
+  },
+  {
+    id: 'TK-3828',
+    customerId: 'cust002', // Michael Williams
+    tokenId: 'tok003',
+    subject: 'Coupon showing expired but should not be',
+    description: 'Customer indicates that 30% Off Contact Lenses coupon is showing as expired in app, but expiration date should be next week.',
+    status: 'Escalated',
+    priority: 'Medium',
+    createdDate: '2023-07-14T15:45:00Z',
+    updatedDate: '2023-07-15T09:20:00Z',
+    assignedTo: 'Sarah Johnson',
+    tier: 'Tier2',
+    notes: [
+      'Initial review: Confirmed coupon should be valid until 2023-06-15.',
+      'Attempted to refresh token status in system without success.',
+      'Escalated to Tier 2 for technical review of token records.'
+    ]
+  },
+  {
+    id: 'TK-3825',
+    customerId: 'cust004', // John Doe
+    subject: 'Missing tokens after app update',
+    description: 'Customer updated app and now cannot see previously claimed tokens.',
+    status: 'In Progress',
+    priority: 'Medium',
+    createdDate: '2023-07-13T11:15:00Z',
+    updatedDate: '2023-07-14T13:40:00Z',
+    assignedTo: 'Alex Chen',
+    tier: 'Tier1',
+    notes: [
+      'Initial troubleshooting performed, advised customer to clear app cache.',
+      'Customer reports issue persists after clearing cache.',
+      'Looking at token database to verify status.'
+    ]
+  }
+];
+
 const initialState: CVSTokenState = {
   customers: generatedCustomers,
   searchQuery: '',
@@ -647,17 +738,19 @@ const initialState: CVSTokenState = {
     merchant: '',
     searchQuery: ''
   },
-  // Sorting options
   tokenSort: {
     field: 'name',
     direction: 'asc'
   },
-  // Initialize pagination
   pagination: {
     currentPage: 1,
     itemsPerPage: 10,
     totalPages: Math.ceil(generatedCustomers.length / 10)
-  }
+  },
+  // Add sample ticket data to initialState
+  tickets: mockTickets,
+  selectedTicket: null,
+  showTicketModal: false
 };
 
 export const cvsTokenSlice = createSlice({
@@ -977,6 +1070,180 @@ export const cvsTokenSlice = createSlice({
         state.tokenSort.field = field;
         state.tokenSort.direction = direction || 'asc';
       }
+    },
+    
+    // New reducers for ticket management
+    createTicket: (state, action: PayloadAction<Omit<TicketInfo, 'id' | 'createdDate' | 'updatedDate'>>) => {
+      const newTicket: TicketInfo = {
+        ...action.payload,
+        id: `TK-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
+        createdDate: new Date().toISOString(),
+        updatedDate: new Date().toISOString()
+      };
+      
+      state.tickets.push(newTicket);
+      state.selectedTicket = newTicket;
+      
+      // If this is related to a token, update the token as well
+      if (newTicket.tokenId && state.selectedCustomer) {
+        const tokenIndex = state.selectedCustomer.tokens.findIndex(t => t.id === newTicket.tokenId);
+        if (tokenIndex >= 0) {
+          if (!state.selectedCustomer.tokens[tokenIndex].supportActions) {
+            state.selectedCustomer.tokens[tokenIndex].supportActions = {};
+          }
+          
+          state.selectedCustomer.tokens[tokenIndex].supportActions!.ticketId = newTicket.id;
+          state.selectedCustomer.tokens[tokenIndex].supportActions!.tier = newTicket.tier;
+          
+          // Update selected token if relevant
+          if (state.selectedToken?.id === newTicket.tokenId) {
+            state.selectedToken = { ...state.selectedCustomer.tokens[tokenIndex] };
+          }
+        }
+      }
+      
+      state.actionMessage = {
+        text: `Support ticket ${newTicket.id} created successfully`,
+        type: 'success'
+      };
+    },
+    
+    updateTicket: (state, action: PayloadAction<Partial<TicketInfo> & { id: string }>) => {
+      const ticketIndex = state.tickets.findIndex(t => t.id === action.payload.id);
+      if (ticketIndex >= 0) {
+        state.tickets[ticketIndex] = {
+          ...state.tickets[ticketIndex],
+          ...action.payload,
+          updatedDate: new Date().toISOString()
+        };
+        
+        state.selectedTicket = state.tickets[ticketIndex];
+        
+        // If ticket status changed to Escalated, update tier as well
+        if (action.payload.status === 'Escalated') {
+          state.tickets[ticketIndex].tier = 'Tier2';
+          
+          // If this is related to a token, update the token as well
+          if (state.tickets[ticketIndex].tokenId && state.selectedCustomer) {
+            const tokenIndex = state.selectedCustomer.tokens.findIndex(t => t.id === state.tickets[ticketIndex].tokenId);
+            if (tokenIndex >= 0) {
+              if (!state.selectedCustomer.tokens[tokenIndex].supportActions) {
+                state.selectedCustomer.tokens[tokenIndex].supportActions = {};
+              }
+              
+              state.selectedCustomer.tokens[tokenIndex].supportActions!.tier = 'Tier2';
+              state.selectedCustomer.tokens[tokenIndex].supportActions!.escalationDate = new Date().toISOString();
+              
+              // Update selected token if relevant
+              if (state.selectedToken?.id === state.tickets[ticketIndex].tokenId) {
+                state.selectedToken = { ...state.selectedCustomer.tokens[tokenIndex] };
+              }
+            }
+          }
+        }
+        
+        state.actionMessage = {
+          text: `Support ticket ${action.payload.id} updated successfully`,
+          type: 'success'
+        };
+      }
+    },
+    
+    selectTicket: (state, action: PayloadAction<string>) => {
+      const ticket = state.tickets.find(t => t.id === action.payload);
+      state.selectedTicket = ticket || null;
+      
+      // If the ticket is associated with a customer, select that customer
+      if (ticket?.customerId) {
+        const customer = state.customers.find(c => c.id === ticket.customerId);
+        if (customer) {
+          state.selectedCustomer = customer;
+          state.customerResults = [customer];
+          state.hasSearched = true;
+          
+          // If the ticket is associated with a token, select that token
+          if (ticket.tokenId) {
+            const token = customer.tokens.find(t => t.id === ticket.tokenId);
+            if (token) {
+              state.selectedToken = token;
+              state.viewState = 'detail';
+            }
+          }
+        }
+      }
+    },
+    
+    closeTicket: (state, action: PayloadAction<{ id: string, resolution: string }>) => {
+      const ticketIndex = state.tickets.findIndex(t => t.id === action.payload.id);
+      if (ticketIndex >= 0) {
+        state.tickets[ticketIndex].status = 'Closed';
+        state.tickets[ticketIndex].resolutionSummary = action.payload.resolution;
+        state.tickets[ticketIndex].updatedDate = new Date().toISOString();
+        
+        state.selectedTicket = state.tickets[ticketIndex];
+        
+        state.actionMessage = {
+          text: `Ticket ${action.payload.id} has been closed`,
+          type: 'success'
+        };
+      }
+    },
+    
+    escalateToTier2: (state, action: PayloadAction<{ ticketId: string, reason: string }>) => {
+      const ticketIndex = state.tickets.findIndex(t => t.id === action.payload.ticketId);
+      if (ticketIndex >= 0) {
+        state.tickets[ticketIndex].status = 'Escalated';
+        state.tickets[ticketIndex].tier = 'Tier2';
+        state.tickets[ticketIndex].updatedDate = new Date().toISOString();
+        state.tickets[ticketIndex].notes = [
+          ...(state.tickets[ticketIndex].notes || []),
+          `Escalated to Tier 2: ${action.payload.reason}`
+        ];
+        
+        state.selectedTicket = state.tickets[ticketIndex];
+        
+        // If this is related to a token, update the token as well
+        if (state.tickets[ticketIndex].tokenId && state.selectedCustomer) {
+          const tokenIndex = state.selectedCustomer.tokens.findIndex(t => t.id === state.tickets[ticketIndex].tokenId);
+          if (tokenIndex >= 0) {
+            if (!state.selectedCustomer.tokens[tokenIndex].supportActions) {
+              state.selectedCustomer.tokens[tokenIndex].supportActions = {};
+            }
+            
+            state.selectedCustomer.tokens[tokenIndex].supportActions!.tier = 'Tier2';
+            state.selectedCustomer.tokens[tokenIndex].supportActions!.escalationDate = new Date().toISOString();
+            state.selectedCustomer.tokens[tokenIndex].supportActions!.escalationReason = action.payload.reason;
+            
+            // Update selected token if relevant
+            if (state.selectedToken?.id === state.tickets[ticketIndex].tokenId) {
+              state.selectedToken = { ...state.selectedCustomer.tokens[tokenIndex] };
+            }
+          }
+        }
+        
+        state.actionMessage = {
+          text: `Ticket ${action.payload.ticketId} has been escalated to Tier 2 support`,
+          type: 'success'
+        };
+      }
+    },
+    
+    addTicketNote: (state, action: PayloadAction<{ ticketId: string, note: string }>) => {
+      const ticketIndex = state.tickets.findIndex(t => t.id === action.payload.ticketId);
+      if (ticketIndex >= 0) {
+        if (!state.tickets[ticketIndex].notes) {
+          state.tickets[ticketIndex].notes = [];
+        }
+        
+        state.tickets[ticketIndex].notes!.push(action.payload.note);
+        state.tickets[ticketIndex].updatedDate = new Date().toISOString();
+        
+        state.selectedTicket = state.tickets[ticketIndex];
+      }
+    },
+    
+    toggleTicketModal: (state) => {
+      state.showTicketModal = !state.showTicketModal;
     }
   }
 });
@@ -998,7 +1265,14 @@ export const {
   setCurrentPage,
   setItemsPerPage,
   markTokenDisputed,
-  setTokenSort
+  setTokenSort,
+  createTicket,
+  updateTicket,
+  selectTicket,
+  closeTicket,
+  escalateToTier2,
+  addTicketNote,
+  toggleTicketModal
 } = cvsTokenSlice.actions;
 
 export default cvsTokenSlice.reducer; 

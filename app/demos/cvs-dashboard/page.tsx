@@ -43,7 +43,8 @@ const recentTickets = [
     priority: 'High',
     status: 'Open',
     timeCreated: '2 hours ago',
-    flagged: true
+    flagged: true,
+    tier: 'Tier1'
   },
   { 
     id: 'TK-3828', 
@@ -52,7 +53,8 @@ const recentTickets = [
     priority: 'Medium',
     status: 'Open',
     timeCreated: '4 hours ago',
-    flagged: true
+    flagged: true,
+    tier: 'Tier1'
   },
   { 
     id: 'TK-3825', 
@@ -61,7 +63,8 @@ const recentTickets = [
     priority: 'Medium',
     status: 'Open',
     timeCreated: '1 day ago',
-    flagged: false
+    flagged: false,
+    tier: 'Tier1'
   },
   { 
     id: 'TK-3821', 
@@ -70,7 +73,8 @@ const recentTickets = [
     priority: 'Low',
     status: 'Open',
     timeCreated: '2 days ago',
-    flagged: false
+    flagged: false,
+    tier: 'Tier1'
   },
   { 
     id: 'TK-3820', 
@@ -79,7 +83,8 @@ const recentTickets = [
     priority: 'Medium',
     status: 'In Progress',
     timeCreated: '2 days ago',
-    flagged: false
+    flagged: false,
+    tier: 'Tier1'
   },
   { 
     id: 'TK-3818', 
@@ -88,7 +93,8 @@ const recentTickets = [
     priority: 'Low',
     status: 'In Progress',
     timeCreated: '3 days ago',
-    flagged: false
+    flagged: false,
+    tier: 'Tier1'
   },
 ];
 
@@ -249,9 +255,10 @@ export default function CVSDashboard() {
                   <h2 className="text-xl font-semibold text-gray-800">Recent Tickets</h2>
                   <Link
                     href={buildDemoUrl('cvs', 'tickets')}
-                    className="text-blue-600 text-sm hover:text-blue-800"
+                    className="bg-blue-600 text-white px-3 py-1.5 rounded-md flex items-center hover:bg-blue-700 transition-colors text-sm"
                   >
-                    View all tickets
+                    <TicketIcon className="h-4 w-4 mr-1" />
+                    View All Tickets
                   </Link>
                 </div>
                 
@@ -265,6 +272,7 @@ export default function CVSDashboard() {
                           <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Issue</th>
                           <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
                           <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tier</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
@@ -299,6 +307,15 @@ export default function CVSDashboard() {
                                   : 'bg-gray-100 text-gray-800'
                               }`}>
                                 {ticket.status}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                ticket.tier === 'Tier1' 
+                                  ? 'bg-blue-100 text-blue-800' 
+                                  : 'bg-red-100 text-red-800'
+                              }`}>
+                                {ticket.tier === 'Tier1' ? 'Tier 1 (CVS)' : 'Tier 2 (Kigo Pro)'}
                               </span>
                             </td>
                           </tr>

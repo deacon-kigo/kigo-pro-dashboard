@@ -1,96 +1,156 @@
 'use client';
 
 import React from 'react';
-import Card from '@/components/ui/Card';
+import Link from 'next/link';
+import Image from 'next/image';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { 
+  TicketIcon, 
+  ExclamationCircleIcon, 
+  InformationCircleIcon,
+  ArrowPathIcon
+} from '@heroicons/react/24/outline';
+import { TierBadge, TicketStatusBadge } from './TicketBadge';
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric'
+  }).format(date);
+};
 
 /**
  * Sidebar content component for the token management view
  */
 export default function SidebarContent() {
+  const tickets = useAppSelector(state => state.cvsToken.tickets);
+  
+  // Get recent tickets (last 3)
+  const recentTickets = [...tickets]
+    .sort((a, b) => new Date(b.updatedDate).getTime() - new Date(a.updatedDate).getTime())
+    .slice(0, 3);
+  
+  // Count tickets by tier
+  const tier1Count = tickets.filter(t => t.tier === 'Tier1').length;
+  const tier2Count = tickets.filter(t => t.tier === 'Tier2').length;
+  
+  // Count open tickets
+  const openTickets = tickets.filter(t => t.status === 'Open' || t.status === 'In Progress').length;
+  
   return (
-    <>
-      <div className="bg-red-50 rounded-lg p-5 shadow-sm mb-6">
-        <div className="flex items-center">
-          <div className="bg-red-100 rounded-full p-3 mr-4 text-[#cc0000]">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-            </svg>
-          </div>
-          <div>
-            <h3 className="font-semibold">ExtraCare Support Tools</h3>
-            <p className="text-sm text-gray-600">Manage customer tokens easily</p>
-          </div>
-        </div>
-        <div className="mt-4">
-          <ul className="space-y-2">
-            <li className="flex items-center bg-white p-3 rounded-lg shadow-sm">
-              <div className="text-[#cc0000] mr-3">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
-                </svg>
-              </div>
-              <span className="text-sm font-medium">Token Management</span>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </li>
-            <li className="flex items-center bg-white p-3 rounded-lg shadow-sm">
-              <div className="text-[#cc0000] mr-3">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
-              <span className="text-sm font-medium">View token usage reports</span>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </li>
-          </ul>
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          Support Resources
+        </h3>
+        <div className="mt-2 space-y-1">
+          <Link
+            href="/dashboard/resources/guides"
+            className="group flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+          >
+            <InformationCircleIcon className="mr-3 flex-shrink-0 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
+            ExtraCare Token Management Guide
+          </Link>
+          <Link
+            href="/dashboard/resources/training"
+            className="group flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+          >
+            <InformationCircleIcon className="mr-3 flex-shrink-0 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
+            Training Resources
+          </Link>
         </div>
       </div>
       
-      <Card title="Support Guidelines">
-        <div className="p-4 space-y-3">
-          <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
-            <h4 className="font-medium text-blue-800">Looking up accounts</h4>
-            <p className="text-sm text-gray-600 mt-1">
-              Always verify customer identity using at least two identifiers before making changes.
-            </p>
+      <div>
+        <div className="flex justify-between items-center">
+          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            Ticket Overview
+          </h3>
+          <Link 
+            href="/demos/cvs-tickets"
+            className="text-xs text-blue-600 hover:text-blue-800"
+          >
+            View all
+          </Link>
+        </div>
+        
+        <div className="mt-3 grid grid-cols-2 gap-3">
+          <div className="p-3 bg-blue-50 rounded-lg">
+            <div className="text-xs text-blue-600 font-medium">Tier 1 (CVS)</div>
+            <div className="text-lg font-bold text-blue-800">{tier1Count}</div>
           </div>
-          
-          <div className="p-3 bg-green-50 rounded-lg border border-green-100">
-            <h4 className="font-medium text-green-800">Adding tokens</h4>
-            <p className="text-sm text-gray-600 mt-1">
-              Only add tokens that customers were eligible for but did not receive due to system issues.
-            </p>
-          </div>
-          
-          <div className="p-3 bg-red-50 rounded-lg border border-red-100">
-            <h4 className="font-medium text-red-800">Removing tokens</h4>
-            <p className="text-sm text-gray-600 mt-1">
-              Token removal should only be done in cases of fraud or system error. Document all removals.
-            </p>
+          <div className="p-3 bg-red-50 rounded-lg">
+            <div className="text-xs text-red-600 font-medium">Tier 2 (Kigo)</div>
+            <div className="text-lg font-bold text-red-800">{tier2Count}</div>
           </div>
         </div>
-      </Card>
+        
+        <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+          <div className="text-xs text-gray-600 font-medium">Open Tickets</div>
+          <div className="text-lg font-bold text-gray-800">{openTickets}</div>
+        </div>
+      </div>
       
-      <Card title="Recent System Updates" className="mt-6">
-        <div className="p-4 space-y-3">
-          <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-100">
-            <h4 className="font-medium text-yellow-800">System Update</h4>
-            <p className="text-sm text-gray-600 mt-1">
-              Token management system will be updated tonight at 2 AM EST. Expect 15 minutes of downtime.
-            </p>
-          </div>
-          
-          <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
-            <h4 className="font-medium text-blue-800">New Token Types</h4>
-            <p className="text-sm text-gray-600 mt-1">
-              Extra Care Birthday Rewards are now available. See knowledge base for details.
-            </p>
-          </div>
+      <div>
+        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          Recent Tickets
+        </h3>
+        <div className="mt-2 space-y-3">
+          {recentTickets.map(ticket => (
+            <Link
+              key={ticket.id}
+              href="/demos/cvs-tickets"
+              className="block p-3 rounded-lg border border-gray-200 hover:bg-gray-50"
+            >
+              <div className="flex justify-between items-start">
+                <div className="flex items-center">
+                  <TicketIcon className="h-4 w-4 text-gray-400 mr-1" />
+                  <span className="text-sm font-medium text-blue-600">{ticket.id}</span>
+                </div>
+                <div className="flex space-x-1">
+                  <TicketStatusBadge status={ticket.status} />
+                  <TierBadge tier={ticket.tier} />
+                </div>
+              </div>
+              <p className="mt-1 text-sm text-gray-800 line-clamp-1">{ticket.subject}</p>
+              <div className="mt-1 flex items-center justify-between">
+                <div className="text-xs text-gray-500">
+                  Updated {formatDate(ticket.updatedDate)}
+                </div>
+                {ticket.status === 'Escalated' && (
+                  <div className="flex items-center text-xs text-yellow-600">
+                    <ArrowPathIcon className="h-3 w-3 mr-1" />
+                    Escalated
+                  </div>
+                )}
+              </div>
+            </Link>
+          ))}
         </div>
-      </Card>
-    </>
+      </div>
+      
+      <div>
+        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          Quick Links
+        </h3>
+        <div className="mt-2 space-y-1">
+          <Link
+            href="/demos/cvs-tickets"
+            className="group flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+          >
+            <TicketIcon className="mr-3 flex-shrink-0 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
+            Support Tickets
+          </Link>
+          <Link
+            href="/dashboard/reports"
+            className="group flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+          >
+            <InformationCircleIcon className="mr-3 flex-shrink-0 h-5 w-5 text-gray-400 group-hover:text-gray-500" />
+            Token Reports
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 } 

@@ -5,6 +5,9 @@
 // Token state types
 export type TokenState = 'Active' | 'Shared' | 'Used' | 'Expired';
 
+// Support tier types
+export type SupportTier = 'Tier1' | 'Tier2';
+
 // Token type definition
 export type Token = {
   id: string;
@@ -18,6 +21,19 @@ export type Token = {
   expirationDate: string;
   merchantName?: string;
   merchantLocation?: string;
+  // Support actions
+  supportActions?: {
+    isReissued?: boolean;
+    reissuedDate?: string;
+    reissuedBy?: string;
+    reissuedReason?: string;
+    originalTokenId?: string;
+    comments?: string;
+    tier?: SupportTier;
+    escalationReason?: string;
+    escalationDate?: string;
+    ticketId?: string;
+  };
 };
 
 // Account type definition
