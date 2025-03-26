@@ -11,7 +11,7 @@ import TokenSearchModal from './TokenSearchModal';
 import SidebarContent from './SidebarContent';
 import DashboardHeader from './DashboardHeader';
 import StatsSection from './StatsSection';
-import { Account, Token } from './types';
+import { Account, Token, TokenState } from './types';
 import { sampleTokens, sampleAccounts } from './data';
 import { generateTokenId, calculateExpirationDate } from './utils';
 
@@ -45,7 +45,7 @@ export default function TokenManagementView() {
     const newToken = { 
       ...token, 
       id: generateTokenId(), 
-      state: 'Active',
+      state: 'Active' as TokenState,
       claimDate: new Date().toISOString(),
       expirationDate: calculateExpirationDate(),
       useDate: undefined,
@@ -84,7 +84,7 @@ export default function TokenManagementView() {
     const newToken = { 
       ...oldToken, 
       id: generateTokenId(), 
-      state: 'Active',
+      state: 'Active' as TokenState,
       claimDate: new Date().toISOString(),
       expirationDate: calculateExpirationDate(),
       useDate: undefined,
