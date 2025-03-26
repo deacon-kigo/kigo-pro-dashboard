@@ -99,7 +99,7 @@ export default function Header() {
   const getPageTitle = () => {
     // Handle CVS specific pages first
     if (isCVSContext) {
-      if (pathname && (pathname.includes('token-management') || pathname.includes('cvs-token-management'))) return 'Token Management';
+      if (pathname && (pathname.includes('token-management') || pathname.includes('cvs-token-management'))) return '';
       if (pathname && pathname.includes('dashboard')) return '';
       if (pathname && pathname.includes('customers')) return 'Customers';
       if (pathname && pathname.includes('tickets')) return 'Support Tickets';
