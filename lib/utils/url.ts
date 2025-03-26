@@ -3,11 +3,23 @@
  */
 
 /**
- * Builds a URL for a demo scenario
- * @param clientId The client ID (e.g., 'cvs', 'deacons', etc.)
- * @param scenario The scenario name (e.g., 'dashboard', 'token-management', etc.)
- * @returns The URL for the demo scenario
+ * Build a URL for a demo page with client and scenario parameters
  */
-export const buildDemoUrl = (clientId: string, scenario: string): string => {
-  return `/demos/${clientId}-${scenario}`;
+export const buildDemoUrl = (client: string, scenario: string, additionalParams?: Record<string, string>): string => {
+  // Start with the base path for the demo
+  const basePath = `/demos/${client}-${scenario}`;
+  
+  // If there are no additional params, return just the path
+  if (!additionalParams || Object.keys(additionalParams).length === 0) {
+    return basePath;
+  }
+  
+  // Build the query string with additional parameters
+  const queryParams = new URLSearchParams();
+  
+  Object.entries(additionalParams).forEach(([key, value]) => {
+    queryParams.append(key, value);
+  });
+  
+  return `${basePath}?${queryParams.toString()}`;
 }; 

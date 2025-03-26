@@ -3,6 +3,8 @@ import demoReducer from './slices/demoSlice';
 import uiReducer from './slices/uiSlice';
 import userReducer from './slices/userSlice';
 import cvsTokenReducer from './slices/cvsTokenSlice';
+import featureConfigReducer from './slices/featureConfigSlice';
+import analyticsReducer from './slices/analyticsSlice';
 import { useDispatch } from 'react-redux';
 import { ActionWithType } from '../../types/redux';
 
@@ -30,7 +32,9 @@ export const store = configureStore({
     demo: demoReducer,
     ui: uiReducer,
     user: userReducer,
-    cvsToken: cvsTokenReducer
+    cvsToken: cvsTokenReducer,
+    featureConfig: featureConfigReducer,
+    analytics: analyticsReducer
   },
   middleware: (getDefaultMiddleware) => 
     getDefaultMiddleware().concat(demoActionLoggerMiddleware),

@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useDemo } from '@/contexts/DemoContext';
-import { useAppSelector } from '@/lib/redux/hooks';
+import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { useDemoActions } from '@/lib/redux/hooks';
 import { 
   UserCircleIcon, 
@@ -33,6 +33,8 @@ import {
   ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
 import { buildDemoUrl } from '@/lib/utils';
+import { fetchCallVolumeData } from '@/lib/redux/slices/analyticsSlice';
+import CallAnalyticsSection from '@/components/features/analytics/CallAnalyticsSection';
 
 // Mock data for the dashboard
 const recentTickets = [
@@ -133,6 +135,7 @@ export default function CVSDashboard() {
   const softShadow = "0 2px 10px rgba(0, 0, 0, 0.05)";
   
   const { updateDemoState } = useDemoActions();
+  const dispatch = useAppDispatch();
   
   // Set up client-side rendering
   useEffect(() => {
@@ -184,6 +187,15 @@ export default function CVSDashboard() {
     });
   }, []);
 
+  useEffect(() => {
+    // Initialize analytics data when dashboard loads
+    dispatch(fetchCallVolumeData());
+  }, [dispatch]);
+
+  const navigateToCreateTicket = () => {
+    router.push('/demos/cvs-tickets?action=create');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Main Content */}
@@ -219,13 +231,22 @@ export default function CVSDashboard() {
                       </div>
                     )}
                   </div>
-                  <Link
-                    href={buildDemoUrl('cvs', 'token-management')}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md flex items-center hover:bg-blue-700 transition-colors"
-                  >
-                    <span>Manage Customer Tokens</span>
-                    <ArrowRightIcon className="h-4 w-4 ml-2" />
-                  </Link>
+                  <div className="flex space-x-3">
+                    <Link
+                      href={buildDemoUrl('cvs', 'token-catalog')}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-md flex items-center hover:bg-blue-700 transition-colors"
+                    >
+                      <span>Manage Tokens</span>
+                      <ArrowRightIcon className="h-4 w-4 ml-2" />
+                    </Link>
+                    <button
+                      onClick={navigateToCreateTicket}
+                      className="bg-green-600 text-white px-4 py-2 rounded-md flex items-center hover:bg-green-700 transition-colors"
+                    >
+                      <TicketIcon className="h-4 w-4 mr-2" />
+                      <span>Create Ticket</span>
+                    </button>
+                  </div>
                 </div>
               </div>
               
@@ -249,7 +270,7 @@ export default function CVSDashboard() {
                 </div>
               </div>
               
-              {/* Recent Tickets Table */}
+              {/* Recent Tickets Table - Placed higher in the main column */}
               <div>
                 <div className="flex justify-between items-center mb-3">
                   <h2 className="text-xl font-semibold text-gray-800">Recent Tickets</h2>
@@ -329,39 +350,12 @@ export default function CVSDashboard() {
             
             {/* Right Sidebar (1/3 width) */}
             <div className="space-y-5">
-              {/* Getting Started */}
-              <div className="bg-white rounded-lg border border-gray-100 overflow-hidden" style={{ boxShadow: softShadow }}>
-                <div className="px-4 py-3 border-b border-gray-200 bg-white flex justify-between">
-                  <h2 className="font-semibold text-gray-800">Getting Started</h2>
-                  <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">2/5 completed</span>
-                </div>
-                <div className="p-4">
-                  <ul className="space-y-3">
-                    {actionItems.map((item) => (
-                      <li key={item.id} className="flex items-start">
-                        <div className={`flex-shrink-0 h-5 w-5 ${item.completed ? 'text-green-500' : 'text-gray-300'}`}>
-                          {item.completed ? (
-                            <CheckCircleIcon className="h-5 w-5" />
-                          ) : (
-                            <div className="h-5 w-5 border-2 border-gray-300 rounded-full" />
-                          )}
-                        </div>
-                        <span className={`ml-2 text-sm ${item.completed ? 'text-gray-500 line-through' : 'text-gray-700'}`}>
-                          {item.task}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-4">
-                    <Link href="#" className="text-sm text-blue-600 flex items-center">
-                      <span>View all training resources</span>
-                      <ArrowRightIcon className="h-4 w-4 ml-1" />
-                    </Link>
-                  </div>
-                </div>
+              {/* Call Analytics Section */}
+              <div className="mb-6">
+                <CallAnalyticsSection />
               </div>
               
-              {/* System Status - replacing Quick Actions */}
+              {/* Token Types Section */}
               <div>
                 <h2 className="text-xl font-semibold text-gray-800 mb-3">Token Types</h2>
                 <div className="bg-white rounded-lg border border-gray-100" style={{ boxShadow: softShadow }}>
@@ -397,6 +391,38 @@ export default function CVSDashboard() {
                   <div className="p-4 border-t border-gray-100">
                     <Link href={buildDemoUrl('cvs', 'token-management')} className="text-sm text-blue-600 flex items-center">
                       <span>Manage customer tokens</span>
+                      <ArrowRightIcon className="h-4 w-4 ml-1" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Getting Started */}
+              <div className="bg-white rounded-lg border border-gray-100 overflow-hidden" style={{ boxShadow: softShadow }}>
+                <div className="px-4 py-3 border-b border-gray-200 bg-white flex justify-between">
+                  <h2 className="font-semibold text-gray-800">Getting Started</h2>
+                  <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">2/5 completed</span>
+                </div>
+                <div className="p-4">
+                  <ul className="space-y-3">
+                    {actionItems.map((item) => (
+                      <li key={item.id} className="flex items-start">
+                        <div className={`flex-shrink-0 h-5 w-5 ${item.completed ? 'text-green-500' : 'text-gray-300'}`}>
+                          {item.completed ? (
+                            <CheckCircleIcon className="h-5 w-5" />
+                          ) : (
+                            <div className="h-5 w-5 border-2 border-gray-300 rounded-full" />
+                          )}
+                        </div>
+                        <span className={`ml-2 text-sm ${item.completed ? 'text-gray-500 line-through' : 'text-gray-700'}`}>
+                          {item.task}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-4">
+                    <Link href="#" className="text-sm text-blue-600 flex items-center">
+                      <span>View all training resources</span>
                       <ArrowRightIcon className="h-4 w-4 ml-1" />
                     </Link>
                   </div>

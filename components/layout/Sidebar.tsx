@@ -107,8 +107,8 @@ export default function Sidebar() {
   // Get CVS-specific navigation items
   const getCVSNavigationItems = () => {
     const dashboardUrl = buildDemoUrl('cvs', 'dashboard');
-    const customersUrl = buildDemoUrl('cvs', 'customers');
-    const tokenManagementUrl = buildDemoUrl('cvs', 'token-management');
+    const customersUrl = buildDemoUrl('cvs', 'token-management');
+    const tokenManagementUrl = buildDemoUrl('cvs', 'token-catalog');
     const ticketsUrl = buildDemoUrl('cvs', 'tickets');
     
     return (
@@ -452,8 +452,8 @@ export default function Sidebar() {
                   <Image 
                     src="/logos/cvs-logo-only.svg"
                     alt="CVS"
-                    width={28} 
-                    height={28} 
+                    width={24} 
+                    height={24} 
                     className="absolute top-1 left-1 transition-all duration-300"
                   />
                   <Image 
@@ -482,8 +482,8 @@ export default function Sidebar() {
                     <Image 
                       src="/logos/cvs-logo-only.svg" 
                       alt="CVS Logo" 
-                      width={32} 
-                      height={32} 
+                      width={26} 
+                      height={26} 
                     />
                     <span className="mx-2 text-gray-300">|</span>
                     <Image 

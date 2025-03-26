@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Card from '@/components/ui/Card';
 import { Token } from './types';
@@ -8,7 +8,7 @@ import TokenStateBadge from './TokenStateBadge';
 import { formatShortDate as formatDate } from './utils';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { toggleTicketModal, selectTicket } from '@/lib/redux/slices/cvsTokenSlice';
-import { TierBadge } from './TicketBadge';
+import { TierBadge, TicketStatusBadge } from './TicketBadge';
 import { 
   XMarkIcon, 
   ArrowPathIcon, 
@@ -16,8 +16,10 @@ import {
   FlagIcon, 
   TicketIcon,
   ArrowTopRightOnSquareIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  PlusIcon
 } from '@heroicons/react/24/outline';
+import LightweightTicketForm from './LightweightTicketForm';
 
 type TokenDetailsProps = {
   token: Token;
@@ -39,6 +41,8 @@ export default function TokenDetails({
 }: TokenDetailsProps) {
   const dispatch = useAppDispatch();
   const tickets = useAppSelector(state => state.cvsToken.tickets);
+  const { features } = useAppSelector(state => state.featureConfig);
+  const [showLightweightForm, setShowLightweightForm] = useState(false);
   
   // Find associated ticket if any
   const associatedTicket = tickets.find(t => 
@@ -181,18 +185,23 @@ export default function TokenDetails({
             )}
             
             {associatedTicket && (
-              <div className="mt-3 flex justify-between items-center">
-                <div>
-                  <span className="text-sm text-blue-700 mr-1">Linked Ticket:</span>
-                  <span className="text-sm font-medium">{associatedTicket.id}</span>
+              <div className="mt-3">
+                <h4 className="text-xs font-medium text-blue-700 mb-1">Linked Ticket:</h4>
+                <div className="bg-white p-2 rounded flex justify-between items-center">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm font-medium">{associatedTicket.id}</span>
+                    <TicketStatusBadge status={associatedTicket.status} />
+                    <TierBadge tier={associatedTicket.tier} />
+                  </div>
+                  <button
+                    onClick={handleTicketClick}
+                    className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
+                  >
+                    <ArrowTopRightOnSquareIcon className="h-4 w-4 mr-1" />
+                    View Ticket
+                  </button>
                 </div>
-                <button
-                  onClick={handleTicketClick}
-                  className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
-                >
-                  <ArrowTopRightOnSquareIcon className="h-4 w-4 mr-1" />
-                  View Ticket
-                </button>
+                <div className="mt-1 text-sm text-gray-700 px-2">{associatedTicket.subject}</div>
               </div>
             )}
           </div>
@@ -229,13 +238,24 @@ export default function TokenDetails({
             )}
           </div>
           
-          <button
-            className={`px-3 py-2 ${associatedTicket ? 'bg-blue-600' : 'bg-green-600'} text-white rounded-md flex items-center hover:bg-${associatedTicket ? 'blue' : 'green'}-700`}
-            onClick={handleTicketClick}
-          >
-            <TicketIcon className="h-4 w-4 mr-2" />
-            {associatedTicket ? 'View Ticket' : 'Create Ticket'}
-          </button>
+          {/* Ticket Actions */}
+          {associatedTicket ? (
+            <button
+              className="px-3 py-2 bg-blue-600 text-white rounded-md flex items-center hover:bg-blue-700"
+              onClick={handleTicketClick}
+            >
+              <TicketIcon className="h-4 w-4 mr-2" />
+              View Ticket
+            </button>
+          ) : (
+            <button
+              className="px-3 py-2 bg-green-600 text-white rounded-md flex items-center hover:bg-green-700"
+              onClick={() => dispatch(toggleTicketModal())}
+            >
+              <PlusIcon className="h-4 w-4 mr-2" />
+              Create Ticket
+            </button>
+          )}
         </div>
       </div>
     </Card>

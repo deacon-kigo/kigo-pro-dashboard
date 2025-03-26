@@ -6,7 +6,7 @@
  */
 'use client';
 
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { 
   setRole, 
@@ -21,6 +21,7 @@ import {
   VersionType
 } from '@/lib/redux/slices/demoSlice';
 import { MockUser, getUserForContext } from '@/lib/userProfileUtils';
+import { setClient } from '@/lib/redux/slices/featureConfigSlice';
 
 // Create a compatibility context
 const DemoContext = createContext<any>(undefined);
@@ -47,6 +48,12 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
     goToInstance: (index: number) => dispatch(goToInstance(index)),
     saveCurrentInstance: () => dispatch(saveCurrentInstance())
   };
+  
+  useEffect(() => {
+    if (demoState.clientId) {
+      dispatch(setClient(demoState.clientId));
+    }
+  }, [demoState.clientId, dispatch]);
   
   return (
     <DemoContext.Provider value={contextValue}>

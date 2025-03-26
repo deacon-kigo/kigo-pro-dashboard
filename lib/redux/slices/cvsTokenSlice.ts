@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 
 // Tier level for token support
 export type SupportTier = 'Tier1' | 'Tier2';
@@ -126,7 +126,14 @@ export interface CVSTokenState {
   tickets: TicketInfo[];
   selectedTicket: TicketInfo | null;
   // Flag to show the create/update ticket modal
-  showTicketModal: boolean;
+  isTicketModalOpen: boolean;
+  // Collection of tokens for reference
+  tokens: Array<{
+    tokenId: string;
+    deviceId: string;
+    customerId?: string;
+    // other token properties
+  }>;
 }
 
 // Modify the generateRandomTokens function to create more tokens
@@ -750,7 +757,12 @@ const initialState: CVSTokenState = {
   // Add sample ticket data to initialState
   tickets: mockTickets,
   selectedTicket: null,
-  showTicketModal: false
+  isTicketModalOpen: false,
+  tokens: generatedCustomers.flatMap(c => c.tokens.map(t => ({
+    tokenId: t.id,
+    deviceId: t.id.replace('tok', 'dev'),
+    customerId: c.id
+  })))
 };
 
 export const cvsTokenSlice = createSlice({
@@ -1243,8 +1255,17 @@ export const cvsTokenSlice = createSlice({
     },
     
     toggleTicketModal: (state) => {
-      state.showTicketModal = !state.showTicketModal;
+      state.isTicketModalOpen = !state.isTicketModalOpen;
     }
+  },
+  extraReducers: (builder) => {
+    builder.addCase(createLightweightTicket.fulfilled, (state, action) => {
+      state.tickets.push(action.payload);
+      state.actionMessage = {
+        text: `Ticket ${action.payload.id} created successfully`,
+        type: 'success',
+      };
+    })
   }
 });
 
@@ -1274,5 +1295,39 @@ export const {
   addTicketNote,
   toggleTicketModal
 } = cvsTokenSlice.actions;
+
+export const createLightweightTicket = createAsyncThunk(
+  'cvsToken/createLightweightTicket',
+  async (ticketData: {
+    customerId: string;
+    tokenId?: string;
+    subject: string;
+    description: string;
+    priority: TicketPriority;
+  }, { dispatch, getState }) => {
+    try {
+      // This would be an API call in a real app
+      const newTicket: TicketInfo = {
+        id: `TK-${Math.floor(Math.random() * 10000)}`,
+        customerId: ticketData.customerId,
+        tokenId: ticketData.tokenId,
+        subject: ticketData.subject,
+        description: ticketData.description,
+        priority: ticketData.priority,
+        status: 'Open',
+        tier: 'Tier1',
+        createdDate: new Date().toISOString(),
+        updatedDate: new Date().toISOString(),
+      };
+      
+      // In a real app, we would wait for the API response
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      return newTicket;
+    } catch (error) {
+      throw new Error('Failed to create ticket');
+    }
+  }
+);
 
 export default cvsTokenSlice.reducer; 

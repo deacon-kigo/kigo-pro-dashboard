@@ -11,8 +11,17 @@ import {
   CheckCircleIcon,
   ChevronRightIcon,
   ArrowUpTrayIcon,
-  QuestionMarkCircleIcon
+  QuestionMarkCircleIcon,
+  PlusIcon,
+  UsersIcon,
+  BoltIcon,
+  CircleStackIcon,
+  ArrowsRightLeftIcon,
+  UserCircleIcon,
+  BuildingStorefrontIcon,
+  LinkIcon
 } from '@heroicons/react/24/outline';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Import redux hooks
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
@@ -29,6 +38,7 @@ import {
 
 // Components for tier support
 import { TicketStatusBadge, TierBadge } from '@/components/features/token-management/TicketBadge';
+import TicketModal from '@/components/features/token-management/TicketModal';
 
 const softShadow = '0 2px 4px rgba(0,0,0,0.05)';
 
@@ -43,77 +53,45 @@ const formatDate = (dateString: string) => {
   }).format(date);
 };
 
+// Add this constant for ticket priority colors
+const PRIORITY_COLORS = {
+  'High': 'bg-red-50 text-red-700 border-red-200',
+  'Medium': 'bg-yellow-50 text-yellow-700 border-yellow-200',
+  'Low': 'bg-blue-50 text-blue-700 border-blue-200'
+};
+
 export default function CVSTicketsView() {
-  const { updateDemoState, userProfile } = useDemo();
+  const { userProfile } = useDemo();
   const dispatch = useAppDispatch();
-  const tickets = useAppSelector(state => state.cvsToken.tickets);
   
-  const [greeting, setGreeting] = useState('Good morning');
+  // Get tickets from redux
+  const { tickets, selectedTicket: reduxSelectedTicket } = useAppSelector(state => state.cvsToken);
+  const { features } = useAppSelector(state => state.featureConfig);
+  
+  // Local component state
   const [currentTime, setCurrentTime] = useState('');
+  const [greeting, setGreeting] = useState('');
   const [dateString, setDateString] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredTickets, setFilteredTickets] = useState<TicketInfo[]>([]);
-  const [statusFilter, setStatusFilter] = useState<TicketStatus | 'All'>('All');
-  const [tierFilter, setTierFilter] = useState<SupportTier | 'All'>('All');
   const [selectedTicket, setSelectedTicket] = useState<TicketInfo | null>(null);
   const [newNote, setNewNote] = useState('');
   const [escalationReason, setEscalationReason] = useState('');
   const [resolutionSummary, setResolutionSummary] = useState('');
+  const [currentFilter, setCurrentFilter] = useState<'all' | 'tier1' | 'tier2' | 'escalated' | 'closed'>('all');
+  const [currentTab, setCurrentTab] = useState<string>('all');
   
-  // Set up initial demo state on mount
+  // Flag for external ticketing system mode
+  const useExternalSystem = features?.ticketing?.useExternalSystem || false;
+  const externalSystemName = features?.ticketing?.externalSystemName || 'External System';
+  
+  // Update time and greeting on component mount
   useEffect(() => {
-    updateDemoState({
-      clientId: 'cvs',
-      scenario: 'tickets',
-      role: 'support'
-    });
     updateTimeAndGreeting();
-    
-    // Set interval to update time every minute
-    const interval = setInterval(updateTimeAndGreeting, 60000);
-    return () => clearInterval(interval);
+    const timer = setInterval(updateTimeAndGreeting, 60000);
+    return () => clearInterval(timer);
   }, []);
-  
-  // Filter tickets when search term or filters change
-  useEffect(() => {
-    let filtered = [...tickets];
-    
-    // Apply status filter
-    if (statusFilter !== 'All') {
-      filtered = filtered.filter(ticket => ticket.status === statusFilter);
-    }
-    
-    // Apply tier filter
-    if (tierFilter !== 'All') {
-      filtered = filtered.filter(ticket => ticket.tier === tierFilter);
-    }
-    
-    // Apply search term
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(ticket => 
-        ticket.id.toLowerCase().includes(term) ||
-        ticket.subject.toLowerCase().includes(term) ||
-        ticket.description.toLowerCase().includes(term) ||
-        (ticket.notes && ticket.notes.some(note => note.toLowerCase().includes(term)))
-      );
-    }
-    
-    // Sort tickets by status and priority
-    filtered.sort((a, b) => {
-      // Open tickets first
-      if (a.status === 'Open' && b.status !== 'Open') return -1;
-      if (a.status !== 'Open' && b.status === 'Open') return 1;
-      
-      // Then by priority
-      const priorityOrder = { 'High': 0, 'Medium': 1, 'Low': 2 };
-      return priorityOrder[a.priority] - priorityOrder[b.priority];
-    });
-    
-    setFilteredTickets(filtered);
-  }, [tickets, searchTerm, statusFilter, tierFilter]);
-  
-  // Set personalized greeting based on time of day
+
+  // Update time and greeting
   const updateTimeAndGreeting = () => {
     const now = new Date();
     const hours = now.getHours();
@@ -136,19 +114,53 @@ export default function CVSTicketsView() {
     setDateString(now.toLocaleDateString('en-US', dateOptions));
   };
   
+  // Sync with redux selected ticket
+  useEffect(() => {
+    if (reduxSelectedTicket) {
+      setSelectedTicket(reduxSelectedTicket);
+    }
+  }, [reduxSelectedTicket]);
+
+  // Handle selecting a ticket
   const handleSelectTicket = (ticket: TicketInfo) => {
+    dispatch(selectTicket(ticket.id));
     setSelectedTicket(ticket);
-    setNewNote('');
-    setEscalationReason('');
-    setResolutionSummary(ticket.resolutionSummary || '');
   };
   
+  // Filter tickets based on current filter and search term
+  const filteredTickets = tickets.filter(ticket => {
+    const matchesSearch = 
+      searchTerm === '' || 
+      ticket.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ticket.description.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (!matchesSearch) return false;
+    
+    switch (currentTab) {
+      case 'tier1':
+        return ticket.tier === 'Tier1' && ticket.status !== 'Closed';
+      case 'tier2':
+        return ticket.tier === 'Tier2' && ticket.status !== 'Closed';
+      case 'escalated':
+        return ticket.status === 'Escalated';
+      case 'closed':
+        return ticket.status === 'Closed';
+      case 'open':
+        return ticket.status === 'Open' || ticket.status === 'In Progress';
+      case 'all':
+      default:
+        return true;
+    }
+  });
+  
+  // Add note to ticket
   const handleAddNote = () => {
     if (!selectedTicket || !newNote.trim()) return;
     
     dispatch(addTicketNote({
       ticketId: selectedTicket.id,
-      note: newNote
+      note: `${userProfile?.firstName || 'Agent'}: ${newNote}`
     }));
     
     // Update the selected ticket
@@ -160,6 +172,7 @@ export default function CVSTicketsView() {
     setNewNote('');
   };
   
+  // Escalate ticket to tier 2
   const handleEscalate = () => {
     if (!selectedTicket || !escalationReason.trim()) return;
     
@@ -177,6 +190,7 @@ export default function CVSTicketsView() {
     setEscalationReason('');
   };
   
+  // Close ticket with resolution
   const handleCloseTicket = () => {
     if (!selectedTicket || !resolutionSummary.trim()) return;
     
@@ -192,362 +206,388 @@ export default function CVSTicketsView() {
     }
   };
   
-  const getStatusColor = (status: TicketStatus) => {
-    switch (status) {
-      case 'Open': return 'bg-green-50 text-green-700 hover:bg-green-100';
-      case 'In Progress': return 'bg-blue-50 text-blue-700 hover:bg-blue-100';
-      case 'Escalated': return 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100';
-      case 'Resolved': return 'bg-purple-50 text-purple-700 hover:bg-purple-100';
-      case 'Closed': return 'bg-gray-50 text-gray-700 hover:bg-gray-100';
-      default: return 'bg-gray-50 text-gray-700 hover:bg-gray-100';
-    }
+  // Create a new ticket
+  const handleCreateTicket = () => {
+    dispatch(toggleTicketModal());
   };
   
-  const getTierColor = (tier: SupportTier) => {
-    switch (tier) {
-      case 'Tier1': return 'bg-blue-50 text-blue-700 hover:bg-blue-100';
-      case 'Tier2': return 'bg-red-50 text-red-700 hover:bg-red-100';
-      default: return 'bg-gray-50 text-gray-700 hover:bg-gray-100';
-    }
+  // External system integration
+  const openInExternalSystem = (ticketId: string) => {
+    alert(`Opening ticket ${ticketId} in ${externalSystemName}...`);
+    // In a real implementation, this would redirect to or open the external system
   };
   
+  // Handle automatic actions from URL parameters
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const action = urlParams.get('action');
+      
+      if (action === 'create') {
+        dispatch(toggleTicketModal());
+      }
+    }
+  }, [dispatch]);
+  
+  // Component for ticket details
+  const TicketDetailsPanel = () => {
+    if (!selectedTicket) {
+      return (
+        <div className="bg-white rounded-lg border border-gray-100 p-8 text-center h-full flex flex-col items-center justify-center" style={{ boxShadow: softShadow }}>
+          <QuestionMarkCircleIcon className="mx-auto h-12 w-12 text-gray-300" />
+          <h3 className="mt-2 text-lg font-medium text-gray-900">No ticket selected</h3>
+          <p className="mt-1 text-gray-500">
+            Select a ticket from the list to view details
+          </p>
+          <button 
+            onClick={handleCreateTicket}
+            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+          >
+            <PlusIcon className="h-5 w-5 mr-2" />
+            Create New Ticket
+          </button>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="bg-white rounded-lg border border-gray-100 overflow-hidden h-full flex flex-col" style={{ boxShadow: softShadow }}>
+        {/* Ticket Header */}
+        <div className={`p-4 border-b border-gray-100 ${selectedTicket.tier === 'Tier1' ? 'bg-blue-50' : 'bg-red-50'}`}>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold flex items-center">
+              <span className="mr-2">Ticket {selectedTicket.id}</span>
+              <TicketStatusBadge status={selectedTicket.status} />
+            </h2>
+            
+            <div className="flex items-center space-x-2">
+              <TierBadge tier={selectedTicket.tier} />
+              
+              {useExternalSystem && (
+                <button
+                  onClick={() => openInExternalSystem(selectedTicket.id)}
+                  className="inline-flex items-center px-2 py-1 border border-gray-300 text-xs rounded shadow-sm text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  <LinkIcon className="h-4 w-4 mr-1" />
+                  Open in {externalSystemName}
+                </button>
+              )}
+            </div>
+          </div>
+          
+          <div className="mt-2">
+            <h3 className="font-medium">{selectedTicket.subject}</h3>
+          </div>
+          
+          <div className="mt-2 flex flex-wrap items-center text-sm text-gray-600 gap-2">
+            <span className={`px-2 py-0.5 rounded-full border ${PRIORITY_COLORS[selectedTicket.priority]}`}>
+              {selectedTicket.priority} Priority
+            </span>
+            <span>Created: {formatDate(selectedTicket.createdDate)}</span>
+            <span>Updated: {formatDate(selectedTicket.updatedDate)}</span>
+          </div>
+          
+          {selectedTicket.customerId && (
+            <div className="mt-2 flex items-center text-sm text-gray-600">
+              <UserCircleIcon className="h-4 w-4 mr-1" />
+              <span>Customer ID: {selectedTicket.customerId}</span>
+            </div>
+          )}
+          
+          {selectedTicket.tokenId && (
+            <div className="mt-1 flex items-center text-sm text-blue-600">
+              <CircleStackIcon className="h-4 w-4 mr-1" />
+              <span>Token ID: {selectedTicket.tokenId}</span>
+            </div>
+          )}
+        </div>
+        
+        {/* Ticket Body */}
+        <div className="flex-1 overflow-auto">
+          {/* Description */}
+          <div className="p-4 border-b border-gray-100">
+            <h3 className="text-sm font-medium text-gray-700 mb-2">Description</h3>
+            <div className="bg-gray-50 rounded-md p-3 text-sm text-gray-700">
+              {selectedTicket.description}
+            </div>
+          </div>
+          
+          {/* Notes */}
+          <div className="p-4 border-b border-gray-100">
+            <h3 className="text-sm font-medium text-gray-700 mb-2">Support Notes</h3>
+            {selectedTicket.notes && selectedTicket.notes.length > 0 ? (
+              <div className="space-y-3 max-h-60 overflow-y-auto">
+                {selectedTicket.notes.map((note, index) => (
+                  <div key={index} className="bg-gray-50 rounded-md p-3 text-sm text-gray-700">
+                    {note}
+                    <div className="text-xs text-gray-500 mt-1 text-right">
+                      {index === 0 ? 'Initial note' : `Note ${index + 1}`}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-sm text-gray-500 italic">No notes yet</div>
+            )}
+            
+            {selectedTicket.status !== 'Closed' && (
+              <div className="mt-3">
+                <textarea
+                  value={newNote}
+                  onChange={(e) => setNewNote(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  placeholder="Add a note..."
+                  rows={3}
+                />
+                <div className="mt-2 flex justify-end">
+                  <button
+                    onClick={handleAddNote}
+                    disabled={!newNote.trim()}
+                    className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Add Note
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Escalation (only for Tier1 tickets) */}
+          {selectedTicket.tier === 'Tier1' && selectedTicket.status !== 'Closed' && selectedTicket.status !== 'Escalated' && (
+            <div className="p-4 border-b border-gray-100 bg-yellow-50">
+              <h3 className="text-sm font-medium text-yellow-800 mb-2 flex items-center">
+                <ArrowsRightLeftIcon className="h-4 w-4 mr-1" />
+                Escalate to Tier 2 (Kigo PRO)
+              </h3>
+              <p className="text-xs text-yellow-700 mb-2">
+                Escalate this ticket to Kigo PRO specialists for advanced token management assistance.
+              </p>
+              <textarea
+                value={escalationReason}
+                onChange={(e) => setEscalationReason(e.target.value)}
+                className="w-full px-3 py-2 border border-yellow-300 rounded-md focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-sm bg-white"
+                placeholder="Explain reason for escalation..."
+                rows={3}
+              />
+              <div className="mt-2 flex justify-end">
+                <button
+                  onClick={handleEscalate}
+                  disabled={!escalationReason.trim()}
+                  className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Escalate Ticket
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {/* Resolution (for all tickets except closed) */}
+          {selectedTicket.status !== 'Closed' && (
+            <div className="p-4 border-b border-gray-100 bg-green-50">
+              <h3 className="text-sm font-medium text-green-800 mb-2 flex items-center">
+                <CheckCircleIcon className="h-4 w-4 mr-1" />
+                Resolve Ticket
+              </h3>
+              <textarea
+                value={resolutionSummary}
+                onChange={(e) => setResolutionSummary(e.target.value)}
+                className="w-full px-3 py-2 border border-green-300 rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm bg-white"
+                placeholder="Provide resolution summary..."
+                rows={3}
+              />
+              <div className="mt-2 flex justify-end">
+                <button
+                  onClick={handleCloseTicket}
+                  disabled={!resolutionSummary.trim()}
+                  className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Close Ticket
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {/* Resolution Summary (for closed tickets) */}
+          {selectedTicket.status === 'Closed' && selectedTicket.resolutionSummary && (
+            <div className="p-4 border-t border-gray-100 bg-green-50">
+              <h3 className="text-sm font-medium text-green-800 mb-2">Resolution Summary</h3>
+              <div className="bg-white rounded-md p-3 text-sm text-gray-700 border border-green-200">
+                {selectedTicket.resolutionSummary}
+              </div>
+              <div className="text-xs text-green-800 mt-2 text-right">
+                Closed on {formatDate(selectedTicket.updatedDate)}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+  
+  // Main render
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Main Content */}
-      <div className="mx-auto max-w-7xl px-4 py-6">
+    <div className="container mx-auto pt-6 pb-16">
+      <div className="bg-white rounded-lg shadow-sm p-6 max-w-7xl mx-auto">
+        {/* Header */}
         <div className="mb-6">
-          <div className="flex justify-between items-start">
+          <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-semibold text-gray-800">{greeting}, {userProfile?.firstName || 'Agent'}</h1>
+              <h1 className="text-2xl font-semibold text-gray-800">Support Ticket Management</h1>
               <p className="text-gray-600 mt-1">{dateString} • {currentTime}</p>
             </div>
             
-            <Link
-              href={buildDemoUrl('cvs', 'dashboard')}
-              className="text-blue-600 hover:text-blue-800 flex items-center"
-            >
-              Return to Dashboard
-              <ChevronRightIcon className="ml-1 h-4 w-4" />
-            </Link>
+            <div className="flex items-center space-x-4">
+              <Link
+                href={buildDemoUrl('cvs', 'dashboard')}
+                className="text-blue-600 hover:text-blue-800 flex items-center"
+              >
+                Return to Dashboard
+                <ChevronRightIcon className="ml-1 h-4 w-4" />
+              </Link>
+              
+              <button
+                onClick={handleCreateTicket}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+              >
+                <PlusIcon className="h-5 w-5 mr-2" />
+                Create Ticket
+              </button>
+            </div>
           </div>
         </div>
         
+        {/* Support Tier Explanation */}
+        <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <div className="flex items-center mb-2">
+              <BuildingStorefrontIcon className="h-6 w-6 text-blue-600 mr-2" />
+              <h2 className="font-semibold text-blue-800">Tier 1 Support (CVS)</h2>
+            </div>
+            <p className="text-sm text-blue-700">
+              First-line support for common token issues. CVS agents can resolve basic token problems, 
+              manage customer accounts, and escalate complex cases to Tier 2 when necessary.
+            </p>
+          </div>
+          
+          <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+            <div className="flex items-center mb-2">
+              <BoltIcon className="h-6 w-6 text-red-600 mr-2" />
+              <h2 className="font-semibold text-red-800">Tier 2 Support (Kigo PRO)</h2>
+            </div>
+            <p className="text-sm text-red-700">
+              Advanced support for complex token issues. Kigo PRO specialists handle technical problems, 
+              backend token operations, and system-level troubleshooting that requires deeper access.
+            </p>
+          </div>
+        </div>
+        
+        {/* Main Content */}
         <div className="grid grid-cols-12 gap-6">
           {/* Left Column - Ticket List */}
           <div className="col-span-12 md:col-span-5 lg:col-span-4">
+            {/* Search */}
+            <div className="mb-4">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="Search tickets by ID, subject or description..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+            
+            {/* Tabs */}
+            <Tabs defaultValue="all" className="mb-4" onValueChange={setCurrentTab}>
+              <TabsList className="grid grid-cols-3 mb-2">
+                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="tier1">Tier 1</TabsTrigger>
+                <TabsTrigger value="tier2">Tier 2</TabsTrigger>
+              </TabsList>
+              <TabsList className="grid grid-cols-3">
+                <TabsTrigger value="open">Open</TabsTrigger>
+                <TabsTrigger value="escalated">Escalated</TabsTrigger>
+                <TabsTrigger value="closed">Closed</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            
+            {/* Ticket List */}
             <div className="bg-white rounded-lg border border-gray-100 overflow-hidden" style={{ boxShadow: softShadow }}>
-              <div className="p-4 border-b border-gray-100">
-                <h2 className="text-lg font-semibold text-gray-800 mb-4">Support Tickets</h2>
-                
-                {/* Search bar */}
-                <div className="relative mb-4">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    type="text"
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="Search tickets..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
+              {filteredTickets.length === 0 ? (
+                <div className="p-6 text-center text-gray-500">
+                  No tickets found matching the current filters
                 </div>
-                
-                {/* Filter buttons */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                  <button
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${statusFilter === 'All' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                    onClick={() => setStatusFilter('All')}
-                  >
-                    All Status
-                  </button>
-                  <button
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${statusFilter === 'Open' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                    onClick={() => setStatusFilter('Open')}
-                  >
-                    Open
-                  </button>
-                  <button
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${statusFilter === 'Escalated' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                    onClick={() => setStatusFilter('Escalated')}
-                  >
-                    Escalated
-                  </button>
-                  <button
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${statusFilter === 'Closed' ? 'bg-gray-300 text-gray-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                    onClick={() => setStatusFilter('Closed')}
-                  >
-                    Closed
-                  </button>
-                </div>
-                
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${tierFilter === 'All' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                    onClick={() => setTierFilter('All')}
-                  >
-                    All Tiers
-                  </button>
-                  <button
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${tierFilter === 'Tier1' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                    onClick={() => setTierFilter('Tier1')}
-                  >
-                    Tier 1 (CVS)
-                  </button>
-                  <button
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${tierFilter === 'Tier2' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                    onClick={() => setTierFilter('Tier2')}
-                  >
-                    Tier 2 (Kigo Pro)
-                  </button>
-                </div>
-              </div>
-              
-              {/* Ticket list */}
-              <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 300px)' }}>
-                {filteredTickets.length > 0 ? (
-                  <ul className="divide-y divide-gray-100">
-                    {filteredTickets.map(ticket => (
-                      <li 
-                        key={ticket.id}
-                        className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${selectedTicket?.id === ticket.id ? 'bg-blue-50' : ''}`}
-                        onClick={() => handleSelectTicket(ticket)}
-                      >
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center">
-                              {ticket.priority === 'High' && (
-                                <ExclamationCircleIcon className="h-4 w-4 text-red-500 mr-1" />
-                              )}
-                              <p className="text-sm font-medium text-blue-600 truncate">{ticket.id}</p>
-                              <TierBadge tier={ticket.tier} className="ml-2" />
-                            </div>
-                            <p className="mt-1 text-sm text-gray-900 font-medium">{ticket.subject}</p>
-                            <p className="mt-1 text-xs text-gray-500 truncate">
-                              {ticket.tokenId ? 'Token issue' : 'Account issue'} • Updated {formatDate(ticket.updatedDate)}
-                            </p>
+              ) : (
+                <div className="space-y-0 max-h-[calc(100vh-360px)] overflow-y-auto">
+                  {filteredTickets.map((ticket) => (
+                    <div
+                      key={ticket.id}
+                      className={`p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${
+                        selectedTicket?.id === ticket.id ? 'bg-blue-50' : ''
+                      }`}
+                      onClick={() => handleSelectTicket(ticket)}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-start space-x-2">
+                          <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-gray-100">
+                            {ticket.tier === 'Tier1' 
+                              ? <BuildingStorefrontIcon className="h-5 w-5 text-blue-700" />
+                              : <BoltIcon className="h-5 w-5 text-red-700" />
+                            }
                           </div>
-                          <TicketStatusBadge status={ticket.status} />
+                          <div>
+                            <div className="flex items-center">
+                              <span className="font-medium text-blue-600">{ticket.id}</span>
+                              <span className={`ml-2 px-1.5 py-0.5 text-xs rounded-full ${PRIORITY_COLORS[ticket.priority]}`}>
+                                {ticket.priority}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-800 line-clamp-1">{ticket.subject}</p>
+                          </div>
                         </div>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <div className="p-8 text-center text-gray-500">
-                    <QuestionMarkCircleIcon className="mx-auto h-12 w-12 text-gray-300" />
-                    <p className="mt-2">No tickets found matching your criteria</p>
-                  </div>
-                )}
-              </div>
+                        <TicketStatusBadge status={ticket.status} />
+                      </div>
+                      
+                      <div className="mt-1 flex justify-between items-center text-xs text-gray-500">
+                        <span>Updated {formatDate(ticket.updatedDate)}</span>
+                        {ticket.tokenId && (
+                          <span className="flex items-center text-blue-600">
+                            <CircleStackIcon className="h-3 w-3 mr-1" />
+                            Token linked
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           
           {/* Right Column - Ticket Details */}
           <div className="col-span-12 md:col-span-7 lg:col-span-8">
-            {selectedTicket ? (
-              <div className="bg-white rounded-lg border border-gray-100 p-5" style={{ boxShadow: softShadow }}>
-                <div className="flex justify-between items-start mb-6">
-                  <div>
-                    <div className="flex items-center">
-                      <h2 className="text-xl font-bold text-gray-800">{selectedTicket.id}</h2>
-                      <TicketStatusBadge status={selectedTicket.status} className="ml-2" />
-                      <TierBadge tier={selectedTicket.tier} className="ml-2" />
-                    </div>
-                    <p className="text-lg font-medium mt-1">{selectedTicket.subject}</p>
-                  </div>
-                  
-                  <div className="text-sm text-gray-500">
-                    Created: {formatDate(selectedTicket.createdDate)}
-                  </div>
-                </div>
-                
-                {/* Customer information */}
-                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">Customer Information</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-gray-500">Customer ID</p>
-                      <p className="font-medium">{selectedTicket.customerId}</p>
-                    </div>
-                    {selectedTicket.tokenId && (
-                      <div>
-                        <p className="text-sm text-gray-500">Related Token</p>
-                        <Link 
-                          href={buildDemoUrl('cvs', 'token-management')}
-                          className="font-medium text-blue-600 hover:text-blue-800 flex items-center"
-                        >
-                          {selectedTicket.tokenId.substring(0, 8)}...
-                          <ChevronRightIcon className="ml-1 h-3 w-3" />
-                        </Link>
-                      </div>
-                    )}
-                    
-                    <div>
-                      <p className="text-sm text-gray-500">Priority</p>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        selectedTicket.priority === 'High' ? 'bg-red-100 text-red-800' :
-                        selectedTicket.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-blue-100 text-blue-800'
-                      }`}>
-                        {selectedTicket.priority}
-                      </span>
-                    </div>
-                    
-                    {selectedTicket.assignedTo && (
-                      <div>
-                        <p className="text-sm text-gray-500">Assigned To</p>
-                        <p className="font-medium">{selectedTicket.assignedTo}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Description */}
-                <div className="mb-6">
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">Description</h3>
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-800">{selectedTicket.description}</p>
-                  </div>
-                </div>
-                
-                {/* Ticket Notes */}
-                <div className="mb-6">
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">Ticket Notes</h3>
-                  {selectedTicket.notes && selectedTicket.notes.length > 0 ? (
-                    <div className="border border-gray-200 rounded-lg overflow-hidden">
-                      <ul className="divide-y divide-gray-200">
-                        {selectedTicket.notes.map((note, index) => (
-                          <li key={index} className="p-3 bg-white">
-                            <p className="text-sm text-gray-800">{note}</p>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : (
-                    <div className="p-4 bg-gray-50 rounded-lg text-center text-gray-500">
-                      No notes available for this ticket
-                    </div>
-                  )}
-                </div>
-                
-                {/* Add Note */}
-                {selectedTicket.status !== 'Closed' && (
-                  <div className="mb-6">
-                    <h3 className="text-sm font-medium text-gray-700 mb-2">Add Note</h3>
-                    <div className="mb-2">
-                      <textarea
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                        rows={3}
-                        placeholder="Add a note to this ticket..."
-                        value={newNote}
-                        onChange={(e) => setNewNote(e.target.value)}
-                      ></textarea>
-                    </div>
-                    <div className="flex justify-end">
-                      <button
-                        className="px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-                        onClick={handleAddNote}
-                        disabled={!newNote.trim()}
-                      >
-                        Add Note
-                      </button>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Escalation Section */}
-                {selectedTicket.tier === 'Tier1' && selectedTicket.status !== 'Closed' && selectedTicket.status !== 'Escalated' && (
-                  <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <h3 className="text-sm font-medium text-yellow-800 mb-2">Escalate to Tier 2 Support</h3>
-                    <p className="text-sm text-yellow-700 mb-3">
-                      If this issue requires advanced token management or technical assistance, escalate to Kigo Pro specialists.
-                    </p>
-                    <div className="mb-2">
-                      <textarea
-                        className="w-full px-3 py-2 border border-yellow-300 rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500"
-                        rows={3}
-                        placeholder="Explain why this ticket needs Tier 2 support..."
-                        value={escalationReason}
-                        onChange={(e) => setEscalationReason(e.target.value)}
-                      ></textarea>
-                    </div>
-                    <div className="flex justify-end">
-                      <button
-                        className="px-4 py-2 bg-yellow-600 text-white rounded-md shadow-sm hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 disabled:opacity-50"
-                        onClick={handleEscalate}
-                        disabled={!escalationReason.trim()}
-                      >
-                        <ArrowUpTrayIcon className="inline-block h-4 w-4 mr-1" />
-                        Escalate to Tier 2
-                      </button>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Resolution Section */}
-                {selectedTicket.status === 'Closed' ? (
-                  <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <h3 className="text-sm font-medium text-green-800 mb-2">Resolution</h3>
-                    <div className="flex items-start">
-                      <CheckCircleIcon className="h-5 w-5 text-green-500 mr-2 mt-0.5" />
-                      <p className="text-sm text-green-800">{selectedTicket.resolutionSummary}</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="mb-6">
-                    <h3 className="text-sm font-medium text-gray-700 mb-2">Resolution</h3>
-                    <div className="mb-2">
-                      <textarea
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-                        rows={3}
-                        placeholder="Describe how this ticket was resolved..."
-                        value={resolutionSummary}
-                        onChange={(e) => setResolutionSummary(e.target.value)}
-                      ></textarea>
-                    </div>
-                    <div className="flex justify-end">
-                      <button
-                        className="px-4 py-2 bg-green-600 text-white rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
-                        onClick={handleCloseTicket}
-                        disabled={!resolutionSummary.trim()}
-                      >
-                        <CheckCircleIcon className="inline-block h-4 w-4 mr-1" />
-                        Close Ticket as Resolved
-                      </button>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Action Buttons */}
-                <div className="flex justify-between pt-4 border-t border-gray-200">
-                  <div>
-                    <Link
-                      href={buildDemoUrl('cvs', 'token-management')}
-                      className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                      View in Token Management
-                    </Link>
-                  </div>
-                  
-                  {selectedTicket.tier === 'Tier2' && (
-                    <div className="text-sm text-gray-600 flex items-center">
-                      <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium mr-2">Tier 2</span>
-                      This ticket is being handled by Kigo Pro specialists
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="bg-white rounded-lg border border-gray-100 p-8 text-center" style={{ boxShadow: softShadow }}>
-                <QuestionMarkCircleIcon className="mx-auto h-12 w-12 text-gray-300" />
-                <h3 className="mt-2 text-lg font-medium text-gray-900">No ticket selected</h3>
-                <p className="mt-1 text-gray-500">
-                  Select a ticket from the list to view details
-                </p>
-              </div>
-            )}
+            <TicketDetailsPanel />
           </div>
         </div>
+      </div>
+      
+      {/* Ticket Modal */}
+      <TicketModal />
+      
+      {/* Floating Action Button */}
+      <div className="fixed bottom-8 right-8">
+        <button 
+          onClick={handleCreateTicket}
+          className="bg-green-600 text-white rounded-full p-4 shadow-lg hover:bg-green-700 transition-colors flex items-center justify-center"
+          aria-label="Create new ticket"
+        >
+          <PlusIcon className="h-6 w-6" />
+          <span className="ml-2 font-medium">New Ticket</span>
+        </button>
       </div>
     </div>
   );
