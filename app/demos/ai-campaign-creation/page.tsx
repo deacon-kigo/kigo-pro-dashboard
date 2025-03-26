@@ -9,6 +9,7 @@ import { useDemo } from '../../../contexts/DemoContext';
 import AIAssistantPanel from '../../../components/ai-assistant/AIAssistantPanel';
 import DynamicCanvas from '../../../components/campaign-creation/DynamicCanvas';
 import Card from '../../../components/shared/Card';
+import { buildDemoUrl } from '@/lib/utils';
 
 // Define ViewType locally to match DynamicCanvas
 type ViewType = 
@@ -38,7 +39,7 @@ export default function AICampaignCreation() {
 
   // Set client ID and greeting only once on mount
   useEffect(() => {
-    setClientId('deacons-pizza');
+    setClientId('deacons');
     setGreeting(getGreeting());
   }, [setClientId, getGreeting]);
 
@@ -61,7 +62,7 @@ export default function AICampaignCreation() {
       <div className="p-3 sm:p-4 flex-shrink-0">
         <div className="max-w-screen-2xl mx-auto">
           <Card className="flex justify-between items-center p-3">
-            <Link href="/demos/deacons-pizza" className="flex items-center text-gray-500 hover:text-primary transition-colors">
+            <Link href={buildDemoUrl('deacons', 'pizza')} className="flex items-center text-gray-500 hover:text-primary transition-colors">
               <ChevronLeftIcon className="w-5 h-5 mr-1" />
               <span className="font-medium">Back to Dashboard</span>
             </Link>

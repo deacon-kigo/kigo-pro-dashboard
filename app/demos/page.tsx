@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { ArrowRightIcon } from '@heroicons/react/24/outline';
 import { SparklesIcon, HomeIcon, ShoppingCartIcon, CurrencyDollarIcon, ChartBarIcon, UserGroupIcon } from '@heroicons/react/24/outline';
+import { buildDemoUrl } from '@/lib/utils';
 
 export default function DemosPage() {
   return (
@@ -74,7 +75,7 @@ export default function DemosPage() {
                 </div>
                 
                 <Link 
-                  href="/demos/deacons-pizza" 
+                  href={buildDemoUrl('deacons', 'pizza')} 
                   className="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
                 >
                   View Demo

@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useDemo } from '@/contexts/DemoContext';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
+import { useDemoActions } from '@/lib/redux/hooks';
 import { searchObjects, sortObjects, highlightSearchTerms } from '@/lib/utils/search';
 import { 
   MagnifyingGlassIcon, 
@@ -502,6 +503,7 @@ export default function CVSTokenManagement() {
   const { userProfile, theme, themeMode } = useDemo();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const { updateDemoState } = useDemoActions();
   
   // Add this state to prevent hydration errors
   const [isClient, setIsClient] = useState(false);
@@ -551,11 +553,25 @@ export default function CVSTokenManagement() {
   const [catalogSearchInput, setCatalogSearchInput] = useState('');
   const [filteredCatalogTokens, setFilteredCatalogTokens] = useState<TokenInfo[]>(generatedTokenCatalog);
   
+  // Add this near the other state declarations
+  const hasInitialized = useRef(false);
+
   // Initialize Redux state only once on the client-side
   useEffect(() => {
-    setIsClient(true);
-    dispatch(initializeState());
-  }, [dispatch]);
+    if (!hasInitialized.current) {
+      hasInitialized.current = true;
+      setIsClient(true);
+      dispatch(initializeState());
+      
+      // Set the proper demo context for consistent styling across all CVS pages
+      updateDemoState({
+        clientId: 'cvs',
+        scenario: 'support-flow',
+        role: 'support',
+        themeMode: 'light'
+      });
+    }
+  }, [dispatch, updateDemoState]);
 
   // Force light mode for this component
   useEffect(() => {

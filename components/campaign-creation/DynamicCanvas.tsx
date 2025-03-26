@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useDemo } from '../../contexts/DemoContext';
 import { useRouter } from 'next/navigation';
 import ReactConfetti from 'react-confetti';
+import { buildDemoUrl } from '@/lib/utils';
 
 // Importing views statically to fix module not found errors
 import BusinessIntelligenceView from './views/BusinessIntelligenceView';
@@ -483,7 +484,7 @@ Deacon's Pizza Team`
     
     // Wait a bit then redirect to dashboard with new campaign added
     setTimeout(() => {
-      router.push('/demos/deacons-pizza?from=campaign-launch');
+      router.push(`${buildDemoUrl('deacons', 'pizza')}?from=campaign-launch`);
     }, 3000);
   };
   

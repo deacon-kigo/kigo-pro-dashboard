@@ -42,7 +42,7 @@ export default function DeaconsPizzaDashboard() {
   // Improved useEffect with stable dependency array
   useEffect(() => {
     // Set client ID for the demo only once
-    setClientId('deacons-pizza');
+    setClientId('deacons');
     
     // Set greeting based on time of day
     setGreeting(getGreeting());

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useDemo } from '@/contexts/DemoContext';
 import { useAppSelector } from '@/lib/redux/hooks';
+import { useDemoActions } from '@/lib/redux/hooks';
 import { 
   UserCircleIcon, 
   BellIcon, 
@@ -27,10 +28,11 @@ import {
   CogIcon,
   QuestionMarkCircleIcon,
   PhoneIcon,
-  EnvelopeIcon,
   WrenchScrewdriverIcon,
   ClipboardDocumentCheckIcon,
+  ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
+import { buildDemoUrl } from '@/lib/utils';
 
 // Mock data for the dashboard
 const recentTickets = [
@@ -111,6 +113,7 @@ export default function CVSDashboard() {
   const [isClient, setIsClient] = useState(false);
   const [currentTime, setCurrentTime] = useState('');
   const [greeting, setGreeting] = useState('');
+  const [dateString, setDateString] = useState('');
   
   // Get the sidebar width from Redux state
   const { sidebarWidth } = useAppSelector(state => state.ui);
@@ -119,6 +122,11 @@ export default function CVSDashboard() {
   const cvsRed = '#CC0000';
   const cvsBlue = '#2563EB';
   const kigoBlue = '#3268cc';
+  
+  // Shadow styling
+  const softShadow = "0 2px 10px rgba(0, 0, 0, 0.05)";
+  
+  const { updateDemoState } = useDemoActions();
   
   // Set up client-side rendering
   useEffect(() => {
@@ -145,124 +153,153 @@ export default function CVSDashboard() {
     else if (hours < 18) greeting = 'Good afternoon';
     
     setGreeting(greeting);
+    
+    // Format date like: Tuesday, March 25, 2025
+    const dateOptions: Intl.DateTimeFormatOptions = { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    };
+    setDateString(now.toLocaleDateString('en-US', dateOptions));
   };
   
-  // Get today's date in a readable format
-  const getTodayDate = () => {
-    const now = new Date();
-    const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    return now.toLocaleDateString('en-US', options);
+  // Count high priority tickets
+  const getHighPriorityCount = () => {
+    return recentTickets.filter(ticket => ticket.priority === 'High').length;
   };
   
+  // Set up initial demo state on mount
+  useEffect(() => {
+    updateDemoState({
+      clientId: 'cvs',
+      scenario: 'dashboard',
+      role: 'support'
+    });
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Main Content */}
-      <main className="py-6">
-        <div 
-          className="transition-all duration-300 ease-in-out px-8"
-          style={{ 
-            marginLeft: 'auto',
-            marginRight: 'auto',
-            width: `calc(100% - ${sidebarWidth})`
-          }}
-        >
-          {/* Welcome Banner */}
-          <div className="bg-white rounded-lg mb-6 overflow-hidden shadow-sm border border-gray-100">
-            <div className="bg-gradient-to-r from-red-50 via-blue-50 to-indigo-50 px-6 py-5">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-                <div>
-                  <h1 className="text-2xl font-semibold text-gray-900">{greeting}, Sarah</h1>
-                  <p className="text-gray-600">{getTodayDate()} • {currentTime}</p>
-                  <p className="text-sm text-blue-600 mt-1">You have 3 high-priority tickets needing attention today</p>
-                </div>
-                <div className="mt-4 md:mt-0">
-                  <button 
-                    onClick={() => router.push('/demos/cvs-token-management')}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+      <main 
+        className="py-6 overflow-auto"
+        style={{ 
+          position: 'fixed',
+          top: '72px',  // Header height
+          bottom: '56px', // Footer height
+          right: 0,
+          left: sidebarWidth,
+          width: `calc(100% - ${sidebarWidth})`,
+          transition: 'all 0.3s ease-in-out'
+        }}
+      >
+        <div className="px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Left Content (2/3 width) */}
+            <div className="lg:col-span-2 space-y-5">
+              {/* Welcome Card with Gradient Background and Manage Tokens Button */}
+              <div className="rounded-lg p-6 border border-gray-100" 
+                   style={{ 
+                     background: `linear-gradient(to right, #f0f8ff, ${kigoBlue}10, ${cvsRed}05)`,
+                     boxShadow: softShadow
+                   }}>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h1 className="text-2xl font-semibold text-gray-800">{greeting}, {userProfile?.firstName || 'Agent'}</h1>
+                    <p className="text-gray-600 mt-1">{dateString} • {currentTime}</p>
+                    {getHighPriorityCount() > 0 && (
+                      <div className="mt-3 py-2 px-3 bg-blue-50 text-blue-700 rounded-md inline-block">
+                        <span>You have {getHighPriorityCount()} high-priority tickets needing attention today</span>
+                      </div>
+                    )}
+                  </div>
+                  <Link
+                    href={buildDemoUrl('cvs', 'token-management')}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md flex items-center hover:bg-blue-700 transition-colors"
                   >
-                    Manage Customer Tokens
-                    <ArrowRightIcon className="ml-2 h-4 w-4" />
-                  </button>
+                    <span>Manage Customer Tokens</span>
+                    <ArrowRightIcon className="h-4 w-4 ml-2" />
+                  </Link>
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* Dashboard Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Left Column */}
-            <div className="col-span-2 space-y-6">
-              {/* Stats Overview */}
-              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-                <h2 className="text-lg font-medium text-gray-900 mb-4">Support Overview</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              
+              {/* Support Overview Section */}
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800 mb-3">Support Overview</h2>
+                
+                {/* Dashboard Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                   {dashboardStats.map((stat) => (
-                    <div key={stat.id} className="bg-gray-50 rounded-lg p-4 flex flex-col items-center">
-                      {stat.icon}
-                      <h3 className="mt-2 text-2xl font-bold text-gray-900">{stat.value}</h3>
-                      <p className="text-gray-500 text-sm">{stat.name}</p>
+                    <div key={stat.id} className="bg-white rounded-lg p-4 border border-gray-100" style={{ boxShadow: softShadow }}>
+                      <div className="flex justify-center items-center mb-1">
+                        {stat.icon}
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-semibold text-gray-800">{stat.value}</div>
+                        <span className="text-sm font-medium text-gray-500">{stat.name}</span>
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
-
-              {/* Tickets From External System */}
-              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-lg font-medium text-gray-900">Recent Tickets</h2>
-                  <Link href="/demos/cvs-tickets" className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer">
+              
+              {/* Recent Tickets Table */}
+              <div>
+                <div className="flex justify-between items-center mb-3">
+                  <h2 className="text-xl font-semibold text-gray-800">Recent Tickets</h2>
+                  <Link
+                    href={buildDemoUrl('cvs', 'tickets')}
+                    className="text-blue-600 text-sm hover:text-blue-800"
+                  >
                     View all tickets
                   </Link>
                 </div>
-                <div className="overflow-hidden">
+                
+                <div className="bg-white rounded-lg border border-gray-100 overflow-hidden" style={{ boxShadow: softShadow }}>
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket</th>
-                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Issue</th>
-                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
-                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                          <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket</th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Issue</th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {recentTickets.map((ticket) => (
                           <tr key={ticket.id} className="hover:bg-gray-50">
-                            <td className="px-4 py-3 whitespace-nowrap">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
                               <div className="flex items-center">
-                                {ticket.flagged && (
-                                  <ExclamationCircleIcon className="h-5 w-5 text-red-500 mr-2" />
-                                )}
-                                <span className={`text-sm font-medium ${ticket.flagged ? 'text-red-600' : 'text-gray-900'}`}>{ticket.id}</span>
+                                {ticket.flagged && <ExclamationCircleIcon className="h-4 w-4 text-red-500 mr-1" />}
+                                {ticket.id}
                               </div>
                             </td>
-                            <td className="px-4 py-3 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">{ticket.customer}</div>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {ticket.customer}
                               <div className="text-xs text-gray-500">{ticket.timeCreated}</div>
                             </td>
-                            <td className="px-4 py-3">
-                              <div className="text-sm text-gray-900 truncate max-w-[200px]">{ticket.issue}</div>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap">
-                              <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                ticket.priority === 'High' ? 'bg-red-100 text-red-800' :
-                                ticket.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                                'bg-green-100 text-green-800'
+                            <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">{ticket.issue}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                ticket.priority === 'High' 
+                                  ? 'bg-red-100 text-red-800' 
+                                  : ticket.priority === 'Medium' 
+                                  ? 'bg-yellow-100 text-yellow-800' 
+                                  : 'bg-blue-100 text-blue-800'
                               }`}>
                                 {ticket.priority}
                               </span>
                             </td>
-                            <td className="px-4 py-3 whitespace-nowrap">
-                              <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                ticket.status === 'Open' 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-gray-100 text-gray-800'
+                              }`}>
                                 {ticket.status}
                               </span>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
-                              <Link href={`/demos/cvs-tickets/${ticket.id}`} className="text-blue-600 hover:text-blue-900">
-                                View details
-                              </Link>
                             </td>
                           </tr>
                         ))}
@@ -272,73 +309,80 @@ export default function CVSDashboard() {
                 </div>
               </div>
             </div>
-
-            {/* Right Column */}
-            <div className="space-y-6">
-              {/* Onboarding Checklist */}
-              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-lg font-medium text-gray-900">Getting Started</h2>
-                  <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">{actionItems.filter(item => item.completed).length}/{actionItems.length} completed</span>
+            
+            {/* Right Sidebar (1/3 width) */}
+            <div className="space-y-5">
+              {/* Getting Started */}
+              <div className="bg-white rounded-lg border border-gray-100 overflow-hidden" style={{ boxShadow: softShadow }}>
+                <div className="px-4 py-3 border-b border-gray-200 bg-white flex justify-between">
+                  <h2 className="font-semibold text-gray-800">Getting Started</h2>
+                  <span className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">2/5 completed</span>
                 </div>
-                <div className="space-y-3">
-                  {actionItems.map((item) => (
-                    <div key={item.id} className="flex items-start">
-                      <div className={`flex-shrink-0 h-5 w-5 rounded-full ${item.completed ? 'bg-green-100' : 'bg-gray-100'} flex items-center justify-center`}>
-                        {item.completed ? (
-                          <CheckCircleIcon className="h-4 w-4 text-green-600" />
-                        ) : (
-                          <span className="h-3 w-3 rounded-full bg-gray-300" />
-                        )}
-                      </div>
-                      <div className="ml-3">
-                        <p className={`text-sm ${item.completed ? 'text-gray-500 line-through' : 'text-gray-900'}`}>
+                <div className="p-4">
+                  <ul className="space-y-3">
+                    {actionItems.map((item) => (
+                      <li key={item.id} className="flex items-start">
+                        <div className={`flex-shrink-0 h-5 w-5 ${item.completed ? 'text-green-500' : 'text-gray-300'}`}>
+                          {item.completed ? (
+                            <CheckCircleIcon className="h-5 w-5" />
+                          ) : (
+                            <div className="h-5 w-5 border-2 border-gray-300 rounded-full" />
+                          )}
+                        </div>
+                        <span className={`ml-2 text-sm ${item.completed ? 'text-gray-500 line-through' : 'text-gray-700'}`}>
                           {item.task}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <Link href="/demos/cvs-training" className="text-sm text-blue-600 hover:text-blue-800 flex items-center">
-                    <QuestionMarkCircleIcon className="h-4 w-4 mr-1" />
-                    View all training resources
-                  </Link>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-4">
+                    <Link href="#" className="text-sm text-blue-600 flex items-center">
+                      <span>View all training resources</span>
+                      <ArrowRightIcon className="h-4 w-4 ml-1" />
+                    </Link>
+                  </div>
                 </div>
               </div>
-
-              {/* Quick Actions */}
-              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-                <h2 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h2>
-                <div className="grid grid-cols-2 gap-3">
-                  <Link 
-                    href="/demos/cvs-customers/new"
-                    className="flex flex-col items-center justify-center p-3 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                  >
-                    <UserCircleIcon className="h-6 w-6 text-blue-500 mb-2" />
-                    <span className="text-xs text-gray-700">New Customer</span>
-                  </Link>
-                  <Link 
-                    href="/demos/cvs-tickets/new"
-                    className="flex flex-col items-center justify-center p-3 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                  >
-                    <TicketIcon className="h-6 w-6 text-blue-500 mb-2" />
-                    <span className="text-xs text-gray-700">Create Ticket</span>
-                  </Link>
-                  <Link 
-                    href="/demos/cvs-calls/log"
-                    className="flex flex-col items-center justify-center p-3 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                  >
-                    <PhoneIcon className="h-6 w-6 text-blue-500 mb-2" />
-                    <span className="text-xs text-gray-700">Log Call</span>
-                  </Link>
-                  <Link 
-                    href="/demos/cvs-email/compose"
-                    className="flex flex-col items-center justify-center p-3 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                  >
-                    <EnvelopeIcon className="h-6 w-6 text-blue-500 mb-2" />
-                    <span className="text-xs text-gray-700">Send Email</span>
-                  </Link>
+              
+              {/* System Status - replacing Quick Actions */}
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800 mb-3">Token Types</h2>
+                <div className="bg-white rounded-lg border border-gray-100" style={{ boxShadow: softShadow }}>
+                  <ul className="divide-y divide-gray-100">
+                    <li className="p-4 flex items-start">
+                      <div className="flex-shrink-0 h-8 w-8 rounded-full bg-red-100 flex items-center justify-center mr-3">
+                        <span className="text-red-600 font-semibold text-xs">EB</span>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-800">ExtraBucks</h3>
+                        <p className="text-xs text-gray-500 mt-1">Store credit earned through the ExtraCare program</p>
+                      </div>
+                    </li>
+                    <li className="p-4 flex items-start">
+                      <div className="flex-shrink-0 h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                        <span className="text-blue-600 font-semibold text-xs">CP</span>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-800">Coupons</h3>
+                        <p className="text-xs text-gray-500 mt-1">Percentage or fixed amount discounts on eligible products</p>
+                      </div>
+                    </li>
+                    <li className="p-4 flex items-start">
+                      <div className="flex-shrink-0 h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center mr-3">
+                        <span className="text-purple-600 font-semibold text-xs">RW</span>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-800">Rewards</h3>
+                        <p className="text-xs text-gray-500 mt-1">Special offers and loyalty rewards for frequent shoppers</p>
+                      </div>
+                    </li>
+                  </ul>
+                  <div className="p-4 border-t border-gray-100">
+                    <Link href={buildDemoUrl('cvs', 'token-management')} className="text-sm text-blue-600 flex items-center">
+                      <span>Manage customer tokens</span>
+                      <ArrowRightIcon className="h-4 w-4 ml-1" />
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
@@ -347,15 +391,19 @@ export default function CVSDashboard() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white shadow-inner border-t border-gray-200 py-4 mt-8">
-        <div
-          className="px-8 flex justify-between items-center transition-all duration-300 ease-in-out"
-          style={{ 
-            marginLeft: 'auto',
-            marginRight: 'auto',
-            width: `calc(100% - ${sidebarWidth})`
-          }}
-        >
+      <footer 
+        className="bg-white shadow-inner border-t border-gray-200 py-4"
+        style={{ 
+          position: 'fixed',
+          bottom: 0,
+          right: 0,
+          left: sidebarWidth,
+          width: `calc(100% - ${sidebarWidth})`,
+          height: '56px',
+          transition: 'all 0.3s ease-in-out'
+        }}
+      >
+        <div className="px-8 flex justify-between items-center h-full">
           <div>
             <p className="text-xs text-gray-500">
               &copy; 2023 CVS Health + Kigo. All rights reserved.
@@ -367,7 +415,7 @@ export default function CVSDashboard() {
             </p>
             <div className="flex items-center">
               <WrenchScrewdriverIcon className="h-4 w-4 text-gray-400 mr-1" />
-              <Link href="/demos/cvs-support" className="text-xs text-blue-600 hover:text-blue-800">
+              <Link href={buildDemoUrl('cvs', 'help')} className="text-xs text-blue-600 hover:text-blue-800">
                 Report an issue
               </Link>
             </div>

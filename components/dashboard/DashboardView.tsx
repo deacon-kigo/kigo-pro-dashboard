@@ -36,7 +36,7 @@ export default function DashboardView() {
       }
       
       // Use DeaconsPizzaView for both dashboard and campaign-creation scenarios
-      if (clientId === 'deacons-pizza' && (scenario === 'campaign-creation' || scenario === 'dashboard')) {
+      if (clientId === 'deacons' && (scenario === 'campaign-creation' || scenario === 'dashboard' || scenario === 'pizza')) {
         console.log('Using DeaconsPizzaView');
         return DeaconsPizzaView;
       }

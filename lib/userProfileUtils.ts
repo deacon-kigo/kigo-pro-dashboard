@@ -37,7 +37,7 @@ export interface MockUser {
 // Define mock users for each role and client combination
 const mockUsers: Record<string, MockUser> = {
   // Merchant users
-  'merchant-deacons-pizza': {
+  'merchant-deacons': {
     id: 'marco-deacon',
     firstName: 'Marco',
     lastName: 'Deacon',

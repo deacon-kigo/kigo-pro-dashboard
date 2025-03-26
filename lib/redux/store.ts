@@ -4,6 +4,26 @@ import uiReducer from './slices/uiSlice';
 import userReducer from './slices/userSlice';
 import cvsTokenReducer from './slices/cvsTokenSlice';
 import { useDispatch } from 'react-redux';
+import { ActionWithType } from '../../types/redux';
+
+// Custom middleware for logging only, NO URL SYNC
+const demoActionLoggerMiddleware = (store: any) => (next: any) => (action: any) => {
+  const result = next(action);
+  
+  // Log demo-related actions for debugging
+  if (
+    typeof action.type === 'string' && 
+    action.type.startsWith('demo/')
+  ) {
+    const { demo } = store.getState();
+    console.log(`Redux: Action ${action.type} processed`, {
+      clientId: demo.clientId,
+      scenario: demo.scenario
+    });
+  }
+  
+  return result;
+};
 
 export const store = configureStore({
   reducer: {
@@ -12,12 +32,11 @@ export const store = configureStore({
     user: userReducer,
     cvsToken: cvsTokenReducer
   },
+  middleware: (getDefaultMiddleware) => 
+    getDefaultMiddleware().concat(demoActionLoggerMiddleware),
   // Enable Redux DevTools in development
   devTools: process.env.NODE_ENV !== 'production',
 });
 
-// Define RootState type for type checking
 export type RootState = ReturnType<typeof store.getState>;
-
-// Define AppDispatch type for dispatching actions
 export type AppDispatch = typeof store.dispatch; 

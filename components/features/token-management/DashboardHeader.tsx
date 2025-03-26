@@ -30,16 +30,27 @@ export default function DashboardHeader({
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center">
-        <div className="h-14 w-24 relative mr-4">
-          <Image 
-            src="/logos/cvs-logo.svg" 
-            alt="CVS Logo" 
-            fill
-            style={{ objectFit: 'contain' }}
-          />
+        <div className="flex items-center mr-4">
+          <div className="h-10 w-16 relative">
+            <Image 
+              src="/logos/cvs-logo.svg" 
+              alt="CVS Logo" 
+              fill
+              style={{ objectFit: 'contain' }}
+            />
+          </div>
+          <span className="mx-2 text-gray-300">|</span>
+          <div className="h-8 w-8 relative">
+            <Image 
+              src="/kigo logo only.svg" 
+              alt="Kigo Logo" 
+              fill
+              style={{ objectFit: 'contain' }}
+            />
+          </div>
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-[#cc0000]">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent">
             Good morning, {displayName}!
           </h1>
           <p className="text-sm text-gray-600 mt-1">
@@ -55,7 +66,7 @@ export default function DashboardHeader({
         {selectedAccount && (
           <button 
             onClick={onAddToken}
-            className="inline-flex items-center rounded-md bg-[#cc0000] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#a00000]"
+            className="inline-flex items-center rounded-md bg-gradient-to-r from-blue-500 to-red-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:from-blue-600 hover:to-red-600 transition-all duration-200"
           >
             <svg className="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

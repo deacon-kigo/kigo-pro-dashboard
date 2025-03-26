@@ -5,9 +5,13 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRightIcon, LockClosedIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
+import { buildDemoUrl } from '@/lib/utils';
+import { useAppDispatch } from '@/lib/redux/hooks';
+import { updateDemoState } from '@/lib/redux/slices/demoSlice';
 
 export default function SSOSignIn() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -31,25 +35,16 @@ export default function SSOSignIn() {
         return;
       }
       
-      console.log("Redirecting to dashboard...");
+      console.log("Login successful, navigating to CVS dashboard...");
       
-      try {
-        // For demo, any credentials will work - try router first
-        router.push('/demos/cvs-dashboard');
-        
-        // As a fallback, use direct navigation after a short delay
-        setTimeout(() => {
-          if (window.location.pathname === '/sso') {
-            console.log("Router navigation may have failed, using direct navigation");
-            window.location.href = '/demos/cvs-dashboard';
-          }
-        }, 500);
-      } catch (error) {
-        console.error("Navigation error:", error);
-        // Fallback to direct navigation
-        window.location.href = '/demos/cvs-dashboard';
-      }
-    }, 1500);
+      // Direct navigation to the CVS dashboard URL
+      // The state will be derived from the URL on the dashboard page
+      const dashboardUrl = buildDemoUrl('cvs', 'dashboard');
+      console.log("Navigating to:", dashboardUrl);
+      
+      // Force direct navigation to bypass Next.js router
+      window.location.href = dashboardUrl;
+    }, 1000);
   };
 
   return (

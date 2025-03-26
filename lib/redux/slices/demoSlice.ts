@@ -1,5 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ThemeColors } from '@/types/demo';
+import { getUserForContext } from '@/lib/userProfileUtils';
+import { RootState } from '../store';
 
 // Define version type
 export type VersionType = 'current' | 'upcoming' | 'future' | 'experimental';
@@ -35,7 +37,7 @@ const defaultTheme: ThemeColors = {
 
 // Client-specific themes
 const clientThemes: Record<string, { light: ThemeColors; dark: ThemeColors }> = {
-  'deacons-pizza': {
+  'deacons': {
     light: {
       primaryColor: '#ef4444', // red-500 (pizza theme)
       secondaryColor: '#84cc16', // lime-500 (for fresh ingredients)
@@ -85,12 +87,12 @@ const clientThemes: Record<string, { light: ThemeColors; dark: ThemeColors }> = 
 // Default state
 const defaultDemoState: DemoState = {
   role: 'merchant',
-  clientId: 'deacons-pizza',
+  clientId: 'deacons',
   clientName: 'Deacon\'s Pizza',
-  scenario: 'dashboard',
+  scenario: 'pizza',
   themeMode: 'light',
   version: 'current',
-  theme: clientThemes['deacons-pizza'].light,
+  theme: clientThemes['deacons'].light,
   history: [],
   instanceHistory: [],
   currentInstanceIndex: -1,
@@ -123,7 +125,7 @@ export const demoSlice = createSlice({
       state.clientId = action.payload;
       // Update client name based on client ID
       switch(action.payload) {
-        case 'deacons-pizza':
+        case 'deacons':
           state.clientName = 'Deacon\'s Pizza';
           break;
         case 'cvs':
@@ -194,7 +196,7 @@ export const demoSlice = createSlice({
           state.clientName = updates.clientName;
         } else {
           switch(updates.clientId) {
-            case 'deacons-pizza':
+            case 'deacons':
               state.clientName = 'Deacon\'s Pizza';
               break;
             case 'cvs':
@@ -261,6 +263,11 @@ export const demoSlice = createSlice({
     }
   }
 });
+
+// Selector for user profile
+export const selectUserProfile = (state: RootState) => {
+  return getUserForContext(state.demo.role, state.demo.clientId);
+};
 
 // Export actions
 export const { 

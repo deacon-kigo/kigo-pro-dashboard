@@ -24,6 +24,7 @@ import { UserProfile } from '@/types/demo';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { toggleSpotlight, setDemoSelectorOpen } from '@/lib/redux/slices/uiSlice';
 import Link from 'next/link';
+import { buildDemoUrl } from '@/lib/utils';
 
 // Define instance type that combines role, client, and scenario
 interface DemoInstance {
@@ -47,16 +48,16 @@ const generateDemoInstances = (): DemoInstance[] => {
   // Based on user-persona.md, use-cases.md, and merchant-deacon-pizza-demo.md
   // Local Merchant - Deacon's Pizza
   instances.push({
-    id: 'merchant-deacons-pizza-campaign-creation',
-    title: 'Deacon\'s Pizza - AI Campaign Creation',
-    description: 'Create a restaurant campaign with AI assistance',
+    id: 'merchant-deacons-campaign-creation',
+    title: 'AI-Powered Campaign Creation',
+    description: 'Experience the next-gen AI campaign wizard',
     role: 'merchant',
-    clientId: 'deacons-pizza',
+    clientId: 'deacons',
     scenario: 'campaign-creation',
-    category: 'Small Business Owner',
-    emoji: '🍕',
-    tags: ['merchant', 'restaurant', 'campaign', 'ai assistant', 'marketing'],
-    userProfile: getUserForContext('merchant', 'deacons-pizza') as MockUser
+    category: 'Featured Experiences',
+    emoji: '🪄',
+    tags: ['merchant', 'deacons', 'ai', 'campaign'],
+    userProfile: getUserForContext('merchant', 'deacons') as MockUser
   });
   
   // Support Agent - Token Management
@@ -117,16 +118,16 @@ const generateDemoInstances = (): DemoInstance[] => {
   
   // Additional Deacon's Pizza flows
   instances.push({
-    id: 'merchant-deacons-pizza-default',
-    title: 'Deacon\'s Pizza - Dashboard',
-    description: 'View merchant dashboard and performance',
+    id: 'merchant-deacons-default',
+    title: 'Deacon\'s Pizza Dashboard',
+    description: 'Local pizzeria owner dashboard',
     role: 'merchant',
-    clientId: 'deacons-pizza',
-    scenario: 'dashboard',
-    category: 'Small Business Owner',
+    clientId: 'deacons',
+    scenario: 'pizza',
+    category: 'Merchant Views',
     emoji: '🍕',
-    tags: ['merchant', 'restaurant', 'dashboard', 'analytics'],
-    userProfile: getUserForContext('merchant', 'deacons-pizza') as MockUser
+    tags: ['merchant', 'deacons', 'dashboard'],
+    userProfile: getUserForContext('merchant', 'deacons') as MockUser
   });
   
   // CVS Dashboard
@@ -350,8 +351,12 @@ const DemoSpotlight: React.FC = () => {
       }
       
       // For specific client demos
-      if (instance.clientId === 'deacons-pizza' && instance.scenario === 'campaign-creation') {
+      if (instance.clientId === 'deacons' && instance.scenario === 'campaign-creation') {
         defaultPath = '/demos/ai-campaign-creation';
+      } else if (instance.clientId && instance.scenario && 
+                 ['dashboard', 'token-management', 'customers', 'tickets', 'settings', 'pizza'].includes(instance.scenario)) {
+        // Use the buildDemoUrl utility for standard demo scenarios
+        defaultPath = buildDemoUrl(instance.clientId, instance.scenario);
       }
       
       // Navigate to the constructed path
@@ -553,10 +558,9 @@ const DemoSpotlight: React.FC = () => {
   
   const getClientName = () => {
     switch(clientId) {
-      case 'deacons-pizza': return 'Deacon\'s Pizza';
-      case 'boutique-fitness': return 'Boutique Fitness';
-      case 'tech-solutions': return 'Tech Solutions';
-      default: return 'Default Client';
+      case 'deacons': return 'Deacon\'s Pizza';
+      case 'cvs': return 'CVS Pharmacy';
+      default: return clientId;
     }
   };
   

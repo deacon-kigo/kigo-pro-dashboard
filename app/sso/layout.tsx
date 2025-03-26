@@ -1,6 +1,9 @@
 'use client';
 
 import '../globals.css';
+import { Inter } from "next/font/google";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export default function SSOLayout({
   children,
@@ -9,7 +12,7 @@ export default function SSOLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body className={inter.className}>
         <div className="min-h-screen">
           {children}
         </div>
