@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -20,7 +20,8 @@ import {
 } from 'recharts';
 import { useDemo } from '../../../contexts/DemoContext';
 
-export default function DeaconsPizzaDashboard() {
+// Create a client component that uses useSearchParams
+function DeaconsPizzaDashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { setClientId } = useDemo();
@@ -58,7 +59,7 @@ export default function DeaconsPizzaDashboard() {
       }, 5000);
     }
     
-  }, [getGreeting, searchParams]);
+  }, [getGreeting, searchParams, setClientId]);
 
   // Memoize sample data to prevent unnecessary recreations on each render
   const campaignData = useMemo(() => {
@@ -360,5 +361,19 @@ export default function DeaconsPizzaDashboard() {
         </div>
       </Card>
     </div>
+  );
+}
+
+// Create a loading fallback
+function DeaconsPizzaLoading() {
+  return <div className="p-6 text-center">Loading dashboard...</div>;
+}
+
+// Main component that wraps the content in Suspense
+export default function DeaconsPizzaDashboard() {
+  return (
+    <Suspense fallback={<DeaconsPizzaLoading />}>
+      <DeaconsPizzaDashboardContent />
+    </Suspense>
   );
 } 
