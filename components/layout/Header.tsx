@@ -15,24 +15,36 @@ import {
   ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
+import { useAppSelector, useAppDispatch, useDemoState } from '@/lib/redux/hooks';
 import { toggleSidebar } from '@/lib/redux/slices/uiSlice';
 import { markAllNotificationsAsRead } from '@/lib/redux/slices/userSlice';
+import { buildDemoUrl } from '@/lib/utils';
 
 export default function Header() {
+  // Use Redux hooks directly
   const dispatch = useAppDispatch();
   const pathname = usePathname();
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
-  const { role, clientId, theme, themeMode, clientName } = useAppSelector(state => state.demo);
+  
+  // Get demo state from Redux using our custom hook
+  const { role, clientId, themeMode, clientName } = useDemoState();
+  
+  // Get UI state from Redux
   const { isMobileView, sidebarCollapsed, sidebarWidth } = useAppSelector(state => state.ui);
+  
+  // Get user state from Redux
   const { notifications } = useAppSelector(state => state.user);
   const unreadNotificationsCount = notifications?.filter(n => !n.read).length || 0;
   
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   
   // Check if we're in the CVS context
-  const isCVSContext = clientId === 'cvs';
+  const isCVSContext = clientId === 'cvs' || (pathname && pathname.includes('cvs-'));
+  
+  // CVS brand colors
+  const cvsBlue = '#2563EB';
+  const cvsRed = '#CC0000';
   
   // Mock search suggestions - role-based
   const getSearchSuggestions = () => {
@@ -83,7 +95,17 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
   
+  // Get page title based on pathname
   const getPageTitle = () => {
+    // Handle CVS specific pages first
+    if (isCVSContext) {
+      if (pathname && (pathname.includes('token-management') || pathname.includes('cvs-token-management'))) return 'Token Management';
+      if (pathname && pathname.includes('dashboard')) return '';
+      if (pathname && pathname.includes('customers')) return 'Customers';
+      if (pathname && pathname.includes('tickets')) return 'Support Tickets';
+    }
+    
+    // Handle general pages
     if (pathname === '/') return 'Dashboard';
     if (pathname.startsWith('/campaigns')) {
       if (pathname === '/campaigns/create') return 'Create Campaign';
@@ -95,6 +117,7 @@ export default function Header() {
     if (pathname === '/notifications') return 'Notifications';
     if (pathname === '/help') return 'Help & Support';
     if (pathname === '/tickets') return 'Support Tickets';
+    
     return '';
   };
 
@@ -102,17 +125,9 @@ export default function Header() {
   const getActionButton = () => {
     if (pathname.includes('/create')) return null;
     
-    // Special handling for CVS context
+    // Special handling for CVS context - always return null for CVS pages
     if (isCVSContext) {
-      return (
-        <Link 
-          href="/demos/cvs-token-management"
-          className="bg-red-600 text-white font-medium rounded-lg px-4 py-2 flex items-center space-x-1 shadow-md hover:bg-red-700 transition-colors"
-        >
-          <TicketIcon className="w-5 h-5" />
-          <span>Manage Tokens</span>
-        </Link>
-      );
+      return null;
     }
     
     switch(role) {
@@ -121,7 +136,7 @@ export default function Header() {
           <div className="relative">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-lg opacity-40 animate-rainbow-border blur-[1px]"></div>
             <Link 
-              href="/demos/ai-campaign-creation"
+              href={buildDemoUrl('deacons', 'ai-campaign-creation')}
               className="relative z-10 bg-primary text-white font-medium rounded-lg px-4 py-2 flex items-center space-x-1 shadow-md hover:bg-primary/95 transition-all duration-500 ease-in-out
               before:absolute before:content-[''] before:-z-10 before:inset-0 before:rounded-lg before:opacity-0 before:transition-opacity before:duration-500 
               hover:before:opacity-100 before:bg-gradient-to-r before:from-primary/30 before:via-blue-500/20 before:to-purple-500/30 before:blur-xl before:animate-spin-slow"
@@ -202,19 +217,29 @@ export default function Header() {
         width: `calc(100% - ${sidebarWidth})`
       }}
     >
-      <div className={`absolute inset-0 ${isDarkMode ? 'bg-gradient-to-r from-gray-900/90 via-gray-800/5 to-gray-700/10' : (isCVSContext ? 'bg-gradient-to-r from-white/90 via-red-50/5 to-blue-50/10' : 'bg-gradient-to-r from-white/90 via-pastel-blue/5 to-pastel-purple/10')} backdrop-blur-md border-b border-border-light`}></div>
+      <div className={`absolute inset-0 ${
+        isDarkMode 
+          ? 'bg-gradient-to-r from-gray-900/90 via-gray-800/5 to-gray-700/10' 
+          : (isCVSContext 
+              ? 'bg-gradient-to-r from-blue-50 via-blue-50/80 to-red-50/70 backdrop-blur-sm' 
+              : 'bg-gradient-to-r from-white/90 via-pastel-blue/5 to-pastel-purple/10')
+        } backdrop-blur-md border-b border-border-light`}></div>
       
       <div className="relative z-10 flex items-center w-full">
-        <h1 className={`text-2xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{isCVSContext ? 'CVS Support Portal' : getPageTitle()}</h1>
+        {/* Removing the Support text as requested */}
         
-        <div id="search-container" className="relative ml-8 flex-1 max-w-md">
+        <h1 className={`text-2xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+          {getPageTitle()}
+        </h1>
+        
+        <div id="search-container" className="relative ml-4 flex-1 max-w-md">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <MagnifyingGlassIcon className={`h-5 w-5 ${isDarkMode ? 'text-gray-400' : 'text-gray-400'}`} />
           </div>
           <input
             type="text"
             className={`block w-full pl-10 pr-3 py-2 border ${isDarkMode ? 'border-gray-700 bg-gray-800/80 focus:ring-blue-500/20 focus:border-blue-500 text-white' : 'border-gray-200 bg-white/80 focus:ring-primary/20 focus:border-primary text-gray-900'} rounded-lg focus:outline-none focus:ring-2 text-sm`}
-            placeholder={getSearchPlaceholder()}
+            placeholder={isCVSContext ? "Search tokens, customers, tickets..." : getSearchPlaceholder()}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => setShowSearchDropdown(true)}
@@ -259,19 +284,6 @@ export default function Header() {
           <button className={`w-10 h-10 rounded-full flex items-center justify-center ${isDarkMode ? 'hover:bg-gray-800/80' : 'hover:bg-white/80'}`}>
             <ChatBubbleLeftEllipsisIcon className={`h-5 w-5 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} />
           </button>
-          
-          {/* Display user info for CVS context */}
-          {isCVSContext && (
-            <div className="ml-3 flex items-center">
-              <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white">
-                SJ
-              </div>
-              <div className="ml-3 hidden md:block">
-                <p className="text-sm font-medium text-gray-700">Sarah Johnson</p>
-                <p className="text-xs text-gray-500">Agent ID: CVS-2358</p>
-              </div>
-            </div>
-          )}
           
           {getActionButton()}
         </div>

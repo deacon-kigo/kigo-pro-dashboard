@@ -18,21 +18,29 @@ import {
   TicketIcon,
   BuildingStorefrontIcon
 } from '@heroicons/react/24/outline';
-import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
+import { useAppSelector, useAppDispatch, useDemoState } from '@/lib/redux/hooks';
 import { toggleSidebar, setSidebarCollapsed } from '@/lib/redux/slices/uiSlice';
 import demoConfigs from '../../config/demoConfigs';
+import { buildDemoUrl, isPathActive } from '@/lib/utils';
 
 export default function Sidebar() {
   const pathname = usePathname();
   const dispatch = useAppDispatch();
-  const { role, clientId, clientName } = useAppSelector(state => state.demo);
+  const { role, clientId, clientName } = useDemoState();
   const { sidebarCollapsed } = useAppSelector(state => state.ui);
   
   // Local state for backward compatibility during migration
   const [isCollapsed, setIsCollapsed] = useState(false);
   
   // Check if we're in the CVS context
-  const isCVSContext = clientId === 'cvs';
+  const isCVSContext = clientId === 'cvs' || (pathname && pathname.includes('cvs-'));
+  
+  // CVS brand colors for gradients
+  const cvsBlue = '#2563EB';
+  const cvsRed = '#CC0000';
+  
+  // Define gradients
+  const activeLinkGradient = `linear-gradient(to right, ${cvsBlue}, ${cvsRed})`;
   
   // Sync local state with Redux
   useEffect(() => {
@@ -66,22 +74,29 @@ export default function Sidebar() {
   };
   
   const isLinkActive = (path: string) => {
-    // Special case for demo pages
-    if (path === '/' && pathname.startsWith('/demos/deacons-pizza')) {
+    // Special case for token management
+    if (path.includes('token-management') && pathname && (pathname.includes('token-management') || pathname.includes('cvs-token-management'))) {
+      return true;
+    }
+    // Special case for dashboard - when on root path or specific dashboard URL
+    if (path.includes('/dashboard') && (pathname === '/' || pathname === '/demos/cvs-dashboard' || pathname.includes('cvs-dashboard'))) {
       return true;
     }
     
-    // Special case for CVS pages
+    // Special cases for other CVS pages
     if (isCVSContext) {
-      if (path === '/demos/cvs-dashboard' && pathname.startsWith('/demos/cvs-dashboard')) {
+      if (path.includes('customers') && pathname && pathname.includes('customers')) {
         return true;
       }
-      if (path === '/demos/cvs-token-management' && pathname.startsWith('/demos/cvs-token-management')) {
+      if (path.includes('tickets') && pathname && pathname.includes('tickets')) {
+        return true;
+      }
+      if (path.includes('settings') && pathname && pathname.includes('settings')) {
         return true;
       }
     }
     
-    return pathname === path || pathname.startsWith(`${path}/`);
+    return isPathActive(pathname, path);
   };
 
   // Get client-specific information
@@ -91,24 +106,29 @@ export default function Sidebar() {
   
   // Get CVS-specific navigation items
   const getCVSNavigationItems = () => {
+    const dashboardUrl = buildDemoUrl('cvs', 'dashboard');
+    const customersUrl = buildDemoUrl('cvs', 'customers');
+    const tokenManagementUrl = buildDemoUrl('cvs', 'token-management');
+    const ticketsUrl = buildDemoUrl('cvs', 'tickets');
+    
     return (
       <>
         <li className="nav-item px-3 py-1">
           <Link 
-            href="/demos/cvs-dashboard" 
+            href={dashboardUrl}
             className={`
               flex items-center py-2 text-sm font-medium rounded-md
               ${isCollapsed ? 'justify-center px-2' : 'px-3'}
-              ${isLinkActive('/demos/cvs-dashboard') 
-                ? 'text-red-600 bg-red-50' 
-                : 'text-text-dark hover:text-red-600 hover:bg-gray-100'
+              ${isLinkActive(dashboardUrl) 
+                ? 'bg-gradient-to-r from-blue-50 to-red-50 text-gray-800' 
+                : 'text-text-dark hover:text-gray-800 hover:bg-gray-100'
               }
             `}
             title="Dashboard"
           >
-            <HomeIcon className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${isLinkActive('/demos/cvs-dashboard') ? 'text-red-600' : 'text-text-muted'}`} />
+            <HomeIcon className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${isLinkActive(dashboardUrl) ? 'text-gray-800' : 'text-text-muted'}`} />
             {!isCollapsed && (
-              <span className={`${isLinkActive('/demos/cvs-dashboard') ? 'font-semibold' : ''}`}>
+              <span className={`${isLinkActive(dashboardUrl) ? 'font-semibold' : ''} ${isLinkActive(dashboardUrl) ? 'bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent' : ''}`}>
                 Dashboard
               </span>
             )}
@@ -116,55 +136,67 @@ export default function Sidebar() {
         </li>
         <li className="nav-item px-3 py-1">
           <Link 
-            href="/demos/cvs-customers" 
+            href={customersUrl}
             className={`
               flex items-center py-2 text-sm font-medium rounded-md
               ${isCollapsed ? 'justify-center px-2' : 'px-3'}
-              ${isLinkActive('/demos/cvs-customers') 
-                ? 'text-red-600 bg-red-50' 
-                : 'text-text-dark hover:text-red-600 hover:bg-gray-100'
+              ${isLinkActive(customersUrl) 
+                ? 'bg-gradient-to-r from-blue-50 to-red-50 text-gray-800' 
+                : 'text-text-dark hover:text-gray-800 hover:bg-gray-100'
               }
             `}
             title="Customers"
           >
-            <UserGroupIcon className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${isLinkActive('/demos/cvs-customers') ? 'text-red-600' : 'text-text-muted'}`} />
-            {!isCollapsed && <span>Customers</span>}
+            <UserGroupIcon className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${isLinkActive(customersUrl) ? 'text-gray-800' : 'text-text-muted'}`} />
+            {!isCollapsed && (
+              <span className={`${isLinkActive(customersUrl) ? 'font-semibold bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent' : ''}`}>
+                Customers
+              </span>
+            )}
           </Link>
         </li>
         <li className="nav-item px-3 py-1">
           <Link 
-            href="/demos/cvs-token-management" 
+            href={tokenManagementUrl}
             className={`
               flex items-center py-2 text-sm font-medium rounded-md
               ${isCollapsed ? 'justify-center px-2' : 'px-3'}
-              ${isLinkActive('/demos/cvs-token-management') 
-                ? 'text-red-600 bg-red-50' 
-                : 'text-text-dark hover:text-red-600 hover:bg-gray-100'
+              ${isLinkActive(tokenManagementUrl) 
+                ? 'bg-gradient-to-r from-blue-50 to-red-50 text-gray-800' 
+                : 'text-text-dark hover:text-gray-800 hover:bg-gray-100'
               }
             `}
             title="Token Management"
           >
-            <svg className="w-5 h-5 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <svg className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${isLinkActive(tokenManagementUrl) ? 'text-gray-800' : 'text-text-muted'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
             </svg>
-            {!isCollapsed && <span>Tokens</span>}
+            {!isCollapsed && (
+              <span className={`${isLinkActive(tokenManagementUrl) ? 'font-semibold bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent' : ''}`}>
+                Tokens
+              </span>
+            )}
           </Link>
         </li>
         <li className="nav-item px-3 py-1">
           <Link 
-            href="/demos/cvs-tickets" 
+            href={ticketsUrl}
             className={`
               flex items-center py-2 text-sm font-medium rounded-md
               ${isCollapsed ? 'justify-center px-2' : 'px-3'}
-              ${isLinkActive('/demos/cvs-tickets') 
-                ? 'text-red-600 bg-red-50' 
-                : 'text-text-dark hover:text-red-600 hover:bg-gray-100'
+              ${isLinkActive(ticketsUrl) 
+                ? 'bg-gradient-to-r from-blue-50 to-red-50 text-gray-800' 
+                : 'text-text-dark hover:text-gray-800 hover:bg-gray-100'
               }
             `}
             title="Support Tickets"
           >
-            <TicketIcon className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${isLinkActive('/demos/cvs-tickets') ? 'text-red-600' : 'text-text-muted'}`} />
-            {!isCollapsed && <span>Tickets</span>}
+            <TicketIcon className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${isLinkActive(ticketsUrl) ? 'text-gray-800' : 'text-text-muted'}`} />
+            {!isCollapsed && (
+              <span className={`${isLinkActive(ticketsUrl) ? 'font-semibold bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent' : ''}`}>
+                Tickets
+              </span>
+            )}
           </Link>
         </li>
       </>
@@ -390,6 +422,15 @@ export default function Sidebar() {
     }
   };
   
+  // Ensure consistent handling for CVS context detection
+  useEffect(() => {
+    // Special case to ensure all CVS pages use the same styling
+    if (clientId === 'cvs' && !isCVSContext) {
+      console.log('Ensuring CVS context is active');
+      // This log helps trace if there's any context issue
+    }
+  }, [clientId, isCVSContext]);
+  
   return (
     <aside 
       className={`
@@ -403,25 +444,60 @@ export default function Sidebar() {
     >
       <div className="flex flex-col h-full">
         {/* Logo */}
-        <div className="flex items-center h-[64px] px-4">
+        <div className={`flex items-center h-[64px] px-4 ${isCollapsed ? 'justify-center' : ''}`}>
           {isCollapsed ? (
-            <Link href="/" className="flex items-center justify-center w-full">
-              <Image 
-                src={isCVSContext ? "/logos/cvs-logo.svg" : "/kigo logo only.svg"}
-                alt={clientName || 'Kigo'}
-                width={40} 
-                height={40} 
-                className="transition-all duration-300"
-              />
+            <Link href="/" className="flex flex-col items-center justify-center w-full">
+              {isCVSContext ? (
+                <div className="relative flex items-center justify-center w-[50px] h-[50px]">
+                  <Image 
+                    src="/logos/cvs-logo-only.svg"
+                    alt="CVS"
+                    width={28} 
+                    height={28} 
+                    className="absolute top-1 left-1 transition-all duration-300"
+                  />
+                  <Image 
+                    src="/kigo logo only.svg" 
+                    alt="Kigo"
+                    width={26} 
+                    height={26} 
+                    className="absolute bottom-1 right-1 transition-all duration-300"
+                  />
+                </div>
+              ) : (
+                <Image 
+                  src={isCVSContext ? "/logos/cvs-logo-only.svg" : "/kigo logo only.svg"}
+                  alt={clientName || 'Kigo'}
+                  width={40} 
+                  height={40} 
+                  className="transition-all duration-300"
+                />
+              )}
             </Link>
           ) : (
             <Link href="/" className="flex items-center">
               {isCVSContext ? (
                 <div className="flex items-center">
-                  <div className="h-8 w-8 bg-red-600 rounded-md flex items-center justify-center text-white font-bold">
-                    CVS
+                  <div className="flex items-center">
+                    <Image 
+                      src="/logos/cvs-logo-only.svg" 
+                      alt="CVS Logo" 
+                      width={32} 
+                      height={32} 
+                    />
+                    <span className="mx-2 text-gray-300">|</span>
+                    <Image 
+                      src="/kigo logo only.svg" 
+                      alt="Kigo Logo" 
+                      width={30} 
+                      height={30} 
+                    />
                   </div>
-                  <span className="ml-2 text-xl font-semibold text-gray-900">Support Portal</span>
+                  <div className="ml-2">
+                    <div className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent">
+                      Support Portal
+                    </div>
+                  </div>
                 </div>
               ) : role === 'merchant' ? (
                 <div className="text-lg font-bold text-gray-800">
@@ -467,19 +543,23 @@ export default function Sidebar() {
           <ul className="nav-items">
             <li className="nav-item px-3 py-1">
               <Link 
-                href={isCVSContext ? "/demos/cvs-settings" : "/settings"} 
+                href={isCVSContext ? buildDemoUrl('cvs', 'settings') : "/settings"} 
                 className={`
                   flex items-center py-2 text-sm font-medium rounded-md
                   ${isCollapsed ? 'justify-center px-2' : 'px-3'}
-                  ${isLinkActive(isCVSContext ? '/demos/cvs-settings' : '/settings') 
-                    ? (isCVSContext ? 'text-red-600 bg-red-50' : 'text-primary bg-primary-light')
+                  ${isLinkActive(isCVSContext ? buildDemoUrl('cvs', 'settings') : '/settings') 
+                    ? (isCVSContext ? 'bg-gradient-to-r from-blue-50 to-red-50 text-gray-800' : 'text-primary bg-primary-light')
                     : 'text-text-dark hover:text-primary hover:bg-gray-100'
                   }
                 `}
                 title="Settings"
               >
-                <Cog6ToothIcon className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${isLinkActive(isCVSContext ? '/demos/cvs-settings' : '/settings') ? (isCVSContext ? 'text-red-600' : 'text-primary') : 'text-text-muted'}`} />
-                {!isCollapsed && <span>Settings</span>}
+                <Cog6ToothIcon className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${isLinkActive(isCVSContext ? buildDemoUrl('cvs', 'settings') : '/settings') ? (isCVSContext ? 'text-gray-800' : 'text-primary') : 'text-text-muted'}`} />
+                {!isCollapsed && (
+                  <span className={`${isLinkActive(isCVSContext ? buildDemoUrl('cvs', 'settings') : '/settings') && isCVSContext ? 'font-semibold bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent' : ''}`}>
+                    Settings
+                  </span>
+                )}
               </Link>
             </li>
             <li className="nav-item px-3 py-1">
@@ -489,15 +569,21 @@ export default function Sidebar() {
                   flex items-center py-2 text-sm font-medium rounded-md
                   ${isCollapsed ? 'justify-center px-2' : 'px-3'}
                   ${isLinkActive('/notifications') 
-                    ? 'text-primary bg-primary-light' 
+                    ? (isCVSContext ? 'bg-gradient-to-r from-blue-50 to-red-50 text-gray-800' : 'text-primary bg-primary-light')
                     : 'text-text-dark hover:text-primary hover:bg-gray-100'
                   }
                 `}
                 title="Notifications"
               >
-                <BellIcon className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${isLinkActive('/notifications') ? 'text-primary' : 'text-text-muted'}`} />
-                {!isCollapsed && <span>Notifications</span>}
-                <span className={`bg-pastel-red text-red-600 text-xs rounded-full px-1.5 py-0.5 ${isCollapsed ? 'absolute top-1 right-1 min-w-[18px] h-[18px] flex items-center justify-center' : 'ml-auto'}`}>5</span>
+                <BellIcon className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${isLinkActive('/notifications') ? (isCVSContext ? 'text-gray-800' : 'text-primary') : 'text-text-muted'}`} />
+                {!isCollapsed && (
+                  <span className={`${isLinkActive('/notifications') && isCVSContext ? 'font-semibold bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent' : ''}`}>
+                    Notifications
+                  </span>
+                )}
+                {!isCollapsed && (
+                  <span className="bg-pastel-red text-red-600 text-xs rounded-full px-1.5 py-0.5 ml-auto">5</span>
+                )}
               </Link>
             </li>
             <li className="nav-item px-3 py-1">
@@ -507,14 +593,18 @@ export default function Sidebar() {
                   flex items-center py-2 text-sm font-medium rounded-md
                   ${isCollapsed ? 'justify-center px-2' : 'px-3'}
                   ${isLinkActive('/help') 
-                    ? 'text-primary bg-primary-light' 
+                    ? (isCVSContext ? 'bg-gradient-to-r from-blue-50 to-red-50 text-gray-800' : 'text-primary bg-primary-light')
                     : 'text-text-dark hover:text-primary hover:bg-gray-100'
                   }
                 `}
                 title="Help & Support"
               >
-                <QuestionMarkCircleIcon className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${isLinkActive('/help') ? 'text-primary' : 'text-text-muted'}`} />
-                {!isCollapsed && <span>Help & Support</span>}
+                <QuestionMarkCircleIcon className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${isLinkActive('/help') ? (isCVSContext ? 'text-gray-800' : 'text-primary') : 'text-text-muted'}`} />
+                {!isCollapsed && (
+                  <span className={`${isLinkActive('/help') && isCVSContext ? 'font-semibold bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent' : ''}`}>
+                    Help & Support
+                  </span>
+                )}
               </Link>
             </li>
           </ul>
