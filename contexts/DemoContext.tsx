@@ -21,7 +21,7 @@ import {
   VersionType
 } from '@/lib/redux/slices/demoSlice';
 import { MockUser, getUserForContext } from '@/lib/userProfileUtils';
-import { setClient } from '@/lib/redux/slices/featureConfigSlice';
+import { updateTicketingFeatures } from '@/lib/redux/slices/featureConfigSlice';
 
 // Create a compatibility context
 const DemoContext = createContext<any>(undefined);
@@ -51,7 +51,7 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   useEffect(() => {
     if (demoState.clientId) {
-      dispatch(setClient(demoState.clientId));
+      dispatch(updateTicketingFeatures({ externalSystemName: demoState.clientId === 'cvs' ? 'ServiceNow' : 'Zendesk' }));
     }
   }, [demoState.clientId, dispatch]);
   

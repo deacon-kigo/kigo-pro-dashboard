@@ -6,7 +6,7 @@ import {
   createLightweightTicket, 
   TicketPriority
 } from '@/lib/redux/slices/cvsTokenSlice';
-import { ExternalLinkIcon } from '@heroicons/react/24/outline';
+import { ArrowTopRightOnSquareIcon as ExternalLinkIcon } from '@heroicons/react/24/outline';
 
 type LightweightTicketFormProps = {
   onSuccess?: () => void;
@@ -47,22 +47,26 @@ const LightweightTicketForm: React.FC<LightweightTicketFormProps> = ({
   
   const handleExternalSystemRedirect = () => {
     // In a real application, this would integrate with the external system
-    window.alert(`Redirecting to ${features.ticketing.externalSystemName} for ticket creation with pre-filled data.`);
+    const systemName = features?.ticketing?.externalSystemName || 'External System';
+    window.alert(`Redirecting to ${systemName} for ticket creation with pre-filled data.`);
   };
   
-  if (features.ticketing.useExternalSystem && !features.ticketing.enableInternalTicketing) {
+  // Check if we should use external system only
+  const useExternalOnly = features?.ticketing?.useExternalSystem === true;
+  
+  if (useExternalOnly) {
     return (
       <div className="p-4 bg-gray-50 rounded-md">
         <h3 className="text-sm font-medium text-gray-800 mb-2">Create Support Ticket</h3>
         <p className="text-sm text-gray-600 mb-3">
-          This organization uses {features.ticketing.externalSystemName} for ticket management.
+          This organization uses {features?.ticketing?.externalSystemName || 'an external system'} for ticket management.
         </p>
         <button
           onClick={handleExternalSystemRedirect}
           className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 w-full flex items-center justify-center"
         >
           <ExternalLinkIcon className="h-4 w-4 mr-2" />
-          Open in {features.ticketing.externalSystemName}
+          Open in {features?.ticketing?.externalSystemName || 'External System'}
         </button>
       </div>
     );
