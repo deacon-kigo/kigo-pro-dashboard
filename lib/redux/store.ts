@@ -5,6 +5,7 @@ import userReducer from './slices/userSlice';
 import cvsTokenReducer from './slices/cvsTokenSlice';
 import featureConfigReducer from './slices/featureConfigSlice';
 import analyticsReducer from './slices/analyticsSlice';
+import externalTicketingReducer from './slices/externalTicketingSlice';
 import { useDispatch } from 'react-redux';
 import { ActionWithType } from '../../types/redux';
 
@@ -34,7 +35,8 @@ export const store = configureStore({
     user: userReducer,
     cvsToken: cvsTokenReducer,
     featureConfig: featureConfigReducer,
-    analytics: analyticsReducer
+    analytics: analyticsReducer,
+    externalTicketing: externalTicketingReducer
   },
   middleware: (getDefaultMiddleware) => 
     getDefaultMiddleware().concat(demoActionLoggerMiddleware),

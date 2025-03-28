@@ -95,31 +95,7 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
   
-  // Get page title based on pathname
-  const getPageTitle = () => {
-    // Handle CVS specific pages first
-    if (isCVSContext) {
-      if (pathname && (pathname.includes('token-management') || pathname.includes('cvs-token-management'))) return '';
-      if (pathname && pathname.includes('dashboard')) return '';
-      if (pathname && pathname.includes('customers')) return 'Customers';
-      if (pathname && pathname.includes('tickets')) return 'Support Tickets';
-    }
-    
-    // Handle general pages
-    if (pathname === '/') return 'Dashboard';
-    if (pathname.startsWith('/campaigns')) {
-      if (pathname === '/campaigns/create') return 'Create Campaign';
-      return 'Campaigns';
-    }
-    if (pathname === '/analytics') return 'Analytics';
-    if (pathname === '/merchants') return 'Merchants';
-    if (pathname === '/settings') return 'Settings';
-    if (pathname === '/notifications') return 'Notifications';
-    if (pathname === '/help') return 'Help & Support';
-    if (pathname === '/tickets') return 'Support Tickets';
-    
-    return '';
-  };
+
 
   // Get the appropriate action button based on role and client
   const getActionButton = () => {
@@ -228,9 +204,7 @@ export default function Header() {
       <div className="relative z-10 flex items-center w-full">
         {/* Removing the Support text as requested */}
         
-        <h1 className={`text-2xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-          {getPageTitle()}
-        </h1>
+
         
         <div id="search-container" className="relative ml-4 flex-1 max-w-md">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

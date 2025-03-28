@@ -14,6 +14,7 @@ import {
   ArrowLeftIcon,
   FunnelIcon,
   ChevronDownIcon,
+  ChevronLeftIcon,
 } from '@heroicons/react/24/outline';
 import { buildDemoUrl } from '@/lib/utils';
 
@@ -193,32 +194,6 @@ export default function CVSTokenCatalog() {
         }}
       >
         <div className="px-8">
-          {/* Header with navigation */}
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center">
-              <Link href={buildDemoUrl('cvs', 'dashboard')} className="flex items-center text-blue-600 hover:text-blue-800">
-                <ArrowLeftIcon className="h-5 w-5 mr-2" />
-                <span>Back to Dashboard</span>
-              </Link>
-              <h1 className="text-2xl font-semibold ml-6 text-gray-800">Token Catalog</h1>
-            </div>
-            
-            <div className="flex items-center">
-              <div className="text-sm text-gray-600">
-                {userProfile?.firstName} {userProfile?.lastName}
-              </div>
-              <div className="ml-3">
-                <Image 
-                  src="/default-avatar.png" 
-                  alt="User Avatar" 
-                  width={40} 
-                  height={40} 
-                  className="rounded-full"
-                />
-              </div>
-            </div>
-          </div>
-          
           {/* Search and filter controls */}
           <div className="bg-white rounded-lg shadow p-4 mb-6">
             <div className="flex flex-col md:flex-row justify-between">
@@ -339,6 +314,15 @@ export default function CVSTokenCatalog() {
           </div>
         </div>
       </footer>
+
+      {/* Floating Back Button */}
+      <Link
+        href={buildDemoUrl('cvs', 'dashboard')}
+        className="fixed bottom-20 right-8 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors z-10"
+        aria-label="Back to Dashboard"
+      >
+        <ChevronLeftIcon className="h-6 w-6" />
+      </Link>
     </div>
   );
 } 

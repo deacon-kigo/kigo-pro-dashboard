@@ -232,29 +232,28 @@ const TicketModal = () => {
     });
   };
   
-  // Handle form submission
-  const handleSubmit = async () => {
+  // Handle create ticket
+  const handleCreateTicket = async () => {
     // Validation
-    if (!subject.trim()) {
-      alert('Please enter a subject');
-      return;
+    if (!subject.trim() || !description.trim()) {
+      // Check if we should proceed with external system integration
+      if (useExternalSystem) {
+        if (confirm(`Required fields are missing. Continue without creating an external ticket?`)) {
+          // Continue without external ticket
+        } else {
+          return;
+        }
+      } else {
+        alert(`Please fill in all required fields`);
+        return;
+      }
     }
     
-    if (!description.trim()) {
-      alert('Please enter a description');
-      return;
-    }
-    
-    if (requireCustomerId && !customerId) {
-      alert('Please select a customer');
-      return;
-    }
-    
-    let externalId = externalTicketId;
-    
-    // Create external ticket if needed and not already created
-    if (useExternalSystem && !externalTicketId) {
+    // Create external ticket if feature is enabled
+    let externalId: string | null = null;
+    if (useExternalSystem) {
       try {
+        // Attempt to create external ticket
         externalId = await createExternalSystemTicket();
       } catch (error) {
         // External ticket creation failed, but user might want to create local ticket anyway
@@ -270,9 +269,10 @@ const TicketModal = () => {
       description,
       priority,
       tokenId: tokenId || undefined,
-      customerId: customerId || undefined,
+      customerId: customerId || "",
       assignedTo: userProfile?.userName || 'Agent',
-      externalTicketId: externalId || undefined
+      status: 'Open', // Add the required status field
+      tier: 'Tier1'   // Add the required tier field
     }));
     
     // Close the modal
@@ -581,7 +581,7 @@ const TicketModal = () => {
           <Button variant="outline" onClick={() => dispatch(toggleTicketModal())}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit}>
+          <Button onClick={handleCreateTicket}>
             Create Ticket
           </Button>
         </DialogFooter>

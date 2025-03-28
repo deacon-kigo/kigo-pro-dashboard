@@ -812,8 +812,7 @@ export const cvsTokenSlice = createSlice({
       const customer = state.customers.find(c => c.id === action.payload);
       if (customer) {
         state.selectedCustomer = customer;
-        state.customerResults = [];
-        state.searchQuery = '';
+        // Don't clear search results or search query when selecting a customer
         state.viewState = 'detail';
       }
     },

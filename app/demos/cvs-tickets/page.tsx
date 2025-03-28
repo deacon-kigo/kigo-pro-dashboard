@@ -265,6 +265,14 @@ export default function CVSTicketsView() {
             <div className="flex items-center space-x-2">
               <TierBadge tier={selectedTicket.tier} />
               
+              <button
+                onClick={handleCreateTicket}
+                className="inline-flex items-center px-2 py-1 border border-transparent text-xs rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+              >
+                <PlusIcon className="h-3 w-3 mr-1" />
+                New Ticket
+              </button>
+              
               {useExternalSystem && (
                 <button
                   onClick={() => openInExternalSystem(selectedTicket.id)}
@@ -443,77 +451,31 @@ export default function CVSTicketsView() {
         }}
       >
         <div className="px-8">
-          {/* Header */}
-          <div className="mb-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h1 className="text-2xl font-semibold text-gray-800">Support Ticket Management</h1>
-                <p className="text-gray-600 mt-1">{dateString} • {currentTime}</p>
-              </div>
-              
-              <div className="flex items-center space-x-4">
-                <Link
-                  href={buildDemoUrl('cvs', 'dashboard')}
-                  className="text-blue-600 hover:text-blue-800 flex items-center"
-                >
-                  Return to Dashboard
-                  <ChevronRightIcon className="ml-1 h-4 w-4" />
-                </Link>
-                
-                <button
-                  onClick={handleCreateTicket}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
-                >
-                  <PlusIcon className="h-5 w-5 mr-2" />
-                  Create Ticket
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          {/* Support Tier Explanation */}
-          <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-              <div className="flex items-center mb-2">
-                <BuildingStorefrontIcon className="h-6 w-6 text-blue-600 mr-2" />
-                <h2 className="font-semibold text-blue-800">Tier 1 Support (CVS)</h2>
-              </div>
-              <p className="text-sm text-blue-700">
-                First-line support for common token issues. CVS agents can resolve basic token problems, 
-                manage customer accounts, and escalate complex cases to Tier 2 when necessary.
-              </p>
-            </div>
-            
-            <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-              <div className="flex items-center mb-2">
-                <BoltIcon className="h-6 w-6 text-red-600 mr-2" />
-                <h2 className="font-semibold text-red-800">Tier 2 Support (Kigo PRO)</h2>
-              </div>
-              <p className="text-sm text-red-700">
-                Advanced support for complex token issues. Kigo PRO specialists handle technical problems, 
-                backend token operations, and system-level troubleshooting that requires deeper access.
-              </p>
-            </div>
-          </div>
-          
           {/* Main Content */}
           <div className="grid grid-cols-12 gap-6">
             {/* Left Column - Ticket List */}
             <div className="col-span-12 md:col-span-5 lg:col-span-4">
-              {/* Search */}
-              <div className="mb-4">
-                <div className="relative">
+              {/* Search and Create Ticket Header */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="relative flex-1 mr-2">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
                     type="text"
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="Search tickets by ID, subject or description..."
+                    placeholder="Search tickets..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
+                <button
+                  onClick={handleCreateTicket}
+                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+                >
+                  <PlusIcon className="h-4 w-4 mr-1" />
+                  New Ticket
+                </button>
               </div>
               
               {/* Tabs */}

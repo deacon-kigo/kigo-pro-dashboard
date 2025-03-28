@@ -52,12 +52,10 @@ import {
   initializeState
 } from '@/lib/redux/slices/cvsTokenSlice';
 
-// Import createAction to help us create the missing actions
-import { createAction } from '@reduxjs/toolkit';
-
-// Create the missing action creators
-const setShowConfirmModal = createAction<boolean>('cvsToken/setShowConfirmModal');
-const setConfirmAction = createAction<'reissue' | 'remove' | 'dispute' | null>('cvsToken/setConfirmAction');
+// Add imports at the top of the file, right after the other imports
+import { ExternalTicketingProvider } from '@/components/features/external-ticketing';
+import { useExternalTicketing } from '@/lib/hooks/useExternalTicketing';
+import { ActivityTimeline } from '@/components/features/external-ticketing';
 
 // Types for the token management interface
 // Keep these exported so they can be used in the Redux slice
@@ -515,14 +513,14 @@ export default function CVSTokenManagement() {
   // Add this state to prevent hydration errors
   const [isClient, setIsClient] = useState(false);
   
-  // Redux state
-  const { 
+  // Get state from Redux
+  const {
     customers,
-    searchQuery, 
-    customerResults, 
-    selectedCustomer, 
+    searchQuery,
+    customerResults,
+    selectedCustomer,
     selectedToken,
-    showTokenCatalog, 
+    showTokenCatalog,
     actionMessage,
     caseNotes,
     viewState,
@@ -530,15 +528,9 @@ export default function CVSTokenManagement() {
     tokenCatalog,
     tokenFilters,
     pagination,
-    tokenSort,
-    showTokenDetail,
-    showConfirmModal,
-    confirmAction
+    tokenSort
   } = useAppSelector(state => state.cvsToken);
 
-  // Get the sidebar width from Redux state
-  const { sidebarWidth } = useAppSelector(state => state.ui);
-  
   // Local state for UI elements that don't need to be in Redux
   const [caseNotesInput, setCaseNotesInput] = useState(caseNotes);
   // Move isExpanded state to component level to avoid Rules of Hooks violation
@@ -551,6 +543,8 @@ export default function CVSTokenManagement() {
   const kigoBlue = '#2563EB';
 
   // Add state for confirm modal
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<'remove' | 'reissue' | 'dispute' | null>(null);
   const [confirmTokenId, setConfirmTokenId] = useState<string | null>(null);
   const [confirmReason, setConfirmReason] = useState('');
   const [confirmComments, setConfirmComments] = useState('');
@@ -566,6 +560,13 @@ export default function CVSTokenManagement() {
   
   // Add this near the other state declarations
   const hasInitialized = useRef(false);
+
+  // Add the external ticketing hook near the other hooks
+  const { 
+    hasActiveTicketContext, 
+    recordTokenAction,
+    currentTicket
+  } = useExternalTicketing();
 
   // Initialize Redux state only once on the client-side
   useEffect(() => {
@@ -587,10 +588,10 @@ export default function CVSTokenManagement() {
   // Force light mode for this component
   useEffect(() => {
     // Set theme to light mode
-    if (userProfile?.themeMode !== 'light') {
+    if (themeMode !== 'light') {
       router.replace('/demos/cvs-token-management?role=support&client=cvs&scenario=support-flow&theme=light');
     }
-  }, [userProfile, router]);
+  }, [themeMode, router]);
 
   // Ensure we're using the correct demo context
   useEffect(() => {
@@ -613,43 +614,102 @@ export default function CVSTokenManagement() {
 
   // Function to go back to main view
   const backToMainView = () => {
-    // Only change the view state, don't reset search results
     dispatch(setViewState('main'));
-    
-    // If we had search results, make sure hasSearched remains true
-    if (customerResults.length > 0) {
-      // Force the search to run again to restore results
-      handleSearch();
-    }
   };
 
-  // Add a token to the selected customer
+  // Update the addTokenToCustomerHandler to record actions
   const addTokenToCustomerHandler = (tokenId: string) => {
+    // Get token before state if it exists
+    const token = generatedTokenCatalog.find(t => t.id === tokenId);
+    
+    // Record the action for external ticketing if needed
+    if (hasActiveTicketContext && token) {
+      recordTokenAction(
+        'ADD_TOKEN',
+        tokenId,
+        `Added token ${token.name} to customer account`,
+        null, // No before state since it's a new token
+        token // The token being added
+      );
+    }
+    
     dispatch(addTokenToCustomer(tokenId));
     
     // Clear action message after 3 seconds
     setTimeout(() => dispatch(clearActionMessage()), 3000);
   };
-
-  // Updated reissueTokenHandler to show confirmation modal
+  
+  // Update the reissueTokenHandler to record actions
   const reissueTokenHandler = (tokenId: string) => {
+    // Get token before state if it exists
+    const token = selectedCustomer?.tokens.find(t => t.id === tokenId);
+    
     setConfirmAction('reissue');
     setConfirmTokenId(tokenId);
     setShowConfirmModal(true);
+    
+    // Record the action for external ticketing if needed
+    if (hasActiveTicketContext && token) {
+      // Create a copy of the token with updated expiration for the after state
+      const afterToken = { ...token };
+      const today = new Date();
+      const oneMonthLater = new Date(today.setMonth(today.getMonth() + 1));
+      afterToken.expirationDate = oneMonthLater.toISOString();
+      afterToken.state = 'Active';
+      
+      recordTokenAction(
+        'REISSUE_TOKEN',
+        tokenId,
+        `Reissued expired token ${token.name} with new expiration date`,
+        token, // Before state
+        afterToken // After state with new expiration
+      );
+    }
   };
   
-  // Updated removeTokenFromCustomerHandler to show confirmation modal
+  // Update the removeTokenFromCustomerHandler to record actions
   const removeTokenFromCustomerHandler = (tokenId: string) => {
+    // Get token before state if it exists
+    const token = selectedCustomer?.tokens.find(t => t.id === tokenId);
+    
     setConfirmAction('remove');
     setConfirmTokenId(tokenId);
     setShowConfirmModal(true);
+    
+    // Record the action for external ticketing if needed
+    if (hasActiveTicketContext && token) {
+      recordTokenAction(
+        'REMOVE_TOKEN',
+        tokenId,
+        `Removed token ${token.name} from customer account`,
+        token, // Before state
+        null  // No after state since it's being removed
+      );
+    }
   };
   
-  // New handler for marking a token as disputed
+  // Update the markTokenDisputedHandler to record actions
   const markTokenDisputedHandler = (tokenId: string) => {
+    // Get token before state if it exists
+    const token = selectedCustomer?.tokens.find(t => t.id === tokenId);
+    
     setConfirmAction('dispute');
     setConfirmTokenId(tokenId);
     setShowConfirmModal(true);
+    
+    // Record the action for external ticketing if needed
+    if (hasActiveTicketContext && token) {
+      // Create a copy of the token with disputed flag for the after state
+      const afterToken = { ...token, disputed: true };
+      
+      recordTokenAction(
+        'DISPUTE_TOKEN',
+        tokenId,
+        `Marked token ${token.name} as disputed`,
+        token, // Before state
+        afterToken // After state with disputed flag
+      );
+    }
   };
   
   // Handle confirm action
@@ -1041,6 +1101,14 @@ export default function CVSTokenManagement() {
             </div>
           </div>
         </div>
+        
+        {/* Add ActivityTimeline component if there's an active ticket */}
+        {hasActiveTicketContext && (
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Ticket Activities</h3>
+            <ActivityTimeline maxItems={5} />
+          </div>
+        )}
       </div>
     );
   };
@@ -1981,135 +2049,246 @@ export default function CVSTokenManagement() {
 
   // Make sure the main component returns the UI
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Main Content */}
-      <main 
-        className="py-6 px-8 overflow-auto"
-        style={{ 
-          position: 'fixed',
-          top: '72px',  // Header height
-          bottom: '56px', // Footer height
-          right: 0,
-          left: sidebarWidth,
-          width: `calc(100% - ${sidebarWidth})`,
-          transition: 'all 0.3s ease-in-out'
-        }}
-      >
-        {/* Action Message */}
-        {actionMessage && (
-          <div className={`mb-4 p-3 rounded-lg ${
-            actionMessage.type === 'success' ? 'bg-green-100 text-green-800' :
-            actionMessage.type === 'error' ? 'bg-red-100 text-red-800' :
-            'bg-blue-100 text-blue-800'
-          }`}>
-            {actionMessage.text}
-          </div>
-        )}
-
-        {/* Breadcrumbs navigation - only on detail view */}
-        {viewState === 'detail' && selectedCustomer && (
-          <div className="flex justify-between items-center mb-4">
-            <nav>
-              <ol className="flex items-center space-x-2 text-sm">
-                <li>
-                  <button 
-                    onClick={backToMainView} 
-                    className="text-blue-600 hover:text-blue-800 font-medium"
-                  >
-                    Customer Lookup
-                  </button>
-                </li>
-                <li className="text-gray-500">/</li>
-                <li className="text-gray-700 font-medium">
-                  {selectedCustomer.firstName} {selectedCustomer.lastName}
-                </li>
-              </ol>
-            </nav>
-            
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => dispatch(toggleTokenCatalog())}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <span className="flex items-center">
-                  <PlusCircleIcon className="h-4 w-4 mr-1" />
-                  Add Token
-                </span>
-              </button>
+    <ExternalTicketingProvider>
+      <div className="min-h-screen bg-gray-50">
+        {/* Main Content */}
+        <main className="px-8 py-6">
+          {/* Action Message */}
+          {actionMessage && (
+            <div className={`mb-4 p-3 rounded-lg ${
+              actionMessage.type === 'success' ? 'bg-green-100 text-green-800' :
+              actionMessage.type === 'error' ? 'bg-red-100 text-red-800' :
+              'bg-blue-100 text-blue-800'
+            }`}>
+              {actionMessage.text}
             </div>
-          </div>
-        )}
+          )}
 
-        {viewState === 'main' ? (
-          /* Main View: Customer Search & Table */
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold mb-4">Customer Lookup</h2>
-            <div className="flex items-center gap-4">
-              <div className="relative flex-1">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => dispatch(setSearchQuery(e.target.value))}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Search by name, email, phone, or ExtraCare ID..."
-                  className="w-full p-3 pl-10 pr-4 border border-gray-300 rounded-lg"
-                />
-                <MagnifyingGlassIcon className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+          {/* Breadcrumbs navigation */}
+          <nav className="mb-4">
+            <ol className="flex items-center space-x-2 text-sm">
+              <li>
+                <button 
+                  onClick={backToMainView} 
+                  className="text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  Customer Lookup
+                </button>
+              </li>
+              {viewState === 'detail' && selectedCustomer && (
+                <>
+                  <li className="text-gray-500">/</li>
+                  <li className="text-gray-700 font-medium">
+                    {selectedCustomer.firstName} {selectedCustomer.lastName}
+                  </li>
+                </>
+              )}
+            </ol>
+          </nav>
+
+          {viewState === 'main' ? (
+            /* Main View: Customer Search & Table */
+            <div className="mb-8 bg-white p-6 rounded-lg shadow-sm">
+              <h2 className="text-xl font-semibold mb-4">Customer Lookup</h2>
+              <div className="flex items-center gap-4">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => dispatch(setSearchQuery(e.target.value))}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Search by name, email, phone, or ExtraCare ID..."
+                    className="w-full p-3 pl-10 pr-4 border border-gray-300 rounded-lg"
+                  />
+                  <MagnifyingGlassIcon className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                </div>
+                
+                <button 
+                  onClick={handleSearch}
+                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                >
+                  Search
+                </button>
               </div>
-              
-              <button 
-                onClick={handleSearch}
-                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
-              >
-                Search
-              </button>
-            </div>
 
-            {/* Search Results */}
-            {customerResults.length > 0 && (
-              <div className="mt-4">
-                <h3 className="text-sm font-semibold mb-2">Results ({customerResults.length})</h3>
-                <div className="bg-gray-50 rounded-lg overflow-hidden">
-                  {customerResults.map((customer) => (
-                    <div 
-                      key={customer.id}
-                      className="border-b border-gray-200 last:border-0 p-4 cursor-pointer hover:bg-gray-100"
-                      onClick={() => selectCustomerHandler(customer.id)}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="font-medium">
-                            <HighlightedText 
-                              text={`${customer.firstName} ${customer.lastName}`} 
-                              searchTerm={searchQuery} 
-                            />
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            <HighlightedText 
-                              text={customer.email} 
-                              searchTerm={searchQuery} 
-                            /> • <HighlightedText 
-                              text={customer.phone} 
-                              searchTerm={searchQuery} 
-                            />
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            ExtraCare ID: <HighlightedText 
-                              text={customer.extraCareId} 
-                              searchTerm={searchQuery} 
-                            />
-                          </p>
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          Account Created: {formatDate(customer.accountCreated)}
+              {/* Search Results */}
+              {customerResults.length > 0 && (
+                <div className="mt-4">
+                  <h3 className="text-sm font-semibold mb-2">Results ({customerResults.length})</h3>
+                  <div className="bg-gray-50 rounded-lg overflow-hidden">
+                    {customerResults.map((customer) => (
+                      <div 
+                        key={customer.id}
+                        className="border-b border-gray-200 last:border-0 p-4 cursor-pointer hover:bg-gray-100"
+                        onClick={() => selectCustomerHandler(customer.id)}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="font-medium">
+                              <HighlightedText 
+                                text={`${customer.firstName} ${customer.lastName}`} 
+                                searchTerm={searchQuery} 
+                              />
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              <HighlightedText 
+                                text={customer.email} 
+                                searchTerm={searchQuery} 
+                              /> • <HighlightedText 
+                                text={customer.phone} 
+                                searchTerm={searchQuery} 
+                              />
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              ExtraCare ID: <HighlightedText 
+                                text={customer.extraCareId} 
+                                searchTerm={searchQuery} 
+                              />
+                            </p>
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            Account Created: {formatDate(customer.accountCreated)}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
+              {/* Enhanced empty state */}
+              {hasSearched && searchQuery && customerResults.length === 0 && (
+                <div className="mt-6 p-8 bg-gray-50 rounded-lg text-center">
+                  <ExclamationCircleIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-1">No customers found</h3>
+                  <p className="text-gray-500 mb-4">We couldn't find any customers matching '{searchQuery}'</p>
+                  <p className="text-sm text-gray-600">
+                    Try with a different search term or check for typos
+                  </p>
+                </div>
+              )}
+              
+              {/* Initial empty state with pagination */}
+              {!hasSearched && !searchQuery && (
+                <div className="mt-6">
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="text-sm font-semibold">Customers</h3>
+                    {renderPerPageSelector()}
+                  </div>
+                  {isClient ? (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ExtraCare ID</th>
+                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tokens</th>
+                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account Status</th>
+                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {Array.isArray(getPaginatedCustomers()) && getPaginatedCustomers().map((customer) => (
+                            <tr 
+                              key={customer.id} 
+                              className="hover:bg-gray-50 cursor-pointer"
+                              onClick={() => selectCustomerHandler(customer.id)}
+                            >
+                              <td className="px-4 py-4">
+                                <div className="flex items-center">
+                                  <div className={`flex-shrink-0 h-10 w-10 ${
+                                    customer.id === 'cust004' ? 'bg-purple-500' : 
+                                    customer.id === 'cust005' ? 'bg-pink-500' : 
+                                    customer.id === 'cust006' ? 'bg-yellow-500' : 
+                                    'bg-[#2563EB]'
+                                  } rounded-full flex items-center justify-center text-white`}>
+                                    {customer.firstName.charAt(0)}{customer.lastName.charAt(0)}
+                                  </div>
+                                  <div className="ml-4">
+                                    <div className="text-sm font-medium text-gray-900">{customer.firstName} {customer.lastName}</div>
+                                    <div className="text-sm text-gray-500">{customer.email}</div>
+                                    <div className="text-sm text-gray-500">{customer.phone}</div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-4 py-4">
+                                <div className="text-sm text-gray-900">{customer.extraCareId}</div>
+                                <div className="text-xs text-gray-500">Created: {formatDate(customer.accountCreated)}</div>
+                              </td>
+                              <td className="px-4 py-4">
+                                <div className="flex flex-wrap gap-1">
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    Active: {customer.tokens.filter(t => t.state === 'Active').length}
+                                  </span>
+                                  {customer.tokens.filter(t => t.state === 'Expired').length > 0 && (
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                      Expired: {customer.tokens.filter(t => t.state === 'Expired').length}
+                                    </span>
+                                  )}
+                                  {customer.tokens.filter(t => t.state === 'Used').length > 0 && (
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                      Used: {customer.tokens.filter(t => t.state === 'Used').length}
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-4 py-4">
+                                <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  customer.tokens.length > 0 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                }`}>
+                                  {customer.tokens.length > 0 ? 'Active' : 'No Tokens'}
+                                </span>
+                              </td>
+                              <td className="px-4 py-4 text-sm text-blue-600 hover:text-blue-800">
+                                <button 
+                                  className="font-medium"
+                                  onClick={(e) => {
+                                    e.stopPropagation(); // Prevent row click from firing
+                                    selectCustomerHandler(customer.id);
+                                  }}
+                                >
+                                  View Details
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    /* Show a loading/skeleton state until client is ready */
+                    <div className="animate-pulse">
+                      <div className="h-10 bg-gray-200 rounded mb-4"></div>
+                      <div className="h-16 bg-gray-200 rounded mb-2"></div>
+                      <div className="h-16 bg-gray-200 rounded mb-2"></div>
+                      <div className="h-16 bg-gray-200 rounded mb-2"></div>
+                    </div>
+                  )}
+                  
+                  {/* Pagination - only show when client-side */}
+                  {isClient && renderPagination()}
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Detail View: Customer Details and Token Management */
+            selectedCustomer && (
+              <div>
+                <div className="flex justify-between items-center mb-6">
+                  <div className="flex items-center">
+                    <button
+                      onClick={backToMainView}
+                      className="mr-4 hover:bg-gray-100 p-2 rounded-md transition-colors"
+                    >
+                      <ArrowLeftIcon className="h-5 w-5 text-gray-600" />
+                    </button>
+                    <h3 className="text-xl font-bold text-gray-900">Customer Token Management</h3>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => dispatch(toggleTokenCatalog())}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             {/* Enhanced empty state */}
             {hasSearched && searchQuery && customerResults.length === 0 && (
               <div className="mt-6 p-8 bg-gray-50 rounded-lg text-center">
@@ -2228,6 +2407,30 @@ export default function CVSTokenManagement() {
           /* Detail View: Customer Details and Token Management */
           selectedCustomer && (
             <div>
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center">
+                  <button
+                    onClick={backToMainView}
+                    className="mr-4 hover:bg-gray-100 p-2 rounded-md transition-colors"
+                  >
+                    <ArrowLeftIcon className="h-5 w-5 text-gray-600" />
+                  </button>
+                  <h3 className="text-xl font-bold text-gray-900">Customer Token Management</h3>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => dispatch(toggleTokenCatalog())}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    <span className="flex items-center">
+                      <PlusCircleIcon className="h-4 w-4 mr-1" />
+                      Add Token
+                    </span>
+                  </button>
+                </div>
+              </div>
+              
               {/* Two Column Layout */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 {/* Left Column: Customer Profile - make narrower */}
@@ -2246,19 +2449,8 @@ export default function CVSTokenManagement() {
       </main>
 
       {/* Footer */}
-      <footer 
-        className="bg-white shadow-inner border-t border-gray-200 py-4"
-        style={{ 
-          position: 'fixed',
-          bottom: 0,
-          right: 0,
-          left: sidebarWidth,
-          width: `calc(100% - ${sidebarWidth})`,
-          height: '56px',
-          transition: 'all 0.3s ease-in-out'
-        }}
-      >
-        <div className="px-8 flex justify-between items-center h-full">
+      <footer className="bg-white shadow-inner border-t border-gray-200 py-4 mt-8">
+        <div className="px-8 flex justify-between items-center">
           <div>
             <p className="text-xs text-gray-500">
               &copy; 2023 Kigo + CVS Pharmacy. All rights reserved.
