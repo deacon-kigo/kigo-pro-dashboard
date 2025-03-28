@@ -67,6 +67,8 @@ export default function CVSTicketsView() {
   // Get tickets from redux
   const { tickets, selectedTicket: reduxSelectedTicket } = useAppSelector(state => state.cvsToken);
   const { features } = useAppSelector(state => state.featureConfig);
+  // Get the sidebar width from Redux state
+  const { sidebarWidth } = useAppSelector(state => state.ui);
   
   // Local component state
   const [currentTime, setCurrentTime] = useState('');
@@ -426,169 +428,204 @@ export default function CVSTicketsView() {
   
   // Main render
   return (
-    <div className="container mx-auto pt-6 pb-16">
-      <div className="bg-white rounded-lg shadow-sm p-6 max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-semibold text-gray-800">Support Ticket Management</h1>
-              <p className="text-gray-600 mt-1">{dateString} • {currentTime}</p>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <Link
-                href={buildDemoUrl('cvs', 'dashboard')}
-                className="text-blue-600 hover:text-blue-800 flex items-center"
-              >
-                Return to Dashboard
-                <ChevronRightIcon className="ml-1 h-4 w-4" />
-              </Link>
+    <div className="min-h-screen bg-gray-50">
+      {/* Main Content */}
+      <main 
+        className="py-6 overflow-auto"
+        style={{ 
+          position: 'fixed',
+          top: '72px',  // Header height
+          bottom: '56px', // Footer height
+          right: 0,
+          left: sidebarWidth,
+          width: `calc(100% - ${sidebarWidth})`,
+          transition: 'all 0.3s ease-in-out'
+        }}
+      >
+        <div className="px-8">
+          {/* Header */}
+          <div className="mb-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-2xl font-semibold text-gray-800">Support Ticket Management</h1>
+                <p className="text-gray-600 mt-1">{dateString} • {currentTime}</p>
+              </div>
               
-              <button
-                onClick={handleCreateTicket}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
-              >
-                <PlusIcon className="h-5 w-5 mr-2" />
-                Create Ticket
-              </button>
+              <div className="flex items-center space-x-4">
+                <Link
+                  href={buildDemoUrl('cvs', 'dashboard')}
+                  className="text-blue-600 hover:text-blue-800 flex items-center"
+                >
+                  Return to Dashboard
+                  <ChevronRightIcon className="ml-1 h-4 w-4" />
+                </Link>
+                
+                <button
+                  onClick={handleCreateTicket}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+                >
+                  <PlusIcon className="h-5 w-5 mr-2" />
+                  Create Ticket
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-        
-        {/* Support Tier Explanation */}
-        <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-            <div className="flex items-center mb-2">
-              <BuildingStorefrontIcon className="h-6 w-6 text-blue-600 mr-2" />
-              <h2 className="font-semibold text-blue-800">Tier 1 Support (CVS)</h2>
-            </div>
-            <p className="text-sm text-blue-700">
-              First-line support for common token issues. CVS agents can resolve basic token problems, 
-              manage customer accounts, and escalate complex cases to Tier 2 when necessary.
-            </p>
           </div>
           
-          <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-            <div className="flex items-center mb-2">
-              <BoltIcon className="h-6 w-6 text-red-600 mr-2" />
-              <h2 className="font-semibold text-red-800">Tier 2 Support (Kigo PRO)</h2>
+          {/* Support Tier Explanation */}
+          <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+              <div className="flex items-center mb-2">
+                <BuildingStorefrontIcon className="h-6 w-6 text-blue-600 mr-2" />
+                <h2 className="font-semibold text-blue-800">Tier 1 Support (CVS)</h2>
+              </div>
+              <p className="text-sm text-blue-700">
+                First-line support for common token issues. CVS agents can resolve basic token problems, 
+                manage customer accounts, and escalate complex cases to Tier 2 when necessary.
+              </p>
             </div>
-            <p className="text-sm text-red-700">
-              Advanced support for complex token issues. Kigo PRO specialists handle technical problems, 
-              backend token operations, and system-level troubleshooting that requires deeper access.
-            </p>
+            
+            <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+              <div className="flex items-center mb-2">
+                <BoltIcon className="h-6 w-6 text-red-600 mr-2" />
+                <h2 className="font-semibold text-red-800">Tier 2 Support (Kigo PRO)</h2>
+              </div>
+              <p className="text-sm text-red-700">
+                Advanced support for complex token issues. Kigo PRO specialists handle technical problems, 
+                backend token operations, and system-level troubleshooting that requires deeper access.
+              </p>
+            </div>
           </div>
-        </div>
-        
-        {/* Main Content */}
-        <div className="grid grid-cols-12 gap-6">
-          {/* Left Column - Ticket List */}
-          <div className="col-span-12 md:col-span-5 lg:col-span-4">
-            {/* Search */}
-            <div className="mb-4">
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+          
+          {/* Main Content */}
+          <div className="grid grid-cols-12 gap-6">
+            {/* Left Column - Ticket List */}
+            <div className="col-span-12 md:col-span-5 lg:col-span-4">
+              {/* Search */}
+              <div className="mb-4">
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    placeholder="Search tickets by ID, subject or description..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
                 </div>
-                <input
-                  type="text"
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Search tickets by ID, subject or description..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+              </div>
+              
+              {/* Tabs */}
+              <Tabs defaultValue="all" className="mb-4" onValueChange={setCurrentTab}>
+                <TabsList className="grid grid-cols-3 mb-2">
+                  <TabsTrigger value="all">All</TabsTrigger>
+                  <TabsTrigger value="tier1">Tier 1</TabsTrigger>
+                  <TabsTrigger value="tier2">Tier 2</TabsTrigger>
+                </TabsList>
+                <TabsList className="grid grid-cols-3">
+                  <TabsTrigger value="open">Open</TabsTrigger>
+                  <TabsTrigger value="escalated">Escalated</TabsTrigger>
+                  <TabsTrigger value="closed">Closed</TabsTrigger>
+                </TabsList>
+              </Tabs>
+              
+              {/* Ticket List */}
+              <div className="bg-white rounded-lg border border-gray-100 overflow-hidden" style={{ boxShadow: softShadow }}>
+                {filteredTickets.length === 0 ? (
+                  <div className="p-6 text-center text-gray-500">
+                    No tickets found matching the current filters
+                  </div>
+                ) : (
+                  <div className="space-y-0 max-h-[calc(100vh-360px)] overflow-y-auto">
+                    {filteredTickets.map((ticket) => (
+                      <div
+                        key={ticket.id}
+                        className={`p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${
+                          selectedTicket?.id === ticket.id ? 'bg-blue-50' : ''
+                        }`}
+                        onClick={() => handleSelectTicket(ticket)}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="flex items-start space-x-2">
+                            <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-gray-100">
+                              {ticket.tier === 'Tier1' 
+                                ? <BuildingStorefrontIcon className="h-5 w-5 text-blue-700" />
+                                : <BoltIcon className="h-5 w-5 text-red-700" />
+                              }
+                            </div>
+                            <div>
+                              <div className="flex items-center">
+                                <span className="font-medium text-blue-600">{ticket.id}</span>
+                                <span className={`ml-2 px-1.5 py-0.5 text-xs rounded-full ${PRIORITY_COLORS[ticket.priority]}`}>
+                                  {ticket.priority}
+                                </span>
+                              </div>
+                              <p className="text-sm text-gray-800 line-clamp-1">{ticket.subject}</p>
+                            </div>
+                          </div>
+                          <TicketStatusBadge status={ticket.status} />
+                        </div>
+                        
+                        <div className="mt-1 flex justify-between items-center text-xs text-gray-500">
+                          <span>Updated {formatDate(ticket.updatedDate)}</span>
+                          {ticket.tokenId && (
+                            <span className="flex items-center text-blue-600">
+                              <CircleStackIcon className="h-3 w-3 mr-1" />
+                              Token linked
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             
-            {/* Tabs */}
-            <Tabs defaultValue="all" className="mb-4" onValueChange={setCurrentTab}>
-              <TabsList className="grid grid-cols-3 mb-2">
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="tier1">Tier 1</TabsTrigger>
-                <TabsTrigger value="tier2">Tier 2</TabsTrigger>
-              </TabsList>
-              <TabsList className="grid grid-cols-3">
-                <TabsTrigger value="open">Open</TabsTrigger>
-                <TabsTrigger value="escalated">Escalated</TabsTrigger>
-                <TabsTrigger value="closed">Closed</TabsTrigger>
-              </TabsList>
-            </Tabs>
-            
-            {/* Ticket List */}
-            <div className="bg-white rounded-lg border border-gray-100 overflow-hidden" style={{ boxShadow: softShadow }}>
-              {filteredTickets.length === 0 ? (
-                <div className="p-6 text-center text-gray-500">
-                  No tickets found matching the current filters
-                </div>
-              ) : (
-                <div className="space-y-0 max-h-[calc(100vh-360px)] overflow-y-auto">
-                  {filteredTickets.map((ticket) => (
-                    <div
-                      key={ticket.id}
-                      className={`p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${
-                        selectedTicket?.id === ticket.id ? 'bg-blue-50' : ''
-                      }`}
-                      onClick={() => handleSelectTicket(ticket)}
-                    >
-                      <div className="flex justify-between items-start">
-                        <div className="flex items-start space-x-2">
-                          <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-gray-100">
-                            {ticket.tier === 'Tier1' 
-                              ? <BuildingStorefrontIcon className="h-5 w-5 text-blue-700" />
-                              : <BoltIcon className="h-5 w-5 text-red-700" />
-                            }
-                          </div>
-                          <div>
-                            <div className="flex items-center">
-                              <span className="font-medium text-blue-600">{ticket.id}</span>
-                              <span className={`ml-2 px-1.5 py-0.5 text-xs rounded-full ${PRIORITY_COLORS[ticket.priority]}`}>
-                                {ticket.priority}
-                              </span>
-                            </div>
-                            <p className="text-sm text-gray-800 line-clamp-1">{ticket.subject}</p>
-                          </div>
-                        </div>
-                        <TicketStatusBadge status={ticket.status} />
-                      </div>
-                      
-                      <div className="mt-1 flex justify-between items-center text-xs text-gray-500">
-                        <span>Updated {formatDate(ticket.updatedDate)}</span>
-                        {ticket.tokenId && (
-                          <span className="flex items-center text-blue-600">
-                            <CircleStackIcon className="h-3 w-3 mr-1" />
-                            Token linked
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+            {/* Right Column - Ticket Details */}
+            <div className="col-span-12 md:col-span-7 lg:col-span-8">
+              <TicketDetailsPanel />
             </div>
           </div>
-          
-          {/* Right Column - Ticket Details */}
-          <div className="col-span-12 md:col-span-7 lg:col-span-8">
-            <TicketDetailsPanel />
+        </div>
+      </main>
+      
+      {/* Footer */}
+      <footer 
+        className="bg-white shadow-inner border-t border-gray-200 py-4"
+        style={{ 
+          position: 'fixed',
+          bottom: 0,
+          right: 0,
+          left: sidebarWidth,
+          width: `calc(100% - ${sidebarWidth})`,
+          height: '56px',
+          transition: 'all 0.3s ease-in-out'
+        }}
+      >
+        <div className="px-8 flex justify-between items-center h-full">
+          <div>
+            <p className="text-xs text-gray-500">
+              &copy; 2023 CVS Health + Kigo. All rights reserved.
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <p className="text-xs text-gray-500">
+              Support Portal v1.2.3
+            </p>
+            <div className="flex items-center">
+              <QuestionMarkCircleIcon className="h-4 w-4 text-gray-400 mr-1" />
+              <Link href={buildDemoUrl('cvs', 'help')} className="text-xs text-blue-600 hover:text-blue-800">
+                Help Center
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
+      </footer>
       
       {/* Ticket Modal */}
       <TicketModal />
-      
-      {/* Floating Action Button */}
-      <div className="fixed bottom-8 right-8">
-        <button 
-          onClick={handleCreateTicket}
-          className="bg-green-600 text-white rounded-full p-4 shadow-lg hover:bg-green-700 transition-colors flex items-center justify-center"
-          aria-label="Create new ticket"
-        >
-          <PlusIcon className="h-6 w-6" />
-          <span className="ml-2 font-medium">New Ticket</span>
-        </button>
-      </div>
     </div>
   );
 } 
