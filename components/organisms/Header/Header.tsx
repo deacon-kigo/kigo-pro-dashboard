@@ -23,7 +23,7 @@ import { buildDemoUrl } from '@/lib/utils';
 export default function Header() {
   // Use Redux hooks directly
   const dispatch = useAppDispatch();
-  const pathname = usePathname();
+  const pathname = usePathname() || ''; // Add fallback for Storybook/test environments
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   
@@ -99,7 +99,8 @@ export default function Header() {
 
   // Get the appropriate action button based on role and client
   const getActionButton = () => {
-    if (pathname.includes('/create')) return null;
+    // Add defensive check for pathname in Storybook/test environments
+    if (pathname && pathname.includes('/create')) return null;
     
     // Special handling for CVS context - always return null for CVS pages
     if (isCVSContext) {
