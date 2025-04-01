@@ -24,7 +24,7 @@ import demoConfigs from '../../config/demoConfigs';
 import { buildDemoUrl, isPathActive } from '@/lib/utils';
 
 export default function Sidebar() {
-  const pathname = usePathname();
+  const pathname = usePathname() || '';
   const dispatch = useAppDispatch();
   const { role, clientId, clientName } = useDemoState();
   const { sidebarCollapsed } = useAppSelector(state => state.ui);
@@ -79,7 +79,7 @@ export default function Sidebar() {
       return true;
     }
     // Special case for dashboard - when on root path or specific dashboard URL
-    if (path.includes('/dashboard') && (pathname === '/' || pathname === '/demos/cvs-dashboard' || pathname.includes('cvs-dashboard'))) {
+    if (path.includes('/dashboard') && (pathname === '/' || pathname === '/demos/cvs-dashboard' || pathname?.includes('cvs-dashboard'))) {
       return true;
     }
     
