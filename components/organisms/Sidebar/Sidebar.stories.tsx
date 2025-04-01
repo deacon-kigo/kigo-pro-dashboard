@@ -4,6 +4,30 @@ import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import React from 'react';
 
+// Mock demoConfigs
+import * as DemoConfigsModule from '@/config/demoConfigs';
+// @ts-ignore - Intentionally overriding for Storybook
+DemoConfigsModule.default = {
+  clients: {
+    deacons: {
+      logo: '/logos/deacons.svg',
+      name: 'Deacon\'s Pizza'
+    },
+    cvs: {
+      logo: '/logos/cvs-logo.svg',
+      name: 'CVS Health'
+    },
+    support: {
+      logo: '/kigo logo.svg',
+      name: 'Support Portal'
+    },
+    admin: {
+      logo: '/kigo logo.svg',
+      name: 'Admin Portal'
+    }
+  }
+};
+
 // Create a mock wrapper that provides the same functionality as the original Sidebar
 // but with a controllable pathname
 const SidebarStoryWrapper = (props: { pathname?: string }) => {

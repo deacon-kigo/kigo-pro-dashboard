@@ -20,7 +20,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useAppSelector, useAppDispatch, useDemoState } from '@/lib/redux/hooks';
 import { toggleSidebar, setSidebarCollapsed } from '@/lib/redux/slices/uiSlice';
-import demoConfigs from '../../config/demoConfigs';
+import demoConfigs from '@/config/demoConfigs';
 import { buildDemoUrl, isPathActive } from '@/lib/utils';
 
 export default function Sidebar() {
@@ -49,6 +49,8 @@ export default function Sidebar() {
   
   // Store collapse state in localStorage (will be handled by Redux in the future)
   useEffect(() => {
+    if (typeof window === 'undefined') return; // SSR check
+    
     const storedState = localStorage.getItem('sidebarCollapsed');
     if (storedState) {
       setIsCollapsed(storedState === 'true');
@@ -58,6 +60,8 @@ export default function Sidebar() {
 
   // Update localStorage when state changes
   useEffect(() => {
+    if (typeof window === 'undefined') return; // SSR check
+    
     localStorage.setItem('sidebarCollapsed', isCollapsed.toString());
     
     // Update the main content padding when sidebar collapses/expands
@@ -96,20 +100,33 @@ export default function Sidebar() {
       }
     }
     
+    // Add a fallback in case isPathActive is not available in Storybook
+    if (typeof isPathActive !== 'function') {
+      return pathname === path;
+    }
+    
     return isPathActive(pathname, path);
   };
 
-  // Get client-specific information
-  const client = demoConfigs.clients[clientId];
+  // Get client-specific information with defensive checks for Storybook
+  const client = demoConfigs?.clients?.[clientId] || {}; 
   const clientLogo = client?.logo || '/kigo logo.svg';
   const clientLogoIconOnly = client?.logo || '/kigo logo only.svg';
   
+  // Helper function with defensive check for Storybook
+  const safeBuildDemoUrl = (client: string, page: string) => {
+    if (typeof buildDemoUrl !== 'function') {
+      return `/${client}/${page}`;
+    }
+    return buildDemoUrl(client, page);
+  };
+  
   // Get CVS-specific navigation items
   const getCVSNavigationItems = () => {
-    const dashboardUrl = buildDemoUrl('cvs', 'dashboard');
-    const customersUrl = buildDemoUrl('cvs', 'token-management');
-    const tokenManagementUrl = buildDemoUrl('cvs', 'token-catalog');
-    const ticketsUrl = buildDemoUrl('cvs', 'tickets');
+    const dashboardUrl = safeBuildDemoUrl('cvs', 'dashboard');
+    const customersUrl = safeBuildDemoUrl('cvs', 'token-management');
+    const tokenManagementUrl = safeBuildDemoUrl('cvs', 'token-catalog');
+    const ticketsUrl = safeBuildDemoUrl('cvs', 'tickets');
     
     return (
       <>
@@ -543,20 +560,20 @@ export default function Sidebar() {
           <ul className="nav-items">
             <li className="nav-item px-3 py-1">
               <Link 
-                href={isCVSContext ? buildDemoUrl('cvs', 'settings') : "/settings"} 
+                href={isCVSContext ? safeBuildDemoUrl('cvs', 'settings') : "/settings"} 
                 className={`
                   flex items-center py-2 text-sm font-medium rounded-md
                   ${isCollapsed ? 'justify-center px-2' : 'px-3'}
-                  ${isLinkActive(isCVSContext ? buildDemoUrl('cvs', 'settings') : '/settings') 
+                  ${isLinkActive(isCVSContext ? safeBuildDemoUrl('cvs', 'settings') : '/settings') 
                     ? (isCVSContext ? 'bg-gradient-to-r from-blue-50 to-red-50 text-gray-800' : 'text-primary bg-primary-light')
                     : 'text-text-dark hover:text-primary hover:bg-gray-100'
                   }
                 `}
                 title="Settings"
               >
-                <Cog6ToothIcon className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${isLinkActive(isCVSContext ? buildDemoUrl('cvs', 'settings') : '/settings') ? (isCVSContext ? 'text-gray-800' : 'text-primary') : 'text-text-muted'}`} />
+                <Cog6ToothIcon className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${isLinkActive(isCVSContext ? safeBuildDemoUrl('cvs', 'settings') : '/settings') ? (isCVSContext ? 'text-gray-800' : 'text-primary') : 'text-text-muted'}`} />
                 {!isCollapsed && (
-                  <span className={`${isLinkActive(isCVSContext ? buildDemoUrl('cvs', 'settings') : '/settings') && isCVSContext ? 'font-semibold bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent' : ''}`}>
+                  <span className={`${isLinkActive(isCVSContext ? safeBuildDemoUrl('cvs', 'settings') : '/settings') && isCVSContext ? 'font-semibold bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent' : ''}`}>
                     Settings
                   </span>
                 )}
