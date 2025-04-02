@@ -1,8 +1,8 @@
 import React from 'react';
 import Link from 'next/link';
-import Card from '../../components/shared/Card';
-import Button from '../../components/shared/Button';
-import StatusBadge from '../../components/shared/StatusBadge';
+import Card from '@/components/shared/Card';
+import Button from '@/components/shared/Button';
+import StatusBadge from '@/components/shared/StatusBadge';
 import { 
   PlusIcon, 
   MagnifyingGlassIcon,

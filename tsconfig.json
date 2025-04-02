@@ -28,6 +28,9 @@
       ],
       "@/src/*": [
         "./src/*"
+      ],
+      "@/components/*": [
+        "./src/components/*"
       ]
     }
   },
