@@ -6,7 +6,7 @@ import {
   ArrowLeftIcon
 } from '@heroicons/react/24/outline';
 import { Button } from '@/components/atoms/Button';
-import { Textarea } from '@/components/ui/textarea';
+import { Textarea } from '@/components/atoms/Textarea';
 import { useExternalTicketing } from '@/lib/hooks/useExternalTicketing';
 
 interface ActionSummaryPanelProps {
