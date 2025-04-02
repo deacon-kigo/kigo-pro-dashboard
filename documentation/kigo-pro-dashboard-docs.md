@@ -42,25 +42,40 @@ The repository is currently undergoing a migration to a standard `/src` director
 ├── components          # Original component directory (being migrated)
 ├── diagrams            # Visual diagrams of the system
 ├── documentation       # Project documentation
+│   └── business-context  # User personas and business documentation
 ├── public              # Static assets
 ├── src                 # Source code (target of migration)
 │   ├── app             # Next.js App Router
-│   ├── components      # UI Components (Atomic Design)
-│   │    ├── atoms      # Basic building blocks
-│   │    ├── molecules  # Simple combinations of atoms
-│   │    ├── organisms  # Complex UI sections
-│   │    ├── templates  # Page layouts
-│   │    ├── shared     # Shared UI utilities
-│   │    ├── dashboard  # Dashboard-specific components
-│   │    ├── features   # Feature-specific components
-│   │    └── ui         # UI component library
+│   ├── core            # Core application infrastructure
+│   │    ├── components # UI Components (Atomic Design)
+│   │    │    ├── atoms      # Basic building blocks
+│   │    │    ├── molecules  # Simple combinations of atoms
+│   │    │    ├── organisms  # Complex UI sections
+│   │    ├── hooks      # Shared hooks
+│   │    ├── utils      # Shared utilities
+│   │    ├── contexts   # Global contexts
+│   ├── domains         # Domain-driven organization
+│   │    ├── campaigns  # Campaign management domain
+│   │    │    ├── components # Domain-specific components
+│   │    │    ├── hooks      # Domain-specific hooks
+│   │    │    ├── services   # Domain-specific services
+│   │    │    ├── views      # Domain-specific views
+│   │    ├── tokens     # Token management domain
+│   │    │    ├── components # Domain-specific components
+│   │    │    ├── hooks      # Domain-specific hooks
+│   │    │    ├── services   # Domain-specific services
+│   │    │    ├── views      # Domain-specific views
+│   ├── layouts         # Page layouts
+│   │    ├── dashboard  # Dashboard layouts
+│   │    │    ├── variants   # Role-specific dashboard variants
+│   │    ├── auth       # Authentication layouts
+│   ├── demo            # Demo configurations and sample data
+│   │    ├── merchants  # Merchant demo data
+│   │    │    ├── deacons-pizza  # Deacon's Pizza sample data
+│   │    ├── support    # Support agent demo data
+│   ├── pages           # Next.js pages
 │   ├── config          # Configuration
 │   ├── constants       # Constants and enums
-│   ├── contexts        # React contexts
-│   ├── hooks           # Custom React hooks
-│   ├── mocks           # Mock data for testing
-│   ├── types           # TypeScript type definitions
-│   └── utils           # Utility functions
 └── tooling             # Developer tooling configuration
 ```
 
@@ -68,7 +83,7 @@ The repository is currently undergoing a migration to a standard `/src` director
 
 - **Frontend Framework**: Next.js
 - **Styling**: Tailwind CSS with custom configuration
-- **Component Structure**: Atomic Design Methodology
+- **Component Structure**: Domain-Driven Design with Atomic Components
 - **State Management**: Redux for global state, Context API for component trees
 - **TypeScript**: For type safety and better developer experience
 - **Storybook**: For component documentation and visual testing
@@ -100,33 +115,52 @@ The development workflow follows these steps:
 
 ### Atomic Design Methodology
 
-We follow the atomic design methodology to organize our components:
+We have evolved our architecture to combine atomic design principles with domain-driven design:
 
-- **Atoms**: Basic building blocks (buttons, inputs, icons)
-- **Molecules**: Simple combinations of atoms (search bars, form fields)
-- **Organisms**: Complex combinations of molecules (navigation bars, dashboards)
-- **Templates**: Page layouts with placeholder content
-- **Views**: Templates with actual content for specific use cases
+- **Core Components**: Pure, domain-agnostic UI components using atomic design principles:
+  - **Atoms**: Basic building blocks (buttons, inputs, icons, badges)
+  - **Molecules**: Simple combinations of atoms (search bars, form fields, status badges)
+  - **Organisms**: Complex combinations of molecules (lists, data tables, panels)
 
-Our architecture specifically follows a **Pure Atomic Design + Views** approach:
+- **Domain-Specific Components**: Components that are specific to a business domain:
+  - Each domain contains its own components, hooks, services, and views
+  - Domain components leverage core atomic components for UI
+
+- **Layouts**: Page structures that are customizable by role:
+  - Provide consistent layout patterns across the application
+  - Support role-specific variants
+
+Our new architecture follows a **Domain-Driven Design with Atomic Core** approach:
 
 ```
 /src
-  /components
-    /atoms       # Fundamental UI components
-    /molecules   # Composite UI components
-    /organisms   # Complex UI components (search bars, data tables, etc.)
-    /templates   # Layout templates (dashboards, split views, etc.)
-  /views         # Assembled views/pages using components
-    /token       # Token-related views
-    /ticket      # Ticket-related views
-    /dashboard   # Dashboard views
-  /hooks         # Custom hooks
-  /contexts      # Context providers
-  /lib           # Utilities and helpers
+  /core            # Domain-agnostic core components and utilities
+    /components    # Atomic design components (atoms, molecules, organisms)
+    /hooks         # Shared hooks
+    /utils         # Shared utilities
+    /contexts      # Global contexts
+  /domains         # Domain-specific code organized by business domain
+    /campaigns     # Campaign management domain
+      /components  # Domain-specific components
+      /hooks       # Domain-specific hooks
+      /services    # Domain-specific services
+      /views       # Domain-specific views
+    /tokens        # Token management domain
+  /layouts         # Page layout components
+    /dashboard     # Dashboard layouts
+      /variants    # Role-specific dashboard variants
+  /demo            # Demo configurations and sample data
+    /merchants     # Merchant demo data
+    /support       # Support demo data
+  /pages           # Next.js pages - thin composition layer
 ```
 
-This architecture keeps components domain-agnostic and truly reusable while providing organization for views without coupling to specific business domains.
+This architecture emphasizes:
+1. **Domain Separation**: Clear boundaries between business domains
+2. **Reusable Core**: Domain-agnostic components following atomic design
+3. **Thin Composition Layer**: Pages simply compose domain views with layouts
+4. **Role-Specific Customization**: Layout variants for different user roles
+5. **Prop-Based Demo Implementation**: Clean separation of demo data
 
 ### Component Metadata
 
@@ -136,7 +170,7 @@ Each component uses standardized JSDoc metadata for documentation and categoriza
 /**
  * @component ComponentName
  * @classification atom|molecule|organism|template
- * @pattern data-display|data-entry|navigation|feedback
+ * @pattern data-display|data-entry|navigation|feedback|status-display
  * @usage demo|production|both
  * @description Component purpose and functionality
  */
@@ -151,68 +185,56 @@ This metadata approach enables:
 
 ### Component Architecture
 
-#### Component Structure
+All components accept their data via props and don't have hard dependencies on contexts or global state. This approach enables:
 
-Each component follows a consistent structure:
+- **Testability**: Components can be tested in isolation
+- **Reusability**: Components can be used in different contexts
+- **Demo Flexibility**: Demo implementations can pass sample data as props without special "demo modes"
 
-```
-ComponentName/
-  ├── ComponentName.tsx       # Main component implementation
-  ├── ComponentName.test.tsx  # Unit tests
-  ├── ComponentName.stories.tsx  # Storybook stories
-  ├── index.ts                # Re-export for cleaner imports
-  └── types.ts                # Component-specific types (optional)
-```
-
-#### Presentation-Container Pattern
-
-For complex components with external dependencies, we implement a separation between presentation and container components:
+This props-based approach keeps components pure and easy to compose:
 
 ```tsx
-// Container component with external dependencies
-const Sidebar = () => {
-  const pathname = usePathname();
-  const dispatch = useAppDispatch();
-  const { sidebarCollapsed } = useAppSelector(state => state.ui);
-  
-  // Business logic
-  
-  return <PresentationalSidebar {...props} />;
+// Example of a pure component accepting all data via props
+function CampaignDashboard({ campaigns, onCreateCampaign, onEditCampaign }) {
+  return (
+    <div>
+      <Button onClick={onCreateCampaign}>Create Campaign</Button>
+      <Table 
+        data={campaigns}
+        onRowClick={onEditCampaign}
+      />
+    </div>
+  );
 }
 
-// Presentation component with no external dependencies
-export const PresentationalSidebar = (props: SidebarProps) => {
-  // Pure rendering logic
-  return <aside>...</aside>;
-};
-```
+// Usage with real data
+function CampaignsPage() {
+  const { campaigns, createCampaign, editCampaign } = useCampaigns();
+  
+  return (
+    <DashboardLayout>
+      <CampaignDashboard 
+        campaigns={campaigns}
+        onCreateCampaign={createCampaign}
+        onEditCampaign={editCampaign}
+      />
+    </DashboardLayout>
+  );
+}
 
-This pattern enables:
-- Easier testing of UI components in isolation
-- Better compatibility with Storybook
-- Clear separation of concerns
-
-#### Component Props
-
-All component props are defined using TypeScript interfaces:
-
-```tsx
-interface ButtonProps {
-  variant: 'primary' | 'secondary' | 'outline' | 'text';
-  size?: 'sm' | 'md' | 'lg';
-  isLoading?: boolean;
-  isDisabled?: boolean;
-  onClick?: () => void;
-  children: React.ReactNode;
-  className?: string;
+// Usage with demo data
+function DemoCampaignsPage() {
+  return (
+    <MerchantDashboard clientName="Deacon's Pizza">
+      <CampaignDashboard 
+        campaigns={deaconsPizzaData.campaigns}
+        onCreateCampaign={() => console.log('Creating campaign for demo')}
+        onEditCampaign={(id) => console.log('Editing campaign', id)}
+      />
+    </MerchantDashboard>
+  );
 }
 ```
-
-Props follow these conventions:
-- Boolean props use `is` prefix (e.g., `isLoading`)
-- Event handlers use `on` prefix (e.g., `onClick`)
-- Required props don't use the optional `?` operator
-- `className` is included for style overrides
 
 ### State Management
 
@@ -332,6 +354,65 @@ All components are designed to be responsive using Tailwind's breakpoint system:
 | Button | Core button component with variants (primary, secondary, outline, text) |
 | Input | Text input fields with validation |
 | Modal | Dialog component for modals |
+| Badge | Display status indicators and labels |
+
+### Badge Components (Molecules)
+
+#### TokenStateBadge
+
+**Purpose**: Displays a badge representing the state of a token with appropriate colors.
+
+**Usage Example**:
+
+```tsx
+<TokenStateBadge state="Active" />
+<TokenStateBadge state="Shared" />
+<TokenStateBadge state="Used" />
+<TokenStateBadge state="Expired" />
+```
+
+#### TicketBadge
+
+**Purpose**: Displays badges for ticket status and support tier with appropriate colors.
+
+**Usage Example**:
+
+```tsx
+<TicketBadge status="Open" />
+<TicketBadge status="In Progress" />
+<TierBadge tier="Tier1" />
+<TierBadge tier="Tier2" />
+```
+
+### List Components (Organisms)
+
+#### TokenList
+
+**Purpose**: Displays a filterable and searchable list of tokens with selection capability.
+
+**Usage Example**:
+
+```tsx
+<TokenList 
+  tokens={tokens}
+  onSelectToken={(token) => setSelectedToken(token)}
+  selectedTokenId="TKN-1001"
+/>
+```
+
+#### TicketList
+
+**Purpose**: Displays a filterable and searchable list of support tickets with selection capability.
+
+**Usage Example**:
+
+```tsx
+<TicketList
+  tickets={tickets}
+  onSelectTicket={(ticket) => setSelectedTicket(ticket)}
+  selectedTicketId="TCKT-1001"
+/>
+```
 
 ### Data Display Components
 
@@ -425,7 +506,12 @@ All components are designed to be responsive using Tailwind's breakpoint system:
 ```
 src/
   ├── components/        # UI components organized by atomic design
+  │   ├── atoms/         # Basic building blocks
+  │   ├── molecules/     # Simple combinations of atoms
+  │   ├── organisms/     # Complex combinations of molecules
+  │   └── templates/     # Page layouts
   ├── hooks/             # Custom React hooks
+  ├── views/             # Domain-specific views
   ├── pages/             # Next.js pages
   ├── store/             # Redux store configuration and slices
   ├── lib/               # Utility functions and libraries
@@ -802,9 +888,43 @@ Added several new dashboard components to demonstrate data visualization capabil
 
 ## Project Timeline & Changelog
 
-### Recent Development (April 4, 2024)
+### Recent Development (April 10, 2024)
 
-#### Repository Structure Migration - Phase 2 Complete
+#### Repository Structure Migration - Phase 3 Complete
+- Completed Phase 3 of migration to atomic design structure
+- Created token management components as atomic components:
+  - Molecules: TokenStateBadge, TicketBadges (status indicator badges)
+  - Organisms: TokenList, TicketList (filterable/selectable list components)
+- Implemented domain-agnostic view structure:
+  - Created `/src/views/token-management/TokenManagementView.tsx`
+  - View leverages atomic components rather than inline components
+- Centralized shared code:
+  - Created type definitions in `lib/token-management/types.ts`
+  - Extracted utility functions to `lib/token-management/utils.ts`
+  - Added proper index exports for better import experience
+
+#### Atomic Component Structure Details
+- Badge molecules implement consistent styling patterns 
+- List organisms feature filtering, searching, and selection capabilities
+- Components use the component metadata tagging system for better organization
+- Components follow the pure atomic design pattern (domain-agnostic)
+
+#### View Structure Implementation
+- Views now live in a dedicated `/src/views` directory
+- Token management view uses atomic components for all UI elements
+- Clear separation between domain logic (in view) and presentation (in components)
+- Incremental migration approach maintains backward compatibility
+
+#### Next Steps for Migration - Phase 4
+- Migrate remaining feature components to atomic structure
+- Update route configuration to use the new view structure
+- Implement Storybook stories for all migrated components
+- Add more domain-agnostic views for other features
+- Eventually remove duplicate components when migration is complete
+
+### Repository Structure Migration - Phase 2 (April 4, 2024)
+
+#### Phase 2 Complete
 - Completed Phase 2 of migration to atomic design structure
 - Updated component imports to use atomic design paths
 - Migrated UI components to their corresponding atomic categories:
@@ -824,14 +944,6 @@ Added several new dashboard components to demonstrate data visualization capabil
 - Maintained backward compatibility during transition
 - Used iterative, atomic commits to ensure stability
 - Verified functionality after each migration step
-
-#### Next Steps for Migration - Phase 3
-- Migrate complex UI components to organisms directory
-- Organize views separate from components for better reusability
-- Implement component metadata tagging system
-- Build out remaining atomic components
-- Establish clear patterns for component composition
-- Update Storybook configuration to recognize new structure
 
 ### Repository Structure Alignment
 
@@ -969,54 +1081,118 @@ Added several new dashboard components to demonstrate data visualization capabil
 
 ### Current Focus
 
-#### Migration to src Directory Structure
-- Moving components from the flat directory structure to a standard `/src` directory
-- Using a dedicated `src-migration` branch for the reorganization
-- Ensuring components maintain functionality during the migration
-- Preserving Storybook integration with appropriate paths and references
+#### Domain-Driven Architecture Implementation
+- Organizing code according to business domains
+- Creating domain-specific components that leverage core atomic components
+- Implementing domain-specific hooks, services, and views
+- Maintaining clean separation between domains
 
-#### Dashboard Component Library
-- Developing a comprehensive set of visually appealing dashboard components
-- Creating well-documented, reusable components with Storybook integration
-- Ensuring components work in isolation without external dependencies
-- Added several key dashboard components: 
-  - `StatCard`
-  - `CircularProgress`
-  - `GradientCard`
-  - `StatisticsCard`
+#### Prop-Based Component Design
+- Building components that accept all data via props
+- Avoiding hard dependencies on contexts or global state
+- Making components easy to test, reuse, and demo
 
-#### Storybook Enhancement
-- Improving visual presentation and categorization of components
-- Enhancing documentation with usage examples and implementation details
-- Adding interactive controls for better developer experience
-- Fixing compatibility issues with components that have external dependencies
-- Creating presentation-only versions of components for Storybook showcasing
+#### Role-Specific Customization
+- Implementing layout variants for different user roles
+- Supporting role-specific features and UIs
+- Maintaining consistent user experience across roles
 
-#### Code Quality and Maintainability
-- Ensuring consistent coding patterns across the repository
-- Improving type safety and reducing TypeScript errors
-- Implementing robust error handling and defensive coding practices
-- Organizing components according to atomic design principles
+#### Thin Page Composition
+- Creating pages that simply compose domain views with layouts
+- Keeping routing logic separate from business logic
+- Making it easy to swap components and layouts
+
+#### Demo Implementation
+- Creating demo data organized by user persona
+- Implementing clean demo pages that showcase features
+- Using the same components for both production and demo
+
+### Next Steps
+
+#### Migration Roadmap (May-June 2024)
+
+1. **Directory Structure Creation** ✅
+   - Create base folders for domains, core, layouts, and demo
+   - Set up the initial organizational structure
+   - Update project documentation to reflect the new architecture
+
+2. **Core Components Migration** (1-2 weeks)
+   - Move existing atomic components to `/src/core/components`
+   - Create proper index files for component exports
+   - Update imports in existing code
+   - Ensure backward compatibility during migration
+
+3. **Domain Organization** (2-3 weeks)
+   - Identify domains in the existing codebase
+   - Create domain-specific directories
+   - Move domain-specific components, hooks, and services
+   - Set up proper exports and imports
+
+4. **Layout Standardization** (1 week)
+   - Create standardized layout components
+   - Implement role-specific variants
+   - Update page compositions to use the new layouts
+
+5. **Demo Implementation** (1-2 weeks)
+   - Create sample data organized by user persona
+   - Implement demo pages that utilize the same components
+   - Establish clear separation between demo and production code
+
+6. **Testing & Refinement** (1-2 weeks)
+   - Ensure all components work correctly in their new locations
+   - Update Storybook stories for the new structure
+   - Address any issues discovered during testing
+   - Refine the architecture based on real-world usage
+
+7. **Documentation & Knowledge Transfer** (Ongoing)
+   - Update documentation to reflect the new architecture
+   - Create guides for adding new domains and components
+   - Train team members on the new structure
+   - Establish standards for ongoing development
+
+#### Immediate Tasks (This Sprint)
+
+1. **Token Management Migration**
+   - Move token management components to `/src/domains/tokens/components`
+   - Create token management hooks in `/src/domains/tokens/hooks`
+   - Move token management services to `/src/domains/tokens/services`
+   - Update token management views in `/src/domains/tokens/views`
+
+2. **Dashboard Layout Migration**
+   - Create standard dashboard layout in `/src/layouts/dashboard`
+   - Implement merchant and support variants
+   - Update relevant pages to use the new layouts
+
+3. **Core Component Organization**
+   - Move Badge components to `/src/core/components/molecules`
+   - Move Button, Card, and Input to `/src/core/components/atoms`
+   - Move List components to `/src/core/components/organisms`
+   - Update imports and ensure backward compatibility
+
+4. **Demo Data Organization**
+   - Create sample data for Deacon's Pizza in `/src/demo/merchants/deacons-pizza`
+   - Set up support demo data in `/src/demo/support`
+   - Ensure demo pages use data via props rather than context
 
 ### Next Steps
 
 #### Short-term (1-2 weeks)
-- Complete migration of remaining components to the `/src` directory structure
-- Ensure all Storybook stories work with the new structure
-- Configure CI/CD pipeline with Vercel for continuous deployment
-- Fix Storybook rendering issues with Next.js components
-- Address untracked changes to Storybook configuration files
+- Migrate additional feature views to the domain-agnostic structure
+- Create Storybook stories for all migrated components
+- Address type errors and linting issues in migrated components
+- Complete migration of remaining token management components
+- Update routes to use the new view structure
 
 #### Medium-term (1 month)
-- Complete implementation of remaining dashboard components
-- Merge `src-migration` branch into `main` when migration is complete
+- Migrate remaining feature components to the atomic design structure
+- Implement remaining dashboard components
+- Address all TypeScript and linting issues
 - Enhance performance monitoring and optimization
-- Improve accessibility compliance across all components
-- Update project documentation to reflect the new structure
+- Complete project documentation reflecting the new structure
 
 #### Long-term (3+ months)
+- Remove duplicate components after migration is complete
 - Develop advanced data visualization capabilities
 - Implement AI-powered insights and recommendations
 - Create customizable dashboard experiences for different user roles
-- Ensure full alignment with Kigo Admin Tools production repository
-- Establish shared component library between repositories 
+- Ensure full alignment with Kigo Admin Tools production repository 
