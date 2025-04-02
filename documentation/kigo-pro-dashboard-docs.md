@@ -594,6 +594,7 @@ For large lists, we use virtualization libraries:
 3. **Interactive Controls**: Components have appropriate controls for manipulating their appearance
 4. **Responsive Design**: Components showcase mobile, tablet, and desktop variations where applicable
 5. **Accessibility**: Components adhere to accessibility standards
+6. **Isolation**: Components are designed to work without external state or contexts
 
 ### Component Story Structure
 
@@ -640,6 +641,82 @@ export const ComponentGrid: Story = {
 };
 ```
 
+### Storybook Configuration
+
+The Storybook configuration in `.storybook/main.js` is set up to:
+
+1. Look for stories in both the root directory and the `/src` directory during migration
+2. Provide essential addons for documentation, interactions, and links
+3. Configure the Next.js framework integration
+4. Enable story store V7 and building of stories.json for better performance
+
+```js
+const config = {
+  stories: [
+    '../components/**/*.stories.@(js|jsx|mjs|ts|tsx)',
+    '../components/**/*.mdx'
+    // Temporarily commenting out src paths to avoid duplicate story IDs
+    // '../src/**/*.mdx',
+    // '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)',
+  ],
+  addons: [
+    '@storybook/addon-links',
+    '@storybook/addon-essentials',
+    '@storybook/addon-interactions',
+  ],
+  framework: {
+    name: '@storybook/nextjs',
+    options: {
+      fastRefresh: true,
+      strictMode: false
+    },
+  },
+  features: {
+    storyStoreV7: true,
+    buildStoriesJson: true
+  },
+  docs: {
+    autodocs: 'tag',
+  },
+  staticDirs: ['../public'],
+};
+```
+
+### Mock Providers for Context Dependency
+
+For components that depend on context providers, we've implemented mock providers in `.storybook/preview.js`:
+
+```jsx
+// Create a mock provider context for stories
+export const MockDemoContext = React.createContext({
+  role: 'merchant',
+  clientId: 'deacons',
+  clientName: 'Deacon\'s Pizza',
+  userProfile: {
+    id: '123',
+    firstName: 'John',
+    lastName: 'Doe',
+    title: 'Store Manager',
+    email: 'john@example.com',
+  },
+  themeMode: 'light',
+  version: 'current',
+});
+
+// Create a decorator that provides these contexts to all stories
+const withMockProviders = (Story) => (
+  <MockDemoContext.Provider value={{...}}>
+    <Story />
+  </MockDemoContext.Provider>
+);
+
+// Apply the mock providers decorator to all stories
+const preview = {
+  // ...configuration...
+  decorators: [withMockProviders],
+};
+```
+
 ### Recent Developments
 
 #### Dashboard Components Implementation
@@ -650,6 +727,19 @@ Added several new dashboard components to demonstrate data visualization capabil
 2. **CircularProgress**: Customizable circular progress component
 3. **GradientCard**: Eye-catching gradient cards for key metrics
 4. **StatisticsCard**: Advanced statistics cards with integrated sparkline charts
+
+#### Storybook Organization
+
+1. **Atomic Design Categories**: Stories are organized according to atomic design principles
+2. **Interactive Controls**: All components include appropriate controls for manipulating props
+3. **Documentation**: Enhanced component documentation with descriptions and examples
+4. **Grid Layouts**: Many stories include grid layouts to showcase component variants together
+
+#### Component Isolation
+
+1. **Presentation Patterns**: Created presentation-only versions of components with external dependencies
+2. **Mock Providers**: Implemented mock context providers for components that rely on context
+3. **Defensive Coding**: Updated components to handle missing dependencies gracefully
 
 ### Best Practices
 
@@ -674,6 +764,14 @@ Added several new dashboard components to demonstrate data visualization capabil
 - Refactored utility functions to match production patterns
 - Standardized import paths using aliased imports (e.g., `@/components`)
 - Implemented shared type definitions for better consistency
+
+#### 2024-04-01
+- Initiated migration to `/src` directory structure
+- Created dedicated `src-migration` branch for the refactoring work
+- Began moving atomic components (Button, Input, Card, etc.) to the new structure
+- Ensured backward compatibility with existing imports during transition
+- Updated Storybook configuration to support both original and migrated components
+- Consolidated documentation for better project overview and tracking
 
 ### Component Development
 
@@ -791,34 +889,54 @@ Added several new dashboard components to demonstrate data visualization capabil
 
 ### Current Focus
 
+#### Migration to src Directory Structure
+- Moving components from the flat directory structure to a standard `/src` directory
+- Using a dedicated `src-migration` branch for the reorganization
+- Ensuring components maintain functionality during the migration
+- Preserving Storybook integration with appropriate paths and references
+
 #### Dashboard Component Library
 - Developing a comprehensive set of visually appealing dashboard components
 - Creating well-documented, reusable components with Storybook integration
 - Ensuring components work in isolation without external dependencies
+- Added several key dashboard components: 
+  - `StatCard`
+  - `CircularProgress`
+  - `GradientCard`
+  - `StatisticsCard`
 
-#### Storybook Optimization
+#### Storybook Enhancement
 - Improving visual presentation and categorization of components
 - Enhancing documentation with usage examples and implementation details
 - Adding interactive controls for better developer experience
+- Fixing compatibility issues with components that have external dependencies
+- Creating presentation-only versions of components for Storybook showcasing
 
 #### Code Quality and Maintainability
 - Ensuring consistent coding patterns across the repository
 - Improving type safety and reducing TypeScript errors
 - Implementing robust error handling and defensive coding practices
+- Organizing components according to atomic design principles
 
 ### Next Steps
 
 #### Short-term (1-2 weeks)
-- Complete implementation of remaining dashboard components
-- Finalize Storybook documentation for all components
-- Address any remaining TypeScript or linting issues
+- Complete migration of remaining components to the `/src` directory structure
+- Ensure all Storybook stories work with the new structure
+- Configure CI/CD pipeline with Vercel for continuous deployment
+- Fix Storybook rendering issues with Next.js components
+- Address untracked changes to Storybook configuration files
 
 #### Medium-term (1 month)
-- Implement end-to-end tests for critical user flows
+- Complete implementation of remaining dashboard components
+- Merge `src-migration` branch into `main` when migration is complete
 - Enhance performance monitoring and optimization
 - Improve accessibility compliance across all components
+- Update project documentation to reflect the new structure
 
 #### Long-term (3+ months)
 - Develop advanced data visualization capabilities
 - Implement AI-powered insights and recommendations
-- Create customizable dashboard experiences for different user roles 
+- Create customizable dashboard experiences for different user roles
+- Ensure full alignment with Kigo Admin Tools production repository
+- Establish shared component library between repositories 

@@ -1,12 +1,106 @@
-# Kigo Project Context For LLM Assistants
+# Kigo Pro Dashboard Project Context
 
-## Repository Overview
+## Project Overview
 
-This repository (`/Users/dpoon/Documents/Kigo/Repo`) contains three distinct but related projects:
+The Kigo Pro Dashboard is a Next.js application serving as a UI component prototype environment for the Kigo ecosystem. It's part of a larger project structure:
 
-1. **Kigo Admin Tools** - Production repository for the Kigo Pro software
-2. **Kigo Pro Dashboard** - A prototype/demo environment that will be renamed to "Kigo Admin Tool Prototype"
-3. **Kigo Web SDKs** - Contains the design system with brand colors and styling guidelines
+1. **Kigo Web SDKs**: Design system repository with design tokens and styling guidelines
+2. **Kigo Pro Dashboard** (current repository): UI component prototype/design canvas
+3. **Kigo Admin Tools**: Production repository that integrates components from this prototype
+
+## Current Project State (April 2024)
+
+### Repository Structure
+
+The repository is currently undergoing a migration from a flat directory structure to a standard `/src` directory structure:
+
+- **Original Structure**: Components directly in the root `/components` directory
+- **Target Structure**: Components organized within `/src/components`
+- **Branch**: Working in `src-migration` branch dedicated to this refactoring
+
+### Migration Status
+
+1. **Components**:
+   - Several atomic components migrated to `/src/components/atoms` (Button, Input, Card, etc.)
+   - Dashboard components remain in original `/components/dashboard` directory
+   - UI data display components recently created in `/components/ui/data-display`
+
+2. **Storybook Integration**:
+   - Configuration supports both original and new directory structures
+   - Stories temporarily duplicated to avoid ID conflicts
+   - Some components have basic stories in the `/src` structure
+
+3. **Dashboard Components**:
+   - Recent work focused on creating data visualization components:
+     - StatCard: Simple statistics cards with change indicators
+     - CircularProgress: Circular progress component with customization
+     - GradientCard: Cards with gradient backgrounds
+     - StatisticsCard: Advanced statistics cards with sparkline charts
+
+### Current Focus Areas
+
+1. **Directory Structure Migration**:
+   - Moving components to the `/src` structure following atomic design principles
+   - Ensuring backward compatibility during transition
+
+2. **Storybook Enhancement**:
+   - Improving component isolation from external dependencies
+   - Creating presentation-only versions of stateful components
+   - Adding comprehensive documentation and examples
+
+3. **Component Development**:
+   - Building visually appealing dashboard components
+   - Ensuring components work in isolation
+   - Implementing best practices for reusability
+
+### Immediate Next Steps
+
+1. Complete migration of remaining components to `/src` structure
+2. Fix Storybook configuration issues
+3. Update documentation to reflect new structure
+4. Configure CI/CD pipeline with Vercel
+5. Continue development of dashboard components
+
+## Repository Organization
+
+```
+.
+├── .storybook          # Storybook configuration
+├── components          # Original component directory (being migrated)
+│   ├── atoms           # Basic UI elements
+│   ├── molecules       # Composite components
+│   ├── organisms       # Complex UI sections
+│   ├── dashboard       # Dashboard-specific components
+│   └── ui              # UI component library
+├── documentation       # Project documentation
+├── public              # Static assets
+└── src                 # New directory structure (migration target)
+    ├── app             # Next.js App Router
+    ├── components      # UI Components (Atomic Design)
+    │    ├── atoms      # Basic building blocks
+    │    ├── molecules  # Simple combinations of atoms
+    │    ├── organisms  # Complex UI sections
+    │    └── templates  # Page layouts
+    ├── contexts        # React contexts
+    ├── hooks           # Custom React hooks
+    └── utils           # Utility functions
+```
+
+## Technical Stack
+
+- **Framework**: Next.js 15.x with React 19
+- **Styling**: Tailwind CSS 
+- **State Management**: Redux & Context API
+- **Component Documentation**: Storybook 8.x
+- **Type Safety**: TypeScript
+
+## Development Workflow
+
+The current development workflow follows these steps:
+1. Create components in the prototype repository (Kigo Pro Dashboard)
+2. Document and showcase in Storybook
+3. Test in various scenarios with mock data
+4. Extract and implement in the production repository (Kigo Admin Tools)
 
 ## Project Relationships & Purposes
 
