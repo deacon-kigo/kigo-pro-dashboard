@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { selectTicket, toggleTicketModal, TicketInfo } from '@/lib/redux/slices/cvsTokenSlice';
 import { TicketStatusBadge, TierBadge } from './TicketBadge';
 import { ExclamationCircleIcon, ArrowPathIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
-import Card from '@/components/ui/Card';
+import Card from '@/components/atoms/Card/Card';
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);

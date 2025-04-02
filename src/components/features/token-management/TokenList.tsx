@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import Card from '@/components/ui/Card';
+import Card from '@/components/atoms/Card/Card';
 import { Token, TokenState } from './types';
 import TokenStateBadge from './TokenStateBadge';
 import { formatShortDate } from './utils';

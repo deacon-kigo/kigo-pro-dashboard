@@ -12,7 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { ExternalTicketReference } from '@/lib/types/ticketing';
 import { useExternalTicketing } from '@/lib/hooks/useExternalTicketing';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/atoms/Button';
 import { Badge } from '@/components/ui/badge';
 
 interface TicketContextBannerProps {

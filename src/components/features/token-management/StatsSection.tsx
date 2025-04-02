@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Card from '@/components/ui/Card';
+import Card from '@/components/atoms/Card/Card';
 import { Token } from './types';
 
 type StatsSectionProps = {

@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/atoms/Input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/atoms/Button";
+import { Label } from "@/components/atoms/Label";
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { 
   toggleTicketModal, 
