@@ -61,10 +61,10 @@ export type TicketInfo = {
   description: string;
   status: TicketStatus;
   priority: 'High' | 'Medium' | 'Low';
-  createdDate: string;
-  updatedDate: string;
+  createdAt: string;
+  updatedAt: string;
   assignedTo: string;
   tier: SupportTier;
   tokenId?: string; // Optional - linked token
-  customerId?: string; // Optional - linked customer
+  customerName?: string; // Added customerName field
 }; 
