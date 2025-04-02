@@ -23,9 +23,10 @@ This repository (`/Users/dpoon/Documents/Kigo/Repo`) contains three distinct but
   - Built using atomic design principles (atoms, molecules, organisms, templates)
   - Well-documented
   - Easily extractable for use in the production repository
-- **Current Initiative**: 
-  - Migrating from a flat directory structure to a proper `/src` directory structure
-  - All code is temporarily duplicated between root and `/src` while we migrate imports
+- **Current Status**: 
+  - Migration to `/src` directory structure is complete
+  - Enhanced with comprehensive Storybook integration
+  - Added several dashboard visualization components
 
 ### 2. Kigo Admin Tools (Production Repository)
 - **Purpose**: 
@@ -72,31 +73,71 @@ All UI components should be:
 6. **Accessible** - Meet WCAG guidelines
 7. **Performant** - Optimized for speed and efficiency
 
-## Current Migration Context
+## Key Implementation Patterns
 
-We are currently migrating the Kigo Pro Dashboard (prototype) from a flat structure to a src-based structure:
+### Presentation-Container Pattern
+For complex components with external dependencies, we separate presentation from container components:
 
-- Original paths: `@/components/*`, `@/lib/*`, etc.
-- New paths: `@/src/components/*`, `@/src/lib/*`, etc.
-- Using component-by-component approach rather than symbolic links
-- Working in a dedicated `src-migration` branch
-- Both locations contain identical files until migration is complete
-- TypeScript path aliases are configured to support both structures during transition
+```tsx
+// Container component with external dependencies
+const Sidebar = () => {
+  const pathname = usePathname();
+  const dispatch = useAppDispatch();
+  const { sidebarCollapsed } = useAppSelector(state => state.ui);
+  
+  // Business logic
+  
+  return <PresentationalSidebar {...props} />;
+}
+
+// Presentation component with no external dependencies
+export const PresentationalSidebar = (props: SidebarProps) => {
+  // Pure rendering logic
+  return <aside>...</aside>;
+};
+```
+
+### Defensive Coding
+We use defensive coding patterns to handle potential null or undefined values:
+
+```tsx
+// Safely access nested properties
+const userName = user?.profile?.name || 'Unknown User';
+
+// Default values for potentially undefined props
+function Component({ items = [] }) {
+  // Now safe to use items.map() without checking if items exists
+}
+
+// Optional chaining for function calls
+onClick?.();
+```
+
+## Recently Added Components
+
+1. **StatCard**: Statistics cards with configurable icons and change indicators
+2. **CircularProgress**: Customizable circular progress component
+3. **GradientCard**: Eye-catching gradient cards for key metrics
+4. **StatisticsCard**: Advanced statistics cards with integrated sparkline charts
 
 ## Technology Stack
 
 - **Frontend Framework**: Next.js
 - **Styling**: Tailwind CSS with custom configuration
 - **Component Structure**: Atomic Design Methodology
-- **State Management**: Redux (for complex state)
+- **State Management**: Redux for global state, Context API for component trees
 - **TypeScript**: For type safety and better developer experience
+- **Storybook**: For component documentation and visual testing
 
-## Development Priorities
+## Documentation Structure
 
-1. Maintain visual consistency with design system
-2. Create reusable patterns that can be easily transferred to production
-3. Document component usage and composition patterns
-4. Ensure accessibility compliance
-5. Optimize for developer experience and maintainability
+For comprehensive documentation, refer to `documentation/kigo-pro-dashboard-docs.md`, which serves as the single source of truth for human-facing documentation. This LLM context file is optimized specifically for AI assistants to quickly understand the project context.
+
+## Current Development Priorities
+
+1. Enhancing the dashboard component library with additional visualizations
+2. Optimizing Storybook presentation and documentation
+3. Ensuring code quality and maintainability
+4. Preparing components for extraction to the production repository
 
 This document serves as a quick reference for LLM assistants to understand the context and purpose of the Kigo projects when starting new chat sessions in Cursor. 

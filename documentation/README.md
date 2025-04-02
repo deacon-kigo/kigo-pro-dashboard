@@ -10,6 +10,10 @@ This folder contains comprehensive documentation for the Kigo Pro Dashboard proj
 
 - [**Kigo Pro Dashboard Documentation**](./kigo-pro-dashboard-docs.md) - The primary, consolidated documentation file covering all aspects of the project
 
+### LLM Context File
+
+- [**LLM Context**](./llm-context.md) - A specialized file optimized for AI assistants to quickly understand the project context when starting new chat sessions in Cursor. This file is intentionally concise and focused on key project relationships and current development status.
+
 ### Feature-Specific Documentation
 
 The following folders contain detailed documentation for specific features:
@@ -20,27 +24,15 @@ The following folders contain detailed documentation for specific features:
 - [**Prototype**](./prototype/) - Architecture and design of the prototype implementation
 - [**Research Findings**](./research-findings/) - Results of user research and competitive analysis
 
-## Legacy Documentation
-
-The following files are being phased out in favor of the consolidated documentation:
-
-- ~~component-reference.md~~ → See [Components](./kigo-pro-dashboard-docs.md#components) section in main docs
-- ~~development-changelog.md~~ → See [Project Timeline & Changelog](./kigo-pro-dashboard-docs.md#project-timeline--changelog) section in main docs
-- ~~design-patterns.md~~ → See [Design & Architecture](./kigo-pro-dashboard-docs.md#design--architecture) section in main docs
-- ~~storybook-progress.md~~ → See [Storybook Development](./kigo-pro-dashboard-docs.md#storybook-development) section in main docs
-- ~~llm-context.md~~ → Incorporated into the main documentation file
-- ~~migration.md~~ → Migration is now complete, refer to main docs for current structure
-- ~~project-structure.md~~ → See [Repository Structure](./kigo-pro-dashboard-docs.md#repository-structure) section in main docs
-- ~~coding_standards.md~~ → See [Development Standards](./kigo-pro-dashboard-docs.md#development-standards) section in main docs
-
-## Contributing to Documentation
+## Documentation Maintenance
 
 When updating documentation, please:
 
-1. Make changes to the consolidated [kigo-pro-dashboard-docs.md](./kigo-pro-dashboard-docs.md) file instead of the legacy files
-2. Update feature-specific documentation in the appropriate subfolders
-3. Keep the documentation organized according to the established structure
-4. Ensure your changes follow the project's documentation standards
+1. Make changes to the consolidated [kigo-pro-dashboard-docs.md](./kigo-pro-dashboard-docs.md) file for human-facing documentation
+2. Update the [llm-context.md](./llm-context.md) file when AI context initialization needs to change
+3. Update feature-specific documentation in the appropriate subfolders
+4. Keep the documentation organized according to the established structure
+5. Ensure your changes follow the project's documentation standards
 
 ## Questions and Support
 
