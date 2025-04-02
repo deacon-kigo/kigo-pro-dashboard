@@ -106,7 +106,48 @@ We follow the atomic design methodology to organize our components:
 - **Molecules**: Simple combinations of atoms (search bars, form fields)
 - **Organisms**: Complex combinations of molecules (navigation bars, dashboards)
 - **Templates**: Page layouts with placeholder content
-- **Pages**: Templates with actual content
+- **Views**: Templates with actual content for specific use cases
+
+Our architecture specifically follows a **Pure Atomic Design + Views** approach:
+
+```
+/src
+  /components
+    /atoms       # Fundamental UI components
+    /molecules   # Composite UI components
+    /organisms   # Complex UI components (search bars, data tables, etc.)
+    /templates   # Layout templates (dashboards, split views, etc.)
+  /views         # Assembled views/pages using components
+    /token       # Token-related views
+    /ticket      # Ticket-related views
+    /dashboard   # Dashboard views
+  /hooks         # Custom hooks
+  /contexts      # Context providers
+  /lib           # Utilities and helpers
+```
+
+This architecture keeps components domain-agnostic and truly reusable while providing organization for views without coupling to specific business domains.
+
+### Component Metadata
+
+Each component uses standardized JSDoc metadata for documentation and categorization:
+
+```typescript
+/**
+ * @component ComponentName
+ * @classification atom|molecule|organism|template
+ * @pattern data-display|data-entry|navigation|feedback
+ * @usage demo|production|both
+ * @description Component purpose and functionality
+ */
+```
+
+This metadata approach enables:
+- Clear documentation of component purpose
+- Indication of whether components are for demo, production, or both
+- Categorization by UI pattern rather than business domain
+- Better searchability in code editors
+- Future integration with automated documentation tools
 
 ### Component Architecture
 
@@ -761,26 +802,36 @@ Added several new dashboard components to demonstrate data visualization capabil
 
 ## Project Timeline & Changelog
 
-### Recent Development (April 3, 2024)
+### Recent Development (April 4, 2024)
 
-#### Repository Structure Migration - Phase 1 Complete
-- Completed Phase 1 of migration to `/src` directory structure
-- Created complete directory structure in `/src` mirroring the kigo-admin-tools pattern
-- Added placeholder `instrumentation.ts` file to match kigo-admin-tools
-- Copied all components from `/components` to `/src/components` to maintain functionality 
-- Added temporary path alias in tsconfig.json to support both directory structures
-- Updated sample import statements to use the new path aliases
+#### Repository Structure Migration - Phase 2 Complete
+- Completed Phase 2 of migration to atomic design structure
+- Updated component imports to use atomic design paths
+- Migrated UI components to their corresponding atomic categories:
+  - Button → atoms/Button
+  - Input → atoms/Input
+  - Card → atoms/Card
+  - Label → atoms/Label
+  - Textarea → atoms/Textarea
+  - Select → atoms/Select
+  - Dialog → molecules/Dialog
+- Added metadata tagging approach for component classification
+- Standardized on domain-agnostic architecture (Pure Atomic Design + Views)
 
-#### Storybook Configuration
-- Storybook configuration temporarily supports only original components path
-- Path references to `/src` components commented out to avoid duplicate story IDs
-- Preparing for full Storybook update in next phase of migration
+#### Phase 2 Migration Details
+- Identified duplicate components between UI and atomic directories
+- Updated imports across feature components to use atomic versions
+- Maintained backward compatibility during transition
+- Used iterative, atomic commits to ensure stability
+- Verified functionality after each migration step
 
-#### Next Steps for Migration
-- Progressive updates of import statements from original to new paths
-- Focus on maintaining application functionality during transition
-- Plan for selective restructuring of components into atomic design categories
-- Eventual cleanup of original components directory after full migration
+#### Next Steps for Migration - Phase 3
+- Migrate complex UI components to organisms directory
+- Organize views separate from components for better reusability
+- Implement component metadata tagging system
+- Build out remaining atomic components
+- Establish clear patterns for component composition
+- Update Storybook configuration to recognize new structure
 
 ### Repository Structure Alignment
 

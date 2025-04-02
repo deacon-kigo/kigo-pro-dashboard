@@ -1,7 +1,7 @@
 'use client';
 
 import React, { ReactNode } from 'react';
-import TicketContextBanner from './TicketContextBanner';
+import TicketContextBanner from '@/components/organisms/TicketContextBanner';
 import { useExternalTicketing } from '@/lib/hooks/useExternalTicketing';
 
 interface ExternalTicketingProviderProps {
