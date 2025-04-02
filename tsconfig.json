@@ -26,11 +26,11 @@
       "@/*": [
         "./*"
       ],
-      "@/src/*": [
-        "./src/*"
-      ],
       "@/components/*": [
-        "./src/components/*"
+        "./components/*"
+      ],
+      "@/app/*": [
+        "./app/*"
       ]
     }
   },
