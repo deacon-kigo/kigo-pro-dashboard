@@ -13,12 +13,12 @@ import TokenList from '@/components/organisms/TokenList';
 import TicketList from '@/components/organisms/TicketList';
 import { TokenStateBadge, TicketBadge, TierBadge } from '@/components/molecules/badges';
 import { 
-  Token, 
-  Account, 
-  TicketInfo, 
-  TicketStatus,
   TokenState,
   SupportTier,
+  Token,
+  Account,
+  TicketInfo,
+  TicketStatus,
   formatDate,
   formatShortDate,
   generateTokenId,
@@ -202,7 +202,7 @@ function PriorityIndicator({ priority }: { priority: string }) {
 }
 
 export default function TokenManagementView() {
-  const { clientName, version } = useDemo();
+  const { version } = useDemo();
   const [currentTab, setCurrentTab] = useState('tokens');
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
@@ -263,7 +263,7 @@ export default function TokenManagementView() {
     );
     
     // Add token to all tokens if not already there
-    if (!allTokens.some(t => t.id === token.id)) {
+    if (!allTokens.some((t: Token) => t.id === token.id)) {
       setAllTokens([...allTokens, token]);
     }
     
@@ -277,7 +277,7 @@ export default function TokenManagementView() {
     // Update account's tokens
     const updatedAccount = {
       ...currentAccount,
-      tokens: currentAccount.tokens.filter(token => token.id !== tokenId)
+      tokens: currentAccount.tokens.filter((token: Token) => token.id !== tokenId)
     };
     
     // Update account in accounts list
@@ -327,11 +327,11 @@ export default function TokenManagementView() {
     setAllTokens([...updatedTokens, newToken]);
     
     // If token belongs to current account, add it there too
-    if (currentAccount && currentAccount.tokens.some(t => t.id === oldToken.id)) {
+    if (currentAccount && currentAccount.tokens.some((t: Token) => t.id === oldToken.id)) {
       const updatedAccount = {
         ...currentAccount,
         tokens: [
-          ...currentAccount.tokens.map(t => 
+          ...currentAccount.tokens.map((t: Token) => 
             t.id === oldToken.id ? { ...t, state: 'Expired' as TokenState } : t
           ),
           newToken
@@ -375,11 +375,7 @@ export default function TokenManagementView() {
   };
   
   return (
-    <StandardDashboard 
-      clientName={clientName || 'CVS'}
-      currentPage="token-management" 
-      version={version}
-    >
+    <StandardDashboard>
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">
@@ -573,8 +569,8 @@ export default function TokenManagementView() {
                           className="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded-md text-sm"
                           onClick={() => createSupportTicket(
                             selectedToken.id,
-                            `Support request for ${selectedToken.name}`,
-                            `Customer needs assistance with token ${selectedToken.id}`
+                            `Issue with ${selectedToken.name} token`,
+                            `Customer reported an issue with their token (${selectedToken.id}). Please investigate.`
                           )}
                         >
                           Create Support Ticket
@@ -583,34 +579,25 @@ export default function TokenManagementView() {
                     </div>
                   )}
                   
-                  {/* Associated Ticket */}
+                  {/* Associated Tickets */}
                   {associatedTicket && (
                     <div className="mt-6 border-t pt-4">
-                      <h3 className="text-md font-semibold mb-2">Associated Support Ticket</h3>
-                      <div className="p-3 border rounded-md">
+                      <h3 className="text-md font-semibold mb-2">Associated Support Tickets</h3>
+                      <div className="bg-gray-50 p-3 rounded-md border border-gray-100">
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="font-medium">{associatedTicket.subject}</p>
-                            <p className="text-xs text-gray-500">{associatedTicket.id}</p>
+                            <h4 className="font-medium text-sm">{associatedTicket.subject}</h4>
+                            <p className="text-xs text-gray-600 mt-1">{associatedTicket.description}</p>
                           </div>
-                          <TicketBadge status={associatedTicket.status} />
+                          <div className="flex space-x-2">
+                            <TicketBadge status={associatedTicket.status} />
+                            <PriorityIndicator priority={associatedTicket.priority} />
+                          </div>
                         </div>
-                        <p className="text-sm text-gray-600 mt-2">{associatedTicket.description}</p>
-                        <div className="flex justify-between items-center mt-2">
-                          <PriorityIndicator priority={associatedTicket.priority} />
-                          <p className="text-xs text-gray-500">
-                            Created: {formatShortDate(associatedTicket.createdAt)}
-                          </p>
+                        <div className="mt-2 pt-2 border-t border-gray-200 text-xs text-gray-500">
+                          <p>Created: {formatDate(associatedTicket.createdAt)}</p>
+                          <p>Assigned to: {associatedTicket.assignedTo}</p>
                         </div>
-                        <button
-                          className="mt-2 text-blue-600 hover:text-blue-800 text-sm font-medium"
-                          onClick={() => {
-                            setCurrentTab('tickets');
-                            setSelectedTicketId(associatedTicket.id);
-                          }}
-                        >
-                          View Ticket Details
-                        </button>
                       </div>
                     </div>
                   )}
@@ -623,26 +610,23 @@ export default function TokenManagementView() {
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <h2 className="text-lg font-semibold">{selectedTicket.subject}</h2>
-                      <p className="text-sm text-gray-500">{selectedTicket.id}</p>
+                      <p className="text-sm text-gray-600">{selectedTicket.description}</p>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex space-x-2">
                       <TicketBadge status={selectedTicket.status} />
                       <TierBadge tier={selectedTicket.tier} />
+                      <PriorityIndicator priority={selectedTicket.priority} />
                     </div>
-                  </div>
-                  
-                  <div className="mb-4">
-                    <p className="text-sm text-gray-600">{selectedTicket.description}</p>
                   </div>
                   
                   <div className="grid md:grid-cols-2 gap-4 mb-4">
                     <div>
-                      <p className="text-sm text-gray-500">Status</p>
-                      <p className="font-medium">{selectedTicket.status}</p>
+                      <p className="text-sm text-gray-500">Ticket ID</p>
+                      <p className="font-medium">{selectedTicket.id}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Priority</p>
-                      <PriorityIndicator priority={selectedTicket.priority} />
+                      <p className="text-sm text-gray-500">Customer</p>
+                      <p className="font-medium">{selectedTicket.customerName}</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Created</p>
@@ -657,8 +641,8 @@ export default function TokenManagementView() {
                       <p className="font-medium">{selectedTicket.assignedTo}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Customer</p>
-                      <p className="font-medium">{selectedTicket.customerName || 'N/A'}</p>
+                      <p className="text-sm text-gray-500">Support Tier</p>
+                      <p className="font-medium">{selectedTicket.tier}</p>
                     </div>
                   </div>
                   
@@ -666,50 +650,39 @@ export default function TokenManagementView() {
                   {ticketToken && (
                     <div className="mt-6 border-t pt-4">
                       <h3 className="text-md font-semibold mb-2">Associated Token</h3>
-                      <div className="p-3 border rounded-md">
+                      <div className="bg-gray-50 p-3 rounded-md border border-gray-100">
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="font-medium">{ticketToken.name}</p>
-                            <p className="text-xs text-gray-500">{ticketToken.id}</p>
+                            <h4 className="font-medium text-sm">{ticketToken.name}</h4>
+                            <p className="text-xs text-gray-600 mt-1">{ticketToken.description}</p>
                           </div>
                           <TokenStateBadge state={ticketToken.state} />
                         </div>
-                        <p className="text-sm text-gray-600 mt-2">{ticketToken.description}</p>
-                        <button
-                          className="mt-2 text-blue-600 hover:text-blue-800 text-sm font-medium"
-                          onClick={() => {
-                            setCurrentTab('tokens');
-                            setSelectedTokenId(ticketToken.id);
-                          }}
-                        >
-                          View Token Details
-                        </button>
+                        <div className="mt-2 pt-2 border-t border-gray-200 text-xs text-gray-500">
+                          <p>Token ID: {ticketToken.id}</p>
+                          <p>Expiration: {formatShortDate(ticketToken.expirationDate)}</p>
+                        </div>
                       </div>
                     </div>
                   )}
                   
                   {/* Support Actions */}
                   <div className="mt-6 border-t pt-4">
-                    <h3 className="text-md font-semibold mb-2">Support Actions</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedTicket.status !== 'Closed' && (
-                        <button className="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded-md text-sm">
-                          Update Status
+                    <h3 className="text-md font-semibold mb-2">Ticket Actions</h3>
+                    <div className="flex space-x-2">
+                      {selectedTicket.status !== 'Resolved' && (
+                        <button className="bg-green-600 hover:bg-green-700 text-white py-1 px-3 rounded-md text-sm">
+                          Resolve Ticket
                         </button>
                       )}
-                      {selectedTicket.status !== 'Escalated' && selectedTicket.tier === 'Tier1' && (
-                        <button className="bg-yellow-600 hover:bg-yellow-700 text-white py-1 px-3 rounded-md text-sm">
+                      {selectedTicket.tier === 'Tier1' && selectedTicket.status !== 'Resolved' && (
+                        <button className="bg-purple-600 hover:bg-purple-700 text-white py-1 px-3 rounded-md text-sm">
                           Escalate to Tier 2
                         </button>
                       )}
-                      {ticketToken && ticketToken.state === 'Active' && (
-                        <button 
-                          className="bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded-md text-sm"
-                          onClick={() => reissueToken(ticketToken)}
-                        >
-                          Reissue Associated Token
-                        </button>
-                      )}
+                      <button className="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded-md text-sm">
+                        Add Comment
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -717,24 +690,16 @@ export default function TokenManagementView() {
             ) : (
               // No selection
               <Card>
-                <div className="p-10 text-center text-gray-500">
-                  {currentTab === 'tokens' ? (
-                    <>
-                      <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      <h3 className="mt-2 text-sm font-medium text-gray-900">No token selected</h3>
-                      <p className="mt-1 text-sm text-gray-500">Select a token to view its details</p>
-                    </>
-                  ) : (
-                    <>
-                      <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                      </svg>
-                      <h3 className="mt-2 text-sm font-medium text-gray-900">No ticket selected</h3>
-                      <p className="mt-1 text-sm text-gray-500">Select a ticket to view its details</p>
-                    </>
-                  )}
+                <div className="p-5 text-center py-16">
+                  <svg className="mx-auto h-12 w-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                  </svg>
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">No selection</h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {currentTab === 'tokens' 
+                      ? "Select a token to view its details"
+                      : "Select a ticket to view its details"}
+                  </p>
                 </div>
               </Card>
             )}
