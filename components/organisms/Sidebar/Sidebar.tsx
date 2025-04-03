@@ -634,9 +634,13 @@ export default function Sidebar() {
                   </div>
                 </div>
               ) : role === "merchant" ? (
-                <div className="text-lg font-bold text-gray-800">
-                  {clientName}
-                </div>
+                <Image
+                  src="/kigo logo.svg"
+                  alt="Kigo Logo"
+                  width={100}
+                  height={40}
+                  className="transition-all duration-300"
+                />
               ) : (
                 <Image
                   src="/kigo logo.svg"
@@ -772,7 +776,7 @@ export default function Sidebar() {
               {isCVSContext
                 ? "SJ"
                 : role === "merchant"
-                  ? "DP"
+                  ? "MU"
                   : role === "support"
                     ? "SA"
                     : "AD"}
@@ -783,7 +787,7 @@ export default function Sidebar() {
                   {isCVSContext
                     ? "Sarah Johnson"
                     : role === "merchant"
-                      ? "Deacon Poon"
+                      ? "Merchant User"
                       : role === "support"
                         ? "Support Agent"
                         : "Admin User"}
