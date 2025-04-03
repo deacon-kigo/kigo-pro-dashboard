@@ -22,13 +22,18 @@ import { toggleSidebar, setSidebarCollapsed } from "@/lib/redux/slices/uiSlice";
 import { buildDemoUrl, isPathActive } from "@/lib/utils";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
-// Import SidebarLabel component with full path to avoid Storybook resolution issues
-import SidebarLabel from "./SidebarLabel/index";
+// Import SidebarLabel component with standard path
+import SidebarLabel from "./SidebarLabel";
 
-export default function Sidebar() {
+export interface SidebarProps {
+  role?: 'merchant' | 'support' | 'admin';
+  isCVSContext?: boolean;
+}
+
+const Sidebar = ({ role = 'merchant', isCVSContext = false }: SidebarProps) => {
   const dispatch = useDispatch();
   const { sidebarCollapsed } = useSelector((state: RootState) => state.ui);
-  const { role, clientId } = useSelector((state: RootState) => state.demo);
+  const { clientId } = useSelector((state: RootState) => state.demo);
   const { clientName } = useDemoState();
 
   // Local state for backward compatibility during migration
@@ -49,8 +54,7 @@ export default function Sidebar() {
   pathname = pathname || "/dashboard";
 
   // Check if we're in the CVS context
-  const isCVSContext =
-    clientId === "cvs" || (pathname && pathname.includes("cvs-"));
+  const isCVSContextBool = Boolean(isCVSContext);
 
   // CVS brand colors for gradients - removing since they're not used
   // const cvsBlue = '#2563EB';
@@ -72,14 +76,14 @@ export default function Sidebar() {
   const getActiveClasses = (isActive: boolean) => {
     if (!isActive) return kigoInactiveClass;
 
-    return isCVSContext
+    return isCVSContextBool
       ? `${cvsPastelGradient} text-gray-800`
       : `${kigoActiveBgClass} ${kigoActiveClass}`;
   };
 
   // For hover classes
   const getHoverClasses = () => {
-    return isCVSContext 
+    return isCVSContextBool 
       ? `hover:${cvsPastelGradient} hover:text-gray-800`
       : "hover:bg-blue-100 hover:text-gray-800";
   };
@@ -88,14 +92,14 @@ export default function Sidebar() {
   const getActiveIconClasses = (isActive: boolean) => {
     if (!isActive) return "text-gray-500"; // Gray icon for inactive items
 
-    return isCVSContext ? "text-gray-800" : kigoActiveIconClass;
+    return isCVSContextBool ? "text-gray-800" : kigoActiveIconClass;
   };
 
   // Get active text classes for span elements
   const getActiveTextClasses = (isActive: boolean) => {
     if (!isActive) return "";
 
-    return isCVSContext ? activeLinkTextGradient : "font-medium";
+    return isCVSContextBool ? activeLinkTextGradient : "font-medium";
   };
 
   // Sync local state with Redux
@@ -150,7 +154,7 @@ export default function Sidebar() {
     }
 
     // Special cases for other CVS pages
-    if (isCVSContext) {
+    if (isCVSContextBool) {
       if (
         path.includes("customers") &&
         pathname &&
@@ -186,7 +190,7 @@ export default function Sidebar() {
 
     // Cast isCVSContext to boolean explicitly for type safety
     // Adding separate variable with unique name to avoid scope issues
-    const cvxContextBool = Boolean(isCVSContext);
+    const cvxContextBool = Boolean(isCVSContextBool);
 
     return (
       <>
@@ -250,11 +254,8 @@ export default function Sidebar() {
 
   // Role-specific navigation items
   const getNavigationItems = () => {
-    // Cast isCVSContext to boolean explicitly for type safety once
-    const isCVSContextBoolean = Boolean(isCVSContext);
-    
     // If in CVS context, show CVS-specific navigation
-    if (isCVSContext) {
+    if (isCVSContextBool) {
       return getCVSNavigationItems();
     }
 
@@ -269,7 +270,7 @@ export default function Sidebar() {
                 title="Dashboard"
                 isActive={Boolean(isLinkActive("/"))}
                 isCollapsed={isCollapsed}
-                isCVSContext={isCVSContextBoolean}
+                isCVSContext={isCVSContextBool}
               />
             </li>
             <li className="nav-item px-3 py-1">
@@ -279,7 +280,7 @@ export default function Sidebar() {
                 title="Campaigns"
                 isActive={Boolean(isLinkActive("/campaigns"))}
                 isCollapsed={isCollapsed}
-                isCVSContext={isCVSContextBoolean}
+                isCVSContext={isCVSContextBool}
               />
             </li>
             <li className="nav-item px-3 py-1">
@@ -289,7 +290,7 @@ export default function Sidebar() {
                 title="Analytics"
                 isActive={Boolean(isLinkActive("/analytics"))}
                 isCollapsed={isCollapsed}
-                isCVSContext={isCVSContextBoolean}
+                isCVSContext={isCVSContextBool}
               />
             </li>
           </>
@@ -304,7 +305,7 @@ export default function Sidebar() {
                 title="Dashboard"
                 isActive={Boolean(isLinkActive("/"))}
                 isCollapsed={isCollapsed}
-                isCVSContext={isCVSContextBoolean}
+                isCVSContext={isCVSContextBool}
               />
             </li>
             <li className="nav-item px-3 py-1">
@@ -314,7 +315,7 @@ export default function Sidebar() {
                 title="Tickets"
                 isActive={Boolean(isLinkActive("/tickets"))}
                 isCollapsed={isCollapsed}
-                isCVSContext={isCVSContextBoolean}
+                isCVSContext={isCVSContextBool}
               />
             </li>
             <li className="nav-item px-3 py-1">
@@ -324,7 +325,7 @@ export default function Sidebar() {
                 title="Merchants"
                 isActive={Boolean(isLinkActive("/merchants"))}
                 isCollapsed={isCollapsed}
-                isCVSContext={isCVSContextBoolean}
+                isCVSContext={isCVSContextBool}
               />
             </li>
           </>
@@ -339,7 +340,7 @@ export default function Sidebar() {
                 title="Dashboard"
                 isActive={Boolean(isLinkActive("/"))}
                 isCollapsed={isCollapsed}
-                isCVSContext={isCVSContextBoolean}
+                isCVSContext={isCVSContextBool}
               />
             </li>
             <li className="nav-item px-3 py-1">
@@ -349,7 +350,7 @@ export default function Sidebar() {
                 title="Merchants"
                 isActive={Boolean(isLinkActive("/merchants"))}
                 isCollapsed={isCollapsed}
-                isCVSContext={isCVSContextBoolean}
+                isCVSContext={isCVSContextBool}
               />
             </li>
             <li className="nav-item px-3 py-1">
@@ -359,7 +360,7 @@ export default function Sidebar() {
                 title="Analytics"
                 isActive={Boolean(isLinkActive("/analytics"))}
                 isCollapsed={isCollapsed}
-                isCVSContext={isCVSContextBoolean}
+                isCVSContext={isCVSContextBool}
               />
             </li>
             <li className="nav-item px-3 py-1">
@@ -369,7 +370,7 @@ export default function Sidebar() {
                 title="Settings"
                 isActive={Boolean(isLinkActive("/settings"))}
                 isCollapsed={isCollapsed}
-                isCVSContext={isCVSContextBoolean}
+                isCVSContext={isCVSContextBool}
               />
             </li>
           </>
@@ -395,11 +396,11 @@ export default function Sidebar() {
   // Ensure consistent handling for CVS context detection
   useEffect(() => {
     // Special case to ensure all CVS pages use the same styling
-    if (clientId === "cvs" && !isCVSContext) {
+    if (clientId === "cvs" && !isCVSContextBool) {
       console.log("Ensuring CVS context is active");
       // This log helps trace if there's any context issue
     }
-  }, [clientId, isCVSContext]);
+  }, [clientId, isCVSContextBool]);
 
   return (
     <aside
@@ -413,56 +414,66 @@ export default function Sidebar() {
       }}
     >
       <div className="flex flex-col h-full">
-        {/* Logo */}
+        {/* Logo - Fixed height container with improved transitions */}
         <div
-          className={`flex items-center h-[64px] px-4 ${isCollapsed ? "justify-center" : ""}`}
+          className={`
+            flex items-center h-[64px] px-4 transition-all duration-300 ease-in-out
+            ${isCollapsed ? "justify-center" : ""}
+          `}
         >
           {isCollapsed ? (
             <Link
               href="/"
-              className="flex flex-col items-center justify-center w-full"
+              className="flex flex-col items-center justify-center w-full overflow-hidden"
             >
-              {isCVSContext ? (
-                <div className="relative flex items-center justify-center w-[50px] h-[50px]">
+              {isCVSContextBool ? (
+                <div className="relative flex items-center justify-center w-[40px] h-[40px] transition-all duration-300 ease-in-out overflow-hidden">
                   <Image
                     src="/logos/cvs-logo-only.svg"
                     alt="CVS"
                     width={24}
                     height={24}
-                    className="absolute top-1 left-1 transition-all duration-300"
+                    className="absolute top-1 left-1 transition-all duration-300 ease-in-out"
+                    style={{ objectFit: "contain" }}
                   />
                   <Image
                     src="/kigo logo only.svg"
                     alt="Kigo"
                     width={26}
                     height={26}
-                    className="absolute bottom-1 right-1 transition-all duration-300"
+                    className="absolute bottom-1 right-1 transition-all duration-300 ease-in-out"
+                    style={{ objectFit: "contain" }}
                   />
                 </div>
               ) : (
-                <Image
-                  src={
-                    isCVSContext
-                      ? "/logos/cvs-logo-only.svg"
-                      : "/kigo logo only.svg"
-                  }
-                  alt={clientName || "Kigo"}
-                  width={40}
-                  height={40}
-                  className="transition-all duration-300"
-                />
+                <div className="w-[40px] h-[40px] flex items-center justify-center overflow-hidden">
+                  <Image
+                    src={
+                      isCVSContextBool
+                        ? "/logos/cvs-logo-only.svg"
+                        : "/kigo logo only.svg"
+                    }
+                    alt={clientName || "Kigo"}
+                    width={36}
+                    height={36}
+                    className="transition-all duration-300 ease-in-out"
+                    style={{ objectFit: "contain" }}
+                  />
+                </div>
               )}
             </Link>
           ) : (
             <Link href="/" className="flex items-center">
-              {isCVSContext ? (
-                <div className="flex items-center p-1.5 relative">
+              {isCVSContextBool ? (
+                <div className="flex items-center p-1.5 relative max-w-[180px] overflow-hidden">
                   <div className="flex items-center z-10">
                     <Image
                       src="/logos/cvs-logo-only.svg"
                       alt="CVS Logo"
                       width={26}
                       height={26}
+                      className="transition-all duration-300 ease-in-out"
+                      style={{ objectFit: "contain" }}
                     />
                     <span className="mx-2 text-gray-300">|</span>
                     <Image
@@ -470,25 +481,23 @@ export default function Sidebar() {
                       alt="Kigo Logo"
                       width={30}
                       height={30}
+                      className="transition-all duration-300 ease-in-out"
+                      style={{ objectFit: "contain" }}
                     />
                   </div>
                 </div>
-              ) : role === "merchant" ? (
-                <Image
-                  src="/kigo logo.svg"
-                  alt="Kigo Logo"
-                  width={100}
-                  height={40}
-                  className="transition-all duration-300"
-                />
               ) : (
-                <Image
-                  src="/kigo logo.svg"
-                  alt="Kigo Logo"
-                  width={100}
-                  height={40}
-                  className="transition-all duration-300"
-                />
+                <div className="w-[100px] h-[40px] flex items-center justify-center overflow-hidden">
+                  <Image
+                    src="/kigo logo.svg"
+                    alt="Kigo Logo"
+                    width={100}
+                    height={40}
+                    className="transition-all duration-300 ease-in-out"
+                    style={{ objectFit: "contain" }}
+                    priority
+                  />
+                </div>
               )}
             </Link>
           )}
@@ -523,12 +532,12 @@ export default function Sidebar() {
           <ul className="nav-items">
             <li className="nav-item px-3 py-1">
               <SidebarLabel
-                href={isCVSContext ? buildDemoUrl("cvs", "settings") : "/settings"}
+                href={isCVSContextBool ? buildDemoUrl("cvs", "settings") : "/settings"}
                 icon={Cog6ToothIcon}
                 title="Settings"
-                isActive={Boolean(isLinkActive(isCVSContext ? buildDemoUrl("cvs", "settings") : "/settings"))}
+                isActive={Boolean(isLinkActive(isCVSContextBool ? buildDemoUrl("cvs", "settings") : "/settings"))}
                 isCollapsed={isCollapsed}
-                isCVSContext={Boolean(isCVSContext)}
+                isCVSContext={Boolean(isCVSContextBool)}
               />
             </li>
             <li className="nav-item px-3 py-1">
@@ -538,7 +547,7 @@ export default function Sidebar() {
                 title="Notifications"
                 isActive={Boolean(isLinkActive("/notifications"))}
                 isCollapsed={isCollapsed}
-                isCVSContext={Boolean(isCVSContext)}
+                isCVSContext={Boolean(isCVSContextBool)}
                 hasNotification={true}
                 notificationCount={5}
               />
@@ -550,7 +559,7 @@ export default function Sidebar() {
                 title="Help & Support"
                 isActive={Boolean(isLinkActive("/help"))}
                 isCollapsed={isCollapsed}
-                isCVSContext={Boolean(isCVSContext)}
+                isCVSContext={Boolean(isCVSContextBool)}
               />
             </li>
           </ul>
@@ -563,7 +572,7 @@ export default function Sidebar() {
             className={`flex items-center ${isCollapsed ? "justify-center" : ""} pb-6`}
           >
             <div className="w-9 h-9 bg-pastel-purple rounded-full flex items-center justify-center text-indigo-500 font-semibold text-sm shadow-sm">
-              {isCVSContext
+              {isCVSContextBool
                 ? "SJ"
                 : role === "merchant"
                   ? "MU"
@@ -574,7 +583,7 @@ export default function Sidebar() {
             {!isCollapsed && (
               <div className="ml-3 overflow-hidden">
                 <p className="font-semibold text-sm whitespace-nowrap overflow-hidden text-ellipsis">
-                  {isCVSContext
+                  {isCVSContextBool
                     ? "Sarah Johnson"
                     : role === "merchant"
                       ? "Merchant User"
@@ -583,7 +592,7 @@ export default function Sidebar() {
                         : "Admin User"}
                 </p>
                 <p className="text-xs text-text-muted">
-                  {isCVSContext ? "CVS Agent ID: 2358" : getRoleTitle()}
+                  {isCVSContextBool ? "CVS Agent ID: 2358" : getRoleTitle()}
                 </p>
               </div>
             )}
@@ -593,3 +602,5 @@ export default function Sidebar() {
     </aside>
   );
 }
+
+export default Sidebar;
