@@ -43,32 +43,33 @@ export default function SidebarLabel({
     return null;
   }
 
-  // Extract the active and hover classes for consistent application
+  // Determine if we're using CVS theme
+  const isCvsTheme = themeName === "cvs";
+
+  // Classes for active and inactive states
   const activeClasses = theme.active;
   const inactiveClasses = theme.inactive;
 
-  // For CVS theme, we need special treatment for the gradient
-  const isCvsTheme = themeName === "cvs";
-
-  // Build hover classes by mimicking the active state exactly
-  // For hover, we need to add 'hover:' prefix to each class in active state
+  // Hover classes that match the active state
   const hoverClasses = isCvsTheme
     ? "hover:bg-gradient-to-r hover:from-pastel-blue hover:to-pastel-red hover:text-gray-800"
     : "hover:bg-pastel-blue hover:text-gray-800";
 
-  // Icon classes based on state
+  // Icon classes based on state and theme
   const getIconClasses = () => {
     if (isActive) {
-      return theme.icon.active;
+      // For CVS, ensure icon is dark on the gradient background
+      return isCvsTheme ? "text-gray-800" : theme.icon.active;
     } else {
       return `${theme.icon.inactive} ${isCvsTheme ? "group-hover:text-gray-800" : "group-hover:text-primary"}`;
     }
   };
 
-  // Text classes based on state
+  // Text classes based on state and theme
   const getTextClasses = () => {
     if (isActive) {
-      return theme.text.active;
+      // For CVS, ensure text is semibold when active
+      return isCvsTheme ? "font-semibold" : theme.text.active;
     } else {
       return `${theme.text.inactive} ${isCvsTheme ? "group-hover:font-semibold" : "group-hover:font-medium"}`;
     }
