@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import StatusBadge from '@/components/molecules/badges/StatusBadge';
+import { StatusBadge } from '@/components/molecules/badges';
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
 
 interface CampaignCardProps {

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import DashboardView from '@/components/dashboard/DashboardView';
+import { DashboardView } from '@/components/features/dashboard';
 import { useDemo } from '@/contexts/DemoContext';
 import { BellIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
 
