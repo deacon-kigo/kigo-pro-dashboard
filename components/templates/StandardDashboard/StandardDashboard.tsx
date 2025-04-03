@@ -4,7 +4,7 @@ import React, { useState, useEffect, ReactNode } from 'react';
 import { useDemo } from '@/contexts/DemoContext';
 import { getMockAvatarUrl } from '@/lib/avatarUtils';
 import Card from '@/components/atoms/Card/Card';
-import AIAssistant from '@/components/organisms/AIAssistant';
+import { AIAssistant } from '@/components/features/ai';
 import VersionBadge from '@/components/molecules/badges/VersionBadge';
 
 interface StandardDashboardProps {
