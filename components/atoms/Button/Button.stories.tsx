@@ -8,7 +8,7 @@ import { Button } from './';
 
 const meta: Meta<typeof Button> = {
   component: Button,
-  title: 'Atoms/Button',
+  title: 'Kigo UI/Atoms/Button',
   parameters: {
     docs: {
       description: {
