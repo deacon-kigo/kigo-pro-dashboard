@@ -8,7 +8,8 @@ import {
   ResponsiveContainer, Line, LineChart 
 } from 'recharts';
 import { LightBulbIcon } from '@heroicons/react/24/outline';
-import { useDemo } from '../../../contexts/DemoContext';
+import { buildDemoUrl } from '@/lib/utils';
+import { useDemo } from '@/contexts/DemoContext';
 import { BusinessData } from '../DynamicCanvas';
 import Card from '@/components/atoms/Card/Card';
 

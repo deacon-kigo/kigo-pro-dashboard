@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowPathIcon, PencilSquareIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { useDemo } from '../../../contexts/DemoContext';
+import { useDemo } from '@/contexts/DemoContext';
 import { CampaignAsset, OfferDetails } from '../DynamicCanvas';
 
 interface AssetCreationWorkshopProps {

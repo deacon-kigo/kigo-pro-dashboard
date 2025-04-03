@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircleIcon, ArrowPathIcon, XCircleIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { CheckIcon } from '@heroicons/react/24/solid';
-import { useDemo } from '../../../contexts/DemoContext';
+import { useDemo } from '@/contexts/DemoContext';
 
 // Define a type for the launch status
 type LaunchStatusType = 'ready' | 'pending' | 'launched' | 'failed';

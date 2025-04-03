@@ -3,9 +3,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { ArrowUpIcon, ArrowDownIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { ArrowUpIcon, ArrowDownIcon, SparklesIcon, LightBulbIcon } from '@heroicons/react/24/outline';
 import { PerformancePredictions } from '../DynamicCanvas';
-import { useDemo } from '../../../contexts/DemoContext';
+import { useDemo } from '@/contexts/DemoContext';
 
 interface PerformancePredictionDashboardProps {
   predictions: PerformancePredictions;

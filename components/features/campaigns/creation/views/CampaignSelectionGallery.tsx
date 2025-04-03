@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { SparklesIcon } from '@heroicons/react/24/solid';
-import { useDemo } from '../../../contexts/DemoContext';
+import { useDemo } from '@/contexts/DemoContext';
 import { CampaignOption } from '../DynamicCanvas';
 
 interface CampaignSelectionGalleryProps {
