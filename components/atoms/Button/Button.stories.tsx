@@ -12,7 +12,7 @@ const meta: Meta<typeof Button> = {
   parameters: {
     docs: {
       description: {
-        component: 'Button component with various styles and variants. Used throughout the application for user interactions.'
+        component: 'Button component with various styles and variants. Supports theming and co-branding through a declarative API.'
       },
     },
   },
@@ -22,15 +22,12 @@ const meta: Meta<typeof Button> = {
       description: 'The visual style variant of the button',
       control: 'select',
       options: [
-        'default',
-        'destructive',
+        'primary',
+        'destructive', 
         'outline',
         'secondary',
         'ghost',
         'link',
-        'gradient',
-        'cvs-gradient',
-        'cvs-outline'
       ],
     },
     size: {
@@ -42,6 +39,11 @@ const meta: Meta<typeof Button> = {
       description: 'The state of the button',
       control: 'select',
       options: ['default', 'active', 'selected'],
+    },
+    branded: {
+      description: 'The branding mode for this button',
+      control: 'select',
+      options: ['default', 'cvs'],
     },
     disabled: {
       description: 'Whether the button is disabled',
@@ -61,11 +63,11 @@ const meta: Meta<typeof Button> = {
 export default meta;
 type Story = StoryObj<typeof Button>;
 
-// Basic variants
-export const Default: Story = {
+// ======= BASIC VARIANTS =======
+export const Primary: Story = {
   args: {
-    children: 'Default Button',
-    variant: 'default',
+    children: 'Primary Button',
+    variant: 'primary',
   },
 };
 
@@ -104,28 +106,48 @@ export const Link: Story = {
   },
 };
 
-export const Gradient: Story = {
+// ======= CO-BRANDED VARIANTS =======
+export const PrimaryCVS: Story = {
   args: {
-    children: 'Gradient Button',
-    variant: 'gradient',
+    children: 'Primary CVS Button',
+    variant: 'primary',
+    branded: 'cvs',
   },
 };
 
-export const CVSGradient: Story = {
+export const SecondaryCVS: Story = {
   args: {
-    children: 'CVS Co-branded',
-    variant: 'cvs-gradient',
+    children: 'Secondary CVS Button',
+    variant: 'secondary',
+    branded: 'cvs', 
   },
 };
 
-export const CVSOutline: Story = {
+export const OutlineCVS: Story = {
   args: {
-    children: 'CVS Outline',
-    variant: 'cvs-outline',
+    children: 'Outline CVS Button',
+    variant: 'outline',
+    branded: 'cvs',
   },
 };
 
-// Size variants
+export const GhostCVS: Story = {
+  args: {
+    children: 'Ghost CVS Button',
+    variant: 'ghost',
+    branded: 'cvs',
+  },
+};
+
+export const LinkCVS: Story = {
+  args: {
+    children: 'Link CVS Button',
+    variant: 'link',
+    branded: 'cvs',
+  },
+};
+
+// ======= SIZE VARIANTS =======
 export const Small: Story = {
   args: {
     children: 'Small Button',
@@ -154,10 +176,11 @@ export const ExtraLarge: Story = {
   },
 };
 
-// State variants
+// ======= STATE VARIANTS =======
 export const Active: Story = {
   args: {
     children: 'Active Button',
+    variant: 'primary',
     state: 'active',
   },
 };
@@ -165,6 +188,7 @@ export const Active: Story = {
 export const Selected: Story = {
   args: {
     children: 'Selected Button',
+    variant: 'primary',
     state: 'selected',
   },
 };
@@ -176,7 +200,7 @@ export const Disabled: Story = {
   },
 };
 
-// Example of a story with an icon
+// ======= WITH ICONS =======
 export const WithIcon: Story = {
   args: {
     children: 'Button with Icon',
@@ -202,7 +226,7 @@ export const IconOnly: Story = {
   },
 };
 
-// Compound states and variants
+// ======= COMPOUND VARIANTS =======
 export const OutlineActive: Story = {
   args: {
     children: 'Active Outline',
@@ -219,19 +243,39 @@ export const OutlineSelected: Story = {
   },
 };
 
-export const CVSOutlineActive: Story = {
+export const OutlineActiveCVS: Story = {
   args: {
-    children: 'Active CVS Outline',
-    variant: 'cvs-outline',
-    state: 'active'
+    children: 'CVS Active Outline',
+    variant: 'outline',
+    state: 'active',
+    branded: 'cvs'
   },
 };
 
-export const CVSOutlineSelected: Story = {
+export const OutlineSelectedCVS: Story = {
   args: {
-    children: 'Selected CVS Outline',
-    variant: 'cvs-outline',
-    state: 'selected'
+    children: 'CVS Selected Outline',
+    variant: 'outline',
+    state: 'selected',
+    branded: 'cvs'
+  },
+};
+
+// ======= FUNCTION EXAMPLES =======
+export const AsLink: Story = {
+  args: {
+    children: 'Link Example',
+    variant: 'primary',
+    href: '#',
+  },
+};
+
+export const BrandedLink: Story = {
+  args: {
+    children: 'CVS Branded Link',
+    variant: 'primary',
+    branded: 'cvs',
+    href: '#',
   },
 };
 
