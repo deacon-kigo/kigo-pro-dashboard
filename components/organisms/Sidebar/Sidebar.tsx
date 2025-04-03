@@ -505,7 +505,7 @@ const Sidebar = ({ role = 'merchant', isCVSContext = false }: SidebarProps) => {
 
         <button
           onClick={handleToggleSidebar}
-          className="absolute top-24 -right-3 transform -translate-y-1/2 bg-white border border-border-light rounded-full p-1.5 shadow-sm hover:bg-gray-50 z-30 transition-colors"
+          className="absolute top-24 -right-3 transform -translate-y-1/2 bg-white border border-border-light rounded-full p-1.5 shadow-sm hover:bg-gray-50 z-50 transition-colors"
         >
           {isCollapsed ? (
             <ChevronRightIcon className="w-3.5 h-3.5 text-gray-500" />
@@ -514,22 +514,22 @@ const Sidebar = ({ role = 'merchant', isCVSContext = false }: SidebarProps) => {
           )}
         </button>
 
-        <div className="mt-6 mb-6 flex-1 overflow-y-auto">
+        <div className="mt-6 mb-6 flex-1 overflow-y-auto overflow-x-hidden">
           {!isCollapsed && (
             <p className="text-xs font-medium text-text-muted px-5 uppercase tracking-wider mb-2">
               {role === "merchant" ? "Business" : "Main"}
             </p>
           )}
-          <ul className="nav-items">{getNavigationItems()}</ul>
+          <ul className="nav-items w-full">{getNavigationItems()}</ul>
         </div>
 
-        <div className="mb-4">
+        <div className="mb-4 overflow-x-hidden">
           {!isCollapsed && (
             <p className="text-xs font-medium text-text-muted px-5 uppercase tracking-wider mb-2">
               Settings
             </p>
           )}
-          <ul className="nav-items">
+          <ul className="nav-items w-full">
             <li className="nav-item px-3 py-1">
               <SidebarLabel
                 href={isCVSContextBool ? buildDemoUrl("cvs", "settings") : "/settings"}
@@ -566,7 +566,7 @@ const Sidebar = ({ role = 'merchant', isCVSContext = false }: SidebarProps) => {
         </div>
 
         <div
-          className={`mt-auto pt-4 ${isCollapsed ? "px-3" : "px-5"} border-t border-border-light`}
+          className={`mt-auto pt-4 ${isCollapsed ? "px-3" : "px-5"} border-t border-border-light overflow-x-hidden`}
         >
           <div
             className={`flex items-center ${isCollapsed ? "justify-center" : ""} pb-6`}
