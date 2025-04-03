@@ -1,19 +1,19 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface UIState {
   // Sidebar state
   sidebarCollapsed: boolean;
   sidebarWidth: string;
-  
+
   // Chat state
   chatOpen: boolean;
-  
+
   // Spotlight state
   spotlightOpen: boolean;
-  
+
   // Mobile responsiveness
   isMobileView: boolean;
-  
+
   // Additional UI flags
   demoSelectorOpen: boolean;
   demoSelectorPinned: boolean;
@@ -22,7 +22,7 @@ export interface UIState {
 
 const initialState: UIState = {
   sidebarCollapsed: false,
-  sidebarWidth: '225px',
+  sidebarWidth: "225px",
   chatOpen: false,
   spotlightOpen: false,
   isMobileView: false,
@@ -31,88 +31,127 @@ const initialState: UIState = {
   demoSelectorCollapsed: false,
 };
 
+// Theme definitions - composable and extensible
+export const themeConfigs = {
+  default: {
+    sidebar: {
+      item: {
+        active: "bg-pastel-blue text-gray-800",
+        inactive: "text-gray-500",
+        hover: "hover:bg-blue-50",
+        icon: {
+          active: "text-primary",
+          inactive: "text-gray-500",
+        },
+        text: {
+          active: "font-medium",
+          inactive: "",
+        },
+      },
+    },
+  },
+  cvs: {
+    sidebar: {
+      item: {
+        active: "bg-pastel-blue text-gray-800", // Same as default for consistency
+        inactive: "text-gray-500",
+        hover: "hover:bg-blue-50",
+        icon: {
+          active: "text-primary",
+          inactive: "text-gray-500",
+        },
+        text: {
+          active: "font-medium",
+          inactive: "",
+        },
+      },
+    },
+  },
+  // Additional themes can be added here
+};
+
 export const uiSlice = createSlice({
-  name: 'ui',
+  name: "ui",
   initialState,
   reducers: {
     setSidebarCollapsed: (state, action: PayloadAction<boolean>) => {
       state.sidebarCollapsed = action.payload;
-      state.sidebarWidth = action.payload ? '70px' : '225px';
-      
+      state.sidebarWidth = action.payload ? "70px" : "225px";
+
       // Update CSS variable
-      if (typeof document !== 'undefined') {
+      if (typeof document !== "undefined") {
         document.documentElement.style.setProperty(
-          '--sidebar-width', 
+          "--sidebar-width",
           state.sidebarWidth
         );
       }
     },
-    
+
     toggleSidebar: (state) => {
       state.sidebarCollapsed = !state.sidebarCollapsed;
-      state.sidebarWidth = state.sidebarCollapsed ? '70px' : '225px';
-      
+      state.sidebarWidth = state.sidebarCollapsed ? "70px" : "225px";
+
       // Update CSS variable
-      if (typeof document !== 'undefined') {
+      if (typeof document !== "undefined") {
         document.documentElement.style.setProperty(
-          '--sidebar-width', 
+          "--sidebar-width",
           state.sidebarWidth
         );
       }
     },
-    
+
     setChatOpen: (state, action: PayloadAction<boolean>) => {
       state.chatOpen = action.payload;
     },
-    
+
     toggleChat: (state) => {
       state.chatOpen = !state.chatOpen;
     },
-    
+
     setSpotlightOpen: (state, action: PayloadAction<boolean>) => {
       state.spotlightOpen = action.payload;
     },
-    
+
     toggleSpotlight: (state) => {
       state.spotlightOpen = !state.spotlightOpen;
     },
-    
+
     setIsMobileView: (state, action: PayloadAction<boolean>) => {
       state.isMobileView = action.payload;
-      
+
       // Auto-collapse sidebar on mobile
       if (action.payload && !state.sidebarCollapsed) {
         state.sidebarCollapsed = true;
-        state.sidebarWidth = '70px';
-        
-        if (typeof document !== 'undefined') {
+        state.sidebarWidth = "70px";
+
+        if (typeof document !== "undefined") {
           document.documentElement.style.setProperty(
-            '--sidebar-width', 
+            "--sidebar-width",
             state.sidebarWidth
           );
         }
       }
     },
-    
+
     // Demo selector actions
     setDemoSelectorOpen: (state, action: PayloadAction<boolean>) => {
       state.demoSelectorOpen = action.payload;
     },
-    
+
     toggleDemoSelector: (state) => {
       if (!state.demoSelectorPinned) {
         state.demoSelectorOpen = !state.demoSelectorOpen;
       }
     },
-    
+
     setDemoSelectorPinned: (state, action: PayloadAction<boolean>) => {
       state.demoSelectorPinned = action.payload;
     },
-    
+
     setDemoSelectorCollapsed: (state, action: PayloadAction<boolean>) => {
       state.demoSelectorCollapsed = action.payload;
-    }
-  }
+    },
+  },
 });
 
 export const {
@@ -126,7 +165,7 @@ export const {
   setDemoSelectorOpen,
   toggleDemoSelector,
   setDemoSelectorPinned,
-  setDemoSelectorCollapsed
+  setDemoSelectorCollapsed,
 } = uiSlice.actions;
 
-export default uiSlice.reducer; 
+export default uiSlice.reducer;

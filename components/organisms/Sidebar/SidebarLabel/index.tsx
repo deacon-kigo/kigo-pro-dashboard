@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { ComponentType, SVGProps } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/redux/store";
+import { themeConfigs } from "@/lib/redux/slices/uiSlice";
 
 // Type for HeroIcon components
 type HeroIcon = ComponentType<SVGProps<SVGSVGElement>>;
@@ -10,7 +13,6 @@ interface SidebarLabelProps {
   title: string;
   isActive: boolean;
   isCollapsed: boolean;
-  isCVSContext: boolean;
   hasNotification?: boolean;
   notificationCount?: number;
 }
@@ -21,64 +23,57 @@ export default function SidebarLabel({
   title,
   isActive,
   isCollapsed,
-  isCVSContext,
   hasNotification,
-  notificationCount
+  notificationCount,
 }: SidebarLabelProps) {
-  // Console log for debugging
-  console.log('SidebarLabel rendering with props:', { 
-    href, title, isActive, isCollapsed, isCVSContext, hasNotification 
-  });
-  
+  // Get theme information directly from Redux
+  const { clientId } = useSelector((state: RootState) => state.demo);
+
+  // Determine theme based on client ID
+  const themeName = clientId === "cvs" ? "cvs" : "default";
+  const theme =
+    themeConfigs[themeName]?.sidebar?.item || themeConfigs.default.sidebar.item;
+
   // Validate that Icon is defined
   if (!Icon) {
-    console.error('SidebarLabel: Icon prop is undefined');
+    console.error("SidebarLabel: Icon prop is undefined");
     return null;
   }
-  
-  // Generate CSS classes for the CVS context gradient
-  const getCVSGradientClasses = () => {
-    // Use explicit tailwind classes for the gradient
-    const gradientClasses = "bg-gradient-to-r from-pastel-blue to-pastel-red text-gray-800";
-    console.log('Using CVS gradient classes:', gradientClasses);
-    return gradientClasses;
-  };
-  
-  // Active state classes
-  const getActiveClasses = () => {
-    if (!isActive) return "text-gray-500";
-    return isCVSContext 
-      ? getCVSGradientClasses()
-      : "bg-blue-100 text-gray-800 font-medium";
-  };
-  
-  // Hover classes
-  const getHoverClasses = () => {
-    return isCVSContext 
-      ? "hover:bg-gradient-to-r hover:from-pastel-blue hover:to-pastel-red hover:text-gray-800"
-      : "hover:bg-blue-100 hover:text-gray-800";
+
+  // Get the appropriate styles based on state and theme
+  const getBaseClasses = () => {
+    return isActive ? theme.active : theme.inactive;
   };
 
-  // Single styling approach with extracted methods for clarity
+  // Get hover classes from theme
+  const getHoverClasses = () => {
+    return isActive ? "" : theme.hover;
+  };
+
+  // Get icon classes based on active state
+  const getIconClasses = () => {
+    return isActive ? theme.icon.active : theme.icon.inactive;
+  };
+
+  // Get text classes based on active state
+  const getTextClasses = () => {
+    return isActive ? theme.text.active : theme.text.inactive;
+  };
+
+  // Combine all styling into a single class string
   const linkClasses = `
     flex items-center py-2 text-sm font-medium rounded-lg
     ${isCollapsed ? "justify-center px-2" : "px-3"}
-    ${getActiveClasses()}
+    ${getBaseClasses()}
     ${getHoverClasses()}
   `;
 
-  const iconClasses = `w-5 h-5 ${isCollapsed ? "" : "mr-3"} ${
-    isActive ? (isCVSContext ? "text-gray-800" : "text-primary") : "text-gray-500"
-  }`;
+  const iconClasses = `w-5 h-5 ${isCollapsed ? "" : "mr-3"} ${getIconClasses()}`;
 
   return (
     <Link href={href} className={linkClasses} title={title}>
       <Icon className={iconClasses} />
-      {!isCollapsed && (
-        <span className={isActive ? (isCVSContext ? "font-semibold" : "font-medium") : ""}>
-          {title}
-        </span>
-      )}
+      {!isCollapsed && <span className={getTextClasses()}>{title}</span>}
       {!isCollapsed && hasNotification && (
         <span className="bg-pastel-red text-red-600 text-xs rounded-full px-1.5 py-0.5 ml-auto">
           {notificationCount}
@@ -86,4 +81,4 @@ export default function SidebarLabel({
       )}
     </Link>
   );
-} 
+}

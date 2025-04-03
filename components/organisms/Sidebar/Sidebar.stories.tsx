@@ -1,12 +1,10 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import Sidebar from './Sidebar';
-import SidebarLabel from './SidebarLabel';
-import { DecoratorFunction } from '@storybook/types';
-import { ReactRenderer } from '@storybook/react';
+import type { Meta, StoryObj } from "@storybook/react";
+import Sidebar from "./Sidebar";
+import SidebarLabel from "./SidebarLabel";
 
 // Debug imports
-console.log('Sidebar component imported:', Sidebar);
-console.log('SidebarLabel component imported:', SidebarLabel);
+console.log("Sidebar component imported:", Sidebar);
+console.log("SidebarLabel component imported:", SidebarLabel);
 
 // Add TypeScript interface for window to make TypeScript happy
 declare global {
@@ -16,21 +14,21 @@ declare global {
 }
 
 const meta = {
-  title: 'Kigo UI/Organisms/Sidebar',
+  title: "Kigo UI/Organisms/Sidebar",
   component: Sidebar,
   parameters: {
-    layout: 'fullscreen',
+    layout: "fullscreen",
   },
   decorators: [
     (Story) => {
       // Make SidebarLabel globally available for development
-      console.log('SidebarLabel:', SidebarLabel);
-      console.log('Sidebar:', Sidebar);
-      if (typeof window !== 'undefined') {
+      console.log("SidebarLabel:", SidebarLabel);
+      console.log("Sidebar:", Sidebar);
+      if (typeof window !== "undefined") {
         window.SidebarLabel = SidebarLabel;
       }
       return <Story />;
-    }
+    },
   ],
 } satisfies Meta<typeof Sidebar>;
 
@@ -39,130 +37,157 @@ type Story = StoryObj<typeof meta>;
 
 export const MerchantSidebar: Story = {
   args: {
-    role: 'merchant',
-    isCVSContext: false
+    role: "merchant",
+    isCVSContext: false,
   },
   parameters: {
     nextRouter: {
-      path: '/'
+      path: "/",
     },
     redux: {
       state: {
         ui: {
           sidebarCollapsed: false,
-          sidebarWidth: '250px'
+          sidebarWidth: "250px",
         },
         demo: {
-          role: 'merchant',
-          clientId: 'deacons',
-          clientName: 'Deacon\'s Pizza',
-          themeMode: 'light'
-        }
-      }
-    }
-  }
+          role: "merchant",
+          clientId: "deacons",
+          clientName: "Deacon's Pizza",
+          themeMode: "light",
+        },
+      },
+    },
+  },
 };
 
 export const SupportSidebar: Story = {
   args: {
-    role: 'support',
-    isCVSContext: false
+    role: "support",
+    isCVSContext: false,
   },
   parameters: {
     nextRouter: {
-      path: '/tickets'
+      path: "/tickets",
     },
     redux: {
       state: {
         ui: {
           sidebarCollapsed: false,
-          sidebarWidth: '250px'
+          sidebarWidth: "250px",
         },
         demo: {
-          role: 'support',
-          clientId: 'support',
-          clientName: 'Support Portal',
-          themeMode: 'light'
-        }
-      }
-    }
-  }
+          role: "support",
+          clientId: "support",
+          clientName: "Support Portal",
+          themeMode: "light",
+        },
+      },
+    },
+  },
 };
 
 export const CVSSidebar: Story = {
   args: {
-    role: 'support',
-    isCVSContext: true
+    role: "support",
+    isCVSContext: true,
   },
   parameters: {
     nextRouter: {
-      path: '/cvs/dashboard'
+      path: "/cvs/dashboard",
     },
     redux: {
       state: {
         ui: {
           sidebarCollapsed: false,
-          sidebarWidth: '250px'
+          sidebarWidth: "250px",
         },
         demo: {
-          role: 'support',
-          clientId: 'cvs',
-          clientName: 'CVS Health',
-          themeMode: 'light'
-        }
-      }
-    }
-  }
+          role: "support",
+          clientId: "cvs",
+          clientName: "CVS Health",
+          themeMode: "light",
+        },
+      },
+    },
+  },
 };
 
 export const CollapsedSidebar: Story = {
   args: {
-    role: 'merchant',
-    isCVSContext: false
+    role: "merchant",
+    isCVSContext: false,
   },
   parameters: {
     nextRouter: {
-      path: '/'
+      path: "/",
     },
     redux: {
       state: {
         ui: {
           sidebarCollapsed: true,
-          sidebarWidth: '70px'
+          sidebarWidth: "70px",
         },
         demo: {
-          role: 'merchant',
-          clientId: 'deacons',
-          clientName: 'Deacon\'s Pizza',
-          themeMode: 'light'
-        }
-      }
-    }
-  }
+          role: "merchant",
+          clientId: "deacons",
+          clientName: "Deacon's Pizza",
+          themeMode: "light",
+        },
+      },
+    },
+  },
 };
 
 export const AdminSidebar: Story = {
   args: {
-    role: 'admin',
-    isCVSContext: false
+    role: "admin",
+    isCVSContext: false,
   },
   parameters: {
     nextRouter: {
-      path: '/settings'
+      path: "/settings",
     },
     redux: {
       state: {
         ui: {
           sidebarCollapsed: false,
-          sidebarWidth: '250px'
+          sidebarWidth: "250px",
         },
         demo: {
-          role: 'admin',
-          clientId: 'admin',
-          clientName: 'Admin Portal',
-          themeMode: 'light'
-        }
-      }
-    }
-  }
-}; 
+          role: "admin",
+          clientId: "admin",
+          clientName: "Admin Portal",
+          themeMode: "light",
+        },
+      },
+    },
+  },
+};
+
+// Now theme is controlled via the Redux clientId
+export const CustomThemeSidebar: Story = {
+  args: {
+    role: "merchant",
+    isCVSContext: false, // We'll use clientId in Redux to control theme
+  },
+  parameters: {
+    nextRouter: {
+      path: "/",
+    },
+    redux: {
+      state: {
+        ui: {
+          sidebarCollapsed: false,
+          sidebarWidth: "250px",
+        },
+        demo: {
+          role: "merchant",
+          clientId: "cvs", // Set to CVS to use the CVS theme
+          clientName: "Merchant with CVS Theme",
+          themeMode: "light",
+        },
+      },
+    },
+  },
+};

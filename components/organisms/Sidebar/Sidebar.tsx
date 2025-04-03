@@ -26,11 +26,11 @@ import { RootState } from "@/lib/redux/store";
 import SidebarLabel from "./SidebarLabel";
 
 export interface SidebarProps {
-  role?: 'merchant' | 'support' | 'admin';
+  role?: "merchant" | "support" | "admin";
   isCVSContext?: boolean;
 }
 
-const Sidebar = ({ role = 'merchant', isCVSContext = false }: SidebarProps) => {
+const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
   const dispatch = useDispatch();
   const { sidebarCollapsed } = useSelector((state: RootState) => state.ui);
   const { clientId } = useSelector((state: RootState) => state.demo);
@@ -53,54 +53,8 @@ const Sidebar = ({ role = 'merchant', isCVSContext = false }: SidebarProps) => {
   // Ensure pathname is a string and never null
   pathname = pathname || "/dashboard";
 
-  // Check if we're in the CVS context
-  const isCVSContextBool = Boolean(isCVSContext);
-
-  // CVS brand colors for gradients - removing since they're not used
-  // const cvsBlue = '#2563EB';
-  // const cvsRed = '#CC0000';
-
-  // Define gradients - centralized for consistency
-  const cvsPastelGradient = "bg-gradient-to-r from-pastel-blue to-pastel-red";
-  const activeLinkBgGradient = cvsPastelGradient;
-  const activeLinkTextGradient = "font-semibold";
-  const activeIconClass = "text-gray-800";
-
-  // Kigo brand colors - matched to CVS pattern but with solid blue
-  const kigoActiveClass = "text-gray-800 font-medium"; // Dark text like CVS
-  const kigoActiveBgClass = "bg-blue-100"; // Blue background for active items
-  const kigoActiveIconClass = "text-primary"; // Blue icon for brand consistency
-  const kigoInactiveClass = "text-gray-500"; // Gray text for inactive items
-
-  // Get active state classes based on context
-  const getActiveClasses = (isActive: boolean) => {
-    if (!isActive) return kigoInactiveClass;
-
-    return isCVSContextBool
-      ? `${cvsPastelGradient} text-gray-800`
-      : `${kigoActiveBgClass} ${kigoActiveClass}`;
-  };
-
-  // For hover classes
-  const getHoverClasses = () => {
-    return isCVSContextBool 
-      ? `hover:${cvsPastelGradient} hover:text-gray-800`
-      : "hover:bg-blue-100 hover:text-gray-800";
-  };
-
-  // Get active icon classes based on context
-  const getActiveIconClasses = (isActive: boolean) => {
-    if (!isActive) return "text-gray-500"; // Gray icon for inactive items
-
-    return isCVSContextBool ? "text-gray-800" : kigoActiveIconClass;
-  };
-
-  // Get active text classes for span elements
-  const getActiveTextClasses = (isActive: boolean) => {
-    if (!isActive) return "";
-
-    return isCVSContextBool ? activeLinkTextGradient : "font-medium";
-  };
+  // Check if we're in the CVS context - use prop or derive from Redux
+  const isCVSContextBool = Boolean(isCVSContext || clientId === "cvs");
 
   // Sync local state with Redux
   useEffect(() => {
@@ -188,10 +142,6 @@ const Sidebar = ({ role = 'merchant', isCVSContext = false }: SidebarProps) => {
     const tokenManagementUrl = buildDemoUrl("cvs", "token-catalog");
     const ticketsUrl = buildDemoUrl("cvs", "tickets");
 
-    // Cast isCVSContext to boolean explicitly for type safety
-    // Adding separate variable with unique name to avoid scope issues
-    const cvxContextBool = Boolean(isCVSContextBool);
-
     return (
       <>
         <li className="nav-item px-3 py-1">
@@ -201,7 +151,6 @@ const Sidebar = ({ role = 'merchant', isCVSContext = false }: SidebarProps) => {
             title="Dashboard"
             isActive={Boolean(isLinkActive(dashboardUrl))}
             isCollapsed={isCollapsed}
-            isCVSContext={cvxContextBool}
           />
         </li>
         <li className="nav-item px-3 py-1">
@@ -211,7 +160,6 @@ const Sidebar = ({ role = 'merchant', isCVSContext = false }: SidebarProps) => {
             title="Customers"
             isActive={Boolean(isLinkActive(customersUrl))}
             isCollapsed={isCollapsed}
-            isCVSContext={cvxContextBool}
           />
         </li>
         <li className="nav-item px-3 py-1">
@@ -235,7 +183,6 @@ const Sidebar = ({ role = 'merchant', isCVSContext = false }: SidebarProps) => {
             title="Tokens"
             isActive={Boolean(isLinkActive(tokenManagementUrl))}
             isCollapsed={isCollapsed}
-            isCVSContext={cvxContextBool}
           />
         </li>
         <li className="nav-item px-3 py-1">
@@ -245,7 +192,6 @@ const Sidebar = ({ role = 'merchant', isCVSContext = false }: SidebarProps) => {
             title="Tickets"
             isActive={Boolean(isLinkActive(ticketsUrl))}
             isCollapsed={isCollapsed}
-            isCVSContext={cvxContextBool}
           />
         </li>
       </>
@@ -270,7 +216,6 @@ const Sidebar = ({ role = 'merchant', isCVSContext = false }: SidebarProps) => {
                 title="Dashboard"
                 isActive={Boolean(isLinkActive("/"))}
                 isCollapsed={isCollapsed}
-                isCVSContext={isCVSContextBool}
               />
             </li>
             <li className="nav-item px-3 py-1">
@@ -280,7 +225,6 @@ const Sidebar = ({ role = 'merchant', isCVSContext = false }: SidebarProps) => {
                 title="Campaigns"
                 isActive={Boolean(isLinkActive("/campaigns"))}
                 isCollapsed={isCollapsed}
-                isCVSContext={isCVSContextBool}
               />
             </li>
             <li className="nav-item px-3 py-1">
@@ -290,7 +234,6 @@ const Sidebar = ({ role = 'merchant', isCVSContext = false }: SidebarProps) => {
                 title="Analytics"
                 isActive={Boolean(isLinkActive("/analytics"))}
                 isCollapsed={isCollapsed}
-                isCVSContext={isCVSContextBool}
               />
             </li>
           </>
@@ -305,7 +248,6 @@ const Sidebar = ({ role = 'merchant', isCVSContext = false }: SidebarProps) => {
                 title="Dashboard"
                 isActive={Boolean(isLinkActive("/"))}
                 isCollapsed={isCollapsed}
-                isCVSContext={isCVSContextBool}
               />
             </li>
             <li className="nav-item px-3 py-1">
@@ -315,7 +257,6 @@ const Sidebar = ({ role = 'merchant', isCVSContext = false }: SidebarProps) => {
                 title="Tickets"
                 isActive={Boolean(isLinkActive("/tickets"))}
                 isCollapsed={isCollapsed}
-                isCVSContext={isCVSContextBool}
               />
             </li>
             <li className="nav-item px-3 py-1">
@@ -325,7 +266,6 @@ const Sidebar = ({ role = 'merchant', isCVSContext = false }: SidebarProps) => {
                 title="Merchants"
                 isActive={Boolean(isLinkActive("/merchants"))}
                 isCollapsed={isCollapsed}
-                isCVSContext={isCVSContextBool}
               />
             </li>
           </>
@@ -340,7 +280,6 @@ const Sidebar = ({ role = 'merchant', isCVSContext = false }: SidebarProps) => {
                 title="Dashboard"
                 isActive={Boolean(isLinkActive("/"))}
                 isCollapsed={isCollapsed}
-                isCVSContext={isCVSContextBool}
               />
             </li>
             <li className="nav-item px-3 py-1">
@@ -350,7 +289,6 @@ const Sidebar = ({ role = 'merchant', isCVSContext = false }: SidebarProps) => {
                 title="Merchants"
                 isActive={Boolean(isLinkActive("/merchants"))}
                 isCollapsed={isCollapsed}
-                isCVSContext={isCVSContextBool}
               />
             </li>
             <li className="nav-item px-3 py-1">
@@ -360,7 +298,6 @@ const Sidebar = ({ role = 'merchant', isCVSContext = false }: SidebarProps) => {
                 title="Analytics"
                 isActive={Boolean(isLinkActive("/analytics"))}
                 isCollapsed={isCollapsed}
-                isCVSContext={isCVSContextBool}
               />
             </li>
             <li className="nav-item px-3 py-1">
@@ -370,7 +307,6 @@ const Sidebar = ({ role = 'merchant', isCVSContext = false }: SidebarProps) => {
                 title="Settings"
                 isActive={Boolean(isLinkActive("/settings"))}
                 isCollapsed={isCollapsed}
-                isCVSContext={isCVSContextBool}
               />
             </li>
           </>
@@ -532,12 +468,21 @@ const Sidebar = ({ role = 'merchant', isCVSContext = false }: SidebarProps) => {
           <ul className="nav-items w-full">
             <li className="nav-item px-3 py-1">
               <SidebarLabel
-                href={isCVSContextBool ? buildDemoUrl("cvs", "settings") : "/settings"}
+                href={
+                  isCVSContextBool
+                    ? buildDemoUrl("cvs", "settings")
+                    : "/settings"
+                }
                 icon={Cog6ToothIcon}
                 title="Settings"
-                isActive={Boolean(isLinkActive(isCVSContextBool ? buildDemoUrl("cvs", "settings") : "/settings"))}
+                isActive={Boolean(
+                  isLinkActive(
+                    isCVSContextBool
+                      ? buildDemoUrl("cvs", "settings")
+                      : "/settings"
+                  )
+                )}
                 isCollapsed={isCollapsed}
-                isCVSContext={Boolean(isCVSContextBool)}
               />
             </li>
             <li className="nav-item px-3 py-1">
@@ -547,7 +492,6 @@ const Sidebar = ({ role = 'merchant', isCVSContext = false }: SidebarProps) => {
                 title="Notifications"
                 isActive={Boolean(isLinkActive("/notifications"))}
                 isCollapsed={isCollapsed}
-                isCVSContext={Boolean(isCVSContextBool)}
                 hasNotification={true}
                 notificationCount={5}
               />
@@ -559,7 +503,6 @@ const Sidebar = ({ role = 'merchant', isCVSContext = false }: SidebarProps) => {
                 title="Help & Support"
                 isActive={Boolean(isLinkActive("/help"))}
                 isCollapsed={isCollapsed}
-                isCVSContext={Boolean(isCVSContextBool)}
               />
             </li>
           </ul>
@@ -571,6 +514,7 @@ const Sidebar = ({ role = 'merchant', isCVSContext = false }: SidebarProps) => {
           <div
             className={`flex items-center ${isCollapsed ? "justify-center" : ""} pb-6`}
           >
+            {/* User avatar - Support both CVS and role-based indicators */}
             <div className="w-9 h-9 bg-pastel-purple rounded-full flex items-center justify-center text-indigo-500 font-semibold text-sm shadow-sm">
               {isCVSContextBool
                 ? "SJ"
@@ -601,6 +545,6 @@ const Sidebar = ({ role = 'merchant', isCVSContext = false }: SidebarProps) => {
       </div>
     </aside>
   );
-}
+};
 
 export default Sidebar;
