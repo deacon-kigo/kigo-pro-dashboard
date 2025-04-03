@@ -3,15 +3,19 @@
 @tailwind utilities;
 
 :root {
-  --primary: #2563EB;
-  --primary-light: #EFF6FF;
-  --bg-light: #F8FAFC;
-  --text-dark: #1E293B;
-  --text-muted: #64748B;
-  --border-light: #E2E8F0;
+  --primary: #4B55FD;
+  --primary-light: #E6E7FF;
+  --bg-light: #f6f5f1;
+  --text-dark: #231F20;
+  --text-muted: #5A5858;
+  --border-light: #E4E5E7;
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --sidebar-width: 225px;
+  
+  /* CVS Colors */
+  --cvs-blue: #2563EB;
+  --cvs-red: #CC0000;
   
   /* Pastel Colors */
   --pastel-blue: #E1F0FF;

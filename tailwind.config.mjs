@@ -8,14 +8,52 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#2563EB",
-        "primary-dark": "#1D4ED8", 
-        "primary-light": "#EFF6FF",
-        "bg-light": "#F8FAFC",
-        "text-dark": "#1E293B",
-        "text-muted": "#64748B",
-        "border-light": "#E2E8F0",
-        // Pastel Colors
+        // Kigo Brand Colors
+        primary: "#4B55FD",
+        secondary: "#CCFFFE",
+        
+        // Kigo Neutrals
+        white: "#FFFFFF",
+        stone: "#f6f5f1",
+        charcoal: "#5A5858",
+        black: "#231F20",
+        "black-grey": "#E9E9E9",
+        "gray-100": "#E4E5E7",
+        "gray-200": "#E5E7EB",
+        "gray-500": "#717585",
+        "gray-900": "#111827",
+        
+        // Text & Background Colors
+        "text-dark": "#231F20", // Using Kigo black
+        "text-muted": "#5A5858", // Using Kigo charcoal
+        "bg-light": "#f6f5f1", // Using Kigo stone
+        "border-light": "#E4E5E7", // Using Kigo gray-100
+        
+        // Kigo Reds
+        "red-light-50": "#FEECED",
+        "red-light-10": "#C63469",
+        red: "#DC1021",
+        "red-dark-10": "#AB0C1A",
+        "red-dark-20": "#8E0916",
+        coral: "#FF4F5E",
+        
+        // Kigo Blues & Other Colors
+        orange: "#FF8717",
+        blue: "#328FE5",
+        "blue-light-35": "#E6E7FF",
+        "sky-blue": "#CCFFFE",
+        "dark-sky-blue": "#25BDFE",
+        green: "#77D898",
+        "green-100": "#6ADFA0",
+        "light-green": "#D1F7DF",
+        purple: "#8941EB",
+        "light-purple": "#E5D7FA",
+        
+        // CVS colors
+        "cvs-blue": "#2563EB",
+        "cvs-red": "#CC0000",
+        
+        // Retain existing pastel colors for specific use cases
         "pastel-blue": "#E1F0FF",
         "pastel-purple": "#F3E8FF", 
         "pastel-green": "#DCFCE7",
@@ -24,9 +62,49 @@ export default {
         "pastel-red": "#FEE2E2",
         "pastel-pink": "#FCE7F3",
       },
+      fontFamily: {
+        sans: ["Inter", "sans-serif"],
+      },
+      fontSize: {
+        // Mapping to Kigo type scale
+        'xs': '10px',    // bodyXs
+        'sm': '12px',    // bodySm
+        'base': '14px',  // bodyMd
+        'lg': '16px',    // titleSm
+        'xl': '22px',    // titleMd
+        '2xl': '32px',   // titleLg
+        '3xl': '50px',   // titleXl
+      },
+      fontWeight: {
+        normal: 400,
+        medium: 500,
+        semibold: 600,
+        bold: 700,
+        extrabold: 800,
+      },
+      lineHeight: {
+        tight: '16px',    // bodySm lineHeight
+        snug: '20px',     // bodyMd lineHeight
+        normal: '24px',   // titleSmBd lineHeight
+        relaxed: '28px',  // titleMd lineHeight
+        loose: '40px',    // titleLg lineHeight
+      },
+      borderRadius: {
+        'sm': '8px',
+        'md': '12px', 
+        'lg': '20px',
+        'xl': '25px',
+      },
+      screens: {
+        'sm': '420px',
+        'md': '640px',
+        'lg': '768px',
+        'xl': '1025px',
+      },
       boxShadow: {
         'sm': '0 1px 3px rgba(0, 0, 0, 0.05)',
         'md': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        'popover': '0px 2px 2px -1px rgba(27, 35, 44, 0.04), 0px 8px 16px -2px rgba(27, 36, 44, 0.12)', // From Kigo's MuiPopover
       },
       animation: {
         'fadeIn': 'fadeIn 0.3s ease-in-out',
@@ -97,13 +175,13 @@ export default {
     themes: [
       {
         light: {
-          primary: "#2563EB",
-          secondary: "#6366F1",
-          accent: "#F59E0B",
-          neutral: "#1E293B",
-          "base-100": "#FFFFFF",
-          "base-200": "#F8FAFC",
-          "base-300": "#E2E8F0",
+          primary: "#4B55FD", // Kigo primary color
+          secondary: "#CCFFFE", // Kigo secondary color
+          accent: "#FF8717", // Using Kigo orange as accent
+          neutral: "#231F20", // Using Kigo black
+          "base-100": "#FFFFFF", // Using Kigo white
+          "base-200": "#f6f5f1", // Using Kigo stone
+          "base-300": "#E4E5E7", // Using Kigo gray-100
         },
       },
     ],
