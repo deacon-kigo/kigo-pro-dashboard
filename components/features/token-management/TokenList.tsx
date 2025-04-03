@@ -6,19 +6,45 @@ import { Token, TokenState } from './types';
 import TokenStateBadge from '@/components/molecules/badges/TokenStateBadge';
 import { formatShortDate } from './utils';
 import { Button } from '@/components/atoms/Button';
-import { TokenDetails } from '@/lib/redux/slices/cvsTokenSlice';
-import { useRouter } from 'next/navigation';
-
-type TokenListProps = {
-  tokens: Token[];
-  onSelectToken: (token: Token) => void;
-  selectedTokenId?: string;
-};
 
 /**
- * Component for displaying and filtering a list of tokens
+ * Props for the TokenList component
  */
-export default function TokenList({ tokens, onSelectToken, selectedTokenId }: TokenListProps) {
+interface TokenListProps {
+  /** Array of tokens to display */
+  tokens: Token[];
+  /** Callback function when a token is selected */
+  onSelectToken: (token: Token) => void;
+  /** ID of the currently selected token, if any */
+  selectedTokenId?: string;
+  /** Optional title for the token list */
+  title?: string;
+  /** Maximum height of the token list container */
+  maxHeight?: string;
+}
+
+/**
+ * TokenList Component
+ * 
+ * Displays a filterable, searchable list of tokens with their relevant details.
+ * Users can filter by token state and search by name or description.
+ * 
+ * @example
+ * ```tsx
+ * <TokenList 
+ *   tokens={customerTokens} 
+ *   onSelectToken={handleSelectToken} 
+ *   selectedTokenId={selectedToken?.id} 
+ * />
+ * ```
+ */
+export default function TokenList({ 
+  tokens, 
+  onSelectToken, 
+  selectedTokenId,
+  title = 'Customer Tokens',
+  maxHeight = '60vh'
+}: TokenListProps) {
   const [tokenFilter, setTokenFilter] = useState<TokenState | 'All'>('All');
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -34,10 +60,12 @@ export default function TokenList({ tokens, onSelectToken, selectedTokenId }: To
   return (
     <Card>
       <div className="p-5">
+        {/* Header with search and filter */}
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">Customer Tokens</h2>
+          <h2 className="text-lg font-semibold">{title}</h2>
           
           <div className="flex space-x-2">
+            {/* Search input */}
             <div className="relative w-64">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -50,13 +78,16 @@ export default function TokenList({ tokens, onSelectToken, selectedTokenId }: To
                 placeholder="Search tokens..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label="Search tokens"
               />
             </div>
             
+            {/* Filter dropdown */}
             <select
               className="border border-gray-300 rounded-md px-3 py-2"
               value={tokenFilter}
               onChange={(e) => setTokenFilter(e.target.value as TokenState | 'All')}
+              aria-label="Filter tokens by state"
             >
               <option value="All">All Tokens</option>
               <option value="Active">Active</option>
@@ -67,7 +98,8 @@ export default function TokenList({ tokens, onSelectToken, selectedTokenId }: To
           </div>
         </div>
         
-        <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+        {/* Token list */}
+        <div className={`space-y-3 max-h-[${maxHeight}] overflow-y-auto pr-2`}>
           {filteredTokens.length > 0 ? filteredTokens.map((token) => (
             <div 
               key={token.id}
@@ -77,6 +109,8 @@ export default function TokenList({ tokens, onSelectToken, selectedTokenId }: To
                   : 'border-gray-200 hover:bg-gray-50'
               }`}
               onClick={() => onSelectToken(token)}
+              role="button"
+              aria-pressed={selectedTokenId === token.id}
             >
               <div className="flex justify-between">
                 <span className="font-medium">{token.name}</span>

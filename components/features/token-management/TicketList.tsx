@@ -7,6 +7,9 @@ import { TicketStatusBadge, TierBadge } from '@/components/molecules/badges/Tick
 import { ExclamationCircleIcon, ArrowPathIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import Card from '@/components/ui/Card';
 
+/**
+ * Format date to readable format with time
+ */
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   return new Intl.DateTimeFormat('en-US', {
@@ -18,20 +21,47 @@ const formatDate = (dateString: string) => {
   }).format(date);
 };
 
+/**
+ * Props for the TicketList component
+ */
 interface TicketListProps {
+  /** Array of tickets to display */
   tickets: TicketInfo[];
+  /** Optional title for the ticket list */
   title?: string;
+  /** Filter tickets by tier */
   filterTier?: 'Tier1' | 'Tier2' | 'All';
+  /** Maximum number of tickets to show before "Show all" button */
   maxVisible?: number;
+  /** Whether to show the create ticket button */
   showCreateButton?: boolean;
+  /** Maximum height of the ticket list container */
+  maxHeight?: string;
 }
 
+/**
+ * TicketList Component
+ * 
+ * Displays a list of support tickets with filtering by tier.
+ * Tickets are sorted by status, priority, and date.
+ * 
+ * @example
+ * ```tsx
+ * <TicketList 
+ *   tickets={supportTickets} 
+ *   filterTier="Tier1" 
+ *   maxVisible={10}
+ *   showCreateButton={true}
+ * />
+ * ```
+ */
 const TicketList: React.FC<TicketListProps> = ({
   tickets,
   title = 'Support Tickets',
   filterTier = 'All',
   maxVisible = 5,
-  showCreateButton = true
+  showCreateButton = true,
+  maxHeight = '50vh'
 }) => {
   const dispatch = useAppDispatch();
   const selectedTicket = useAppSelector(state => state.cvsToken.selectedTicket);
@@ -73,6 +103,7 @@ const TicketList: React.FC<TicketListProps> = ({
   
   return (
     <Card title={title}>
+      {/* Header with ticket count and create button */}
       <div className="mb-4 flex justify-between items-center">
         <div className="text-sm text-gray-500">
           {filterTier === 'All' ? 'All tickets' : filterTier === 'Tier1' ? 'CVS support tickets' : 'Kigo Pro escalated tickets'}
@@ -83,6 +114,7 @@ const TicketList: React.FC<TicketListProps> = ({
           <button
             onClick={handleCreateTicket}
             className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 flex items-center"
+            aria-label="Create new ticket"
           >
             Create Ticket
           </button>
@@ -95,7 +127,8 @@ const TicketList: React.FC<TicketListProps> = ({
         </div>
       ) : (
         <>
-          <div className="space-y-3 max-h-[50vh] overflow-y-auto">
+          {/* Ticket list */}
+          <div className={`space-y-3 max-h-[${maxHeight}] overflow-y-auto`}>
             {visibleTickets.map(ticket => (
               <div
                 key={ticket.id}
@@ -103,15 +136,17 @@ const TicketList: React.FC<TicketListProps> = ({
                   selectedTicket?.id === ticket.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
                 }`}
                 onClick={() => handleSelectTicket(ticket.id)}
+                role="button"
+                aria-pressed={selectedTicket?.id === ticket.id}
               >
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="font-medium flex items-center">
                       {ticket.status === 'Escalated' && (
-                        <ArrowPathIcon className="h-4 w-4 text-yellow-500 mr-1" />
+                        <ArrowPathIcon className="h-4 w-4 text-yellow-500 mr-1" aria-hidden="true" />
                       )}
                       {ticket.priority === 'High' && (
-                        <ExclamationCircleIcon className="h-4 w-4 text-red-500 mr-1" />
+                        <ExclamationCircleIcon className="h-4 w-4 text-red-500 mr-1" aria-hidden="true" />
                       )}
                       <span className="mr-2">{ticket.id}</span>
                       <TierBadge tier={ticket.tier} className="ml-1" />
@@ -126,7 +161,7 @@ const TicketList: React.FC<TicketListProps> = ({
                   
                   {ticket.tokenId && (
                     <div className="flex items-center">
-                      <ArrowTopRightOnSquareIcon className="h-3 w-3 mr-1" />
+                      <ArrowTopRightOnSquareIcon className="h-3 w-3 mr-1" aria-hidden="true" />
                       <span>Has token</span>
                     </div>
                   )}
@@ -135,11 +170,13 @@ const TicketList: React.FC<TicketListProps> = ({
             ))}
           </div>
           
+          {/* Show more/less button if there are more tickets than maxVisible */}
           {sortedTickets.length > maxVisible && (
             <div className="mt-4 text-center">
               <button
                 onClick={() => setShowAll(!showAll)}
                 className="text-blue-600 text-sm hover:text-blue-800"
+                aria-label={showAll ? "Show fewer tickets" : `Show all ${sortedTickets.length} tickets`}
               >
                 {showAll ? 'Show less' : `Show all (${sortedTickets.length})`}
               </button>
