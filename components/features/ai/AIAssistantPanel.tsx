@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
-import { useDemo } from '../../contexts/DemoContext';
+import { useDemo } from '@/contexts/DemoContext';
 import ReactMarkdown from 'react-markdown';
 
 interface Message {
