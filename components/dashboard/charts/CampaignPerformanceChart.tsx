@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import Card from '../../shared/Card';
+import Card from '@/components/atoms/Card/Card';
 
 // Mock data for campaign performance
 const data = [

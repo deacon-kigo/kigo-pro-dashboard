@@ -6,9 +6,9 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ChevronLeftIcon, LightBulbIcon } from '@heroicons/react/24/outline';
 import { useDemo } from '../../../contexts/DemoContext';
-import AIAssistantPanel from '../../../components/ai-assistant/AIAssistantPanel';
-import DynamicCanvas from '../../../components/campaign-creation/DynamicCanvas';
-import Card from '../../../components/shared/Card';
+import { AIAssistantPanel } from '../../../components/features/ai';
+import { DynamicCanvas } from '../../../components/features/campaigns/creation';
+import Card from '@/components/atoms/Card/Card';
 import { buildDemoUrl } from '@/lib/utils';
 
 // Define ViewType locally to match DynamicCanvas

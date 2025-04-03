@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, useCallback, Suspense } from 'reac
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Card from '../../../components/shared/Card';
+import Card from '@/components/atoms/Card/Card';
 import { ChevronRightIcon, PlusIcon } from '@heroicons/react/24/outline';
 import {
   AreaChart,

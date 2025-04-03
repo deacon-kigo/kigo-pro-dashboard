@@ -10,7 +10,7 @@ import {
 import { LightBulbIcon } from '@heroicons/react/24/outline';
 import { useDemo } from '../../../contexts/DemoContext';
 import { BusinessData } from '../DynamicCanvas';
-import Card from '../../shared/Card';
+import Card from '@/components/atoms/Card/Card';
 
 interface BusinessIntelligenceViewProps {
   data: BusinessData;

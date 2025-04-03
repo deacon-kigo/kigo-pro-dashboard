@@ -5,7 +5,7 @@ import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend 
 } from 'recharts';
-import Card from '../../shared/Card';
+import Card from '@/components/atoms/Card/Card';
 
 // Define data types to avoid TypeScript errors
 interface MonthlyDataPoint {

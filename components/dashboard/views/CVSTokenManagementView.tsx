@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useDemo } from '@/contexts/DemoContext';
 import Image from 'next/image';
 import Card from '@/components/atoms/Card/Card';
-import StandardDashboard from '@/components/shared/StandardDashboard';
+import StandardDashboard from '@/components/templates/StandardDashboard';
 
 // Define the token state enum type
 type TokenState = 'Active' | 'Shared' | 'Used' | 'Expired';

@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Sidebar from "../components/layout/Sidebar";
-import Header from "../components/layout/Header";
-import AIChat from "../components/ai-assistant/AIChat";
+import Sidebar from "../components/organisms/Sidebar";
+import Header from "../components/organisms/Header";
+import { AIChat } from "../components/features/ai";
 import DemoSpotlight from "../components/demo/DemoSpotlight";
 import { useAppSelector } from "@/lib/redux/hooks";
 
