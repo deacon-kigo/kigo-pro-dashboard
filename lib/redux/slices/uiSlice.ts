@@ -38,7 +38,7 @@ export const themeConfigs = {
       item: {
         active: "bg-pastel-blue text-gray-800",
         inactive: "text-gray-500",
-        hover: "hover:bg-blue-50",
+        hover: "hover:bg-pastel-blue hover:text-gray-800",
         icon: {
           active: "text-primary",
           inactive: "text-gray-500",
@@ -55,7 +55,7 @@ export const themeConfigs = {
       item: {
         active: "bg-pastel-blue text-gray-800", // Same as default for consistency
         inactive: "text-gray-500",
-        hover: "hover:bg-blue-50",
+        hover: "hover:bg-pastel-blue hover:text-gray-800",
         icon: {
           active: "text-primary",
           inactive: "text-gray-500",

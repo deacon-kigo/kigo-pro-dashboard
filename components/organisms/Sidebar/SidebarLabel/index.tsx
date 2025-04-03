@@ -45,7 +45,7 @@ export default function SidebarLabel({
     return isActive ? theme.active : theme.inactive;
   };
 
-  // Get hover classes from theme
+  // Get hover classes from theme - only apply to inactive items
   const getHoverClasses = () => {
     return isActive ? "" : theme.hover;
   };
@@ -62,18 +62,30 @@ export default function SidebarLabel({
 
   // Combine all styling into a single class string
   const linkClasses = `
-    flex items-center py-2 text-sm font-medium rounded-lg
+    flex items-center py-2 text-sm font-medium rounded-lg group
     ${isCollapsed ? "justify-center px-2" : "px-3"}
     ${getBaseClasses()}
     ${getHoverClasses()}
   `;
 
-  const iconClasses = `w-5 h-5 ${isCollapsed ? "" : "mr-3"} ${getIconClasses()}`;
+  // Include icon hover effect within the icon classes
+  const iconClasses = `
+    w-5 h-5 
+    ${isCollapsed ? "" : "mr-3"} 
+    ${getIconClasses()}
+    ${isActive ? "" : "group-hover:text-primary"}
+  `;
 
   return (
     <Link href={href} className={linkClasses} title={title}>
       <Icon className={iconClasses} />
-      {!isCollapsed && <span className={getTextClasses()}>{title}</span>}
+      {!isCollapsed && (
+        <span
+          className={`${getTextClasses()} ${isActive ? "" : "group-hover:font-medium"}`}
+        >
+          {title}
+        </span>
+      )}
       {!isCollapsed && hasNotification && (
         <span className="bg-pastel-red text-red-600 text-xs rounded-full px-1.5 py-0.5 ml-auto">
           {notificationCount}
