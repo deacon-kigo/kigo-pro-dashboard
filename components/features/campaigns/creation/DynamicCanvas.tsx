@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useDemo } from '../../contexts/DemoContext';
+import { useDemo } from '@/contexts/DemoContext';
 import { useRouter } from 'next/navigation';
 import ReactConfetti from 'react-confetti';
 import { buildDemoUrl } from '@/lib/utils';
