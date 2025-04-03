@@ -1,17 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kigo Pro Dashboard
+
+A prototype dashboard environment for the Kigo Pro platform that showcases UI components and dashboard features.
+
+## Project Structure
+
+The project follows a hybrid approach combining Next.js App Router and Atomic Design:
+
+```
+.
+├── app                 # Next.js App Router (routes/pages)
+│   ├── dashboard       # Dashboard routes
+│   ├── campaigns       # Campaign management routes
+│   ├── demos           # Demo-specific routes
+├── components          # UI Component Library
+│   ├── atoms           # Basic building blocks (Button, Input, etc.)
+│   ├── molecules       # Simple component combinations
+│   ├── organisms       # Complex UI components
+│   ├── templates       # Page layouts with placeholder content
+│   ├── features        # Feature-specific components
+│   │   ├── token-management
+│   │   ├── analytics
+```
+
+## Component Organization
+
+### 1. Atomic Components
+Components are organized using atomic design principles:
+
+- **Atoms**: Basic UI elements (Button, Input, Card, Badge, etc.)
+- **Molecules**: Combinations of atoms (Dialog, StatusBadge, etc.)
+- **Organisms**: Complex components (Header, Sidebar, TokenList, etc.)
+- **Templates**: Page layouts (AppLayout, DashboardLayout, etc.)
+
+### 2. Feature Components
+Domain-specific components are organized by feature domain:
+
+- **Token Management**: Components specific to token management functionality
+- **Analytics**: Components specific to analytics functionality
+- **Campaign Management**: Components specific to campaign functionality
+
+## Development Guidelines
+
+### Adding New Components
+
+1. Identify whether the component is generic (atomic) or domain-specific (feature):
+   - Generic UI components go in atoms/molecules/organisms
+   - Domain-specific components go in features/{domain}
+
+2. Create the appropriate files:
+   - ComponentName.tsx
+   - index.ts (for exports)
+
+3. Document with JSDoc:
+```tsx
+/**
+ * @component ComponentName
+ * @classification atom|molecule|organism
+ * @description Purpose of the component
+ */
+```
+
+### Creating Routes/Pages
+
+Use the Next.js App Router structure:
+```
+/app/route-name/page.tsx
+```
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+# Install dependencies
+npm install
+
+# Run the development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Start Storybook
+npm run storybook
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.

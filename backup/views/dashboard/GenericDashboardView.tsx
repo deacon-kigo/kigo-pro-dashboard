@@ -1,3 +1,7 @@
+/**
+ * @view GenericDashboardView
+ * @description A generic dashboard view that displays various statistics and activities
+ */
 'use client';
 
 import React, { useState, useEffect } from 'react';

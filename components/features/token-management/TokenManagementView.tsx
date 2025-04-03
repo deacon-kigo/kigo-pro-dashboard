@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useDemo } from '@/contexts/DemoContext';
-import StandardDashboard from '@/components/ui/StandardDashboard';
+import StandardDashboard from '@/components/templates/StandardDashboard/StandardDashboard';
 import AccountLookup from './AccountLookup';
 import AccountDetails from './AccountDetails';
 import TokenList from './TokenList';

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Card from '@/components/ui/Card';
+import Card from '@/components/atoms/Card/Card';
 import { Account } from './types';
 import { formatDate } from './utils';
 

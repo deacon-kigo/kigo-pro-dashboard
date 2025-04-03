@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import Card from '@/components/ui/Card';
+import Card from '@/components/atoms/Card/Card';
 import { Token } from './types';
 import TokenStateBadge from '@/components/molecules/badges/TokenStateBadge';
 import { formatShortDate as formatDate } from './utils';

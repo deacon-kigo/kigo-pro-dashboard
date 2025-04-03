@@ -21,7 +21,7 @@ import {
   BuildingStorefrontIcon,
   LinkIcon
 } from '@heroicons/react/24/outline';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/atoms/Tabs";
 
 // Import redux hooks
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';

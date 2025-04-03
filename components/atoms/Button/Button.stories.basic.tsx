@@ -3,7 +3,7 @@ import { Button } from './';
 
 const meta: Meta<typeof Button> = {
   component: Button,
-  title: 'Atoms/Button',
+  title: 'Kigo UI/Atoms/KigoButton',
   parameters: {
     docs: {
       description: {
@@ -26,10 +26,6 @@ const meta: Meta<typeof Button> = {
     disabled: {
       description: 'Whether the button is disabled',
       control: 'boolean',
-    },
-    className: {
-      description: 'Additional CSS classes to apply',
-      control: 'text',
     },
     children: {
       description: 'Button content',
@@ -102,5 +98,4 @@ export const Disabled: Story = {
     children: 'Disabled Button',
     disabled: true,
   },
-};
-
+}; 

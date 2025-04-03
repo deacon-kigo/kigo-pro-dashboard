@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useDemo } from '@/contexts/DemoContext';
 import Image from 'next/image';
-import Card from '@/components/ui/data-display/Card';
+import Card from '@/components/atoms/Card/Card';
 import StandardDashboard from '@/components/shared/StandardDashboard';
 
 // Sample campaign data

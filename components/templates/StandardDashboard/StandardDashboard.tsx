@@ -3,7 +3,7 @@
 import React, { useState, useEffect, ReactNode } from 'react';
 import { useDemo } from '@/contexts/DemoContext';
 import { getMockAvatarUrl } from '@/lib/avatarUtils';
-import Card from '@/components/ui/data-display/Card';
+import Card from '@/components/atoms/Card/Card';
 import AIAssistant from '@/components/shared/AIAssistant';
 import VersionBadge from '@/components/shared/VersionBadge';
 
