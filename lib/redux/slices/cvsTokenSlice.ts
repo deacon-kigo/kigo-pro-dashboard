@@ -105,6 +105,9 @@ export interface CVSTokenState {
   selectedCustomer: CustomerInfo | null;
   selectedToken: TokenInfo | null;
   showTokenCatalog: boolean;
+  showTokenDetail: boolean;
+  showConfirmModal: boolean;
+  confirmAction: 'reissue' | 'remove' | 'dispute' | null;
   actionMessage: {
     text: string;
     type: 'success' | 'error' | 'info';
@@ -730,6 +733,9 @@ const initialState: CVSTokenState = {
   selectedCustomer: null,
   selectedToken: null,
   showTokenCatalog: false,
+  showTokenDetail: false,
+  showConfirmModal: false,
+  confirmAction: null,
   actionMessage: null,
   caseNotes: '',
   viewState: 'main',

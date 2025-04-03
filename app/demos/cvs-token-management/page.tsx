@@ -58,6 +58,7 @@ import { createAction } from '@reduxjs/toolkit';
 // Create the missing action creators
 const setShowConfirmModal = createAction<boolean>('cvsToken/setShowConfirmModal');
 const setConfirmAction = createAction<'reissue' | 'remove' | 'dispute' | null>('cvsToken/setConfirmAction');
+const setShowTokenDetail = createAction<boolean>('cvsToken/setShowTokenDetail');
 
 // Types for the token management interface
 // Keep these exported so they can be used in the Redux slice

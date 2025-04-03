@@ -8,7 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { useDemo } from '@/contexts/DemoContext';
 import Image from 'next/image';
 import Card from '@/components/atoms/Card/Card';
-import StandardDashboard from '@/components/shared/StandardDashboard';
+import StandardDashboard from '@/components/templates/StandardDashboard';
 import TokenList from '@/components/organisms/TokenList';
 import TicketList from '@/components/organisms/TicketList';
 import { TokenStateBadge, TicketBadge, TierBadge } from '@/components/molecules/badges';

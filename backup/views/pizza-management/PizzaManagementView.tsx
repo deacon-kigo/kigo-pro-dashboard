@@ -8,7 +8,7 @@ import React, { useState } from 'react';
 import { useDemo } from '@/contexts/DemoContext';
 import Image from 'next/image';
 import Card from '@/components/atoms/Card/Card';
-import StandardDashboard from '@/components/shared/StandardDashboard';
+import StandardDashboard from '@/components/templates/StandardDashboard';
 
 // Sample campaign data
 const sampleCampaigns = [

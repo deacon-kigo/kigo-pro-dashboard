@@ -8,7 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { useDemo } from '@/contexts/DemoContext';
 import Card from '@/components/atoms/Card/Card';
 import { getTimeBasedGreeting, getWelcomeBackMessage } from '@/lib/userProfileUtils';
-import StandardDashboard from '@/components/shared/StandardDashboard';
+import StandardDashboard from '@/components/templates/StandardDashboard';
 
 export default function GenericDashboardView() {
   const { userProfile, theme, themeMode } = useDemo();

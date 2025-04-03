@@ -1,7 +1,18 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/molecules/dialog";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogFooter,
+  DialogDescription,
+  DialogOverlay,
+  DialogPortal,
+  DialogTrigger,
+  DialogClose 
+} from "@/components/molecules/dialog";
 import { Input } from "@/components/atoms/Input";
 import { Textarea } from "@/components/atoms/Textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/atoms/Select";
