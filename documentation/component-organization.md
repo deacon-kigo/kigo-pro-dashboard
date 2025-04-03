@@ -62,6 +62,64 @@ kigo-pro-dashboard/
 └── ... other project files
 ```
 
+## Detailed Migration Workflow
+
+The migration follows an end-to-end process for each component or component group. Each step in the workflow ensures that components are moved properly, updated to use atomic design principles, and integrated seamlessly into the application.
+
+### End-to-End Migration Process
+
+1. **Prepare the Target Directory**
+   ```bash
+   # Create target directory if it doesn't exist
+   mkdir -p components/molecules/badges
+   ```
+
+2. **Move Files Using Git**
+   ```bash
+   # Move files using git mv to preserve git history
+   git mv components/features/token-management/TokenStateBadge.tsx components/molecules/badges/
+   git mv components/molecules/StatusBadge/StatusBadge.tsx components/molecules/badges/
+   ```
+
+3. **Update Component Implementation**
+   - Modify the component to use atomic components where applicable
+   - Update imports to reference the correct paths
+   - Add or update JSDoc comments
+   - Define local types if needed instead of importing from feature-specific files
+
+4. **Create/Update Index Files for Exports**
+   ```bash
+   # Create an index.ts file in the target directory
+   # Export both components and types using named exports
+   ```
+
+5. **Update Parent Directory Exports**
+   ```bash
+   # Update the parent directory's index.ts to export from the new location
+   ```
+
+6. **Update Imports in Consuming Files**
+   - Find all files that import the moved components
+   - Update import paths to reference the new location
+
+7. **Clean Up Old Directories**
+   ```bash
+   # Remove any leftover directories and files after migration
+   git rm -r components/molecules/StatusBadge
+   ```
+
+8. **Commit Changes**
+   ```bash
+   # Commit the changes with a descriptive message
+   git add components/molecules/badges components/molecules/index.ts
+   git add components/features/token-management/TokenList.tsx
+   git commit -m "Move badge components to molecules/badges directory and update imports"
+   ```
+
+9. **Test**
+   - Verify the application works correctly with the migrated components
+   - Check for any linting errors or broken references
+
 ## Migration Plan
 
 ### Phase 1: Badge Component Organization
@@ -73,14 +131,26 @@ kigo-pro-dashboard/
 2. **Move Badge Components**
    - Move `TokenStateBadge` from features/token-management to molecules/badges
    - Move `TicketBadge` from features/token-management to molecules/badges
-   - Consider consolidating StatusBadge and VersionBadge
+   - Move StatusBadge from molecules/StatusBadge to molecules/badges
+   - Move VersionBadge from molecules/VersionBadge to molecules/badges
 
-3. **Setup Proper Exports**
-   - Create `components/molecules/badges/index.ts` to export all badges
-   - Update `components/features/token-management/index.ts` to remove badge exports
+3. **Update Component Implementation**
+   - Update each badge to use the base Badge atom component
+   - Ensure consistent styling and behavior across all badge variations
+   - Standardize prop interfaces and type exports
 
-4. **Update Imports**
-   - Update all imports to reference badges from their new location
+4. **Setup Proper Exports**
+   - Create `components/molecules/badges/index.ts` to export all badges and types
+   - Update `components/molecules/index.ts` to export from the badges directory
+   - Remove obsolete exports from other files
+
+5. **Update Imports**
+   - Update all imports in consuming files to reference badges from the new location
+   - Ensure type imports are also updated
+
+6. **Clean Up**
+   - Remove empty directories and obsolete index files
+   - Commit changes with descriptive messages
 
 ### Phase 2: List Component Standardization
 
@@ -115,18 +185,22 @@ kigo-pro-dashboard/
 
 ## Implementation Guidelines
 
-1. **Make Small, Focused Changes**
+1. **Preserve Git History**
+   - Always use `git mv` instead of manually moving files
+   - This preserves file history and makes the codebase more maintainable
+
+2. **Make Small, Focused Changes**
    - Each change should be focused on a specific component or group of related components
    - Make changes incrementally to maintain a working application
 
-2. **Test After Each Change**
+3. **Test After Each Change**
    - Verify the application still works after each change
    - Check that imports are correctly resolved
 
-3. **Document Changes**
+4. **Document Changes**
    - Document changes made to the file structure
    - Update relevant documentation to reflect new organization
 
-4. **Follow Component Patterns**
+5. **Follow Component Patterns**
    - Ensure all components follow the established patterns
    - Document any exceptions or special cases 
