@@ -53,15 +53,16 @@ export const themeConfigs = {
   cvs: {
     sidebar: {
       item: {
-        active: "bg-pastel-blue text-gray-800", // Same as default for consistency
+        active: "bg-gradient-to-r from-pastel-blue to-pastel-red text-gray-800",
         inactive: "text-gray-500",
-        hover: "hover:bg-pastel-blue hover:text-gray-800",
+        hover:
+          "hover:bg-gradient-to-r hover:from-pastel-blue hover:to-pastel-red hover:text-gray-800",
         icon: {
-          active: "text-primary",
+          active: "text-gray-800", // Dark text for better contrast on gradient
           inactive: "text-gray-500",
         },
         text: {
-          active: "font-medium",
+          active: "font-semibold", // Slightly bolder for CVS
           inactive: "",
         },
       },

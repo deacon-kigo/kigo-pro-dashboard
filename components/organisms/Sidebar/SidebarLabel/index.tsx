@@ -34,58 +34,67 @@ export default function SidebarLabel({
   const theme =
     themeConfigs[themeName]?.sidebar?.item || themeConfigs.default.sidebar.item;
 
+  // For debugging in development
+  // console.log("SidebarLabel theme:", themeName, theme, clientId);
+
   // Validate that Icon is defined
   if (!Icon) {
     console.error("SidebarLabel: Icon prop is undefined");
     return null;
   }
 
-  // Get the appropriate styles based on state and theme
-  const getBaseClasses = () => {
-    return isActive ? theme.active : theme.inactive;
-  };
+  // Extract the active and hover classes for consistent application
+  const activeClasses = theme.active;
+  const inactiveClasses = theme.inactive;
 
-  // Get hover classes from theme - only apply to inactive items
-  const getHoverClasses = () => {
-    return isActive ? "" : theme.hover;
-  };
+  // For CVS theme, we need special treatment for the gradient
+  const isCvsTheme = themeName === "cvs";
 
-  // Get icon classes based on active state
+  // Build hover classes by mimicking the active state exactly
+  // For hover, we need to add 'hover:' prefix to each class in active state
+  const hoverClasses = isCvsTheme
+    ? "hover:bg-gradient-to-r hover:from-pastel-blue hover:to-pastel-red hover:text-gray-800"
+    : "hover:bg-pastel-blue hover:text-gray-800";
+
+  // Icon classes based on state
   const getIconClasses = () => {
-    return isActive ? theme.icon.active : theme.icon.inactive;
+    if (isActive) {
+      return theme.icon.active;
+    } else {
+      return `${theme.icon.inactive} ${isCvsTheme ? "group-hover:text-gray-800" : "group-hover:text-primary"}`;
+    }
   };
 
-  // Get text classes based on active state
+  // Text classes based on state
   const getTextClasses = () => {
-    return isActive ? theme.text.active : theme.text.inactive;
+    if (isActive) {
+      return theme.text.active;
+    } else {
+      return `${theme.text.inactive} ${isCvsTheme ? "group-hover:font-semibold" : "group-hover:font-medium"}`;
+    }
   };
 
-  // Combine all styling into a single class string
+  // Combine all classes for the link
   const linkClasses = `
     flex items-center py-2 text-sm font-medium rounded-lg group
     ${isCollapsed ? "justify-center px-2" : "px-3"}
-    ${getBaseClasses()}
-    ${getHoverClasses()}
+    ${isActive ? activeClasses : inactiveClasses}
+    ${!isActive ? hoverClasses : ""}
+    transition-all duration-200
   `;
 
-  // Include icon hover effect within the icon classes
+  // Icon classes
   const iconClasses = `
     w-5 h-5 
     ${isCollapsed ? "" : "mr-3"} 
     ${getIconClasses()}
-    ${isActive ? "" : "group-hover:text-primary"}
+    transition-colors duration-200
   `;
 
   return (
     <Link href={href} className={linkClasses} title={title}>
       <Icon className={iconClasses} />
-      {!isCollapsed && (
-        <span
-          className={`${getTextClasses()} ${isActive ? "" : "group-hover:font-medium"}`}
-        >
-          {title}
-        </span>
-      )}
+      {!isCollapsed && <span className={getTextClasses()}>{title}</span>}
       {!isCollapsed && hasNotification && (
         <span className="bg-pastel-red text-red-600 text-xs rounded-full px-1.5 py-0.5 ml-auto">
           {notificationCount}
