@@ -1,75 +1,72 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import React from 'react';
 import SidebarLabel from './index';
 import { HomeIcon } from '@heroicons/react/24/outline';
 
-// Story metadata
-const meta: Meta<typeof SidebarLabel> = {
-  component: SidebarLabel,
+// Debug console log
+console.log('Loading SidebarLabel story file');
+
+const meta = {
   title: 'Kigo UI/Organisms/Sidebar/SidebarLabel',
+  component: SidebarLabel,
   parameters: {
-    docs: {
-      description: {
-        component: 'Reusable navigation item used in the sidebar.'
-      }
-    }
+    layout: 'padded',
   },
-  tags: ['autodocs'],
-  argTypes: {
-    isActive: { control: 'boolean' },
-    isCollapsed: { control: 'boolean' },
-    isCVSContext: { control: 'boolean' },
-    hasNotification: { control: 'boolean' },
-    notificationCount: { control: 'number' }
-  }
-};
+} satisfies Meta<typeof SidebarLabel>;
 
 export default meta;
-type Story = StoryObj<typeof SidebarLabel>;
+type Story = StoryObj<typeof meta>;
 
-// Base SidebarLabel story
 export const Default: Story = {
   args: {
-    href: '#',
+    href: '/',
     icon: HomeIcon,
     title: 'Dashboard',
     isActive: false,
     isCollapsed: false,
     isCVSContext: false,
-    hasNotification: false,
-    notificationCount: 0
-  }
+  },
 };
 
-// Active state
 export const Active: Story = {
   args: {
-    ...Default.args,
-    isActive: true
-  }
+    href: '/',
+    icon: HomeIcon,
+    title: 'Dashboard',
+    isActive: true,
+    isCollapsed: false,
+    isCVSContext: false,
+  },
 };
 
-// Collapsed state
 export const Collapsed: Story = {
   args: {
-    ...Default.args,
-    isCollapsed: true
-  }
+    href: '/',
+    icon: HomeIcon,
+    title: 'Dashboard',
+    isActive: false,
+    isCollapsed: true,
+    isCVSContext: false,
+  },
 };
 
-// CVS Context
 export const CVSContext: Story = {
   args: {
-    ...Default.args,
-    isCVSContext: true
-  }
+    href: '/',
+    icon: HomeIcon,
+    title: 'Dashboard',
+    isActive: false,
+    isCollapsed: false,
+    isCVSContext: true,
+  },
 };
 
-// With notification
-export const WithNotification: Story = {
+export const CVSContextActive: Story = {
   args: {
-    ...Default.args,
-    hasNotification: true,
-    notificationCount: 5
-  }
+    href: '/',
+    icon: HomeIcon,
+    title: 'Dashboard',
+    isActive: true,
+    isCollapsed: false,
+    isCVSContext: true,
+  },
 }; 

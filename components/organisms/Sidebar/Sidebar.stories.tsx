@@ -1,59 +1,47 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import React, { ComponentType, ReactElement } from 'react';
-// Use absolute imports to ensure proper resolution
-import Sidebar from '@/components/organisms/Sidebar/Sidebar';
-// Add SidebarLabel for potential mocking
-import SidebarLabel from '@/components/organisms/Sidebar/SidebarLabel';
+import Sidebar from './Sidebar';
+import SidebarLabel from './SidebarLabel';
+import { DecoratorFunction } from '@storybook/types';
+import { ReactRenderer } from '@storybook/react';
 
 // Debug imports
 console.log('Sidebar component imported:', Sidebar);
 console.log('SidebarLabel component imported:', SidebarLabel);
 
-// Add type declaration for window augmentation
+// Add TypeScript interface for window to make TypeScript happy
 declare global {
   interface Window {
-    SidebarLabel?: ComponentType<any>;
+    SidebarLabel?: typeof SidebarLabel;
   }
 }
 
-// Custom decorator to address potential resolution issues
-const withSidebarResolutionFix = (Story: ComponentType): ReactElement => {
-  // Ensure SidebarLabel is properly resolved
-  if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
-    // Make SidebarLabel globally available as a fallback
-    window.SidebarLabel = SidebarLabel;
-  }
-  
-  return <Story />;
-};
-
-// Story metadata
-const meta: Meta<typeof Sidebar> = {
-  component: Sidebar,
+const meta = {
   title: 'Kigo UI/Organisms/Sidebar',
+  component: Sidebar,
   parameters: {
-    docs: {
-      description: {
-        component: 'Navigation sidebar that adapts based on user role and context.'
-      }
-    },
-    layout: 'fullscreen'
+    layout: 'fullscreen',
   },
-  tags: ['autodocs'],
   decorators: [
-    withSidebarResolutionFix,
-    (Story) => (
-      <div style={{ height: '100vh' }}>
-        <Story />
-      </div>
-    ),
+    (Story) => {
+      // Make SidebarLabel globally available for development
+      console.log('SidebarLabel:', SidebarLabel);
+      console.log('Sidebar:', Sidebar);
+      if (typeof window !== 'undefined') {
+        window.SidebarLabel = SidebarLabel;
+      }
+      return <Story />;
+    }
   ],
-};
+} satisfies Meta<typeof Sidebar>;
 
 export default meta;
-type Story = StoryObj<typeof Sidebar>;
+type Story = StoryObj<typeof meta>;
 
 export const MerchantSidebar: Story = {
+  args: {
+    role: 'merchant',
+    isCVSContext: false
+  },
   parameters: {
     nextRouter: {
       path: '/'
@@ -76,6 +64,10 @@ export const MerchantSidebar: Story = {
 };
 
 export const SupportSidebar: Story = {
+  args: {
+    role: 'support',
+    isCVSContext: false
+  },
   parameters: {
     nextRouter: {
       path: '/tickets'
@@ -98,6 +90,10 @@ export const SupportSidebar: Story = {
 };
 
 export const CVSSidebar: Story = {
+  args: {
+    role: 'support',
+    isCVSContext: true
+  },
   parameters: {
     nextRouter: {
       path: '/cvs/dashboard'
@@ -120,6 +116,10 @@ export const CVSSidebar: Story = {
 };
 
 export const CollapsedSidebar: Story = {
+  args: {
+    role: 'merchant',
+    isCVSContext: false
+  },
   parameters: {
     nextRouter: {
       path: '/'
@@ -142,6 +142,10 @@ export const CollapsedSidebar: Story = {
 };
 
 export const AdminSidebar: Story = {
+  args: {
+    role: 'admin',
+    isCVSContext: false
+  },
   parameters: {
     nextRouter: {
       path: '/settings'
