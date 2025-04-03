@@ -122,7 +122,7 @@ The migration follows an end-to-end process for each component or component grou
 
 ## Migration Plan
 
-### Phase 1: Badge Component Organization
+### ✅ Phase 1: Badge Component Organization (COMPLETED)
 
 1. **Create Central Badge Directory**
    - Create `components/molecules/badges`
@@ -134,25 +134,50 @@ The migration follows an end-to-end process for each component or component grou
    - Move StatusBadge from molecules/StatusBadge to molecules/badges
    - Move VersionBadge from molecules/VersionBadge to molecules/badges
 
-3. **Update Component Implementation**
-   - Update each badge to use the base Badge atom component
-   - Ensure consistent styling and behavior across all badge variations
-   - Standardize prop interfaces and type exports
+3. **Setup Proper Exports**
+   - Create `components/molecules/badges/index.ts` to export all badges
+   - Update `components/features/token-management/index.ts` to remove badge exports
 
-4. **Setup Proper Exports**
-   - Create `components/molecules/badges/index.ts` to export all badges and types
-   - Update `components/molecules/index.ts` to export from the badges directory
-   - Remove obsolete exports from other files
+### ✅ Phase 2: Card Components Organization (COMPLETED)
 
-5. **Update Imports**
-   - Update all imports in consuming files to reference badges from the new location
-   - Ensure type imports are also updated
+1. **Create Cards Directory**
+   - Create `components/molecules/cards`
+   - Follow lowercase naming convention for consistency
 
-6. **Clean Up**
-   - Remove empty directories and obsolete index files
-   - Commit changes with descriptive messages
+2. **Move Card Components**
+   - Move `CampaignCard` from components/dashboard to molecules/cards
+   - Move `StatCard` from components/dashboard to molecules/cards
+   - Move `TaskCard` from components/dashboard to molecules/cards
 
-### Phase 2: List Component Standardization
+3. **Setup Proper Exports**
+   - Create `components/molecules/cards/index.ts` to export all card components
+   - Update the molecules index.ts to export from cards
+
+### ✅ Phase 3: Chart Components Organization (COMPLETED)
+
+1. **Standardize Chart Directory Structure**
+   - Rename `components/molecules/Chart` to `components/molecules/charts`
+   - Move chart components from other locations to molecules/charts
+   - Remove capitalized `Chart` directory to avoid duplicate directories
+
+2. **Move Chart Components**
+   - Move Chart.tsx to BaseChart.tsx in molecules/charts
+   - Move CampaignPerformanceChart from dashboard/charts to molecules/charts
+   - Add RevenueChart from dashboard/charts to molecules/charts
+
+3. **Setup Proper Exports**
+   - Create `components/molecules/charts/index.ts` to export all chart components
+   - Update the molecules index.ts to export from charts
+   - Update imports in CallVolumeChart.tsx to use the new path
+
+### ✅ Phase 4: Update Dialog Directory Structure (COMPLETED)
+
+1. **Update Dialog Directory Name**
+   - Rename `components/molecules/Dialog` to `components/molecules/dialog`
+   - Update molecules/index.ts to import from the new path
+   - Update imports in TicketModal.tsx to use the new path
+
+### Phase 5: List Component Standardization (IN PROGRESS)
 
 1. **Standardize Props and Interfaces**
    - Keep TokenList and TicketList in their feature folders
@@ -163,7 +188,7 @@ The migration follows an end-to-end process for each component or component grou
    - Check all feature folders have proper index.ts files
    - Standardize export patterns
 
-### Phase 3: Dashboard Views Organization
+### Phase 6: Dashboard Views Organization
 
 1. **Standardize View Structure**
    - Keep views in their current locations
@@ -173,7 +198,7 @@ The migration follows an end-to-end process for each component or component grou
    - Add JSDoc comments to view components
    - Establish clear patterns for view composition
 
-### Phase 4: Documentation & Cleanup
+### Phase 7: Documentation & Cleanup
 
 1. **Update Component Documentation**
    - Ensure all components have JSDoc comments
@@ -182,6 +207,19 @@ The migration follows an end-to-end process for each component or component grou
 2. **Clean Up Any Duplicates**
    - Identify and remove duplicate components
    - Consolidate shared functionality
+
+## Folder Naming Conventions
+
+For consistency, we follow these naming conventions throughout the codebase:
+
+1. **Component Type Directories**: Use lowercase for component type directories
+   - `atoms/`, `molecules/`, `organisms/`, `templates/`, `features/`
+
+2. **Component Category Directories**: Use lowercase for component category directories
+   - `molecules/badges/`, `molecules/cards/`, `features/campaigns/`
+
+3. **Component Files**: Use PascalCase for component files
+   - `Button.tsx`, `CampaignCard.tsx`
 
 ## Implementation Guidelines
 

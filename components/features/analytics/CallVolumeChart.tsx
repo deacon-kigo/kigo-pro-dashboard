@@ -3,7 +3,7 @@
 import React, { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { fetchCallVolumeData } from '@/lib/redux/slices/analyticsSlice';
-import { LineChart } from '@/components/molecules/Chart';
+import { LineChart } from '@/components/molecules/charts';
 import { cn } from '@/lib/utils';
 import { Chart as ChartJS } from 'chart.js';
 

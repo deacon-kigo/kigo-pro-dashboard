@@ -1,4 +1,4 @@
-export * from './Dialog';
-export * from './Chart';
+export * from './dialog';
+export * from './charts';
 export * from './badges';
 export * from './DemoSelector';

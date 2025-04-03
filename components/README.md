@@ -25,8 +25,8 @@ Molecules are combinations of atoms that form more complex, functional units:
 
 - Dialog
 - Chart
-- StatusBadge
-- VersionBadge
+- badges (StatusBadge, VersionBadge, TokenStateBadge, etc.)
+- cards (CampaignCard, StatCard, TaskCard)
 
 ### organisms/
 
@@ -44,13 +44,29 @@ Templates are page-level structures that define layouts:
 - StandardDashboard
 - AppLayout
 
-### shared/
+### features/
 
-Shared utilities used across components:
+Feature-specific components that encapsulate domain logic:
 
-- providers: React context providers
-- hoc: Higher-order components
-- context: Component-specific contexts
+- campaigns
+- token-management
+- analytics
+
+## Folder Naming Conventions
+
+For consistency, we follow these naming conventions:
+
+1. **Component Type Directories**: Use lowercase for component type directories
+   - ✅ `atoms/`, `molecules/`, `organisms/`, `templates/`, `features/`
+
+2. **Component Category Directories**: Use lowercase for component category directories under component types
+   - ✅ `molecules/badges/`, `molecules/cards/`, `features/campaigns/`
+
+3. **Component Directories**: Use PascalCase for specific component directories (when applicable)
+   - ✅ `atoms/Button/`, `organisms/Header/`
+
+4. **Component Files**: Use PascalCase for component files
+   - ✅ `Button.tsx`, `CampaignCard.tsx`
 
 ## Component Structure
 

@@ -1,5 +1,6 @@
 import * as React from "react"
 import { VariantProps, cva } from "class-variance-authority"
+import Link from "next/link"
 
 import { cn } from "@/lib/utils"
 
@@ -32,18 +33,44 @@ const buttonVariants = cva(
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
-  asChild?: boolean
+  asChild?: boolean;
+  href?: string;
+  icon?: React.ReactNode;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, href, icon, children, ...props }, ref) => {
+    const buttonContent = (
+      <>
+        {icon && <span className="mr-2">{icon}</span>}
+        {children}
+      </>
+    )
+    
+    if (href) {
+      // Filter out button-specific props that can't be applied to a Link
+      const { type, ...linkProps } = props as any;
+      
+      return (
+        <Link 
+          href={href}
+          className={cn(buttonVariants({ variant, size, className }))}
+          {...linkProps}
+        >
+          {buttonContent}
+        </Link>
+      );
+    }
+    
     return (
       <button
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         {...props}
-      />
-    )
+      >
+        {buttonContent}
+      </button>
+    );
   }
 )
 Button.displayName = "Button"

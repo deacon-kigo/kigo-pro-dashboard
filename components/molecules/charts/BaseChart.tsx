@@ -59,7 +59,7 @@ export interface ChartProps
 
 // Chart container component
 const ChartContainer = forwardRef<HTMLDivElement, ChartProps>(
-  ({ className, size, ...props }, ref) => {
+  ({ className, size, data, ...props }, ref) => {
     return (
       <div
         ref={ref}
@@ -75,7 +75,7 @@ ChartContainer.displayName = "ChartContainer"
 export const LineChart = forwardRef<HTMLDivElement, ChartProps>(
   ({ data, options, className, size, ...props }, ref) => {
     return (
-      <ChartContainer ref={ref} className={className} size={size} {...props}>
+      <ChartContainer ref={ref} className={className} size={size} data={data} {...props}>
         <Line 
           data={data} 
           options={{
@@ -94,7 +94,7 @@ LineChart.displayName = "LineChart"
 export const BarChart = forwardRef<HTMLDivElement, ChartProps>(
   ({ data, options, className, size, ...props }, ref) => {
     return (
-      <ChartContainer ref={ref} className={className} size={size} {...props}>
+      <ChartContainer ref={ref} className={className} size={size} data={data} {...props}>
         <Bar 
           data={data} 
           options={{
@@ -113,7 +113,7 @@ BarChart.displayName = "BarChart"
 export const PieChart = forwardRef<HTMLDivElement, ChartProps>(
   ({ data, options, className, size, ...props }, ref) => {
     return (
-      <ChartContainer ref={ref} className={className} size={size} {...props}>
+      <ChartContainer ref={ref} className={className} size={size} data={data} {...props}>
         <Pie 
           data={data} 
           options={{
@@ -132,7 +132,7 @@ PieChart.displayName = "PieChart"
 export const DoughnutChart = forwardRef<HTMLDivElement, ChartProps>(
   ({ data, options, className, size, ...props }, ref) => {
     return (
-      <ChartContainer ref={ref} className={className} size={size} {...props}>
+      <ChartContainer ref={ref} className={className} size={size} data={data} {...props}>
         <Doughnut 
           data={data} 
           options={{

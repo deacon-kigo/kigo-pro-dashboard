@@ -109,7 +109,7 @@ export default function CampaignsPage() {
           </Button>
           
           <Button 
-            variant="primary"
+            variant="default"
             size="sm"
             href="/campaigns/create"
             icon={<PlusIcon className="w-4 h-4" />}
