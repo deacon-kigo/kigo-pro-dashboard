@@ -1,55 +1,60 @@
+// Configuration for Storybook
 const config = {
   stories: [
-    "../components/**/*.stories.@(js|jsx|ts|tsx)",
-    "../app/**/*.stories.@(js|jsx|ts|tsx)",
+    '../components/**/*.mdx',
+    '../components/**/*.stories.@(js|jsx|ts|tsx)',
+    '../app/**/*.stories.@(js|jsx|ts|tsx)'
   ],
+  staticDirs: ['../public'],
   addons: [
-    "@storybook/addon-links",
-    "@storybook/addon-essentials",
-    "@storybook/addon-interactions",
-    "@storybook/addon-a11y",
+    '@storybook/addon-links',
+    '@storybook/addon-essentials',
+    '@storybook/addon-interactions',
+    '@storybook/addon-docs',
+    '@storybook/addon-styling-webpack',
     {
-      name: "@storybook/addon-styling",
-      options: {},
+      name: '@storybook/addon-styling-webpack',
+      options: {
+        rules: [
+          {
+            test: /\.css$/,
+            use: [
+              'style-loader',
+              {
+                loader: 'css-loader',
+                options: { importLoaders: 1 }
+              },
+              {
+                loader: 'postcss-loader',
+                options: {
+                  // eslint-disable-next-line @typescript-eslint/no-var-requires
+                  implementation: require('postcss'),
+                },
+              },
+            ],
+          },
+        ],
+      },
     },
   ],
   framework: {
-    name: "@storybook/nextjs",
-    options: {},
+    name: '@storybook/nextjs',
+    options: {}
   },
   docs: {
-    autodocs: "tag",
+    autodocs: 'tag'
   },
-  staticDirs: ["../public"],
   webpackFinal: async (config) => {
-    // Find the CSS rule
-    const cssRule = config.module.rules.find(
-      (rule) => rule.test && rule.test.toString().includes("css")
-    );
-
-    // If we find a CSS rule, ensure it's not expecting modules
-    if (cssRule) {
-      cssRule.exclude = /\.module\.css$/;
-    }
-
-    // Explicitly add the rule for CSS Modules
-    config.module.rules.push({
-      test: /\.module\.css$/,
-      use: [
-        "style-loader",
-        {
-          loader: "css-loader",
-          options: {
-            importLoaders: 1,
-            modules: true,
-          },
-        },
-        "postcss-loader",
-      ],
-    });
-
+    // Add any custom webpack configurations here
+    
+    // Alias next/navigation to our mock implementation
+    config.resolve = config.resolve || {};
+    config.resolve.alias = config.resolve.alias || {};
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    config.resolve.alias['next/navigation'] = require.resolve('./mockNextNavigation.js');
+    
     return config;
-  },
+  }
 };
 
 export default config;

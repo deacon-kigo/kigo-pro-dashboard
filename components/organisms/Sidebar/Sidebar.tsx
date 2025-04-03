@@ -14,23 +14,36 @@ import {
   QuestionMarkCircleIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  UserIcon,
   TicketIcon,
   BuildingStorefrontIcon
 } from '@heroicons/react/24/outline';
-import { useAppSelector, useAppDispatch, useDemoState } from '@/lib/redux/hooks';
+import { useDemoState } from '@/lib/redux/hooks';
 import { toggleSidebar, setSidebarCollapsed } from '@/lib/redux/slices/uiSlice';
 import demoConfigs from '@/config/demoConfigs';
 import { buildDemoUrl, isPathActive } from '@/lib/utils';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '@/lib/redux/store';
 
 export default function Sidebar() {
-  const pathname = usePathname();
-  const dispatch = useAppDispatch();
-  const { role, clientId, clientName } = useDemoState();
-  const { sidebarCollapsed } = useAppSelector(state => state.ui);
+  const dispatch = useDispatch();
+  const { sidebarCollapsed } = useSelector((state: RootState) => state.ui);
+  const { role, clientId } = useSelector((state: RootState) => state.demo);
+  const { clientName } = useDemoState();
   
   // Local state for backward compatibility during migration
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(sidebarCollapsed);
+  
+  // This is where the error occurs - pathname can be null in Storybook
+  let pathname = usePathname();
+  
+  // Add a fallback for Storybook
+  if (pathname === null) {
+    // Check for a mocked pathname or use a default
+    pathname = (typeof window !== 'undefined' && window.__NEXT_MOCK_PATHNAME) || '/dashboard';
+  }
+  
+  // Ensure pathname is a string and never null
+  pathname = pathname || '/dashboard';
   
   // Check if we're in the CVS context
   const isCVSContext = clientId === 'cvs' || (pathname && pathname.includes('cvs-'));
@@ -38,9 +51,6 @@ export default function Sidebar() {
   // CVS brand colors for gradients
   const cvsBlue = '#2563EB';
   const cvsRed = '#CC0000';
-  
-  // Define gradients
-  const activeLinkGradient = `linear-gradient(to right, ${cvsBlue}, ${cvsRed})`;
   
   // Sync local state with Redux
   useEffect(() => {
@@ -101,8 +111,6 @@ export default function Sidebar() {
 
   // Get client-specific information
   const client = demoConfigs.clients[clientId];
-  const clientLogo = client?.logo || '/kigo logo.svg';
-  const clientLogoIconOnly = client?.logo || '/kigo logo only.svg';
   
   // Get CVS-specific navigation items
   const getCVSNavigationItems = () => {

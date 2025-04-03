@@ -1,139 +1,203 @@
 import '../app/globals.css';
 import React from 'react';
+import { Provider } from 'react-redux';
+import { configureStore, createSlice } from '@reduxjs/toolkit';
+import { setupNextNavigationMocks } from './mockNextNavigation';
 
-/**
- * TypeScript type declarations for the window properties
- * 
- * declare global {
- *   interface Window {
- *     __NEXT_MOCK_PATHNAME?: string;
- *   }
- * }
- */
+// Initialize Next.js navigation mocks
+setupNextNavigationMocks();
 
-// Register viewports for responsive testing
-const customViewports = {
-  mobile1: {
-    name: 'Small Mobile',
-    styles: {
-      width: '320px',
-      height: '568px',
-    },
-  },
-  mobile2: {
-    name: 'Large Mobile',
-    styles: {
-      width: '414px',
-      height: '896px',
-    },
-  },
-  tablet: {
-    name: 'Tablet',
-    styles: {
-      width: '768px',
-      height: '1024px',
-    },
-  },
-  desktop: {
-    name: 'Desktop',
-    styles: {
-      width: '1280px',
-      height: '800px',
-    },
-  },
-  largeDesktop: {
-    name: 'Large Desktop',
-    styles: {
-      width: '1920px',
-      height: '1080px',
-    },
-  },
-};
-
-// Add a notice if a component uses Redux but doesn't have the proper mocks in Storybook
-const ReduxComponentMessage = () => (
-  <div
-    style={{
-      padding: '20px',
-      margin: '20px 0',
-      borderRadius: '4px',
-      backgroundColor: '#FEF6E4',
-      border: '1px solid #F7C948',
-    }}
-  >
-    <h3 style={{ margin: '0 0 10px', color: '#8C6D1F' }}>⚠️ Redux Component</h3>
-    <p style={{ margin: '0', color: '#8C6D1F' }}>
-      This component uses Redux for state management. In Storybook, the component is rendered with mock data for display purposes only.
-      Some interactive functionality may not work without proper Redux context.
-    </p>
-  </div>
-);
-
-// Simple mock for next/navigation pathname
+// Mock the next/navigation module
+// This needs to be at the top level, before any component imports
 if (typeof window !== 'undefined') {
-  // Default pathname for Storybook stories
-  window.__NEXT_MOCK_PATHNAME = '/';
+  // Direct module replacement for usePathname
+  window.usePathname = () => '/dashboard'; // Default fallback
 }
 
-// Global decorator for mocking Redux hooks
-const withMockReduxHooks = (Story, context) => {
-  // Check if this story has mockData parameter
-  const hasMockData = context.parameters.mockData !== undefined;
-  
-  // Update pathname if provided in story parameters
-  if (typeof window !== 'undefined' && context.parameters.pathname) {
-    window.__NEXT_MOCK_PATHNAME = context.parameters.pathname;
+// TypeScript declarations for Next.js router
+/**
+ * @typedef {Object} NextRouter
+ * @property {string} pathname - The current path
+ * @property {string} asPath - The as path
+ * @property {Object} query - The query object
+ * @property {Function} push - Navigate to a new URL
+ * @property {Function} replace - Replace the current URL
+ * @property {Function} back - Go back in history
+ */
+
+/**
+ * Global window augmentation
+ * @typedef {Object} WindowWithNextRouter
+ * @property {string} __NEXT_ROUTER_BASEPATH - Next.js base path
+ * @property {string} __NEXT_MOCK_PATHNAME - Mocked pathname for Storybook
+ * @property {NextRouter} mockNextRouter - Mock router object
+ */
+
+// Create default mock state
+const DEFAULT_MOCK_STATE = {
+  ui: {
+    sidebarCollapsed: false,
+    sidebarWidth: '250px',
+    isMobileView: false,
+    currentBreakpoint: 'lg',
+    theme: 'light',
+    chatOpen: false,
+    spotlightOpen: false,
+    demoSelectorOpen: false
+  },
+  demo: {
+    role: 'merchant',
+    clientId: 'deacons',
+    clientName: 'Deacon\'s Pizza',
+    themeMode: 'light',
+    scenario: 'default',
+    version: 'v1.0'
+  },
+  user: {
+    profile: {
+      name: 'Demo User',
+      email: 'demo@kigo.com'
+    },
+    notifications: []
   }
-  
+};
+
+// Create a redux store factory
+const createStore = (state = DEFAULT_MOCK_STATE) => {
+  // Create UI slice
+  const uiSlice = createSlice({
+    name: 'ui',
+    initialState: state.ui,
+    reducers: {
+      toggleSidebar: (state) => {
+        state.sidebarCollapsed = !state.sidebarCollapsed;
+        state.sidebarWidth = state.sidebarCollapsed ? '70px' : '250px';
+      }
+    }
+  });
+
+  // Create demo slice
+  const demoSlice = createSlice({
+    name: 'demo',
+    initialState: state.demo,
+    reducers: {}
+  });
+
+  // Create user slice
+  const userSlice = createSlice({
+    name: 'user',
+    initialState: state.user,
+    reducers: {}
+  });
+
+  // Configure the store
+  return configureStore({
+    reducer: {
+      ui: uiSlice.reducer,
+      demo: demoSlice.reducer,
+      user: userSlice.reducer
+    }
+  });
+};
+
+// Global decorator for Redux
+const withRedux = (Story, context) => {
+  // Get parameters from the story or use defaults
+  const { redux } = context.parameters;
+  const store = createStore(redux?.state);
+
   return (
-    <>
-      {hasMockData && <ReduxComponentMessage />}
+    <Provider store={store}>
       <Story />
-    </>
+    </Provider>
   );
+};
+
+// Mock Next.js router for all stories
+const withNextRouter = (Story, context) => {
+  // We need to mock next/router for Storybook
+  // This sets up a global mock that any component can access
+  if (typeof window !== 'undefined') {
+    // Get pathname from story parameters or context
+    const storyPath = context.parameters.nextRouter?.path || '/dashboard';
+    
+    // Create a global mock router object
+    window.__NEXT_ROUTER_BASEPATH = '';
+    window.__NEXT_MOCK_PATHNAME = storyPath;
+    
+    // Mock for any component that directly imports next/router
+    window.mockNextRouter = {
+      pathname: storyPath,
+      asPath: storyPath,
+      query: {},
+      push: () => Promise.resolve(true),
+      replace: () => Promise.resolve(true),
+      back: () => {}
+    };
+    
+    // For components that check basePath
+    window.__NEXT_ROUTER_BASEPATH = '';
+
+    // Make sure usePathname always returns the current path string
+    window.usePathname = () => storyPath;
+    
+    // Ensure our mocks are properly loaded before component initialization
+    // This helps ensure the mocks are available during component rendering
+    Object.defineProperty(window, 'usePathname', {
+      value: () => storyPath,
+      writable: true
+    });
+  }
+
+  return <Story />;
 };
 
 const preview = {
   parameters: {
-    actions: { argTypesRegex: '^on[A-Z].*' },
+    actions: { argTypesRegex: "^on[A-Z].*" },
     controls: {
       matchers: {
         color: /(background|color)$/i,
         date: /Date$/,
       },
     },
-    viewport: { 
-      viewports: customViewports,
-      defaultViewport: 'desktop' 
-    },
     docs: {
-      toc: true,
-    },
-    options: {
-      storySort: {
-        order: ['Kigo UI', ['Introduction', 'Atoms', 'Molecules', 'Organisms', 'Templates', 'Pages']],
+      story: {
+        inline: true,
+      },
+      canvas: {
+        sourceState: 'shown',
+      },
+      source: {
+        excludeDecorators: true,
+        type: 'code',
+      },
+      description: {
+        component: 'Description for the component',
+      },
+      argTypes: {
+        excludeStories: [
+          'default',
+          'Primary',
+          'Secondary',
+          'Large',
+          'Small',
+        ],
       },
     },
-    backgrounds: {
-      default: 'light',
-      values: [
-        {
-          name: 'light',
-          value: '#ffffff',
-        },
-        {
-          name: 'dark',
-          value: '#1a1a1a',
-        },
-        {
-          name: 'kigo-stone',
-          value: '#f6f5f1',
-        },
-      ],
+    nextRouter: {
+      path: '/dashboard', // default path
     },
+    // Default Redux state - can be overridden in individual stories
+    redux: {
+      state: DEFAULT_MOCK_STATE
+    }
   },
   // Apply the mock context decorator to all stories
-  decorators: [withMockReduxHooks],
+  decorators: [
+    withNextRouter,
+    withRedux
+  ],
 };
 
 export default preview;
