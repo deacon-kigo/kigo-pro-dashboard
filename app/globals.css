@@ -3,29 +3,30 @@
 @tailwind utilities;
 
 :root {
-  --primary: #4B55FD;
-  --primary-light: #E6E7FF;
+  --primary: #4b55fd;
+  --primary-light: #e6e7ff;
   --bg-light: #f6f5f1;
-  --text-dark: #231F20;
-  --text-muted: #5A5858;
-  --border-light: #E4E5E7;
+  --text-dark: #231f20;
+  --text-muted: #5a5858;
+  --border-light: #e4e5e7;
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-md:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --sidebar-width: 225px;
-  
+
   /* CVS Colors */
-  --cvs-blue: #2563EB;
-  --cvs-red: #CC0000;
-  
+  --cvs-blue: #2563eb;
+  --cvs-red: #cc0000;
+
   /* Pastel Colors */
-  --pastel-blue: #E1F0FF;
-  --pastel-purple: #F3E8FF;
-  --pastel-green: #DCFCE7;
-  --pastel-yellow: #FEF9C3;
-  --pastel-orange: #FFEDD5;
-  --pastel-red: #FEE2E2;
-  --pastel-pink: #FCE7F3;
-  
+  --pastel-blue: #e1f0ff;
+  --pastel-purple: #f3e8ff;
+  --pastel-green: #dcfce7;
+  --pastel-yellow: #fef9c3;
+  --pastel-orange: #ffedd5;
+  --pastel-red: #fee2e2;
+  --pastel-pink: #fce7f3;
+
   /* Glassmorphism */
   --glass-background-light: rgba(255, 255, 255, 0.9);
   --glass-background-dark: rgba(15, 23, 42, 0.95);
@@ -37,7 +38,7 @@
 
 html {
   height: 100%;
-  background-color: #F8FAFC;
+  background-color: #f8fafc;
 }
 
 * {
@@ -47,11 +48,22 @@ html {
 }
 
 body {
-  background-color: #F8FAFC;
-  color: #1E293B;
+  background-color: #f8fafc;
+  color: #1e293b;
   min-height: 100vh;
   height: 100%;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    "Open Sans",
+    "Helvetica Neue",
+    sans-serif;
 }
 
 /* Transition for spotlight overlay */
@@ -79,16 +91,16 @@ body.spotlight-open {
   .status-badge {
     @apply text-xs font-medium px-2 py-1 rounded-full;
   }
-  
+
   /* Glassmorphism Components */
   .glass {
     @apply bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border border-white/20 dark:border-gray-700/30;
   }
-  
+
   .glass-intense {
     @apply bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl border border-white/30 dark:border-gray-700/40 shadow-xl;
   }
-  
+
   .glass-subtle {
     @apply bg-white/60 dark:bg-gray-900/70 backdrop-blur-sm border border-white/10 dark:border-gray-700/20;
   }
@@ -96,8 +108,8 @@ body.spotlight-open {
 
 /* Hide scrollbar utility class */
 .hide-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 .hide-scrollbar::-webkit-scrollbar {
@@ -145,34 +157,72 @@ body.spotlight-open nav {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 @keyframes scaleIn {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @keyframes scaleOut {
-  from { transform: scale(1); opacity: 1; }
-  to { transform: scale(0.95); opacity: 0; }
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.95);
+    opacity: 0;
+  }
 }
 
 /* Ensure modal content is above the backdrop */
 .spotlight-modal-content {
-  z-index: 101;
-  position: relative;
+  z-index: 100;
 }
 
-/* Floating animations for logos with different speeds for depth effect */
+/* Layout Consistency Styles */
+.content-container {
+  width: 100%;
+  max-width: 1600px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 2rem;
+}
+
+.no-gap {
+  gap: 0 !important;
+}
+
+.align-with-header {
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+/* Animation Keyframes */
 @keyframes float-slow {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) rotate(0deg);
   }
   25% {
@@ -186,8 +236,10 @@ body.spotlight-open nav {
   }
 }
 
+/* Floating animations for logos with different speeds for depth effect */
 @keyframes float-slower {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) rotate(6deg);
   }
   33% {
@@ -199,7 +251,8 @@ body.spotlight-open nav {
 }
 
 @keyframes float-medium {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) rotate(12deg);
   }
   40% {
@@ -211,7 +264,8 @@ body.spotlight-open nav {
 }
 
 @keyframes float-fast {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) rotate(-12deg);
   }
   30% {
@@ -256,7 +310,8 @@ body.spotlight-open nav {
 
 /* Refined subtle animations for logos */
 @keyframes gentle-float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translate(0, 0) scale(1);
   }
   25% {
@@ -271,7 +326,8 @@ body.spotlight-open nav {
 }
 
 @keyframes gentle-float-reverse {
-  0%, 100% {
+  0%,
+  100% {
     transform: translate(0, 0) scale(1) rotate(0deg);
   }
   33% {
@@ -283,7 +339,8 @@ body.spotlight-open nav {
 }
 
 @keyframes gentle-pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 0.15;
   }
@@ -342,7 +399,8 @@ body.spotlight-open nav {
     transform: translate(32px, 0) rotate(0deg) translateX(70px) rotate(0deg);
   }
   to {
-    transform: translate(32px, 0) rotate(360deg) translateX(70px) rotate(-360deg);
+    transform: translate(32px, 0) rotate(360deg) translateX(70px)
+      rotate(-360deg);
   }
 }
 
@@ -351,7 +409,8 @@ body.spotlight-open nav {
     transform: translate(32px, 0) rotate(0deg) translateX(70px) rotate(0deg);
   }
   to {
-    transform: translate(32px, 0) rotate(-360deg) translateX(70px) rotate(360deg);
+    transform: translate(32px, 0) rotate(-360deg) translateX(70px)
+      rotate(360deg);
   }
 }
 
@@ -360,7 +419,8 @@ body.spotlight-open nav {
     transform: translate(32px, 0) rotate(0deg) translateX(40px) rotate(0deg);
   }
   to {
-    transform: translate(32px, 0) rotate(360deg) translateX(40px) rotate(-360deg);
+    transform: translate(32px, 0) rotate(360deg) translateX(40px)
+      rotate(-360deg);
   }
 }
 
@@ -369,12 +429,14 @@ body.spotlight-open nav {
     transform: translate(32px, 0) rotate(0deg) translateX(40px) rotate(0deg);
   }
   to {
-    transform: translate(32px, 0) rotate(-360deg) translateX(40px) rotate(360deg);
+    transform: translate(32px, 0) rotate(-360deg) translateX(40px)
+      rotate(360deg);
   }
 }
 
 @keyframes pulse-gentle {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.1;
   }
   50% {
@@ -383,7 +445,8 @@ body.spotlight-open nav {
 }
 
 @keyframes float-micro {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -392,7 +455,8 @@ body.spotlight-open nav {
 }
 
 @keyframes float-micro-reverse {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -448,7 +512,8 @@ body.spotlight-open nav {
 
 /* Gentle floating animations with longer duration */
 @keyframes gentle-float-slow {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) translateX(0);
   }
   25% {
@@ -463,7 +528,8 @@ body.spotlight-open nav {
 }
 
 @keyframes gentle-float-reverse-slow {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) translateX(0);
   }
   25% {

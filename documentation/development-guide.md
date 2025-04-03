@@ -8,6 +8,38 @@ This document outlines the organization strategy for the Kigo Pro Dashboard comp
 2. **Feature-Based Organization for Domain Logic**: Domain-specific components are organized by feature
 3. **Incremental Migration**: Changes are made incrementally without disrupting the working application
 4. **No Structural Overhaul**: Keep working within existing app and components directories
+5. **Design System Consistency**: Leverage Kigo design tokens while implementing with Tailwind CSS
+
+## Design System Strategy
+
+As the sole designer for Kigo Pro, we've made the strategic decision to:
+
+1. **Adopt Kigo design tokens** (colors, typography, spacing, etc.) for brand consistency
+2. **Use Tailwind CSS** for implementation rather than Material UI components
+3. **Create custom components** that align with the Kigo brand but are optimized for the Pro platform
+
+### Design Token Integration
+
+We will extract design tokens from the Kigo Web SDK (`kigoMuiTheme.ts`) and integrate them into our Tailwind configuration. This allows us to maintain brand consistency while using our preferred technology stack.
+
+The design tokens to be integrated include:
+
+- **Color palette**: Primary, secondary, neutrals, and semantic colors
+- **Typography**: Font family, sizes, weights, and line heights
+- **Breakpoints**: Screen size definitions
+- **Border radii**: Standard rounded corner values
+- **Spacing**: Consistent spacing values (based on Kigo patterns)
+
+### Implementation Approach for Nav & Header Components
+
+The navigation and header components will be implemented using Tailwind CSS while maintaining the Kigo branding. This approach:
+
+1. Maintains technical consistency (single styling approach)
+2. Provides better developer experience with familiar Tailwind patterns
+3. Allows for future flexibility and customization
+4. Optimizes bundle size by avoiding unused Material UI components
+
+The implementation will be documented in Storybook to ensure proper usage patterns and design consistency across the application.
 
 ## Target File Structure
 
@@ -214,7 +246,24 @@ The migration follows an end-to-end process for each component or component grou
    - Add JSDoc comments to view components
    - Establish clear patterns for view composition
 
-### Phase 7: Documentation & Cleanup
+### Phase 7: Design System Implementation
+
+1. **Update Tailwind Configuration**
+   - Implement Kigo design tokens in tailwind.config.mjs
+   - Include colors, typography, spacing, and breakpoints
+   - Document the mapping between Kigo tokens and Tailwind classes
+
+2. **Create Core Nav & Header Components**
+   - Develop navigation and header components using Tailwind
+   - Ensure responsive behavior across all breakpoints
+   - Follow Kigo branding guidelines while optimizing for our stack
+
+3. **Document in Storybook**
+   - Set up Storybook documentation for design tokens
+   - Create stories for core components with usage examples
+   - Include responsive behavior demonstrations
+
+### Phase 8: Documentation & Cleanup
 
 1. **Update Component Documentation**
 
@@ -263,5 +312,11 @@ For consistency, we follow these naming conventions throughout the codebase:
    - Update relevant documentation to reflect new organization
 
 5. **Follow Component Patterns**
+
    - Ensure all components follow the established patterns
    - Document any exceptions or special cases
+
+6. **Maintain Design Consistency**
+   - Use Kigo design tokens for visual consistency
+   - Follow the established design patterns from the Kigo design system
+   - Implement using Tailwind CSS for technical consistency

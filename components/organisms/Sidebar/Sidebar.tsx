@@ -22,6 +22,8 @@ import { toggleSidebar, setSidebarCollapsed } from "@/lib/redux/slices/uiSlice";
 import { buildDemoUrl, isPathActive } from "@/lib/utils";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
+// Import SidebarLabel component with full path to avoid Storybook resolution issues
+import SidebarLabel from "./SidebarLabel/index";
 
 export default function Sidebar() {
   const dispatch = useDispatch();
@@ -54,38 +56,46 @@ export default function Sidebar() {
   // const cvsBlue = '#2563EB';
   // const cvsRed = '#CC0000';
 
-  // Define gradients
-  const activeLinkBgGradient = "bg-gradient-to-r from-blue-50 to-red-50";
-  const activeLinkTextGradient =
-    "font-semibold bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent";
+  // Define gradients - centralized for consistency
+  const cvsPastelGradient = "bg-gradient-to-r from-pastel-blue to-pastel-red";
+  const activeLinkBgGradient = cvsPastelGradient;
+  const activeLinkTextGradient = "font-semibold";
   const activeIconClass = "text-gray-800";
 
-  // Kigo brand colors
-  const kigoActiveClass = "text-primary";
-  const kigoActiveBgClass = "bg-primary-light";
-  const kigoActiveIconClass = "text-primary";
+  // Kigo brand colors - matched to CVS pattern but with solid blue
+  const kigoActiveClass = "text-gray-800 font-medium"; // Dark text like CVS
+  const kigoActiveBgClass = "bg-blue-100"; // Blue background for active items
+  const kigoActiveIconClass = "text-primary"; // Blue icon for brand consistency
+  const kigoInactiveClass = "text-gray-500"; // Gray text for inactive items
 
   // Get active state classes based on context
   const getActiveClasses = (isActive: boolean) => {
-    if (!isActive) return "text-text-dark hover:bg-gray-100";
+    if (!isActive) return kigoInactiveClass;
 
     return isCVSContext
-      ? `${activeLinkBgGradient} text-gray-800`
-      : `${kigoActiveClass} ${kigoActiveBgClass}`;
+      ? `${cvsPastelGradient} text-gray-800`
+      : `${kigoActiveBgClass} ${kigoActiveClass}`;
+  };
+
+  // For hover classes
+  const getHoverClasses = () => {
+    return isCVSContext 
+      ? `hover:${cvsPastelGradient} hover:text-gray-800`
+      : "hover:bg-blue-100 hover:text-gray-800";
   };
 
   // Get active icon classes based on context
   const getActiveIconClasses = (isActive: boolean) => {
-    if (!isActive) return "text-text-muted";
+    if (!isActive) return "text-gray-500"; // Gray icon for inactive items
 
-    return isCVSContext ? activeIconClass : kigoActiveIconClass;
+    return isCVSContext ? "text-gray-800" : kigoActiveIconClass;
   };
 
   // Get active text classes for span elements
   const getActiveTextClasses = (isActive: boolean) => {
     if (!isActive) return "";
 
-    return isCVSContext ? activeLinkTextGradient : "font-semibold";
+    return isCVSContext ? activeLinkTextGradient : "font-medium";
   };
 
   // Sync local state with Redux
@@ -174,109 +184,65 @@ export default function Sidebar() {
     const tokenManagementUrl = buildDemoUrl("cvs", "token-catalog");
     const ticketsUrl = buildDemoUrl("cvs", "tickets");
 
+    // Cast isCVSContext to boolean explicitly for type safety
+    // Adding separate variable with unique name to avoid scope issues
+    const cvxContextBool = Boolean(isCVSContext);
+
     return (
       <>
         <li className="nav-item px-3 py-1">
-          <Link
+          <SidebarLabel
             href={dashboardUrl}
-            className={`
-              flex items-center py-2 text-sm font-medium rounded-md
-              ${isCollapsed ? "justify-center px-2" : "px-3"}
-              ${getActiveClasses(isLinkActive(dashboardUrl))}
-              ${isCVSContext ? "hover:text-gray-800" : "hover:text-primary"}
-            `}
+            icon={HomeIcon}
             title="Dashboard"
-          >
-            <HomeIcon
-              className={`w-5 h-5 ${isCollapsed ? "" : "mr-3"} ${getActiveIconClasses(isLinkActive(dashboardUrl))}`}
-            />
-            {!isCollapsed && (
-              <span
-                className={getActiveTextClasses(isLinkActive(dashboardUrl))}
-              >
-                Dashboard
-              </span>
-            )}
-          </Link>
+            isActive={Boolean(isLinkActive(dashboardUrl))}
+            isCollapsed={isCollapsed}
+            isCVSContext={cvxContextBool}
+          />
         </li>
         <li className="nav-item px-3 py-1">
-          <Link
+          <SidebarLabel
             href={customersUrl}
-            className={`
-              flex items-center py-2 text-sm font-medium rounded-md
-              ${isCollapsed ? "justify-center px-2" : "px-3"}
-              ${getActiveClasses(isLinkActive(customersUrl))}
-              ${isCVSContext ? "hover:text-gray-800" : "hover:text-primary"}
-            `}
+            icon={UserGroupIcon}
             title="Customers"
-          >
-            <UserGroupIcon
-              className={`w-5 h-5 ${isCollapsed ? "" : "mr-3"} ${getActiveIconClasses(isLinkActive(customersUrl))}`}
-            />
-            {!isCollapsed && (
-              <span
-                className={getActiveTextClasses(isLinkActive(customersUrl))}
-              >
-                Customers
-              </span>
-            )}
-          </Link>
+            isActive={Boolean(isLinkActive(customersUrl))}
+            isCollapsed={isCollapsed}
+            isCVSContext={cvxContextBool}
+          />
         </li>
         <li className="nav-item px-3 py-1">
-          <Link
+          <SidebarLabel
             href={tokenManagementUrl}
-            className={`
-              flex items-center py-2 text-sm font-medium rounded-md
-              ${isCollapsed ? "justify-center px-2" : "px-3"}
-              ${getActiveClasses(isLinkActive(tokenManagementUrl))}
-              ${isCVSContext ? "hover:text-gray-800" : "hover:text-primary"}
-            `}
-            title="Token Management"
-          >
-            <svg
-              className={`w-5 h-5 ${isCollapsed ? "" : "mr-3"} ${getActiveIconClasses(isLinkActive(tokenManagementUrl))}`}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1.5}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"
-              />
-            </svg>
-            {!isCollapsed && (
-              <span
-                className={getActiveTextClasses(
-                  isLinkActive(tokenManagementUrl)
-                )}
+            icon={(props) => (
+              <svg
+                {...props}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.5}
               >
-                Tokens
-              </span>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"
+                />
+              </svg>
             )}
-          </Link>
+            title="Tokens"
+            isActive={Boolean(isLinkActive(tokenManagementUrl))}
+            isCollapsed={isCollapsed}
+            isCVSContext={cvxContextBool}
+          />
         </li>
         <li className="nav-item px-3 py-1">
-          <Link
+          <SidebarLabel
             href={ticketsUrl}
-            className={`
-              flex items-center py-2 text-sm font-medium rounded-md
-              ${isCollapsed ? "justify-center px-2" : "px-3"}
-              ${getActiveClasses(isLinkActive(ticketsUrl))}
-              ${isCVSContext ? "hover:text-gray-800" : "hover:text-primary"}
-            `}
-            title="Support Tickets"
-          >
-            <TicketIcon
-              className={`w-5 h-5 ${isCollapsed ? "" : "mr-3"} ${getActiveIconClasses(isLinkActive(ticketsUrl))}`}
-            />
-            {!isCollapsed && (
-              <span className={getActiveTextClasses(isLinkActive(ticketsUrl))}>
-                Tickets
-              </span>
-            )}
-          </Link>
+            icon={TicketIcon}
+            title="Tickets"
+            isActive={Boolean(isLinkActive(ticketsUrl))}
+            isCollapsed={isCollapsed}
+            isCVSContext={cvxContextBool}
+          />
         </li>
       </>
     );
@@ -284,6 +250,9 @@ export default function Sidebar() {
 
   // Role-specific navigation items
   const getNavigationItems = () => {
+    // Cast isCVSContext to boolean explicitly for type safety once
+    const isCVSContextBoolean = Boolean(isCVSContext);
+    
     // If in CVS context, show CVS-specific navigation
     if (isCVSContext) {
       return getCVSNavigationItems();
@@ -294,71 +263,34 @@ export default function Sidebar() {
         return (
           <>
             <li className="nav-item px-3 py-1">
-              <Link
+              <SidebarLabel
                 href="/"
-                className={`
-                  flex items-center py-2 text-sm font-medium rounded-md
-                  ${isCollapsed ? "justify-center px-2" : "px-3"}
-                  ${getActiveClasses(isLinkActive("/"))}
-                  ${isCVSContext ? "hover:text-gray-800" : "hover:text-primary"}
-                `}
+                icon={HomeIcon}
                 title="Dashboard"
-              >
-                <HomeIcon
-                  className={`w-5 h-5 ${isCollapsed ? "" : "mr-3"} ${getActiveIconClasses(isLinkActive("/"))}`}
-                />
-                {!isCollapsed && (
-                  <span className={getActiveTextClasses(isLinkActive("/"))}>
-                    Dashboard
-                  </span>
-                )}
-              </Link>
+                isActive={Boolean(isLinkActive("/"))}
+                isCollapsed={isCollapsed}
+                isCVSContext={isCVSContextBoolean}
+              />
             </li>
             <li className="nav-item px-3 py-1">
-              <Link
+              <SidebarLabel
                 href="/campaigns"
-                className={`
-                  flex items-center py-2 text-sm font-medium rounded-md
-                  ${isCollapsed ? "justify-center px-2" : "px-3"}
-                  ${getActiveClasses(isLinkActive("/campaigns"))}
-                  ${isCVSContext ? "hover:text-gray-800" : "hover:text-primary"}
-                `}
+                icon={RocketLaunchIcon}
                 title="Campaigns"
-              >
-                <RocketLaunchIcon
-                  className={`w-5 h-5 ${isCollapsed ? "" : "mr-3"} ${getActiveIconClasses(isLinkActive("/campaigns"))}`}
-                />
-                {!isCollapsed && (
-                  <span
-                    className={getActiveTextClasses(isLinkActive("/campaigns"))}
-                  >
-                    Campaigns
-                  </span>
-                )}
-              </Link>
+                isActive={Boolean(isLinkActive("/campaigns"))}
+                isCollapsed={isCollapsed}
+                isCVSContext={isCVSContextBoolean}
+              />
             </li>
             <li className="nav-item px-3 py-1">
-              <Link
+              <SidebarLabel
                 href="/analytics"
-                className={`
-                  flex items-center py-2 text-sm font-medium rounded-md
-                  ${isCollapsed ? "justify-center px-2" : "px-3"}
-                  ${getActiveClasses(isLinkActive("/analytics"))}
-                  ${isCVSContext ? "hover:text-gray-800" : "hover:text-primary"}
-                `}
+                icon={ChartBarIcon}
                 title="Analytics"
-              >
-                <ChartBarIcon
-                  className={`w-5 h-5 ${isCollapsed ? "" : "mr-3"} ${getActiveIconClasses(isLinkActive("/analytics"))}`}
-                />
-                {!isCollapsed && (
-                  <span
-                    className={getActiveTextClasses(isLinkActive("/analytics"))}
-                  >
-                    Analytics
-                  </span>
-                )}
-              </Link>
+                isActive={Boolean(isLinkActive("/analytics"))}
+                isCollapsed={isCollapsed}
+                isCVSContext={isCVSContextBoolean}
+              />
             </li>
           </>
         );
@@ -366,71 +298,34 @@ export default function Sidebar() {
         return (
           <>
             <li className="nav-item px-3 py-1">
-              <Link
+              <SidebarLabel
                 href="/"
-                className={`
-                  flex items-center py-2 text-sm font-medium rounded-md
-                  ${isCollapsed ? "justify-center px-2" : "px-3"}
-                  ${getActiveClasses(isLinkActive("/"))}
-                  ${isCVSContext ? "hover:text-gray-800" : "hover:text-primary"}
-                `}
+                icon={HomeIcon}
                 title="Dashboard"
-              >
-                <HomeIcon
-                  className={`w-5 h-5 ${isCollapsed ? "" : "mr-3"} ${getActiveIconClasses(isLinkActive("/"))}`}
-                />
-                {!isCollapsed && (
-                  <span className={getActiveTextClasses(isLinkActive("/"))}>
-                    Dashboard
-                  </span>
-                )}
-              </Link>
+                isActive={Boolean(isLinkActive("/"))}
+                isCollapsed={isCollapsed}
+                isCVSContext={isCVSContextBoolean}
+              />
             </li>
             <li className="nav-item px-3 py-1">
-              <Link
+              <SidebarLabel
                 href="/tickets"
-                className={`
-                  flex items-center py-2 text-sm font-medium rounded-md
-                  ${isCollapsed ? "justify-center px-2" : "px-3"}
-                  ${getActiveClasses(isLinkActive("/tickets"))}
-                  ${isCVSContext ? "hover:text-gray-800" : "hover:text-primary"}
-                `}
-                title="Support Tickets"
-              >
-                <TicketIcon
-                  className={`w-5 h-5 ${isCollapsed ? "" : "mr-3"} ${getActiveIconClasses(isLinkActive("/tickets"))}`}
-                />
-                {!isCollapsed && (
-                  <span
-                    className={getActiveTextClasses(isLinkActive("/tickets"))}
-                  >
-                    Tickets
-                  </span>
-                )}
-              </Link>
+                icon={TicketIcon}
+                title="Tickets"
+                isActive={Boolean(isLinkActive("/tickets"))}
+                isCollapsed={isCollapsed}
+                isCVSContext={isCVSContextBoolean}
+              />
             </li>
             <li className="nav-item px-3 py-1">
-              <Link
+              <SidebarLabel
                 href="/merchants"
-                className={`
-                  flex items-center py-2 text-sm font-medium rounded-md
-                  ${isCollapsed ? "justify-center px-2" : "px-3"}
-                  ${getActiveClasses(isLinkActive("/merchants"))}
-                  ${isCVSContext ? "hover:text-gray-800" : "hover:text-primary"}
-                `}
+                icon={BuildingStorefrontIcon}
                 title="Merchants"
-              >
-                <BuildingStorefrontIcon
-                  className={`w-5 h-5 ${isCollapsed ? "" : "mr-3"} ${getActiveIconClasses(isLinkActive("/merchants"))}`}
-                />
-                {!isCollapsed && (
-                  <span
-                    className={getActiveTextClasses(isLinkActive("/merchants"))}
-                  >
-                    Merchants
-                  </span>
-                )}
-              </Link>
+                isActive={Boolean(isLinkActive("/merchants"))}
+                isCollapsed={isCollapsed}
+                isCVSContext={isCVSContextBoolean}
+              />
             </li>
           </>
         );
@@ -438,94 +333,44 @@ export default function Sidebar() {
         return (
           <>
             <li className="nav-item px-3 py-1">
-              <Link
+              <SidebarLabel
                 href="/"
-                className={`
-                  flex items-center py-2 text-sm font-medium rounded-md
-                  ${isCollapsed ? "justify-center px-2" : "px-3"}
-                  ${getActiveClasses(isLinkActive("/"))}
-                  ${isCVSContext ? "hover:text-gray-800" : "hover:text-primary"}
-                `}
+                icon={HomeIcon}
                 title="Dashboard"
-              >
-                <HomeIcon
-                  className={`w-5 h-5 ${isCollapsed ? "" : "mr-3"} ${getActiveIconClasses(isLinkActive("/"))}`}
-                />
-                {!isCollapsed && (
-                  <span className={getActiveTextClasses(isLinkActive("/"))}>
-                    Dashboard
-                  </span>
-                )}
-              </Link>
+                isActive={Boolean(isLinkActive("/"))}
+                isCollapsed={isCollapsed}
+                isCVSContext={isCVSContextBoolean}
+              />
             </li>
             <li className="nav-item px-3 py-1">
-              <Link
+              <SidebarLabel
                 href="/merchants"
-                className={`
-                  flex items-center py-2 text-sm font-medium rounded-md
-                  ${isCollapsed ? "justify-center px-2" : "px-3"}
-                  ${getActiveClasses(isLinkActive("/merchants"))}
-                  ${isCVSContext ? "hover:text-gray-800" : "hover:text-primary"}
-                `}
+                icon={UserGroupIcon}
                 title="Merchants"
-              >
-                <UserGroupIcon
-                  className={`w-5 h-5 ${isCollapsed ? "" : "mr-3"} ${getActiveIconClasses(isLinkActive("/merchants"))}`}
-                />
-                {!isCollapsed && (
-                  <span
-                    className={getActiveTextClasses(isLinkActive("/merchants"))}
-                  >
-                    Merchants
-                  </span>
-                )}
-              </Link>
+                isActive={Boolean(isLinkActive("/merchants"))}
+                isCollapsed={isCollapsed}
+                isCVSContext={isCVSContextBoolean}
+              />
             </li>
             <li className="nav-item px-3 py-1">
-              <Link
+              <SidebarLabel
                 href="/analytics"
-                className={`
-                  flex items-center py-2 text-sm font-medium rounded-md
-                  ${isCollapsed ? "justify-center px-2" : "px-3"}
-                  ${getActiveClasses(isLinkActive("/analytics"))}
-                  ${isCVSContext ? "hover:text-gray-800" : "hover:text-primary"}
-                `}
+                icon={ChartBarIcon}
                 title="Analytics"
-              >
-                <ChartBarIcon
-                  className={`w-5 h-5 ${isCollapsed ? "" : "mr-3"} ${getActiveIconClasses(isLinkActive("/analytics"))}`}
-                />
-                {!isCollapsed && (
-                  <span
-                    className={getActiveTextClasses(isLinkActive("/analytics"))}
-                  >
-                    Analytics
-                  </span>
-                )}
-              </Link>
+                isActive={Boolean(isLinkActive("/analytics"))}
+                isCollapsed={isCollapsed}
+                isCVSContext={isCVSContextBoolean}
+              />
             </li>
             <li className="nav-item px-3 py-1">
-              <Link
+              <SidebarLabel
                 href="/settings"
-                className={`
-                  flex items-center py-2 text-sm font-medium rounded-md
-                  ${isCollapsed ? "justify-center px-2" : "px-3"}
-                  ${getActiveClasses(isLinkActive("/settings"))}
-                  ${isCVSContext ? "hover:text-gray-800" : "hover:text-primary"}
-                `}
+                icon={Cog6ToothIcon}
                 title="Settings"
-              >
-                <Cog6ToothIcon
-                  className={`w-5 h-5 ${isCollapsed ? "" : "mr-3"} ${getActiveIconClasses(isLinkActive("/settings"))}`}
-                />
-                {!isCollapsed && (
-                  <span
-                    className={getActiveTextClasses(isLinkActive("/settings"))}
-                  >
-                    Settings
-                  </span>
-                )}
-              </Link>
+                isActive={Boolean(isLinkActive("/settings"))}
+                isCollapsed={isCollapsed}
+                isCVSContext={isCVSContextBoolean}
+              />
             </li>
           </>
         );
@@ -611,8 +456,8 @@ export default function Sidebar() {
           ) : (
             <Link href="/" className="flex items-center">
               {isCVSContext ? (
-                <div className="flex items-center">
-                  <div className="flex items-center">
+                <div className="flex items-center p-1.5 relative">
+                  <div className="flex items-center z-10">
                     <Image
                       src="/logos/cvs-logo-only.svg"
                       alt="CVS Logo"
@@ -626,11 +471,6 @@ export default function Sidebar() {
                       width={30}
                       height={30}
                     />
-                  </div>
-                  <div className="ml-2">
-                    <div className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent">
-                      Support Portal
-                    </div>
                   </div>
                 </div>
               ) : role === "merchant" ? (
@@ -682,86 +522,36 @@ export default function Sidebar() {
           )}
           <ul className="nav-items">
             <li className="nav-item px-3 py-1">
-              <Link
-                href={
-                  isCVSContext ? buildDemoUrl("cvs", "settings") : "/settings"
-                }
-                className={`
-                  flex items-center py-2 text-sm font-medium rounded-md
-                  ${isCollapsed ? "justify-center px-2" : "px-3"}
-                  ${getActiveClasses(isLinkActive(isCVSContext ? buildDemoUrl("cvs", "settings") : "/settings"))}
-                  ${isCVSContext ? "hover:text-gray-800" : "hover:text-primary"}
-                `}
+              <SidebarLabel
+                href={isCVSContext ? buildDemoUrl("cvs", "settings") : "/settings"}
+                icon={Cog6ToothIcon}
                 title="Settings"
-              >
-                <Cog6ToothIcon
-                  className={`w-5 h-5 ${isCollapsed ? "" : "mr-3"} ${getActiveIconClasses(isLinkActive(isCVSContext ? buildDemoUrl("cvs", "settings") : "/settings"))}`}
-                />
-                {!isCollapsed && (
-                  <span
-                    className={getActiveTextClasses(
-                      isLinkActive(
-                        isCVSContext
-                          ? buildDemoUrl("cvs", "settings")
-                          : "/settings"
-                      )
-                    )}
-                  >
-                    Settings
-                  </span>
-                )}
-              </Link>
+                isActive={Boolean(isLinkActive(isCVSContext ? buildDemoUrl("cvs", "settings") : "/settings"))}
+                isCollapsed={isCollapsed}
+                isCVSContext={Boolean(isCVSContext)}
+              />
             </li>
             <li className="nav-item px-3 py-1">
-              <Link
+              <SidebarLabel
                 href="/notifications"
-                className={`
-                  flex items-center py-2 text-sm font-medium rounded-md
-                  ${isCollapsed ? "justify-center px-2" : "px-3"}
-                  ${getActiveClasses(isLinkActive("/notifications"))}
-                  ${isCVSContext ? "hover:text-gray-800" : "hover:text-primary"}
-                `}
+                icon={BellIcon}
                 title="Notifications"
-              >
-                <BellIcon
-                  className={`w-5 h-5 ${isCollapsed ? "" : "mr-3"} ${getActiveIconClasses(isLinkActive("/notifications"))}`}
-                />
-                {!isCollapsed && (
-                  <span
-                    className={getActiveTextClasses(
-                      isLinkActive("/notifications")
-                    )}
-                  >
-                    Notifications
-                  </span>
-                )}
-                {!isCollapsed && (
-                  <span className="bg-pastel-red text-red-600 text-xs rounded-full px-1.5 py-0.5 ml-auto">
-                    5
-                  </span>
-                )}
-              </Link>
+                isActive={Boolean(isLinkActive("/notifications"))}
+                isCollapsed={isCollapsed}
+                isCVSContext={Boolean(isCVSContext)}
+                hasNotification={true}
+                notificationCount={5}
+              />
             </li>
             <li className="nav-item px-3 py-1">
-              <Link
+              <SidebarLabel
                 href="/help"
-                className={`
-                  flex items-center py-2 text-sm font-medium rounded-md
-                  ${isCollapsed ? "justify-center px-2" : "px-3"}
-                  ${getActiveClasses(isLinkActive("/help"))}
-                  ${isCVSContext ? "hover:text-gray-800" : "hover:text-primary"}
-                `}
+                icon={QuestionMarkCircleIcon}
                 title="Help & Support"
-              >
-                <QuestionMarkCircleIcon
-                  className={`w-5 h-5 ${isCollapsed ? "" : "mr-3"} ${getActiveIconClasses(isLinkActive("/help"))}`}
-                />
-                {!isCollapsed && (
-                  <span className={getActiveTextClasses(isLinkActive("/help"))}>
-                    Help & Support
-                  </span>
-                )}
-              </Link>
+                isActive={Boolean(isLinkActive("/help"))}
+                isCollapsed={isCollapsed}
+                isCVSContext={Boolean(isCVSContext)}
+              />
             </li>
           </ul>
         </div>

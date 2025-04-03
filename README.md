@@ -22,6 +22,16 @@ The project follows a hybrid approach combining Next.js App Router and Atomic De
 │   │   ├── analytics
 ```
 
+## Design System Approach
+
+Kigo Pro maintains brand consistency with the wider Kigo ecosystem while implementing components using Tailwind CSS rather than Material UI:
+
+1. **Design Tokens**: We extract design tokens (colors, typography, spacing) from the Kigo Web SDK
+2. **Tailwind Integration**: These tokens are integrated into our Tailwind configuration
+3. **Custom Components**: We create custom Tailwind-based components that align with Kigo branding
+
+This approach allows us to maintain a consistent visual identity while benefiting from Tailwind's developer experience and flexibility.
+
 ## Component Organization
 
 ### 1. Atomic Components
@@ -84,7 +94,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Inter](https://fonts.google.com/specimen/Inter), which is the Kigo brand font.
 
 ## Learn More
 

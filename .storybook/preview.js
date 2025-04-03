@@ -106,6 +106,9 @@ const withRedux = (Story, context) => {
   const { redux } = context.parameters;
   const store = createStore(redux?.state);
 
+  // Debug component imports
+  console.log('Story component:', context.component?.name);
+  
   return (
     <Provider store={store}>
       <Story />
