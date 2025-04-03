@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Token } from './types';
-import TokenStateBadge from './TokenStateBadge';
+import Modal from '@/components/ui/Modal';
+import TokenStateBadge from '@/components/molecules/badges/TokenStateBadge';
 import { formatShortDate } from './utils';
 
 type TokenSearchModalProps = {

@@ -3,8 +3,11 @@
 import React, { useState } from 'react';
 import Card from '@/components/ui/Card';
 import { Token, TokenState } from './types';
-import TokenStateBadge from './TokenStateBadge';
+import TokenStateBadge from '@/components/molecules/badges/TokenStateBadge';
 import { formatShortDate } from './utils';
+import { Button } from '@/components/atoms/Button';
+import { TokenDetails } from '@/lib/redux/slices/cvsTokenSlice';
+import { useRouter } from 'next/navigation';
 
 type TokenListProps = {
   tokens: Token[];

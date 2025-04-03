@@ -10,7 +10,8 @@ import {
   InformationCircleIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline';
-import { TierBadge, TicketStatusBadge } from './TicketBadge';
+import { selectTicket } from '@/lib/redux/slices/cvsTokenSlice';
+import { TierBadge, TicketStatusBadge } from '@/components/molecules/badges/TicketBadge';
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);

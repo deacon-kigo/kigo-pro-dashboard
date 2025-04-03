@@ -1,8 +1,11 @@
 'use client';
 
 import React from 'react';
-import { VersionType } from '@/lib/redux/slices/demoSlice';
+import { Badge } from '@/components/atoms/Badge';
 import { BeakerIcon, ClockIcon, RocketLaunchIcon, CommandLineIcon } from '@heroicons/react/24/outline';
+
+// Define the type locally instead of importing
+export type VersionType = 'current' | 'upcoming' | 'future' | 'experimental';
 
 interface VersionBadgeProps {
   version: VersionType;
@@ -35,11 +38,12 @@ const versionIcons: Record<VersionType, React.ReactNode> = {
   'experimental': <BeakerIcon className="w-4 h-4" />
 };
 
-const versionColors: Record<VersionType, string> = {
-  'current': 'bg-emerald-100 text-emerald-800 border-emerald-200',
-  'upcoming': 'bg-blue-100 text-blue-800 border-blue-200',
-  'future': 'bg-purple-100 text-purple-800 border-purple-200',
-  'experimental': 'bg-amber-100 text-amber-800 border-amber-200'
+// Map version types to Badge variants that match the expected values
+const versionVariants: Record<VersionType, 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning' | 'info'> = {
+  'current': 'success',
+  'upcoming': 'info',
+  'future': 'secondary',
+  'experimental': 'warning'
 };
 
 /**
@@ -49,15 +53,16 @@ export default function VersionBadge({ version }: VersionBadgeProps) {
   if (version === 'current') return null;
   
   const info = versionInfo[version];
-  const colors = versionColors[version];
   const icon = versionIcons[version];
+  const variant = versionVariants[version];
   
+  // Using a custom wrapper instead of Badge directly because of the special positioning
   return (
     <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
-      <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-full shadow-md ${colors} border`}>
+      <div className="flex items-center space-x-2 px-3 py-1.5 rounded-full shadow-md border">
         {icon}
         <span className="font-medium text-sm">{info.name}</span>
-        <span className="text-xs opacity-75">Mode</span>
+        <Badge variant={variant} className="text-xs">Mode</Badge>
       </div>
     </div>
   );

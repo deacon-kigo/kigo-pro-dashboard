@@ -4,11 +4,11 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import Card from '@/components/ui/Card';
 import { Token } from './types';
-import TokenStateBadge from './TokenStateBadge';
+import TokenStateBadge from '@/components/molecules/badges/TokenStateBadge';
 import { formatShortDate as formatDate } from './utils';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { toggleTicketModal, selectTicket } from '@/lib/redux/slices/cvsTokenSlice';
-import { TierBadge, TicketStatusBadge } from './TicketBadge';
+import { TierBadge, TicketStatusBadge } from '@/components/molecules/badges/TicketBadge';
 import { 
   XMarkIcon, 
   ArrowPathIcon, 

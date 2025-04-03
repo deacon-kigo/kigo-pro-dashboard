@@ -37,7 +37,7 @@ import {
 } from '@/lib/redux/slices/cvsTokenSlice';
 
 // Components for tier support
-import { TicketStatusBadge, TierBadge } from '@/components/features/token-management/TicketBadge';
+import { TicketStatusBadge, TierBadge } from '@/components/molecules/badges/TicketBadge';
 import TicketModal from '@/components/features/token-management/TicketModal';
 
 const softShadow = '0 2px 4px rgba(0,0,0,0.05)';

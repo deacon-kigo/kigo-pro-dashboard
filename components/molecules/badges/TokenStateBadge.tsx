@@ -1,7 +1,10 @@
 'use client';
 
 import React from 'react';
-import { TokenState } from './types';
+import { Badge } from '@/components/atoms/Badge';
+
+// Define TokenState type directly since we're no longer in the token-management folder
+export type TokenState = 'Active' | 'Shared' | 'Used' | 'Expired';
 
 type TokenStateBadgeProps = {
   state: TokenState;
@@ -12,24 +15,24 @@ type TokenStateBadgeProps = {
  * Badge component for displaying token states with appropriate colors
  */
 export default function TokenStateBadge({ state, className = '' }: TokenStateBadgeProps) {
-  const getStateStyles = () => {
+  const getVariant = () => {
     switch(state) {
       case 'Active':
-        return 'bg-green-100 text-green-800';
+        return 'success';
       case 'Shared':
-        return 'bg-blue-100 text-blue-800';
+        return 'info';
       case 'Used':
-        return 'bg-gray-100 text-gray-800';
+        return 'secondary';
       case 'Expired':
-        return 'bg-red-100 text-red-800';
+        return 'destructive';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'default';
     }
   };
   
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStateStyles()} ${className}`}>
+    <Badge variant={getVariant()} className={className}>
       {state}
-    </span>
+    </Badge>
   );
 } 
