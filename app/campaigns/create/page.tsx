@@ -1,5 +1,5 @@
 import React from 'react';
-import CampaignForm from '../../../components/campaigns/CampaignForm';
+import { CampaignForm } from '@/components/features/campaigns';
 
 export default function CreateCampaignPage() {
   return (
