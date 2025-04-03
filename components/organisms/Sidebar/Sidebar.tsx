@@ -20,7 +20,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useAppSelector, useAppDispatch, useDemoState } from '@/lib/redux/hooks';
 import { toggleSidebar, setSidebarCollapsed } from '@/lib/redux/slices/uiSlice';
-import demoConfigs from '../../config/demoConfigs';
+import demoConfigs from '@/config/demoConfigs';
 import { buildDemoUrl, isPathActive } from '@/lib/utils';
 
 export default function Sidebar() {
