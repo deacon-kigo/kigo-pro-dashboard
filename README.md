@@ -154,7 +154,7 @@ The dashboard can be deployed through Vercel, Netlify, or any static site hostin
 ### Storybook Deployment
 
 The Storybook component library is deployed at:
-https://storybook-static-8luok7j48-deacon-s-projects.vercel.app
+https://storybook-static-3sp2uzsya-deacon-s-projects.vercel.app
 
 ## Contributing
 
