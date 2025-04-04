@@ -30,7 +30,7 @@ const createMockStore = ({
     name: 'ui',
     initialState: {
       sidebarCollapsed: isCollapsed,
-      sidebarWidth: isCollapsed ? '70px' : '250px',
+      sidebarWidth: isCollapsed ? '70px' : '225px',
       isMobileView: false,
       currentBreakpoint: 'lg',
       theme: 'light',
@@ -209,7 +209,7 @@ export const Default: Story = {
       state: {
         ui: {
           sidebarCollapsed: false,
-          sidebarWidth: '250px'
+          sidebarWidth: '225px'
         },
         demo: {
           role: 'merchant',
