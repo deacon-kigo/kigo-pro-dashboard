@@ -151,6 +151,11 @@ To learn more about the technologies used in this project:
 
 The dashboard can be deployed through Vercel, Netlify, or any static site hosting platform that supports Next.js.
 
+### Storybook Deployment
+
+The Storybook component library is deployed at:
+https://storybook-static-8luok7j48-deacon-s-projects.vercel.app
+
 ## Contributing
 
 Please follow the established patterns when contributing to this project:
