@@ -2,6 +2,16 @@
 
 A prototype dashboard environment for the Kigo Pro platform that showcases UI components and dashboard features.
 
+## Project Purpose
+
+The Kigo Pro Dashboard serves three critical roles:
+
+1. **Demo Platform**: A polished showcase of the Kigo platform capabilities, featuring client-specific themes (CVS, merchant businesses), role-based experiences, and complete product workflows for sales demonstrations and stakeholder presentations.
+
+2. **Prototype Sandbox**: A development environment for rapid experimentation with new features, UX patterns, and technical approaches, enabling collaborative iteration across product, design, and development teams.
+
+3. **Design System Implementation**: A living reference that bridges design and development through practical implementation of UI components, interaction patterns, and responsive behaviors.
+
 ## Project Structure
 
 The project follows a hybrid approach combining Next.js App Router and Atomic Design:
@@ -22,19 +32,55 @@ The project follows a hybrid approach combining Next.js App Router and Atomic De
 │   │   ├── analytics
 ```
 
-## Design System Approach
+## Key Features
 
-Kigo Pro maintains brand consistency with the wider Kigo ecosystem while implementing components using Tailwind CSS rather than Material UI:
+- Role-based navigation and permissions (merchant, support, admin)
+- Client-specific theming and white-labeling
+- Comprehensive UI component library with Tailwind CSS
+- Interactive demonstrations of core platform capabilities
+- Next.js App Router architecture with Redux state management
 
-1. **Design Tokens**: We extract design tokens (colors, typography, spacing) from the Kigo Web SDK
-2. **Tailwind Integration**: These tokens are integrated into our Tailwind configuration
-3. **Custom Components**: We create custom Tailwind-based components that align with Kigo branding
+## Getting Started
 
-This approach allows us to maintain a consistent visual identity while benefiting from Tailwind's developer experience and flexibility.
+```bash
+# Install dependencies
+npm install
+
+# Run the development server
+npm run dev
+
+# Start Storybook (Design Deliverable)
+npm run storybook
+```
+
+**Important Note**: Always run Storybook from the `kigo-pro-dashboard` directory, not from the root repo folder.
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Storybook - Design Deliverable
+
+Storybook serves as the primary design deliverable, providing interactive documentation of all UI components and their variants.
+
+```bash
+# Start Storybook for component exploration and documentation
+npm run storybook
+
+# Build static Storybook for sharing
+npm run build-storybook
+```
+
+### Key Storybook Features
+
+- Interactive component documentation
+- Visual testing of component states and variations
+- Responsive design preview capabilities
+- Accessibility checking with addon support
+- Component prop documentation and examples
 
 ## Component Organization
 
 ### 1. Atomic Components
+
 Components are organized using atomic design principles:
 
 - **Atoms**: Basic UI elements (Button, Input, Card, Badge, etc.)
@@ -43,6 +89,7 @@ Components are organized using atomic design principles:
 - **Templates**: Page layouts (AppLayout, DashboardLayout, etc.)
 
 ### 2. Feature Components
+
 Domain-specific components are organized by feature domain:
 
 - **Token Management**: Components specific to token management functionality
@@ -54,14 +101,17 @@ Domain-specific components are organized by feature domain:
 ### Adding New Components
 
 1. Identify whether the component is generic (atomic) or domain-specific (feature):
+
    - Generic UI components go in atoms/molecules/organisms
    - Domain-specific components go in features/{domain}
 
 2. Create the appropriate files:
+
    - ComponentName.tsx
    - index.ts (for exports)
 
-3. Document with JSDoc:
+3. Document with JSDoc and create a Storybook story:
+
 ```tsx
 /**
  * @component ComponentName
@@ -73,40 +123,40 @@ Domain-specific components are organized by feature domain:
 ### Creating Routes/Pages
 
 Use the Next.js App Router structure:
+
 ```
 /app/route-name/page.tsx
 ```
 
-## Getting Started
+## Demo Environments
 
-```bash
-# Install dependencies
-npm install
+The dashboard includes several demo environments for different client contexts:
 
-# Run the development server
-npm run dev
+- **Default Merchant**: Standard merchant experience
+- **CVS Health**: Customized experience for enterprise healthcare client
+- **Support Portal**: View for customer support users
 
-# Start Storybook
-npm run storybook
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Inter](https://fonts.google.com/specimen/Inter), which is the Kigo brand font.
+To switch between demos, use the demo selector in the user menu.
 
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+To learn more about the technologies used in this project:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Tailwind CSS](https://tailwindcss.com/docs)
+- [Redux Toolkit](https://redux-toolkit.js.org/)
+- [Storybook](https://storybook.js.org/docs/react/get-started/introduction)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment
 
-## Deploy on Vercel
+The dashboard can be deployed through Vercel, Netlify, or any static site hosting platform that supports Next.js.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Contributing
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Please follow the established patterns when contributing to this project:
+
+1. Use existing component patterns where possible
+2. Document new components with JSDoc and Storybook stories
+3. Maintain accessibility best practices
+4. Test components across various screen sizes
+5. Consider the triple purpose of the project in your designs and implementations
