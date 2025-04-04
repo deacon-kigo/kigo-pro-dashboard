@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { ComponentType, SVGProps } from "react";
+import { ComponentType, SVGProps, MouseEvent } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
 import { themeConfigs } from "@/lib/redux/slices/uiSlice";
+import { cn } from "@/lib/utils";
 
 // Type for HeroIcon components
 type HeroIcon = ComponentType<SVGProps<SVGSVGElement>>;
@@ -15,6 +16,8 @@ interface SidebarLabelProps {
   isCollapsed: boolean;
   hasNotification?: boolean;
   notificationCount?: number;
+  onClick?: (event: MouseEvent<HTMLAnchorElement>) => void;
+  className?: string;
 }
 
 export default function SidebarLabel({
@@ -25,6 +28,8 @@ export default function SidebarLabel({
   isCollapsed,
   hasNotification,
   notificationCount,
+  onClick,
+  className,
 }: SidebarLabelProps) {
   // Get theme information directly from Redux
   const { clientId } = useSelector((state: RootState) => state.demo);
@@ -76,13 +81,14 @@ export default function SidebarLabel({
   };
 
   // Combine all classes for the link
-  const linkClasses = `
-    flex items-center py-2 text-sm font-medium rounded-lg group
-    ${isCollapsed ? "justify-center px-2" : "px-3"}
-    ${isActive ? activeClasses : inactiveClasses}
-    ${!isActive ? hoverClasses : ""}
-    transition-all duration-200
-  `;
+  const linkClasses = cn(
+    "flex items-center py-2 text-sm font-medium rounded-lg group",
+    isCollapsed ? "justify-center px-2" : "px-3",
+    isActive ? activeClasses : inactiveClasses,
+    !isActive ? hoverClasses : "",
+    "transition-all duration-200",
+    className // Add custom className
+  );
 
   // Icon classes
   const iconClasses = `
@@ -93,7 +99,12 @@ export default function SidebarLabel({
   `;
 
   return (
-    <Link href={href} className={linkClasses} title={title}>
+    <Link
+      href={href}
+      className={linkClasses}
+      title={title}
+      onClick={onClick} // Add onClick handler
+    >
       <Icon className={iconClasses} />
       {!isCollapsed && <span className={getTextClasses()}>{title}</span>}
       {!isCollapsed && hasNotification && (

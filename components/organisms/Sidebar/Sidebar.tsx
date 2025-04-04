@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   HomeIcon,
   RocketLaunchIcon,
@@ -16,14 +16,27 @@ import {
   ChevronRightIcon,
   TicketIcon,
   BuildingStorefrontIcon,
+  ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 import { useDemoState } from "@/lib/redux/hooks";
 import { toggleSidebar, setSidebarCollapsed } from "@/lib/redux/slices/uiSlice";
+import { logout } from "@/lib/redux/slices/userSlice";
 import { buildDemoUrl, isPathActive } from "@/lib/utils";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
 // Import SidebarLabel component with standard path
 import SidebarLabel from "./SidebarLabel";
+// Import Dialog components for the confirmation
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/molecules/dialog";
+import { Button } from "@/components/atoms/Button";
 
 export interface SidebarProps {
   role?: "merchant" | "support" | "admin";
@@ -32,9 +45,17 @@ export interface SidebarProps {
 
 const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
   const dispatch = useDispatch();
+  // Add fallback for router in Storybook environment
+  const router = useRouter() || {
+    push: (url: string) => console.log(`Would navigate to: ${url}`),
+    replace: () => {},
+    back: () => {},
+  };
   const { sidebarCollapsed } = useSelector((state: RootState) => state.ui);
   const { clientId } = useSelector((state: RootState) => state.demo);
   const { clientName } = useDemoState();
+  // State for sign out dialog
+  const [signOutDialogOpen, setSignOutDialogOpen] = useState(false);
 
   // Local state for backward compatibility during migration
   const [isCollapsed, setIsCollapsed] = useState(sidebarCollapsed);
@@ -66,22 +87,38 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
 
   // Store collapse state in localStorage (will be handled by Redux in the future)
   useEffect(() => {
-    const storedState = localStorage.getItem("sidebarCollapsed");
-    if (storedState) {
-      setIsCollapsed(storedState === "true");
-      dispatch(setSidebarCollapsed(storedState === "true"));
+    // Add a try-catch for localStorage to handle Storybook environments
+    try {
+      if (typeof localStorage !== "undefined") {
+        const storedState = localStorage.getItem("sidebarCollapsed");
+        if (storedState) {
+          setIsCollapsed(storedState === "true");
+          dispatch(setSidebarCollapsed(storedState === "true"));
+        }
+      }
+    } catch (error) {
+      console.warn("Unable to access localStorage:", error);
     }
   }, [dispatch]);
 
   // Update localStorage when state changes
   useEffect(() => {
-    localStorage.setItem("sidebarCollapsed", isCollapsed.toString());
+    // Add a try-catch for localStorage to handle Storybook environments
+    try {
+      if (typeof localStorage !== "undefined") {
+        localStorage.setItem("sidebarCollapsed", isCollapsed.toString());
+      }
+    } catch (error) {
+      console.warn("Unable to access localStorage:", error);
+    }
 
     // Update the main content padding when sidebar collapses/expands
-    document.documentElement.style.setProperty(
-      "--sidebar-width",
-      isCollapsed ? "70px" : "225px"
-    );
+    if (typeof document !== "undefined") {
+      document.documentElement.style.setProperty(
+        "--sidebar-width",
+        isCollapsed ? "70px" : "225px"
+      );
+    }
   }, [isCollapsed]);
 
   // Handle toggle sidebar click - update both local and Redux state
@@ -344,6 +381,15 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     }
   }, [isCVSContext, clientId]);
 
+  // Handle sign out
+  const handleSignOut = () => {
+    dispatch(logout());
+    // Close the dialog
+    setSignOutDialogOpen(false);
+    // Redirect to login page
+    router.push("/sso/login");
+  };
+
   return (
     <aside
       className={`
@@ -511,6 +557,49 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 isCollapsed={isCollapsed}
               />
             </li>
+            {/* Sign Out Item */}
+            <li className="nav-item px-3 py-1">
+              <Dialog
+                open={signOutDialogOpen}
+                onOpenChange={setSignOutDialogOpen}
+              >
+                <DialogTrigger asChild>
+                  <div className="w-full">
+                    <SidebarLabel
+                      href="#"
+                      icon={ArrowRightOnRectangleIcon}
+                      title="Sign Out"
+                      isActive={false}
+                      isCollapsed={isCollapsed}
+                      onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                        e.preventDefault(); // Prevent default link behavior
+                        setSignOutDialogOpen(true);
+                      }}
+                      className="text-red-600 hover:text-red-700"
+                    />
+                  </div>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Sign Out Confirmation</DialogTitle>
+                    <DialogDescription>
+                      Are you sure you want to sign out of your account?
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter className="gap-2 mt-4">
+                    <Button
+                      onClick={() => setSignOutDialogOpen(false)}
+                      variant="outline"
+                    >
+                      Cancel
+                    </Button>
+                    <Button onClick={handleSignOut} variant="destructive">
+                      Sign Out
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </li>
           </ul>
         </div>
 
@@ -518,7 +607,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
           className={`mt-auto pt-4 ${isCollapsed ? "px-3" : "px-5"} border-t border-border-light overflow-x-hidden`}
         >
           <div
-            className={`flex items-center ${isCollapsed ? "justify-center" : ""} pb-6`}
+            className={`flex items-center ${isCollapsed ? "justify-center" : ""} pb-4`}
           >
             {/* User avatar - Support both CVS and role-based indicators */}
             <div className="w-9 h-9 bg-pastel-purple rounded-full flex items-center justify-center text-indigo-500 font-semibold text-sm shadow-sm">
