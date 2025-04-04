@@ -187,7 +187,7 @@ export default function DemosPage() {
                 </div>
                 
                 <Link 
-                  href="/demos/cvs-dashboard" 
+                  href="/demos/cvs-token-management?role=support&client=cvs&scenario=support-flow&theme=light" 
                   className="inline-flex items-center px-3 py-1.5 bg-[#CC0000] hover:bg-[#AA0000] text-white text-sm font-medium rounded-lg transition-colors"
                 >
                   View Demo

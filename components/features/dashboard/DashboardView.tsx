@@ -2,13 +2,12 @@
 
 import React, { useMemo, Suspense, useEffect } from 'react';
 import { useDemo } from '@/contexts/DemoContext';
-import CVSTokenManagementView from './views/CVSTokenManagementView';
-import DeaconsPizzaView from './views/DeaconsPizzaView';
-import GenericDashboardView from './views/GenericDashboardView';
+import { dashboardRegistry } from './registry/dashboardRegistry';
 
 /**
  * Main Dashboard component that renders the correct dashboard view based on the current context.
- * This allows for conditional rendering without duplicating page structures.
+ * Uses a registry pattern for scalable extensibility - new dashboard views can be registered
+ * in the registry without modifying this component.
  */
 export default function DashboardView() {
   const { userProfile, clientId, scenario, role, version } = useDemo();
@@ -24,27 +23,9 @@ export default function DashboardView() {
     });
   }, [userProfile, role, clientId, scenario, version]);
   
+  // Get the appropriate dashboard component from the registry
   const DashboardComponent = useMemo(() => {
-    // If we have a specific demo scenario and client, try to find a matching view
-    if (clientId && scenario) {
-      console.log(`Determining view component for clientId: ${clientId}, scenario: ${scenario}`);
-      
-      // Client-specific dashboard views
-      if (clientId === 'cvs' && scenario === 'support-flow') {
-        console.log('Using CVSTokenManagementView');
-        return CVSTokenManagementView;
-      }
-      
-      // Use DeaconsPizzaView for both dashboard and campaign-creation scenarios
-      if (clientId === 'deacons' && (scenario === 'campaign-creation' || scenario === 'dashboard' || scenario === 'pizza')) {
-        console.log('Using DeaconsPizzaView');
-        return DeaconsPizzaView;
-      }
-    }
-    
-    // Fall back to the generic dashboard
-    console.log('Using GenericDashboardView');
-    return GenericDashboardView;
+    return dashboardRegistry.getView(clientId, scenario);
   }, [clientId, scenario]);
   
   return (

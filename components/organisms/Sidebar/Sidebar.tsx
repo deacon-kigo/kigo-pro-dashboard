@@ -104,7 +104,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     if (
       path.includes("/dashboard") &&
       (pathname === "/" ||
-        pathname === "/demos/cvs-dashboard" ||
+        pathname.includes("cvs-token-management") ||
         pathname.includes("cvs-dashboard"))
     ) {
       return true;
@@ -140,8 +140,9 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
 
   // Get CVS-specific navigation items
   const getCVSNavigationItems = () => {
-    const dashboardUrl = buildDemoUrl("cvs", "dashboard");
-    const customersUrl = buildDemoUrl("cvs", "token-management");
+    // Update URLs to use token-management as the primary page
+    const dashboardUrl = buildDemoUrl("cvs", "token-management") + "?role=support&client=cvs&scenario=support-flow&theme=light";
+    const customersUrl = buildDemoUrl("cvs", "token-management") + "?role=support&client=cvs&scenario=support-flow&theme=light";
     const tokenManagementUrl = buildDemoUrl("cvs", "token-catalog");
     const ticketsUrl = buildDemoUrl("cvs", "tickets");
 
@@ -447,7 +448,12 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
 
         <button
           onClick={handleToggleSidebar}
-          className="absolute top-24 -right-3 transform -translate-y-1/2 bg-white border border-border-light rounded-full p-1.5 shadow-sm hover:bg-gray-50 z-50 transition-colors"
+          className="absolute top-24 -right-3 transform -translate-y-1/2 bg-white border border-border-light rounded-full p-1.5 shadow-sm hover:bg-gray-50 z-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
+          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          style={{ 
+            boxShadow: '0 2px 5px rgba(0,0,0,0.1)', 
+            zIndex: 100 
+          }}
         >
           {isCollapsed ? (
             <ChevronRightIcon className="w-3.5 h-3.5 text-gray-500" />

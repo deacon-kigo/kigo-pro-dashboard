@@ -35,15 +35,26 @@ export default function SSOSignIn() {
         return;
       }
       
-      console.log("Login successful, navigating to CVS dashboard...");
+      console.log("Login successful, navigating to CVS token management...");
       
-      // Direct navigation to the CVS dashboard URL
-      // The state will be derived from the URL on the dashboard page
-      const dashboardUrl = buildDemoUrl('cvs', 'dashboard');
-      console.log("Navigating to:", dashboardUrl);
+      // Update demo state before navigation to ensure proper context
+      dispatch(updateDemoState({
+        clientId: 'cvs',
+        scenario: 'support-flow',
+        role: 'support',
+        themeMode: 'light'
+      }));
       
-      // Force direct navigation to bypass Next.js router
-      window.location.href = dashboardUrl;
+      // Direct navigation to the CVS token management URL with required parameters
+      // This is the correct destination for the support flow
+      const supportUrl = buildDemoUrl('cvs', 'token-management');
+      console.log("Navigating to:", supportUrl);
+      
+      // Add necessary query parameters for correct context
+      const fullUrl = `${supportUrl}?role=support&client=cvs&scenario=support-flow&theme=light`;
+      
+      // Force direct navigation to bypass Next.js router and ensure complete URL
+      window.location.href = fullUrl;
     }, 1000);
   };
 

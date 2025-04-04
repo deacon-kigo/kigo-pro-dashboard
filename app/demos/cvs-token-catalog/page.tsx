@@ -317,9 +317,9 @@ export default function CVSTokenCatalog() {
 
       {/* Floating Back Button */}
       <Link
-        href={buildDemoUrl('cvs', 'dashboard')}
+        href={`${buildDemoUrl('cvs', 'token-management')}?role=support&client=cvs&scenario=support-flow&theme=light`}
         className="fixed bottom-20 right-8 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors z-10"
-        aria-label="Back to Dashboard"
+        aria-label="Back to Token Management"
       >
         <ChevronLeftIcon className="h-6 w-6" />
       </Link>

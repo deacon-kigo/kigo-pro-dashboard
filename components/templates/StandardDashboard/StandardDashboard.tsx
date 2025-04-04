@@ -6,6 +6,7 @@ import { getMockAvatarUrl } from '@/lib/avatarUtils';
 import Card from '@/components/atoms/Card/Card';
 import { AIAssistant } from '@/components/features/ai';
 import VersionBadge from '@/components/molecules/badges/VersionBadge';
+import { useAppSelector } from '@/lib/redux/hooks';
 
 interface StandardDashboardProps {
   children: ReactNode;
@@ -32,6 +33,7 @@ export default function StandardDashboard({
   const [currentTime, setCurrentTime] = useState('');
   const [currentDate, setCurrentDate] = useState('');
   const [weatherEmoji, setWeatherEmoji] = useState('☀️'); // Default sunny
+  const { sidebarCollapsed } = useAppSelector(state => state.ui);
   
   // Set greeting based on time of day if not provided
   useEffect(() => {
@@ -86,7 +88,50 @@ export default function StandardDashboard({
   });
   
   return (
-    <div className="pt-4 transition-all duration-300 ease-in-out">
+    <div className="pt-4 transition-all duration-300 ease-in-out overflow-x-hidden">
+      {/* Add responsive styles */}
+      <style jsx global>{`
+        @media (max-width: 768px) {
+          .grid-layout {
+            grid-template-columns: 1fr !important;
+          }
+          
+          .lg-col-span-3 {
+            grid-column: span 1 / span 1 !important;
+          }
+          
+          .sidebar-content {
+            margin-top: 1.5rem;
+          }
+        }
+        
+        /* Content padding adjustment based on sidebar state */
+        .dashboard-container {
+          transition: padding-left 0.3s ease-in-out;
+          padding-left: ${sidebarCollapsed ? '1rem' : '0'};
+        }
+        
+        /* Table improvements */
+        .table-wrapper {
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Improve table rendering */
+        table {
+          width: 100%;
+          border-collapse: separate;
+          border-spacing: 0;
+        }
+        
+        /* Prevent text overflow in cells */
+        td, th {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      `}</style>
+      
       {/* Version Badge - only show for non-current versions */}
       {version !== 'current' && <VersionBadge version={version} />}
       
@@ -124,13 +169,15 @@ export default function StandardDashboard({
       )}
       
       {/* Main Content Area */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-3 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 overflow-hidden grid-layout">
+        <div className="lg:col-span-3 space-y-6 overflow-x-auto lg-col-span-3">
           {/* Primary content provided via children */}
-          {children}
+          <div className="dashboard-container">
+            {children}
+          </div>
         </div>
         
-        <div className="space-y-6">
+        <div className="space-y-6 sidebar-content">
           {/* Sidebar content - either custom or default AI assistant */}
           {sidebarContent || (
             <>

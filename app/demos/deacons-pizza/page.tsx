@@ -18,7 +18,10 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts';
-import { useDemo } from '../../../contexts/DemoContext';
+import { useDemo } from '@/contexts/DemoContext';
+import DashboardView from '@/components/features/dashboard/DashboardView';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+import { setSidebarCollapsed } from '@/lib/redux/slices/uiSlice';
 
 // Create a client component that uses useSearchParams
 function DeaconsPizzaDashboardContent() {
@@ -371,9 +374,66 @@ function DeaconsPizzaLoading() {
 
 // Main component that wraps the content in Suspense
 export default function DeaconsPizzaDashboard() {
+  const { updateDemoState } = useDemo();
+  const dispatch = useAppDispatch();
+  const { sidebarCollapsed } = useAppSelector(state => state.ui);
+  
+  // Set up initial demo state on mount
+  useEffect(() => {
+    // Initialize the demo state with Deacons Pizza context
+    updateDemoState({
+      clientId: 'deacons',
+      scenario: 'dashboard',
+      role: 'merchant'
+    });
+    
+    // Ensure sidebar state is initialized from localStorage or default
+    const storedSidebarState = localStorage.getItem('sidebarCollapsed');
+    if (storedSidebarState) {
+      dispatch(setSidebarCollapsed(storedSidebarState === 'true'));
+    }
+    
+    // Apply CSS variable for sidebar width
+    const sidebarWidth = sidebarCollapsed ? '70px' : '225px';
+    document.documentElement.style.setProperty('--sidebar-width', sidebarWidth);
+    
+    // Clean up styles when component unmounts
+    return () => {
+      document.documentElement.style.setProperty('--sidebar-width', '225px');
+    };
+  }, [updateDemoState, dispatch, sidebarCollapsed]);
+
   return (
-    <Suspense fallback={<DeaconsPizzaLoading />}>
-      <DeaconsPizzaDashboardContent />
-    </Suspense>
+    <div className="relative w-full overflow-x-hidden">
+      <style jsx global>{`
+        /* Ensure content doesn't overflow and respects sidebar width */
+        main {
+          padding-left: calc(var(--sidebar-width) + 1.5rem) !important;
+          transition: padding-left 0.3s ease-in-out;
+        }
+        
+        /* Additional overflow protection */
+        .overflow-container {
+          max-width: 100%;
+          overflow-x: hidden;
+        }
+        
+        /* Ensure tables don't cause horizontal overflow */
+        table {
+          width: 100%;
+          table-layout: fixed;
+        }
+        
+        /* Add responsive handling for small screens */
+        @media (max-width: 768px) {
+          main {
+            padding-left: 1.5rem !important;
+          }
+        }
+      `}</style>
+      <div className="overflow-container">
+        <DashboardView />
+      </div>
+    </div>
   );
 } 

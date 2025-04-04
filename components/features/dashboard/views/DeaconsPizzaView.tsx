@@ -3,8 +3,10 @@
 import React, { useState } from 'react';
 import { useDemo } from '@/contexts/DemoContext';
 import Image from 'next/image';
+import Link from 'next/link';
 import Card from '@/components/atoms/Card/Card';
 import StandardDashboard from '@/components/templates/StandardDashboard';
+import { ChevronRightIcon } from '@heroicons/react/24/outline';
 
 // Sample campaign data
 const sampleCampaigns = [
@@ -319,20 +321,73 @@ export default function DeaconsPizzaView() {
           </div>
         </div>
         
-        <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+        <Link href="/demos/ai-campaign-creation" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
           <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
           New Campaign
-        </button>
+        </Link>
       </div>
     </div>
   );
   
-  // Main content 
+  // Main content - import the content from DeaconsPizzaDashboardContent
   const mainContent = (
     <div className="space-y-4">
       {revenueAnalyticsSection}
+      
+      {/* Campaigns Section */}
+      <Card title="Active Campaigns">
+        <div className="overflow-x-auto table-wrapper">
+          <table className="min-w-full table-fixed divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[25%]">Name</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">Status</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">Type</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">Budget</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[20%]">Duration</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[10%]">ROI</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {sampleCampaigns.map((campaign) => (
+                <tr key={campaign.id} className="hover:bg-gray-50 cursor-pointer">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900 truncate">{campaign.name}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <StatusBadge status={campaign.status} />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-500">{campaign.type}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-500">{formatCurrency(campaign.budget)}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-500">
+                      {formatDate(campaign.startDate)} - {formatDate(campaign.endDate)}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className={`text-sm ${campaign.roi > 0 ? 'text-green-600' : 'text-gray-500'}`}>
+                      {campaign.roi > 0 ? `${campaign.roi}x` : 'N/A'}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+      
+      {/* AI Opportunities */}
+      <Card title="AI-Powered Growth Opportunities">
+        <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Include AI opportunities here */}
+        </div>
+      </Card>
     </div>
   );
   

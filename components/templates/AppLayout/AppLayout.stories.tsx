@@ -17,6 +17,10 @@ import {
   TicketIcon
 } from '@heroicons/react/24/outline';
 
+// Define consistent sidebar width values to match the actual components
+const SIDEBAR_EXPANDED_WIDTH = '225px';
+const SIDEBAR_COLLAPSED_WIDTH = '70px';
+
 // Create a simple mock store factory
 const createMockStore = ({
   role = 'merchant',
@@ -30,7 +34,7 @@ const createMockStore = ({
     name: 'ui',
     initialState: {
       sidebarCollapsed: isCollapsed,
-      sidebarWidth: isCollapsed ? '70px' : '250px',
+      sidebarWidth: isCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH,
       isMobileView: false,
       currentBreakpoint: 'lg',
       theme: 'light',
@@ -41,6 +45,7 @@ const createMockStore = ({
     reducers: {
       toggleSidebar: state => {
         state.sidebarCollapsed = !state.sidebarCollapsed;
+        state.sidebarWidth = state.sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH;
       }
     }
   });
@@ -209,7 +214,7 @@ export const Default: Story = {
       state: {
         ui: {
           sidebarCollapsed: false,
-          sidebarWidth: '250px'
+          sidebarWidth: SIDEBAR_EXPANDED_WIDTH
         },
         demo: {
           role: 'merchant',
@@ -234,7 +239,7 @@ export const CollapsedSidebar: Story = {
       state: {
         ui: {
           sidebarCollapsed: true,
-          sidebarWidth: '70px'
+          sidebarWidth: SIDEBAR_COLLAPSED_WIDTH
         },
         demo: {
           role: 'merchant',
@@ -260,7 +265,7 @@ export const ResponsiveLayout: Story = {
       state: {
         ui: {
           sidebarCollapsed: false,
-          sidebarWidth: '225px'
+          sidebarWidth: SIDEBAR_EXPANDED_WIDTH
         },
         demo: {
           role: 'merchant',
