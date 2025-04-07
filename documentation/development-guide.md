@@ -9,6 +9,7 @@ This document outlines the organization strategy for the Kigo Pro Dashboard comp
 3. **Incremental Migration**: Changes are made incrementally without disrupting the working application
 4. **No Structural Overhaul**: Keep working within existing app and components directories
 5. **Design System Consistency**: Leverage Kigo design tokens while implementing with Tailwind CSS
+6. **Performance Optimization**: Implement safeguards against infinite loops and unnecessary renders
 
 ## Design System Strategy
 
@@ -40,6 +41,197 @@ The navigation and header components will be implemented using Tailwind CSS whil
 4. Optimizes bundle size by avoiding unused Material UI components
 
 The implementation will be documented in Storybook to ensure proper usage patterns and design consistency across the application.
+
+## React Performance Optimization
+
+To ensure optimal performance in our React components, we've implemented several key patterns to prevent common issues such as infinite render loops and unnecessary re-renders.
+
+### Preventing Infinite Render Loops
+
+Infinite render loops occur when a component continuously updates its state or props in a way that triggers additional renders, creating a cycle that can freeze the application.
+
+#### Common causes of infinite loops:
+
+- State updates in useEffect hooks with dependencies that change on every render
+- Props or state changing in response to component re-renders
+- Redux action dispatches triggering additional component updates
+- URL parameter changes causing state updates that trigger URL changes
+
+#### Implemented solutions:
+
+1. **One-time initialization with refs**:
+
+   ```tsx
+   function MyComponent() {
+     // Track initialization status
+     const isInitializedRef = useRef(false);
+
+     useEffect(() => {
+       // Skip if already initialized
+       if (isInitializedRef.current) {
+         return;
+       }
+
+       // Mark as initialized immediately
+       isInitializedRef.current = true;
+
+       // One-time initialization logic here
+       setClientId("some-id");
+     }, []); // Empty dependency array
+   }
+   ```
+
+2. **Memoizing event handlers with useCallback**:
+
+   ```tsx
+   // Avoid creating new function instances on each render
+   const handleClick = useCallback(() => {
+     dispatch(someAction());
+   }, [dispatch]);
+   ```
+
+3. **Stabilizing useEffect dependencies**:
+
+   ```tsx
+   // Store URL params in refs instead of depending on searchParams
+   const paramRef = useRef(searchParams.get("id"));
+
+   useEffect(() => {
+     // Use the stored parameter value
+     const param = paramRef.current;
+     // Effect logic...
+   }, []); // No dependency on searchParams
+   ```
+
+### Redux Optimization
+
+Our Redux architecture has been optimized with several key patterns:
+
+1. **Equality checks in reducers**:
+
+   ```tsx
+   // Only update state if the value actually changed
+   case 'SET_CLIENT_ID':
+     if (state.clientId === action.payload) {
+       return state; // Return same reference if unchanged
+     }
+     return {
+       ...state,
+       clientId: action.payload
+     };
+   ```
+
+2. **Safe middleware implementation**:
+
+   ```tsx
+   // Process the action before any side effects
+   const middleware = (store) => (next) => (action) => {
+     // Process action first
+     const result = next(action);
+
+     // Then handle any side effects
+     if (ENABLE_ACTION_LOGGING && action.type.startsWith("demo/")) {
+       // Log or perform other side effects
+     }
+
+     return result;
+   };
+   ```
+
+3. **URL synchronization safeguards**:
+
+   ```tsx
+   // Global sync state to prevent parallel operations
+   const syncState = {
+     isSyncing: false,
+     lastSyncedPath: null,
+   };
+
+   // Skip synchronization under certain conditions
+   if (syncState.isSyncing || pathname === syncState.lastSyncedPath) {
+     return;
+   }
+   ```
+
+4. **Memoized Context values**:
+
+   ```tsx
+   // Memoize handlers and context value
+   const setClientIdHandler = useCallback(
+     (clientId) => {
+       dispatch(setClientId(clientId));
+     },
+     [dispatch]
+   );
+
+   const contextValue = useMemo(
+     () => ({
+       ...demoState,
+       setClientId: setClientIdHandler,
+       // Other handlers...
+     }),
+     [
+       demoState,
+       setClientIdHandler,
+       // Other dependencies...
+     ]
+   );
+   ```
+
+### Redux Architecture and Data Flow
+
+Our improved Redux implementation follows this data flow pattern:
+
+```
+┌─────────────────────────┐
+│                         │
+│  Component (React)      │
+│                         │
+└───────────┬─────────────┘
+            │
+            │ Dispatch Action
+            ▼
+┌─────────────────────────┐           ┌─────────────────────────┐
+│                         │           │                         │
+│  Middleware             │──────────▶│  Action Logging         │
+│  (Safety Checks)        │           │  (No State Access)      │
+│                         │           │                         │
+└───────────┬─────────────┘           └─────────────────────────┘
+            │
+            │ Process Action
+            ▼
+┌─────────────────────────┐
+│                         │
+│  Reducer                │
+│  (With Equality Checks) │
+│                         │
+└───────────┬─────────────┘
+            │
+            │ Update State
+            ▼
+┌─────────────────────────┐           ┌─────────────────────────┐
+│                         │           │                         │
+│  Redux Store            │──────────▶│  URL Sync               │
+│                         │           │  (With Safety Locks)    │
+│                         │           │                         │
+└───────────┬─────────────┘           └─────────────────────────┘
+            │
+            │ State Changes
+            ▼
+┌─────────────────────────┐
+│                         │
+│  Component Re-render    │
+│  (Memoized Handlers)    │
+│                         │
+└─────────────────────────┘
+```
+
+Key improvements in this architecture:
+
+- Middleware processes actions before any side effects
+- Reducers implement equality checks to prevent unnecessary updates
+- URL synchronization includes safety locks to prevent cycles
+- Components use memoization to prevent handler recreation
 
 ## Target File Structure
 
@@ -88,9 +280,23 @@ kigo-pro-dashboard/
 │       ├── analytics/                  # (no changes)
 │       └── ... other features
 │
-├── contexts/                           # (no changes)
-├── hooks/                              # (no changes)
-├── lib/                                # (no changes)
+├── contexts/                           # React contexts
+│   ├── DemoContext.tsx                 # [OPTIMIZED] Demo context with memoized handlers
+│   └── ... other contexts
+│
+├── hooks/                              # Custom hooks
+│   ├── useSyncStateWithURL.ts          # [OPTIMIZED] URL sync with safety locks
+│   └── ... other hooks
+│
+├── lib/                                # Utility functions and configurations
+│   ├── redux/                          # Redux implementation
+│   │   ├── store.ts                    # [OPTIMIZED] Redux store with safe middleware
+│   │   ├── slices/                     # Redux slices
+│   │   │   ├── demoSlice.ts            # [OPTIMIZED] Demo slice with equality checks
+│   │   │   └── ... other slices
+│   │   └── hooks.ts                    # Redux hooks
+│   └── ... other utilities
+│
 └── ... other project files
 ```
 
@@ -249,11 +455,13 @@ The migration follows an end-to-end process for each component or component grou
 ### Phase 7: Design System Implementation
 
 1. **Update Tailwind Configuration**
+
    - Implement Kigo design tokens in tailwind.config.mjs
    - Include colors, typography, spacing, and breakpoints
    - Document the mapping between Kigo tokens and Tailwind classes
 
 2. **Create Core Nav & Header Components**
+
    - Develop navigation and header components using Tailwind
    - Ensure responsive behavior across all breakpoints
    - Follow Kigo branding guidelines while optimizing for our stack
