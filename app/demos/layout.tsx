@@ -1,13 +1,9 @@
-import ClientLayout from '../ClientLayout';
+import AppLayout from "@/components/templates/AppLayout/AppLayout";
 
 export default function DemosLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <ClientLayout>
-      {children}
-    </ClientLayout>
-  );
-} 
+  return <AppLayout>{children}</AppLayout>;
+}

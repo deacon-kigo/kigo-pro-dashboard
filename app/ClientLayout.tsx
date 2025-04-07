@@ -1,39 +1,15 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Sidebar from "../components/organisms/Sidebar";
-import Header from "../components/organisms/Header";
-import { AIChat } from "../components/features/ai";
-import DemoSpotlight from "../components/demo/DemoSpotlight";
-import { useAppSelector } from "@/lib/redux/hooks";
+/**
+ * @deprecated This component is kept for backward compatibility but is no longer the preferred way to use the layout.
+ * Import and use AppLayout directly from '@/components/templates/AppLayout/AppLayout' instead.
+ *
+ * This component will be removed in a future update once all references have been updated.
+ */
 
-export default function ClientLayout({ children }: { children: React.ReactNode }) {
-  const { sidebarWidth } = useAppSelector(state => state.ui);
-  
-  // Add client-side detection to avoid hydration errors
-  const [isClient, setIsClient] = useState(false);
-  
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-  
-  return (
-    <div className="flex min-h-screen bg-bg-light">
-      <Sidebar />
-      <div className="flex-1 flex flex-col">
-        <Header />
-        <main 
-          className="pt-[72px] p-6 min-h-screen overflow-auto transition-all duration-300"
-          style={{ 
-            paddingLeft: isClient ? `calc(${sidebarWidth} + 1.5rem)` : '1.5rem',
-            width: '100%'
-          }}
-        >
-          {children}
-        </main>
-      </div>
-      <AIChat />
-      <DemoSpotlight />
-    </div>
-  );
-} 
+import { ReactNode } from "react";
+import AppLayout from "@/components/templates/AppLayout/AppLayout";
+
+export default function ClientLayout({ children }: { children: ReactNode }) {
+  return <AppLayout>{children}</AppLayout>;
+}
