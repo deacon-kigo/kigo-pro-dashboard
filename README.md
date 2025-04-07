@@ -156,6 +156,22 @@ The dashboard can be deployed through Vercel, Netlify, or any static site hostin
 The Storybook component library is deployed at:
 https://storybook-static-lemon-ten.vercel.app/
 
+#### Updating Storybook While Maintaining the Same URL
+
+To update the Storybook deployment without changing the URL (important to maintain references in Jira and Slack):
+
+```bash
+# Option 1: Use the provided script
+./deploy-storybook.sh
+
+# Option 2: Manual process
+npm run build-storybook
+cd storybook-static
+vercel --prod
+```
+
+**Important**: Always use the `--prod` flag when deploying to ensure the same URL is maintained.
+
 ## Contributing
 
 Please follow the established patterns when contributing to this project:
