@@ -25,7 +25,7 @@ import {
   TicketPriority,
   TicketInfo
 } from '@/lib/redux/slices/cvsTokenSlice';
-import { useDemo } from '@/contexts/DemoContext';
+import { useDemoState } from '@/lib/redux/hooks';
 import { 
   MagnifyingGlassIcon, 
   UserIcon,
@@ -74,7 +74,7 @@ const HighlightedText = ({ text, searchTerm }: { text: string, searchTerm: strin
 
 const TicketModal = () => {
   const dispatch = useAppDispatch();
-  const { userProfile } = useDemo();
+  const { userProfile } = useDemoState();
   const { isTicketModalOpen } = useAppSelector(state => state.cvsToken);
   const { features } = useAppSelector(state => state.featureConfig);
   const { tokens, customers } = useAppSelector(state => state.cvsToken);
@@ -281,7 +281,7 @@ const TicketModal = () => {
       priority,
       tokenId: tokenId || undefined,
       customerId: customerId || "",
-      assignedTo: userProfile?.userName || 'Agent',
+      assignedTo: userProfile?.firstName || 'Agent',
       status: 'Open', // Add the required status field
       tier: 'Tier1'   // Add the required tier field
     }));
