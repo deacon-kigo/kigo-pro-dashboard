@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ArrowUpIcon, ArrowDownIcon, SparklesIcon, LightBulbIcon } from '@heroicons/react/24/outline';
 import { PerformancePredictions } from '../DynamicCanvas';
-import { useDemo } from '@/contexts/DemoContext';
+import { useDemoState } from '@/lib/redux/hooks';
 
 interface PerformancePredictionDashboardProps {
   predictions: PerformancePredictions;
@@ -36,7 +36,7 @@ const PerformancePredictionDashboard: React.FC<PerformancePredictionDashboardPro
   campaignParams,
   onUpdateParams
 }) => {
-  const { clientId, themeMode } = useDemo();
+  const { clientId, themeMode } = useDemoState();
   const [includeFriday, setIncludeFriday] = useState(false);
   const [increasedRadius, setIncreasedRadius] = useState(false);
   

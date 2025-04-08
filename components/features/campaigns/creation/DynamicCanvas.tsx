@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useDemo } from '@/contexts/DemoContext';
+import { useDemoState } from '@/lib/redux/hooks';
 import { useRouter } from 'next/navigation';
 import ReactConfetti from 'react-confetti';
 import { buildDemoUrl } from '@/lib/utils';
@@ -139,7 +139,7 @@ interface DynamicCanvasProps {
 }
 
 const DynamicCanvas: React.FC<DynamicCanvasProps> = ({ initialView = 'business-intelligence' }) => {
-  const { clientId } = useDemo();
+  const { clientId } = useDemoState();
   const router = useRouter();
   const [currentView, setCurrentView] = useState<ViewType>(initialView);
   const [selectedCampaign, setSelectedCampaign] = useState<CampaignOption | null>(null);

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowPathIcon, PencilSquareIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { useDemo } from '@/contexts/DemoContext';
+import { useDemoState } from '@/lib/redux/hooks';
 import { CampaignAsset, OfferDetails } from '../DynamicCanvas';
 
 interface AssetCreationWorkshopProps {
@@ -19,7 +19,7 @@ const AssetCreationWorkshop: React.FC<AssetCreationWorkshopProps> = ({
   onUpdateDetails,
   onRegenerate
 }) => {
-  const { clientId } = useDemo();
+  const { clientId } = useDemoState();
   const [selectedAsset, setSelectedAsset] = useState<CampaignAsset | null>(null);
   const [isCustomizing, setIsCustomizing] = useState(false);
   const [editedDetails, setEditedDetails] = useState<OfferDetails>({

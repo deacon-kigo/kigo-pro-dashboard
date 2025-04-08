@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useDemo } from '@/contexts/DemoContext';
+import { useDemoState } from '@/lib/redux/hooks';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
 import { useDemoActions } from '@/lib/redux/hooks';
 import { searchObjects, sortObjects, highlightSearchTerms } from '@/lib/utils/search';
@@ -508,7 +508,7 @@ const getTokenTypeBadgeColor = (type: string) => {
 };
 
 export default function CVSTokenManagement() {
-  const { userProfile, theme, themeMode } = useDemo();
+  const { userProfile, theme, themeMode } = useDemoState();
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { updateDemoState } = useDemoActions();
@@ -588,10 +588,10 @@ export default function CVSTokenManagement() {
   // Force light mode for this component
   useEffect(() => {
     // Set theme to light mode
-    if (userProfile?.themeMode !== 'light') {
+    if (themeMode !== 'light') {
       router.replace('/demos/cvs-token-management?role=support&client=cvs&scenario=support-flow&theme=light');
     }
-  }, [userProfile, router]);
+  }, [themeMode, router]);
 
   // Ensure we're using the correct demo context
   useEffect(() => {

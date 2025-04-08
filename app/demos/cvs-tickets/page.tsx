@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useDemo } from '@/contexts/DemoContext';
 import Link from 'next/link';
 import { buildDemoUrl } from '@/lib/utils/url';
 import {
@@ -24,7 +23,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/atoms/Tabs";
 
 // Import redux hooks
-import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
+import { useAppSelector, useAppDispatch, useDemoState } from '@/lib/redux/hooks';
 import { 
   selectTicket, 
   toggleTicketModal, 
@@ -61,7 +60,7 @@ const PRIORITY_COLORS = {
 };
 
 export default function CVSTicketsView() {
-  const { userProfile } = useDemo();
+  const { userProfile } = useDemoState();
   const dispatch = useAppDispatch();
   
   // Get tickets from redux

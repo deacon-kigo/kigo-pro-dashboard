@@ -4,9 +4,8 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useDemo } from '@/contexts/DemoContext';
+import { useDemoState, useDemoActions } from '@/lib/redux/hooks';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
-import { useDemoActions } from '@/lib/redux/hooks';
 import { 
   MagnifyingGlassIcon, 
   PlusCircleIcon,
@@ -36,7 +35,7 @@ interface TokenInfo {
 }
 
 export default function CVSTokenCatalog() {
-  const { userProfile, themeMode } = useDemo();
+  const { userProfile, themeMode } = useDemoState();
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');

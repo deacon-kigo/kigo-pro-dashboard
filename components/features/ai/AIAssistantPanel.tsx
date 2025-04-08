@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
-import { useDemo } from '@/contexts/DemoContext';
+import { useDemoState } from '@/lib/redux/hooks';
 import ReactMarkdown from 'react-markdown';
 
 interface Message {
@@ -61,7 +61,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
   onSend,
   onOptionSelected
 }) => {
-  const { clientId } = useDemo();
+  const { clientId } = useDemoState();
   const [messages, setMessages] = useState<Message[]>(campaignCreationInitialMessages);
   const [isThinking, setIsThinking] = useState(false);
   const [newMessage, setNewMessage] = useState('');

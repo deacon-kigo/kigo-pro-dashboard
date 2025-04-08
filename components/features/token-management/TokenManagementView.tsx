@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useDemo } from '@/contexts/DemoContext';
+import { useDemoState, useDemoActions } from '@/lib/redux/hooks';
 import StandardDashboard from '@/components/templates/StandardDashboard/StandardDashboard';
 import AccountLookup from './AccountLookup';
 import AccountDetails from './AccountDetails';
@@ -17,12 +17,15 @@ import { Account, Token, TokenState } from './types';
 import { sampleTokens, sampleAccounts } from './data';
 import { generateTokenId, calculateExpirationDate } from './utils';
 import { useAppSelector } from '@/lib/redux/hooks';
+import { convertMockUserToUserProfile } from '@/lib/userProfileUtils';
 
 /**
  * Main token management view component
  */
 export default function TokenManagementView() {
-  const { userProfile, setThemeMode } = useDemo();
+  const { userProfile: mockUserProfile } = useDemoState();
+  const { setThemeMode } = useDemoActions();
+  const userProfile = mockUserProfile ? convertMockUserToUserProfile(mockUserProfile) : undefined;
   const tickets = useAppSelector(state => state.cvsToken.tickets);
   const [currentDate, setCurrentDate] = useState('');
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
@@ -221,7 +224,7 @@ export default function TokenManagementView() {
     <StandardDashboard
       headerContent={
         <DashboardHeader 
-          userProfile={userProfile} 
+          userProfile={userProfile || { firstName: '', id: '' }} 
           currentDate={currentDate} 
           selectedAccount={selectedAccount}
           onAddToken={() => setShowTokenSearchModal(true)}

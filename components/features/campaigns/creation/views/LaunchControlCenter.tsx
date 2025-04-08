@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircleIcon, ArrowPathIcon, XCircleIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { CheckIcon } from '@heroicons/react/24/solid';
-import { useDemo } from '@/contexts/DemoContext';
+import { useDemoState } from '@/lib/redux/hooks';
 
 // Define a type for the launch status
 type LaunchStatusType = 'ready' | 'pending' | 'launched' | 'failed';
@@ -52,7 +52,7 @@ const LaunchControlCenter: React.FC<LaunchControlCenterProps> = ({
   onLaunch,
   isLoading = false
 }) => {
-  const { clientId } = useDemo();
+  const { clientId } = useDemoState();
   const [reviewedSections, setReviewedSections] = useState<{ [key: string]: boolean }>({
     targeting: false,
     schedule: false,

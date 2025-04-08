@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
+import { useAppDispatch, useAppSelector, useDemoState } from '@/lib/redux/hooks';
 import { 
   setCurrentTicket, 
   setReturnUrl, 
@@ -10,7 +10,6 @@ import {
 } from '@/lib/redux/slices/externalTicketingSlice';
 import { TokenActionType, ActivityLog, ActionSummary } from '@/lib/types/ticketing';
 import externalTicketingService from '@/lib/services/externalTicketingService';
-import { useDemo } from '@/contexts/DemoContext';
 
 /**
  * Hook for managing external ticketing functionality
@@ -18,7 +17,7 @@ import { useDemo } from '@/contexts/DemoContext';
 export function useExternalTicketing() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { userProfile } = useDemo();
+  const { userProfile } = useDemoState();
   
   // Get current state from Redux
   const { 
@@ -74,7 +73,7 @@ export function useExternalTicketing() {
       notes,
       beforeState,
       afterState,
-      performedBy: userProfile?.userName || 'Unknown User'
+      performedBy: userProfile?.firstName ? `${userProfile.firstName} ${userProfile.lastName || ''}` : 'Unknown User'
     }));
   };
   

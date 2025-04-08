@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { SparklesIcon } from '@heroicons/react/24/solid';
-import { useDemo } from '@/contexts/DemoContext';
+import { useDemoState } from '@/lib/redux/hooks';
 import { CampaignOption } from '../DynamicCanvas';
 
 interface CampaignSelectionGalleryProps {
@@ -16,7 +16,7 @@ const CampaignSelectionGallery: React.FC<CampaignSelectionGalleryProps> = ({
   options,
   onSelect
 }) => {
-  const { clientId } = useDemo();
+  const { clientId } = useDemoState();
   const galleryRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);

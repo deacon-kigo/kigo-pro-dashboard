@@ -9,7 +9,7 @@ import {
 } from 'recharts';
 import { LightBulbIcon } from '@heroicons/react/24/outline';
 import { buildDemoUrl } from '@/lib/utils';
-import { useDemo } from '@/contexts/DemoContext';
+import { useDemoState } from '@/lib/redux/hooks';
 import { BusinessData } from '../DynamicCanvas';
 import Card from '@/components/atoms/Card/Card';
 
@@ -18,7 +18,7 @@ interface BusinessIntelligenceViewProps {
 }
 
 const BusinessIntelligenceView: React.FC<BusinessIntelligenceViewProps> = ({ data }) => {
-  const { clientId, themeMode } = useDemo();
+  const { clientId, themeMode } = useDemoState();
   
   // Format sales data for visualization
   const formatSalesData = (salesData: { [key: string]: number }) => {

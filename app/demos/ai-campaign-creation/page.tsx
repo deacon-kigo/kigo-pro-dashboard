@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ChevronLeftIcon, LightBulbIcon } from '@heroicons/react/24/outline';
-import { useDemo } from '../../../contexts/DemoContext';
+import { useDemoState, useDemoActions } from '@/lib/redux/hooks';
 import { AIAssistantPanel } from '../../../components/features/ai';
 import { DynamicCanvas } from '../../../components/features/campaigns/creation';
 import Card from '@/components/atoms/Card/Card';
@@ -21,7 +21,8 @@ type ViewType =
 
 export default function AICampaignCreation() {
   const router = useRouter();
-  const { clientId, setClientId } = useDemo();
+  const { clientId } = useDemoState();
+  const { setClientId } = useDemoActions();
   const [currentView, setCurrentView] = useState<ViewType>('business-intelligence');
   const [greeting, setGreeting] = useState('');
 

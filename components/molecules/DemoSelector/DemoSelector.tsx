@@ -1,10 +1,10 @@
 import React from 'react';
-import { useDemo } from '../../contexts/DemoContext';
+import { useDemoState } from '@/lib/redux/hooks';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import demoConfigs from '../../config/demoConfigs';
+import demoConfigs, { ScenarioConfig, ClientConfig } from '@/config/demoConfigs';
 
 export default function DemoSelector() {
-  const { role, scenario, clientId } = useDemo();
+  const { role, scenario, clientId } = useDemoState();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -52,7 +52,7 @@ export default function DemoSelector() {
             onChange={handleChange}
             className="w-full text-sm border border-gray-300 rounded-md p-1.5"
           >
-            {Object.entries(demoConfigs.scenarios).map(([key, config]) => (
+            {Object.entries(demoConfigs.scenarios).map(([key, config]: [string, ScenarioConfig]) => (
               <option key={key} value={key}>{config.title}</option>
             ))}
           </select>
@@ -66,7 +66,7 @@ export default function DemoSelector() {
             onChange={handleChange}
             className="w-full text-sm border border-gray-300 rounded-md p-1.5"
           >
-            {Object.entries(demoConfigs.clients).map(([key, client]) => (
+            {Object.entries(demoConfigs.clients).map(([key, client]: [string, ClientConfig]) => (
               <option key={key} value={key}>{client.name}</option>
             ))}
           </select>
