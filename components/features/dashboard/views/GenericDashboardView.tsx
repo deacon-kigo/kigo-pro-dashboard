@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useDemo } from '@/contexts/DemoContext';
+import { useDemoState } from '@/lib/redux/hooks';
 import Card from '@/components/atoms/Card/Card';
 import { getTimeBasedGreeting, getWelcomeBackMessage } from '@/lib/userProfileUtils';
 import StandardDashboard from '@/components/templates/StandardDashboard';
 
 export default function GenericDashboardView() {
-  const { userProfile, theme, themeMode } = useDemo();
+  const { userProfile, theme, themeMode } = useDemoState();
   
   // Calculate task completion rate
   const userData = {

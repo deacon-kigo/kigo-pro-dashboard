@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { useDemo } from "@/contexts/DemoContext";
+import { useDemoState, useDemoActions } from "@/lib/redux/hooks";
 import {
   BuildingStorefrontIcon,
   PhoneIcon,
@@ -48,8 +48,9 @@ const versionInfo: Record<VersionType, { name: string; description: string }> =
   };
 
 export default function RootPage() {
-  // We still need the Demo context for user profile information
-  const { userProfile, updateDemoState } = useDemo();
+  // Replace the DemoContext usage with Redux hooks
+  const { userProfile } = useDemoState();
+  const { updateDemoState } = useDemoActions();
   const { role, clientId, clientName, version } = useAppSelector(
     (state) => state.demo
   );
@@ -185,7 +186,7 @@ export default function RootPage() {
                   </h2>
                   <p className="text-gray-600 mt-2">
                     Welcome,{" "}
-                    {userProfile?.firstName || userProfile?.name || "User"}
+                    {userProfile?.firstName || "User"}
                   </p>
                   <div className="mt-2 inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
                     {role === "merchant"

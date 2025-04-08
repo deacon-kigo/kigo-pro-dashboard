@@ -1,12 +1,15 @@
 'use client';
 
 import React from 'react';
-import { useDemo } from '@/contexts/DemoContext';
+import { useDemoState } from '@/lib/redux/hooks';
 import UserGreeting from './UserGreeting';
-import { getPersonalizedSuggestions } from '@/lib/userProfileUtils';
+import { getPersonalizedSuggestions, convertMockUserToUserProfile } from '@/lib/userProfileUtils';
+import { UserProfile } from '@/types/demo';
 
 const PersonalizedDashboard: React.FC = () => {
-  const { userProfile, clientId, role, theme } = useDemo();
+  const { userProfile: mockUserProfile, clientId, role, theme } = useDemoState();
+  // Convert MockUser to UserProfile for the getPersonalizedSuggestions function
+  const userProfile: UserProfile | undefined = mockUserProfile ? convertMockUserToUserProfile(mockUserProfile) : undefined;
   const personalizedSuggestions = getPersonalizedSuggestions(userProfile);
 
   // Get client-specific metrics

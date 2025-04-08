@@ -2,11 +2,11 @@
 
 import React from 'react';
 import { DashboardView } from '@/components/features/dashboard';
-import { useDemo } from '@/contexts/DemoContext';
+import { useDemoState } from '@/lib/redux/hooks';
 import { BellIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
 
 export default function DashboardPage() {
-  const { clientId, role, themeMode } = useDemo();
+  const { clientId, role, themeMode } = useDemoState();
   
   return (
     <div className={`dashboard-page min-h-screen ${themeMode === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
