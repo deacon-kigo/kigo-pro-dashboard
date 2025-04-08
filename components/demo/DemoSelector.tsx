@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useDemo } from '../../contexts/DemoContext';
+import { useDemoState, useDemoActions } from '@/lib/redux/hooks';
 import { VersionType } from '@/lib/redux/slices/demoSlice';
 import demoConfigs from '../../config/demoConfigs';
 import { 
@@ -66,12 +66,15 @@ export default function DemoSelector() {
     themeMode, 
     scenario,
     version,
-    updateDemoState,
     instanceHistory,
-    currentInstanceIndex,
+    currentInstanceIndex
+  } = useDemoState();
+  
+  const {
+    updateDemoState,
     goToInstance,
     saveCurrentInstance
-  } = useDemo();
+  } = useDemoActions();
   
   // Start with panel open on first render, use localStorage to remember state
   const [isOpen, setIsOpen] = useState(true);

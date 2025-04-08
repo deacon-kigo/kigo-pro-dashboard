@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, ReactNode } from 'react';
-import { useDemo } from '@/contexts/DemoContext';
+import React, { useState, useEffect, ReactNode, useMemo } from 'react';
+import { useDemoState } from '@/lib/redux/hooks';
+import { convertMockUserToUserProfile } from '@/lib/userProfileUtils';
 import { getMockAvatarUrl } from '@/lib/avatarUtils';
 import Card from '@/components/atoms/Card/Card';
 import { AIAssistant } from '@/components/features/ai';
@@ -27,13 +28,25 @@ export default function StandardDashboard({
   statsSection,
   sidebarContent
 }: StandardDashboardProps) {
-  const { role, clientId, userProfile, themeMode, version } = useDemo();
+  const { role, clientId, version, themeMode } = useDemoState();
+  const mockUserProfile = useDemoState().userProfile;
+  
+  const userProfile = useMemo(() => 
+    mockUserProfile ? convertMockUserToUserProfile(mockUserProfile) : undefined
+  , [mockUserProfile]);
+  
   const [currentGreeting, setCurrentGreeting] = useState(greeting || '');
   const [currentTime, setCurrentTime] = useState('');
   const [currentDate, setCurrentDate] = useState('');
   const [weatherEmoji, setWeatherEmoji] = useState('☀️'); // Default sunny
   
-  // Set greeting based on time of day if not provided
+  const patternStyles = useMemo(() => `
+    .bg-pattern {
+      background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+      background-size: 120px 120px;
+    }
+  `, []);
+  
   useEffect(() => {
     if (greeting) {
       setCurrentGreeting(greeting);
@@ -79,19 +92,25 @@ export default function StandardDashboard({
     return () => clearInterval(timer);
   }, [greeting]);
   
-  const avatarUrl = getMockAvatarUrl({
-    id: userProfile.id,
-    firstName: userProfile.firstName,
-    lastName: userProfile.lastName
-  });
+  const avatarUrl = useMemo(() => {
+    if (!userProfile) return '';
+    
+    return getMockAvatarUrl({
+      id: userProfile.name || '',
+      firstName: userProfile.name?.split(' ')[0] || '',
+      lastName: userProfile.name?.split(' ')[1] || ''
+    });
+  }, [userProfile]);
   
   return (
     <div className="pt-4 transition-all duration-300 ease-in-out">
-      {/* Version Badge - only show for non-current versions */}
+      <style dangerouslySetInnerHTML={{ __html: patternStyles }} />
+      
       {version !== 'current' && <VersionBadge version={version} />}
       
-      {/* Header/Greeting Banner */}
-      <div className="relative overflow-hidden rounded-lg bg-blue-50 mb-6">
+      <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 mb-6">
+        <div className="absolute inset-0 opacity-20 bg-pattern"></div>
+        
         <div className="relative p-5 z-10">
           {headerContent ? (
             headerContent
@@ -100,13 +119,13 @@ export default function StandardDashboard({
               <div className="flex items-center">
                 <span className="text-4xl mr-3">{weatherEmoji}</span>
                 <div>
-                  <h1 className="text-2xl font-bold text-blue-700">
-                    {currentGreeting}, {userProfile.firstName}!
+                  <h1 className="text-2xl font-bold text-white">
+                    {currentGreeting}, {userProfile?.name?.split(' ')[0] || 'User'}!
                   </h1>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {currentDate} • <span className="text-primary font-medium">{userProfile.title}</span>
+                  <p className="text-sm text-white/80 mt-1">
+                    {currentDate} • <span className="text-white font-medium">{userProfile?.role || 'User'}</span>
                   </p>
-                  <p className="text-sm text-gray-500 italic mt-1">
+                  <p className="text-sm text-white/70 italic mt-1">
                     Your most unhappy customers are your greatest source of learning.
                   </p>
                 </div>
@@ -116,55 +135,55 @@ export default function StandardDashboard({
         </div>
       </div>
 
-      {/* Stats Overview */}
       {statsSection && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {statsSection}
         </div>
       )}
       
-      {/* Main Content Area */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3 space-y-6">
-          {/* Primary content provided via children */}
           {children}
         </div>
         
         <div className="space-y-6">
-          {/* Sidebar content - either custom or default AI assistant */}
           {sidebarContent || (
             <>
-              <div className="bg-blue-50 rounded-lg p-4 shadow-sm">
-                <div className="flex items-center">
-                  <div className="bg-blue-100 rounded-full p-2 mr-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                    </svg>
+              <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 p-4 shadow-sm">
+                <div className="absolute inset-0 opacity-20 bg-pattern"></div>
+                
+                <div className="relative z-10">
+                  <div className="flex items-center">
+                    <div className="bg-white/20 backdrop-blur-sm rounded-full p-2 mr-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-white">Hey {userProfile?.name?.split(' ')[0] || 'User'}, I'm your AI Assistant</h3>
+                      <p className="text-xs text-white/80">Personalized insights for your campaigns</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-semibold">Hey {userProfile.firstName}, I'm your AI Assistant</h3>
-                    <p className="text-xs text-gray-600">Personalized insights for your campaigns</p>
+                  <div className="mt-4">
+                    <ul className="space-y-2">
+                      <li>
+                        <a href="#" className="flex items-center text-sm text-white hover:text-blue-100">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                          </svg>
+                          Review today's metrics
+                        </a>
+                      </li>
+                      <li>
+                        <a href="#" className="flex items-center text-sm text-white hover:text-blue-100">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                          Run performance report
+                        </a>
+                      </li>
+                    </ul>
                   </div>
-                </div>
-                <div className="mt-4">
-                  <ul className="space-y-2">
-                    <li>
-                      <a href="#" className="flex items-center text-sm text-blue-600 hover:text-blue-800">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
-                        Review today's metrics
-                      </a>
-                    </li>
-                    <li>
-                      <a href="#" className="flex items-center text-sm text-blue-600 hover:text-blue-800">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                        Run performance report
-                      </a>
-                    </li>
-                  </ul>
                 </div>
               </div>
               <Card title="Tasks & Notifications">

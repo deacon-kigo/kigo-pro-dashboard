@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { useDemo } from '@/contexts/DemoContext';
-import { getPersonalizedGreeting } from '@/lib/userProfileUtils';
+import { useDemoState } from '@/lib/redux/hooks';
+import { getPersonalizedGreeting, convertMockUserToUserProfile } from '@/lib/userProfileUtils';
 import { motion } from 'framer-motion';
 
 interface UserGreetingProps {
@@ -16,7 +16,9 @@ const UserGreeting: React.FC<UserGreetingProps> = ({
   showWelcomeMessage = false,
   className = ''
 }) => {
-  const { userProfile, role, clientId } = useDemo();
+  const { role, clientId } = useDemoState();
+  const mockUserProfile = useDemoState().userProfile;
+  const userProfile = mockUserProfile ? convertMockUserToUserProfile(mockUserProfile) : undefined;
   const greeting = getPersonalizedGreeting(userProfile);
 
   // Animation variants

@@ -1,48 +1,46 @@
-'use client';
-
 import React from 'react';
 
-type CardProps = {
+export interface EnhancedCardProps {
   children: React.ReactNode;
   title?: string;
   className?: string;
-  variant?: 'default' | 'elevated' | 'gradient';
+  variant?: 'default' | 'elevated' | 'gradient' | 'outline' | 'glass';
   gradientFrom?: string;
   gradientTo?: string;
   cardIcon?: React.ReactNode;
   headerContent?: React.ReactNode;
   footer?: React.ReactNode;
-};
+}
 
 /**
- * A reusable card component for displaying content in a contained box
+ * Enhanced card component with multiple visual variants
  * 
  * @component
  * @example
  * // Default card
- * <Card>Content</Card>
+ * <EnhancedCard>Content</EnhancedCard>
  * 
- * // Card with title
- * <Card title="Card Title">Content</Card>
- * 
- * // Elevated card with soft shadow
- * <Card variant="elevated">Content</Card>
+ * // Elevated card with soft shadows
+ * <EnhancedCard variant="elevated">Content</EnhancedCard>
  * 
  * // Gradient card
- * <Card variant="gradient" gradientFrom="from-blue-500" gradientTo="to-indigo-600">Content</Card>
+ * <EnhancedCard variant="gradient" gradientFrom="from-blue-500" gradientTo="to-indigo-600">Content</EnhancedCard>
+ * 
+ * // Glass effect card
+ * <EnhancedCard variant="glass">Content</EnhancedCard>
  */
-export default function Card({ 
+export default function EnhancedCard({ 
   children, 
   title, 
   className = '',
   variant = 'default',
-  gradientFrom = 'from-blue-500',
-  gradientTo = 'to-indigo-600',
+  gradientFrom = 'from-primary',
+  gradientTo = 'to-primary-dark',
   cardIcon,
   headerContent,
   footer
-}: CardProps) {
-  // Base classes for the card
+}: EnhancedCardProps) {
+  // Base classes for all card variants
   let cardClasses = 'rounded-xl overflow-hidden ';
   
   // Add variant-specific classes
@@ -53,14 +51,20 @@ export default function Card({
     case 'gradient':
       cardClasses += `bg-gradient-to-r ${gradientFrom} ${gradientTo} text-white `;
       break;
+    case 'outline':
+      cardClasses += 'bg-white border-2 border-gray-200 ';
+      break;
+    case 'glass':
+      cardClasses += 'bg-white/80 backdrop-blur-sm border border-white/20 shadow-sm ';
+      break;
     default:
-      cardClasses += 'bg-white rounded-xl shadow-sm border border-gray-200 ';
+      cardClasses += 'bg-white border border-gray-200 shadow-sm ';
   }
   
   // Add any custom classes
   cardClasses += className;
   
-  // Determine header text color based on variant
+  // Determine header content color based on variant
   const headerTextColor = variant === 'gradient' ? 'text-white' : 'text-gray-900';
   
   return (
@@ -87,7 +91,7 @@ export default function Card({
         </div>
       )}
       
-      <div className={title || headerContent || cardIcon ? 'px-5 py-4' : 'p-5'}>
+      <div className={`${title || headerContent || cardIcon ? 'p-5' : 'p-5'}`}>
         {children}
       </div>
       

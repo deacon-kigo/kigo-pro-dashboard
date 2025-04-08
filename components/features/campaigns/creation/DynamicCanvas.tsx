@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDemo } from '@/contexts/DemoContext';
 import { useRouter } from 'next/navigation';
@@ -427,15 +427,16 @@ Deacon's Pizza Team`
     }
   };
   
+  // Window resize handler
+  const handleResize = useCallback(() => {
+    setWindowSize({
+      width: window.innerWidth,
+      height: window.innerHeight
+    });
+  }, []);
+  
   // Get window size for confetti
   useEffect(() => {
-    const handleResize = () => {
-      setWindowSize({
-        width: window.innerWidth,
-        height: window.innerHeight
-      });
-    };
-
     if (typeof window !== 'undefined') {
       setWindowSize({
         width: window.innerWidth,
@@ -449,18 +450,18 @@ Deacon's Pizza Team`
         window.removeEventListener('resize', handleResize);
       }
     };
-  }, []);
+  }, [handleResize]);
   
   // Handle campaign selection
-  const handleCampaignSelect = (campaign: CampaignOption) => {
+  const handleCampaignSelect = useCallback((campaign: CampaignOption) => {
     setSelectedCampaign(campaign);
     setCampaignAssets(mockCampaignAssets);
     setOfferDetails(mockOfferDetails);
     setCurrentView('asset-creation');
-  };
+  }, [mockCampaignAssets, mockOfferDetails]);
   
   // Handle parameter updates for performance prediction
-  const handleParamUpdate = (key: string, value: any) => {
+  const handleParamUpdate = useCallback((key: string, value: any) => {
     const keyParts = key.split('.');
     
     if (keyParts.length === 2) {
@@ -473,10 +474,10 @@ Deacon's Pizza Team`
         }
       }));
     }
-  };
+  }, []);
   
   // Handle campaign launch
-  const handleLaunch = () => {
+  const handleLaunch = useCallback(() => {
     console.log('Campaign launched!');
     
     // Show confetti
@@ -486,10 +487,10 @@ Deacon's Pizza Team`
     setTimeout(() => {
       router.push(`${buildDemoUrl('deacons', 'pizza')}?from=campaign-launch`);
     }, 3000);
-  };
+  }, [router]);
   
   // Function to get view title
-  const getViewTitle = (view: ViewType): string => {
+  const getViewTitle = useCallback((view: ViewType): string => {
     switch(view) {
       case 'business-intelligence':
         return 'Business Intelligence';
@@ -502,7 +503,7 @@ Deacon's Pizza Team`
       case 'launch-control':
         return 'Launch Control';
     }
-  };
+  }, []);
   
   // Animation variants
   const viewVariants = {

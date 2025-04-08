@@ -26,7 +26,7 @@ export default {
         // Text & Background Colors
         "text-dark": "#231F20", // Using Kigo black
         "text-muted": "#5A5858", // Using Kigo charcoal
-        "bg-light": "#f6f5f1", // Using Kigo stone
+        "bg-light": "#F9FAFC", // Changed to requested light gray/blue
         "border-light": "#E4E5E7", // Using Kigo gray-100
         
         // Kigo Reds
@@ -41,6 +41,7 @@ export default {
         orange: "#FF8717",
         blue: "#328FE5",
         "blue-light-35": "#E6E7FF",
+        "blue-50": "#EFF6FF",
         "sky-blue": "#CCFFFE",
         "dark-sky-blue": "#25BDFE",
         green: "#77D898",

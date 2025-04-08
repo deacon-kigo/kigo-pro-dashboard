@@ -6,3 +6,4 @@ export * from './Textarea';
 export * from './Select';
 export * from './Card';
 export * from './Tabs';
+export { default as Progress } from './Progress';

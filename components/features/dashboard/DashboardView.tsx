@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, Suspense, useEffect } from 'react';
-import { useDemo } from '@/contexts/DemoContext';
+import { useDemoState } from '@/lib/redux/hooks';
 import CVSTokenManagementView from './views/CVSTokenManagementView';
 import DeaconsPizzaView from './views/DeaconsPizzaView';
 import GenericDashboardView from './views/GenericDashboardView';
@@ -11,7 +11,7 @@ import GenericDashboardView from './views/GenericDashboardView';
  * This allows for conditional rendering without duplicating page structures.
  */
 export default function DashboardView() {
-  const { userProfile, clientId, scenario, role, version } = useDemo();
+  const { userProfile, clientId, scenario, role, version } = useDemoState();
   
   // Add more detailed logging to help debug the context and routing
   useEffect(() => {

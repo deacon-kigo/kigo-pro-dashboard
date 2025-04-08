@@ -9,20 +9,27 @@ import externalTicketingReducer from './slices/externalTicketingSlice';
 import { useDispatch } from 'react-redux';
 import { ActionWithType } from '../../types/redux';
 
-// Custom middleware for logging only, NO URL SYNC
+// Simple flag to disable all middleware logging if needed
+const ENABLE_ACTION_LOGGING = true;
+
+// Simple set to track the types of actions we've already seen
+const seenActionTypes = new Set<string>();
+
+// Simplified middleware that avoids accessing store state during action processing
 const demoActionLoggerMiddleware = (store: any) => (next: any) => (action: any) => {
+  // Process the action first to ensure proper flow
   const result = next(action);
   
-  // Log demo-related actions for debugging
-  if (
-    typeof action.type === 'string' && 
-    action.type.startsWith('demo/')
-  ) {
-    const { demo } = store.getState();
-    console.log(`Redux: Action ${action.type} processed`, {
-      clientId: demo.clientId,
-      scenario: demo.scenario
-    });
+  // Only log if logging is enabled
+  if (ENABLE_ACTION_LOGGING && typeof action.type === 'string' && action.type.startsWith('demo/')) {
+    // Only log new action types we haven't seen before to reduce console noise
+    if (!seenActionTypes.has(action.type)) {
+      console.log(`Redux: First occurrence of action ${action.type}`);
+      seenActionTypes.add(action.type);
+    }
+    
+    // For debugging specific actions, uncomment this
+    // console.log(`Redux: Action ${action.type} processed with payload:`, action.payload);
   }
   
   return result;

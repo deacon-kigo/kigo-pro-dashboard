@@ -4,9 +4,8 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useDemo } from '@/contexts/DemoContext';
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
-import { useDemoActions } from '@/lib/redux/hooks';
+import { useDemoState, useDemoActions } from '@/lib/redux/hooks';
 import { 
   UserCircleIcon, 
   BellIcon, 
@@ -116,7 +115,7 @@ const dashboardStats = [
 ];
 
 export default function CVSDashboard() {
-  const { userProfile, themeMode } = useDemo();
+  const { userProfile, themeMode } = useDemoState();
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
   const [currentTime, setCurrentTime] = useState('');

@@ -184,13 +184,17 @@ export const demoSlice = createSlice({
     },
     updateDemoState: (state, action: PayloadAction<Partial<DemoState>>) => {
       const updates = action.payload;
+      let stateChanged = false;
       
-      if (updates.role !== undefined) {
+      if (updates.role !== undefined && updates.role !== state.role) {
         state.role = updates.role;
+        stateChanged = true;
       }
       
-      if (updates.clientId !== undefined) {
+      if (updates.clientId !== undefined && updates.clientId !== state.clientId) {
         state.clientId = updates.clientId;
+        stateChanged = true;
+        
         // Update client name
         if (updates.clientName) {
           state.clientName = updates.clientName;
@@ -208,29 +212,34 @@ export const demoSlice = createSlice({
         }
       }
       
-      if (updates.scenario !== undefined) {
+      if (updates.scenario !== undefined && updates.scenario !== state.scenario) {
         state.scenario = updates.scenario;
+        stateChanged = true;
       }
       
-      if (updates.themeMode !== undefined) {
+      if (updates.themeMode !== undefined && updates.themeMode !== state.themeMode) {
         state.themeMode = updates.themeMode;
+        stateChanged = true;
       }
       
-      if (updates.version !== undefined) {
+      if (updates.version !== undefined && updates.version !== state.version) {
         state.version = updates.version;
+        stateChanged = true;
       }
       
       // Update theme based on new state
-      state.theme = getTheme(state.clientId, state.themeMode);
-      
-      // Add to history
-      state.history.push({
-        role: state.role,
-        clientId: state.clientId,
-        scenario: state.scenario,
-        themeMode: state.themeMode,
-        version: state.version,
-      });
+      if (stateChanged) {
+        state.theme = getTheme(state.clientId, state.themeMode);
+        
+        // Add to history only if state actually changed
+        state.history.push({
+          role: state.role,
+          clientId: state.clientId,
+          scenario: state.scenario,
+          themeMode: state.themeMode,
+          version: state.version,
+        });
+      }
     },
     resetToDefault: (state) => {
       Object.assign(state, defaultDemoState);

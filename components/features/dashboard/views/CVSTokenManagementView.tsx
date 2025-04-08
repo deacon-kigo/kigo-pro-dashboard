@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useDemo } from '@/contexts/DemoContext';
+import { useDemoState, useDemoActions } from '@/lib/redux/hooks';
 import Image from 'next/image';
 import Card from '@/components/atoms/Card/Card';
 import StandardDashboard from '@/components/templates/StandardDashboard';
@@ -204,7 +204,8 @@ function PriorityIndicator({ priority }: { priority: string }) {
 }
 
 export default function CVSTokenManagementView() {
-  const { userProfile, setThemeMode } = useDemo();
+  const { userProfile } = useDemoState();
+  const { setThemeMode } = useDemoActions();
   const [currentDate, setCurrentDate] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchType, setSearchType] = useState<'email' | 'name' | 'phone' | 'id'>('email');

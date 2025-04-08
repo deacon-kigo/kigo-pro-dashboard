@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
-import { useDemo } from '../../contexts/DemoContext';
+import { useDemoState, useDemoActions } from '@/lib/redux/hooks';
 import demoConfigs from '../../config/demoConfigs';
 import shortcutManager from '../../lib/KeyboardShortcutManager';
 import { 
@@ -196,7 +196,7 @@ const DemoSpotlight: React.FC = () => {
   const { role, clientId, version } = useAppSelector(state => state.demo);
   const demoInstances = useRef(generateDemoInstances());
   const instanceGroups = useRef(groupInstancesByCategory(demoInstances.current));
-  const { updateDemoState } = useDemo();
+  const { updateDemoState } = useDemoActions();
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);

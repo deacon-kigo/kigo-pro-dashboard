@@ -1,10 +1,19 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useDemo } from '@/contexts/DemoContext';
+import React, { useState, useMemo } from 'react';
+import { useDemoState } from '@/lib/redux/hooks';
+import { convertMockUserToUserProfile } from '@/lib/userProfileUtils';
 import Image from 'next/image';
 import Card from '@/components/atoms/Card/Card';
 import StandardDashboard from '@/components/templates/StandardDashboard';
+
+// Custom CSS for banner pattern
+const headerStyles = `
+  .bg-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+    background-size: 120px 120px;
+  }
+`;
 
 // Sample campaign data
 const sampleCampaigns = [
@@ -115,7 +124,13 @@ function formatDate(dateString: string) {
 }
 
 export default function DeaconsPizzaView() {
-  const { userProfile, theme } = useDemo();
+  const demoState = useDemoState();
+  const mockUserProfile = demoState.userProfile;
+  const userProfile = useMemo(() => 
+    mockUserProfile ? convertMockUserToUserProfile(mockUserProfile) : undefined
+  , [mockUserProfile]);
+  const { theme } = demoState;
+  
   const [selectedTab, setSelectedTab] = useState('campaigns');
   
   // Stats data
@@ -298,33 +313,38 @@ export default function DeaconsPizzaView() {
   
   // Custom header content with logo, search, and new campaign button
   const headerContent = (
-    <div className="flex items-center justify-between">
-      <div>
-        <h1 className="text-2xl font-bold text-blue-700">
-          Dashboard
-        </h1>
-      </div>
+    <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600">
+      {/* Add overlay pattern for texture */}
+      <div className="absolute inset-0 opacity-20 bg-pattern"></div>
       
-      <div className="flex items-center space-x-4">
-        <div className="relative">
-          <input 
-            type="text" 
-            placeholder="Search campaigns, products..." 
-            className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm w-64" 
-          />
-          <div className="absolute left-3 top-2.5">
-            <svg className="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
+      <div className="relative z-10 flex items-center justify-between p-5">
+        <div>
+          <h1 className="text-2xl font-bold text-white">
+            Dashboard
+          </h1>
         </div>
         
-        <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
-          <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          New Campaign
-        </button>
+        <div className="flex items-center space-x-4">
+          <div className="relative">
+            <input 
+              type="text" 
+              placeholder="Search campaigns, products..." 
+              className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm w-64" 
+            />
+            <div className="absolute left-3 top-2.5">
+              <svg className="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
+          
+          <button className="flex items-center gap-2 bg-white hover:bg-gray-50 text-blue-600 px-4 py-2 rounded-lg text-sm font-medium">
+            <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            New Campaign
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -341,6 +361,8 @@ export default function DeaconsPizzaView() {
       headerContent={headerContent}
       statsSection={statsSection}
     >
+      {/* Add style tag for banner pattern */}
+      <style dangerouslySetInnerHTML={{ __html: headerStyles }} />
       {mainContent}
     </StandardDashboard>
   );

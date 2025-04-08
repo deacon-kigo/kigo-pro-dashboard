@@ -66,6 +66,8 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
   const [isThinking, setIsThinking] = useState(false);
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  // Reference to track if there's a pending timeout
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Auto-scroll to bottom on new messages - no need to recreate every render
   const scrollToBottom = useCallback(() => {
@@ -96,8 +98,13 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
     const isCompetitorQuery = newMessage.toLowerCase().includes('competitor') || 
                              newMessage.toLowerCase().includes('competition');
     
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    
     // Simulate AI response after a delay
-    setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       let aiResponse: Message;
       
       if (isCompetitorQuery) {
@@ -141,6 +148,9 @@ Would you like me to analyze any specific competitor in more detail, or would yo
       if (onSend) {
         onSend(newMessage);
       }
+      
+      // Clear the timeout reference
+      timeoutRef.current = null;
     }, 2000);
   }, [newMessage, onSend]);
 
@@ -162,8 +172,13 @@ Would you like me to analyze any specific competitor in more detail, or would yo
       setMessages(prev => [...prev, userMessage]);
       setIsThinking(true);
       
+      // Clear any existing timeout
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      
       // Generate appropriate AI response based on option selected
-      setTimeout(() => {
+      timeoutRef.current = setTimeout(() => {
         let aiResponse: Message;
         
         switch(value) {
@@ -260,6 +275,100 @@ Would you like me to analyze any specific competitor in more detail, or would yo
               ]
             };
             if (onOptionSelected) onOptionSelected('review-performance');
+            break;
+            
+          case 'launch-campaign':
+            aiResponse = {
+              id: Date.now().toString(),
+              type: 'ai',
+              content: "Congratulations! Your Family Weekday Special campaign has been launched. You can monitor its performance from your dashboard.",
+              timestamp: new Date()
+            };
+            if (onOptionSelected) onOptionSelected('launch-campaign');
+            break;
+            
+          case 'keep-assets':
+            aiResponse = {
+              id: Date.now().toString(),
+              type: 'ai',
+              content: "Great! I'll keep the assets as is. Let's move on to the performance predictions for your campaign.",
+              timestamp: new Date(),
+              responseOptions: [
+                { text: "Show me performance predictions", value: "review-performance" }
+              ]
+            };
+            if (onOptionSelected) onOptionSelected('customize-assets');
+            break;
+            
+          case 'campaign-suggestion':
+            aiResponse = {
+              id: Date.now().toString(),
+              type: 'ai',
+              content: "Based on your data, a Family Weekday Special would be most effective. It offers a complete family meal at a competitive price point, targeting your underperforming weekday periods.",
+              timestamp: new Date(),
+              responseOptions: [
+                { text: "Let's create this campaign", value: "create-campaign" }
+              ]
+            };
+            break;
+            
+          case 'expected-results':
+            aiResponse = {
+              id: Date.now().toString(),
+              type: 'ai',
+              content: "Based on similar campaigns in your industry, you can expect a 25-35% increase in weekday dinner sales, with approximately 200-300 offer redemptions per week and a positive ROI within the first 14 days.",
+              timestamp: new Date(),
+              responseOptions: [
+                { text: "Generate campaign options", value: "create-campaign" }
+              ]
+            };
+            break;
+            
+          case 'campaign-explanation':
+            aiResponse = {
+              id: Date.now().toString(),
+              type: 'ai',
+              content: "I created these options by analyzing your sales data, competitive landscape, and customer preferences. Each option targets your weekday dinner opportunity with a different approach to appeal to your family demographic.",
+              timestamp: new Date(),
+              responseOptions: [
+                { text: "Select the Family Dinner Bundle", value: "select-campaign" }
+              ]
+            };
+            break;
+            
+          case 'focus-suggestion':
+            aiResponse = {
+              id: Date.now().toString(),
+              type: 'ai',
+              content: "Based on your data, focus on the weekday dinner opportunity. Specifically, target families with a value-oriented bundle that emphasizes your portion size advantage over competitors.",
+              timestamp: new Date(),
+              responseOptions: [
+                { text: "Create a campaign for this focus", value: "create-campaign" }
+              ]
+            };
+            break;
+            
+          case 'optimize-campaign':
+            aiResponse = {
+              id: Date.now().toString(),
+              type: 'ai',
+              content: "I've optimized your campaign parameters for maximum ROI. By adjusting the targeting radius to 5 miles and focusing on Monday-Thursday from 4-8pm, we can increase expected redemptions by 15%.",
+              timestamp: new Date(),
+              responseOptions: [
+                { text: "Review updated performance", value: "review-performance" }
+              ]
+            };
+            if (onOptionSelected) onOptionSelected('customize-assets');
+            break;
+            
+          case 'schedule-campaign':
+            aiResponse = {
+              id: Date.now().toString(),
+              type: 'ai',
+              content: "Your campaign has been scheduled to launch next Monday. You'll receive a notification when it goes live, and you can monitor performance from your dashboard.",
+              timestamp: new Date()
+            };
+            if (onOptionSelected) onOptionSelected('launch-campaign');
             break;
             
           case 'pizza-palace':
@@ -399,7 +508,19 @@ Would you like me to develop a campaign strategy for any of these opportunities 
               ]
             };
             break;
-          
+            
+          case 'loyalty-program':
+            aiResponse = {
+              id: Date.now().toString(),
+              type: 'ai',
+              content: "Based on your customer data, a simple points-based loyalty program could increase your repeat customer rate by 15-20%. We should focus on the family campaign first, then I can help you design a loyalty program next.",
+              timestamp: new Date(),
+              responseOptions: [
+                { text: "Let's focus on the family campaign", value: "create-campaign" }
+              ]
+            };
+            break;
+            
           default:
             aiResponse = {
               id: Date.now().toString(),
@@ -411,9 +532,21 @@ Would you like me to develop a campaign strategy for any of these opportunities 
         
         setMessages(prev => [...prev, aiResponse]);
         setIsThinking(false);
+        
+        // Clear the timeout reference
+        timeoutRef.current = null;
       }, 1500);
     }
   }, [messages, onOptionSelected]);
+
+  // Clean up timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   // Memoize the form submit handler
   const handleFormSubmit = useCallback((e: React.FormEvent) => {

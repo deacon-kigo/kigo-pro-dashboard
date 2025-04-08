@@ -23,10 +23,10 @@ export default function AICampaignCreation() {
   const router = useRouter();
   const { clientId, setClientId } = useDemo();
   const [currentView, setCurrentView] = useState<ViewType>('business-intelligence');
-  const [greeting, setGreeting] = useState('Good morning');
+  const [greeting, setGreeting] = useState('');
 
   // Memoize the greeting calculation to avoid recalculation on every render
-  const getGreeting = useCallback(() => {
+  const getGreeting = useMemo(() => {
     const hour = new Date().getHours();
     if (hour >= 5 && hour < 12) {
       return 'Good morning';
@@ -40,19 +40,29 @@ export default function AICampaignCreation() {
   // Set client ID and greeting only once on mount
   useEffect(() => {
     setClientId('deacons');
-    setGreeting(getGreeting());
+    setGreeting(getGreeting);
   }, [setClientId, getGreeting]);
 
   // Handle option selected from AI Assistant Panel - memoize to avoid recreation
   const handleOptionSelected = useCallback((optionId: string) => {
-    if (optionId === 'tell-more' || optionId === 'recommendation') {
-      setCurrentView('business-intelligence');
-    } else if (optionId === 'create-campaign') {
-      setCurrentView('campaign-selection');
-    } else if (optionId === 'customize-assets') {
-      setCurrentView('asset-creation');
-    } else if (optionId === 'launch-campaign') {
-      setCurrentView('launch-control');
+    switch(optionId) {
+      case 'tell-more':
+      case 'recommendation':
+        setCurrentView('business-intelligence');
+        break;
+      case 'create-campaign':
+        setCurrentView('campaign-selection');
+        break;
+      case 'select-campaign':
+      case 'customize-assets':
+        setCurrentView('asset-creation');
+        break;
+      case 'review-performance':
+        setCurrentView('performance-prediction');
+        break;
+      case 'launch-campaign':
+        setCurrentView('launch-control');
+        break;
     }
   }, []);
 
