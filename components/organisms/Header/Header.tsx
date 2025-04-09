@@ -220,7 +220,7 @@ export default function Header() {
 
   return (
     <header
-      className={`h-[72px] flex items-center px-8 fixed top-0 right-0 z-30 transition-all duration-300 ease-in-out border-b border-border-light`}
+      className={`h-[72px] flex items-center px-6 fixed top-0 right-0 z-30 transition-all duration-300 ease-in-out border-b border-border-light`}
       style={{
         left: sidebarWidth,
         width: `calc(100% - ${sidebarWidth})`,
@@ -239,7 +239,7 @@ export default function Header() {
       <div className="relative z-10 flex items-center w-full max-w-[1600px] mx-auto">
         {/* Removing the Support text as requested */}
 
-        <div id="search-container" className="relative ml-4 flex-1 max-w-md">
+        <div id="search-container" className="relative  flex-1 max-w-md">
           <Input
             variant="search"
             value={searchQuery}

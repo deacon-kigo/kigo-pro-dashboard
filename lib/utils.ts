@@ -13,25 +13,15 @@ export function buildDemoUrl(client: string, page: string): string {
 }
 
 /**
- * Checks if a given path is active based on the current pathname
+ * Check if a path is active by comparing it with the current pathname
+ * Works for exact matches or parent routes
  */
-export function isPathActive(pathname: string | null, path: string): boolean {
-  if (!pathname) return false;
-
-  // Handle root path
-  if (path === "/" && pathname === "/") return true;
-
-  // Handle exact match
-  if (pathname === path) return true;
-
-  // Handle subpaths
-  if (path !== "/" && pathname.startsWith(path)) {
-    // Check if it's truly a subpath and not just a string prefix match
-    const nextChar = pathname.charAt(path.length);
-    if (nextChar === "" || nextChar === "/") {
-      return true;
-    }
+export function isPathActive(pathname: string, path: string) {
+  // For root paths like '/' match exactly
+  if (path === '/') {
+    return pathname === path;
   }
-
-  return false;
+  
+  // For other paths, check if the current path starts with the given path
+  return pathname && pathname.startsWith(path);
 }

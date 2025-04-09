@@ -1,0 +1,46 @@
+npm error code ERESOLVE
+npm error ERESOLVE could not resolve
+npm error
+npm error While resolving: @storybook/addon-styling@2.0.0
+npm error Found: react@19.0.0
+npm error node_modules/react
+npm error   peer react@">=16.8.0" from @emotion/use-insertion-effect-with-fallbacks@1.2.0
+npm error   node_modules/@emotion/use-insertion-effect-with-fallbacks
+npm error     @emotion/use-insertion-effect-with-fallbacks@"^1.0.0" from @storybook/theming@7.6.20
+npm error     node_modules/@storybook/addon-styling/node_modules/@storybook/theming
+npm error       @storybook/theming@"^7.0.2" from @storybook/addon-styling@2.0.0
+npm error       node_modules/@storybook/addon-styling
+npm error         dev @storybook/addon-styling@"^2.0.0" from the root project
+npm error       2 more (@storybook/components, @storybook/manager-api)
+npm error     @emotion/use-insertion-effect-with-fallbacks@"^1.0.0" from @storybook/theming@7.6.17
+npm error     node_modules/@storybook/api/node_modules/@storybook/theming
+npm error       @storybook/theming@"7.6.17" from @storybook/manager-api@7.6.17
+npm error       node_modules/@storybook/api/node_modules/@storybook/manager-api
+npm error         @storybook/manager-api@"7.6.17" from @storybook/api@7.6.17
+npm error         node_modules/@storybook/api
+npm error   peer react@">=16.8.0" from @floating-ui/react@0.26.28
+npm error   node_modules/@floating-ui/react
+npm error     @floating-ui/react@"^0.26.16" from @headlessui/react@2.2.0
+npm error     node_modules/@headlessui/react
+npm error       @headlessui/react@"^2.2.0" from the root project
+npm error   80 more (@floating-ui/react-dom, @headlessui/react, ...)
+npm error
+npm error Could not resolve dependency:
+npm error peerOptional react@"^16.8.0 || ^17.0.0 || ^18.0.0" from @storybook/addon-styling@2.0.0
+npm error node_modules/@storybook/addon-styling
+npm error   dev @storybook/addon-styling@"^2.0.0" from the root project
+npm error
+npm error Conflicting peer dependency: react@18.3.1
+npm error node_modules/react
+npm error   peerOptional react@"^16.8.0 || ^17.0.0 || ^18.0.0" from @storybook/addon-styling@2.0.0
+npm error   node_modules/@storybook/addon-styling
+npm error     dev @storybook/addon-styling@"^2.0.0" from the root project
+npm error
+npm error Fix the upstream dependency conflict, or retry
+npm error this command with --force or --legacy-peer-deps
+npm error to accept an incorrect (and potentially broken) dependency resolution.
+npm error
+npm error
+npm error For a full report see:
+npm error /Users/dpoon/.npm/_logs/2025-04-09T19_35_36_514Z-eresolve-report.txt
+npm error A complete log of this run can be found in: /Users/dpoon/.npm/_logs/2025-04-09T19_35_36_514Z-debug-0.log
