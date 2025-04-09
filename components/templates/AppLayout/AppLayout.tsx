@@ -5,7 +5,6 @@ import Header from "@/components/organisms/Header/Header";
 import Sidebar from "@/components/organisms/Sidebar/Sidebar";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { AIChat } from "@/components/features/ai";
-import DemoSpotlight from "@/components/demo/DemoSpotlight";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -40,7 +39,6 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
         </main>
       </div>
       <AIChat />
-      <DemoSpotlight />
     </div>
   );
 };

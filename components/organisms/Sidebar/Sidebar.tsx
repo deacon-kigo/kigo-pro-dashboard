@@ -38,6 +38,13 @@ import {
 } from "@/components/molecules/dialog";
 import { Button } from "@/components/atoms/Button";
 
+// Ensure window type declaration for Storybook
+declare global {
+  interface Window {
+    __NEXT_MOCK_PATHNAME?: string;
+  }
+}
+
 export interface SidebarProps {
   role?: "merchant" | "support" | "admin";
   isCVSContext?: boolean;
@@ -128,6 +135,14 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
   };
 
   const isLinkActive = (path: string) => {
+    // Special case for analytics - active for both regular and campaign manager analytics
+    if (
+      path.includes("/analytics") &&
+      (pathname.includes("/analytics") || pathname.includes("/campaign-manager/analytics"))
+    ) {
+      return true;
+    }
+    
     // Special case for token management
     if (
       path.includes("token-management") &&
@@ -137,6 +152,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     ) {
       return true;
     }
+    
     // Special case for dashboard - when on root path or specific dashboard URL
     if (
       path.includes("/dashboard") &&

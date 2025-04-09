@@ -31,6 +31,18 @@ const meta: Meta<typeof Input> = {
       description: 'Whether the input is required',
       control: 'boolean',
     },
+    variant: {
+      description: 'The style variant of the input',
+      control: 'select',
+      options: ['default', 'error'],
+      defaultValue: 'default',
+    },
+    inputSize: {
+      description: 'The size of the input',
+      control: 'select',
+      options: ['default', 'sm', 'lg'],
+      defaultValue: 'default',
+    },
     className: {
       description: 'Additional CSS classes to apply',
       control: 'text',
@@ -80,6 +92,28 @@ export const Required: Story = {
   args: {
     placeholder: 'Required input',
     required: true,
+  },
+};
+
+export const Error: Story = {
+  args: {
+    placeholder: 'Error input',
+    variant: 'error',
+    defaultValue: 'Invalid input',
+  },
+};
+
+export const Small: Story = {
+  args: {
+    placeholder: 'Small input',
+    inputSize: 'sm',
+  },
+};
+
+export const Large: Story = {
+  args: {
+    placeholder: 'Large input',
+    inputSize: 'lg',
   },
 };
 

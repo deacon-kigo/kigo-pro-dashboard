@@ -1,10 +1,10 @@
+"use client";
 import * as React from "react";
-import { buttonVariants } from "@/components/ui/button";
-import Link from "next/link";
+import { Button as ShadcnButton } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Slot } from "@radix-ui/react-slot";
+import { GlowEffect, GlowEffectProps } from "@/components/effects/GlowEffect";
 
-// Define our variant types
+// Simple type definition
 type ButtonVariant =
   | "primary"
   | "secondary"
@@ -12,129 +12,174 @@ type ButtonVariant =
   | "ghost"
   | "link"
   | "destructive";
-type ButtonSize = "default" | "sm" | "lg" | "icon";
-type ButtonState = "default" | "active" | "selected";
 type ButtonTheme = "kigo" | "cvs";
 
-// Define theme-specific styles using CSS classes
-const themeStyles: Record<ButtonTheme, Record<ButtonVariant, string>> = {
-  kigo: {
-    primary: "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800",
-    secondary: "bg-gray-100 text-gray-800 hover:bg-gray-200",
-    outline: "border-blue-600 text-blue-600 hover:bg-blue-50",
-    ghost: "hover:bg-blue-50 text-blue-600",
-    link: "text-blue-600 hover:underline",
-    destructive: "bg-red-600 text-white hover:bg-red-700", // Custom destructive
-  },
-  cvs: {
-    primary:
-      "bg-gradient-to-r from-blue-600 to-red-600 text-white hover:from-blue-700 hover:to-red-700 active:from-blue-800 active:to-red-800",
-    secondary:
-      "bg-gradient-to-r from-blue-50 to-red-50 text-gray-800 hover:from-blue-100 hover:to-red-100",
-    outline: "border-blue-600 text-blue-600 hover:bg-blue-50",
-    ghost: "hover:bg-gradient-to-r hover:from-blue-50 hover:to-red-50",
-    link: "bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent hover:underline",
-    destructive: "bg-red-600 text-white hover:bg-red-700", // Custom destructive
-  },
-};
-
-// Size styles
-const sizeStyles: Record<ButtonSize, string> = {
-  default: "h-10 px-4 py-2",
-  sm: "h-9 rounded-md px-3 py-1 text-xs",
-  lg: "h-11 rounded-md px-8 py-3 text-base",
-  icon: "h-10 w-10 p-2",
-};
-
-// Define state styles
-const stateStyles: Record<ButtonState, string> = {
-  default: "",
-  active: "ring-2 ring-offset-1",
-  selected: "ring-1 ring-inset",
-};
-
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+// Simple props interface that includes ShadCN button props but defines our own variant
+interface ButtonProps
+  extends Omit<React.ComponentPropsWithRef<typeof ShadcnButton>, "variant"> {
   variant?: ButtonVariant;
-  size?: ButtonSize;
   theme?: ButtonTheme;
-  state?: ButtonState;
   icon?: React.ReactNode;
   href?: string;
-  asChild?: boolean;
+  glow?: boolean | GlowEffectProps;
 }
+
+// Simple CSS class map for CVS theme
+const cvsThemeStyles: Record<ButtonVariant, string> = {
+  primary:
+    "bg-gradient-to-r from-blue-600 to-red-600 text-white hover:from-blue-700 hover:to-red-700",
+  secondary:
+    "bg-gradient-to-r from-blue-50 to-red-50 text-gray-800 hover:from-blue-100 hover:to-red-100",
+  outline: "border-blue-600 text-blue-600 hover:bg-blue-50",
+  ghost: "hover:bg-gradient-to-r hover:from-blue-50 hover:to-red-50",
+  link: "bg-gradient-to-r from-blue-600 to-red-600 bg-clip-text text-transparent hover:underline",
+  destructive: "bg-red-600 text-white hover:bg-red-700",
+};
+
+// Map our variants directly to ShadCN variants
+const variantMap = {
+  primary: "default",
+  secondary: "secondary",
+  outline: "outline",
+  ghost: "ghost",
+  link: "link",
+  destructive: "destructive",
+} as const;
+
+// Default glow effect based on variant
+const defaultGlowEffects: Record<ButtonVariant, GlowEffectProps> = {
+  primary: {
+    colors: ["#3b82f6", "#2563eb", "#1d4ed8", "#1e40af"],
+    mode: "colorShift",
+    blur: "soft",
+    scale: 0.95,
+    duration: 3,
+  },
+  secondary: {
+    colors: ["#e5e7eb", "#d1d5db", "#9ca3af", "#6b7280"],
+    mode: "pulse",
+    blur: "soft",
+    scale: 0.95,
+    duration: 4,
+  },
+  outline: {
+    colors: ["#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe"],
+    mode: "breathe",
+    blur: "soft",
+    scale: 0.95,
+    duration: 4,
+  },
+  ghost: {
+    colors: ["#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe"],
+    mode: "breathe",
+    blur: "soft",
+    scale: 0.95,
+    duration: 5,
+  },
+  link: {
+    colors: ["#3b82f6", "#2563eb"],
+    mode: "flowHorizontal",
+    blur: "soft",
+    scale: 0.95,
+    duration: 3,
+  },
+  destructive: {
+    colors: ["#ef4444", "#dc2626", "#b91c1c", "#991b1b"],
+    mode: "pulse",
+    blur: "soft",
+    scale: 0.95,
+    duration: 2,
+  },
+};
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
       className,
       variant = "primary",
-      size = "default",
       theme = "kigo",
-      state = "default",
       icon,
-      href,
       children,
-      asChild = false,
+      href,
+      glow,
       ...props
     },
     ref
   ) => {
-    // Get theme-specific style for this variant
-    const themeStyle = themeStyles[theme][variant];
+    // Only apply CVS theme classes if theme is cvs
+    const themeClass = theme === "cvs" ? cvsThemeStyles[variant] : "";
 
-    // Get size style
-    const sizeStyle = sizeStyles[size];
+    // Map to ShadCN variant
+    const shadcnVariant = variantMap[variant];
 
-    // Get state-specific style
-    const stateStyle = stateStyles[state];
-
-    const buttonContent = (
+    // Create content with icon if provided
+    const content = (
       <>
-        {icon && (
-          <span className={cn("inline-flex", children ? "mr-2" : "")}>
-            {icon}
-          </span>
-        )}
+        {icon && <span className="mr-2">{icon}</span>}
         {children}
       </>
     );
 
-    // Base button styles
-    const baseStyles =
-      "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0";
+    // Configure glow effect if enabled
+    const glowProps: GlowEffectProps | undefined = glow
+      ? typeof glow === "boolean"
+        ? defaultGlowEffects[variant]
+        : { ...defaultGlowEffects[variant], ...glow }
+      : undefined;
 
-    // Handle href prop for link buttons
+    // Custom colors for CVS theme glow
+    if (glowProps && theme === "cvs" && variant === "primary") {
+      glowProps.colors = ["#2563eb", "#3b82f6", "#cc0000", "#ef4444"];
+    }
+
+    // Apply outline styling for glow effect
+    const outlineClass = glow
+      ? "outline outline-1 outline-[#ffffff1a] relative z-10"
+      : "";
+
+    // Wrapper component with potential glow effect
+    const ButtonWithGlow = ({ children }: { children: React.ReactNode }) => (
+      <div className="relative inline-flex">
+        {glow && <GlowEffect {...glowProps} className="z-0" />}
+        {children}
+      </div>
+    );
+
+    // For links, use anchor tag
     if (href) {
       return (
-        <Link
-          href={href}
-          className={cn(
-            baseStyles,
-            sizeStyle,
-            themeStyle,
-            stateStyle,
-            className
-          )}
-        >
-          {buttonContent}
-        </Link>
+        <ButtonWithGlow>
+          <ShadcnButton
+            asChild
+            className={cn(themeClass, outlineClass, className)}
+            variant={shadcnVariant}
+            // We don't forward the ref here because the component prop types expect HTMLButtonElement
+            // but when using asChild with an anchor tag, it would need HTMLAnchorElement
+            // This avoids TypeScript errors while still providing expected functionality
+            {...props}
+          >
+            <a href={href}>{content}</a>
+          </ShadcnButton>
+        </ButtonWithGlow>
       );
     }
 
-    const Comp = asChild ? Slot : "button";
-
+    // Regular button
     return (
-      <Comp
-        className={cn(baseStyles, sizeStyle, themeStyle, stateStyle, className)}
-        ref={ref}
-        {...props}
-      >
-        {buttonContent}
-      </Comp>
+      <ButtonWithGlow>
+        <ShadcnButton
+          className={cn(themeClass, outlineClass, className)}
+          variant={shadcnVariant}
+          ref={ref}
+          {...props}
+        >
+          {content}
+        </ShadcnButton>
+      </ButtonWithGlow>
     );
   }
 );
+
 Button.displayName = "Button";
 
-export { Button, buttonVariants };
+export { Button };

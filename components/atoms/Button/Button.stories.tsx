@@ -1,5 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import React from "react";
 import { Button } from "./";
+import { PlusIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
+import type { Meta, StoryObj } from "@storybook/react";
 
 /**
  * Button component with various styles and variants.
@@ -7,9 +9,10 @@ import { Button } from "./";
  */
 
 const meta: Meta<typeof Button> = {
+  title: "KIGO UI/Atoms/Button",
   component: Button,
-  title: "Kigo UI/Atoms/Button",
   parameters: {
+    layout: "centered",
     docs: {
       description: {
         component:
@@ -20,35 +23,44 @@ const meta: Meta<typeof Button> = {
   tags: ["autodocs"],
   argTypes: {
     variant: {
-      description: "The visual style variant of the button",
       control: "select",
       options: [
         "primary",
-        "destructive",
-        "outline",
         "secondary",
+        "outline",
         "ghost",
         "link",
+        "destructive",
       ],
+      description: "The button's visual style",
+      defaultValue: "primary",
     },
     size: {
-      description: "The size of the button",
       control: "select",
       options: ["default", "sm", "lg", "icon"],
-    },
-    state: {
-      description: "The state of the button",
-      control: "select",
-      options: ["default", "active", "selected"],
+      description: "The button's size",
+      defaultValue: "default",
     },
     theme: {
-      description: "The visual theme for this button",
       control: "select",
       options: ["kigo", "cvs"],
+      description: "The button's theme",
+      defaultValue: "kigo",
+    },
+    glow: {
+      control: "boolean",
+      description: "Whether to add a glow effect to the button",
+      defaultValue: false,
     },
     disabled: {
-      description: "Whether the button is disabled",
       control: "boolean",
+      description: "Whether the button is disabled",
+      defaultValue: false,
+    },
+    icon: {
+      control: "boolean",
+      description: "Whether to show an icon",
+      defaultValue: false,
     },
     className: {
       description: "Additional CSS classes to apply",
@@ -64,298 +76,312 @@ const meta: Meta<typeof Button> = {
 export default meta;
 type Story = StoryObj<typeof Button>;
 
-// ======= BASIC VARIANTS =======
-export const Primary: Story = {
-  args: {
-    children: "Primary Button",
-    variant: "primary",
-  },
-};
-
-export const Secondary: Story = {
-  args: {
-    children: "Secondary Button",
-    variant: "secondary",
-  },
-};
-
-export const Destructive: Story = {
-  args: {
-    children: "Delete",
-    variant: "destructive",
-  },
-};
-
-export const Outline: Story = {
-  args: {
-    children: "Outline Button",
-    variant: "outline",
-  },
-};
-
-export const Ghost: Story = {
-  args: {
-    children: "Ghost Button",
-    variant: "ghost",
-  },
-};
-
-export const Link: Story = {
-  args: {
-    children: "Link Button",
-    variant: "link",
-  },
-};
-
-// ======= THEMED VARIANTS =======
-export const PrimaryKigo: Story = {
-  args: {
-    children: "Primary Kigo Button",
-    variant: "primary",
-    theme: "kigo",
-  },
-};
-
-export const PrimaryCVS: Story = {
-  args: {
-    children: "Primary CVS Button",
-    variant: "primary",
-    theme: "cvs",
-  },
-};
-
-export const SecondaryKigo: Story = {
-  args: {
-    children: "Secondary Kigo Button",
-    variant: "secondary",
-    theme: "kigo",
-  },
-};
-
-export const SecondaryCVS: Story = {
-  args: {
-    children: "Secondary CVS Button",
-    variant: "secondary",
-    theme: "cvs",
-  },
-};
-
-export const OutlineKigo: Story = {
-  args: {
-    children: "Outline Kigo Button",
-    variant: "outline",
-    theme: "kigo",
-  },
-};
-
-export const OutlineCVS: Story = {
-  args: {
-    children: "Outline CVS Button",
-    variant: "outline",
-    theme: "cvs",
-  },
-};
-
-export const GhostKigo: Story = {
-  args: {
-    children: "Ghost Kigo Button",
-    variant: "ghost",
-    theme: "kigo",
-  },
-};
-
-export const GhostCVS: Story = {
-  args: {
-    children: "Ghost CVS Button",
-    variant: "ghost",
-    theme: "cvs",
-  },
-};
-
-export const LinkKigo: Story = {
-  args: {
-    children: "Link Kigo Button",
-    variant: "link",
-    theme: "kigo",
-  },
-};
-
-export const LinkCVS: Story = {
-  args: {
-    children: "Link CVS Button",
-    variant: "link",
-    theme: "cvs",
-  },
-};
-
-// ======= SIZE VARIANTS =======
-export const Small: Story = {
-  args: {
-    children: "Small Button",
-    size: "sm",
-  },
-};
-
+// Base story
 export const Default: Story = {
   args: {
-    children: "Default Size Button",
+    children: "Button",
+    variant: "primary",
     size: "default",
-  },
-};
-
-export const Large: Story = {
-  args: {
-    children: "Large Button",
-    size: "lg",
-  },
-};
-
-// ======= STATE VARIANTS =======
-export const Active: Story = {
-  args: {
-    children: "Active Button",
-    variant: "primary",
-    state: "active",
-  },
-};
-
-export const Selected: Story = {
-  args: {
-    children: "Selected Button",
-    variant: "primary",
-    state: "selected",
-  },
-};
-
-export const Disabled: Story = {
-  args: {
-    children: "Disabled Button",
-    disabled: true,
-  },
-};
-
-// ======= WITH ICONS =======
-export const WithIcon: Story = {
-  args: {
-    children: "Button with Icon",
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M5 12h14"></path>
-        <path d="M12 5l7 7-7 7"></path>
-      </svg>
-    ),
-  },
-};
-
-export const IconOnly: Story = {
-  args: {
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M5 12h14"></path>
-        <path d="M12 5l7 7-7 7"></path>
-      </svg>
-    ),
-    size: "icon",
-    "aria-label": "Next",
-  },
-};
-
-// ======= COMPOUND VARIANTS =======
-export const OutlineActiveKigo: Story = {
-  args: {
-    children: "Kigo Active Outline",
-    variant: "outline",
-    state: "active",
     theme: "kigo",
+    disabled: false,
   },
+  render: (args) => (
+    <Button {...args} icon={args.icon ? <PlusIcon /> : undefined}>
+      {args.children}
+    </Button>
+  ),
 };
 
-export const OutlineActive: Story = {
-  args: {
-    children: "Active Outline",
-    variant: "outline",
-    state: "active",
-  },
+// Show all variants
+export const Variants: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-6 gap-4">
+        <Button variant="primary">Primary</Button>
+        <Button variant="secondary">Secondary</Button>
+        <Button variant="outline">Outline</Button>
+        <Button variant="ghost">Ghost</Button>
+        <Button variant="link">Link</Button>
+        <Button variant="destructive">Destructive</Button>
+      </div>
+
+      <div className="grid grid-cols-6 gap-4">
+        <Button variant="primary" disabled>
+          Primary
+        </Button>
+        <Button variant="secondary" disabled>
+          Secondary
+        </Button>
+        <Button variant="outline" disabled>
+          Outline
+        </Button>
+        <Button variant="ghost" disabled>
+          Ghost
+        </Button>
+        <Button variant="link" disabled>
+          Link
+        </Button>
+        <Button variant="destructive" disabled>
+          Destructive
+        </Button>
+      </div>
+    </div>
+  ),
 };
 
-export const OutlineSelectedKigo: Story = {
-  args: {
-    children: "Kigo Selected Outline",
-    variant: "outline",
-    state: "selected",
-    theme: "kigo",
-  },
+// Show all sizes
+export const Sizes: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-4">
+        <Button size="sm">Small</Button>
+        <Button size="default">Default</Button>
+        <Button size="lg">Large</Button>
+        <Button size="icon" icon={<PlusIcon />} />
+      </div>
+    </div>
+  ),
 };
 
-export const OutlineSelected: Story = {
-  args: {
-    children: "Selected Outline",
-    variant: "outline",
-    state: "selected",
-  },
+// Show all themes
+export const Themes: Story = {
+  render: () => (
+    <div className="flex flex-col gap-8">
+      <div>
+        <h3 className="text-sm font-medium mb-3">Kigo Theme</h3>
+        <div className="grid grid-cols-6 gap-4">
+          <Button theme="kigo" variant="primary">
+            Primary
+          </Button>
+          <Button theme="kigo" variant="secondary">
+            Secondary
+          </Button>
+          <Button theme="kigo" variant="outline">
+            Outline
+          </Button>
+          <Button theme="kigo" variant="ghost">
+            Ghost
+          </Button>
+          <Button theme="kigo" variant="link">
+            Link
+          </Button>
+          <Button theme="kigo" variant="destructive">
+            Destructive
+          </Button>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="text-sm font-medium mb-3">CVS Theme</h3>
+        <div className="grid grid-cols-6 gap-4">
+          <Button theme="cvs" variant="primary">
+            Primary
+          </Button>
+          <Button theme="cvs" variant="secondary">
+            Secondary
+          </Button>
+          <Button theme="cvs" variant="outline">
+            Outline
+          </Button>
+          <Button theme="cvs" variant="ghost">
+            Ghost
+          </Button>
+          <Button theme="cvs" variant="link">
+            Link
+          </Button>
+          <Button theme="cvs" variant="destructive">
+            Destructive
+          </Button>
+        </div>
+      </div>
+    </div>
+  ),
 };
 
-export const OutlineActiveCVS: Story = {
-  args: {
-    children: "CVS Active Outline",
-    variant: "outline",
-    state: "active",
-    theme: "cvs",
-  },
+// Show with icons
+export const WithIcons: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-3 gap-4">
+        <Button icon={<PlusIcon />}>With Icon</Button>
+        <Button icon={<ArrowRightIcon />}>Icon Right</Button>
+        <Button size="icon" icon={<PlusIcon />} />
+      </div>
+      <div className="grid grid-cols-3 gap-4">
+        <Button variant="outline" icon={<PlusIcon />}>
+          Outline
+        </Button>
+        <Button variant="secondary" icon={<PlusIcon />}>
+          Secondary
+        </Button>
+        <Button variant="ghost" icon={<PlusIcon />}>
+          Ghost
+        </Button>
+      </div>
+    </div>
+  ),
 };
 
-export const OutlineSelectedCVS: Story = {
-  args: {
-    children: "CVS Selected Outline",
-    variant: "outline",
-    state: "selected",
-    theme: "cvs",
-  },
+// Show with links
+export const WithLinks: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-3 gap-4">
+        <Button href="#" icon={<ArrowRightIcon />}>
+          Link Button
+        </Button>
+        <Button href="#" variant="outline">
+          Outline Link
+        </Button>
+        <Button href="#" variant="link">
+          Link Variant
+        </Button>
+      </div>
+    </div>
+  ),
 };
 
-// ======= FUNCTION EXAMPLES =======
-export const AsLink: Story = {
-  args: {
-    children: "Link Example",
-    variant: "primary",
-    href: "#",
-  },
-};
+// Show with glow effects
+export const WithGlowEffects: Story = {
+  render: () => (
+    <div className="flex flex-col gap-8 p-8 bg-gray-950 rounded-xl">
+      <div>
+        <h3 className="text-sm font-medium mb-3 text-white">
+          Default Glow Effects
+        </h3>
+        <div className="grid grid-cols-3 gap-4">
+          <Button variant="primary" glow>
+            Primary
+          </Button>
+          <Button variant="secondary" glow>
+            Secondary
+          </Button>
+          <Button variant="outline" glow>
+            Outline
+          </Button>
+        </div>
+        <div className="grid grid-cols-3 gap-4 mt-4">
+          <Button variant="ghost" glow>
+            Ghost
+          </Button>
+          <Button variant="link" glow>
+            Link
+          </Button>
+          <Button variant="destructive" glow>
+            Destructive
+          </Button>
+        </div>
+      </div>
 
-export const CVSLinkButton: Story = {
-  args: {
-    children: "CVS Branded Link",
-    variant: "primary",
-    theme: "cvs",
-    href: "#",
-  },
-};
+      <div>
+        <h3 className="text-sm font-medium mb-3 text-white">
+          Custom Glow Effects
+        </h3>
+        <div className="grid grid-cols-3 gap-4">
+          <Button
+            variant="primary"
+            glow={{
+              mode: "rotate",
+              colors: ["#3b82f6", "#8b5cf6", "#ec4899", "#ef4444"],
+              blur: "soft",
+              scale: 0.95,
+            }}
+          >
+            Rainbow Rotate
+          </Button>
+          <Button
+            variant="secondary"
+            glow={{
+              mode: "breathe",
+              colors: ["#10b981", "#059669", "#047857"],
+              blur: "soft",
+              duration: 2,
+            }}
+          >
+            Green Breathe
+          </Button>
+          <Button
+            variant="outline"
+            glow={{
+              mode: "pulse",
+              colors: ["#f97316", "#ea580c", "#c2410c"],
+              blur: "soft",
+              scale: 0.95,
+            }}
+          >
+            Orange Pulse
+          </Button>
+        </div>
+      </div>
 
-export const KigoLinkButton: Story = {
-  args: {
-    children: "Kigo Branded Link",
-    variant: "primary",
-    theme: "kigo",
-    href: "#",
-  },
+      <div>
+        <h3 className="text-sm font-medium mb-3 text-white">
+          CVS Theme with Glow
+        </h3>
+        <div className="grid grid-cols-3 gap-4">
+          <Button theme="cvs" variant="primary" glow>
+            CVS Primary
+          </Button>
+          <Button theme="cvs" variant="outline" glow>
+            CVS Outline
+          </Button>
+          <Button
+            theme="cvs"
+            variant="primary"
+            glow={{
+              mode: "colorShift",
+              blur: "soft",
+              scale: 0.95,
+            }}
+          >
+            Custom CVS Glow
+          </Button>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="text-sm font-medium mb-3 text-white">
+          Header Style Example
+        </h3>
+        <div className="flex justify-center gap-4 p-6 bg-zinc-900 rounded-lg">
+          <Button
+            variant="primary"
+            size="sm"
+            glow={{
+              mode: "colorShift",
+              blur: "soft",
+              scale: 0.95,
+              colors: ["#3b82f6", "#8b5cf6", "#ec4899", "#ef4444"],
+            }}
+          >
+            Dashboard
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            glow={{
+              mode: "colorShift",
+              blur: "soft",
+              scale: 0.95,
+              colors: ["#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe"],
+            }}
+          >
+            Analytics
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            glow={{
+              mode: "pulse",
+              blur: "soft",
+              scale: 0.95,
+              colors: ["#9ca3af", "#6b7280", "#4b5563"],
+            }}
+          >
+            Reports
+          </Button>
+        </div>
+      </div>
+    </div>
+  ),
 };

@@ -11,31 +11,6 @@ const config = {
     '@storybook/addon-essentials',
     '@storybook/addon-interactions',
     '@storybook/addon-docs',
-    '@storybook/addon-styling-webpack',
-    {
-      name: '@storybook/addon-styling-webpack',
-      options: {
-        rules: [
-          {
-            test: /\.css$/,
-            use: [
-              'style-loader',
-              {
-                loader: 'css-loader',
-                options: { importLoaders: 1 }
-              },
-              {
-                loader: 'postcss-loader',
-                options: {
-                  // eslint-disable-next-line @typescript-eslint/no-var-requires
-                  implementation: require('postcss'),
-                },
-              },
-            ],
-          },
-        ],
-      },
-    },
   ],
   framework: {
     name: '@storybook/nextjs',
@@ -46,6 +21,27 @@ const config = {
   },
   webpackFinal: async (config) => {
     // Add any custom webpack configurations here
+    
+    // Add CSS and PostCSS support
+    const cssRule = config.module.rules.find(
+      rule => rule.test && rule.test.toString().includes('css')
+    );
+    
+    if (cssRule) {
+      // Ensure we have the postcss-loader configured
+      const hasPostCSSLoader = cssRule.use.some(
+        use => use.loader && use.loader.includes('postcss-loader')
+      );
+      
+      if (!hasPostCSSLoader) {
+        cssRule.use.push({
+          loader: 'postcss-loader',
+          options: {
+            implementation: 'postcss',
+          },
+        });
+      }
+    }
     
     // Alias next/navigation to our mock implementation
     config.resolve = config.resolve || {};

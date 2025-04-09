@@ -24,7 +24,8 @@ import {
 import { toggleSidebar } from "@/lib/redux/slices/uiSlice";
 import { markAllNotificationsAsRead } from "@/lib/redux/slices/userSlice";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/atoms/Button";
+import { Input, SearchSuggestion } from "@/components/atoms/Input";
 
 export default function Header() {
   // Use Redux hooks directly
@@ -94,6 +95,19 @@ export default function Header() {
 
   const searchSuggestions = getSearchSuggestions();
 
+  // Handle search suggestion click
+  const handleSearchSuggestionClick = (suggestion: SearchSuggestion) => {
+    setSearchQuery(suggestion.text);
+    setShowSearchDropdown(false);
+    // Additional logic for handling the search with the suggestion
+  };
+
+  // Handle search all results click
+  const handleSearchAllResults = () => {
+    setShowSearchDropdown(false);
+    // Logic to search all results with current query
+  };
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -120,38 +134,41 @@ export default function Header() {
     switch (role) {
       case "merchant":
         return (
-          <div className="relative">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-lg opacity-40 animate-rainbow-border blur-[1px]"></div>
-            <Button
-              asChild
-              variant="default"
-              className="relative z-10 shadow-md transition-all duration-500 ease-in-out
-              before:absolute before:content-[''] before:-z-10 before:inset-0 before:rounded-lg before:opacity-0 before:transition-opacity before:duration-500 
-              hover:before:opacity-100 before:bg-gradient-to-r before:from-primary/30 before:via-blue-500/20 before:to-purple-500/30 before:blur-xl before:animate-spin-slow"
-            >
-              <Link href={buildDemoUrl("deacons", "ai-campaign-creation")}>
-                <PlusIcon className="w-5 h-5 mr-1 inline-block" />
-                <span>New Campaign</span>
-              </Link>
-            </Button>
-          </div>
+          <Button
+            variant="primary"
+            href={buildDemoUrl("deacons", "ai-campaign-creation")}
+            icon={<PlusIcon className="w-5 h-5" />}
+            glow={{
+              mode: "colorShift",
+              colors: ["#3b82f6", "#8b5cf6", "#ec4899", "#ef4444"],
+              blur: "soft",
+              scale: 0.95,
+              duration: 3,
+            }}
+          >
+            New Campaign
+          </Button>
         );
       case "support":
         return (
-          <Button asChild variant="default">
-            <Link href="/tickets/create">
-              <TicketIcon className="w-5 h-5 mr-1 inline-block" />
-              <span>New Ticket</span>
-            </Link>
+          <Button
+            variant="primary"
+            href="/tickets/create"
+            icon={<TicketIcon className="w-5 h-5" />}
+            glow
+          >
+            New Ticket
           </Button>
         );
       case "admin":
         return (
-          <Button asChild variant="default">
-            <Link href="/merchants/create">
-              <PlusCircleIcon className="w-5 h-5 mr-1 inline-block" />
-              <span>Add Merchant</span>
-            </Link>
+          <Button
+            variant="primary"
+            href="/merchants/create"
+            icon={<PlusCircleIcon className="w-5 h-5" />}
+            glow
+          >
+            Add Merchant
           </Button>
         );
       default:
@@ -203,7 +220,7 @@ export default function Header() {
 
   return (
     <header
-      className={`h-[72px] flex items-center px-8 fixed top-0 right-0 z-30 transition-all duration-300 ease-in-out border-b border-border-light`}
+      className={`h-[72px] flex items-center px-6 fixed top-0 right-0 z-30 transition-all duration-300 ease-in-out border-b border-border-light`}
       style={{
         left: sidebarWidth,
         width: `calc(100% - ${sidebarWidth})`,
@@ -222,82 +239,28 @@ export default function Header() {
       <div className="relative z-10 flex items-center w-full max-w-[1600px] mx-auto">
         {/* Removing the Support text as requested */}
 
-        <div id="search-container" className="relative ml-4 flex-1 max-w-md">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <MagnifyingGlassIcon
-              className={`h-5 w-5 ${isDarkMode ? "text-gray-400" : "text-gray-400"}`}
-            />
-          </div>
-          <input
-            type="text"
-            className={`block w-full pl-10 pr-3 py-2 border ${isDarkMode ? "border-gray-700 bg-gray-800/80 focus:ring-blue-500/20 focus:border-blue-500 text-white" : "border-gray-200 bg-white/80 focus:ring-primary/20 focus:border-primary text-gray-900"} rounded-lg focus:outline-none focus:ring-2 text-sm`}
+        <div id="search-container" className="relative  flex-1 max-w-md">
+          <Input
+            variant="search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => setShowSearchDropdown(true)}
             placeholder={
               isCVSContext
                 ? "Search tokens, customers, tickets..."
                 : getSearchPlaceholder()
             }
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => setShowSearchDropdown(true)}
+            suggestions={searchSuggestions}
+            showSuggestions={showSearchDropdown}
+            onSuggestionClick={handleSearchSuggestionClick}
+            onSearchAllResults={handleSearchAllResults}
+            isDarkMode={isDarkMode}
+            className={
+              isDarkMode
+                ? "border-gray-700 bg-gray-800/80 text-white"
+                : "border-gray-200 bg-white/80 text-gray-900"
+            }
           />
-
-          {/* AI Search Dropdown */}
-          {showSearchDropdown && (
-            <div
-              className={`absolute top-full left-0 right-0 mt-1 ${isDarkMode ? "bg-gray-800" : "bg-white"} rounded-lg shadow-lg ${isDarkMode ? "border-gray-700" : "border-gray-200"} border overflow-hidden z-50 animate-fadeIn`}
-            >
-              <div
-                className={`p-3 ${isDarkMode ? "border-gray-700" : "border-gray-100"} border-b`}
-              >
-                <p
-                  className={`text-xs font-medium ${isDarkMode ? "text-gray-400" : "text-text-muted"}`}
-                >
-                  AI Suggestions
-                </p>
-              </div>
-              <ul>
-                {searchSuggestions.map((suggestion, index) => (
-                  <li key={index}>
-                    <button
-                      className={`w-full px-4 py-2.5 text-left ${isDarkMode ? "hover:bg-gray-700" : "hover:bg-gray-50"} flex items-center`}
-                    >
-                      <span className="w-6 h-6 flex items-center justify-center text-lg mr-3">
-                        {suggestion.icon}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <p
-                          className={`text-sm ${isDarkMode ? "text-gray-200" : "text-text-dark"}`}
-                        >
-                          {suggestion.text}
-                        </p>
-                        <p
-                          className={`text-xs ${isDarkMode ? "text-gray-400" : "text-text-muted"} capitalize`}
-                        >
-                          {suggestion.type}
-                        </p>
-                      </div>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-              <div
-                className={`p-2 ${isDarkMode ? "bg-gray-900 border-gray-700" : "bg-gray-50 border-gray-100"} border-t`}
-              >
-                <div className="flex items-center justify-between">
-                  <p
-                    className={`text-xs ${isDarkMode ? "text-gray-400" : "text-text-muted"}`}
-                  >
-                    Powered by AI
-                  </p>
-                  <button
-                    className={`text-xs ${isDarkMode ? "text-blue-400" : "text-primary"} font-medium`}
-                  >
-                    Search all results
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         <div className="ml-auto flex items-center gap-4">

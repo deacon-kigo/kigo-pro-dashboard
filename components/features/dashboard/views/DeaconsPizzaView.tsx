@@ -123,7 +123,12 @@ function formatDate(dateString: string) {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export default function DeaconsPizzaView() {
+// Function component interface
+interface DeaconsPizzaViewProps {
+  newCampaignAdded?: boolean;
+}
+
+export default function DeaconsPizzaView({ newCampaignAdded = false }: DeaconsPizzaViewProps) {
   const demoState = useDemoState();
   const mockUserProfile = demoState.userProfile;
   const userProfile = useMemo(() => 
@@ -136,7 +141,7 @@ export default function DeaconsPizzaView() {
   // Stats data
   const statsData = {
     activeCampaigns: {
-      value: 8,
+      value: newCampaignAdded ? 9 : 8,
       change: 12.5,
       increased: true
     },
@@ -160,7 +165,7 @@ export default function DeaconsPizzaView() {
   // Create stats section for StandardDashboard
   const statsSection = (
     <>
-      <Card className="relative overflow-hidden p-4">
+      <Card className="relative overflow-hidden p-4 bg-white">
         <div className="absolute top-3 left-3">
           <div className="p-2 bg-blue-100 rounded-lg">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -173,16 +178,16 @@ export default function DeaconsPizzaView() {
           <p className="text-3xl font-bold mt-1">{statsData.activeCampaigns.value}</p>
           <div className="flex items-center mt-2">
             <span className={`text-xs ${statsData.activeCampaigns.increased ? 'text-green-500' : 'text-red-500'}`}>
-              {statsData.activeCampaigns.increased ? '↑' : '↓'} {statsData.activeCampaigns.change}% vs last month
+              ↑ {statsData.activeCampaigns.change}% vs last month
             </span>
           </div>
         </div>
       </Card>
       
-      <Card className="relative overflow-hidden p-4">
+      <Card className="relative overflow-hidden p-4 bg-white">
         <div className="absolute top-3 left-3">
-          <div className="p-2 bg-purple-100 rounded-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="p-2 bg-indigo-100 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
           </div>
@@ -192,13 +197,13 @@ export default function DeaconsPizzaView() {
           <p className="text-3xl font-bold mt-1">{statsData.totalMerchants.value}</p>
           <div className="flex items-center mt-2">
             <span className={`text-xs ${statsData.totalMerchants.increased ? 'text-green-500' : 'text-red-500'}`}>
-              {statsData.totalMerchants.increased ? '↑' : '↓'} {statsData.totalMerchants.change}% vs last month
+              ↑ {statsData.totalMerchants.change}% vs last month
             </span>
           </div>
         </div>
       </Card>
       
-      <Card className="relative overflow-hidden p-4">
+      <Card className="relative overflow-hidden p-4 bg-white">
         <div className="absolute top-3 left-3">
           <div className="p-2 bg-green-100 rounded-lg">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -208,20 +213,20 @@ export default function DeaconsPizzaView() {
         </div>
         <div className="mt-12">
           <p className="text-sm text-gray-600">Monthly Revenue</p>
-          <p className="text-3xl font-bold mt-1">${statsData.monthlyRevenue.toLocaleString()}</p>
+          <p className="text-3xl font-bold mt-1">${formatNumber(statsData.monthlyRevenue.value)}</p>
           <div className="flex items-center mt-2">
             <span className={`text-xs ${statsData.monthlyRevenue.increased ? 'text-green-500' : 'text-red-500'}`}>
-              {statsData.monthlyRevenue.increased ? '↑' : '↓'} {statsData.monthlyRevenue.change}% vs last month
+              ↓ {statsData.monthlyRevenue.change}% vs last month
             </span>
           </div>
         </div>
       </Card>
       
-      <Card className="relative overflow-hidden p-4">
+      <Card className="relative overflow-hidden p-4 bg-white">
         <div className="absolute top-3 left-3">
           <div className="p-2 bg-yellow-100 rounded-lg">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
             </svg>
           </div>
         </div>
@@ -230,7 +235,7 @@ export default function DeaconsPizzaView() {
           <p className="text-3xl font-bold mt-1">{statsData.engagementRate.value}%</p>
           <div className="flex items-center mt-2">
             <span className={`text-xs ${statsData.engagementRate.increased ? 'text-green-500' : 'text-red-500'}`}>
-              {statsData.engagementRate.increased ? '↑' : '↓'} {statsData.engagementRate.change}% vs last month
+              ↑ {statsData.engagementRate.change}% vs last month
             </span>
           </div>
         </div>
@@ -311,44 +316,6 @@ export default function DeaconsPizzaView() {
     </Card>
   );
   
-  // Custom header content with logo, search, and new campaign button
-  const headerContent = (
-    <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600">
-      {/* Add overlay pattern for texture */}
-      <div className="absolute inset-0 opacity-20 bg-pattern"></div>
-      
-      <div className="relative z-10 flex items-center justify-between p-5">
-        <div>
-          <h1 className="text-2xl font-bold text-white">
-            Dashboard
-          </h1>
-        </div>
-        
-        <div className="flex items-center space-x-4">
-          <div className="relative">
-            <input 
-              type="text" 
-              placeholder="Search campaigns, products..." 
-              className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm w-64" 
-            />
-            <div className="absolute left-3 top-2.5">
-              <svg className="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-          </div>
-          
-          <button className="flex items-center gap-2 bg-white hover:bg-gray-50 text-blue-600 px-4 py-2 rounded-lg text-sm font-medium">
-            <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            New Campaign
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-  
   // Main content 
   const mainContent = (
     <div className="space-y-4">
@@ -356,14 +323,69 @@ export default function DeaconsPizzaView() {
     </div>
   );
   
+  // Main render
   return (
-    <StandardDashboard
-      headerContent={headerContent}
-      statsSection={statsSection}
-    >
-      {/* Add style tag for banner pattern */}
+    <div className="bg-blue-50 p-6 pb-20 space-y-6">
+      {/* Include the CSS styles */}
       <style dangerouslySetInnerHTML={{ __html: headerStyles }} />
+      
+      {/* Greeting Banner */}
+      <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-6 text-white shadow-md overflow-hidden relative mb-6">
+        {/* Add overlay pattern for texture */}
+        <div className="absolute inset-0 opacity-20 bg-pattern"></div>
+        
+        <div className="relative z-10">
+          <div className="flex flex-col md:flex-row justify-between">
+            <div className="flex items-start">
+              <div className="bg-white/20 backdrop-blur-sm rounded-lg p-1.5 mr-4">
+                <Image 
+                  src="/images/deacons-pizza-logo.png" 
+                  alt="Deacon's Pizza" 
+                  width={48} 
+                  height={48}
+                  className="rounded"
+                  onError={(e) => {
+                    // Fallback if image doesn't exist
+                    e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/%3E%3C/svg%3E";
+                  }}
+                />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold mb-1">Good morning, Jane!</h2>
+                <p className="opacity-90 text-sm">Friday, March 14 • Campaign Manager</p>
+              </div>
+            </div>
+            
+            <div className="mt-4 md:mt-0 md:ml-4 min-w-[250px]">
+              <div className="mb-2 flex justify-between">
+                <span className="text-sm font-medium text-white">Weekly Progress</span>
+                <span className="text-sm font-medium text-white">67%</span>
+              </div>
+              <div className="h-2.5 w-full bg-blue-600/30 rounded-full">
+                <div className="h-2.5 rounded-full bg-white" style={{ width: '67%' }}></div>
+              </div>
+              <div className="mt-2 flex justify-between text-sm text-white/90">
+                <div className="flex items-center">
+                  <span className="inline-block w-3 h-3 rounded-full bg-green-400 mr-1.5"></span>
+                  <span>Complete: 12</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="inline-block w-3 h-3 rounded-full bg-white/60 mr-1.5"></span>
+                  <span>Total: 18</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        {statsSection}
+      </div>
+      
+      {/* Main Dashboard Content */}
       {mainContent}
-    </StandardDashboard>
+    </div>
   );
 } 
