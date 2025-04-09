@@ -83,7 +83,7 @@ const GreetingHeader = () => {
                   {currentDate} • <span className="text-purple-600 font-medium">{userProfile?.role || 'Campaign Manager'}</span>
                 </p>
                 <p className="text-sm text-blue-400 mt-1">
-                  Don't watch the clock; do what it does. Keep going.
+                  Don&apos;t watch the clock; do what it does. Keep going.
                 </p>
               </div>
             </div>

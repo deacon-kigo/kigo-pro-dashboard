@@ -37,7 +37,7 @@ const config = {
         cssRule.use.push({
           loader: 'postcss-loader',
           options: {
-            implementation: require('postcss'),
+            implementation: 'postcss',
           },
         });
       }

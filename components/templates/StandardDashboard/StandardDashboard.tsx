@@ -2,11 +2,13 @@
 
 import React, { useState, useEffect, ReactNode, useMemo } from 'react';
 import { useDemoState } from '@/lib/redux/hooks';
+import { useAppSelector } from "@/lib/redux/hooks";
 import { convertMockUserToUserProfile } from '@/lib/userProfileUtils';
 import { getMockAvatarUrl } from '@/lib/avatarUtils';
 import Card from '@/components/atoms/Card/Card';
 import { AIAssistant } from '@/components/features/ai';
 import VersionBadge from '@/components/molecules/badges/VersionBadge';
+import { UserIcon, ClockIcon, PlusIcon } from "@heroicons/react/24/outline";
 
 interface StandardDashboardProps {
   children: ReactNode;
@@ -28,7 +30,9 @@ export default function StandardDashboard({
   statsSection,
   sidebarContent
 }: StandardDashboardProps) {
-  const { role, clientId, version, themeMode } = useDemoState();
+  const user = useAppSelector((state) => state.user.profile);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { role, clientId, clientName, themeMode, version } = useDemoState();
   const mockUserProfile = useDemoState().userProfile;
   
   const userProfile = useMemo(() => 
@@ -36,8 +40,9 @@ export default function StandardDashboard({
   , [mockUserProfile]);
   
   const [currentGreeting, setCurrentGreeting] = useState(greeting || '');
-  const [currentTime, setCurrentTime] = useState('');
-  const [currentDate, setCurrentDate] = useState('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState("");
   const [weatherEmoji, setWeatherEmoji] = useState('☀️'); // Default sunny
   
   const patternStyles = useMemo(() => `
@@ -92,15 +97,8 @@ export default function StandardDashboard({
     return () => clearInterval(timer);
   }, [greeting]);
   
-  const avatarUrl = useMemo(() => {
-    if (!userProfile) return '';
-    
-    return getMockAvatarUrl({
-      id: userProfile.name || '',
-      firstName: userProfile.name?.split(' ')[0] || '',
-      lastName: userProfile.name?.split(' ')[1] || ''
-    });
-  }, [userProfile]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const avatarUrl = user?.avatar || '';
   
   return (
     <div className="pt-4 transition-all duration-300 ease-in-out">
@@ -210,8 +208,7 @@ export default function StandardDashboard({
                       </div>
                       <div>
                         <h4 className="font-medium text-sm">Approve merchant discount request</h4>
-                        <p className="text-xs text-gray-600 mt-1">Acme Corporation has requested a custom discount rate</p>
-                        <p className="text-xs text-gray-500 mt-1">Today</p>
+                        <div className="text-sm text-gray-500">Deacon&apos;s Pizza requesting special discount approval for upcoming holiday promotion</div>
                       </div>
                     </div>
                   </div>
@@ -224,8 +221,21 @@ export default function StandardDashboard({
                       </div>
                       <div>
                         <h4 className="font-medium text-sm">Review campaign performance</h4>
-                        <p className="text-xs text-gray-600 mt-1">The "Summer Sale Promotion" campaign has reached 50% completion</p>
-                        <p className="text-xs text-gray-500 mt-1">Today</p>
+                        <div className="text-sm text-gray-500">Review Deacon&apos;s Pizza summer campaign performance</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-3 border border-gray-100 rounded-lg">
+                    <div className="flex">
+                      <div className="p-2 bg-yellow-100 rounded-md mr-3 flex-shrink-0">
+                        <svg className="h-4 w-4 text-yellow-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-3.943 7.864-7 12.342-7C20.477 5 24.268 7.943 25.542 12c-1.274 4.057-3.943 7.864-7.864 9.138-4.057 1.274-7.864-2.477-9.138-6.534-7.864z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm">New analysis</h4>
+                        <div className="text-sm text-gray-500">New analysis shows that &quot;Buy One Get One&quot; offers generate 32% more engagement than flat discounts</div>
                       </div>
                     </div>
                   </div>
