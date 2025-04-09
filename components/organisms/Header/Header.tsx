@@ -23,7 +23,8 @@ import {
 } from "@/lib/redux/hooks";
 import { toggleSidebar } from "@/lib/redux/slices/uiSlice";
 import { markAllNotificationsAsRead } from "@/lib/redux/slices/userSlice";
-import { buildDemoUrl } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export default function Header() {
   // Use Redux hooks directly
@@ -52,9 +53,10 @@ export default function Header() {
   const isCVSContext =
     clientId === "cvs" || (pathname && pathname.includes("cvs-"));
 
-  // CVS brand colors
-  const cvsBlue = "#2563EB";
-  const cvsRed = "#CC0000";
+  // Helper function to build demo URLs
+  const buildDemoUrl = (client: string, page: string) => {
+    return `/demos/${client}/${page}`;
+  };
 
   // Mock search suggestions - role-based
   const getSearchSuggestions = () => {
@@ -120,36 +122,42 @@ export default function Header() {
         return (
           <div className="relative">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-lg opacity-40 animate-rainbow-border blur-[1px]"></div>
-            <Link
-              href={buildDemoUrl("deacons", "ai-campaign-creation")}
-              className="relative z-10 bg-primary text-white font-medium rounded-lg px-4 py-2 flex items-center space-x-1 shadow-md hover:bg-primary/95 transition-all duration-500 ease-in-out
+            <Button
+              asChild
+              className="relative z-10 bg-blue-600 text-white hover:bg-blue-700 shadow-md transition-all duration-500 ease-in-out
               before:absolute before:content-[''] before:-z-10 before:inset-0 before:rounded-lg before:opacity-0 before:transition-opacity before:duration-500 
               hover:before:opacity-100 before:bg-gradient-to-r before:from-primary/30 before:via-blue-500/20 before:to-purple-500/30 before:blur-xl before:animate-spin-slow"
             >
-              <PlusIcon className="w-5 h-5" />
-              <span>New Campaign</span>
-            </Link>
+              <Link href={buildDemoUrl("deacons", "ai-campaign-creation")}>
+                <PlusIcon className="w-5 h-5 mr-1 inline-block" />
+                <span>New Campaign</span>
+              </Link>
+            </Button>
           </div>
         );
       case "support":
         return (
-          <Link
-            href="/tickets/create"
-            className={`bg-primary text-white font-medium rounded-lg px-4 py-2 flex items-center space-x-1 shadow-md hover:bg-primary/95 transition-colors`}
+          <Button
+            asChild
+            className="bg-blue-600 text-white hover:bg-blue-700 shadow-md"
           >
-            <TicketIcon className="w-5 h-5" />
-            <span>New Ticket</span>
-          </Link>
+            <Link href="/tickets/create">
+              <TicketIcon className="w-5 h-5 mr-1 inline-block" />
+              <span>New Ticket</span>
+            </Link>
+          </Button>
         );
       case "admin":
         return (
-          <Link
-            href="/merchants/create"
-            className={`bg-primary text-white font-medium rounded-lg px-4 py-2 flex items-center space-x-1 shadow-md hover:bg-primary/95 transition-colors`}
+          <Button
+            asChild
+            className="bg-blue-600 text-white hover:bg-blue-700 shadow-md"
           >
-            <PlusCircleIcon className="w-5 h-5" />
-            <span>Add Merchant</span>
-          </Link>
+            <Link href="/merchants/create">
+              <PlusCircleIcon className="w-5 h-5 mr-1 inline-block" />
+              <span>Add Merchant</span>
+            </Link>
+          </Button>
         );
       default:
         return null;
