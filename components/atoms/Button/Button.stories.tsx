@@ -244,12 +244,12 @@ export const WithLinks: Story = {
 // Show with glow effects
 export const WithGlowEffects: Story = {
   render: () => (
-    <div className="flex flex-col gap-8 p-8 bg-gray-900">
+    <div className="flex flex-col gap-8 p-8 bg-gray-950 rounded-xl">
       <div>
         <h3 className="text-sm font-medium mb-3 text-white">
           Default Glow Effects
         </h3>
-        <div className="grid grid-cols-6 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <Button variant="primary" glow>
             Primary
           </Button>
@@ -259,6 +259,8 @@ export const WithGlowEffects: Story = {
           <Button variant="outline" glow>
             Outline
           </Button>
+        </div>
+        <div className="grid grid-cols-3 gap-4 mt-4">
           <Button variant="ghost" glow>
             Ghost
           </Button>
@@ -341,7 +343,7 @@ export const WithGlowEffects: Story = {
         <h3 className="text-sm font-medium mb-3 text-white">
           Header Style Example
         </h3>
-        <div className="flex justify-center gap-4 p-4 bg-zinc-950 rounded-lg">
+        <div className="flex justify-center gap-4 p-6 bg-zinc-900 rounded-lg">
           <Button
             variant="primary"
             size="sm"
@@ -365,6 +367,18 @@ export const WithGlowEffects: Story = {
             }}
           >
             Analytics
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            glow={{
+              mode: "pulse",
+              blur: "soft",
+              scale: 0.95,
+              colors: ["#9ca3af", "#6b7280", "#4b5563"],
+            }}
+          >
+            Reports
           </Button>
         </div>
       </div>
