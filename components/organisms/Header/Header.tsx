@@ -124,7 +124,7 @@ export default function Header() {
             <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-lg opacity-40 animate-rainbow-border blur-[1px]"></div>
             <Button
               asChild
-              className="relative z-10 bg-blue-600 text-white hover:bg-blue-700 shadow-md transition-all duration-500 ease-in-out
+              className="relative z-10 bg-primary text-primary-foreground shadow-md transition-all duration-500 ease-in-out
               before:absolute before:content-[''] before:-z-10 before:inset-0 before:rounded-lg before:opacity-0 before:transition-opacity before:duration-500 
               hover:before:opacity-100 before:bg-gradient-to-r before:from-primary/30 before:via-blue-500/20 before:to-purple-500/30 before:blur-xl before:animate-spin-slow"
             >
@@ -137,10 +137,7 @@ export default function Header() {
         );
       case "support":
         return (
-          <Button
-            asChild
-            className="bg-blue-600 text-white hover:bg-blue-700 shadow-md"
-          >
+          <Button asChild variant="default">
             <Link href="/tickets/create">
               <TicketIcon className="w-5 h-5 mr-1 inline-block" />
               <span>New Ticket</span>
@@ -149,10 +146,7 @@ export default function Header() {
         );
       case "admin":
         return (
-          <Button
-            asChild
-            className="bg-blue-600 text-white hover:bg-blue-700 shadow-md"
-          >
+          <Button asChild variant="default">
             <Link href="/merchants/create">
               <PlusCircleIcon className="w-5 h-5 mr-1 inline-block" />
               <span>Add Merchant</span>
