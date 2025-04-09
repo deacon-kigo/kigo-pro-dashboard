@@ -135,11 +135,10 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
   };
 
   const isLinkActive = (path: string) => {
-    // Special case for campaign-manager analytics
+    // Special case for analytics - active for both regular and campaign manager analytics
     if (
       path.includes("/analytics") &&
-      pathname &&
-      pathname.includes("/campaign-manager/analytics")
+      (pathname.includes("/analytics") || pathname.includes("/campaign-manager/analytics"))
     ) {
       return true;
     }
@@ -286,19 +285,10 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
             </li>
             <li className="nav-item px-3 py-1">
               <SidebarLabel
-                href="/campaign-manager/analytics"
-                icon={ChartBarIcon}
-                title="Campaign Analytics"
-                isActive={Boolean(isLinkActive("/analytics") || pathname?.includes("/campaign-manager"))}
-                isCollapsed={isCollapsed}
-              />
-            </li>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
                 href="/analytics"
                 icon={ChartBarIcon}
                 title="Analytics"
-                isActive={Boolean(isLinkActive("/analytics") && !pathname?.includes("/campaign-manager"))}
+                isActive={Boolean(isLinkActive("/analytics"))}
                 isCollapsed={isCollapsed}
               />
             </li>
@@ -334,15 +324,6 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 isCollapsed={isCollapsed}
               />
             </li>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/campaign-manager/analytics"
-                icon={ChartBarIcon}
-                title="Campaign Analytics"
-                isActive={Boolean(isLinkActive("/analytics") || pathname?.includes("/campaign-manager"))}
-                isCollapsed={isCollapsed}
-              />
-            </li>
           </>
         );
       case "admin":
@@ -368,19 +349,10 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
             </li>
             <li className="nav-item px-3 py-1">
               <SidebarLabel
-                href="/campaign-manager/analytics"
-                icon={ChartBarIcon}
-                title="Campaign Analytics"
-                isActive={Boolean(isLinkActive("/analytics") || pathname?.includes("/campaign-manager"))}
-                isCollapsed={isCollapsed}
-              />
-            </li>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
                 href="/analytics"
                 icon={ChartBarIcon}
                 title="Analytics"
-                isActive={Boolean(isLinkActive("/analytics") && !pathname?.includes("/campaign-manager"))}
+                isActive={Boolean(isLinkActive("/analytics"))}
                 isCollapsed={isCollapsed}
               />
             </li>
