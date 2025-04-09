@@ -2,12 +2,11 @@ import React from 'react';
 import Link from 'next/link';
 import Card from '@/components/atoms/Card/Card';
 import { Button } from '@/components/atoms/Button';
-import StatusBadge from '@/components/molecules/badges/StatusBadge';
+import { StatusBadge } from '@/components/molecules/badges';
 import { 
   PlusIcon, 
   MagnifyingGlassIcon,
   FunnelIcon,
-  ArrowPathIcon
 } from '@heroicons/react/24/outline';
 
 // Mock data for campaigns
@@ -109,7 +108,7 @@ export default function CampaignsPage() {
           </Button>
           
           <Button 
-            variant="default"
+            variant="primary"
             size="sm"
             href="/campaigns/create"
             icon={<PlusIcon className="w-4 h-4" />}
@@ -145,7 +144,7 @@ export default function CampaignsPage() {
                     </Link>
                   </td>
                   <td className="px-4 py-3">
-                    <StatusBadge status={campaign.status as any} />
+                    <StatusBadge status={campaign.status} />
                   </td>
                   <td className="px-4 py-3 text-text-muted">{campaign.merchantName}</td>
                   <td className="px-4 py-3 text-text-muted">

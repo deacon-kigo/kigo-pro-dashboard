@@ -13,6 +13,28 @@ export function buildDemoUrl(client: string, page: string): string {
 }
 
 /**
+ * Parse a demo URL into its components
+ * Pattern: /demos/[clientId]/[scenario]?version=[version]
+ */
+export function parseDemoUrl(pathname: string) {
+  if (!pathname || !pathname.includes('/demos/')) {
+    return null;
+  }
+
+  // Parse the basic path pattern /demos/clientId/scenario
+  const pathSegments = pathname.split('/').filter(Boolean);
+  if (pathSegments.length < 3) {
+    return null;
+  }
+
+  return {
+    clientId: pathSegments[1],
+    scenario: pathSegments[2],
+    version: 'current' // Default version
+  };
+}
+
+/**
  * Check if a path is active by comparing it with the current pathname
  * Works for exact matches or parent routes
  */
