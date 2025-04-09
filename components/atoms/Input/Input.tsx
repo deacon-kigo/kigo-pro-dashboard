@@ -1,8 +1,8 @@
-import * as React from "react"
-import { Input as ShadcnInput } from "@/components/ui/input"
-import { cva, type VariantProps } from "class-variance-authority"
+import * as React from "react";
+import { Input as ShadcnInput } from "@/components/ui/input";
+import { cva } from "class-variance-authority";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 // Define custom classes for our variants
 const customVariants = cva("", {
@@ -21,7 +21,7 @@ const customVariants = cva("", {
     variant: "default",
     inputSize: "default",
   },
-})
+});
 
 export interface InputProps
   extends Omit<React.ComponentProps<typeof ShadcnInput>, "size"> {
@@ -31,10 +31,19 @@ export interface InputProps
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, variant = "default", inputSize = "default", htmlSize, ...props }, ref) => {
+  (
+    {
+      className,
+      variant = "default",
+      inputSize = "default",
+      htmlSize,
+      ...props
+    },
+    ref
+  ) => {
     // Get custom classes based on our variants
     const customClasses = customVariants({ variant, inputSize });
-    
+
     return (
       <ShadcnInput
         className={cn(customClasses, className)}
@@ -42,9 +51,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         ref={ref}
         {...props}
       />
-    )
+    );
   }
-)
-Input.displayName = "Input"
+);
+Input.displayName = "Input";
 
-export { Input } 
+export { Input };
