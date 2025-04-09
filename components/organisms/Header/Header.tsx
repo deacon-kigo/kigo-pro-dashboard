@@ -124,7 +124,8 @@ export default function Header() {
             <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-lg opacity-40 animate-rainbow-border blur-[1px]"></div>
             <Button
               asChild
-              className="relative z-10 bg-primary text-primary-foreground shadow-md transition-all duration-500 ease-in-out
+              variant="default"
+              className="relative z-10 shadow-md transition-all duration-500 ease-in-out
               before:absolute before:content-[''] before:-z-10 before:inset-0 before:rounded-lg before:opacity-0 before:transition-opacity before:duration-500 
               hover:before:opacity-100 before:bg-gradient-to-r before:from-primary/30 before:via-blue-500/20 before:to-purple-500/30 before:blur-xl before:animate-spin-slow"
             >
