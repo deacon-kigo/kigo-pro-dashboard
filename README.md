@@ -2,6 +2,8 @@
 
 A prototype dashboard environment for the Kigo Pro platform that showcases UI components and dashboard features.
 
+> Last deployed: [TIMESTAMP] for Vercel auto-deployment testing
+
 ## Project Purpose
 
 The Kigo Pro Dashboard serves three critical roles:
