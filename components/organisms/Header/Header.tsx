@@ -24,7 +24,7 @@ import {
 import { toggleSidebar } from "@/lib/redux/slices/uiSlice";
 import { markAllNotificationsAsRead } from "@/lib/redux/slices/userSlice";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/atoms/Button";
 
 export default function Header() {
   // Use Redux hooks directly
@@ -120,37 +120,41 @@ export default function Header() {
     switch (role) {
       case "merchant":
         return (
-          <div className="relative">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-lg opacity-40 animate-rainbow-border blur-[1px]"></div>
-            <Button
-              asChild
-              className="relative z-10 bg-primary text-primary-foreground shadow-md transition-all duration-500 ease-in-out
-              before:absolute before:content-[''] before:-z-10 before:inset-0 before:rounded-lg before:opacity-0 before:transition-opacity before:duration-500 
-              hover:before:opacity-100 before:bg-gradient-to-r before:from-primary/30 before:via-blue-500/20 before:to-purple-500/30 before:blur-xl before:animate-spin-slow"
-            >
-              <Link href={buildDemoUrl("deacons", "ai-campaign-creation")}>
-                <PlusIcon className="w-5 h-5 mr-1 inline-block" />
-                <span>New Campaign</span>
-              </Link>
-            </Button>
-          </div>
+          <Button
+            variant="primary"
+            href={buildDemoUrl("deacons", "ai-campaign-creation")}
+            icon={<PlusIcon className="w-5 h-5" />}
+            glow={{
+              mode: "colorShift",
+              colors: ["#3b82f6", "#8b5cf6", "#ec4899", "#ef4444"],
+              blur: "soft",
+              scale: 0.95,
+              duration: 3,
+            }}
+          >
+            New Campaign
+          </Button>
         );
       case "support":
         return (
-          <Button asChild variant="default">
-            <Link href="/tickets/create">
-              <TicketIcon className="w-5 h-5 mr-1 inline-block" />
-              <span>New Ticket</span>
-            </Link>
+          <Button
+            variant="primary"
+            href="/tickets/create"
+            icon={<TicketIcon className="w-5 h-5" />}
+            glow
+          >
+            New Ticket
           </Button>
         );
       case "admin":
         return (
-          <Button asChild variant="default">
-            <Link href="/merchants/create">
-              <PlusCircleIcon className="w-5 h-5 mr-1 inline-block" />
-              <span>Add Merchant</span>
-            </Link>
+          <Button
+            variant="primary"
+            href="/merchants/create"
+            icon={<PlusCircleIcon className="w-5 h-5" />}
+            glow
+          >
+            Add Merchant
           </Button>
         );
       default:

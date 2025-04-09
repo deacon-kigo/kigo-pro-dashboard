@@ -135,13 +135,13 @@ export function GlowEffect({
         {
           ...style,
           "--scale": scale,
-          willChange: "transform",
+          willChange: "transform, opacity, background",
           backfaceVisibility: "hidden",
         } as React.CSSProperties
       }
       animate={animations[mode]}
       className={cn(
-        "pointer-events-none absolute inset-0 -z-10",
+        "pointer-events-none absolute -inset-[1px] -z-10",
         "rounded-[inherit]",
         "scale-[var(--scale)] transform-gpu",
         getBlurClass(blur),

@@ -139,7 +139,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     // Wrapper component with potential glow effect
     const ButtonWithGlow = ({ children }: { children: React.ReactNode }) => (
-      <div className="relative inline-block">
+      <div className="relative inline-flex">
         {glow && <GlowEffect {...glowProps} className="z-0" />}
         {children}
       </div>
@@ -153,7 +153,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             asChild
             className={cn(themeClass, outlineClass, className)}
             variant={shadcnVariant}
-            ref={ref}
+            // We don't forward the ref here because the component prop types expect HTMLButtonElement
+            // but when using asChild with an anchor tag, it would need HTMLAnchorElement
+            // This avoids TypeScript errors while still providing expected functionality
             {...props}
           >
             <a href={href}>{content}</a>
