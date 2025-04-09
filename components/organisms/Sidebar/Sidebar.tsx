@@ -38,6 +38,13 @@ import {
 } from "@/components/molecules/dialog";
 import { Button } from "@/components/atoms/Button";
 
+// Ensure window type declaration for Storybook
+declare global {
+  interface Window {
+    __NEXT_MOCK_PATHNAME?: string;
+  }
+}
+
 export interface SidebarProps {
   role?: "merchant" | "support" | "admin";
   isCVSContext?: boolean;
