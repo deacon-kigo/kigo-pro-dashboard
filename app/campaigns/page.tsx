@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Card from '@/components/atoms/Card/Card';
 import { Button } from '@/components/atoms/Button';
 import { StatusBadge } from '@/components/molecules/badges';
+import type { StatusType } from '@/components/molecules/badges/StatusBadge';
 import { 
   PlusIcon, 
   MagnifyingGlassIcon,
@@ -14,7 +15,7 @@ const campaigns = [
   {
     id: '1',
     title: 'Summer Sale Promotion',
-    status: 'active',
+    status: 'active' as StatusType,
     merchantName: 'Acme Corporation',
     startDate: 'Jun 1, 2024',
     endDate: 'Aug 31, 2024',
@@ -24,7 +25,7 @@ const campaigns = [
   {
     id: '2',
     title: 'Back to School Special',
-    status: 'scheduled',
+    status: 'scheduled' as StatusType,
     merchantName: 'Widget Co',
     startDate: 'Aug 15, 2024',
     endDate: 'Sep 15, 2024',
@@ -34,7 +35,7 @@ const campaigns = [
   {
     id: '3',
     title: 'New Customer Welcome',
-    status: 'draft',
+    status: 'draft' as StatusType,
     merchantName: 'Example LLC',
     budget: '$2,000',
     performance: 'Not started'
@@ -42,7 +43,7 @@ const campaigns = [
   {
     id: '4',
     title: 'Holiday Season Flash Sale',
-    status: 'scheduled',
+    status: 'scheduled' as StatusType,
     merchantName: 'Best Store',
     startDate: 'Nov 25, 2024',
     endDate: 'Dec 26, 2024',
@@ -52,7 +53,7 @@ const campaigns = [
   {
     id: '5',
     title: 'Spring Collection Launch',
-    status: 'completed',
+    status: 'completed' as StatusType,
     merchantName: 'Fashion Outlet',
     startDate: 'Mar 1, 2024',
     endDate: 'Apr 15, 2024',
@@ -62,7 +63,7 @@ const campaigns = [
   {
     id: '6',
     title: 'Loyalty Program Rewards',
-    status: 'active',
+    status: 'active' as StatusType,
     merchantName: 'Premium Brands',
     startDate: 'Jan 1, 2024',
     endDate: 'Dec 31, 2024',
@@ -72,7 +73,7 @@ const campaigns = [
   {
     id: '7',
     title: 'Weekend Flash Sale',
-    status: 'paused',
+    status: 'paused' as StatusType,
     merchantName: 'Discount Depot',
     startDate: 'May 15, 2024',
     endDate: 'Jun 30, 2024',
