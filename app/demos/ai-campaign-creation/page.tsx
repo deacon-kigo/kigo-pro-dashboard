@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React from "react";
 import dynamic from "next/dynamic";
 
 // Create a loading component
@@ -15,11 +15,12 @@ function LoadingFallback() {
   );
 }
 
-// Dynamically import the real component with SSR disabled
-const AICampaignCreationWithNoSSR = dynamic(
+// The entire content component wrapped with NoSSR
+const NoSSR = dynamic(
   () =>
-    import(
-      "../../../components/features/campaigns/creation/AICampaignCreationPage"
+    Promise.resolve(
+      // Import local components statically to avoid import path issues
+      require("./client-component").default
     ),
   {
     ssr: false,
@@ -27,7 +28,7 @@ const AICampaignCreationWithNoSSR = dynamic(
   }
 );
 
-// Export a simple component that renders the dynamic import
+// Simple component that only renders the NoSSR wrapper
 export default function AICampaignCreationPage() {
-  return <AICampaignCreationWithNoSSR />;
+  return <NoSSR />;
 }
