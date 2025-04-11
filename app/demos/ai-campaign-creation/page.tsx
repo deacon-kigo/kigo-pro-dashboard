@@ -1,172 +1,33 @@
 "use client";
 
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-  useRef,
-  Suspense,
-} from "react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { ChevronLeftIcon } from "@heroicons/react/24/outline";
-import { useDemoActions, useDemoState } from "@/lib/redux/hooks";
-import { AIAssistantPanel } from "../../../components/features/ai";
-import { DynamicCanvas } from "../../../components/features/campaigns/creation";
-import Card from "@/components/atoms/Card/Card";
-import { buildDemoUrl } from "@/lib/utils";
+import React, { Suspense } from "react";
+import dynamic from "next/dynamic";
 
-// This component uses useSearchParams so it needs to be wrapped in Suspense
-function AICampaignCreationContent() {
-  const searchParams = useSearchParams();
-  const { setClientId, setCampaignCreationStep } = useDemoActions();
-  const { clientId, clientName } = useDemoState();
-  const [greeting, setGreeting] = useState("");
-
-  // Store client parameter to use later for navigation
-  const clientParam = searchParams.get("client") || "deacons";
-  const typeParam = searchParams.get("type") || "";
-
-  // Add initialization ref to ensure the effect only runs once
-  const isInitializedRef = useRef(false);
-
-  // Memoize the greeting calculation to avoid recalculation on every render
-  const getGreeting = useMemo(() => {
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 12) {
-      return "Good morning";
-    } else if (hour >= 12 && hour < 18) {
-      return "Good afternoon";
-    } else {
-      return "Good evening";
-    }
-  }, []);
-
-  // Set client ID and greeting only once on mount with initialization guard
-  useEffect(() => {
-    // Skip if already initialized
-    if (isInitializedRef.current) {
-      console.log("AICampaignCreation: Skipping repeated initialization");
-      return;
-    }
-
-    // Mark as initialized immediately to prevent race conditions
-    isInitializedRef.current = true;
-
-    // Use the client parameter from URL or default to "deacons"
-    console.log(
-      `AICampaignCreation: Initializing once with clientId=${clientParam}`
-    );
-
-    // Set client ID and greeting only once
-    setClientId(clientParam);
-    setGreeting(getGreeting);
-
-    // Initialize at the first step
-    setCampaignCreationStep("business-intelligence");
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Get merchant name for display
-  const merchantName = useMemo(() => {
-    if (clientId === "seven-eleven") return "7-Eleven";
-    if (clientId === "deacons") return "Deacon";
-    return clientName || "Merchant";
-  }, [clientId, clientName]);
-
-  // Get return URL based on client
-  const getDashboardUrl = useCallback(() => {
-    return buildDemoUrl(clientId, clientId === "deacons" ? "pizza" : "");
-  }, [clientId]);
-
-  // Handle option selected from AI Assistant Panel - memoize to avoid recreation
-  const handleOptionSelected = useCallback(
-    (optionId: string) => {
-      switch (optionId) {
-        case "tell-more":
-        case "recommendation":
-          setCampaignCreationStep("business-intelligence");
-          break;
-        case "create-campaign":
-          setCampaignCreationStep("campaign-selection");
-          break;
-        case "select-campaign":
-        case "customize-assets":
-          setCampaignCreationStep("asset-creation");
-          break;
-        case "review-performance":
-          setCampaignCreationStep("performance-prediction");
-          break;
-        case "launch-campaign":
-          setCampaignCreationStep("launch-control");
-          break;
-      }
-    },
-    [setCampaignCreationStep]
-  );
-
+// Create a loading component
+function LoadingFallback() {
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-gray-50">
-      {/* Header */}
-      <div className="p-3 sm:p-4 flex-shrink-0">
-        <div className="max-w-screen-2xl mx-auto">
-          <Card className="flex justify-between items-center p-3">
-            <Link
-              href={getDashboardUrl()}
-              className="flex items-center text-gray-500 hover:text-primary transition-colors"
-            >
-              <ChevronLeftIcon className="w-5 h-5 mr-1" />
-              <span className="font-medium">Back to Dashboard</span>
-            </Link>
-            <div className="text-center">
-              <h2 className="text-xl font-bold bg-gradient-to-r from-blue-500 via-indigo-400 to-purple-500 text-transparent bg-clip-text">
-                {greeting}, {merchantName}
-              </h2>
-              <p className="text-sm text-gray-500">
-                Let&apos;s create a new{" "}
-                {typeParam ? typeParam : "marketing campaign"}
-              </p>
-            </div>
-            <div className="w-32"></div> {/* Empty div for alignment */}
-          </Card>
-        </div>
-      </div>
-
-      {/* Dual Panel Layout */}
-      <div className="flex-1 max-w-screen-2xl mx-auto px-3 sm:px-4 pb-3 flex flex-col overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 h-full flex-1">
-          {/* AI Assistant Panel - Left Side */}
-          <div className="lg:col-span-4 h-full overflow-hidden flex flex-col">
-            <Card className="h-full flex-1 p-0 overflow-hidden flex flex-col">
-              <AIAssistantPanel onOptionSelected={handleOptionSelected} />
-            </Card>
-          </div>
-
-          {/* Dynamic Canvas - Right Side */}
-          <div className="lg:col-span-8 h-full overflow-hidden flex flex-col">
-            <Card className="h-full p-0 overflow-hidden flex flex-col">
-              <DynamicCanvas />
-            </Card>
-          </div>
-        </div>
+    <div className="flex justify-center items-center h-screen">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
+        <p className="text-gray-700 text-lg">Loading AI Campaign Creation...</p>
       </div>
     </div>
   );
 }
 
-// The main export with Suspense wrapper
-export default function AICampaignCreation() {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex justify-center items-center h-screen">
-          Loading AI Campaign Creation...
-        </div>
-      }
-    >
-      <AICampaignCreationContent />
-    </Suspense>
-  );
+// Dynamically import the real component with SSR disabled
+const AICampaignCreationWithNoSSR = dynamic(
+  () =>
+    import(
+      "../../../components/features/campaigns/creation/AICampaignCreationPage"
+    ),
+  {
+    ssr: false,
+    loading: () => <LoadingFallback />,
+  }
+);
+
+// Export a simple component that renders the dynamic import
+export default function AICampaignCreationPage() {
+  return <AICampaignCreationWithNoSSR />;
 }
