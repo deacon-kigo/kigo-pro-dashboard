@@ -6,6 +6,7 @@ import React, {
   useCallback,
   useMemo,
   useRef,
+  Suspense,
 } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -15,12 +16,8 @@ import { AIAssistantPanel } from "../../../components/features/ai";
 import { DynamicCanvas } from "../../../components/features/campaigns/creation";
 import Card from "@/components/atoms/Card/Card";
 import { buildDemoUrl } from "@/lib/utils";
-import { CampaignCreationStepType } from "@/lib/redux/slices/demoSlice";
 
-// Define ViewType locally to match DynamicCanvas
-type ViewType = CampaignCreationStepType;
-
-export default function AICampaignCreation() {
+function AICampaignCreationContent() {
   const searchParams = useSearchParams();
   const { setClientId, setCampaignCreationStep } = useDemoActions();
   const { clientId, clientName } = useDemoState();
@@ -64,7 +61,7 @@ export default function AICampaignCreation() {
     // Set client ID and greeting only once
     setClientId(clientParam);
     setGreeting(getGreeting);
-    
+
     // Initialize at the first step
     setCampaignCreationStep("business-intelligence");
 
@@ -84,27 +81,30 @@ export default function AICampaignCreation() {
   }, [clientId]);
 
   // Handle option selected from AI Assistant Panel - memoize to avoid recreation
-  const handleOptionSelected = useCallback((optionId: string) => {
-    switch (optionId) {
-      case "tell-more":
-      case "recommendation":
-        setCampaignCreationStep("business-intelligence");
-        break;
-      case "create-campaign":
-        setCampaignCreationStep("campaign-selection");
-        break;
-      case "select-campaign":
-      case "customize-assets":
-        setCampaignCreationStep("asset-creation");
-        break;
-      case "review-performance":
-        setCampaignCreationStep("performance-prediction");
-        break;
-      case "launch-campaign":
-        setCampaignCreationStep("launch-control");
-        break;
-    }
-  }, [setCampaignCreationStep]);
+  const handleOptionSelected = useCallback(
+    (optionId: string) => {
+      switch (optionId) {
+        case "tell-more":
+        case "recommendation":
+          setCampaignCreationStep("business-intelligence");
+          break;
+        case "create-campaign":
+          setCampaignCreationStep("campaign-selection");
+          break;
+        case "select-campaign":
+        case "customize-assets":
+          setCampaignCreationStep("asset-creation");
+          break;
+        case "review-performance":
+          setCampaignCreationStep("performance-prediction");
+          break;
+        case "launch-campaign":
+          setCampaignCreationStep("launch-control");
+          break;
+      }
+    },
+    [setCampaignCreationStep]
+  );
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-gray-50">
@@ -152,5 +152,19 @@ export default function AICampaignCreation() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AICampaignCreation() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center h-screen">
+          Loading AI Campaign Creation...
+        </div>
+      }
+    >
+      <AICampaignCreationContent />
+    </Suspense>
   );
 }

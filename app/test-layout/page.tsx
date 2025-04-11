@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 import AppLayout from "@/components/templates/AppLayout/AppLayout";
 
-export default function TestLayoutPage() {
+function TestLayoutContent() {
   return (
     <AppLayout>
       <div className="bg-white p-6 rounded-lg shadow-md">
@@ -18,5 +18,19 @@ export default function TestLayoutPage() {
         </p>
       </div>
     </AppLayout>
+  );
+}
+
+export default function TestLayoutPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center h-screen">
+          Loading...
+        </div>
+      }
+    >
+      <TestLayoutContent />
+    </Suspense>
   );
 }
