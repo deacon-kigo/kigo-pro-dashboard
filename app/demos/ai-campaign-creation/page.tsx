@@ -17,18 +17,19 @@ import { DynamicCanvas } from "../../../components/features/campaigns/creation";
 import Card from "@/components/atoms/Card/Card";
 import { buildDemoUrl } from "@/lib/utils";
 
+// This component uses useSearchParams so it needs to be wrapped in Suspense
 function AICampaignCreationContent() {
   const searchParams = useSearchParams();
   const { setClientId, setCampaignCreationStep } = useDemoActions();
   const { clientId, clientName } = useDemoState();
   const [greeting, setGreeting] = useState("");
 
-  // Add initialization ref to ensure the effect only runs once
-  const isInitializedRef = useRef(false);
-
   // Store client parameter to use later for navigation
   const clientParam = searchParams.get("client") || "deacons";
   const typeParam = searchParams.get("type") || "";
+
+  // Add initialization ref to ensure the effect only runs once
+  const isInitializedRef = useRef(false);
 
   // Memoize the greeting calculation to avoid recalculation on every render
   const getGreeting = useMemo(() => {
@@ -155,6 +156,7 @@ function AICampaignCreationContent() {
   );
 }
 
+// The main export with Suspense wrapper
 export default function AICampaignCreation() {
   return (
     <Suspense
