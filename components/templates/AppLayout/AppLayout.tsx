@@ -91,7 +91,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
             width: "100%",
           }}
         >
-          <div className="h-full w-full max-w-[1600px] mx-auto">
+          <div className="h-full w-full max-w-[1600px] mx-auto pt-4">
             {getBreadcrumbItems()}
             {children}
           </div>
