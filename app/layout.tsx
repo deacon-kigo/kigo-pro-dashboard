@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 import { ReduxProvider } from "@/lib/redux/provider";
 import URLSyncProvider from "@/lib/providers/URLSyncProvider";
@@ -21,7 +22,20 @@ export default function RootLayout({
       <body className={inter.className}>
         <ReduxProvider>
           <URLSyncProvider>
-            {children}
+            <Suspense
+              fallback={
+                <div className="h-screen w-full flex items-center justify-center bg-gray-50">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+                    <p className="mt-4 text-gray-600">
+                      Loading Kigo PRO Dashboard...
+                    </p>
+                  </div>
+                </div>
+              }
+            >
+              {children}
+            </Suspense>
           </URLSyncProvider>
         </ReduxProvider>
       </body>
