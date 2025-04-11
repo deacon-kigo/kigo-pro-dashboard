@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense } from "react";
 import { useRouter } from "next/navigation";
 
-export default function CampaignAnalyticsPage() {
+function CampaignAnalyticsContent() {
   const router = useRouter();
 
   useEffect(() => {
@@ -18,5 +18,19 @@ export default function CampaignAnalyticsPage() {
         <p className="mt-2 text-gray-600">Redirecting to dashboard...</p>
       </div>
     </div>
+  );
+}
+
+export default function CampaignAnalyticsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center h-screen">
+          Loading...
+        </div>
+      }
+    >
+      <CampaignAnalyticsContent />
+    </Suspense>
   );
 }

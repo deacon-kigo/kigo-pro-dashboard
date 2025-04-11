@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense } from "react";
 import CampaignManagerView from "@/components/features/dashboard/views/CampaignManagerView";
 import AppLayout from "@/components/templates/AppLayout/AppLayout";
 import {
@@ -31,10 +31,18 @@ export default function CampaignManagerPage() {
   );
 
   return (
-    <AppLayout customBreadcrumb={dashboardBreadcrumb}>
-      <div className="pt-0 mt-0">
-        <CampaignManagerView />
-      </div>
-    </AppLayout>
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center h-screen">
+          Loading...
+        </div>
+      }
+    >
+      <AppLayout customBreadcrumb={dashboardBreadcrumb}>
+        <div className="pt-0 mt-0">
+          <CampaignManagerView />
+        </div>
+      </AppLayout>
+    </Suspense>
   );
 }
