@@ -860,7 +860,7 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
+    <div className="h-full flex flex-col">
       {showConfetti && (
         <ReactConfetti
           width={windowSize.width}
@@ -871,14 +871,16 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = ({
         />
       )}
 
+      {/* Fixed header */}
       <CanvasHeader
         title={getViewTitle(currentView)}
         currentStep={viewSteps[currentView]}
         totalSteps={5}
-        className="flex-shrink-0"
+        className="flex-shrink-0 sticky top-0 z-10 bg-white"
       />
 
-      <div className="flex-1 overflow-y-auto">
+      {/* Content container with fixed height between header and footer */}
+      <div className="flex-1 min-h-0 overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentView}
@@ -931,7 +933,8 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = ({
         </AnimatePresence>
       </div>
 
-      <div className="p-4 flex justify-between border-t border-gray-200 flex-shrink-0">
+      {/* Navigation footer */}
+      <div className="p-4 flex justify-between border-t border-gray-200 bg-white flex-shrink-0 sticky bottom-0 left-0 right-0 z-10">
         <button
           onClick={() => {
             const views: ViewType[] = [

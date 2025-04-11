@@ -70,8 +70,8 @@ const BusinessIntelligenceView: React.FC<BusinessIntelligenceViewProps> = ({ dat
   // The component receives the already formatted data with concise insights
   
   return (
-    <div className="h-full flex flex-col overflow-y-auto p-6">
-      <div className="space-y-6">
+    <div className="h-full overflow-auto">
+      <div className="p-6 space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Sales by Day */}
           <Card>

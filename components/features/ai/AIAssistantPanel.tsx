@@ -788,9 +788,9 @@ Would you like me to develop a campaign strategy for any of these opportunities 
       </div>
 
       {/* Chat Container */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin">
+      <div className="flex-1 flex flex-col overflow-hidden relative">
+        {/* Messages - Flex grow to take available space and scrollable */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin pb-20">
           {messages.map((message) => (
             <ChatMessage
               key={message.id}
@@ -804,8 +804,8 @@ Would you like me to develop a campaign strategy for any of these opportunities 
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input */}
-        <div className="p-4 border-t border-gray-200 flex-shrink-0">
+        {/* Input - Fixed at bottom, absolute positioned */}
+        <div className="p-4 border-t border-gray-200 bg-white absolute bottom-0 left-0 right-0 z-10">
           <form
             className="flex items-center space-x-2"
             onSubmit={handleFormSubmit}

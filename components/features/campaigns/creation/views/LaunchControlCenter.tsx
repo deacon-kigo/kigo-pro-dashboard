@@ -131,274 +131,276 @@ const LaunchControlCenter: React.FC<LaunchControlCenterProps> = ({
   const colors = getClientColors();
   
   return (
-    <div className="h-full flex flex-col p-6 overflow-y-auto">
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="mb-6"
-      >
-        <h3 className="text-xl font-semibold mb-2">Launch Control Center</h3>
-        <p className="text-gray-600">
-          Review all campaign details before launching. Ensure everything is set up correctly.
-        </p>
-      </motion.div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        {/* Campaign Overview */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <h4 className="text-lg font-semibold mb-4">Campaign Overview</h4>
+    <div className="h-full overflow-auto">
+      <div className="p-6">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-6"
+        >
+          <h3 className="text-xl font-semibold mb-2">Launch Control Center</h3>
+          <p className="text-gray-600">
+            Review all campaign details before launching. Ensure everything is set up correctly.
+          </p>
+        </motion.div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Campaign Overview */}
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <h4 className="text-lg font-semibold mb-4">Campaign Overview</h4>
+            
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Campaign Name</p>
+                <p className="font-medium">{campaignDetails.name}</p>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Target Audience</p>
+                  <p className="font-medium">{campaignDetails.targetAudience}</p>
+                </div>
+                
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Geographic Reach</p>
+                  <p className="font-medium">{campaignDetails.geographicReach}</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Start Date</p>
+                  <p className="font-medium">{formatDate(campaignDetails.schedule.startDate)}</p>
+                </div>
+                
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">End Date</p>
+                  <p className="font-medium">{formatDate(campaignDetails.schedule.endDate)}</p>
+                </div>
+              </div>
+              
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Active Days</p>
+                <div className="flex flex-wrap gap-2">
+                  {campaignDetails.schedule.activeDays.map(day => (
+                    <span key={day} className="px-2 py-1 bg-gray-100 rounded text-xs font-medium">
+                      {day.charAt(0).toUpperCase() + day.slice(1)}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
           
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm text-gray-500 mb-1">Campaign Name</p>
-              <p className="font-medium">{campaignDetails.name}</p>
-            </div>
+          {/* Budget & Projections */}
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <h4 className="text-lg font-semibold mb-4">Budget & Projections</h4>
             
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Target Audience</p>
-                <p className="font-medium">{campaignDetails.targetAudience}</p>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Total Budget</p>
+                  <p className="font-medium">{formatCurrency(campaignDetails.budget.total)}</p>
+                </div>
+                
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Daily Average</p>
+                  <p className="font-medium">{formatCurrency(campaignDetails.budget.dailyAverage)}</p>
+                </div>
               </div>
               
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Geographic Reach</p>
-                <p className="font-medium">{campaignDetails.geographicReach}</p>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Start Date</p>
-                <p className="font-medium">{formatDate(campaignDetails.schedule.startDate)}</p>
-              </div>
-              
-              <div>
-                <p className="text-sm text-gray-500 mb-1">End Date</p>
-                <p className="font-medium">{formatDate(campaignDetails.schedule.endDate)}</p>
-              </div>
-            </div>
-            
-            <div>
-              <p className="text-sm text-gray-500 mb-1">Active Days</p>
-              <div className="flex flex-wrap gap-2">
-                {campaignDetails.schedule.activeDays.map(day => (
-                  <span key={day} className="px-2 py-1 bg-gray-100 rounded text-xs font-medium">
-                    {day.charAt(0).toUpperCase() + day.slice(1)}
-                  </span>
-                ))}
+              <div className="pt-2">
+                <p className="text-sm text-gray-500 mb-3">Estimated Performance</p>
+                
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <p className="text-xs text-gray-500">Reach</p>
+                      <p className="text-xs font-medium">
+                        {campaignDetails.metrics.estimatedReach.min.toLocaleString()} - {campaignDetails.metrics.estimatedReach.max.toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full bg-gradient-to-r ${colors.gradient}`}
+                        style={{ width: '75%' }}
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <p className="text-xs text-gray-500">Engagement</p>
+                      <p className="text-xs font-medium">
+                        {campaignDetails.metrics.predictedEngagement.min.toLocaleString()} - {campaignDetails.metrics.predictedEngagement.max.toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full bg-gradient-to-r ${colors.gradient}`}
+                        style={{ width: '60%' }}
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <p className="text-xs text-gray-500">Redemptions</p>
+                      <p className="text-xs font-medium">
+                        {campaignDetails.metrics.estimatedRedemptions.min.toLocaleString()} - {campaignDetails.metrics.estimatedRedemptions.max.toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full bg-gradient-to-r ${colors.gradient}`}
+                        style={{ width: '45%' }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
         
-        {/* Budget & Projections */}
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <h4 className="text-lg font-semibold mb-4">Budget & Projections</h4>
+        {/* Pre-Launch Checklist */}
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-6">
+          <h4 className="text-lg font-semibold mb-4">Pre-Launch Checklist</h4>
           
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Total Budget</p>
-                <p className="font-medium">{formatCurrency(campaignDetails.budget.total)}</p>
-              </div>
-              
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Daily Average</p>
-                <p className="font-medium">{formatCurrency(campaignDetails.budget.dailyAverage)}</p>
-              </div>
-            </div>
+            <ChecklistItem 
+              title="Targeting Strategy" 
+              description="Verify audience targeting and geographic settings"
+              isChecked={reviewedSections.targeting}
+              onClick={() => toggleSectionReview('targeting')}
+            />
             
-            <div className="pt-2">
-              <p className="text-sm text-gray-500 mb-3">Estimated Performance</p>
-              
-              <div className="space-y-3">
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <p className="text-xs text-gray-500">Reach</p>
-                    <p className="text-xs font-medium">
-                      {campaignDetails.metrics.estimatedReach.min.toLocaleString()} - {campaignDetails.metrics.estimatedReach.max.toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full bg-gradient-to-r ${colors.gradient}`}
-                      style={{ width: '75%' }}
-                    ></div>
-                  </div>
-                </div>
-                
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <p className="text-xs text-gray-500">Engagement</p>
-                    <p className="text-xs font-medium">
-                      {campaignDetails.metrics.predictedEngagement.min.toLocaleString()} - {campaignDetails.metrics.predictedEngagement.max.toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full bg-gradient-to-r ${colors.gradient}`}
-                      style={{ width: '60%' }}
-                    ></div>
-                  </div>
-                </div>
-                
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <p className="text-xs text-gray-500">Redemptions</p>
-                    <p className="text-xs font-medium">
-                      {campaignDetails.metrics.estimatedRedemptions.min.toLocaleString()} - {campaignDetails.metrics.estimatedRedemptions.max.toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full bg-gradient-to-r ${colors.gradient}`}
-                      style={{ width: '45%' }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <ChecklistItem 
+              title="Campaign Schedule" 
+              description="Confirm start date, end date, and active days"
+              isChecked={reviewedSections.schedule}
+              onClick={() => toggleSectionReview('schedule')}
+            />
+            
+            <ChecklistItem 
+              title="Budget Allocation" 
+              description="Review total budget and spending strategy"
+              isChecked={reviewedSections.budget}
+              onClick={() => toggleSectionReview('budget')}
+            />
+            
+            <ChecklistItem 
+              title="Creative Assets" 
+              description="Ensure all required creative assets are ready"
+              isChecked={reviewedSections.assets}
+              onClick={() => toggleSectionReview('assets')}
+            />
           </div>
         </div>
-      </div>
-      
-      {/* Pre-Launch Checklist */}
-      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-6">
-        <h4 className="text-lg font-semibold mb-4">Pre-Launch Checklist</h4>
         
-        <div className="space-y-4">
-          <ChecklistItem 
-            title="Targeting Strategy" 
-            description="Verify audience targeting and geographic settings"
-            isChecked={reviewedSections.targeting}
-            onClick={() => toggleSectionReview('targeting')}
-          />
+        {/* Asset Status */}
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-6">
+          <h4 className="text-lg font-semibold mb-4">Asset Status</h4>
           
-          <ChecklistItem 
-            title="Campaign Schedule" 
-            description="Confirm start date, end date, and active days"
-            isChecked={reviewedSections.schedule}
-            onClick={() => toggleSectionReview('schedule')}
-          />
-          
-          <ChecklistItem 
-            title="Budget Allocation" 
-            description="Review total budget and spending strategy"
-            isChecked={reviewedSections.budget}
-            onClick={() => toggleSectionReview('budget')}
-          />
-          
-          <ChecklistItem 
-            title="Creative Assets" 
-            description="Ensure all required creative assets are ready"
-            isChecked={reviewedSections.assets}
-            onClick={() => toggleSectionReview('assets')}
-          />
+          <div className="space-y-3">
+            {campaignDetails.assets.map((asset, index) => (
+              <div key={index} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                <div className="flex items-center">
+                  <div className={`w-8 h-8 rounded flex items-center justify-center mr-3 ${
+                    asset.status === 'ready' ? 'bg-green-100' : 
+                    asset.status === 'pending' ? 'bg-yellow-100' : 'bg-red-100'
+                  }`}>
+                    {asset.status === 'ready' && <CheckCircleIcon className="w-5 h-5 text-green-600" />}
+                    {asset.status === 'pending' && <ClockIcon className="w-5 h-5 text-yellow-600" />}
+                    {asset.status === 'failed' && <XCircleIcon className="w-5 h-5 text-red-600" />}
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">{asset.type}</p>
+                    <p className="text-xs text-gray-500">{
+                      asset.status === 'ready' ? 'Ready to publish' : 
+                      asset.status === 'pending' ? 'Processing...' : 'Failed - please regenerate'
+                    }</p>
+                  </div>
+                </div>
+                
+                {asset.status === 'failed' && (
+                  <button className="text-sm text-blue-600 hover:text-blue-700">
+                    Regenerate
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-      
-      {/* Asset Status */}
-      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-6">
-        <h4 className="text-lg font-semibold mb-4">Asset Status</h4>
         
-        <div className="space-y-3">
-          {campaignDetails.assets.map((asset, index) => (
-            <div key={index} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-              <div className="flex items-center">
-                <div className={`w-8 h-8 rounded flex items-center justify-center mr-3 ${
-                  asset.status === 'ready' ? 'bg-green-100' : 
-                  asset.status === 'pending' ? 'bg-yellow-100' : 'bg-red-100'
-                }`}>
-                  {asset.status === 'ready' && <CheckCircleIcon className="w-5 h-5 text-green-600" />}
-                  {asset.status === 'pending' && <ClockIcon className="w-5 h-5 text-yellow-600" />}
-                  {asset.status === 'failed' && <XCircleIcon className="w-5 h-5 text-red-600" />}
+        {/* Launch Button Section */}
+        <div className="mt-auto pt-4">
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            {/* @ts-ignore: Type issue with launchStatus */}
+            {launchStatus === 'launched' ? (
+              <div className="text-center py-6">
+                <div className="w-16 h-16 bg-green-100 rounded-full mx-auto flex items-center justify-center mb-4">
+                  <CheckIcon className="w-10 h-10 text-green-600" />
                 </div>
-                <div>
-                  <p className="font-medium text-sm">{asset.type}</p>
-                  <p className="text-xs text-gray-500">{
-                    asset.status === 'ready' ? 'Ready to publish' : 
-                    asset.status === 'pending' ? 'Processing...' : 'Failed - please regenerate'
-                  }</p>
+                <h3 className="text-xl font-bold text-green-600 mb-2">Campaign Successfully Launched!</h3>
+                <p className="text-gray-600 mb-4">Your "Family Weekday Special" campaign is now live.</p>
+                <p className="text-sm text-gray-500">Redirecting to dashboard...</p>
+              </div>
+            ) : (
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between">
+                <div className="mb-4 sm:mb-0">
+                  <h4 className="text-lg font-semibold">Ready to Launch?</h4>
+                  <p className="text-sm text-gray-600">
+                    {allSectionsReviewed 
+                      ? "You've reviewed all sections! You're ready to launch your campaign."
+                      : "Please review all sections before launching your campaign."}
+                  </p>
                 </div>
-              </div>
-              
-              {asset.status === 'failed' && (
-                <button className="text-sm text-blue-600 hover:text-blue-700">
-                  Regenerate
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      {/* Launch Button Section */}
-      <div className="mt-auto pt-4">
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          {/* @ts-ignore: Type issue with launchStatus */}
-          {launchStatus === 'launched' ? (
-            <div className="text-center py-6">
-              <div className="w-16 h-16 bg-green-100 rounded-full mx-auto flex items-center justify-center mb-4">
-                <CheckIcon className="w-10 h-10 text-green-600" />
-              </div>
-              <h3 className="text-xl font-bold text-green-600 mb-2">Campaign Successfully Launched!</h3>
-              <p className="text-gray-600 mb-4">Your "Family Weekday Special" campaign is now live.</p>
-              <p className="text-sm text-gray-500">Redirecting to dashboard...</p>
-            </div>
-          ) : (
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between">
-              <div className="mb-4 sm:mb-0">
-                <h4 className="text-lg font-semibold">Ready to Launch?</h4>
-                <p className="text-sm text-gray-600">
-                  {allSectionsReviewed 
-                    ? "You've reviewed all sections! You're ready to launch your campaign."
-                    : "Please review all sections before launching your campaign."}
-                </p>
-              </div>
-              
-              <motion.button
-                whileHover={{ scale: allSectionsReviewed ? 1.05 : 1 }}
-                whileTap={{ scale: allSectionsReviewed ? 0.95 : 1 }}
-                // @ts-ignore: Type issue with launchStatus
-                disabled={!allSectionsReviewed || launchStatus === 'pending' || launchStatus === 'launched'}
-                onClick={handleLaunch}
-                className={`px-6 py-3 rounded-lg font-medium flex items-center justify-center min-w-[150px] ${
+                
+                <motion.button
+                  whileHover={{ scale: allSectionsReviewed ? 1.05 : 1 }}
+                  whileTap={{ scale: allSectionsReviewed ? 0.95 : 1 }}
                   // @ts-ignore: Type issue with launchStatus
-                  allSectionsReviewed && launchStatus === 'ready'
-                    ? 'bg-gradient-to-r from-green-500 to-blue-500 text-white'
+                  disabled={!allSectionsReviewed || launchStatus === 'pending' || launchStatus === 'launched'}
+                  onClick={handleLaunch}
+                  className={`px-6 py-3 rounded-lg font-medium flex items-center justify-center min-w-[150px] ${
                     // @ts-ignore: Type issue with launchStatus
-                    : launchStatus === 'launched'
-                    ? 'bg-green-500 text-white'
-                    // @ts-ignore: Type issue with launchStatus
-                    : launchStatus === 'pending'
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                }`}
-              >
-                {/* @ts-ignore: Type issue with launchStatus */}
-                {launchStatus === 'pending' && (
-                  <>
-                    <ArrowPathIcon className="w-5 h-5 mr-2 animate-spin" />
-                    Launching...
-                  </>
-                )}
-                {/* @ts-ignore: Type issue with launchStatus */}
-                {launchStatus === 'launched' && (
-                  <>
-                    <CheckIcon className="w-5 h-5 mr-2" />
-                    Launched!
-                  </>
-                )}
-                {/* @ts-ignore: Type issue with launchStatus */}
-                {launchStatus === 'ready' && (
-                  <>
-                    Launch Campaign
-                  </>
-                )}
-              </motion.button>
-            </div>
-          )}
+                    allSectionsReviewed && launchStatus === 'ready'
+                      ? 'bg-gradient-to-r from-green-500 to-blue-500 text-white'
+                      // @ts-ignore: Type issue with launchStatus
+                      : launchStatus === 'launched'
+                      ? 'bg-green-500 text-white'
+                      // @ts-ignore: Type issue with launchStatus
+                      : launchStatus === 'pending'
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  {/* @ts-ignore: Type issue with launchStatus */}
+                  {launchStatus === 'pending' && (
+                    <>
+                      <ArrowPathIcon className="w-5 h-5 mr-2 animate-spin" />
+                      Launching...
+                    </>
+                  )}
+                  {/* @ts-ignore: Type issue with launchStatus */}
+                  {launchStatus === 'launched' && (
+                    <>
+                      <CheckIcon className="w-5 h-5 mr-2" />
+                      Launched!
+                    </>
+                  )}
+                  {/* @ts-ignore: Type issue with launchStatus */}
+                  {launchStatus === 'ready' && (
+                    <>
+                      Launch Campaign
+                    </>
+                  )}
+                </motion.button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
