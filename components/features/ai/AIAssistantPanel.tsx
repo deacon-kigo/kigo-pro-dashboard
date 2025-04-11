@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
-import { useDemoState } from '@/lib/redux/hooks';
-import ReactMarkdown from 'react-markdown';
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
+import { useDemoState } from "@/lib/redux/hooks";
+import ReactMarkdown from "react-markdown";
+import Image from "next/image";
 
 interface Message {
   id: string;
-  type: 'user' | 'ai';
+  type: "user" | "ai";
   content: string;
   timestamp: Date;
   responseOptions?: ResponseOption[];
   attachments?: Attachment[];
-  severity?: 'info' | 'warning' | 'success' | 'error';
+  severity?: "info" | "warning" | "success" | "error";
 }
 
 interface ResponseOption {
@@ -22,7 +22,7 @@ interface ResponseOption {
 }
 
 interface Attachment {
-  type: 'image' | 'chart' | 'file';
+  type: "image" | "chart" | "file";
   url: string;
   title: string;
   description?: string;
@@ -33,45 +33,72 @@ interface AIAssistantPanelProps {
   onOptionSelected?: (optionId: string) => void;
 }
 
-// Initial messages for the campaign creation demo
-const campaignCreationInitialMessages: Message[] = [
-  {
-    id: '1',
-    type: 'ai',
-    content: "I've analyzed your restaurant data and found an opportunity to boost weekday dinner sales. Your Tue-Thu dinner orders are significantly lower than weekends, representing a solid growth opportunity.",
-    timestamp: new Date(Date.now() - 60000),
-    responseOptions: [
-      { text: "Tell me more about this opportunity", value: "tell-more" },
-      { text: "What do you recommend?", value: "recommendation" }
-    ]
-  },
-  {
-    id: '2',
-    type: 'ai',
-    content: "I recommend a targeted campaign for weekday family dinners. Families make up 45% of your weekend business but only 22% of weekday orders. A weekday family special could drive growth without requiring additional resources.",
-    timestamp: new Date(),
-    responseOptions: [
-      { text: "Create a weekday dinner campaign", value: "create-campaign" },
-      { text: "What audience should we target?", value: "tell-more" }
-    ]
-  }
-];
-
 const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
-  onSend,
-  onOptionSelected
+  onSend = () => {},
+  onOptionSelected = () => {},
 }) => {
   const { clientId } = useDemoState();
-  const [messages, setMessages] = useState<Message[]>(campaignCreationInitialMessages);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isThinking, setIsThinking] = useState(false);
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  // Reference to track if there's a pending timeout
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Helper function to get appropriate greeting based on time of day
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) {
+      return "Good morning";
+    } else if (hour >= 12 && hour < 18) {
+      return "Good afternoon";
+    } else {
+      return "Good evening";
+    }
+  };
+
+  // Initial greeting
+  useEffect(() => {
+    if (messages.length === 0) {
+      // Add a slight delay for a more natural feeling
+      const timer = setTimeout(() => {
+        const greeting = getGreeting();
+
+        // Personalize based on client ID
+        let merchantName = "there";
+        if (clientId === "deacons") {
+          merchantName = "Deacon";
+        } else if (clientId === "seven-eleven") {
+          merchantName = "7-Eleven team";
+        }
+
+        setMessages([
+          {
+            id: "1",
+            type: "ai",
+            content: `${greeting}, ${merchantName}! I'm your AI marketing assistant. Let me show you your business intelligence data to help identify opportunities for a new campaign.`,
+            timestamp: new Date(),
+            responseOptions: [
+              { text: "Show me the data", value: "show-data" },
+              {
+                text: "What campaign would you suggest?",
+                value: "campaign-suggestion",
+              },
+              {
+                text: "What can I expect from a new campaign?",
+                value: "expected-results",
+              },
+            ],
+          },
+        ]);
+      }, 800);
+
+      return () => clearTimeout(timer);
+    }
+  }, [messages.length, clientId]);
 
   // Auto-scroll to bottom on new messages - no need to recreate every render
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
   // Run effect only when messages change
@@ -82,299 +109,466 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
   // Memoize the sendMessage function to avoid recreation on each render
   const handleSendMessage = useCallback(() => {
     if (!newMessage.trim()) return;
-    
+
+    // Add the user message
     const userMessage: Message = {
       id: Date.now().toString(),
-      type: 'user',
+      type: "user",
       content: newMessage,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
-    
-    setMessages(prev => [...prev, userMessage]);
-    setNewMessage('');
+
+    setMessages((prev) => [...prev, userMessage]);
+
+    // Call the onSend callback with the message
+    onSend(newMessage);
+
+    setNewMessage("");
     setIsThinking(true);
-    
-    // Check for specific competitor query
-    const isCompetitorQuery = newMessage.toLowerCase().includes('competitor') || 
-                             newMessage.toLowerCase().includes('competition');
-    
+
     // Clear any existing timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-    
-    // Simulate AI response after a delay
+
+    // Set a timeout to simulate AI thinking
     timeoutRef.current = setTimeout(() => {
       let aiResponse: Message;
-      
-      if (isCompetitorQuery) {
+
+      // Customize response based on client ID and user message
+      const isSeven = clientId === "seven-eleven";
+
+      // Try to match the message to known phrases or keywords
+      const lowerMsg = newMessage.toLowerCase();
+
+      if (
+        lowerMsg.includes("hello") ||
+        lowerMsg.includes("hi") ||
+        lowerMsg.includes("hey")
+      ) {
         aiResponse = {
-          id: (Date.now() + 1).toString(),
-          type: 'ai',
-          content: `Based on my analysis of the local pizza market, here's what I can tell you about your competitors:
-
-1. **Competitive Landscape**: There are 3 major competitors within your 5-mile radius: Pizza Palace, Little Italy, and Crust & Co. Pizza Palace is your most aggressive competitor, accounting for approximately 45% of competitor promotions in your area.
-
-2. **Promotion Trends**: I've noticed a significant increase in competitor promotional activity over the past 5 months. In January, competitors ran 3 promotions while you ran 2. By May, they've ramped up to 6 promotions while you've decreased to just 1. This explains some of the pressure on your weekday dinner sales.
-
-3. **Key Differentiators**:
-• Pizza Palace: Focuses on value deals (2 medium pizzas for $18)
-• Little Italy: Emphasizes authentic ingredients and premium pricing
-• Crust & Co: Targets the lunch crowd with rapid service guarantees
-
-4. **Competitive Advantages**: Your customer satisfaction scores (4.7/5) exceed all competitors (avg 4.2/5). Your family-size portions are also 15% larger than competitors at a similar price point, representing an under-marketed advantage.
-
-5. **Recommended Strategy**: Your weekday family dinner special directly counters Pizza Palace's primary value proposition while leveraging your portion size advantage. I suggest emphasizing the "more food for your family" angle in marketing materials.
-
-Would you like me to analyze any specific competitor in more detail, or would you prefer recommendations on how to better position against them?`,
+          id: Date.now().toString(),
+          type: "ai",
+          content: `Hello! I'm your AI marketing assistant. How can I help you create a successful campaign for your ${isSeven ? "7-Eleven locations" : "pizza business"} today?`,
           timestamp: new Date(),
           responseOptions: [
-            { text: "Tell me about Pizza Palace", value: "pizza-palace" },
-            { text: "How should we compete?", value: "compete-strategy" }
-          ]
+            { text: "Show me the data", value: "show-data" },
+            {
+              text: "What campaign would you suggest?",
+              value: "campaign-suggestion",
+            },
+          ],
         };
+      } else if (
+        lowerMsg.includes("competitor") ||
+        lowerMsg.includes("competition")
+      ) {
+        if (isSeven) {
+          aiResponse = {
+            id: Date.now().toString(),
+            type: "ai",
+            content: `Your main competitors include other convenience store chains and quick-service food outlets. They're running 2-3x more promotions than you are currently, especially focused on app-based ordering and loyalty programs.`,
+            timestamp: new Date(),
+            responseOptions: [
+              { text: "Let's create our campaign", value: "create-campaign" },
+              {
+                text: "What should our strategy be?",
+                value: "compete-strategy",
+              },
+            ],
+          };
+        } else {
+          aiResponse = {
+            id: Date.now().toString(),
+            type: "ai",
+            content: `Your main competitor is Pizza Palace. They run more frequent promotions but have lower customer satisfaction. They focus on price while your strength is quality and portion size.`,
+            timestamp: new Date(),
+            responseOptions: [
+              {
+                text: "Tell me more about Pizza Palace",
+                value: "pizza-palace",
+              },
+              { text: "How should we compete?", value: "compete-strategy" },
+            ],
+          };
+        }
+      } else if (
+        lowerMsg.includes("recommend") ||
+        lowerMsg.includes("suggest") ||
+        lowerMsg.includes("idea")
+      ) {
+        if (isSeven) {
+          aiResponse = {
+            id: Date.now().toString(),
+            type: "ai",
+            content: `Based on your data, I recommend a weekday 7NOW delivery promotion. This would address your slower weekday sales while leveraging your delivery service advantage over competitors.`,
+            timestamp: new Date(),
+            responseOptions: [
+              { text: "Let's create this campaign", value: "create-campaign" },
+              { text: "What results can I expect?", value: "expected-results" },
+            ],
+          };
+        } else {
+          aiResponse = {
+            id: Date.now().toString(),
+            type: "ai",
+            content: `Based on your data, a Family Weekday Special would be most effective. It offers a complete family meal at a competitive price point, targeting your underperforming weekday periods.`,
+            timestamp: new Date(),
+            responseOptions: [
+              { text: "Let's create this campaign", value: "create-campaign" },
+              { text: "What results can I expect?", value: "expected-results" },
+            ],
+          };
+        }
       } else {
-        aiResponse = {
-          id: (Date.now() + 1).toString(),
-          type: 'ai',
-          content: "I'm analyzing your request and generating a response based on your marketing data...",
-          timestamp: new Date()
-        };
+        // Handle known option values
+        switch (lowerMsg) {
+          case "show data":
+          case "show me data":
+          case "show the data":
+          case "data":
+            aiResponse = {
+              id: Date.now().toString(),
+              type: "ai",
+              content: isSeven
+                ? "Here's your business intelligence data showing sales by day, delivery vs. in-store trends, competitor activity, and customer segments. The weekday opportunity for delivery is clear."
+                : "Here's your business intelligence data showing sales by day, performance trends, competitor activity, and customer segments. The weekday dinner opportunity is clear.",
+              timestamp: new Date(),
+              responseOptions: [
+                { text: "Let's create a campaign", value: "create-campaign" },
+                { text: "What should I focus on?", value: "focus-suggestion" },
+              ],
+            };
+            if (onOptionSelected) onOptionSelected("show-data");
+            break;
+
+          case "create":
+          case "create campaign":
+          case "new campaign":
+            aiResponse = {
+              id: Date.now().toString(),
+              type: "ai",
+              content: isSeven
+                ? "I've created three campaign options for you, each optimized for your 7-Eleven customer base and sales patterns. View them in the canvas to compare."
+                : "I've created three campaign options for you, each with offer structure, promo copy, visuals, and targeting. View them in the canvas to compare.",
+              timestamp: new Date(),
+              responseOptions: [
+                {
+                  text: isSeven
+                    ? "Select the 7NOW Delivery Special"
+                    : "Select the Family Dinner Bundle",
+                  value: "select-campaign",
+                },
+                {
+                  text: "How did you create these options?",
+                  value: "campaign-explanation",
+                },
+              ],
+            };
+            if (onOptionSelected) onOptionSelected("create-campaign");
+            break;
+
+          default:
+            // For any other message, look for keywords to determine intent
+            if (
+              lowerMsg.includes("sales") ||
+              lowerMsg.includes("revenue") ||
+              lowerMsg.includes("performance")
+            ) {
+              if (isSeven) {
+                aiResponse = {
+                  id: Date.now().toString(),
+                  type: "ai",
+                  content:
+                    "Your sales data shows strong weekend performance but relatively lower weekday sales. Tuesday is your weakest day, with approximately 35% lower revenue than weekend days. Your delivery orders are growing at 18% month over month.",
+                  timestamp: new Date(),
+                  responseOptions: [
+                    {
+                      text: "What campaign would you suggest?",
+                      value: "campaign-suggestion",
+                    },
+                    {
+                      text: "Let's create a campaign",
+                      value: "create-campaign",
+                    },
+                  ],
+                };
+              } else {
+                aiResponse = {
+                  id: Date.now().toString(),
+                  type: "ai",
+                  content:
+                    "Your sales data shows strong weekend performance but relatively lower weekday sales. Monday is your weakest day, with approximately 50% lower revenue than weekend days. However, delivery orders are growing at 15% month over month.",
+                  timestamp: new Date(),
+                  responseOptions: [
+                    {
+                      text: "What campaign would you suggest?",
+                      value: "campaign-suggestion",
+                    },
+                    {
+                      text: "Let's create a campaign",
+                      value: "create-campaign",
+                    },
+                  ],
+                };
+              }
+            } else {
+              // Generic response for anything we don't recognize
+              aiResponse = {
+                id: Date.now().toString(),
+                type: "ai",
+                content: isSeven
+                  ? "Based on your business data, I can help you create a targeted marketing campaign for your 7-Eleven locations. Would you like to see the data or start creating a campaign?"
+                  : "Based on your business data, I can help you create a targeted marketing campaign for your pizza business. Would you like to see the data or start creating a campaign?",
+                timestamp: new Date(),
+                responseOptions: [
+                  { text: "Show me the data", value: "show-data" },
+                  { text: "Let's create a campaign", value: "create-campaign" },
+                ],
+              };
+            }
+        }
       }
-      
-      setMessages(prev => [...prev, aiResponse]);
+
+      setMessages((prev) => [...prev, aiResponse]);
       setIsThinking(false);
-      
-      if (onSend) {
-        onSend(newMessage);
-      }
-      
-      // Clear the timeout reference
-      timeoutRef.current = null;
-    }, 2000);
-  }, [newMessage, onSend]);
+    }, 1500);
+  }, [newMessage, onOptionSelected, clientId, onSend]);
 
   // Memoize option click handler to avoid recreation on each render
-  const handleOptionClick = useCallback((value: string) => {
-    // Add user's choice as a message
-    const option = messages
-      .flatMap(m => m.responseOptions || [])
-      .find(opt => opt.value === value);
-    
-    if (option) {
-      const userMessage: Message = {
-        id: Date.now().toString(),
-        type: 'user',
-        content: option.text,
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, userMessage]);
+  const handleOptionClick = useCallback(
+    (optionValue: string) => {
+      // Set thinking state
       setIsThinking(true);
-      
+
       // Clear any existing timeout
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      
-      // Generate appropriate AI response based on option selected
+
+      // Set a timeout to simulate AI thinking
       timeoutRef.current = setTimeout(() => {
         let aiResponse: Message;
-        
-        switch(value) {
-          case 'tell-more':
+
+        // Customize responses based on client ID
+        const isSeven = clientId === "seven-eleven";
+
+        switch (optionValue) {
+          case "create-campaign":
             aiResponse = {
               id: Date.now().toString(),
-              type: 'ai',
-              content: "Your weekday dinner sales average $1,862 vs. weekend sales of $3,833. A family-focused weekday promotion could increase weekday revenue by 35-40% based on our analysis.",
+              type: "ai",
+              content: isSeven
+                ? "I've created three campaign options for you, designed specifically for 7-Eleven. Take a look at the delivery promotion, family bundle, and app-exclusive options in the canvas."
+                : "I've created three campaign options for you, each with offer structure, promo copy, visuals, and targeting. View them in the canvas to compare.",
               timestamp: new Date(),
               responseOptions: [
-                { text: "Let's create a campaign", value: "create-campaign" },
-                { text: "What kind of campaign would work best?", value: "campaign-suggestion" }
-              ]
+                {
+                  text: isSeven
+                    ? "Select the 7NOW Delivery Special"
+                    : "Select the Family Dinner Bundle",
+                  value: "select-campaign",
+                },
+                {
+                  text: "How did you create these options?",
+                  value: "campaign-explanation",
+                },
+              ],
             };
-            break;
-            
-          case 'recommendation':
-            aiResponse = {
-              id: Date.now().toString(),
-              type: 'ai',
-              content: "I recommend a 'Family Weekday Special' campaign. I can generate complete options with creative assets, targeting strategies, and performance predictions tailored to your business.",
-              timestamp: new Date(),
-              responseOptions: [
-                { text: "Generate campaign options", value: "create-campaign" },
-                { text: "What results can I expect?", value: "expected-results" }
-              ]
-            };
-            break;
-            
-          case 'create-campaign':
-            aiResponse = {
-              id: Date.now().toString(),
-              type: 'ai',
-              content: "I've created three campaign options for you, each with offer structure, promo copy, visuals, and targeting. View them in the canvas to compare.",
-              timestamp: new Date(),
-              responseOptions: [
-                { text: "Select the Family Dinner Bundle", value: "select-campaign" },
-                { text: "How did you create these options?", value: "campaign-explanation" }
-              ]
-            };
-            if (onOptionSelected) onOptionSelected('create-campaign');
-            break;
-            
-          case 'show-data':
-            aiResponse = {
-              id: Date.now().toString(),
-              type: 'ai',
-              content: "Here's your business intelligence data showing sales by day, performance trends, competitor activity, and customer segments. The weekday dinner opportunity is clear.",
-              timestamp: new Date(),
-              responseOptions: [
-                { text: "Let's create a campaign", value: "create-campaign" },
-                { text: "What should I focus on?", value: "focus-suggestion" }
-              ]
-            };
+            if (onOptionSelected) onOptionSelected("create-campaign");
             break;
 
-          case 'select-campaign':
+          case "show-data":
             aiResponse = {
               id: Date.now().toString(),
-              type: 'ai',
-              content: "Family Dinner Bundle selected. All creative assets are ready: social media, email templates, and in-store materials. Customize any asset to match your brand.",
+              type: "ai",
+              content: isSeven
+                ? "Here's your business intelligence data showing 7-Eleven sales patterns, app usage, delivery trends, and customer segments. Weekday delivery shows significant growth potential."
+                : "Here's your business intelligence data showing sales by day, performance trends, competitor activity, and customer segments. The weekday dinner opportunity is clear.",
+              timestamp: new Date(),
+              responseOptions: [
+                { text: "Let's create a campaign", value: "create-campaign" },
+                { text: "What should I focus on?", value: "focus-suggestion" },
+              ],
+            };
+            if (onOptionSelected) onOptionSelected("show-data");
+            break;
+
+          case "select-campaign":
+            aiResponse = {
+              id: Date.now().toString(),
+              type: "ai",
+              content: isSeven
+                ? "7NOW Delivery Special selected. All creative assets are ready: app banners, email templates, social media posts, and in-store materials. Customize any asset to match your preferences."
+                : "Family Dinner Bundle selected. All creative assets are ready: social media, email templates, and in-store materials. Customize any asset to match your brand.",
               timestamp: new Date(),
               responseOptions: [
                 { text: "Customize these assets", value: "customize-assets" },
-                { text: "These look great as is", value: "keep-assets" }
-              ]
+                { text: "These look great as is", value: "keep-assets" },
+              ],
             };
-            if (onOptionSelected) onOptionSelected('select-campaign');
+            if (onOptionSelected) onOptionSelected("select-campaign");
             break;
 
-          case 'customize-assets':
+          case "customize-assets":
             aiResponse = {
               id: Date.now().toString(),
-              type: 'ai',
-              content: "Assets updated based on your selections. Performance predictions are ready with expected views, redemptions, revenue, and ROI.",
+              type: "ai",
+              content:
+                "Assets updated based on your selections. Performance predictions are ready with expected views, redemptions, revenue, and ROI.",
               timestamp: new Date(),
               responseOptions: [
-                { text: "Review performance details", value: "review-performance" },
-                { text: "Optimize for better results", value: "optimize-campaign" }
-              ]
+                {
+                  text: "Review performance details",
+                  value: "review-performance",
+                },
+                {
+                  text: "Optimize for better results",
+                  value: "optimize-campaign",
+                },
+              ],
             };
-            if (onOptionSelected) onOptionSelected('customize-assets');
+            if (onOptionSelected) onOptionSelected("customize-assets");
             break;
 
-          case 'review-performance':
+          case "review-performance":
             aiResponse = {
               id: Date.now().toString(),
-              type: 'ai',
-              content: "Your campaign is ready to launch with distribution schedule, performance tracking, and one-click launch option.",
+              type: "ai",
+              content:
+                "Your campaign is ready to launch with distribution schedule, performance tracking, and one-click launch option.",
               timestamp: new Date(),
               responseOptions: [
                 { text: "Launch campaign", value: "launch-campaign" },
-                { text: "Schedule for later", value: "schedule-campaign" }
-              ]
+                { text: "Schedule for later", value: "schedule-campaign" },
+              ],
             };
-            if (onOptionSelected) onOptionSelected('review-performance');
+            if (onOptionSelected) onOptionSelected("review-performance");
             break;
-            
-          case 'launch-campaign':
+
+          case "launch-campaign":
             aiResponse = {
               id: Date.now().toString(),
-              type: 'ai',
-              content: "Congratulations! Your Family Weekday Special campaign has been launched. You can monitor its performance from your dashboard.",
-              timestamp: new Date()
+              type: "ai",
+              content:
+                "Congratulations! Your Family Weekday Special campaign has been launched. You can monitor its performance from your dashboard.",
+              timestamp: new Date(),
             };
-            if (onOptionSelected) onOptionSelected('launch-campaign');
+            if (onOptionSelected) onOptionSelected("launch-campaign");
             break;
-            
-          case 'keep-assets':
+
+          case "keep-assets":
             aiResponse = {
               id: Date.now().toString(),
-              type: 'ai',
-              content: "Great! I'll keep the assets as is. Let's move on to the performance predictions for your campaign.",
+              type: "ai",
+              content:
+                "Great! I'll keep the assets as is. Let's move on to the performance predictions for your campaign.",
               timestamp: new Date(),
               responseOptions: [
-                { text: "Show me performance predictions", value: "review-performance" }
-              ]
+                {
+                  text: "Show me performance predictions",
+                  value: "review-performance",
+                },
+              ],
             };
-            if (onOptionSelected) onOptionSelected('customize-assets');
+            if (onOptionSelected) onOptionSelected("customize-assets");
             break;
-            
-          case 'campaign-suggestion':
+
+          case "campaign-suggestion":
             aiResponse = {
               id: Date.now().toString(),
-              type: 'ai',
-              content: "Based on your data, a Family Weekday Special would be most effective. It offers a complete family meal at a competitive price point, targeting your underperforming weekday periods.",
+              type: "ai",
+              content: isSeven
+                ? "Based on your data, a 7NOW Weekday Delivery Special would be most effective. It offers free delivery and special pricing on weekdays to boost your slower periods."
+                : "Based on your data, a Family Weekday Special would be most effective. It offers a complete family meal at a competitive price point, targeting your underperforming weekday periods.",
               timestamp: new Date(),
               responseOptions: [
-                { text: "Let's create this campaign", value: "create-campaign" }
-              ]
+                {
+                  text: "Let's create this campaign",
+                  value: "create-campaign",
+                },
+              ],
             };
             break;
-            
-          case 'expected-results':
+
+          case "expected-results":
             aiResponse = {
               id: Date.now().toString(),
-              type: 'ai',
-              content: "Based on similar campaigns in your industry, you can expect a 25-35% increase in weekday dinner sales, with approximately 200-300 offer redemptions per week and a positive ROI within the first 14 days.",
+              type: "ai",
+              content: isSeven
+                ? "Based on similar campaigns in your industry, you can expect a 20-30% increase in weekday delivery orders, with approximately 400-480 offer redemptions per week and a positive ROI within 10 days."
+                : "Based on similar campaigns in your industry, you can expect a 25-35% increase in weekday dinner sales, with approximately 200-300 offer redemptions per week and a positive ROI within the first 14 days.",
               timestamp: new Date(),
               responseOptions: [
-                { text: "Generate campaign options", value: "create-campaign" }
-              ]
+                { text: "Generate campaign options", value: "create-campaign" },
+              ],
             };
             break;
-            
-          case 'campaign-explanation':
+
+          case "campaign-explanation":
             aiResponse = {
               id: Date.now().toString(),
-              type: 'ai',
-              content: "I created these options by analyzing your sales data, competitive landscape, and customer preferences. Each option targets your weekday dinner opportunity with a different approach to appeal to your family demographic.",
+              type: "ai",
+              content:
+                "I created these options by analyzing your sales data, competitive landscape, and customer preferences. Each option targets your weekday dinner opportunity with a different approach to appeal to your family demographic.",
               timestamp: new Date(),
               responseOptions: [
-                { text: "Select the Family Dinner Bundle", value: "select-campaign" }
-              ]
+                {
+                  text: "Select the Family Dinner Bundle",
+                  value: "select-campaign",
+                },
+              ],
             };
             break;
-            
-          case 'focus-suggestion':
+
+          case "focus-suggestion":
             aiResponse = {
               id: Date.now().toString(),
-              type: 'ai',
-              content: "Based on your data, focus on the weekday dinner opportunity. Specifically, target families with a value-oriented bundle that emphasizes your portion size advantage over competitors.",
+              type: "ai",
+              content:
+                "Based on your data, focus on the weekday dinner opportunity. Specifically, target families with a value-oriented bundle that emphasizes your portion size advantage over competitors.",
               timestamp: new Date(),
               responseOptions: [
-                { text: "Create a campaign for this focus", value: "create-campaign" }
-              ]
+                {
+                  text: "Create a campaign for this focus",
+                  value: "create-campaign",
+                },
+              ],
             };
             break;
-            
-          case 'optimize-campaign':
+
+          case "optimize-campaign":
             aiResponse = {
               id: Date.now().toString(),
-              type: 'ai',
-              content: "I've optimized your campaign parameters for maximum ROI. By adjusting the targeting radius to 5 miles and focusing on Monday-Thursday from 4-8pm, we can increase expected redemptions by 15%.",
+              type: "ai",
+              content:
+                "I've optimized your campaign parameters for maximum ROI. By adjusting the targeting radius to 5 miles and focusing on Monday-Thursday from 4-8pm, we can increase expected redemptions by 15%.",
               timestamp: new Date(),
               responseOptions: [
-                { text: "Review updated performance", value: "review-performance" }
-              ]
+                {
+                  text: "Review updated performance",
+                  value: "review-performance",
+                },
+              ],
             };
-            if (onOptionSelected) onOptionSelected('customize-assets');
+            if (onOptionSelected) onOptionSelected("customize-assets");
             break;
-            
-          case 'schedule-campaign':
+
+          case "schedule-campaign":
             aiResponse = {
               id: Date.now().toString(),
-              type: 'ai',
-              content: "Your campaign has been scheduled to launch next Monday. You'll receive a notification when it goes live, and you can monitor performance from your dashboard.",
-              timestamp: new Date()
+              type: "ai",
+              content:
+                "Your campaign has been scheduled to launch next Monday. You'll receive a notification when it goes live, and you can monitor performance from your dashboard.",
+              timestamp: new Date(),
             };
-            if (onOptionSelected) onOptionSelected('launch-campaign');
+            if (onOptionSelected) onOptionSelected("launch-campaign");
             break;
-            
-          case 'pizza-palace':
+
+          case "pizza-palace":
             aiResponse = {
               id: Date.now().toString(),
-              type: 'ai',
+              type: "ai",
               content: `Pizza Palace has been your strongest competitor for the past 18 months. Here's my detailed analysis:
 
 1. **Pricing Strategy**: They operate at an average 12% lower price point than your menu, focusing on volume over margins.
@@ -394,15 +588,18 @@ Your family weekday special effectively counters their main value proposition wh
               timestamp: new Date(),
               responseOptions: [
                 { text: "Let's create our campaign", value: "create-campaign" },
-                { text: "Tell me about other competitors", value: "other-competitors" }
-              ]
+                {
+                  text: "Tell me about other competitors",
+                  value: "other-competitors",
+                },
+              ],
             };
             break;
-            
-          case 'compete-strategy':
+
+          case "compete-strategy":
             aiResponse = {
               id: Date.now().toString(),
-              type: 'ai',
+              type: "ai",
               content: `Based on my competitive analysis, here are my recommended strategies to position against your competitors:
 
 1. **Value Messaging**: Emphasize "family-sized portions" at competitive prices. Your portions are 15% larger than Pizza Palace's at only a slightly higher price point.
@@ -419,15 +616,18 @@ The Family Weekday Special campaign addresses most of these strategies, focusing
               timestamp: new Date(),
               responseOptions: [
                 { text: "Create this campaign now", value: "create-campaign" },
-                { text: "What creative assets do you suggest?", value: "creative-assets" }
-              ]
+                {
+                  text: "What creative assets do you suggest?",
+                  value: "creative-assets",
+                },
+              ],
             };
             break;
-            
-          case 'other-competitors':
+
+          case "other-competitors":
             aiResponse = {
               id: Date.now().toString(),
-              type: 'ai',
+              type: "ai",
               content: `Let me share insights on your other key competitors:
 
 **Little Italy**
@@ -447,16 +647,22 @@ The Family Weekday Special campaign addresses most of these strategies, focusing
 Neither of these competitors directly targets the weekday family dinner segment, which represents your biggest opportunity. Little Italy is too premium-focused, while Crust & Co is lunch-oriented.`,
               timestamp: new Date(),
               responseOptions: [
-                { text: "Create our family dinner campaign", value: "create-campaign" },
-                { text: "What other opportunities do you see?", value: "more-opportunities" }
-              ]
+                {
+                  text: "Create our family dinner campaign",
+                  value: "create-campaign",
+                },
+                {
+                  text: "What other opportunities do you see?",
+                  value: "more-opportunities",
+                },
+              ],
             };
             break;
-            
-          case 'creative-assets':
+
+          case "creative-assets":
             aiResponse = {
               id: Date.now().toString(),
-              type: 'ai',
+              type: "ai",
               content: `For your Family Weekday Special campaign, I recommend these creative approaches:
 
 1. **Primary Visual**: Family-centered imagery showing abundant food portions that emphasize the "more food" value proposition.
@@ -479,15 +685,15 @@ I've prepared draft assets for all these formats that you can customize in the A
               timestamp: new Date(),
               responseOptions: [
                 { text: "Show me the assets", value: "customize-assets" },
-                { text: "Create the campaign", value: "create-campaign" }
-              ]
+                { text: "Create the campaign", value: "create-campaign" },
+              ],
             };
             break;
-            
-          case 'more-opportunities':
+
+          case "more-opportunities":
             aiResponse = {
               id: Date.now().toString(),
-              type: 'ai',
+              type: "ai",
               content: `Beyond the Family Weekday Special, I see these additional opportunities:
 
 1. **Weekend Lunch Gap**: Your weekend business is strong for dinner but underperforms at lunch compared to competitors. A weekend lunch bundle could drive incremental revenue.
@@ -503,41 +709,55 @@ I've prepared draft assets for all these formats that you can customize in the A
 Would you like me to develop a campaign strategy for any of these opportunities after we complete the Family Weekday Special?`,
               timestamp: new Date(),
               responseOptions: [
-                { text: "Let's focus on the family campaign first", value: "create-campaign" },
-                { text: "Tell me more about the loyalty program", value: "loyalty-program" }
-              ]
+                {
+                  text: "Let's focus on the family campaign first",
+                  value: "create-campaign",
+                },
+                {
+                  text: "Tell me more about the loyalty program",
+                  value: "loyalty-program",
+                },
+              ],
             };
             break;
-            
-          case 'loyalty-program':
+
+          case "loyalty-program":
             aiResponse = {
               id: Date.now().toString(),
-              type: 'ai',
-              content: "Based on your customer data, a simple points-based loyalty program could increase your repeat customer rate by 15-20%. We should focus on the family campaign first, then I can help you design a loyalty program next.",
+              type: "ai",
+              content:
+                "Based on your customer data, a simple points-based loyalty program could increase your repeat customer rate by 15-20%. We should focus on the family campaign first, then I can help you design a loyalty program next.",
               timestamp: new Date(),
               responseOptions: [
-                { text: "Let's focus on the family campaign", value: "create-campaign" }
-              ]
+                {
+                  text: "Let's focus on the family campaign",
+                  value: "create-campaign",
+                },
+              ],
             };
             break;
-            
+
           default:
             aiResponse = {
               id: Date.now().toString(),
-              type: 'ai',
-              content: "I understand. Let me know how else I can help with your campaign.",
-              timestamp: new Date()
+              type: "ai",
+              content: isSeven
+                ? "I'm here to help you create effective campaigns for your 7-Eleven locations. What would you like to do next?"
+                : "I'm here to help you create effective campaigns for your pizza business. What would you like to do next?",
+              timestamp: new Date(),
+              responseOptions: [
+                { text: "Show me the data", value: "show-data" },
+                { text: "Create a campaign", value: "create-campaign" },
+              ],
             };
         }
-        
-        setMessages(prev => [...prev, aiResponse]);
+
+        setMessages((prev) => [...prev, aiResponse]);
         setIsThinking(false);
-        
-        // Clear the timeout reference
-        timeoutRef.current = null;
       }, 1500);
-    }
-  }, [messages, onOptionSelected]);
+    },
+    [onOptionSelected, clientId]
+  );
 
   // Clean up timeout on unmount
   useEffect(() => {
@@ -549,39 +769,44 @@ Would you like me to develop a campaign strategy for any of these opportunities 
   }, []);
 
   // Memoize the form submit handler
-  const handleFormSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    handleSendMessage();
-  }, [handleSendMessage]);
+  const handleFormSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      handleSendMessage();
+    },
+    [handleSendMessage]
+  );
 
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b border-gray-200 flex-shrink-0">
         <h3 className="text-lg font-semibold">AI Marketing Assistant</h3>
-        <p className="text-sm text-gray-500">Ask me anything about creating your campaign</p>
+        <p className="text-sm text-gray-500">
+          Ask me anything about creating your campaign
+        </p>
       </div>
-      
+
       {/* Chat Container */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin">
           {messages.map((message) => (
-            <ChatMessage 
-              key={message.id} 
-              message={message} 
-              onOptionSelected={handleOptionClick} 
+            <ChatMessage
+              key={message.id}
+              message={message}
+              onOptionSelected={handleOptionClick}
             />
           ))}
-          
+
           {isThinking && <AIThinkingIndicator />}
-          
+
           <div ref={messagesEndRef} />
         </div>
-        
+
         {/* Input */}
         <div className="p-4 border-t border-gray-200 flex-shrink-0">
-          <form 
+          <form
             className="flex items-center space-x-2"
             onSubmit={handleFormSubmit}
           >
@@ -605,103 +830,103 @@ Would you like me to develop a campaign strategy for any of these opportunities 
   );
 };
 
-// Chat Message Component - memoize to prevent unnecessary re-renders
-const ChatMessage = React.memo<{
+interface ChatMessageProps {
   message: Message;
   onOptionSelected?: (optionId: string) => void;
-}>(({ message, onOptionSelected }) => {
+}
+
+const ChatMessage: React.FC<ChatMessageProps> = ({
+  message,
+  onOptionSelected,
+}) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+    <div
+      className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
     >
-      <div 
-        className={`max-w-3/4 rounded-lg p-3 ${
-          message.type === 'user' 
-            ? 'bg-blue-500 text-white rounded-tr-none' 
-            : 'bg-gray-100 text-gray-800 rounded-tl-none'
+      <div
+        className={`rounded-lg p-3 max-w-[80%] ${
+          message.type === "user"
+            ? "bg-primary text-white rounded-tr-none"
+            : "bg-gray-100 text-gray-800 rounded-tl-none"
         }`}
       >
-        <div className={`${
-          message.type === 'user' 
-            ? 'text-sm text-white' 
-            : 'text-sm prose prose-sm prose-strong:font-bold prose-strong:text-gray-900 prose-ul:pl-5 prose-ul:my-1 prose-li:my-0 max-w-none'
-        }`}>
-          {message.type === 'user' ? (
-            <p>{message.content}</p>
-          ) : (
-            <ReactMarkdown 
-              components={{
-                // Remove default margin from paragraphs
-                p: ({node, ...props}) => <p className="mb-2" {...props} />,
-                // Customize list styles
-                ul: ({node, ...props}) => <ul className="list-disc ml-4 my-1" {...props} />,
-                li: ({node, ...props}) => <li className="mb-1" {...props} />,
-                // Make headings look better
-                h1: ({node, ...props}) => <h1 className="text-base font-bold mt-2 mb-1" {...props} />,
-                h2: ({node, ...props}) => <h2 className="text-base font-bold mt-2 mb-1" {...props} />,
-                h3: ({node, ...props}) => <h3 className="text-base font-bold mt-2 mb-1" {...props} />,
-                h4: ({node, ...props}) => <h4 className="text-base font-bold mt-2 mb-1" {...props} />,
-                h5: ({node, ...props}) => <h5 className="text-base font-bold mt-2 mb-1" {...props} />,
-                h6: ({node, ...props}) => <h6 className="text-base font-bold mt-2 mb-1" {...props} />,
-              }}
-            >
-              {message.content}
-            </ReactMarkdown>
-          )}
-        </div>
-        
-        {/* Response Options */}
-        {message.responseOptions && (
-          <div className="mt-3 space-y-2">
-            {message.responseOptions.map((option, index) => (
-              <button
-                key={index}
-                onClick={() => onOptionSelected && onOptionSelected(option.value)}
-                className="w-full py-2 px-3 bg-white text-blue-600 hover:bg-blue-50 rounded text-sm text-left transition-colors"
+        {message.type === "ai" ? (
+          <div>
+            <div className="prose prose-sm max-w-none">
+              <ReactMarkdown
+                components={{
+                  // Remove unused node parameters
+                  p: ({ children }) => (
+                    <p className="mb-2 last:mb-0">{children}</p>
+                  ),
+                  ul: ({ children }) => (
+                    <ul className="list-disc pl-5 mb-2 last:mb-0">
+                      {children}
+                    </ul>
+                  ),
+                  ol: ({ children }) => (
+                    <ol className="list-decimal pl-5 mb-2 last:mb-0">
+                      {children}
+                    </ol>
+                  ),
+                  li: ({ children }) => (
+                    <li className="mb-1 last:mb-0">{children}</li>
+                  ),
+                  strong: ({ children }) => (
+                    <strong className="font-semibold">{children}</strong>
+                  ),
+                  h3: ({ children }) => (
+                    <h3 className="text-lg font-semibold mb-2">{children}</h3>
+                  ),
+                  h4: ({ children }) => (
+                    <h4 className="text-base font-semibold mb-1">{children}</h4>
+                  ),
+                  a: ({ children, href }) => (
+                    <a href={href} className="text-blue-500 hover:underline">
+                      {children}
+                    </a>
+                  ),
+                  img: ({ src, alt }) => (
+                    <div className="my-2">
+                      <Image
+                        src={src || ""}
+                        alt={alt || ""}
+                        width={400}
+                        height={300}
+                        className="rounded max-w-full"
+                        style={{ height: "auto", objectFit: "contain" }}
+                      />
+                    </div>
+                  ),
+                }}
               >
-                {option.text}
-              </button>
-            ))}
-          </div>
-        )}
-        
-        {/* Attachments */}
-        {message.attachments && (
-          <div className="mt-3 space-y-2">
-            {message.attachments.map((attachment, index) => (
-              <div key={index} className="bg-white rounded p-2 border border-gray-200">
-                {attachment.type === 'image' && (
-                  <img 
-                    src={attachment.url} 
-                    alt={attachment.title} 
-                    className="w-full h-auto rounded"
-                  />
-                )}
-                <div className="mt-1">
-                  <p className="text-xs font-medium">{attachment.title}</p>
-                  {attachment.description && (
-                    <p className="text-xs text-gray-500">{attachment.description}</p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-        
-        <div className="mt-1 text-right">
-          <span className="text-xs opacity-70">
-            {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-          </span>
-        </div>
-      </div>
-    </motion.div>
-  );
-});
+                {message.content}
+              </ReactMarkdown>
+            </div>
 
-ChatMessage.displayName = 'ChatMessage';
+            {message.responseOptions && message.responseOptions.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {message.responseOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() =>
+                      onOptionSelected && onOptionSelected(option.value)
+                    }
+                    className="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    {option.text}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <p>{message.content}</p>
+        )}
+      </div>
+    </div>
+  );
+};
 
 // AI Thinking Indicator - removed clientId dependency
 const AIThinkingIndicator: React.FC = () => {
@@ -724,4 +949,4 @@ const AIThinkingIndicator: React.FC = () => {
   );
 };
 
-export default AIAssistantPanel; 
+export default AIAssistantPanel;

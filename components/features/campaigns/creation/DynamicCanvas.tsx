@@ -1,18 +1,18 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, Suspense, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useDemoState } from '@/lib/redux/hooks';
-import { useRouter } from 'next/navigation';
-import ReactConfetti from 'react-confetti';
-import { buildDemoUrl } from '@/lib/utils';
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useDemoState } from "@/lib/redux/hooks";
+import { useRouter } from "next/navigation";
+import ReactConfetti from "react-confetti";
+import { buildDemoUrl } from "@/lib/utils";
 
 // Importing views statically to fix module not found errors
-import BusinessIntelligenceView from './views/BusinessIntelligenceView';
-import CampaignSelectionGallery from './views/CampaignSelectionGallery';
-import AssetCreationWorkshop from './views/AssetCreationWorkshop';
-import PerformancePredictionDashboard from './views/PerformancePredictionDashboard';
-import LaunchControlCenter from './views/LaunchControlCenter';
+import BusinessIntelligenceView from "./views/BusinessIntelligenceView";
+import CampaignSelectionGallery from "./views/CampaignSelectionGallery";
+import AssetCreationWorkshop from "./views/AssetCreationWorkshop";
+import PerformancePredictionDashboard from "./views/PerformancePredictionDashboard";
+import LaunchControlCenter from "./views/LaunchControlCenter";
 
 // Type Definitions
 export interface BusinessData {
@@ -64,7 +64,7 @@ export interface CampaignOption {
 
 export interface CampaignAsset {
   id: string;
-  type: 'primary' | 'social' | 'promotional';
+  type: "primary" | "social" | "promotional";
   format: string;
   url: string;
   dimensions?: string;
@@ -127,391 +127,738 @@ export interface PerformancePredictions {
   }>;
 }
 
-type ViewType = 
-  'business-intelligence' | 
-  'campaign-selection' | 
-  'asset-creation' | 
-  'performance-prediction' | 
-  'launch-control';
+type ViewType =
+  | "business-intelligence"
+  | "campaign-selection"
+  | "asset-creation"
+  | "performance-prediction"
+  | "launch-control";
 
 interface DynamicCanvasProps {
   initialView?: ViewType;
 }
 
-const DynamicCanvas: React.FC<DynamicCanvasProps> = ({ initialView = 'business-intelligence' }) => {
+const DynamicCanvas: React.FC<DynamicCanvasProps> = ({
+  initialView = "business-intelligence",
+}) => {
   const { clientId } = useDemoState();
   const router = useRouter();
   const [currentView, setCurrentView] = useState<ViewType>(initialView);
-  const [selectedCampaign, setSelectedCampaign] = useState<CampaignOption | null>(null);
+  const [selectedCampaign, setSelectedCampaign] =
+    useState<CampaignOption | null>(null);
   const [campaignAssets, setCampaignAssets] = useState<CampaignAsset[]>([]);
   const [offerDetails, setOfferDetails] = useState<OfferDetails>({
-    title: '',
-    description: '',
+    title: "",
+    description: "",
     discount: 0,
     items: [],
-    terms: '',
-    code: '',
+    terms: "",
+    code: "",
     budget: {
       total: 750,
-      dailyAverage: 25
-    }
+      dailyAverage: 25,
+    },
   });
   const [campaignParams, setCampaignParams] = useState({
     targeting: {
-      audience: 'Families within 5 miles',
+      audience: "Families within 5 miles",
       radius: 5,
-      days: ['monday', 'tuesday', 'wednesday', 'thursday'],
-      timeRange: '4pm-8pm'
+      days: ["monday", "tuesday", "wednesday", "thursday"],
+      timeRange: "4pm-8pm",
     },
     schedule: {
       startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // One week from now
       endDate: new Date(Date.now() + 37 * 24 * 60 * 60 * 1000), // One month after start
-      duration: 30
+      duration: 30,
     },
     offerDetails: {
-      name: 'Family Dinner Special',
+      name: "Family Dinner Special",
       price: 29.99,
-      items: ['Large Pizza', 'Breadsticks', '2-Liter Soda'],
-      discountPercentage: 20
-    }
+      items: ["Large Pizza", "Breadsticks", "2-Liter Soda"],
+      discountPercentage: 20,
+    },
   });
   const [showConfetti, setShowConfetti] = useState(false);
   const [windowSize, setWindowSize] = useState({
-    width: typeof window !== 'undefined' ? window.innerWidth : 0,
-    height: typeof window !== 'undefined' ? window.innerHeight : 0
+    width: typeof window !== "undefined" ? window.innerWidth : 0,
+    height: typeof window !== "undefined" ? window.innerHeight : 0,
   });
-  
+
   // Step numbers for visual reference
   const viewSteps: { [key in ViewType]: number } = {
-    'business-intelligence': 1,
-    'campaign-selection': 2,
-    'asset-creation': 3,
-    'performance-prediction': 4,
-    'launch-control': 5
+    "business-intelligence": 1,
+    "campaign-selection": 2,
+    "asset-creation": 3,
+    "performance-prediction": 4,
+    "launch-control": 5,
   };
-  
-  // Mock business data for Deacon's Pizza
-  const mockBusinessData: BusinessData = {
-    salesByDay: {
-      'Monday': 1200,
-      'Tuesday': 1350,
-      'Wednesday': 1500,
-      'Thursday': 1800,
-      'Friday': 3200,
-      'Saturday': 3800,
-      'Sunday': 2500
-    },
-    performanceTrend: [
-      { week: 'Week 1', sales: 12000, orders: 450 },
-      { week: 'Week 2', sales: 13500, orders: 470 },
-      { week: 'Week 3', sales: 11000, orders: 410 },
-      { week: 'Week 4', sales: 14500, orders: 510 },
-      { week: 'Week 5', sales: 15200, orders: 550 }
-    ],
-    competitorActivity: [
-      { month: 'Jan', ourPromos: 2, competitorPromos: 3 },
-      { month: 'Feb', ourPromos: 1, competitorPromos: 4 },
-      { month: 'Mar', ourPromos: 3, competitorPromos: 2 },
-      { month: 'Apr', ourPromos: 2, competitorPromos: 5 },
-      { month: 'May', ourPromos: 1, competitorPromos: 6 }
-    ],
-    customerSegments: [
-      { segment: 'Families', value: 45 },
-      { segment: 'Singles', value: 25 },
-      { segment: 'Students', value: 15 },
-      { segment: 'Seniors', value: 15 }
-    ],
-    insights: {
-      salesByDay: "Weekday dinner sales (Mon-Thu) are 55% lower than weekends. Perfect opportunity for targeted promotion.",
-      performanceTrend: "Monthly dip noted. Timely promotion could smooth revenue curve.",
-      competitorActivity: "Competitor promos increasing. Unique offer needed to stand out.",
-      customerSegments: "Families: 45% of weekend customers, only 22% of weekdays. Major opportunity."
-    },
-    marketingOpportunities: [
+
+  // Determine mock data based on client ID
+  const mockBusinessData: BusinessData = useMemo(() => {
+    if (clientId === "seven-eleven") {
+      return {
+        salesByDay: {
+          Monday: 8200,
+          Tuesday: 7950,
+          Wednesday: 8100,
+          Thursday: 8500,
+          Friday: 12200,
+          Saturday: 15800,
+          Sunday: 11500,
+        },
+        performanceTrend: [
+          { week: "Week 1", sales: 72500, orders: 5820 },
+          { week: "Week 2", sales: 68400, orders: 5472 },
+          { week: "Week 3", sales: 74300, orders: 5944 },
+          { week: "Week 4", sales: 71900, orders: 5752 },
+        ],
+        competitorActivity: [
+          { month: "Jan", ourPromos: 2, competitorPromos: 5 },
+          { month: "Feb", ourPromos: 1, competitorPromos: 4 },
+          { month: "Mar", ourPromos: 3, competitorPromos: 6 },
+          { month: "Apr", ourPromos: 2, competitorPromos: 7 },
+          { month: "May", ourPromos: 2, competitorPromos: 8 },
+          { month: "Jun", ourPromos: 3, competitorPromos: 5 },
+        ],
+        customerSegments: [
+          { segment: "Families", value: 35 },
+          { segment: "Young Adults", value: 28 },
+          { segment: "Seniors", value: 12 },
+          { segment: "Business", value: 25 },
+        ],
+        insights: {
+          salesByDay:
+            "Weekday sales are significantly lower than weekend sales, with Tuesday showing the lowest performance",
+          performanceTrend:
+            "Overall sales are stable with weekly fluctuations of 5-8%",
+          competitorActivity:
+            "Competitor promotional activity has increased 35% in the last quarter",
+          customerSegments:
+            "Families and young adults are your primary customer segments",
+        },
+        marketingOpportunities: [
+          {
+            title: "Weekday Delivery Boost",
+            description:
+              "Create a weekday-only promotion to drive 7NOW delivery service usage during slower days",
+            impact: "High",
+            difficulty: "Medium",
+          },
+          {
+            title: "Family Value Bundle",
+            description:
+              "Bundle popular family items with special pricing for the family segment",
+            impact: "High",
+            difficulty: "Low",
+          },
+          {
+            title: "App-Exclusive Deals",
+            description:
+              "Drive app downloads with special deals only available through the 7-Eleven app",
+            impact: "Medium",
+            difficulty: "Low",
+          },
+        ],
+      };
+    } else {
+      // Default Deacon's Pizza data
+      return {
+        salesByDay: {
+          Monday: 1200,
+          Tuesday: 1350,
+          Wednesday: 1500,
+          Thursday: 1800,
+          Friday: 3200,
+          Saturday: 3800,
+          Sunday: 2500,
+        },
+        performanceTrend: [
+          { week: "Week 1", sales: 15200, orders: 328 },
+          { week: "Week 2", sales: 14700, orders: 312 },
+          { week: "Week 3", sales: 16100, orders: 347 },
+          { week: "Week 4", sales: 15800, orders: 335 },
+        ],
+        competitorActivity: [
+          { month: "Jan", ourPromos: 1, competitorPromos: 3 },
+          { month: "Feb", ourPromos: 1, competitorPromos: 2 },
+          { month: "Mar", ourPromos: 2, competitorPromos: 4 },
+          { month: "Apr", ourPromos: 1, competitorPromos: 3 },
+          { month: "May", ourPromos: 1, competitorPromos: 4 },
+          { month: "Jun", ourPromos: 2, competitorPromos: 3 },
+        ],
+        customerSegments: [
+          { segment: "Families", value: 42 },
+          { segment: "Young Adults", value: 23 },
+          { segment: "Seniors", value: 15 },
+          { segment: "Business", value: 20 },
+        ],
+        insights: {
+          salesByDay:
+            "Weekday sales are significantly lower than weekend sales, with Monday showing the lowest performance",
+          performanceTrend:
+            "Sales have been stable with a slight upward trend in the last month",
+          competitorActivity:
+            "Competitors run 2-3x more promotions than you do",
+          customerSegments: "Families are your strongest customer segment",
+        },
+        marketingOpportunities: [
+          {
+            title: "Weekday Family Dinner Deal",
+            description:
+              "Create a family bundle promotion for weekday evenings to drive traffic during slower periods",
+            impact: "High",
+            difficulty: "Low",
+          },
+          {
+            title: "Competitor Price Match",
+            description:
+              "Offer to match competitors' prices or coupons to retain price-sensitive customers",
+            impact: "Medium",
+            difficulty: "Medium",
+          },
+          {
+            title: "Loyalty Program Enhancement",
+            description:
+              "Add new tiers or rewards to your loyalty program to increase repeat visits",
+            impact: "High",
+            difficulty: "High",
+          },
+        ],
+      };
+    }
+  }, [clientId]);
+
+  // Generate mock campaign options based on client ID
+  const mockCampaignOptions: CampaignOption[] = useMemo(() => {
+    if (clientId === "seven-eleven") {
+      return [
+        {
+          id: "se-campaign-1",
+          name: "7NOW Weekday Delivery Special",
+          description:
+            "Drive delivery orders during weekdays with special pricing and free delivery promotion",
+          targetAudience: "Convenience shoppers within delivery radius",
+          primaryImage: "/images/campaigns/seven-eleven/campaign1.jpg",
+          estimatedReach: {
+            min: 12000,
+            max: 15000,
+          },
+          conversionRate: {
+            min: 2.8,
+            max: 3.5,
+          },
+          recommended: true,
+        },
+        {
+          id: "se-campaign-2",
+          name: "Family Bundle Meal Deal",
+          description:
+            "Complete meal bundles for families at special pricing with mix-and-match options",
+          targetAudience: "Families looking for convenient meal solutions",
+          primaryImage: "/images/campaigns/seven-eleven/campaign2.jpg",
+          estimatedReach: {
+            min: 8000,
+            max: 10000,
+          },
+          conversionRate: {
+            min: 4.2,
+            max: 5.0,
+          },
+          recommended: false,
+        },
+        {
+          id: "se-campaign-3",
+          name: "App-Exclusive Rewards Program",
+          description:
+            "Special offers and points exclusively for mobile app users to drive app adoption",
+          targetAudience: "Smartphone users who visit stores regularly",
+          primaryImage: "/images/campaigns/seven-eleven/campaign3.jpg",
+          estimatedReach: {
+            min: 20000,
+            max: 25000,
+          },
+          conversionRate: {
+            min: 1.5,
+            max: 2.2,
+          },
+          recommended: false,
+        },
+      ];
+    } else {
+      // Default Deacon's Pizza campaign options
+      return [
+        {
+          id: "campaign-1",
+          name: "Family Dinner Bundle",
+          description:
+            "Complete meal package for families at an attractive price point",
+          targetAudience: "Families with children",
+          primaryImage: "/images/campaigns/deacons/campaign1.jpg",
+          estimatedReach: {
+            min: 3500,
+            max: 4500,
+          },
+          conversionRate: {
+            min: 4.5,
+            max: 5.8,
+          },
+          recommended: true,
+        },
+        {
+          id: "campaign-2",
+          name: "Weekday BOGO Pizza",
+          description:
+            "Buy one, get one free pizza deal valid Monday through Thursday",
+          targetAudience: "Value-conscious customers",
+          primaryImage: "/images/campaigns/deacons/campaign2.jpg",
+          estimatedReach: {
+            min: 5000,
+            max: 6000,
+          },
+          conversionRate: {
+            min: 3.2,
+            max: 4.1,
+          },
+          recommended: false,
+        },
+        {
+          id: "campaign-3",
+          name: "Game Night Special",
+          description:
+            "Sports-themed package ideal for watching games with friends",
+          targetAudience: "Sports fans and group gatherings",
+          primaryImage: "/images/campaigns/deacons/campaign3.jpg",
+          estimatedReach: {
+            min: 2800,
+            max: 3600,
+          },
+          conversionRate: {
+            min: 3.8,
+            max: 4.7,
+          },
+          recommended: false,
+        },
+      ];
+    }
+  }, [clientId]);
+
+  // Initialize mock assets
+  const mockCampaignAssets: CampaignAsset[] = useMemo(() => {
+    const basePath =
+      clientId === "seven-eleven"
+        ? "/images/campaigns/seven-eleven/assets/"
+        : "/images/campaigns/deacons/assets/";
+
+    return [
       {
-        title: "Weekday Family Dinner Special",
-        description: "Create a special family meal deal valid Monday-Thursday to drive traffic during slower weekdays",
-        impact: "High",
-        difficulty: "Low"
+        id: "asset-1",
+        type: "primary",
+        format: "jpg",
+        url: `${basePath}hero.jpg`,
+        dimensions: "1200x800",
       },
       {
-        title: "Student Discount Program",
-        description: "Partner with local colleges to offer exclusive discounts to students during non-peak hours",
-        impact: "Medium",
-        difficulty: "Medium"
+        id: "asset-2",
+        type: "social",
+        format: "jpg",
+        url: `${basePath}social-instagram.jpg`,
+        dimensions: "1080x1080",
       },
       {
-        title: "Loyalty Program Enhancement",
-        description: "Add special bonuses for customers who visit during traditionally slower periods",
-        impact: "High",
-        difficulty: "Medium"
-      }
-    ]
-  };
-  
-  // Mock campaign options
-  const mockCampaignOptions: CampaignOption[] = [
-    {
-      id: 'family-weekday-deal',
-      name: 'Family Weekday Special',
-      description: 'Boost your weekday dinner sales with this family-focused promotion, offering a complete meal at a special price.',
-      targetAudience: 'Families within 5 miles',
-      primaryImage: '/images/pizza 1.png',
-      estimatedReach: { min: 3500, max: 5000 },
-      conversionRate: { min: 2.5, max: 4.2 },
-      recommended: true
-    },
-    {
-      id: 'two-for-tuesday',
-      name: 'Two-for-Tuesday Deal',
-      description: 'Drive traffic on your slowest day with a buy-one-get-one pizza offer that\'s hard to resist.',
-      targetAudience: 'Value-seeking customers',
-      primaryImage: '/images/pizza 2.png',
-      estimatedReach: { min: 2800, max: 4200 },
-      conversionRate: { min: 3.0, max: 5.5 },
-      recommended: false
-    },
-    {
-      id: 'lunch-rush-special',
-      name: 'Lunch Rush Special',
-      description: 'Capture the lunch crowd with a quick-service personal pizza and drink combo at a competitive price.',
-      targetAudience: 'Office workers, students',
-      primaryImage: '/images/pizza 3.png',
-      estimatedReach: { min: 4000, max: 6500 },
-      conversionRate: { min: 1.8, max: 3.2 },
-      recommended: false
-    }
-  ];
-  
-  // Mock campaign assets
-  const mockCampaignAssets: CampaignAsset[] = [
-    {
-      id: 'primary-banner',
-      type: 'primary',
-      format: 'banner',
-      url: '/images/pizza 1.png',
-      dimensions: '1200x600'
-    },
-    {
-      id: 'primary-square',
-      type: 'primary',
-      format: 'square',
-      url: '/images/pizza 2.png',
-      dimensions: '800x800'
-    },
-    {
-      id: 'social-facebook',
-      type: 'social',
-      format: 'facebook',
-      url: '/images/pizza promo 1.png',
-      dimensions: '1200x630',
-      placeholder: 'Family dinner time just got better! 20% OFF our Family Weekday Special. Use code FAMILY24 at checkout.'
-    },
-    {
-      id: 'social-instagram',
-      type: 'social',
-      format: 'instagram',
-      url: '/images/pizza promo 2.png',
-      dimensions: '1080x1080',
-      placeholder: 'Make weeknights special with our Family Dinner Deal! 🍕 Limited time offer - 20% OFF! #DeaconsPizza #FamilyDinner'
-    },
-    {
-      id: 'promotional-email',
-      type: 'promotional',
-      format: 'email',
-      url: '/images/pizza 3.png',
-      dimensions: '600x300',
-      placeholder: `Subject: Weeknight Family Dinner Made Easy - 20% OFF Special Deal!
-
-Dear Valued Customer,
-
-Weeknights just got more delicious! Introducing our Family Weekday Special - the perfect dinner solution for busy families.
-
-🍕 Large 2-topping pizza
-🥖 Fresh-baked breadsticks
-🥤 2-liter soda
-
-All for just $24.99 (20% savings!)
-Use code: FAMILY24 at checkout
-
-Valid Monday-Thursday from 4pm-8pm. 
-Order online or call us at (555) 123-4567.
-
-Enjoy!
-Deacon's Pizza Team`
-    }
-  ];
-  
-  // Mock offer details
-  const mockOfferDetails: OfferDetails = {
-    title: 'Family Weekday Special',
-    description: 'Get a large 2-topping pizza, breadsticks, and a 2-liter soda for just $24.99',
-    discount: 20,
-    items: ['Large 2-topping pizza', 'Order of breadsticks', '2-liter soda'],
-    terms: 'Valid Monday-Thursday from 4pm-8pm. Not valid with other offers.',
-    code: 'FAMILY24',
-    budget: {
-      total: 750,
-      dailyAverage: 25
-    }
-  };
-  
-  // Mock performance predictions
-  const mockPerformancePredictions: PerformancePredictions = {
-    views: { min: 3500, max: 5000 },
-    viewsTrend: 15,
-    redemptions: { min: 175, max: 250 },
-    redemptionsTrend: 22,
-    revenue: { min: 4375, max: 6250 },
-    revenueTrend: 18,
-    costPerAcquisition: { min: 3.50, max: 5.00 },
-    costTrend: -12,
-    revenueTimeline: [
-      { date: 'Week 1', withCampaign: 1500, withoutCampaign: 1200 },
-      { date: 'Week 2', withCampaign: 1650, withoutCampaign: 1250 },
-      { date: 'Week 3', withCampaign: 1700, withoutCampaign: 1200 },
-      { date: 'Week 4', withCampaign: 1800, withoutCampaign: 1300 }
-    ],
-    customerFlow: [
-      { stage: 'Views', count: 4000 },
-      { stage: 'Clicks', count: 800 },
-      { stage: 'Redemptions', count: 200 },
-      { stage: 'Repeat Customers', count: 60 }
-    ],
-    competitiveComparison: [
-      { metric: 'Click Rate', value: 20, benchmark: 15 },
-      { metric: 'Conversion', value: 25, benchmark: 18 },
-      { metric: 'ROI', value: 320, benchmark: 250 }
-    ],
-    suggestions: [
-      {
-        id: 'add-friday',
-        title: 'Include Friday Evening',
-        description: 'Expand your promotion to include Friday 4-6pm (before peak dinner)',
-        impact: 15
+        id: "asset-3",
+        type: "social",
+        format: "jpg",
+        url: `${basePath}social-facebook.jpg`,
+        dimensions: "1200x630",
       },
       {
-        id: 'increase-radius',
-        title: 'Expand Geographic Targeting',
-        description: 'Increase radius from 5 to 7 miles to capture more potential customers',
-        impact: 22
-      }
-    ]
-  };
-  
-  // Mock launch details
-  const mockLaunchDetails = {
-    name: 'Family Weekday Special',
-    targetAudience: 'Families within 5 miles',
-    geographicReach: '5 mile radius from store',
-    schedule: {
-      startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      endDate: new Date(Date.now() + 37 * 24 * 60 * 60 * 1000),
-      activeDays: ['monday', 'tuesday', 'wednesday', 'thursday']
-    },
-    budget: {
-      total: 750,
-      dailyAverage: 25
-    },
-    assets: [
-      { type: 'Banner Ad', url: '/images/pizza 1.png', status: 'ready' as 'ready' | 'pending' | 'failed' },
-      { type: 'Facebook Post', url: '/images/pizza promo 1.png', status: 'ready' as 'ready' | 'pending' | 'failed' },
-      { type: 'Instagram Post', url: '/images/pizza promo 2.png', status: 'ready' as 'ready' | 'pending' | 'failed' },
-      { type: 'Email Template', url: '/images/pizza 3.png', status: 'ready' as 'ready' | 'pending' | 'failed' },
-      { type: 'SMS Message', url: '', status: 'pending' as 'ready' | 'pending' | 'failed' }
-    ],
-    metrics: {
-      estimatedReach: { min: 3500, max: 5000 },
-      predictedEngagement: { min: 700, max: 1000 },
-      estimatedRedemptions: { min: 175, max: 250 }
+        id: "asset-4",
+        type: "promotional",
+        format: "jpg",
+        url: `${basePath}email.jpg`,
+        dimensions: "600x800",
+      },
+      {
+        id: "asset-5",
+        type: "promotional",
+        format: "jpg",
+        url: `${basePath}store-signage.jpg`,
+        dimensions: "800x1200",
+      },
+    ];
+  }, [clientId]);
+
+  // Initialize mock offer details
+  const mockOfferDetails: OfferDetails = useMemo(() => {
+    if (clientId === "seven-eleven") {
+      return {
+        title: "7NOW Weekday Delivery Special",
+        description:
+          "Get free delivery and special pricing on orders placed Monday through Thursday",
+        discount: 30,
+        items: [
+          "Free Delivery",
+          "Buy 2 Get 1 Free on Select Items",
+          "7Rewards Points Bonus",
+        ],
+        terms:
+          "Valid on orders $15+. Limited to delivery radius. May not be combined with other offers.",
+        code: "7NOWDEAL",
+        budget: {
+          total: 12000,
+          dailyAverage: 400,
+        },
+      };
+    } else {
+      return {
+        title: "Family Dinner Bundle",
+        description: "Complete meal for a family of four at a special price",
+        discount: 25,
+        items: [
+          "Large 2-Topping Pizza",
+          "Breadsticks",
+          "2-Liter Soda",
+          "Side Salad",
+        ],
+        terms:
+          "Available Mon-Thu only. Not valid with other offers. Price may vary by location.",
+        code: "FAMILY25",
+        budget: {
+          total: 5000,
+          dailyAverage: 166,
+        },
+      };
     }
-  };
-  
+  }, [clientId]);
+
+  // Initialize mock performance predictions
+  const mockPerformancePredictions: PerformancePredictions = useMemo(() => {
+    if (clientId === "seven-eleven") {
+      return {
+        views: {
+          min: 12000,
+          max: 15000,
+        },
+        viewsTrend: 8.4,
+        redemptions: {
+          min: 360,
+          max: 480,
+        },
+        redemptionsTrend: 12.6,
+        revenue: {
+          min: 7200,
+          max: 9600,
+        },
+        revenueTrend: 15.2,
+        costPerAcquisition: {
+          min: 2.1,
+          max: 2.8,
+        },
+        costTrend: -4.5,
+        revenueTimeline: Array(14)
+          .fill(0)
+          .map((_, i) => ({
+            date: `Day ${i + 1}`,
+            withCampaign: 600 + Math.floor(Math.random() * 300),
+            withoutCampaign: 450 + Math.floor(Math.random() * 100),
+          })),
+        customerFlow: [
+          { stage: "Views", count: 14000 },
+          { stage: "Clicks", count: 3800 },
+          { stage: "App Open", count: 1900 },
+          { stage: "Add to Cart", count: 950 },
+          { stage: "Purchase", count: 420 },
+        ],
+        competitiveComparison: [
+          { metric: "Offer Appeal", value: 7.8, benchmark: 6.4 },
+          { metric: "Value Perception", value: 8.2, benchmark: 7.1 },
+          { metric: "Conversion Rate", value: 3.0, benchmark: 2.2 },
+          { metric: "Customer Satisfaction", value: 8.5, benchmark: 7.3 },
+        ],
+        suggestions: [
+          {
+            id: "suggestion-1",
+            title: "Extend to Thursday",
+            description:
+              "Include Thursday in the promotion to capture pre-weekend planning",
+            impact: 18,
+          },
+          {
+            id: "suggestion-2",
+            title: "Add Push Notification",
+            description:
+              "Send targeted push notifications to users who order regularly",
+            impact: 12,
+          },
+          {
+            id: "suggestion-3",
+            title: "Increase Radius",
+            description:
+              "Expand delivery radius by 1 mile for this promotion only",
+            impact: 8,
+          },
+        ],
+      };
+    } else {
+      return {
+        views: {
+          min: 3500,
+          max: 4500,
+        },
+        viewsTrend: 12.5,
+        redemptions: {
+          min: 175,
+          max: 225,
+        },
+        redemptionsTrend: 18.2,
+        revenue: {
+          min: 5250,
+          max: 6750,
+        },
+        revenueTrend: 22.7,
+        costPerAcquisition: {
+          min: 2.8,
+          max: 3.5,
+        },
+        costTrend: -8.3,
+        revenueTimeline: Array(14)
+          .fill(0)
+          .map((_, i) => ({
+            date: `Day ${i + 1}`,
+            withCampaign: 450 + Math.floor(Math.random() * 200),
+            withoutCampaign: 300 + Math.floor(Math.random() * 100),
+          })),
+        customerFlow: [
+          { stage: "Views", count: 4000 },
+          { stage: "Clicks", count: 1500 },
+          { stage: "Menu Open", count: 800 },
+          { stage: "Add to Cart", count: 400 },
+          { stage: "Purchase", count: 200 },
+        ],
+        competitiveComparison: [
+          { metric: "Offer Appeal", value: 8.2, benchmark: 6.8 },
+          { metric: "Value Perception", value: 8.7, benchmark: 7.3 },
+          { metric: "Conversion Rate", value: 5.0, benchmark: 3.8 },
+          { metric: "Customer Satisfaction", value: 9.1, benchmark: 7.7 },
+        ],
+        suggestions: [
+          {
+            id: "suggestion-1",
+            title: "Include Thursday",
+            description: "Add Thursday to capture more weekday family dinners",
+            impact: 18,
+          },
+          {
+            id: "suggestion-2",
+            title: "Add Dessert Upsell",
+            description: "Offer a discounted dessert with the bundle",
+            impact: 15,
+          },
+          {
+            id: "suggestion-3",
+            title: "Double Social Media Budget",
+            description: "Increase social media promotion budget",
+            impact: 12,
+          },
+        ],
+      };
+    }
+  }, [clientId]);
+
   // Window resize handler
   const handleResize = useCallback(() => {
     setWindowSize({
       width: window.innerWidth,
-      height: window.innerHeight
+      height: window.innerHeight,
     });
   }, []);
-  
+
   // Get window size for confetti
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       setWindowSize({
         width: window.innerWidth,
-        height: window.innerHeight
+        height: window.innerHeight,
       });
-      window.addEventListener('resize', handleResize);
+      window.addEventListener("resize", handleResize);
     }
 
     return () => {
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('resize', handleResize);
+      if (typeof window !== "undefined") {
+        window.removeEventListener("resize", handleResize);
       }
     };
   }, [handleResize]);
-  
+
   // Handle campaign selection
-  const handleCampaignSelect = useCallback((campaign: CampaignOption) => {
-    setSelectedCampaign(campaign);
-    setCampaignAssets(mockCampaignAssets);
-    setOfferDetails(mockOfferDetails);
-    setCurrentView('asset-creation');
-  }, [mockCampaignAssets, mockOfferDetails]);
-  
+  const handleCampaignSelect = useCallback(
+    (campaign: CampaignOption) => {
+      setSelectedCampaign(campaign);
+      setCampaignAssets(mockCampaignAssets);
+      setOfferDetails(mockOfferDetails);
+      setCurrentView("asset-creation");
+    },
+    [mockCampaignAssets, mockOfferDetails]
+  );
+
   // Handle parameter updates for performance prediction
-  const handleParamUpdate = useCallback((key: string, value: any) => {
-    const keyParts = key.split('.');
-    
-    if (keyParts.length === 2) {
-      const [category, param] = keyParts;
-      setCampaignParams(prev => ({
-        ...prev,
-        [category]: {
-          ...prev[category as keyof typeof prev],
-          [param]: value
-        }
-      }));
-    }
-  }, []);
-  
-  // Handle campaign launch
+  const handleParamUpdate = useCallback(
+    (key: string, value: string | number | boolean | string[]) => {
+      const keyParts = key.split(".");
+
+      if (keyParts.length === 2) {
+        const [category, param] = keyParts;
+        setCampaignParams((prev) => ({
+          ...prev,
+          [category]: {
+            ...prev[category as keyof typeof prev],
+            [param]: value,
+          },
+        }));
+      }
+    },
+    []
+  );
+
+  // Handle launch with appropriate redirect
   const handleLaunch = useCallback(() => {
-    console.log('Campaign launched!');
-    
+    console.log("Campaign launched!");
+
     // Show confetti
     setShowConfetti(true);
-    
+
     // Wait a bit then redirect to dashboard with new campaign added
     setTimeout(() => {
-      router.push(`${buildDemoUrl('deacons', 'pizza')}?from=campaign-launch`);
+      if (clientId === "seven-eleven") {
+        router.push(`${buildDemoUrl("seven-eleven", "")}?from=campaign-launch`);
+      } else {
+        router.push(`${buildDemoUrl("deacons", "pizza")}?from=campaign-launch`);
+      }
     }, 3000);
-  }, [router]);
-  
+  }, [router, clientId]);
+
+  // Initialize mock launch details
+  const mockLaunchDetails = useMemo(() => {
+    if (clientId === "seven-eleven") {
+      return {
+        name: "7NOW Weekday Delivery Special",
+        targetAudience: "Convenience shoppers within delivery radius",
+        geographicReach: "Delivery service radius",
+        schedule: {
+          startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          endDate: new Date(Date.now() + 37 * 24 * 60 * 60 * 1000),
+          activeDays: ["monday", "tuesday", "wednesday", "thursday"],
+        },
+        budget: {
+          total: 12000,
+          dailyAverage: 400,
+        },
+        assets: [
+          {
+            type: "Hero Banner",
+            url: "/images/campaigns/seven-eleven/assets/hero.jpg",
+            status: "ready" as "ready" | "pending" | "failed",
+          },
+          {
+            type: "Social Media",
+            url: "/images/campaigns/seven-eleven/assets/social-instagram.jpg",
+            status: "ready" as "ready" | "pending" | "failed",
+          },
+          {
+            type: "Email Template",
+            url: "/images/campaigns/seven-eleven/assets/email.jpg",
+            status: "ready" as "ready" | "pending" | "failed",
+          },
+          {
+            type: "Store Signage",
+            url: "/images/campaigns/seven-eleven/assets/store-signage.jpg",
+            status: "ready" as "ready" | "pending" | "failed",
+          },
+          {
+            type: "App Notification",
+            url: "",
+            status: "pending" as "ready" | "pending" | "failed",
+          },
+        ],
+        metrics: {
+          estimatedReach: { min: 12000, max: 15000 },
+          predictedEngagement: { min: 3800, max: 4600 },
+          estimatedRedemptions: { min: 360, max: 480 },
+        },
+      };
+    } else {
+      return {
+        name: "Family Weekday Special",
+        targetAudience: "Families within 5 miles",
+        geographicReach: "5 mile radius from store",
+        schedule: {
+          startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          endDate: new Date(Date.now() + 37 * 24 * 60 * 60 * 1000),
+          activeDays: ["monday", "tuesday", "wednesday", "thursday"],
+        },
+        budget: {
+          total: 750,
+          dailyAverage: 25,
+        },
+        assets: [
+          {
+            type: "Banner Ad",
+            url: "/images/campaigns/deacons/assets/hero.jpg",
+            status: "ready" as "ready" | "pending" | "failed",
+          },
+          {
+            type: "Facebook Post",
+            url: "/images/campaigns/deacons/assets/social-facebook.jpg",
+            status: "ready" as "ready" | "pending" | "failed",
+          },
+          {
+            type: "Instagram Post",
+            url: "/images/campaigns/deacons/assets/social-instagram.jpg",
+            status: "ready" as "ready" | "pending" | "failed",
+          },
+          {
+            type: "Email Template",
+            url: "/images/campaigns/deacons/assets/email.jpg",
+            status: "ready" as "ready" | "pending" | "failed",
+          },
+          {
+            type: "SMS Message",
+            url: "",
+            status: "pending" as "ready" | "pending" | "failed",
+          },
+        ],
+        metrics: {
+          estimatedReach: { min: 3500, max: 5000 },
+          predictedEngagement: { min: 700, max: 1000 },
+          estimatedRedemptions: { min: 175, max: 250 },
+        },
+      };
+    }
+  }, [clientId]);
+
   // Function to get view title
   const getViewTitle = useCallback((view: ViewType): string => {
-    switch(view) {
-      case 'business-intelligence':
-        return 'Business Intelligence';
-      case 'campaign-selection':
-        return 'Campaign Options';
-      case 'asset-creation':
-        return 'Creative Assets';
-      case 'performance-prediction':
-        return 'Performance Analysis';
-      case 'launch-control':
-        return 'Launch Control';
+    switch (view) {
+      case "business-intelligence":
+        return "Business Intelligence";
+      case "campaign-selection":
+        return "Campaign Options";
+      case "asset-creation":
+        return "Creative Assets";
+      case "performance-prediction":
+        return "Performance Analysis";
+      case "launch-control":
+        return "Launch Control";
     }
   }, []);
-  
+
   // Animation variants
   const viewVariants = {
     initial: { opacity: 0, x: 20 },
     animate: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -20 }
+    exit: { opacity: 0, x: -20 },
   };
-  
+
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {showConfetti && (
@@ -523,14 +870,14 @@ Deacon's Pizza Team`
           gravity={0.15}
         />
       )}
-      
-      <CanvasHeader 
-        title={getViewTitle(currentView)} 
-        currentStep={viewSteps[currentView]} 
+
+      <CanvasHeader
+        title={getViewTitle(currentView)}
+        currentStep={viewSteps[currentView]}
         totalSteps={5}
         className="flex-shrink-0"
       />
-      
+
       <div className="flex-1 overflow-y-auto">
         <AnimatePresence mode="wait">
           <motion.div
@@ -542,38 +889,40 @@ Deacon's Pizza Team`
             transition={{ duration: 0.3 }}
             className="h-full"
           >
-            {currentView === 'business-intelligence' && (
-              <BusinessIntelligenceView 
-                data={mockBusinessData}
-              />
+            {currentView === "business-intelligence" && (
+              <BusinessIntelligenceView data={mockBusinessData} />
             )}
-            
-            {currentView === 'campaign-selection' && (
-              <CampaignSelectionGallery 
+
+            {currentView === "campaign-selection" && (
+              <CampaignSelectionGallery
                 options={mockCampaignOptions}
                 onSelect={handleCampaignSelect}
               />
             )}
-            
-            {currentView === 'asset-creation' && selectedCampaign && (
-              <AssetCreationWorkshop 
+
+            {currentView === "asset-creation" && selectedCampaign && (
+              <AssetCreationWorkshop
                 assets={campaignAssets}
                 offerDetails={offerDetails}
-                onUpdateDetails={(updatedDetails: OfferDetails) => setOfferDetails(updatedDetails)}
-                onRegenerate={(assetId: string) => console.log('Regenerate asset', assetId)}
+                onUpdateDetails={(updatedDetails: OfferDetails) =>
+                  setOfferDetails(updatedDetails)
+                }
+                onRegenerate={(assetId: string) =>
+                  console.log("Regenerate asset", assetId)
+                }
               />
             )}
-            
-            {currentView === 'performance-prediction' && (
-              <PerformancePredictionDashboard 
+
+            {currentView === "performance-prediction" && (
+              <PerformancePredictionDashboard
                 predictions={mockPerformancePredictions}
                 campaignParams={campaignParams}
                 onUpdateParams={handleParamUpdate}
               />
             )}
-            
-            {currentView === 'launch-control' && (
-              <LaunchControlCenter 
+
+            {currentView === "launch-control" && (
+              <LaunchControlCenter
                 campaignDetails={mockLaunchDetails}
                 onLaunch={handleLaunch}
               />
@@ -581,41 +930,53 @@ Deacon's Pizza Team`
           </motion.div>
         </AnimatePresence>
       </div>
-      
+
       <div className="p-4 flex justify-between border-t border-gray-200 flex-shrink-0">
         <button
           onClick={() => {
-            const views: ViewType[] = ['business-intelligence', 'campaign-selection', 'asset-creation', 'performance-prediction', 'launch-control'];
+            const views: ViewType[] = [
+              "business-intelligence",
+              "campaign-selection",
+              "asset-creation",
+              "performance-prediction",
+              "launch-control",
+            ];
             const currentIndex = views.indexOf(currentView);
-            
+
             if (currentIndex > 0) {
               setCurrentView(views[currentIndex - 1]);
             }
           }}
-          disabled={currentView === 'business-intelligence'}
+          disabled={currentView === "business-intelligence"}
           className={`px-4 py-2 rounded-lg ${
-            currentView === 'business-intelligence'
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+            currentView === "business-intelligence"
+              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+              : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
           }`}
         >
           Previous Step
         </button>
-        
+
         <button
           onClick={() => {
-            const views: ViewType[] = ['business-intelligence', 'campaign-selection', 'asset-creation', 'performance-prediction', 'launch-control'];
+            const views: ViewType[] = [
+              "business-intelligence",
+              "campaign-selection",
+              "asset-creation",
+              "performance-prediction",
+              "launch-control",
+            ];
             const currentIndex = views.indexOf(currentView);
-            
+
             if (currentIndex < views.length - 1) {
               setCurrentView(views[currentIndex + 1]);
             }
           }}
-          disabled={currentView === 'launch-control'}
+          disabled={currentView === "launch-control"}
           className={`px-4 py-2 rounded-lg ${
-            currentView === 'launch-control'
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-blue-500 text-white hover:bg-blue-600'
+            currentView === "launch-control"
+              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+              : "bg-blue-500 text-white hover:bg-blue-600"
           }`}
         >
           Next Step
@@ -633,18 +994,20 @@ const CanvasHeader: React.FC<{
   className?: string;
 }> = ({ title, currentStep, totalSteps, className }) => {
   return (
-    <div className={`px-6 py-3 border-b border-gray-200 ${className || ''}`}>
+    <div className={`px-6 py-3 border-b border-gray-200 ${className || ""}`}>
       <div className="flex justify-between items-center mb-2">
         <h2 className="text-xl font-semibold">{title}</h2>
-        <span className="text-sm text-gray-500 bg-white px-2 py-1 rounded-md shadow-sm">Step {currentStep} of {totalSteps}</span>
+        <span className="text-sm text-gray-500 bg-white px-2 py-1 rounded-md shadow-sm">
+          Step {currentStep} of {totalSteps}
+        </span>
       </div>
-      
+
       <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
-        <div 
+        <div
           className="h-full rounded-full transition-all duration-300 ease-in-out"
-          style={{ 
+          style={{
             width: `${(currentStep / totalSteps) * 100}%`,
-            background: 'linear-gradient(to right, #4460F0, #9F7AEA)'
+            background: "linear-gradient(to right, #4460F0, #9F7AEA)",
           }}
         ></div>
       </div>
@@ -652,4 +1015,4 @@ const CanvasHeader: React.FC<{
   );
 };
 
-export default DynamicCanvas; 
+export default DynamicCanvas;

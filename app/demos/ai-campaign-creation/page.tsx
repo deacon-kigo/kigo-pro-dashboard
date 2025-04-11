@@ -8,8 +8,9 @@ import React, {
   useRef,
 } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ChevronLeftIcon } from "@heroicons/react/24/outline";
-import { useDemoActions } from "@/lib/redux/hooks";
+import { useDemoActions, useDemoState } from "@/lib/redux/hooks";
 import { AIAssistantPanel } from "../../../components/features/ai";
 import { DynamicCanvas } from "../../../components/features/campaigns/creation";
 import Card from "@/components/atoms/Card/Card";
@@ -24,8 +25,9 @@ type ViewType =
   | "launch-control";
 
 export default function AICampaignCreation() {
-  // Remove unused router and clientId variables
+  const searchParams = useSearchParams();
   const { setClientId } = useDemoActions();
+  const { clientId, clientName } = useDemoState();
   const [currentView, setCurrentView] = useState<ViewType>(
     "business-intelligence"
   );
@@ -33,6 +35,10 @@ export default function AICampaignCreation() {
 
   // Add initialization ref to ensure the effect only runs once
   const isInitializedRef = useRef(false);
+
+  // Store client parameter to use later for navigation
+  const clientParam = searchParams.get("client") || "deacons";
+  const typeParam = searchParams.get("type") || "";
 
   // Memoize the greeting calculation to avoid recalculation on every render
   const getGreeting = useMemo(() => {
@@ -57,14 +63,29 @@ export default function AICampaignCreation() {
     // Mark as initialized immediately to prevent race conditions
     isInitializedRef.current = true;
 
-    console.log("AICampaignCreation: Initializing once with clientId=deacons");
+    // Use the client parameter from URL or default to "deacons"
+    console.log(
+      `AICampaignCreation: Initializing once with clientId=${clientParam}`
+    );
 
     // Set client ID and greeting only once
-    setClientId("deacons");
+    setClientId(clientParam);
     setGreeting(getGreeting);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Get merchant name for display
+  const merchantName = useMemo(() => {
+    if (clientId === "seven-eleven") return "7-Eleven";
+    if (clientId === "deacons") return "Deacon";
+    return clientName || "Merchant";
+  }, [clientId, clientName]);
+
+  // Get return URL based on client
+  const getDashboardUrl = useCallback(() => {
+    return buildDemoUrl(clientId, clientId === "deacons" ? "pizza" : "");
+  }, [clientId]);
 
   // Handle option selected from AI Assistant Panel - memoize to avoid recreation
   const handleOptionSelected = useCallback((optionId: string) => {
@@ -96,7 +117,7 @@ export default function AICampaignCreation() {
         <div className="max-w-screen-2xl mx-auto">
           <Card className="flex justify-between items-center p-3">
             <Link
-              href={buildDemoUrl("deacons", "pizza")}
+              href={getDashboardUrl()}
               className="flex items-center text-gray-500 hover:text-primary transition-colors"
             >
               <ChevronLeftIcon className="w-5 h-5 mr-1" />
@@ -104,10 +125,11 @@ export default function AICampaignCreation() {
             </Link>
             <div className="text-center">
               <h2 className="text-xl font-bold bg-gradient-to-r from-blue-500 via-indigo-400 to-purple-500 text-transparent bg-clip-text">
-                {greeting}, Deacon
+                {greeting}, {merchantName}
               </h2>
               <p className="text-sm text-gray-500">
-                Let&apos;s create a new marketing campaign
+                Let&apos;s create a new{" "}
+                {typeParam ? typeParam : "marketing campaign"}
               </p>
             </div>
             <div className="w-32"></div> {/* Empty div for alignment */}
