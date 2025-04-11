@@ -1,5 +1,6 @@
 module.exports = {
-  "*.?(m|c)[jt]s?(x)": ["eslint --fix", "prettier --write"],
-  "*.md": ["eslint --fix", "prettier --write"],
+  // Only use prettier for TS/JS files - skip ESLint for demo app
+  "*.?(m|c)[jt]s?(x)": ["prettier --write"],
+  "*.md": ["prettier --write"],
   "*.{json,css}": ["prettier --write"],
 };
