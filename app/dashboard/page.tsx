@@ -1,12 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { DashboardView } from '@/components/features/dashboard';
 import { useDemoState } from '@/lib/redux/hooks';
 import { BellIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
 
-export default function DashboardPage() {
-  const { clientId, role, themeMode } = useDemoState();
+function DashboardContent() {
+  const { clientId, themeMode } = useDemoState();
   
   return (
     <div className={`dashboard-page min-h-screen ${themeMode === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
@@ -31,5 +31,13 @@ export default function DashboardPage() {
         <DashboardView />
       </main>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center h-screen">Loading dashboard...</div>}>
+      <DashboardContent />
+    </Suspense>
   );
 } 
