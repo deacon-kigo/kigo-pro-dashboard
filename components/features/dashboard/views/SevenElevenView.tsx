@@ -213,11 +213,11 @@ export default function SevenElevenView({
   const statsSection = (
     <>
       <Card className="relative overflow-hidden p-4 bg-white shadow-sm hover:shadow transition-shadow duration-200">
-        <div className="absolute top-3 left-3">
-          <div className="p-2 bg-red-50 rounded-lg shadow-sm">
+        <div className="flex items-start">
+          <div className="p-1.5 bg-red-50 rounded-lg shadow-sm mr-3">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-red-600"
+              className="h-5 w-5 text-red-600"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -230,29 +230,32 @@ export default function SevenElevenView({
               />
             </svg>
           </div>
-        </div>
-        <div className="mt-12">
-          <p className="text-sm text-gray-600 font-medium">Active Campaigns</p>
-          <p className="text-3xl font-bold mt-1 text-gray-800">
-            {adjustedStatsData.activeCampaigns.value}
-          </p>
-          <div className="flex items-center mt-2">
-            <span
-              className={`text-xs ${adjustedStatsData.activeCampaigns.increased ? "text-green-500" : "text-red-500"} font-medium`}
-            >
-              {adjustedStatsData.activeCampaigns.increased ? "↑" : "↓"}{" "}
-              {adjustedStatsData.activeCampaigns.change}% vs last month
-            </span>
+          <div className="flex-1">
+            <p className="text-xs text-gray-600 font-medium">
+              Active Campaigns
+            </p>
+            <div className="flex items-baseline justify-between mt-1">
+              <p className="text-2xl font-bold text-gray-800">
+                {adjustedStatsData.activeCampaigns.value}
+              </p>
+              <span
+                className={`text-xs ${adjustedStatsData.activeCampaigns.increased ? "text-green-500" : "text-red-500"} font-medium`}
+              >
+                {adjustedStatsData.activeCampaigns.increased ? "↑" : "↓"}{" "}
+                {adjustedStatsData.activeCampaigns.change}%
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">vs last month</p>
           </div>
         </div>
       </Card>
 
       <Card className="relative overflow-hidden p-4 bg-white shadow-sm hover:shadow transition-shadow duration-200">
-        <div className="absolute top-3 left-3">
-          <div className="p-2 bg-green-50 rounded-lg shadow-sm">
+        <div className="flex items-start">
+          <div className="p-1.5 bg-indigo-50 rounded-lg shadow-sm mr-3">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-green-600"
+              className="h-5 w-5 text-indigo-600"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -265,29 +268,30 @@ export default function SevenElevenView({
               />
             </svg>
           </div>
-        </div>
-        <div className="mt-12">
-          <p className="text-sm text-gray-600 font-medium">Total Stores</p>
-          <p className="text-3xl font-bold mt-1 text-gray-800">
-            {adjustedStatsData.totalStores.value}
-          </p>
-          <div className="flex items-center mt-2">
-            <span
-              className={`text-xs ${adjustedStatsData.totalStores.increased ? "text-green-500" : "text-red-500"} font-medium`}
-            >
-              {adjustedStatsData.totalStores.increased ? "↑" : "↓"}{" "}
-              {adjustedStatsData.totalStores.change}% vs last month
-            </span>
+          <div className="flex-1">
+            <p className="text-xs text-gray-600 font-medium">Total Stores</p>
+            <div className="flex items-baseline justify-between mt-1">
+              <p className="text-2xl font-bold text-gray-800">
+                {adjustedStatsData.totalStores.value}
+              </p>
+              <span
+                className={`text-xs ${adjustedStatsData.totalStores.increased ? "text-green-500" : "text-red-500"} font-medium`}
+              >
+                {adjustedStatsData.totalStores.increased ? "↑" : "↓"}{" "}
+                {adjustedStatsData.totalStores.change}%
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">vs last month</p>
           </div>
         </div>
       </Card>
 
       <Card className="relative overflow-hidden p-4 bg-white shadow-sm hover:shadow transition-shadow duration-200">
-        <div className="absolute top-3 left-3">
-          <div className="p-2 bg-blue-50 rounded-lg shadow-sm">
+        <div className="flex items-start">
+          <div className="p-1.5 bg-blue-50 rounded-lg shadow-sm mr-3">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-blue-600"
+              className="h-5 w-5 text-blue-600"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -300,29 +304,30 @@ export default function SevenElevenView({
               />
             </svg>
           </div>
-        </div>
-        <div className="mt-12">
-          <p className="text-sm text-gray-600 font-medium">Monthly Revenue</p>
-          <p className="text-3xl font-bold mt-1 text-gray-800">
-            ${formatNumber(adjustedStatsData.monthlyRevenue.value)}
-          </p>
-          <div className="flex items-center mt-2">
-            <span
-              className={`text-xs ${adjustedStatsData.monthlyRevenue.increased ? "text-green-500" : "text-red-500"} font-medium`}
-            >
-              {adjustedStatsData.monthlyRevenue.increased ? "↑" : "↓"}{" "}
-              {adjustedStatsData.monthlyRevenue.change}% vs last month
-            </span>
+          <div className="flex-1">
+            <p className="text-xs text-gray-600 font-medium">Monthly Revenue</p>
+            <div className="flex items-baseline justify-between mt-1">
+              <p className="text-2xl font-bold text-gray-800">
+                ${formatNumber(adjustedStatsData.monthlyRevenue.value)}
+              </p>
+              <span
+                className={`text-xs ${adjustedStatsData.monthlyRevenue.increased ? "text-green-500" : "text-red-500"} font-medium`}
+              >
+                {adjustedStatsData.monthlyRevenue.increased ? "↑" : "↓"}{" "}
+                {adjustedStatsData.monthlyRevenue.change}%
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">vs last month</p>
           </div>
         </div>
       </Card>
 
       <Card className="relative overflow-hidden p-4 bg-white shadow-sm hover:shadow transition-shadow duration-200">
-        <div className="absolute top-3 left-3">
-          <div className="p-2 bg-amber-50 rounded-lg shadow-sm">
+        <div className="flex items-start">
+          <div className="p-1.5 bg-amber-50 rounded-lg shadow-sm mr-3">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-amber-600"
+              className="h-5 w-5 text-amber-600"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -335,19 +340,20 @@ export default function SevenElevenView({
               />
             </svg>
           </div>
-        </div>
-        <div className="mt-12">
-          <p className="text-sm text-gray-600 font-medium">Engagement Rate</p>
-          <p className="text-3xl font-bold mt-1 text-gray-800">
-            {adjustedStatsData.engagementRate.value}%
-          </p>
-          <div className="flex items-center mt-2">
-            <span
-              className={`text-xs ${adjustedStatsData.engagementRate.increased ? "text-green-500" : "text-red-500"} font-medium`}
-            >
-              {adjustedStatsData.engagementRate.increased ? "↑" : "↓"}{" "}
-              {adjustedStatsData.engagementRate.change}% vs last month
-            </span>
+          <div className="flex-1">
+            <p className="text-xs text-gray-600 font-medium">Engagement Rate</p>
+            <div className="flex items-baseline justify-between mt-1">
+              <p className="text-2xl font-bold text-gray-800">
+                {adjustedStatsData.engagementRate.value}%
+              </p>
+              <span
+                className={`text-xs ${adjustedStatsData.engagementRate.increased ? "text-green-500" : "text-red-500"} font-medium`}
+              >
+                {adjustedStatsData.engagementRate.increased ? "↑" : "↓"}{" "}
+                {adjustedStatsData.engagementRate.change}%
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">vs last month</p>
           </div>
         </div>
       </Card>
@@ -356,70 +362,267 @@ export default function SevenElevenView({
 
   // 7NOW delivery promotion
   const deliveryPromotionSection = (
-    <Card className="mt-6 overflow-hidden shadow-sm">
+    <Card className="overflow-hidden shadow-sm">
       <div
-        className="p-6 text-white"
+        className="p-4 text-gray-800"
         style={{
           background: sevenElevenGradients.diagonal,
           boxShadow: sevenElevenGradients.cardShadow,
         }}
       >
         <div className="flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-4 md:mb-0">
-            <h3 className="text-xl font-bold mb-2 text-gray-800">
+          <div className="mb-4 md:mb-0 md:pr-8">
+            <h3 className="text-lg font-bold mb-1">
               Promote 7NOW Delivery Service
             </h3>
-            <p className="text-gray-700 mb-4 leading-relaxed">
+            <p className="text-sm text-gray-700 mb-3 leading-relaxed">
               Drive more delivery orders with targeted promotions for 7NOW.
-              Create special offers for first-time customers or boost orders in
-              specific regions.
+              Create special offers for first-time customers.
             </p>
-            <div className="flex space-x-3">
+            <div className="flex space-x-2">
               <Button
                 variant="primary"
-                className="bg-red-600 text-white hover:bg-red-700 shadow-sm"
+                className="bg-red-600 text-white hover:bg-red-700 shadow-sm text-xs"
                 onClick={onCreateCampaign}
               >
                 Start Campaign
               </Button>
               <Button
                 variant="outline"
-                className="border-red-600 text-red-600 hover:bg-red-50"
+                className="border-red-600 text-red-600 hover:bg-red-50 text-xs"
                 onClick={() => window.open("https://www.7now.com", "_blank")}
               >
                 Visit 7NOW
               </Button>
             </div>
           </div>
-          <div className="bg-white/80 backdrop-blur p-5 rounded-lg max-w-sm border border-gray-200 shadow-sm">
-            <h4 className="font-bold mb-3 text-lg text-gray-800">
-              Current 7NOW Promotions
-            </h4>
-            <ul className="space-y-3">
+          <div className="bg-white/80 backdrop-blur p-3 rounded-lg max-w-sm border border-gray-200 shadow-sm text-xs">
+            <h4 className="font-bold mb-2 text-sm">Current 7NOW Promotions</h4>
+            <ul className="space-y-2">
               <li className="flex items-center">
-                <span className="bg-red-600 text-white h-6 w-6 rounded-full flex items-center justify-center mr-3 text-xs font-bold shadow-sm">
+                <span className="bg-red-600 text-white h-5 w-5 rounded-full flex items-center justify-center mr-2 text-xs font-bold shadow-sm">
                   1
                 </span>
                 <span className="text-gray-700">
                   <strong>BIGBITE:</strong> Free pizza with your 7NOW order{" "}
-                  <span className="bg-red-100 text-red-600 px-2 py-0.5 rounded text-xs ml-1">
+                  <span className="bg-red-100 text-red-600 px-1.5 py-0.5 rounded text-xs ml-1">
                     TX & FL
                   </span>
                 </span>
               </li>
               <li className="flex items-center">
-                <span className="bg-red-600 text-white h-6 w-6 rounded-full flex items-center justify-center mr-3 text-xs font-bold shadow-sm">
+                <span className="bg-red-600 text-white h-5 w-5 rounded-full flex items-center justify-center mr-2 text-xs font-bold shadow-sm">
                   2
                 </span>
                 <span className="text-gray-700">
                   <strong>GET10OFF:</strong> $10 off $15+ basket{" "}
-                  <span className="bg-red-100 text-red-600 px-2 py-0.5 rounded text-xs ml-1">
+                  <span className="bg-red-100 text-red-600 px-1.5 py-0.5 rounded text-xs ml-1">
                     New Customers
                   </span>
                 </span>
               </li>
             </ul>
           </div>
+        </div>
+      </div>
+    </Card>
+  );
+
+  // AI Assistant component
+  const aiAssistantSection = (
+    <Card className=" bg-white overflow-hidden p-4 border border-gray-100">
+      <div className="flex items-start">
+        <div className="bg-blue-100 p-2 rounded-full mr-3">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            className="w-5 h-5 text-blue-600"
+          >
+            <path d="M16.5 7.5h-9v9h9v-9z" />
+            <path d="M8.25 2.25A.75.75 0 019 3v.75h2.25V3a.75.75 0 011.5 0v.75H15V3a.75.75 0 011.5 0v.75h.75a3 3 0 013 3v.75H21A.75.75 0 0121 9h-.75v2.25H21a.75.75 0 010 1.5h-.75V15H21a.75.75 0 010 1.5h-.75v.75a3 3 0 01-3 3h-.75V21a.75.75 0 01-1.5 0v-.75h-2.25V21a.75.75 0 01-1.5 0v-.75H9V21a.75.75 0 01-1.5 0v-.75h-.75a3 3 0 01-3-3v-.75H3A.75.75 0 013 15h.75v-2.25H3a.75.75 0 010-1.5h.75V9H3a.75.75 0 010-1.5h.75v-.75a3 3 0 013-3h.75V3a.75.75 0 01.75-.75zM6 6.75A.75.75 0 016.75 6h10.5a.75.75 0 01.75.75v10.5a.75.75 0 01-.75.75H6.75a.75.75 0 01-.75-.75V6.75z" />
+          </svg>
+        </div>
+        <div className="flex-1">
+          <h3 className="text-lg font-semibold text-gray-800">
+            Hey {userName}, I&apos;m your AI Assistant
+          </h3>
+          <p className="text-sm text-gray-600 mb-3">
+            Personalized insights for your campaigns
+          </p>
+
+          <div className="space-y-2">
+            <a
+              href="#"
+              className="flex items-center justify-between bg-gray-50 hover:bg-gray-100 p-2 rounded-lg text-sm text-gray-700 transition-colors"
+            >
+              <div className="flex items-center">
+                <svg
+                  className="w-5 h-5 text-blue-600 mr-2"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path d="M15.5 2A1.5 1.5 0 0014 3.5v13a1.5 1.5 0 001.5 1.5h1a1.5 1.5 0 001.5-1.5v-13A1.5 1.5 0 0016.5 2h-1zM9.5 6A1.5 1.5 0 008 7.5v9A1.5 1.5 0 009.5 18h1a1.5 1.5 0 001.5-1.5v-9A1.5 1.5 0 0010.5 6h-1zM3.5 10A1.5 1.5 0 002 11.5v5A1.5 1.5 0 003.5 18h1A1.5 1.5 0 006 16.5v-5A1.5 1.5 0 004.5 10h-1z" />
+                </svg>
+                Analyze morning campaign performance
+              </div>
+              <svg
+                className="w-4 h-4 text-gray-400"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </a>
+
+            <a
+              href="#"
+              className="flex items-center justify-between bg-gray-50 hover:bg-gray-100 p-2 rounded-lg text-sm text-gray-700 transition-colors"
+            >
+              <div className="flex items-center">
+                <svg
+                  className="w-5 h-5 text-blue-600 mr-2"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Run performance report
+              </div>
+              <svg
+                className="w-4 h-4 text-gray-400"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+
+  // Revenue Analytics Section with Chart
+  const revenueAnalyticsSection = (
+    <Card className="mt-6 overflow-hidden shadow-sm">
+      <div className="flex items-center justify-between p-4 border-b border-gray-100">
+        <div className="flex items-center gap-2">
+          <svg
+            className="h-5 w-5 text-blue-600"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+            />
+          </svg>
+          <h3 className="font-semibold text-gray-800">Revenue Analytics</h3>
+        </div>
+        <div className="flex space-x-1 text-xs">
+          <button className="px-3 py-1 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-700">
+            Daily
+          </button>
+          <button className="px-3 py-1 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-700">
+            Weekly
+          </button>
+          <button className="px-3 py-1 rounded-md bg-blue-100 text-blue-700 font-medium">
+            Monthly
+          </button>
+          <button className="px-3 py-1 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-700">
+            Quarterly
+          </button>
+        </div>
+      </div>
+
+      <div className="p-4">
+        <div className="flex items-center mb-4">
+          <div className="space-x-4">
+            <button className="text-blue-600 text-sm font-medium">
+              <span className="inline-block w-3 h-3 rounded-full bg-blue-600 mr-1"></span>
+              Revenue
+            </button>
+            <button className="text-green-600 text-sm">
+              <span className="inline-block w-3 h-3 rounded-full bg-green-500 mr-1"></span>
+              Expenses
+            </button>
+            <button className="text-purple-600 text-sm">
+              <span className="inline-block w-3 h-3 rounded-full bg-purple-500 mr-1"></span>
+              Profit
+            </button>
+          </div>
+          <div className="ml-auto">
+            <select className="bg-white border border-gray-200 text-sm rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500">
+              <option>All Campaigns</option>
+              <option>Summer Promotion</option>
+              <option>Holiday Special</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="flex items-center mb-2">
+          <h3 className="text-xl font-bold text-gray-800">Revenue Overview</h3>
+          <span className="ml-auto text-red-500 text-sm font-medium">
+            ↓ 33.2% vs previous period
+          </span>
+        </div>
+
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">$35.2k</h2>
+
+        {/* Chart Area Placeholder - In a real implementation, you would use shadcn charts here */}
+        <div className="bg-gray-50 rounded-lg h-64 w-full p-2 flex items-center justify-center">
+          <p className="text-gray-500">Revenue Chart would render here</p>
+        </div>
+
+        <div className="flex justify-center gap-4 mt-4 text-xs">
+          <button className="px-3 py-1 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700">
+            1M
+          </button>
+          <button className="px-3 py-1 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700">
+            3M
+          </button>
+          <button className="px-3 py-1 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700">
+            6M
+          </button>
+          <button className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">
+            1Y
+          </button>
+          <button className="px-3 py-1 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700">
+            All
+          </button>
+        </div>
+
+        <div className="flex justify-end gap-4 mt-4 text-xs">
+          <button className="px-3 py-1 rounded-md bg-blue-100 text-blue-700 font-medium">
+            Area
+          </button>
+          <button className="px-3 py-1 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-700">
+            Line
+          </button>
+          <button className="px-3 py-1 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-700">
+            Bar
+          </button>
         </div>
       </div>
     </Card>
@@ -449,14 +652,14 @@ export default function SevenElevenView({
         <div className="flex gap-2">
           <Button
             variant="primary"
-            className="bg-red-600 hover:bg-red-700 shadow-sm"
+            className="bg-red-600 hover:bg-red-700 text-xs shadow-sm"
             onClick={onCreateCampaign}
           >
             Create Campaign
           </Button>
           <Button
             variant="outline"
-            className="text-red-600 border-red-600 hover:bg-red-50"
+            className="text-red-600 border-red-600 hover:bg-red-50 text-xs"
             onClick={onCreateOffer}
           >
             Create Offer
@@ -577,9 +780,90 @@ export default function SevenElevenView({
 
   // Main content
   const mainContent = (
-    <div className="space-y-4">
-      {deliveryPromotionSection}
-      {currentPromotionsSection}
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="lg:col-span-2 space-y-6">
+        {deliveryPromotionSection}
+        {revenueAnalyticsSection}
+        {currentPromotionsSection}
+      </div>
+      <div className="space-y-6">
+        {aiAssistantSection}
+
+        {/* Tasks & Notifications Section */}
+        <Card className="bg-white overflow-hidden p-4">
+          <h3 className="font-semibold text-gray-800 mb-4">
+            Tasks & Notifications
+          </h3>
+
+          <div className="space-y-4">
+            <div className="border border-gray-100 rounded-lg p-3 hover:bg-gray-50 transition-colors">
+              <div className="flex items-start">
+                <div className="bg-purple-100 p-2 rounded-lg mr-3">
+                  <svg
+                    className="w-4 h-4 text-purple-600"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between mb-1">
+                    <h4 className="text-sm font-medium text-gray-800">
+                      Approve merchant discount request
+                    </h4>
+                    <span className="text-xs bg-gray-100 px-2 py-0.5 rounded text-gray-600">
+                      Today
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600">
+                    Acme Corporation has requested a custom discount rate for
+                    their upcoming campaign.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="border border-gray-100 rounded-lg p-3 hover:bg-gray-50 transition-colors">
+              <div className="flex items-start">
+                <div className="bg-green-100 p-2 rounded-lg mr-3">
+                  <svg
+                    className="w-4 h-4 text-green-600"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between mb-1">
+                    <h4 className="text-sm font-medium text-gray-800">
+                      Review campaign performance
+                    </h4>
+                    <span className="text-xs bg-gray-100 px-2 py-0.5 rounded text-gray-600">
+                      Today
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600">
+                    The &quot;Summer Sale Promotion&quot; campaign has reached
+                    50% completion. Review performance.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 
