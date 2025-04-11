@@ -11,7 +11,9 @@ import {
   saveCurrentInstance, 
   goToInstance,
   selectUserProfile,
-  VersionType
+  VersionType,
+  setCampaignCreationStep,
+  CampaignCreationStepType
 } from './slices/demoSlice';
 
 // Use throughout your app instead of plain `useDispatch` and `useSelector`
@@ -45,6 +47,7 @@ export const useDemoActions = () => {
     setScenario: (scenario: string) => dispatch(setScenario(scenario)),
     setThemeMode: (themeMode: 'light' | 'dark') => dispatch(setThemeMode(themeMode)),
     setVersion: (version: VersionType) => dispatch(setVersion(version)),
+    setCampaignCreationStep: (step: CampaignCreationStepType) => dispatch(setCampaignCreationStep(step)),
     updateDemoState: (updates: any) => dispatch(updateDemoState(updates)),
     resetToDefault: () => dispatch(resetToDefault()),
     saveCurrentInstance: () => dispatch(saveCurrentInstance()),

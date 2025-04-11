@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useDemoState } from "@/lib/redux/hooks";
+import { useDemoState, useDemoActions } from "@/lib/redux/hooks";
 import { useRouter } from "next/navigation";
 import ReactConfetti from "react-confetti";
 import { buildDemoUrl } from "@/lib/utils";
+import { CampaignCreationStepType } from "@/lib/redux/slices/demoSlice";
 
 // Importing views statically to fix module not found errors
 import BusinessIntelligenceView from "./views/BusinessIntelligenceView";
@@ -127,23 +128,17 @@ export interface PerformancePredictions {
   }>;
 }
 
-type ViewType =
-  | "business-intelligence"
-  | "campaign-selection"
-  | "asset-creation"
-  | "performance-prediction"
-  | "launch-control";
+// Update to use Redux type
+type ViewType = CampaignCreationStepType;
 
 interface DynamicCanvasProps {
-  initialView?: ViewType;
+  // initialView and onViewChange no longer needed with Redux
 }
 
-const DynamicCanvas: React.FC<DynamicCanvasProps> = ({
-  initialView = "business-intelligence",
-}) => {
-  const { clientId } = useDemoState();
+const DynamicCanvas: React.FC<DynamicCanvasProps> = () => {
+  const { clientId, campaignCreationStep } = useDemoState();
+  const { setCampaignCreationStep } = useDemoActions();
   const router = useRouter();
-  const [currentView, setCurrentView] = useState<ViewType>(initialView);
   const [selectedCampaign, setSelectedCampaign] =
     useState<CampaignOption | null>(null);
   const [campaignAssets, setCampaignAssets] = useState<CampaignAsset[]>([]);
@@ -696,9 +691,9 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = ({
       setSelectedCampaign(campaign);
       setCampaignAssets(mockCampaignAssets);
       setOfferDetails(mockOfferDetails);
-      setCurrentView("asset-creation");
+      setCampaignCreationStep("asset-creation");
     },
-    [mockCampaignAssets, mockOfferDetails]
+    [mockCampaignAssets, mockOfferDetails, setCampaignCreationStep]
   );
 
   // Handle parameter updates for performance prediction
@@ -873,8 +868,8 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = ({
 
       {/* Fixed header */}
       <CanvasHeader
-        title={getViewTitle(currentView)}
-        currentStep={viewSteps[currentView]}
+        title={getViewTitle(campaignCreationStep)}
+        currentStep={viewSteps[campaignCreationStep]}
         totalSteps={5}
         className="flex-shrink-0 sticky top-0 z-10 bg-white"
       />
@@ -883,7 +878,7 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = ({
       <div className="flex-1 min-h-0 overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
-            key={currentView}
+            key={campaignCreationStep}
             initial="initial"
             animate="animate"
             exit="exit"
@@ -891,18 +886,18 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = ({
             transition={{ duration: 0.3 }}
             className="h-full"
           >
-            {currentView === "business-intelligence" && (
+            {campaignCreationStep === "business-intelligence" && (
               <BusinessIntelligenceView data={mockBusinessData} />
             )}
 
-            {currentView === "campaign-selection" && (
+            {campaignCreationStep === "campaign-selection" && (
               <CampaignSelectionGallery
                 options={mockCampaignOptions}
                 onSelect={handleCampaignSelect}
               />
             )}
 
-            {currentView === "asset-creation" && selectedCampaign && (
+            {campaignCreationStep === "asset-creation" && selectedCampaign && (
               <AssetCreationWorkshop
                 assets={campaignAssets}
                 offerDetails={offerDetails}
@@ -915,7 +910,7 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = ({
               />
             )}
 
-            {currentView === "performance-prediction" && (
+            {campaignCreationStep === "performance-prediction" && (
               <PerformancePredictionDashboard
                 predictions={mockPerformancePredictions}
                 campaignParams={campaignParams}
@@ -923,7 +918,7 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = ({
               />
             )}
 
-            {currentView === "launch-control" && (
+            {campaignCreationStep === "launch-control" && (
               <LaunchControlCenter
                 campaignDetails={mockLaunchDetails}
                 onLaunch={handleLaunch}
@@ -944,15 +939,15 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = ({
               "performance-prediction",
               "launch-control",
             ];
-            const currentIndex = views.indexOf(currentView);
+            const currentIndex = views.indexOf(campaignCreationStep);
 
             if (currentIndex > 0) {
-              setCurrentView(views[currentIndex - 1]);
+              setCampaignCreationStep(views[currentIndex - 1]);
             }
           }}
-          disabled={currentView === "business-intelligence"}
+          disabled={campaignCreationStep === "business-intelligence"}
           className={`px-4 py-2 rounded-lg ${
-            currentView === "business-intelligence"
+            campaignCreationStep === "business-intelligence"
               ? "bg-gray-100 text-gray-400 cursor-not-allowed"
               : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
           }`}
@@ -969,15 +964,15 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = ({
               "performance-prediction",
               "launch-control",
             ];
-            const currentIndex = views.indexOf(currentView);
+            const currentIndex = views.indexOf(campaignCreationStep);
 
             if (currentIndex < views.length - 1) {
-              setCurrentView(views[currentIndex + 1]);
+              setCampaignCreationStep(views[currentIndex + 1]);
             }
           }}
-          disabled={currentView === "launch-control"}
+          disabled={campaignCreationStep === "launch-control"}
           className={`px-4 py-2 rounded-lg ${
-            currentView === "launch-control"
+            campaignCreationStep === "launch-control"
               ? "bg-gray-100 text-gray-400 cursor-not-allowed"
               : "bg-blue-500 text-white hover:bg-blue-600"
           }`}

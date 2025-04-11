@@ -6,6 +6,14 @@ import { RootState } from "../store";
 // Define version type
 export type VersionType = "current" | "upcoming" | "future" | "experimental";
 
+// Define campaign creation steps type
+export type CampaignCreationStepType =
+  | "business-intelligence"
+  | "campaign-selection"
+  | "asset-creation"
+  | "performance-prediction"
+  | "launch-control";
+
 // Define DemoState
 export interface DemoState {
   role: string;
@@ -15,6 +23,7 @@ export interface DemoState {
   themeMode: "light" | "dark";
   version: VersionType;
   theme: ThemeColors;
+  campaignCreationStep: CampaignCreationStepType;
   history: {
     role: string;
     clientId: string;
@@ -110,6 +119,7 @@ const defaultDemoState: DemoState = {
   themeMode: "light",
   version: "current",
   theme: clientThemes["deacons"].light,
+  campaignCreationStep: "business-intelligence",
   history: [],
   instanceHistory: [],
   currentInstanceIndex: -1,
@@ -197,6 +207,18 @@ export const demoSlice = createSlice({
       state.version = action.payload;
 
       // Add to history
+      state.history.push({
+        role: state.role,
+        clientId: state.clientId,
+        scenario: state.scenario,
+        themeMode: state.themeMode,
+        version: state.version,
+      });
+    },
+    setCampaignCreationStep: (state, action: PayloadAction<CampaignCreationStepType>) => {
+      state.campaignCreationStep = action.payload;
+
+      // Add to history (following existing pattern)
       state.history.push({
         role: state.role,
         clientId: state.clientId,
@@ -324,6 +346,7 @@ export const {
   resetToDefault,
   saveCurrentInstance,
   goToInstance,
+  setCampaignCreationStep,
 } = demoSlice.actions;
 
 // Export reducer

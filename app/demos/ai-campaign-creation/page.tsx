@@ -15,22 +15,15 @@ import { AIAssistantPanel } from "../../../components/features/ai";
 import { DynamicCanvas } from "../../../components/features/campaigns/creation";
 import Card from "@/components/atoms/Card/Card";
 import { buildDemoUrl } from "@/lib/utils";
+import { CampaignCreationStepType } from "@/lib/redux/slices/demoSlice";
 
 // Define ViewType locally to match DynamicCanvas
-type ViewType =
-  | "business-intelligence"
-  | "campaign-selection"
-  | "asset-creation"
-  | "performance-prediction"
-  | "launch-control";
+type ViewType = CampaignCreationStepType;
 
 export default function AICampaignCreation() {
   const searchParams = useSearchParams();
-  const { setClientId } = useDemoActions();
+  const { setClientId, setCampaignCreationStep } = useDemoActions();
   const { clientId, clientName } = useDemoState();
-  const [currentView, setCurrentView] = useState<ViewType>(
-    "business-intelligence"
-  );
   const [greeting, setGreeting] = useState("");
 
   // Add initialization ref to ensure the effect only runs once
@@ -71,6 +64,9 @@ export default function AICampaignCreation() {
     // Set client ID and greeting only once
     setClientId(clientParam);
     setGreeting(getGreeting);
+    
+    // Initialize at the first step
+    setCampaignCreationStep("business-intelligence");
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -92,23 +88,23 @@ export default function AICampaignCreation() {
     switch (optionId) {
       case "tell-more":
       case "recommendation":
-        setCurrentView("business-intelligence");
+        setCampaignCreationStep("business-intelligence");
         break;
       case "create-campaign":
-        setCurrentView("campaign-selection");
+        setCampaignCreationStep("campaign-selection");
         break;
       case "select-campaign":
       case "customize-assets":
-        setCurrentView("asset-creation");
+        setCampaignCreationStep("asset-creation");
         break;
       case "review-performance":
-        setCurrentView("performance-prediction");
+        setCampaignCreationStep("performance-prediction");
         break;
       case "launch-campaign":
-        setCurrentView("launch-control");
+        setCampaignCreationStep("launch-control");
         break;
     }
-  }, []);
+  }, [setCampaignCreationStep]);
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-gray-50">
@@ -150,7 +146,7 @@ export default function AICampaignCreation() {
           {/* Dynamic Canvas - Right Side */}
           <div className="lg:col-span-8 h-full overflow-hidden flex flex-col">
             <Card className="h-full p-0 overflow-hidden flex flex-col">
-              <DynamicCanvas initialView={currentView} />
+              <DynamicCanvas />
             </Card>
           </div>
         </div>
