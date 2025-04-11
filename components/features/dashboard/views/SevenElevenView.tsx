@@ -11,6 +11,19 @@ import {
   formatDate,
   formatNumber,
 } from "@/lib/utils/formatting";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 // Custom CSS for banner pattern
 const headerStyles = `
@@ -122,6 +135,22 @@ const defaultStatsData = {
   },
 };
 
+// Revenue data for chart
+const revenueData = [
+  { month: "Jan", revenue: 22000, expenses: 15000, profit: 7000 },
+  { month: "Feb", revenue: 26000, expenses: 16800, profit: 9200 },
+  { month: "Mar", revenue: 25000, expenses: 16500, profit: 8500 },
+  { month: "Apr", revenue: 30000, expenses: 18000, profit: 12000 },
+  { month: "May", revenue: 28000, expenses: 17500, profit: 10500 },
+  { month: "Jun", revenue: 32000, expenses: 19000, profit: 13000 },
+  { month: "Jul", revenue: 34000, expenses: 20000, profit: 14000 },
+  { month: "Aug", revenue: 38000, expenses: 22000, profit: 16000 },
+  { month: "Sep", revenue: 42000, expenses: 24000, profit: 18000 },
+  { month: "Oct", revenue: 45000, expenses: 25500, profit: 19500 },
+  { month: "Nov", revenue: 48000, expenses: 27000, profit: 21000 },
+  { month: "Dec", revenue: 52000, expenses: 29000, profit: 23000 },
+];
+
 // Status badge component
 function StatusBadge({ status }: { status: string }) {
   const getStatusStyles = () => {
@@ -180,6 +209,11 @@ export default function SevenElevenView({
 
   // Use userProfile to get name or default to "Sarah"
   const userName = userProfile?.name || "Sarah";
+
+  // Add state for chart type
+  const [chartType, setChartType] = React.useState<"area" | "line" | "bar">(
+    "area"
+  );
 
   // Adjust active campaigns count based on prop
   const adjustedStatsData = {
@@ -583,16 +617,236 @@ export default function SevenElevenView({
 
         <div className="flex items-center mb-2">
           <h3 className="text-xl font-bold text-gray-800">Revenue Overview</h3>
-          <span className="ml-auto text-red-500 text-sm font-medium">
-            ↓ 33.2% vs previous period
+          <span className="ml-auto text-green-500 text-sm font-medium">
+            ↑ 8.6% vs previous period
           </span>
         </div>
 
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">$35.2k</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">$42.5k</h2>
 
-        {/* Chart Area Placeholder - In a real implementation, you would use shadcn charts here */}
-        <div className="bg-gray-50 rounded-lg h-64 w-full p-2 flex items-center justify-center">
-          <p className="text-gray-500">Revenue Chart would render here</p>
+        {/* ShadCN-style Chart */}
+        <div className="h-64 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            {chartType === "area" ? (
+              <AreaChart
+                data={revenueData}
+                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+              >
+                <defs>
+                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient
+                    id="colorExpenses"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop offset="5%" stopColor="#22c55e" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#a855f7" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#a855f7" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <XAxis
+                  dataKey="month"
+                  tick={{ fontSize: 12, fill: "#6b7280" }}
+                  tickLine={false}
+                  axisLine={{ stroke: "#e5e7eb" }}
+                />
+                <YAxis
+                  tick={{ fontSize: 12, fill: "#6b7280" }}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(value) => `$${value / 1000}k`}
+                />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="#e5e7eb"
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "white",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "0.375rem",
+                    boxShadow:
+                      "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
+                    padding: "0.75rem",
+                  }}
+                  formatter={(value) => [
+                    `$${value.toLocaleString()}`,
+                    undefined,
+                  ]}
+                  labelFormatter={(label) => `${label} 2023`}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#3b82f6"
+                  fillOpacity={1}
+                  fill="url(#colorRevenue)"
+                  strokeWidth={2}
+                  activeDot={{
+                    r: 6,
+                    stroke: "#3b82f6",
+                    strokeWidth: 2,
+                    fill: "white",
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="expenses"
+                  stroke="#22c55e"
+                  fillOpacity={1}
+                  fill="url(#colorExpenses)"
+                  strokeWidth={2}
+                  activeDot={{
+                    r: 6,
+                    stroke: "#22c55e",
+                    strokeWidth: 2,
+                    fill: "white",
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="profit"
+                  stroke="#a855f7"
+                  fillOpacity={1}
+                  fill="url(#colorProfit)"
+                  strokeWidth={2}
+                  activeDot={{
+                    r: 6,
+                    stroke: "#a855f7",
+                    strokeWidth: 2,
+                    fill: "white",
+                  }}
+                />
+              </AreaChart>
+            ) : chartType === "line" ? (
+              <LineChart
+                data={revenueData}
+                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+              >
+                <XAxis
+                  dataKey="month"
+                  tick={{ fontSize: 12, fill: "#6b7280" }}
+                  tickLine={false}
+                  axisLine={{ stroke: "#e5e7eb" }}
+                />
+                <YAxis
+                  tick={{ fontSize: 12, fill: "#6b7280" }}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(value) => `$${value / 1000}k`}
+                />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="#e5e7eb"
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "white",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "0.375rem",
+                    boxShadow:
+                      "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
+                    padding: "0.75rem",
+                  }}
+                  formatter={(value) => [
+                    `$${value.toLocaleString()}`,
+                    undefined,
+                  ]}
+                  labelFormatter={(label) => `${label} 2023`}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#3b82f6"
+                  strokeWidth={2}
+                  dot={{ r: 3, fill: "#3b82f6" }}
+                  activeDot={{
+                    r: 6,
+                    stroke: "#3b82f6",
+                    strokeWidth: 2,
+                    fill: "white",
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="expenses"
+                  stroke="#22c55e"
+                  strokeWidth={2}
+                  dot={{ r: 3, fill: "#22c55e" }}
+                  activeDot={{
+                    r: 6,
+                    stroke: "#22c55e",
+                    strokeWidth: 2,
+                    fill: "white",
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="profit"
+                  stroke="#a855f7"
+                  strokeWidth={2}
+                  dot={{ r: 3, fill: "#a855f7" }}
+                  activeDot={{
+                    r: 6,
+                    stroke: "#a855f7",
+                    strokeWidth: 2,
+                    fill: "white",
+                  }}
+                />
+              </LineChart>
+            ) : (
+              <BarChart
+                data={revenueData}
+                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+              >
+                <XAxis
+                  dataKey="month"
+                  tick={{ fontSize: 12, fill: "#6b7280" }}
+                  tickLine={false}
+                  axisLine={{ stroke: "#e5e7eb" }}
+                />
+                <YAxis
+                  tick={{ fontSize: 12, fill: "#6b7280" }}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(value) => `$${value / 1000}k`}
+                />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="#e5e7eb"
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "white",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "0.375rem",
+                    boxShadow:
+                      "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
+                    padding: "0.75rem",
+                  }}
+                  formatter={(value) => [
+                    `$${value.toLocaleString()}`,
+                    undefined,
+                  ]}
+                  labelFormatter={(label) => `${label} 2023`}
+                />
+                <Bar dataKey="revenue" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="expenses" fill="#22c55e" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="profit" fill="#a855f7" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            )}
+          </ResponsiveContainer>
         </div>
 
         <div className="flex justify-center gap-4 mt-4 text-xs">
@@ -614,13 +868,22 @@ export default function SevenElevenView({
         </div>
 
         <div className="flex justify-end gap-4 mt-4 text-xs">
-          <button className="px-3 py-1 rounded-md bg-blue-100 text-blue-700 font-medium">
+          <button
+            className={`px-3 py-1 rounded-md ${chartType === "area" ? "bg-blue-100 text-blue-700 font-medium" : "bg-gray-100 hover:bg-gray-200 text-gray-700"}`}
+            onClick={() => setChartType("area")}
+          >
             Area
           </button>
-          <button className="px-3 py-1 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-700">
+          <button
+            className={`px-3 py-1 rounded-md ${chartType === "line" ? "bg-blue-100 text-blue-700 font-medium" : "bg-gray-100 hover:bg-gray-200 text-gray-700"}`}
+            onClick={() => setChartType("line")}
+          >
             Line
           </button>
-          <button className="px-3 py-1 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-700">
+          <button
+            className={`px-3 py-1 rounded-md ${chartType === "bar" ? "bg-blue-100 text-blue-700 font-medium" : "bg-gray-100 hover:bg-gray-200 text-gray-700"}`}
+            onClick={() => setChartType("bar")}
+          >
             Bar
           </button>
         </div>
