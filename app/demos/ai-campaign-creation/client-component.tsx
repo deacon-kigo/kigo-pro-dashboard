@@ -17,14 +17,15 @@ import Card from "@/components/atoms/Card/Card";
 import { buildDemoUrl } from "@/lib/utils";
 
 export default function AICampaignClientComponent() {
+  // Make sure search params are accessed in a client-side only component
   const searchParams = useSearchParams();
   const { setClientId, setCampaignCreationStep } = useDemoActions();
   const { clientId, clientName } = useDemoState();
   const [greeting, setGreeting] = useState("");
 
   // Store client parameter to use later for navigation
-  const clientParam = searchParams.get("client") || "deacons";
-  const typeParam = searchParams.get("type") || "";
+  const clientParam = searchParams?.get("client") || "deacons";
+  const typeParam = searchParams?.get("type") || "";
 
   // Add initialization ref to ensure the effect only runs once
   const isInitializedRef = useRef(false);

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 import dynamic from "next/dynamic";
 
 // Create a loading component
@@ -28,7 +28,11 @@ const NoSSR = dynamic(
   }
 );
 
-// Simple component that only renders the NoSSR wrapper
+// Simple component that only renders the NoSSR wrapper with Suspense boundary
 export default function AICampaignCreationPage() {
-  return <NoSSR />;
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <NoSSR />
+    </Suspense>
+  );
 }
