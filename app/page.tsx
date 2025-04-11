@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 import Link from "next/link";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useDemoState, useDemoActions } from "@/lib/redux/hooks";
@@ -47,7 +47,8 @@ const versionInfo: Record<VersionType, { name: string; description: string }> =
     },
   };
 
-export default function RootPage() {
+// Create a wrapper component for the content that might use hooks requiring Suspense
+function HomePageContent() {
   // Replace the DemoContext usage with Redux hooks
   const { userProfile } = useDemoState();
   const { updateDemoState } = useDemoActions();
@@ -185,8 +186,7 @@ export default function RootPage() {
                     {clientName || clientId}
                   </h2>
                   <p className="text-gray-600 mt-2">
-                    Welcome,{" "}
-                    {userProfile?.firstName || "User"}
+                    Welcome, {userProfile?.firstName || "User"}
                   </p>
                   <div className="mt-2 inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
                     {role === "merchant"
@@ -380,5 +380,19 @@ export default function RootPage() {
         </div>
       </div>
     </AppLayout>
+  );
+}
+
+export default function RootPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center h-screen">
+          Loading dashboard...
+        </div>
+      }
+    >
+      <HomePageContent />
+    </Suspense>
   );
 }

@@ -7,15 +7,17 @@ const nextConfig: NextConfig = {
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
-  output: 'export', // This is important for Netlify static deployment
-  distDir: 'out', // Use an explicit 'out' directory
+  output: "export", // This is important for Netlify static deployment
+  distDir: "out", // Use an explicit 'out' directory
   images: {
     unoptimized: true, // For static export
   },
   typescript: {
-    // Skip type checking for Storybook files during production build
+    // Skip type checking during production build for demo apps
     ignoreBuildErrors: true,
   },
+  // Disable React strict mode for demo app
+  reactStrictMode: false,
 };
 
 export default nextConfig;
