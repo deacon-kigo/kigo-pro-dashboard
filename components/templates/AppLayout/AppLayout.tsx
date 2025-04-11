@@ -17,9 +17,10 @@ import {
 
 interface AppLayoutProps {
   children: ReactNode;
+  customBreadcrumb?: ReactNode;
 }
 
-export const AppLayout = ({ children }: AppLayoutProps) => {
+export const AppLayout = ({ children, customBreadcrumb }: AppLayoutProps) => {
   const { sidebarCollapsed } = useAppSelector((state) => state.ui);
   const sidebarWidth = sidebarCollapsed ? "70px" : "225px";
   const pathname = usePathname();
@@ -92,7 +93,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
           }}
         >
           <div className="h-full w-full max-w-[1600px] mx-auto pt-4">
-            {getBreadcrumbItems()}
+            {customBreadcrumb || getBreadcrumbItems()}
             {children}
           </div>
         </main>

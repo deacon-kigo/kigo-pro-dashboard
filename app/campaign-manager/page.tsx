@@ -1,22 +1,40 @@
 "use client";
 
-import React, { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect } from "react";
+import CampaignManagerView from "@/components/features/dashboard/views/CampaignManagerView";
+import AppLayout from "@/components/templates/AppLayout/AppLayout";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+} from "@/components/atoms/Breadcrumb";
 
 export default function CampaignManagerPage() {
-  const router = useRouter();
-  
+  // Fix sidebar active state
   useEffect(() => {
-    // Redirect to analytics page
-    router.push('/campaign-manager/analytics');
-  }, [router]);
-  
-  return (
-    <div className="flex items-center justify-center h-screen">
-      <div className="text-center">
-        <div className="inline-block animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
-        <p className="mt-2 text-gray-600">Redirecting to analytics...</p>
-      </div>
-    </div>
+    // Add view=campaign-manager parameter to mark Dashboard as active in sidebar
+    const url = new URL(window.location.href);
+    url.searchParams.set("view", "campaign-manager");
+    window.history.replaceState({}, "", url);
+  }, []);
+
+  // Custom breadcrumb showing just "Dashboard"
+  const dashboardBreadcrumb = (
+    <Breadcrumb className="mb-4">
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbPage>Dashboard</BreadcrumbPage>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
   );
-} 
+
+  return (
+    <AppLayout customBreadcrumb={dashboardBreadcrumb}>
+      <div className="pt-0 mt-0">
+        <CampaignManagerView />
+      </div>
+    </AppLayout>
+  );
+}

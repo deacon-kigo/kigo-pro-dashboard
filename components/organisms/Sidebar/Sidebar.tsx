@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   HomeIcon,
   RocketLaunchIcon,
@@ -61,6 +61,10 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
   const { sidebarCollapsed } = useSelector((state: RootState) => state.ui);
   const { clientId } = useSelector((state: RootState) => state.demo);
   const { clientName } = useDemoState();
+  // Get search params to check for view=campaign-manager
+  const searchParams = useSearchParams();
+  const isCampaignManagerView = searchParams.get("view") === "campaign-manager";
+
   // State for sign out dialog
   const [signOutDialogOpen, setSignOutDialogOpen] = useState(false);
 
@@ -138,11 +142,12 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     // Special case for analytics - active for both regular and campaign manager analytics
     if (
       path.includes("/analytics") &&
-      (pathname.includes("/analytics") || pathname.includes("/campaign-manager/analytics"))
+      (pathname.includes("/analytics") ||
+        pathname.includes("/campaign-manager/analytics"))
     ) {
       return true;
     }
-    
+
     // Special case for token management
     if (
       path.includes("token-management") &&
@@ -152,13 +157,16 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     ) {
       return true;
     }
-    
+
     // Special case for dashboard - when on root path or specific dashboard URL
+    // Also consider campaign-manager routes as dashboard or when view=campaign-manager param is present
     if (
-      path.includes("/dashboard") &&
+      (path === "/" || path.includes("/dashboard")) &&
       (pathname === "/" ||
         pathname === "/demos/cvs-dashboard" ||
-        pathname.includes("cvs-dashboard"))
+        pathname.includes("cvs-dashboard") ||
+        pathname.includes("/campaign-manager") ||
+        isCampaignManagerView)
     ) {
       return true;
     }
@@ -193,7 +201,10 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
 
   // Get CVS-specific navigation items
   const getCVSNavigationItems = () => {
-    const dashboardUrl = buildDemoUrl("cvs", "dashboard");
+    // Use the campaign-manager URL when in campaign manager context
+    const dashboardUrl = isCampaignManagerView
+      ? "/campaign-manager"
+      : buildDemoUrl("cvs", "dashboard");
     const customersUrl = buildDemoUrl("cvs", "token-management");
     const tokenManagementUrl = buildDemoUrl("cvs", "token-catalog");
     const ticketsUrl = buildDemoUrl("cvs", "tickets");
@@ -256,6 +267,9 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
 
   // Role-specific navigation items
   const getNavigationItems = () => {
+    // Determine dashboard URL based on context
+    const dashboardUrl = isCampaignManagerView ? "/campaign-manager" : "/";
+
     // If in CVS context, show CVS-specific navigation
     if (isCVSContextBool) {
       return getCVSNavigationItems();
@@ -267,7 +281,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
           <>
             <li className="nav-item px-3 py-1">
               <SidebarLabel
-                href="/"
+                href={dashboardUrl}
                 icon={HomeIcon}
                 title="Dashboard"
                 isActive={Boolean(isLinkActive("/"))}
@@ -299,7 +313,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
           <>
             <li className="nav-item px-3 py-1">
               <SidebarLabel
-                href="/"
+                href={dashboardUrl}
                 icon={HomeIcon}
                 title="Dashboard"
                 isActive={Boolean(isLinkActive("/"))}
@@ -331,7 +345,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
           <>
             <li className="nav-item px-3 py-1">
               <SidebarLabel
-                href="/"
+                href={dashboardUrl}
                 icon={HomeIcon}
                 title="Dashboard"
                 isActive={Boolean(isLinkActive("/"))}
