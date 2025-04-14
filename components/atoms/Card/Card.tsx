@@ -6,6 +6,7 @@ type CardProps = {
   children: React.ReactNode;
   title?: string;
   className?: string;
+  style?: React.CSSProperties;
   variant?: "default" | "elevated" | "gradient";
   gradientFrom?: string;
   gradientTo?: string;
@@ -30,11 +31,15 @@ type CardProps = {
  *
  * // Gradient card
  * <Card variant="gradient" gradientFrom="from-blue-500" gradientTo="to-indigo-600">Content</Card>
+ *
+ * // Card with custom styles
+ * <Card style={{ background: 'linear-gradient(...)', boxShadow: '...' }}>Content</Card>
  */
 export default function Card({
   children,
   title,
   className = "",
+  style,
   variant = "default",
   gradientFrom = "from-blue-500",
   gradientTo = "to-indigo-600",
@@ -66,7 +71,7 @@ export default function Card({
     variant === "gradient" ? "text-white" : "text-gray-900";
 
   return (
-    <div className={cardClasses}>
+    <div className={cardClasses} style={style}>
       {(title || headerContent || cardIcon) && (
         <div
           className={`px-5 py-4 ${variant === "gradient" ? "" : "border-b border-gray-200"} flex items-center justify-between`}

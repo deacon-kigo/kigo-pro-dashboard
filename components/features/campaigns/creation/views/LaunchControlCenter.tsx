@@ -420,6 +420,7 @@ const LaunchControlCenter: React.FC<LaunchControlCenterProps> = ({
 
                 <Button
                   variant={allSectionsReviewed ? "primary" : "outline"}
+                  theme="cvs"
                   disabled={
                     !allSectionsReviewed ||
                     launchStatus === "pending" ||

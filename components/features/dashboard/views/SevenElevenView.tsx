@@ -402,67 +402,67 @@ export default function SevenElevenView({
 
   // 7NOW delivery promotion
   const deliveryPromotionSection = (
-    <Card className="overflow-hidden shadow-sm">
-      <div
-        className="p-4 text-gray-800"
-        style={{
-          background: sevenElevenGradients.diagonal,
-          boxShadow: sevenElevenGradients.cardShadow,
-        }}
-      >
-        <div className="flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-4 md:mb-0 md:pr-8">
-            <h3 className="text-lg font-bold mb-1">
-              Promote 7NOW Delivery Service
-            </h3>
-            <p className="text-sm text-gray-700 mb-3 leading-relaxed">
-              Drive more delivery orders with targeted promotions for 7NOW.
-              Create special offers for first-time customers.
-            </p>
-            <div className="flex space-x-2">
-              <Button
-                variant="primary"
-                className="bg-red-600 text-white hover:bg-red-700 shadow-sm text-xs"
-                onClick={onCreateCampaign}
-              >
-                Start Campaign
-              </Button>
-              <Button
-                variant="outline"
-                className="border-red-600 text-red-600 hover:bg-red-50 text-xs"
-                onClick={() => window.open("https://www.7now.com", "_blank")}
-              >
-                Visit 7NOW
-              </Button>
-            </div>
+    <Card
+      className="overflow-hidden shadow-sm p-4 text-gray-800"
+      style={{
+        background: sevenElevenGradients.diagonal,
+        boxShadow: sevenElevenGradients.cardShadow,
+      }}
+    >
+      <div className="flex flex-col md:flex-row justify-between items-center">
+        <div className="mb-4 md:mb-0 md:pr-8">
+          <h3 className="text-lg font-bold mb-1">
+            Promote 7NOW Delivery Service
+          </h3>
+          <p className="text-sm text-gray-700 mb-3 leading-relaxed">
+            Drive more delivery orders with targeted promotions for 7NOW. Create
+            special offers for first-time customers.
+          </p>
+          <div className="flex space-x-2">
+            <Button variant="primary" size="sm" onClick={onCreateCampaign}>
+              Start Campaign
+            </Button>
+            <Button variant="outline" size="sm" href="https://www.7now.com">
+              Visit 7NOW
+            </Button>
           </div>
-          <div className="bg-white/80 backdrop-blur p-3 rounded-lg max-w-sm border border-gray-200 shadow-sm text-xs">
-            <h4 className="font-bold mb-2 text-sm">Current 7NOW Promotions</h4>
-            <ul className="space-y-2">
-              <li className="flex items-center">
-                <span className="bg-red-600 text-white h-5 w-5 rounded-full flex items-center justify-center mr-2 text-xs font-bold shadow-sm">
-                  1
+        </div>
+        <div className="bg-white/80 backdrop-blur p-3 rounded-lg max-w-sm border border-gray-200 shadow-sm text-xs">
+          <h4 className="font-bold mb-2 text-sm">Current 7NOW Promotions</h4>
+          <ul className="space-y-4">
+            <li className="flex items-center">
+              <div className="mr-3 relative w-14 h-14 overflow-hidden rounded-md border border-gray-200">
+                <Image
+                  src="/images/seven-eleven-big-bite.png"
+                  alt="Big Bite Pizza"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <span className="text-gray-700">
+                <strong>BIGBITE:</strong> Free pizza with your 7NOW order{" "}
+                <span className="bg-red-100 text-red-600 px-1.5 py-0.5 rounded text-xs ml-1">
+                  TX & FL
                 </span>
-                <span className="text-gray-700">
-                  <strong>BIGBITE:</strong> Free pizza with your 7NOW order{" "}
-                  <span className="bg-red-100 text-red-600 px-1.5 py-0.5 rounded text-xs ml-1">
-                    TX & FL
-                  </span>
+              </span>
+            </li>
+            <li className="flex items-center">
+              <div className="mr-3 relative w-14 h-14 overflow-hidden rounded-md border border-gray-200">
+                <Image
+                  src="/images/seven-eleven-20off.png"
+                  alt="$10 Off"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <span className="text-gray-700">
+                <strong>GET10OFF:</strong> $10 off $15+ basket{" "}
+                <span className="bg-red-100 text-red-600 px-1.5 py-0.5 rounded text-xs ml-1">
+                  New Customers
                 </span>
-              </li>
-              <li className="flex items-center">
-                <span className="bg-red-600 text-white h-5 w-5 rounded-full flex items-center justify-center mr-2 text-xs font-bold shadow-sm">
-                  2
-                </span>
-                <span className="text-gray-700">
-                  <strong>GET10OFF:</strong> $10 off $15+ basket{" "}
-                  <span className="bg-red-100 text-red-600 px-1.5 py-0.5 rounded text-xs ml-1">
-                    New Customers
-                  </span>
-                </span>
-              </li>
-            </ul>
-          </div>
+              </span>
+            </li>
+          </ul>
         </div>
       </div>
     </Card>
@@ -492,9 +492,12 @@ export default function SevenElevenView({
           </p>
 
           <div className="space-y-2">
-            <a
+            <Button
+              variant="outline"
+              theme="cvs"
+              size="sm"
+              className="w-full text-left justify-between"
               href="#"
-              className="flex items-center justify-between bg-gray-50 hover:bg-gray-100 p-2 rounded-lg text-sm text-gray-700 transition-colors"
             >
               <div className="flex items-center">
                 <svg
@@ -519,11 +522,14 @@ export default function SevenElevenView({
                   clipRule="evenodd"
                 />
               </svg>
-            </a>
+            </Button>
 
-            <a
+            <Button
+              variant="outline"
+              theme="cvs"
+              size="sm"
+              className="w-full text-left justify-between"
               href="#"
-              className="flex items-center justify-between bg-gray-50 hover:bg-gray-100 p-2 rounded-lg text-sm text-gray-700 transition-colors"
             >
               <div className="flex items-center">
                 <svg
@@ -552,7 +558,7 @@ export default function SevenElevenView({
                   clipRule="evenodd"
                 />
               </svg>
-            </a>
+            </Button>
           </div>
         </div>
       </div>
@@ -856,42 +862,48 @@ export default function SevenElevenView({
         </div>
 
         <div className="flex justify-center gap-4 mt-4 text-xs">
-          <button className="px-3 py-1 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700">
+          <Button variant="outline" theme="cvs" size="xs">
             1M
-          </button>
-          <button className="px-3 py-1 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700">
+          </Button>
+          <Button variant="outline" theme="cvs" size="xs">
             3M
-          </button>
-          <button className="px-3 py-1 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700">
+          </Button>
+          <Button variant="outline" theme="cvs" size="xs">
             6M
-          </button>
-          <button className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">
+          </Button>
+          <Button variant="primary" theme="cvs" size="xs">
             1Y
-          </button>
-          <button className="px-3 py-1 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700">
+          </Button>
+          <Button variant="outline" theme="cvs" size="xs">
             All
-          </button>
+          </Button>
         </div>
 
         <div className="flex justify-end gap-4 mt-4 text-xs">
-          <button
-            className={`px-3 py-1 rounded-md ${chartType === "area" ? "bg-blue-100 text-blue-700 font-medium" : "bg-gray-100 hover:bg-gray-200 text-gray-700"}`}
+          <Button
+            variant={chartType === "area" ? "primary" : "outline"}
+            theme="cvs"
+            size="xs"
             onClick={() => setChartType("area")}
           >
             Area
-          </button>
-          <button
-            className={`px-3 py-1 rounded-md ${chartType === "line" ? "bg-blue-100 text-blue-700 font-medium" : "bg-gray-100 hover:bg-gray-200 text-gray-700"}`}
+          </Button>
+          <Button
+            variant={chartType === "line" ? "primary" : "outline"}
+            theme="cvs"
+            size="xs"
             onClick={() => setChartType("line")}
           >
             Line
-          </button>
-          <button
-            className={`px-3 py-1 rounded-md ${chartType === "bar" ? "bg-blue-100 text-blue-700 font-medium" : "bg-gray-100 hover:bg-gray-200 text-gray-700"}`}
+          </Button>
+          <Button
+            variant={chartType === "bar" ? "primary" : "outline"}
+            theme="cvs"
+            size="xs"
             onClick={() => setChartType("bar")}
           >
             Bar
-          </button>
+          </Button>
         </div>
       </div>
     </Card>
@@ -921,14 +933,16 @@ export default function SevenElevenView({
         <div className="flex gap-2">
           <Button
             variant="primary"
-            className="bg-red-600 hover:bg-red-700 text-xs shadow-sm"
+            theme="cvs"
+            size="sm"
             onClick={onCreateCampaign}
           >
             Create Campaign
           </Button>
           <Button
             variant="outline"
-            className="text-red-600 border-red-600 hover:bg-red-50 text-xs"
+            theme="cvs"
+            size="sm"
             onClick={onCreateOffer}
           >
             Create Offer
@@ -1149,12 +1163,13 @@ export default function SevenElevenView({
                 <div className="mt-auto">
                   <Button
                     variant="outline"
-                    color="blue"
-                    className="text-sm w-full"
+                    theme="cvs"
+                    size="sm"
+                    className="w-full"
                     onClick={onCreateCampaign}
+                    icon={<ArrowRightIcon className="w-3.5 h-3.5" />}
                   >
-                    Create Campaign{" "}
-                    <ArrowRightIcon className="w-3.5 h-3.5 ml-1.5" />
+                    Create Campaign
                   </Button>
                 </div>
               </div>
@@ -1170,12 +1185,13 @@ export default function SevenElevenView({
                 <div className="mt-auto">
                   <Button
                     variant="outline"
-                    color="green"
-                    className="text-sm w-full"
+                    theme="cvs"
+                    size="sm"
+                    className="w-full"
                     onClick={onCreateOffer}
+                    icon={<ArrowRightIcon className="w-3.5 h-3.5" />}
                   >
-                    Create Offer{" "}
-                    <ArrowRightIcon className="w-3.5 h-3.5 ml-1.5" />
+                    Create Offer
                   </Button>
                 </div>
               </div>
@@ -1195,12 +1211,13 @@ export default function SevenElevenView({
                   <div className="mt-auto">
                     <Button
                       variant="outline"
-                      color="green"
-                      className="text-sm w-full"
+                      theme="cvs"
+                      size="sm"
+                      className="w-full text-green-600 border-green-600 hover:bg-green-50"
                       onClick={() => onViewCampaign("new-campaign")}
+                      icon={<ArrowRightIcon className="w-3.5 h-3.5" />}
                     >
-                      View Campaign{" "}
-                      <ArrowRightIcon className="w-3.5 h-3.5 ml-1.5" />
+                      View Campaign
                     </Button>
                   </div>
                 </div>
@@ -1214,11 +1231,12 @@ export default function SevenElevenView({
 
   // Personal greeting banner
   const greetingBanner = (
-    <div
-      className="rounded-xl p-6 shadow-md overflow-hidden relative mb-6"
+    <Card
+      className="p-6 mb-6 relative"
       style={{
         background: sevenElevenGradients.horizontal,
         color: "#333333",
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
       }}
     >
       {/* Pattern overlay for texture */}
@@ -1234,11 +1252,12 @@ export default function SevenElevenView({
           <div className="flex items-start">
             <div className="bg-white/50 backdrop-blur-sm rounded-lg p-1.5 mr-4 shadow-sm">
               <Image
-                src="/images/seven-eleven-logo.png"
+                src="/logos/seven-eleven.svg"
                 alt="7-Eleven"
                 width={48}
                 height={48}
                 className="rounded"
+                priority
                 onError={(e) => {
                   // Fallback if image doesn't exist
                   e.currentTarget.src =
@@ -1288,7 +1307,7 @@ export default function SevenElevenView({
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 
   // Main render
