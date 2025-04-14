@@ -850,7 +850,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         className={`rounded-lg p-3 max-w-[80%] ${
           message.type === "user"
             ? "bg-primary text-white rounded-tr-none"
-            : "bg-blue-50 text-blue-800 border border-blue-100 shadow-sm rounded-tl-none"
+            : "bg-blue-50 text-blue-800  shadow-sm rounded-tl-none"
         }`}
       >
         {message.type === "ai" ? (
