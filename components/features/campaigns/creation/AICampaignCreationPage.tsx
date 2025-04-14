@@ -7,14 +7,11 @@ import React, {
   useMemo,
   useRef,
 } from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ChevronLeftIcon } from "@heroicons/react/24/outline";
 import { useDemoActions, useDemoState } from "@/lib/redux/hooks";
 import { AIAssistantPanel } from "../../ai";
 import DynamicCanvas from "./DynamicCanvas";
 import Card from "@/components/atoms/Card/Card";
-import { buildDemoUrl } from "@/lib/utils";
 
 export default function AICampaignCreationPage() {
   const searchParams = useSearchParams();
@@ -74,11 +71,6 @@ export default function AICampaignCreationPage() {
     return clientName || "Merchant";
   }, [clientId, clientName]);
 
-  // Get return URL based on client
-  const getDashboardUrl = useCallback(() => {
-    return buildDemoUrl(clientId, clientId === "deacons" ? "pizza" : "");
-  }, [clientId]);
-
   // Handle option selected from AI Assistant Panel - memoize to avoid recreation
   const handleOptionSelected = useCallback(
     (optionId: string) => {
@@ -107,33 +99,8 @@ export default function AICampaignCreationPage() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-gray-50">
-      {/* Header */}
-      <div className="p-3 sm:p-4 flex-shrink-0">
-        <div className="max-w-screen-2xl mx-auto">
-          <Card className="flex justify-between items-center p-3">
-            <Link
-              href={getDashboardUrl()}
-              className="flex items-center text-gray-500 hover:text-primary transition-colors"
-            >
-              <ChevronLeftIcon className="w-5 h-5 mr-1" />
-              <span className="font-medium">Back to Dashboard</span>
-            </Link>
-            <div className="text-center">
-              <h2 className="text-xl font-bold bg-gradient-to-r from-blue-500 via-indigo-400 to-purple-500 text-transparent bg-clip-text">
-                {greeting}, {merchantName}
-              </h2>
-              <p className="text-sm text-gray-500">
-                Let&apos;s create a new{" "}
-                {typeParam ? typeParam : "marketing campaign"}
-              </p>
-            </div>
-            <div className="w-32"></div> {/* Empty div for alignment */}
-          </Card>
-        </div>
-      </div>
-
       {/* Dual Panel Layout */}
-      <div className="flex-1 max-w-screen-2xl mx-auto px-3 sm:px-4 pb-3">
+      <div className="flex-1 max-w-screen-2xl mx-auto sm: pb-3">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 h-full">
           {/* AI Assistant Panel - Left Side */}
           <div className="lg:col-span-4 h-full">
