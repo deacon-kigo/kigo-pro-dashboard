@@ -965,8 +965,372 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
             }, 1500);
           }, 100);
         }
-        // Handle other option cases
-        // ... existing code ...
+        // Handle campaign creation flow start
+        else if (optionValue === "next-step-campaign") {
+          // We'll use setTimeout to give enough time for the UI to update before triggering
+          setTimeout(() => {
+            // Create a user message
+            const userMessage: Message = {
+              id: Date.now().toString(),
+              type: "user",
+              content: selectedOption.text,
+              timestamp: new Date(),
+            };
+
+            setMessages((prev) => [...prev, userMessage]);
+            setNewMessage("");
+            setIsThinking(true);
+
+            // Clear any existing timeout
+            if (timeoutRef.current) {
+              clearTimeout(timeoutRef.current);
+            }
+
+            // Start the campaign creation dialogue sequence
+            timeoutRef.current = setTimeout(() => {
+              const campaignNamePrompt: Message = {
+                id: Date.now().toString(),
+                type: "ai",
+                content:
+                  "Let's create a campaign to deliver this offer. What would you like to name this campaign?",
+                timestamp: new Date(),
+                responseOptions: [
+                  {
+                    text: "7NOW App Texas & Florida Pizza Promotion",
+                    value: "campaign-name-response",
+                  },
+                ],
+              };
+
+              setMessages((prev) => [...prev, campaignNamePrompt]);
+              setIsThinking(false);
+            }, 1000);
+          }, 100);
+        }
+        // Handle campaign name response
+        else if (optionValue === "campaign-name-response") {
+          // We'll use setTimeout to give enough time for the UI to update before triggering
+          setTimeout(() => {
+            // Create a user message
+            const userMessage: Message = {
+              id: Date.now().toString(),
+              type: "user",
+              content: selectedOption.text,
+              timestamp: new Date(),
+            };
+
+            setMessages((prev) => [...prev, userMessage]);
+            setNewMessage("");
+            setIsThinking(true);
+
+            // Clear any existing timeout
+            if (timeoutRef.current) {
+              clearTimeout(timeoutRef.current);
+            }
+
+            // Ask about campaign timeline
+            timeoutRef.current = setTimeout(() => {
+              const timelinePrompt: Message = {
+                id: Date.now().toString(),
+                type: "ai",
+                content:
+                  "The offer is set to run through June 30th. Would you like the campaign to follow the same timeline?",
+                timestamp: new Date(),
+                responseOptions: [
+                  {
+                    text: "Yes, but let's start next Monday to give us time for final approvals",
+                    value: "campaign-timeline-response",
+                  },
+                ],
+              };
+
+              setMessages((prev) => [...prev, timelinePrompt]);
+              setIsThinking(false);
+            }, 1000);
+          }, 100);
+        }
+        // Handle campaign timeline response
+        else if (optionValue === "campaign-timeline-response") {
+          // We'll use setTimeout to give enough time for the UI to update before triggering
+          setTimeout(() => {
+            // Create a user message
+            const userMessage: Message = {
+              id: Date.now().toString(),
+              type: "user",
+              content: selectedOption.text,
+              timestamp: new Date(),
+            };
+
+            setMessages((prev) => [...prev, userMessage]);
+            setNewMessage("");
+            setIsThinking(true);
+
+            // Clear any existing timeout
+            if (timeoutRef.current) {
+              clearTimeout(timeoutRef.current);
+            }
+
+            // Ask about campaign budget
+            timeoutRef.current = setTimeout(() => {
+              const budgetPrompt: Message = {
+                id: Date.now().toString(),
+                type: "ai",
+                content: "What's your total budget for this campaign?",
+                timestamp: new Date(),
+                responseOptions: [
+                  {
+                    text: "$120,000",
+                    value: "campaign-budget-response",
+                  },
+                ],
+              };
+
+              setMessages((prev) => [...prev, budgetPrompt]);
+              setIsThinking(false);
+            }, 1000);
+          }, 100);
+        }
+        // Handle campaign budget response
+        else if (optionValue === "campaign-budget-response") {
+          // We'll use setTimeout to give enough time for the UI to update before triggering
+          setTimeout(() => {
+            // Create a user message
+            const userMessage: Message = {
+              id: Date.now().toString(),
+              type: "user",
+              content: selectedOption.text,
+              timestamp: new Date(),
+            };
+
+            setMessages((prev) => [...prev, userMessage]);
+            setNewMessage("");
+            setIsThinking(true);
+
+            // Clear any existing timeout
+            if (timeoutRef.current) {
+              clearTimeout(timeoutRef.current);
+            }
+
+            // Ask about daily spend limit
+            timeoutRef.current = setTimeout(() => {
+              const dailySpendPrompt: Message = {
+                id: Date.now().toString(),
+                type: "ai",
+                content: "What's your maximum daily spend?",
+                timestamp: new Date(),
+                responseOptions: [
+                  {
+                    text: "$3,000",
+                    value: "campaign-daily-spend-response",
+                  },
+                ],
+              };
+
+              setMessages((prev) => [...prev, dailySpendPrompt]);
+              setIsThinking(false);
+            }, 1000);
+          }, 100);
+        }
+        // Handle daily spend response
+        else if (optionValue === "campaign-daily-spend-response") {
+          // We'll use setTimeout to give enough time for the UI to update before triggering
+          setTimeout(() => {
+            // Create a user message
+            const userMessage: Message = {
+              id: Date.now().toString(),
+              type: "user",
+              content: selectedOption.text,
+              timestamp: new Date(),
+            };
+
+            setMessages((prev) => [...prev, userMessage]);
+            setNewMessage("");
+            setIsThinking(true);
+
+            // Clear any existing timeout
+            if (timeoutRef.current) {
+              clearTimeout(timeoutRef.current);
+            }
+
+            // Ask about high value actions to track
+            timeoutRef.current = setTimeout(() => {
+              const actionsPrompt: Message = {
+                id: Date.now().toString(),
+                type: "ai",
+                content: "What High Value Actions would you like to track?",
+                timestamp: new Date(),
+                responseOptions: [
+                  {
+                    text: "App installs, account creations, first orders, and repeat orders",
+                    value: "campaign-actions-response",
+                  },
+                ],
+              };
+
+              setMessages((prev) => [...prev, actionsPrompt]);
+              setIsThinking(false);
+            }, 1000);
+          }, 100);
+        }
+        // Handle high value actions response and show campaign configuration
+        else if (optionValue === "campaign-actions-response") {
+          // We'll use setTimeout to give enough time for the UI to update before triggering
+          setTimeout(() => {
+            // Create a user message
+            const userMessage: Message = {
+              id: Date.now().toString(),
+              type: "user",
+              content: selectedOption.text,
+              timestamp: new Date(),
+            };
+
+            setMessages((prev) => [...prev, userMessage]);
+            setNewMessage("");
+            setIsThinking(true);
+
+            // Clear any existing timeout
+            if (timeoutRef.current) {
+              clearTimeout(timeoutRef.current);
+            }
+
+            // Show campaign configuration being generated
+            timeoutRef.current = setTimeout(() => {
+              const configurationProcessingMessage: Message = {
+                id: Date.now().toString(),
+                type: "ai",
+                content:
+                  "Based on your inputs, I'm configuring the optimal campaign settings. This will just take a moment...",
+                timestamp: new Date(),
+              };
+
+              setMessages((prev) => [...prev, configurationProcessingMessage]);
+
+              // After a brief delay, show the advanced campaign configuration
+              setTimeout(() => {
+                const advancedConfigMessage: Message = {
+                  id: Date.now().toString(),
+                  type: "ai",
+                  content: `
+### Optimized Campaign Configuration
+
+**Audience Targeting:**
+- Primary focus on adults 18+ within delivery range of 7-Eleven locations in Texas and Florida
+- Secondary targeting for users with food delivery app usage patterns
+
+**Placement Strategy:**
+- 70% budget allocation to Local+ for neighborhood-level targeting around store locations
+- 20% to TOP for broader awareness in key markets
+- 10% to Boosts during weekend dinner hours
+
+**Brand Safety Parameters:**
+- Automatically configured to exclude competitor locations and content categories with negative sentiment alignment
+
+**Pacing Controls:**
+- Higher budget allocation to evenings (5-9pm) and weekends
+
+**Performance Targets:**
+- Target cost per app install: $4.25
+- Target cost per completed order: $9.75
+- Target ROAS based on average basket value: 3.6x
+
+The campaign is now fully configured and ready to publish. Would you like to make any adjustments, or shall we proceed with publishing?
+                  `,
+                  timestamp: new Date(),
+                  responseOptions: [
+                    {
+                      text: "Publish Campaign",
+                      value: "publish-campaign",
+                    },
+                    {
+                      text: "Make Adjustments",
+                      value: "adjust-campaign",
+                    },
+                  ],
+                };
+
+                setMessages((prev) => [...prev, advancedConfigMessage]);
+                setIsThinking(false);
+
+                // Notify parent component to update the canvas view
+                if (onOptionSelected) onOptionSelected("campaign-selection");
+              }, 3000);
+            }, 1500);
+          }, 100);
+        }
+        // Handle campaign publication
+        else if (optionValue === "publish-campaign") {
+          // We'll use setTimeout to give enough time for the UI to update before triggering
+          setTimeout(() => {
+            // Create a user message
+            const userMessage: Message = {
+              id: Date.now().toString(),
+              type: "user",
+              content: selectedOption.text,
+              timestamp: new Date(),
+            };
+
+            setMessages((prev) => [...prev, userMessage]);
+            setNewMessage("");
+            setIsThinking(true);
+
+            // Clear any existing timeout
+            if (timeoutRef.current) {
+              clearTimeout(timeoutRef.current);
+            }
+
+            // Show publication in progress
+            timeoutRef.current = setTimeout(() => {
+              const publishingMessage: Message = {
+                id: Date.now().toString(),
+                type: "ai",
+                content: "Publishing your campaign across the network...",
+                timestamp: new Date(),
+              };
+
+              setMessages((prev) => [...prev, publishingMessage]);
+
+              // After a brief delay, show successful publication
+              setTimeout(() => {
+                const successMessage: Message = {
+                  id: Date.now().toString(),
+                  type: "ai",
+                  content: `
+### Campaign Successfully Published!
+
+Your 7NOW App Texas & Florida Pizza Promotion campaign is now live and running across our network. 
+
+📱 Targeting mobile users in Texas and Florida
+🍕 Promoting free pizza with first 7NOW order
+📊 Tracking app installs, account creations, first orders, and repeat orders
+
+**Campaign ID:** 7NOW-TX-FL-2023-06
+**Status:** Active
+**Estimated Daily Reach:** 45,000-60,000 impressions
+
+Your campaign performance dashboard is now available. You'll receive daily performance updates, and our AI will continuously optimize your campaign to maximize results.
+                  `,
+                  timestamp: new Date(),
+                  responseOptions: [
+                    {
+                      text: "View Campaign Performance",
+                      value: "view-campaign-performance",
+                    },
+                    {
+                      text: "Create Another Campaign",
+                      value: "create-another-campaign",
+                    },
+                  ],
+                };
+
+                setMessages((prev) => [...prev, successMessage]);
+                setIsThinking(false);
+
+                // Notify parent component to update the canvas view
+                if (onOptionSelected) onOptionSelected("launch-campaign");
+              }, 3000);
+            }, 1500);
+          }, 100);
+        }
       }
     },
     [messages, onOptionSelected, timeoutRef, clarifyingQuestionStep]

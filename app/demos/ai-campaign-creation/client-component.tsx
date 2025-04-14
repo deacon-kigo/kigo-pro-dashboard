@@ -89,6 +89,7 @@ export default function AICampaignClientComponent() {
           setCampaignCreationStep("business-intelligence");
           break;
         case "create-campaign":
+        case "next-step-campaign":
           setCampaignCreationStep("campaign-selection");
           break;
         case "select-campaign":
@@ -99,7 +100,11 @@ export default function AICampaignClientComponent() {
           setCampaignCreationStep("performance-prediction");
           break;
         case "launch-campaign":
+        case "publish-campaign":
           setCampaignCreationStep("launch-control");
+          break;
+        case "view-campaign-performance":
+          setCampaignCreationStep("performance-prediction");
           break;
       }
     },
