@@ -5,6 +5,7 @@ import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import { useDemoState } from "@/lib/redux/hooks";
 import ReactMarkdown from "react-markdown";
 import Image from "next/image";
+import { Button } from "@/components/atoms/Button/Button";
 
 interface Message {
   id: string;
@@ -817,12 +818,15 @@ Would you like me to develop a campaign strategy for any of these opportunities 
             placeholder="Type your message..."
             className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <button
+          <Button
             type="submit"
-            className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <PaperAirplaneIcon className="w-5 h-5" />
-          </button>
+            variant="primary"
+            icon={<PaperAirplaneIcon className="w-5 h-5" />}
+            iconOnly
+            disabled={!newMessage.trim() || isThinking}
+            className="shadow-md"
+            aria-label="Send message"
+          />
         </form>
       </div>
     </div>
@@ -846,7 +850,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         className={`rounded-lg p-3 max-w-[80%] ${
           message.type === "user"
             ? "bg-primary text-white rounded-tr-none"
-            : "bg-blue-50 text-blue-800  shadow-sm rounded-tl-none"
+            : "bg-blue-50 text-blue-800 border border-blue-100 shadow-sm rounded-tl-none"
         }`}
       >
         {message.type === "ai" ? (
@@ -906,15 +910,17 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             {message.responseOptions && message.responseOptions.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-2">
                 {message.responseOptions.map((option) => (
-                  <button
+                  <Button
                     key={option.value}
                     onClick={() =>
                       onOptionSelected && onOptionSelected(option.value)
                     }
-                    className="px-3 py-1.5 bg-white border border-gray-300 rounded-full text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    variant="outline"
+                    size="sm"
+                    className="px-3 py-1.5 rounded-full text-sm font-medium"
                   >
                     {option.text}
-                  </button>
+                  </Button>
                 ))}
               </div>
             )}

@@ -13,13 +13,19 @@ type ButtonVariant =
   | "link"
   | "destructive";
 type ButtonTheme = "kigo" | "cvs";
+type ButtonSize = "default" | "sm" | "lg" | "xs" | "xl";
 
 // Simple props interface that includes ShadCN button props but defines our own variant
 interface ButtonProps
-  extends Omit<React.ComponentPropsWithRef<typeof ShadcnButton>, "variant"> {
+  extends Omit<
+    React.ComponentPropsWithRef<typeof ShadcnButton>,
+    "variant" | "size"
+  > {
   variant?: ButtonVariant;
   theme?: ButtonTheme;
   icon?: React.ReactNode;
+  iconOnly?: boolean;
+  size?: ButtonSize;
   href?: string;
   glow?: boolean | GlowEffectProps;
 }
@@ -92,6 +98,15 @@ const defaultGlowEffects: Record<ButtonVariant, GlowEffectProps> = {
   },
 };
 
+// Map our custom sizes to ShadCN sizes
+const sizeMap = {
+  default: "default",
+  sm: "sm",
+  lg: "lg",
+  xs: "sm", // Map xs to sm
+  xl: "lg", // Map xl to lg
+} as const;
+
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
@@ -99,6 +114,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       variant = "primary",
       theme = "kigo",
       icon,
+      iconOnly = false,
+      size = "default",
       children,
       href,
       glow,
@@ -109,16 +126,36 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     // Only apply CVS theme classes if theme is cvs
     const themeClass = theme === "cvs" ? cvsThemeStyles[variant] : "";
 
-    // Map to ShadCN variant
+    // Map to ShadCN variant and size
     const shadcnVariant = variantMap[variant];
+    const shadcnSize = iconOnly ? "icon" : sizeMap[size];
+
+    // Size classes (for our custom sizes)
+    const sizeClasses = {
+      xs: "text-xs py-1 px-2",
+      sm: "text-sm py-1.5 px-3",
+      default: "text-base py-2 px-4",
+      lg: "text-lg py-2.5 px-5",
+      xl: "text-xl py-3 px-6",
+    }[size];
 
     // Create content with icon if provided
     const content = (
       <>
-        {icon && <span className="mr-2">{icon}</span>}
+        {icon && (
+          <span className={`${!iconOnly && children ? "mr-2" : ""}`}>
+            {icon}
+          </span>
+        )}
         {children}
       </>
     );
+
+    // Decide whether to apply icon-only specific styling
+    const iconOnlyClass =
+      iconOnly || (icon && !children)
+        ? "p-2 aspect-square flex items-center justify-center"
+        : "";
 
     // Configure glow effect if enabled
     const glowProps: GlowEffectProps | undefined = glow
@@ -151,8 +188,15 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         <ButtonWithGlow>
           <ShadcnButton
             asChild
-            className={cn(themeClass, outlineClass, className)}
+            className={cn(
+              themeClass,
+              outlineClass,
+              iconOnlyClass,
+              sizeClasses,
+              className
+            )}
             variant={shadcnVariant}
+            size={shadcnSize}
             // We don't forward the ref here because the component prop types expect HTMLButtonElement
             // but when using asChild with an anchor tag, it would need HTMLAnchorElement
             // This avoids TypeScript errors while still providing expected functionality
@@ -168,8 +212,15 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <ButtonWithGlow>
         <ShadcnButton
-          className={cn(themeClass, outlineClass, className)}
+          className={cn(
+            themeClass,
+            outlineClass,
+            iconOnlyClass,
+            sizeClasses,
+            className
+          )}
           variant={shadcnVariant}
+          size={shadcnSize}
           ref={ref}
           {...props}
         >
