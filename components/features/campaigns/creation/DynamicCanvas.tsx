@@ -188,6 +188,23 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = () => {
     "launch-control": 5,
   };
 
+  // Ordered list of steps for navigation
+  const orderedSteps: ViewType[] = [
+    "business-intelligence",
+    "campaign-selection",
+    "asset-creation",
+    "performance-prediction",
+    "launch-control",
+  ];
+
+  // Simple navigation functions
+  const goToPreviousStep = useCallback(() => {
+    const currentIndex = orderedSteps.indexOf(campaignCreationStep);
+    if (currentIndex > 0) {
+      setCampaignCreationStep(orderedSteps[currentIndex - 1]);
+    }
+  }, [campaignCreationStep, setCampaignCreationStep]);
+
   // Determine mock data based on client ID
   const mockBusinessData: BusinessData = useMemo(() => {
     if (clientId === "seven-eleven") {
@@ -660,6 +677,42 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = () => {
     }
   }, [clientId]);
 
+  const goToNextStep = useCallback(() => {
+    console.log(
+      "Next step button clicked, current step:",
+      campaignCreationStep
+    );
+    const currentIndex = orderedSteps.indexOf(campaignCreationStep);
+
+    if (currentIndex < orderedSteps.length - 1) {
+      // For the demo, we'll auto-populate any required data if missing
+      const nextStep = orderedSteps[currentIndex + 1];
+
+      // If we're moving to asset-creation and no campaign is selected, select the first one
+      if (
+        nextStep === "asset-creation" &&
+        !selectedCampaign &&
+        mockCampaignOptions.length > 0
+      ) {
+        setSelectedCampaign(mockCampaignOptions[0]);
+        setCampaignAssets(mockCampaignAssets);
+        setOfferDetails(mockOfferDetails);
+      }
+
+      // Always proceed to the next step regardless of state
+      setCampaignCreationStep(nextStep);
+    }
+  }, [
+    campaignCreationStep,
+    selectedCampaign,
+    mockCampaignOptions,
+    mockCampaignAssets,
+    mockOfferDetails,
+    setCampaignCreationStep,
+    setCampaignAssets,
+    setOfferDetails,
+  ]);
+
   // Window resize handler
   const handleResize = useCallback(() => {
     setWindowSize({
@@ -931,20 +984,7 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = () => {
       {/* Navigation footer */}
       <div className="p-4 flex justify-between border-t border-gray-200 bg-white flex-shrink-0 sticky bottom-0 left-0 right-0 z-10">
         <button
-          onClick={() => {
-            const views: ViewType[] = [
-              "business-intelligence",
-              "campaign-selection",
-              "asset-creation",
-              "performance-prediction",
-              "launch-control",
-            ];
-            const currentIndex = views.indexOf(campaignCreationStep);
-
-            if (currentIndex > 0) {
-              setCampaignCreationStep(views[currentIndex - 1]);
-            }
-          }}
+          onClick={goToPreviousStep}
           disabled={campaignCreationStep === "business-intelligence"}
           className={`px-4 py-2 rounded-lg ${
             campaignCreationStep === "business-intelligence"
@@ -956,20 +996,7 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = () => {
         </button>
 
         <button
-          onClick={() => {
-            const views: ViewType[] = [
-              "business-intelligence",
-              "campaign-selection",
-              "asset-creation",
-              "performance-prediction",
-              "launch-control",
-            ];
-            const currentIndex = views.indexOf(campaignCreationStep);
-
-            if (currentIndex < views.length - 1) {
-              setCampaignCreationStep(views[currentIndex + 1]);
-            }
-          }}
+          onClick={goToNextStep}
           disabled={campaignCreationStep === "launch-control"}
           className={`px-4 py-2 rounded-lg ${
             campaignCreationStep === "launch-control"
