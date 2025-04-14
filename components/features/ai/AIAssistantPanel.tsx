@@ -846,7 +846,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         className={`rounded-lg p-3 max-w-[80%] ${
           message.type === "user"
             ? "bg-primary text-white rounded-tr-none"
-            : "bg-gray-100 text-gray-800 rounded-tl-none"
+            : "bg-blue-50 text-blue-800  shadow-sm rounded-tl-none"
         }`}
       >
         {message.type === "ai" ? (
@@ -934,13 +934,13 @@ const AIThinkingIndicator: React.FC = () => {
       <div className="h-12 w-12 bg-blue-100 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center">
         <span className="text-blue-600 font-bold">AI</span>
       </div>
-      <div className="bg-gray-100 rounded-lg p-4 max-w-xs">
+      <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 max-w-xs shadow-sm">
         <div className="flex space-x-1">
-          <div className="h-2 w-2 bg-gray-300 rounded-full"></div>
-          <div className="h-2 w-2 bg-gray-300 rounded-full"></div>
-          <div className="h-2 w-2 bg-gray-300 rounded-full"></div>
+          <div className="h-2 w-2 bg-blue-300 rounded-full"></div>
+          <div className="h-2 w-2 bg-blue-300 rounded-full"></div>
+          <div className="h-2 w-2 bg-blue-300 rounded-full"></div>
         </div>
-        <div className="text-xs text-gray-500 mt-2">
+        <div className="text-xs text-blue-800 mt-2">
           Analyzing business data...
         </div>
       </div>
