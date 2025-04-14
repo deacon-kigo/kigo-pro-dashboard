@@ -419,25 +419,31 @@ const BusinessIntelligenceView: React.FC<BusinessIntelligenceViewProps> = ({
 
                 <div className="mt-2 flex space-x-2">
                   <Badge
-                    className={
-                      opportunity.impact === "High"
-                        ? "bg-green-500 text-white"
-                        : opportunity.impact === "Medium"
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-500 text-white"
-                    }
+                    variant={(() => {
+                      switch (opportunity.impact) {
+                        case "High":
+                          return "destructive";
+                        case "Medium":
+                          return "warning";
+                        case "Low":
+                          return "success";
+                      }
+                    })()}
                     rounded="md"
                   >
                     Impact: {opportunity.impact}
                   </Badge>
                   <Badge
-                    className={
-                      opportunity.difficulty === "Low"
-                        ? "bg-green-500 text-white"
-                        : opportunity.difficulty === "Medium"
-                          ? "bg-yellow-500 text-white"
-                          : "bg-red-500 text-white"
-                    }
+                    variant={(() => {
+                      switch (opportunity.difficulty) {
+                        case "Low":
+                          return "success";
+                        case "Medium":
+                          return "warning";
+                        case "High":
+                          return "destructive";
+                      }
+                    })()}
                     rounded="md"
                   >
                     Difficulty: {opportunity.difficulty}

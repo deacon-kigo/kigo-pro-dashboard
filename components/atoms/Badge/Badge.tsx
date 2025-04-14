@@ -10,7 +10,7 @@ import {
 
 // Enhanced badge variants with more options
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
   {
     variants: {
       variant: {
@@ -29,6 +29,14 @@ const badgeVariants = cva(
         error: "border-transparent bg-red-100 text-red-800 hover:bg-red-200",
         neutral:
           "border-transparent bg-gray-100 text-gray-800 hover:bg-gray-200",
+        // Impact badges
+        impactHigh: "border-transparent bg-green-500 text-white",
+        impactMedium: "border-transparent bg-blue-500 text-white",
+        impactLow: "border-transparent bg-gray-500 text-white",
+        // Difficulty badges
+        difficultyLow: "border-transparent bg-green-500 text-white",
+        difficultyMedium: "border-transparent bg-yellow-500 text-white",
+        difficultyHigh: "border-transparent bg-red-500 text-white",
       },
       size: {
         default: "px-2.5 py-0.5 text-xs",
@@ -61,6 +69,8 @@ export interface BadgeProps
   className?: string;
   // Support direct text content for easier usage
   children?: React.ReactNode;
+  // For direct background color control
+  useClassName?: boolean;
 }
 
 function Badge({
@@ -73,6 +83,7 @@ function Badge({
   withDot = false,
   dotColor,
   children,
+  useClassName = false,
   ...props
 }: BadgeProps) {
   // Choose dot color based on variant if not provided
@@ -86,32 +97,104 @@ function Badge({
     info: "bg-blue-500",
     error: "bg-red-500",
     neutral: "bg-gray-500",
+    impactHigh: "bg-green-300",
+    impactMedium: "bg-blue-300",
+    impactLow: "bg-gray-300",
+    difficultyLow: "bg-green-300",
+    difficultyMedium: "bg-yellow-300",
+    difficultyHigh: "bg-red-300",
   };
 
-  const dotColorClass =
-    dotColor ||
-    (variant
-      ? defaultDotColors[variant as keyof typeof defaultDotColors]
-      : defaultDotColors.default);
+  const getDotColor = (variantName: string | undefined | null): string => {
+    if (!variantName) return defaultDotColors.default;
+
+    if (variantName in defaultDotColors) {
+      return defaultDotColors[variantName as keyof typeof defaultDotColors];
+    }
+
+    return "bg-current";
+  };
+
+  const dotColorClass = dotColor || getDotColor(variant);
+
+  // When using custom className, we'll bypass the ShadcnBadge component altogether
+  if (useClassName) {
+    // Base badge styles for custom badges
+    const baseStyles =
+      "inline-flex items-center px-2.5 py-0.5 text-xs font-semibold";
+
+    // Rounded classes
+    let roundedClass = "rounded-full"; // default
+    switch (rounded) {
+      case "md":
+        roundedClass = "rounded-md";
+        break;
+      case "sm":
+        roundedClass = "rounded-sm";
+        break;
+      case "none":
+        roundedClass = "rounded-none";
+        break;
+    }
+
+    // Size classes
+    let sizeClass = "px-2.5 py-0.5 text-xs"; // default
+    switch (size) {
+      case "sm":
+        sizeClass = "px-2 py-0.5 text-[10px]";
+        break;
+      case "lg":
+        sizeClass = "px-3 py-1 text-sm";
+        break;
+    }
+
+    return (
+      <div
+        className={cn(baseStyles, roundedClass, sizeClass, className)}
+        {...props}
+      >
+        {withDot && (
+          <span
+            className={cn("h-1.5 w-1.5 rounded-full mr-1", dotColorClass)}
+          />
+        )}
+        {icon && iconPosition === "left" && (
+          <span className="mr-1 -ml-0.5 h-3.5 w-3.5">{icon}</span>
+        )}
+        {children}
+        {icon && iconPosition === "right" && (
+          <span className="ml-1 -mr-0.5 h-3.5 w-3.5">{icon}</span>
+        )}
+      </div>
+    );
+  }
+
+  // Original implementation for shadcn variants
+  const effectiveVariant = variant || "default";
 
   // Map our variants to shadcn variants when possible
-  const getShadcnVariant = (variant: string | undefined) => {
+  const getShadcnVariant = (
+    variant: string
+  ): "default" | "secondary" | "destructive" | "outline" | undefined => {
     switch (variant) {
       case "default":
+        return "default";
       case "secondary":
+        return "secondary";
       case "destructive":
+        return "destructive";
       case "outline":
-        return variant;
+        return "outline";
       default:
         return undefined;
     }
   };
 
-  const shadcnVariant = getShadcnVariant(variant);
+  const shadcnVariant = getShadcnVariant(effectiveVariant);
 
   // For variants that don't map directly to shadcn, use our custom badgeVariants
   const customVariantClass = !shadcnVariant
-    ? badgeVariants({ variant, size, rounded })
+    ? badgeVariants({ variant: effectiveVariant, size, rounded })
     : "";
 
   return (
