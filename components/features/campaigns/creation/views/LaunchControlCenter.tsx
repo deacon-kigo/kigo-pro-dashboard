@@ -424,7 +424,7 @@ const LaunchControlCenter: React.FC<LaunchControlCenterProps> = ({
                   disabled={
                     !allSectionsReviewed ||
                     launchStatus === "pending" ||
-                    launchStatus === "launched"
+                    String(launchStatus) === "launched"
                   }
                   onClick={handleLaunch}
                   className="min-w-[150px]"
