@@ -68,8 +68,8 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
   // State for sign out dialog
   const [signOutDialogOpen, setSignOutDialogOpen] = useState(false);
 
-  // Local state for backward compatibility during migration
-  const [isCollapsed, setIsCollapsed] = useState(sidebarCollapsed);
+  // Client-side hydration tracker
+  const [isHydrated, setIsHydrated] = useState(false);
 
   // This is where the error occurs - pathname can be null in Storybook
   let pathname = usePathname();
@@ -88,36 +88,40 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
   // Check if we're in the CVS context - use prop or derive from Redux
   const isCVSContextBool = Boolean(isCVSContext || clientId === "cvs");
 
-  // Debug output only when needed
-  // console.log("Sidebar theme context:", { isCVSContext, clientId, isCVSContextBool });
-
-  // Sync local state with Redux
+  // Use effect to mark component as hydrated
   useEffect(() => {
-    setIsCollapsed(sidebarCollapsed);
-  }, [sidebarCollapsed]);
+    setIsHydrated(true);
+  }, []);
 
-  // Store collapse state in localStorage (will be handled by Redux in the future)
+  // Only sync with localStorage after hydration is complete
   useEffect(() => {
+    if (!isHydrated) return;
+
     // Add a try-catch for localStorage to handle Storybook environments
     try {
-      if (typeof localStorage !== "undefined") {
+      if (typeof window !== "undefined") {
         const storedState = localStorage.getItem("sidebarCollapsed");
-        if (storedState) {
-          setIsCollapsed(storedState === "true");
-          dispatch(setSidebarCollapsed(storedState === "true"));
+        if (storedState !== null) {
+          const parsedState = storedState === "true";
+          // Only dispatch if different from current Redux state
+          if (parsedState !== sidebarCollapsed) {
+            dispatch(setSidebarCollapsed(parsedState));
+          }
         }
       }
     } catch (error) {
       console.warn("Unable to access localStorage:", error);
     }
-  }, [dispatch]);
+  }, [isHydrated, dispatch, sidebarCollapsed]);
 
-  // Update localStorage when state changes
+  // Update localStorage when Redux state changes, but only after hydration
   useEffect(() => {
+    if (!isHydrated) return;
+
     // Add a try-catch for localStorage to handle Storybook environments
     try {
-      if (typeof localStorage !== "undefined") {
-        localStorage.setItem("sidebarCollapsed", isCollapsed.toString());
+      if (typeof window !== "undefined") {
+        localStorage.setItem("sidebarCollapsed", sidebarCollapsed.toString());
       }
     } catch (error) {
       console.warn("Unable to access localStorage:", error);
@@ -127,14 +131,13 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     if (typeof document !== "undefined") {
       document.documentElement.style.setProperty(
         "--sidebar-width",
-        isCollapsed ? "70px" : "225px"
+        sidebarCollapsed ? "70px" : "225px"
       );
     }
-  }, [isCollapsed]);
+  }, [sidebarCollapsed, isHydrated]);
 
-  // Handle toggle sidebar click - update both local and Redux state
+  // Handle toggle sidebar click - update Redux state only
   const handleToggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
     dispatch(toggleSidebar());
   };
 
@@ -217,7 +220,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
             icon={HomeIcon}
             title="Dashboard"
             isActive={Boolean(isLinkActive(dashboardUrl))}
-            isCollapsed={isCollapsed}
+            isCollapsed={sidebarCollapsed}
           />
         </li>
         <li className="nav-item px-3 py-1">
@@ -226,7 +229,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
             icon={UserGroupIcon}
             title="Customers"
             isActive={Boolean(isLinkActive(customersUrl))}
-            isCollapsed={isCollapsed}
+            isCollapsed={sidebarCollapsed}
           />
         </li>
         <li className="nav-item px-3 py-1">
@@ -249,7 +252,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
             )}
             title="Tokens"
             isActive={Boolean(isLinkActive(tokenManagementUrl))}
-            isCollapsed={isCollapsed}
+            isCollapsed={sidebarCollapsed}
           />
         </li>
         <li className="nav-item px-3 py-1">
@@ -258,7 +261,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
             icon={TicketIcon}
             title="Tickets"
             isActive={Boolean(isLinkActive(ticketsUrl))}
-            isCollapsed={isCollapsed}
+            isCollapsed={sidebarCollapsed}
           />
         </li>
       </>
@@ -285,7 +288,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 icon={HomeIcon}
                 title="Dashboard"
                 isActive={Boolean(isLinkActive("/"))}
-                isCollapsed={isCollapsed}
+                isCollapsed={sidebarCollapsed}
               />
             </li>
             <li className="nav-item px-3 py-1">
@@ -294,7 +297,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 icon={RocketLaunchIcon}
                 title="Campaigns"
                 isActive={Boolean(isLinkActive("/campaigns"))}
-                isCollapsed={isCollapsed}
+                isCollapsed={sidebarCollapsed}
               />
             </li>
             <li className="nav-item px-3 py-1">
@@ -303,7 +306,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 icon={ChartBarIcon}
                 title="Analytics"
                 isActive={Boolean(isLinkActive("/analytics"))}
-                isCollapsed={isCollapsed}
+                isCollapsed={sidebarCollapsed}
               />
             </li>
           </>
@@ -317,7 +320,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 icon={HomeIcon}
                 title="Dashboard"
                 isActive={Boolean(isLinkActive("/"))}
-                isCollapsed={isCollapsed}
+                isCollapsed={sidebarCollapsed}
               />
             </li>
             <li className="nav-item px-3 py-1">
@@ -326,7 +329,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 icon={TicketIcon}
                 title="Tickets"
                 isActive={Boolean(isLinkActive("/tickets"))}
-                isCollapsed={isCollapsed}
+                isCollapsed={sidebarCollapsed}
               />
             </li>
             <li className="nav-item px-3 py-1">
@@ -335,7 +338,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 icon={BuildingStorefrontIcon}
                 title="Merchants"
                 isActive={Boolean(isLinkActive("/merchants"))}
-                isCollapsed={isCollapsed}
+                isCollapsed={sidebarCollapsed}
               />
             </li>
           </>
@@ -349,7 +352,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 icon={HomeIcon}
                 title="Dashboard"
                 isActive={Boolean(isLinkActive("/"))}
-                isCollapsed={isCollapsed}
+                isCollapsed={sidebarCollapsed}
               />
             </li>
             <li className="nav-item px-3 py-1">
@@ -358,7 +361,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 icon={UserGroupIcon}
                 title="Merchants"
                 isActive={Boolean(isLinkActive("/merchants"))}
-                isCollapsed={isCollapsed}
+                isCollapsed={sidebarCollapsed}
               />
             </li>
             <li className="nav-item px-3 py-1">
@@ -367,7 +370,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 icon={ChartBarIcon}
                 title="Analytics"
                 isActive={Boolean(isLinkActive("/analytics"))}
-                isCollapsed={isCollapsed}
+                isCollapsed={sidebarCollapsed}
               />
             </li>
           </>
@@ -420,12 +423,120 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     router.push("/sso/login");
   };
 
+  // Use a consistent rendering approach for the logo to avoid hydration mismatches
+  const renderLogo = () => {
+    // On the server or before hydration, always use the expanded version
+    if (!isHydrated) {
+      return (
+        <Link href="/" className="flex items-center">
+          <div className="w-[100px] h-[40px] flex items-center justify-center overflow-hidden">
+            <Image
+              src="/kigo logo.svg"
+              alt="Kigo Logo"
+              width={100}
+              height={40}
+              className="transition-all duration-300 ease-in-out"
+              style={{ objectFit: "contain" }}
+              priority
+            />
+          </div>
+        </Link>
+      );
+    }
+
+    // After hydration, render based on the Redux state
+    if (sidebarCollapsed) {
+      return (
+        <Link
+          href="/"
+          className="flex flex-col items-center justify-center w-full overflow-hidden"
+        >
+          {isCVSContextBool ? (
+            <div className="relative flex items-center justify-center w-[40px] h-[40px] transition-all duration-300 ease-in-out overflow-hidden">
+              <Image
+                src="/logos/cvs-logo-only.svg"
+                alt="CVS"
+                width={24}
+                height={24}
+                className="absolute top-1 left-1 transition-all duration-300 ease-in-out"
+                style={{ objectFit: "contain" }}
+              />
+              <Image
+                src="/kigo logo only.svg"
+                alt="Kigo"
+                width={26}
+                height={26}
+                className="absolute bottom-1 right-1 transition-all duration-300 ease-in-out"
+                style={{ objectFit: "contain" }}
+              />
+            </div>
+          ) : (
+            <div className="w-[40px] h-[40px] flex items-center justify-center overflow-hidden">
+              <Image
+                src={
+                  isCVSContextBool
+                    ? "/logos/cvs-logo-only.svg"
+                    : "/kigo logo only.svg"
+                }
+                alt={clientName || "Kigo"}
+                width={36}
+                height={36}
+                className="transition-all duration-300 ease-in-out"
+                style={{ objectFit: "contain" }}
+              />
+            </div>
+          )}
+        </Link>
+      );
+    } else {
+      return (
+        <Link href="/" className="flex items-center">
+          {isCVSContextBool ? (
+            <div className="flex items-center p-1.5 relative max-w-[180px] overflow-hidden">
+              <div className="flex items-center z-10">
+                <Image
+                  src="/logos/cvs-logo-only.svg"
+                  alt="CVS Logo"
+                  width={26}
+                  height={26}
+                  className="transition-all duration-300 ease-in-out"
+                  style={{ objectFit: "contain" }}
+                />
+                <span className="mx-2 text-gray-300">|</span>
+                <Image
+                  src="/kigo logo only.svg"
+                  alt="Kigo Logo"
+                  width={30}
+                  height={30}
+                  className="transition-all duration-300 ease-in-out"
+                  style={{ objectFit: "contain" }}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="w-[100px] h-[40px] flex items-center justify-center overflow-hidden">
+              <Image
+                src="/kigo logo.svg"
+                alt="Kigo Logo"
+                width={100}
+                height={40}
+                className="transition-all duration-300 ease-in-out"
+                style={{ objectFit: "contain" }}
+                priority
+              />
+            </div>
+          )}
+        </Link>
+      );
+    }
+  };
+
   return (
     <aside
       className={`
         fixed top-0 left-0 h-screen border-r border-border-light bg-white
         transition-all duration-300 ease-in-out z-40
-        ${isCollapsed ? "w-[70px]" : "w-[225px]"}
+        ${sidebarCollapsed ? "w-[70px]" : "w-[225px]"}
       `}
       style={{
         boxShadow: "0 4px 12px rgba(0, 0, 0, 0.03)",
@@ -436,96 +547,17 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         <div
           className={`
             flex items-center h-[64px] px-4 transition-all duration-300 ease-in-out
-            ${isCollapsed ? "justify-center" : ""}
+            ${sidebarCollapsed ? "justify-center" : ""}
           `}
         >
-          {isCollapsed ? (
-            <Link
-              href="/"
-              className="flex flex-col items-center justify-center w-full overflow-hidden"
-            >
-              {isCVSContextBool ? (
-                <div className="relative flex items-center justify-center w-[40px] h-[40px] transition-all duration-300 ease-in-out overflow-hidden">
-                  <Image
-                    src="/logos/cvs-logo-only.svg"
-                    alt="CVS"
-                    width={24}
-                    height={24}
-                    className="absolute top-1 left-1 transition-all duration-300 ease-in-out"
-                    style={{ objectFit: "contain" }}
-                  />
-                  <Image
-                    src="/kigo logo only.svg"
-                    alt="Kigo"
-                    width={26}
-                    height={26}
-                    className="absolute bottom-1 right-1 transition-all duration-300 ease-in-out"
-                    style={{ objectFit: "contain" }}
-                  />
-                </div>
-              ) : (
-                <div className="w-[40px] h-[40px] flex items-center justify-center overflow-hidden">
-                  <Image
-                    src={
-                      isCVSContextBool
-                        ? "/logos/cvs-logo-only.svg"
-                        : "/kigo logo only.svg"
-                    }
-                    alt={clientName || "Kigo"}
-                    width={36}
-                    height={36}
-                    className="transition-all duration-300 ease-in-out"
-                    style={{ objectFit: "contain" }}
-                  />
-                </div>
-              )}
-            </Link>
-          ) : (
-            <Link href="/" className="flex items-center">
-              {isCVSContextBool ? (
-                <div className="flex items-center p-1.5 relative max-w-[180px] overflow-hidden">
-                  <div className="flex items-center z-10">
-                    <Image
-                      src="/logos/cvs-logo-only.svg"
-                      alt="CVS Logo"
-                      width={26}
-                      height={26}
-                      className="transition-all duration-300 ease-in-out"
-                      style={{ objectFit: "contain" }}
-                    />
-                    <span className="mx-2 text-gray-300">|</span>
-                    <Image
-                      src="/kigo logo only.svg"
-                      alt="Kigo Logo"
-                      width={30}
-                      height={30}
-                      className="transition-all duration-300 ease-in-out"
-                      style={{ objectFit: "contain" }}
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="w-[100px] h-[40px] flex items-center justify-center overflow-hidden">
-                  <Image
-                    src="/kigo logo.svg"
-                    alt="Kigo Logo"
-                    width={100}
-                    height={40}
-                    className="transition-all duration-300 ease-in-out"
-                    style={{ objectFit: "contain" }}
-                    priority
-                  />
-                </div>
-              )}
-            </Link>
-          )}
+          {renderLogo()}
         </div>
 
         <button
           onClick={handleToggleSidebar}
           className="absolute top-24 -right-3 transform -translate-y-1/2 bg-white border border-border-light rounded-full p-1.5 shadow-sm hover:bg-gray-50 z-50 transition-colors"
         >
-          {isCollapsed ? (
+          {sidebarCollapsed ? (
             <ChevronRightIcon className="w-3.5 h-3.5 text-gray-500" />
           ) : (
             <ChevronLeftIcon className="w-3.5 h-3.5 text-gray-500" />
@@ -533,7 +565,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         </button>
 
         <div className="mt-6 mb-6 flex-1 overflow-y-auto overflow-x-hidden">
-          {!isCollapsed && (
+          {!sidebarCollapsed && isHydrated && (
             <p className="text-xs font-medium text-text-muted px-5 uppercase tracking-wider mb-2">
               {role === "merchant" ? "Business" : "Main"}
             </p>
@@ -542,7 +574,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         </div>
 
         <div className="mb-4 overflow-x-hidden">
-          {!isCollapsed && (
+          {!sidebarCollapsed && isHydrated && (
             <p className="text-xs font-medium text-text-muted px-5 uppercase tracking-wider mb-2">
               Settings
             </p>
@@ -564,7 +596,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                       : "/settings"
                   )
                 )}
-                isCollapsed={isCollapsed}
+                isCollapsed={sidebarCollapsed}
               />
             </li>
             <li className="nav-item px-3 py-1">
@@ -573,7 +605,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 icon={BellIcon}
                 title="Notifications"
                 isActive={Boolean(isLinkActive("/notifications"))}
-                isCollapsed={isCollapsed}
+                isCollapsed={sidebarCollapsed}
                 hasNotification={true}
                 notificationCount={5}
               />
@@ -584,7 +616,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 icon={QuestionMarkCircleIcon}
                 title="Help & Support"
                 isActive={Boolean(isLinkActive("/help"))}
-                isCollapsed={isCollapsed}
+                isCollapsed={sidebarCollapsed}
               />
             </li>
             {/* Sign Out Item */}
@@ -600,7 +632,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                       icon={ArrowRightOnRectangleIcon}
                       title="Sign Out"
                       isActive={false}
-                      isCollapsed={isCollapsed}
+                      isCollapsed={sidebarCollapsed}
                       onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
                         e.preventDefault(); // Prevent default link behavior
                         setSignOutDialogOpen(true);
@@ -634,10 +666,10 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         </div>
 
         <div
-          className={`mt-auto pt-4 ${isCollapsed ? "px-3" : "px-5"} border-t border-border-light overflow-x-hidden`}
+          className={`mt-auto pt-4 ${sidebarCollapsed ? "px-3" : "px-5"} border-t border-border-light overflow-x-hidden`}
         >
           <div
-            className={`flex items-center ${isCollapsed ? "justify-center" : ""} pb-4`}
+            className={`flex items-center ${sidebarCollapsed ? "justify-center" : ""} pb-4`}
           >
             {/* User avatar - Support both CVS and role-based indicators */}
             <div className="w-9 h-9 bg-pastel-purple rounded-full flex items-center justify-center text-indigo-500 font-semibold text-sm shadow-sm">
@@ -649,7 +681,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                     ? "SA"
                     : "AD"}
             </div>
-            {!isCollapsed && (
+            {!sidebarCollapsed && isHydrated && (
               <div className="ml-3 overflow-hidden">
                 <p className="font-semibold text-sm whitespace-nowrap overflow-hidden text-ellipsis">
                   {isCVSContextBool
