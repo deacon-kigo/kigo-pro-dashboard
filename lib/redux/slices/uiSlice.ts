@@ -21,8 +21,8 @@ export interface UIState {
 }
 
 const initialState: UIState = {
-  sidebarCollapsed: false,
-  sidebarWidth: "225px",
+  sidebarCollapsed: true,
+  sidebarWidth: "70px",
   chatOpen: false,
   spotlightOpen: false,
   isMobileView: false,
@@ -98,6 +98,16 @@ export const uiSlice = createSlice({
           "--sidebar-width",
           state.sidebarWidth
         );
+
+        // Persist to localStorage directly
+        try {
+          localStorage.setItem(
+            "sidebarCollapsed",
+            state.sidebarCollapsed.toString()
+          );
+        } catch (error) {
+          console.warn("Unable to access localStorage:", error);
+        }
       }
     },
 

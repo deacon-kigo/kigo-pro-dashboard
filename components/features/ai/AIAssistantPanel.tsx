@@ -584,7 +584,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
               responseOptions: [
                 {
                   text: isSeven
-                    ? "Select the 7NOW Delivery Special"
+                    ? "Select the Free Big Bite Pizza Promotion"
                     : "Select the Family Dinner Bundle",
                   value: "select-campaign",
                 },
@@ -944,24 +944,47 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
               clearTimeout(timeoutRef.current);
             }
 
-            // After a brief delay, show confirmation and next steps message
+            // First show a processing message
             timeoutRef.current = setTimeout(() => {
-              const nextStepsMessage: Message = {
+              const processingMessage: Message = {
                 id: Date.now().toString(),
                 type: "ai",
                 content:
-                  "Your offer has been approved! Click 'Next Step' to continue with the campaign creation process and finalize your delivery app promotion.",
+                  "Creating offer in system... Please wait while I configure all parameters.",
                 timestamp: new Date(),
-                responseOptions: [
-                  {
-                    text: "Next Step",
-                    value: "next-step-campaign",
-                  },
-                ],
               };
 
-              setMessages((prev) => [...prev, nextStepsMessage]);
-              setIsThinking(false);
+              setMessages((prev) => [...prev, processingMessage]);
+
+              // After another delay, show detailed offer confirmation
+              setTimeout(() => {
+                const offerConfirmationMessage: Message = {
+                  id: Date.now().toString(),
+                  type: "ai",
+                  content: `✅ Offer successfully created!
+
+**Offer ID:** PIZZA-7NOW-2023
+**Status:** Active (Pending Campaign Assignment)
+**Offer Details:**
+- Free pizza with 7NOW order
+- Promo code: BIGBITE
+- Redemption Method: App-based code entry
+- Validation Rules: Limit 1 per customer
+- Valid Through: June 30, 2023
+
+The offer is now ready to be assigned to a campaign. Would you like to proceed with creating the campaign for this offer?`,
+                  timestamp: new Date(),
+                  responseOptions: [
+                    {
+                      text: "Next Step",
+                      value: "next-step-campaign",
+                    },
+                  ],
+                };
+
+                setMessages((prev) => [...prev, offerConfirmationMessage]);
+                setIsThinking(false);
+              }, 2000);
             }, 1500);
           }, 100);
         }

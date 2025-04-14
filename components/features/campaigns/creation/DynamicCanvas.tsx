@@ -347,11 +347,11 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = () => {
       return [
         {
           id: "se-campaign-1",
-          name: "7NOW Weekday Delivery Special",
+          name: "Free Big Bite Pizza with Your First 7NOW Order",
           description:
-            "Drive delivery orders during weekdays with special pricing and free delivery promotion",
-          targetAudience: "Convenience shoppers within delivery radius",
-          primaryImage: "/images/campaigns/seven-eleven/campaign1.jpg",
+            "Drive app installs and first-time orders with a free pizza promotion in Texas and Florida",
+          targetAudience: "New 7NOW app users in targeted regions",
+          primaryImage: "/images/seven-eleven-big-bite.png",
           estimatedReach: {
             min: 12000,
             max: 15000,
@@ -368,7 +368,7 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = () => {
           description:
             "Complete meal bundles for families at special pricing with mix-and-match options",
           targetAudience: "Families looking for convenient meal solutions",
-          primaryImage: "/images/campaigns/seven-eleven/campaign2.jpg",
+          primaryImage: "/images/pizza 1.png",
           estimatedReach: {
             min: 8000,
             max: 10000,
@@ -381,11 +381,11 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = () => {
         },
         {
           id: "se-campaign-3",
-          name: "App-Exclusive Rewards Program",
+          name: "7NOW Weekday Delivery Special",
           description:
-            "Special offers and points exclusively for mobile app users to drive app adoption",
-          targetAudience: "Smartphone users who visit stores regularly",
-          primaryImage: "/images/campaigns/seven-eleven/campaign3.jpg",
+            "Drive delivery orders during weekdays with special pricing and free delivery promotion",
+          targetAudience: "Convenience shoppers within delivery radius",
+          primaryImage: "/images/seven-eleven-20off.png",
           estimatedReach: {
             min: 20000,
             max: 25000,
@@ -457,66 +457,103 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = () => {
 
   // Initialize mock assets
   const mockCampaignAssets: CampaignAsset[] = useMemo(() => {
-    const basePath =
-      clientId === "seven-eleven"
-        ? "/images/campaigns/seven-eleven/assets/"
-        : "/images/campaigns/deacons/assets/";
-
-    return [
-      {
-        id: "asset-1",
-        type: "primary",
-        format: "jpg",
-        url: `${basePath}hero.jpg`,
-        dimensions: "1200x800",
-      },
-      {
-        id: "asset-2",
-        type: "social",
-        format: "jpg",
-        url: `${basePath}social-instagram.jpg`,
-        dimensions: "1080x1080",
-      },
-      {
-        id: "asset-3",
-        type: "social",
-        format: "jpg",
-        url: `${basePath}social-facebook.jpg`,
-        dimensions: "1200x630",
-      },
-      {
-        id: "asset-4",
-        type: "promotional",
-        format: "jpg",
-        url: `${basePath}email.jpg`,
-        dimensions: "600x800",
-      },
-      {
-        id: "asset-5",
-        type: "promotional",
-        format: "jpg",
-        url: `${basePath}store-signage.jpg`,
-        dimensions: "800x1200",
-      },
-    ];
+    if (clientId === "seven-eleven") {
+      return [
+        {
+          id: "asset-1",
+          type: "primary",
+          format: "png",
+          url: `/images/seven-eleven-big-bite.png`,
+          dimensions: "1200x800",
+        },
+        {
+          id: "asset-2",
+          type: "social",
+          format: "png",
+          url: `/images/seven-eleven-big-bite.png`,
+          dimensions: "1080x1080",
+        },
+        {
+          id: "asset-3",
+          type: "social",
+          format: "png",
+          url: `/images/pizza 3.png`,
+          dimensions: "1200x630",
+        },
+        {
+          id: "asset-4",
+          type: "promotional",
+          format: "png",
+          url: `/images/pizza promo 1.png`,
+          dimensions: "600x800",
+        },
+        {
+          id: "asset-5",
+          type: "promotional",
+          format: "png",
+          url: `/images/pizza promo 2.png`,
+          dimensions: "800x1200",
+        },
+      ];
+    } else {
+      // Default Deacon's Pizza assets
+      const basePath = "/images/campaigns/deacons/assets/";
+      return [
+        {
+          id: "asset-1",
+          type: "primary",
+          format: "jpg",
+          url: `${basePath}hero.jpg`,
+          dimensions: "1200x800",
+        },
+        {
+          id: "asset-2",
+          type: "social",
+          format: "jpg",
+          url: `${basePath}social-instagram.jpg`,
+          dimensions: "1080x1080",
+        },
+        {
+          id: "asset-3",
+          type: "social",
+          format: "jpg",
+          url: `${basePath}social-facebook.jpg`,
+          dimensions: "1200x630",
+        },
+        {
+          id: "asset-4",
+          type: "promotional",
+          format: "jpg",
+          url: `${basePath}email.jpg`,
+          dimensions: "600x800",
+        },
+        {
+          id: "asset-5",
+          type: "promotional",
+          format: "jpg",
+          url: `${basePath}store-signage.jpg`,
+          dimensions: "800x1200",
+        },
+      ];
+    }
   }, [clientId]);
 
   // Initialize mock offer details
   const mockOfferDetails: OfferDetails = useMemo(() => {
     if (clientId === "seven-eleven") {
       return {
-        title: "7NOW Weekday Delivery Special",
+        title: "Free Big Bite Pizza with Your First 7NOW Order",
         description:
-          "Get free delivery and special pricing on orders placed Monday through Thursday",
-        discount: 30,
+          "Get a free Big Bite Pizza when you place your first order through the 7NOW delivery app",
+        discount: 100,
         items: [
-          "Free Delivery",
-          "Buy 2 Get 1 Free on Select Items",
-          "7Rewards Points Bonus",
+          "Free Big Bite Pizza",
+          "Valid for first-time app users only",
+          "Available in Texas and Florida locations",
         ],
         terms:
-          "Valid on orders $15+. Limited to delivery radius. May not be combined with other offers.",
-        code: "7NOWDEAL",
+          "Valid for first-time 7NOW app users only. Use promo code BIGBITE at checkout. Limited to one per customer. Valid through June 30.",
+        code: "BIGBITE",
         budget: {
           total: 12000,
           dailyAverage: 400,
@@ -549,66 +586,66 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = () => {
     if (clientId === "seven-eleven") {
       return {
         views: {
-          min: 12000,
-          max: 15000,
+          min: 24000,
+          max: 30000,
         },
-        viewsTrend: 8.4,
+        viewsTrend: 12.8,
         redemptions: {
-          min: 360,
-          max: 480,
+          min: 1800,
+          max: 2400,
         },
-        redemptionsTrend: 12.6,
+        redemptionsTrend: 22.5,
         revenue: {
-          min: 7200,
-          max: 9600,
+          min: 36000,
+          max: 48000,
         },
-        revenueTrend: 15.2,
+        revenueTrend: 25.3,
         costPerAcquisition: {
-          min: 2.1,
-          max: 2.8,
+          min: 4.2,
+          max: 5.75,
         },
-        costTrend: -4.5,
+        costTrend: -8.5,
         revenueTimeline: Array(14)
           .fill(0)
           .map((_, i) => ({
             date: `Day ${i + 1}`,
-            withCampaign: 600 + Math.floor(Math.random() * 300),
-            withoutCampaign: 450 + Math.floor(Math.random() * 100),
+            withCampaign: 2800 + Math.floor(Math.random() * 600),
+            withoutCampaign: 2000 + Math.floor(Math.random() * 200),
           })),
         customerFlow: [
-          { stage: "Views", count: 14000 },
-          { stage: "Clicks", count: 3800 },
-          { stage: "App Open", count: 1900 },
-          { stage: "Add to Cart", count: 950 },
-          { stage: "Purchase", count: 420 },
+          { stage: "Views", count: 27000 },
+          { stage: "App Open", count: 8100 },
+          { stage: "Sign Up", count: 4050 },
+          { stage: "Add to Cart", count: 2430 },
+          { stage: "Purchase", count: 2110 },
         ],
         competitiveComparison: [
-          { metric: "Offer Appeal", value: 7.8, benchmark: 6.4 },
-          { metric: "Value Perception", value: 8.2, benchmark: 7.1 },
-          { metric: "Conversion Rate", value: 3.0, benchmark: 2.2 },
-          { metric: "Customer Satisfaction", value: 8.5, benchmark: 7.3 },
+          { metric: "App Install Rate", value: 9.2, benchmark: 5.8 },
+          { metric: "Offer Redemption", value: 7.8, benchmark: 4.3 },
+          { metric: "New Customer %", value: 62.0, benchmark: 38.0 },
+          { metric: "Customer LTV", value: 8.5, benchmark: 5.6 },
         ],
         suggestions: [
           {
             id: "suggestion-1",
-            title: "Extend to Thursday",
+            title: "Extend to Weekend",
             description:
-              "Include Thursday in the promotion to capture pre-weekend planning",
-            impact: 18,
+              "Add Friday, Saturday, and Sunday to capture weekend users",
+            impact: 24,
           },
           {
             id: "suggestion-2",
             title: "Add Push Notification",
             description:
-              "Send targeted push notifications to users who order regularly",
-            impact: 12,
+              "Send targeted push notifications to users within target regions",
+            impact: 18,
           },
           {
             id: "suggestion-3",
-            title: "Increase Radius",
+            title: "Increase Target Radius",
             description:
-              "Expand delivery radius by 1 mile for this promotion only",
-            impact: 8,
+              "Expand targeting to include more areas in Texas and Florida",
+            impact: 15,
           },
         ],
       };
@@ -790,13 +827,21 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = () => {
   const mockLaunchDetails = useMemo(() => {
     if (clientId === "seven-eleven") {
       return {
-        name: "7NOW Weekday Delivery Special",
-        targetAudience: "Convenience shoppers within delivery radius",
-        geographicReach: "Delivery service radius",
+        name: "Free Big Bite Pizza with Your First 7NOW Order",
+        targetAudience: "New 7NOW app users in targeted regions",
+        geographicReach: "7-Eleven locations in Texas and Florida",
         schedule: {
           startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
           endDate: new Date(Date.now() + 37 * 24 * 60 * 60 * 1000),
-          activeDays: ["monday", "tuesday", "wednesday", "thursday"],
+          activeDays: [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday",
+          ],
         },
         budget: {
           total: 12000,
@@ -805,28 +850,28 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = () => {
         assets: [
           {
             type: "Hero Banner",
-            url: "/images/campaigns/seven-eleven/assets/hero.jpg",
+            url: "/images/seven-eleven-big-bite.png",
             status: "ready" as "ready" | "pending" | "failed",
           },
           {
             type: "Social Media",
-            url: "/images/campaigns/seven-eleven/assets/social-instagram.jpg",
+            url: "/images/seven-eleven-big-bite.png",
             status: "ready" as "ready" | "pending" | "failed",
           },
           {
             type: "Email Template",
-            url: "/images/campaigns/seven-eleven/assets/email.jpg",
+            url: "/images/pizza promo 1.png",
             status: "ready" as "ready" | "pending" | "failed",
           },
           {
             type: "Store Signage",
-            url: "/images/campaigns/seven-eleven/assets/store-signage.jpg",
+            url: "/images/pizza promo 2.png",
             status: "ready" as "ready" | "pending" | "failed",
           },
           {
             type: "App Notification",
-            url: "",
-            status: "pending" as "ready" | "pending" | "failed",
+            url: "/images/pizza 3.png",
+            status: "ready" as "ready" | "pending" | "failed",
           },
         ],
         metrics: {

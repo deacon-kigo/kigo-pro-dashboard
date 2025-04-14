@@ -88,53 +88,11 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
   // Check if we're in the CVS context - use prop or derive from Redux
   const isCVSContextBool = Boolean(isCVSContext || clientId === "cvs");
 
-  // Use effect to mark component as hydrated
+  // This effect only runs on the client and only after hydration is complete
   useEffect(() => {
+    // Mark component as hydrated on first client render
     setIsHydrated(true);
   }, []);
-
-  // Only sync with localStorage after hydration is complete
-  useEffect(() => {
-    if (!isHydrated) return;
-
-    // Add a try-catch for localStorage to handle Storybook environments
-    try {
-      if (typeof window !== "undefined") {
-        const storedState = localStorage.getItem("sidebarCollapsed");
-        if (storedState !== null) {
-          const parsedState = storedState === "true";
-          // Only dispatch if different from current Redux state
-          if (parsedState !== sidebarCollapsed) {
-            dispatch(setSidebarCollapsed(parsedState));
-          }
-        }
-      }
-    } catch (error) {
-      console.warn("Unable to access localStorage:", error);
-    }
-  }, [isHydrated, dispatch, sidebarCollapsed]);
-
-  // Update localStorage when Redux state changes, but only after hydration
-  useEffect(() => {
-    if (!isHydrated) return;
-
-    // Add a try-catch for localStorage to handle Storybook environments
-    try {
-      if (typeof window !== "undefined") {
-        localStorage.setItem("sidebarCollapsed", sidebarCollapsed.toString());
-      }
-    } catch (error) {
-      console.warn("Unable to access localStorage:", error);
-    }
-
-    // Update the main content padding when sidebar collapses/expands
-    if (typeof document !== "undefined") {
-      document.documentElement.style.setProperty(
-        "--sidebar-width",
-        sidebarCollapsed ? "70px" : "225px"
-      );
-    }
-  }, [sidebarCollapsed, isHydrated]);
 
   // Handle toggle sidebar click - update Redux state only
   const handleToggleSidebar = () => {
@@ -553,16 +511,19 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
           {renderLogo()}
         </div>
 
-        <button
-          onClick={handleToggleSidebar}
-          className="absolute top-24 -right-3 transform -translate-y-1/2 bg-white border border-border-light rounded-full p-1.5 shadow-sm hover:bg-gray-50 z-50 transition-colors"
-        >
-          {sidebarCollapsed ? (
-            <ChevronRightIcon className="w-3.5 h-3.5 text-gray-500" />
-          ) : (
-            <ChevronLeftIcon className="w-3.5 h-3.5 text-gray-500" />
-          )}
-        </button>
+        {/* Conditional chevron icon with consistent path between server and client */}
+        {isHydrated && (
+          <button
+            onClick={handleToggleSidebar}
+            className="absolute top-24 -right-3 transform -translate-y-1/2 bg-white border border-border-light rounded-full p-1.5 shadow-sm hover:bg-gray-50 z-50 transition-colors"
+          >
+            {sidebarCollapsed ? (
+              <ChevronRightIcon className="w-3.5 h-3.5 text-gray-500" />
+            ) : (
+              <ChevronLeftIcon className="w-3.5 h-3.5 text-gray-500" />
+            )}
+          </button>
+        )}
 
         <div className="mt-6 mb-6 flex-1 overflow-y-auto overflow-x-hidden">
           {!sidebarCollapsed && isHydrated && (
@@ -666,10 +627,10 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         </div>
 
         <div
-          className={`mt-auto pt-4 ${sidebarCollapsed ? "px-3" : "px-5"} border-t border-border-light overflow-x-hidden`}
+          className={`mt-auto pt-4 ${isHydrated && sidebarCollapsed ? "px-3" : "px-5"} border-t border-border-light overflow-x-hidden`}
         >
           <div
-            className={`flex items-center ${sidebarCollapsed ? "justify-center" : ""} pb-4`}
+            className={`flex items-center ${isHydrated && sidebarCollapsed ? "justify-center" : ""} pb-4`}
           >
             {/* User avatar - Support both CVS and role-based indicators */}
             <div className="w-9 h-9 bg-pastel-purple rounded-full flex items-center justify-center text-indigo-500 font-semibold text-sm shadow-sm">
