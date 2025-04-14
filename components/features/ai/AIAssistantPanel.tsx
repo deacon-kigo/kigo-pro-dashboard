@@ -31,11 +31,13 @@ interface Attachment {
 interface AIAssistantPanelProps {
   onSend?: (message: string) => void;
   onOptionSelected?: (optionId: string) => void;
+  className?: string;
 }
 
 const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
   onSend = () => {},
   onOptionSelected = () => {},
+  className = "",
 }) => {
   const { clientId } = useDemoState();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -778,7 +780,7 @@ Would you like me to develop a campaign strategy for any of these opportunities 
   );
 
   return (
-    <div className="flex flex-col h-full">
+    <div className={`flex flex-col h-full ${className}`}>
       {/* Header */}
       <div className="p-4 border-b border-gray-200 flex-shrink-0">
         <h3 className="text-lg font-semibold">AI Marketing Assistant</h3>
@@ -787,44 +789,41 @@ Would you like me to develop a campaign strategy for any of these opportunities 
         </p>
       </div>
 
-      {/* Chat Container */}
-      <div className="flex-1 flex flex-col overflow-hidden relative">
-        {/* Messages - Flex grow to take available space and scrollable */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin pb-20">
-          {messages.map((message) => (
-            <ChatMessage
-              key={message.id}
-              message={message}
-              onOptionSelected={handleOptionClick}
-            />
-          ))}
+      {/* Messages - Change to take all available space except for input height */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin">
+        {messages.map((message) => (
+          <ChatMessage
+            key={message.id}
+            message={message}
+            onOptionSelected={handleOptionClick}
+          />
+        ))}
 
-          {isThinking && <AIThinkingIndicator />}
+        {isThinking && <AIThinkingIndicator />}
 
-          <div ref={messagesEndRef} />
-        </div>
+        <div ref={messagesEndRef} />
+      </div>
 
-        {/* Input - Fixed at bottom, absolute positioned */}
-        <div className="p-4 border-t border-gray-200 bg-white absolute bottom-0 left-0 right-0 z-10">
-          <form
-            className="flex items-center space-x-2"
-            onSubmit={handleFormSubmit}
+      {/* Input - Change from absolute to sticky positioning */}
+      <div className="p-4 border-t border-gray-200 bg-white flex-shrink-0 sticky bottom-0 left-0 right-0 z-10">
+        <form
+          className="flex items-center space-x-2"
+          onSubmit={handleFormSubmit}
+        >
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Type your message..."
+            className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            type="submit"
+            className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <input
-              type="text"
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Type your message..."
-              className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button
-              type="submit"
-              className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <PaperAirplaneIcon className="w-5 h-5" />
-            </button>
-          </form>
-        </div>
+            <PaperAirplaneIcon className="w-5 h-5" />
+          </button>
+        </form>
       </div>
     </div>
   );

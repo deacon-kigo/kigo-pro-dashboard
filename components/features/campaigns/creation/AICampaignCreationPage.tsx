@@ -133,18 +133,21 @@ export default function AICampaignCreationPage() {
       </div>
 
       {/* Dual Panel Layout */}
-      <div className="flex-1 max-w-screen-2xl mx-auto px-3 sm:px-4 pb-3 flex flex-col overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 h-full flex-1">
+      <div className="flex-1 max-w-screen-2xl mx-auto px-3 sm:px-4 pb-3">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 h-full">
           {/* AI Assistant Panel - Left Side */}
-          <div className="lg:col-span-4 h-full overflow-hidden flex flex-col">
-            <Card className="h-full flex-1 p-0 overflow-hidden flex flex-col">
-              <AIAssistantPanel onOptionSelected={handleOptionSelected} />
+          <div className="lg:col-span-4 h-full">
+            <Card className="h-full p-0 overflow-hidden" title=" ">
+              <AIAssistantPanel
+                className="w-full h-full"
+                onOptionSelected={handleOptionSelected}
+              />
             </Card>
           </div>
 
           {/* Dynamic Canvas - Right Side */}
-          <div className="lg:col-span-8 h-full overflow-hidden flex flex-col">
-            <Card className="h-full p-0 overflow-hidden flex flex-col">
+          <div className="lg:col-span-8 h-full">
+            <Card className="h-full p-0 overflow-hidden">
               <DynamicCanvas />
             </Card>
           </div>
