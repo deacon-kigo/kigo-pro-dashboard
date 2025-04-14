@@ -74,25 +74,46 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
           merchantName = "7-Eleven team";
         }
 
-        setMessages([
-          {
+        // Customize initial message based on client ID
+        let initialMessage = {
+          id: "1",
+          type: "ai" as const,
+          content: `${greeting}, ${merchantName}! I'm your AI marketing assistant. Let me show you your business intelligence data to help identify opportunities for a new campaign.`,
+          timestamp: new Date(),
+          responseOptions: [
+            { text: "Show me the data", value: "show-data" },
+            {
+              text: "What campaign would you suggest?",
+              value: "campaign-suggestion",
+            },
+            {
+              text: "What can I expect from a new campaign?",
+              value: "expected-results",
+            },
+          ],
+        };
+
+        // For 7-Eleven, start with business objectives prompt
+        if (clientId === "seven-eleven") {
+          initialMessage = {
             id: "1",
             type: "ai",
-            content: `${greeting}, ${merchantName}! I'm your AI marketing assistant. Let me show you your business intelligence data to help identify opportunities for a new campaign.`,
+            content: `${greeting}, ${merchantName}! I'm your AI marketing assistant. To help you create an effective campaign, please share your primary business objective.`,
             timestamp: new Date(),
             responseOptions: [
-              { text: "Show me the data", value: "show-data" },
               {
-                text: "What campaign would you suggest?",
-                value: "campaign-suggestion",
+                text: "Drive installs of and transactions through our 7NOW delivery app in Texas and Florida",
+                value: "app-installs-objective",
               },
               {
-                text: "What can I expect from a new campaign?",
-                value: "expected-results",
+                text: "I need help defining my objective",
+                value: "need-objective-help",
               },
             ],
-          },
-        ]);
+          };
+        }
+
+        setMessages([initialMessage]);
       }, 800);
 
       return () => clearTimeout(timer);
@@ -138,13 +159,140 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
     timeoutRef.current = setTimeout(() => {
       let aiResponse: Message;
 
-      // Customize response based on client ID and user message
+      // Customize response based on client ID
       const isSeven = clientId === "seven-eleven";
 
       // Try to match the message to known phrases or keywords
       const lowerMsg = newMessage.toLowerCase();
 
-      if (
+      // Special handling for 7-Eleven offer creation demo
+      if (clientId === "seven-eleven") {
+        if (
+          lowerMsg.includes("drive installs") ||
+          lowerMsg.includes("7now") ||
+          lowerMsg.includes("delivery app") ||
+          lowerMsg.includes("texas and florida")
+        ) {
+          aiResponse = {
+            id: Date.now().toString(),
+            type: "ai",
+            content:
+              "Thank you for sharing your business objective. To drive installs and transactions through your 7NOW delivery app, I recommend creating a special offer. Do you have an initial offer concept in mind?",
+            timestamp: new Date(),
+            responseOptions: [
+              {
+                text: "Free pizza with 7NOW order",
+                value: "free-pizza-offer",
+              },
+              {
+                text: "What would you recommend?",
+                value: "recommend-offer",
+              },
+            ],
+          };
+        } else if (
+          lowerMsg.includes("promo code") ||
+          lowerMsg.includes("bigbite") ||
+          lowerMsg.includes("june")
+        ) {
+          aiResponse = {
+            id: Date.now().toString(),
+            type: "ai",
+            content:
+              "I'm analyzing this offer to optimize its structure and performance...",
+            timestamp: new Date(),
+          };
+
+          setMessages((prev) => [...prev, aiResponse]);
+
+          // After a brief delay, show the analysis process
+          setTimeout(() => {
+            const analysisResponse: Message = {
+              id: Date.now().toString(),
+              type: "ai",
+              content: `
+### Analysis in Progress
+
+* Analyzing 7-Eleven's product catalog and margin data for pizza and typical delivery orders ✓
+* Examining historical performance data from similar app-based promotions ✓
+* Evaluating market-specific trends in Texas and Florida delivery patterns ✓
+* Calculating optimal promotion structure to maximize both installs and completed transactions ✓
+* Determining the most effective validation method for tracking unique redemptions ✓
+              `,
+              timestamp: new Date(),
+            };
+
+            setMessages((prev) => [...prev, analysisResponse]);
+
+            // After analysis, show the optimized offer
+            setTimeout(() => {
+              const finalOffer: Message = {
+                id: Date.now().toString(),
+                type: "ai",
+                content: `
+### Optimized Offer Structure
+
+**Free Big Bite Pizza with Your First 7NOW Order**
+
+**Redemption flow:**
+- Install app → Create account → Enter code 'BIGBITE' at checkout → Free pizza added to order
+
+**Geographic targeting:** 
+- All 7-Eleven locations across Texas and Florida (1,842 stores)
+
+**Validation method:** 
+- Automated promo code redemption tracking with 1-per-customer limit enforced
+
+**Timing:** 
+- Immediate launch through June 30
+
+**Projected performance:**
+- 28% projected conversion rate from impression to app install
+- 64% projected completion rate from install to first order
+- $12.84 estimated average basket size on first order (excluding pizza)
+- 42% projected retention rate for second order within 30 days
+
+*The offer is configured and ready for campaign deployment. Would you like to proceed with this optimized structure?*
+                `,
+                timestamp: new Date(),
+                responseOptions: [
+                  {
+                    text: "Yes, proceed with this offer",
+                    value: "approve-offer",
+                  },
+                  {
+                    text: "Make some adjustments",
+                    value: "adjust-offer",
+                  },
+                ],
+              };
+
+              setMessages((prev) => [...prev, finalOffer]);
+              setIsThinking(false);
+            }, 4000);
+          }, 3000);
+
+          return;
+        } else {
+          aiResponse = {
+            id: Date.now().toString(),
+            type: "ai",
+            content:
+              "I understand you want to drive installs and transactions for your 7NOW delivery app. Could you tell me more about the specific offer you'd like to create?",
+            timestamp: new Date(),
+            responseOptions: [
+              {
+                text: "Free pizza with 7NOW order",
+                value: "free-pizza-offer",
+              },
+              {
+                text: "What would you recommend?",
+                value: "recommend-offer",
+              },
+            ],
+          };
+        }
+      } else if (
         lowerMsg.includes("hello") ||
         lowerMsg.includes("hi") ||
         lowerMsg.includes("hey")
@@ -339,427 +487,476 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
   }, [newMessage, onOptionSelected, clientId, onSend]);
 
   // Memoize option click handler to avoid recreation on each render
-  const handleOptionClick = useCallback(
+  const handleOptionSelected = useCallback(
     (optionValue: string) => {
-      // Set thinking state
-      setIsThinking(true);
+      // Notify parent component
+      onOptionSelected && onOptionSelected(optionValue);
 
-      // Clear any existing timeout
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
+      // Add the option as a user message
+      const selectedOption = messages
+        .filter((m) => m.responseOptions)
+        .flatMap((m) => m.responseOptions || [])
+        .find((option) => option.value === optionValue);
 
-      // Set a timeout to simulate AI thinking
-      timeoutRef.current = setTimeout(() => {
-        let aiResponse: Message;
+      if (selectedOption) {
+        const userMessage: Message = {
+          id: Date.now().toString(),
+          type: "user",
+          content: selectedOption.text,
+          timestamp: new Date(),
+        };
 
-        // Customize responses based on client ID
-        const isSeven = clientId === "seven-eleven";
+        setMessages((prev) => [...prev, userMessage]);
+        setIsThinking(true);
 
-        switch (optionValue) {
-          case "create-campaign":
-            aiResponse = {
-              id: Date.now().toString(),
-              type: "ai",
-              content: isSeven
-                ? "I've created three campaign options for you, designed specifically for 7-Eleven. Take a look at the delivery promotion, family bundle, and app-exclusive options in the canvas."
-                : "I've created three campaign options for you, each with offer structure, promo copy, visuals, and targeting. View them in the canvas to compare.",
-              timestamp: new Date(),
-              responseOptions: [
-                {
-                  text: isSeven
-                    ? "Select the 7NOW Delivery Special"
-                    : "Select the Family Dinner Bundle",
-                  value: "select-campaign",
-                },
-                {
-                  text: "How did you create these options?",
-                  value: "campaign-explanation",
-                },
-              ],
-            };
-            if (onOptionSelected) onOptionSelected("create-campaign");
-            break;
-
-          case "show-data":
-            aiResponse = {
-              id: Date.now().toString(),
-              type: "ai",
-              content: isSeven
-                ? "Here's your business intelligence data showing 7-Eleven sales patterns, app usage, delivery trends, and customer segments. Weekday delivery shows significant growth potential."
-                : "Here's your business intelligence data showing sales by day, performance trends, competitor activity, and customer segments. The weekday dinner opportunity is clear.",
-              timestamp: new Date(),
-              responseOptions: [
-                { text: "Let's create a campaign", value: "create-campaign" },
-                { text: "What should I focus on?", value: "focus-suggestion" },
-              ],
-            };
-            if (onOptionSelected) onOptionSelected("show-data");
-            break;
-
-          case "select-campaign":
-            aiResponse = {
-              id: Date.now().toString(),
-              type: "ai",
-              content: isSeven
-                ? "7NOW Delivery Special selected. All creative assets are ready: app banners, email templates, social media posts, and in-store materials. Customize any asset to match your preferences."
-                : "Family Dinner Bundle selected. All creative assets are ready: social media, email templates, and in-store materials. Customize any asset to match your brand.",
-              timestamp: new Date(),
-              responseOptions: [
-                { text: "Customize these assets", value: "customize-assets" },
-                { text: "These look great as is", value: "keep-assets" },
-              ],
-            };
-            if (onOptionSelected) onOptionSelected("select-campaign");
-            break;
-
-          case "customize-assets":
-            aiResponse = {
-              id: Date.now().toString(),
-              type: "ai",
-              content:
-                "Assets updated based on your selections. Performance predictions are ready with expected views, redemptions, revenue, and ROI.",
-              timestamp: new Date(),
-              responseOptions: [
-                {
-                  text: "Review performance details",
-                  value: "review-performance",
-                },
-                {
-                  text: "Optimize for better results",
-                  value: "optimize-campaign",
-                },
-              ],
-            };
-            if (onOptionSelected) onOptionSelected("customize-assets");
-            break;
-
-          case "review-performance":
-            aiResponse = {
-              id: Date.now().toString(),
-              type: "ai",
-              content:
-                "Your campaign is ready to launch with distribution schedule, performance tracking, and one-click launch option.",
-              timestamp: new Date(),
-              responseOptions: [
-                { text: "Launch campaign", value: "launch-campaign" },
-                { text: "Schedule for later", value: "schedule-campaign" },
-              ],
-            };
-            if (onOptionSelected) onOptionSelected("review-performance");
-            break;
-
-          case "launch-campaign":
-            aiResponse = {
-              id: Date.now().toString(),
-              type: "ai",
-              content:
-                "Congratulations! Your Family Weekday Special campaign has been launched. You can monitor its performance from your dashboard.",
-              timestamp: new Date(),
-            };
-            if (onOptionSelected) onOptionSelected("launch-campaign");
-            break;
-
-          case "keep-assets":
-            aiResponse = {
-              id: Date.now().toString(),
-              type: "ai",
-              content:
-                "Great! I'll keep the assets as is. Let's move on to the performance predictions for your campaign.",
-              timestamp: new Date(),
-              responseOptions: [
-                {
-                  text: "Show me performance predictions",
-                  value: "review-performance",
-                },
-              ],
-            };
-            if (onOptionSelected) onOptionSelected("customize-assets");
-            break;
-
-          case "campaign-suggestion":
-            aiResponse = {
-              id: Date.now().toString(),
-              type: "ai",
-              content: isSeven
-                ? "Based on your data, a 7NOW Weekday Delivery Special would be most effective. It offers free delivery and special pricing on weekdays to boost your slower periods."
-                : "Based on your data, a Family Weekday Special would be most effective. It offers a complete family meal at a competitive price point, targeting your underperforming weekday periods.",
-              timestamp: new Date(),
-              responseOptions: [
-                {
-                  text: "Let's create this campaign",
-                  value: "create-campaign",
-                },
-              ],
-            };
-            break;
-
-          case "expected-results":
-            aiResponse = {
-              id: Date.now().toString(),
-              type: "ai",
-              content: isSeven
-                ? "Based on similar campaigns in your industry, you can expect a 20-30% increase in weekday delivery orders, with approximately 400-480 offer redemptions per week and a positive ROI within 10 days."
-                : "Based on similar campaigns in your industry, you can expect a 25-35% increase in weekday dinner sales, with approximately 200-300 offer redemptions per week and a positive ROI within the first 14 days.",
-              timestamp: new Date(),
-              responseOptions: [
-                { text: "Generate campaign options", value: "create-campaign" },
-              ],
-            };
-            break;
-
-          case "campaign-explanation":
-            aiResponse = {
-              id: Date.now().toString(),
-              type: "ai",
-              content:
-                "I created these options by analyzing your sales data, competitive landscape, and customer preferences. Each option targets your weekday dinner opportunity with a different approach to appeal to your family demographic.",
-              timestamp: new Date(),
-              responseOptions: [
-                {
-                  text: "Select the Family Dinner Bundle",
-                  value: "select-campaign",
-                },
-              ],
-            };
-            break;
-
-          case "focus-suggestion":
-            aiResponse = {
-              id: Date.now().toString(),
-              type: "ai",
-              content:
-                "Based on your data, focus on the weekday dinner opportunity. Specifically, target families with a value-oriented bundle that emphasizes your portion size advantage over competitors.",
-              timestamp: new Date(),
-              responseOptions: [
-                {
-                  text: "Create a campaign for this focus",
-                  value: "create-campaign",
-                },
-              ],
-            };
-            break;
-
-          case "optimize-campaign":
-            aiResponse = {
-              id: Date.now().toString(),
-              type: "ai",
-              content:
-                "I've optimized your campaign parameters for maximum ROI. By adjusting the targeting radius to 5 miles and focusing on Monday-Thursday from 4-8pm, we can increase expected redemptions by 15%.",
-              timestamp: new Date(),
-              responseOptions: [
-                {
-                  text: "Review updated performance",
-                  value: "review-performance",
-                },
-              ],
-            };
-            if (onOptionSelected) onOptionSelected("customize-assets");
-            break;
-
-          case "schedule-campaign":
-            aiResponse = {
-              id: Date.now().toString(),
-              type: "ai",
-              content:
-                "Your campaign has been scheduled to launch next Monday. You'll receive a notification when it goes live, and you can monitor performance from your dashboard.",
-              timestamp: new Date(),
-            };
-            if (onOptionSelected) onOptionSelected("launch-campaign");
-            break;
-
-          case "pizza-palace":
-            aiResponse = {
-              id: Date.now().toString(),
-              type: "ai",
-              content: `Pizza Palace has been your strongest competitor for the past 18 months. Here's my detailed analysis:
-
-1. **Pricing Strategy**: They operate at an average 12% lower price point than your menu, focusing on volume over margins.
-
-2. **Target Audience**: Primarily budget-conscious families and students; 65% of their customer base consists of these two segments.
-
-3. **Marketing Approach**: Heavy emphasis on limited-time offers and flash sales. They run twice as many promotions as the industry average.
-
-4. **Weaknesses**:
-• Customer satisfaction scores (3.9/5) are below yours (4.7/5)
-• Portion sizes are 15% smaller than yours for comparable menu items
-• Limited premium options for higher-end customers
-
-5. **Recent Changes**: They've just launched a new mobile app with loyalty program, which has boosted their repeat customer rate by approximately 8% in the test areas.
-
-Your family weekday special effectively counters their main value proposition while highlighting your superior portion sizes and quality.`,
-              timestamp: new Date(),
-              responseOptions: [
-                { text: "Let's create our campaign", value: "create-campaign" },
-                {
-                  text: "Tell me about other competitors",
-                  value: "other-competitors",
-                },
-              ],
-            };
-            break;
-
-          case "compete-strategy":
-            aiResponse = {
-              id: Date.now().toString(),
-              type: "ai",
-              content: `Based on my competitive analysis, here are my recommended strategies to position against your competitors:
-
-1. **Value Messaging**: Emphasize "family-sized portions" at competitive prices. Your portions are 15% larger than Pizza Palace's at only a slightly higher price point.
-
-2. **Quality Differentiation**: Highlight your superior customer satisfaction scores (4.7/5 vs. competitor average of 4.2/5) in marketing materials.
-
-3. **Targeting Opportunity**: Focus on families during weekday dinners - this segment is underserved by competitors who focus primarily on weekend business.
-
-4. **Promotional Calendar**: Increase your promotional frequency to match competitors (currently they run 6 promotions to your 1). A consistent weekday family special would be ideal.
-
-5. **Digital Strategy**: Develop a more visible online ordering experience; competitors are gaining ground through enhanced digital presence.
-
-The Family Weekday Special campaign addresses most of these strategies, focusing on your strengths while targeting a competitive gap in the market.`,
-              timestamp: new Date(),
-              responseOptions: [
-                { text: "Create this campaign now", value: "create-campaign" },
-                {
-                  text: "What creative assets do you suggest?",
-                  value: "creative-assets",
-                },
-              ],
-            };
-            break;
-
-          case "other-competitors":
-            aiResponse = {
-              id: Date.now().toString(),
-              type: "ai",
-              content: `Let me share insights on your other key competitors:
-
-**Little Italy**
-• Positioning: Authentic, premium Italian pizza with imported ingredients
-• Price Point: 20-25% higher than your menu
-• Target Audience: Higher-income families and professionals, 35-55 age range
-• Strengths: Strong brand perception of authenticity and quality
-• Weaknesses: Limited appeal to value-conscious customers; slower delivery times
-
-**Crust & Co**
-• Positioning: Fast, convenient lunch option with express service guarantee
-• Price Point: Similar to yours for individual items, fewer family/group deals
-• Target Audience: Office workers, professionals on lunch breaks
-• Strengths: 10-minute service guarantee drives loyalty for lunch crowd
-• Weaknesses: Lower dinner traffic; limited weekend business
-
-Neither of these competitors directly targets the weekday family dinner segment, which represents your biggest opportunity. Little Italy is too premium-focused, while Crust & Co is lunch-oriented.`,
-              timestamp: new Date(),
-              responseOptions: [
-                {
-                  text: "Create our family dinner campaign",
-                  value: "create-campaign",
-                },
-                {
-                  text: "What other opportunities do you see?",
-                  value: "more-opportunities",
-                },
-              ],
-            };
-            break;
-
-          case "creative-assets":
-            aiResponse = {
-              id: Date.now().toString(),
-              type: "ai",
-              content: `For your Family Weekday Special campaign, I recommend these creative approaches:
-
-1. **Primary Visual**: Family-centered imagery showing abundant food portions that emphasize the "more food" value proposition.
-
-2. **Key Messaging**: 
-   • Headline: "Family Dinner, Sized for REAL Families"
-   • Subheading: "15% More Food at a Price Your Family Will Love"
-
-3. **Creative Elements**:
-   • Show side-by-side portion comparison with generic "competitor" pizza
-   • Use bright, warm colors that convey freshness and abundance
-   • Include authentic customer testimonials about portion sizes
-
-4. **Channel-Specific Adaptations**:
-   • Social Media: Short video showing family reactions to the portion sizes
-   • Email: Personalized offers with family name when possible
-   • In-store: Large format posters emphasizing the size difference
-
-I've prepared draft assets for all these formats that you can customize in the Asset Creation Workshop.`,
-              timestamp: new Date(),
-              responseOptions: [
-                { text: "Show me the assets", value: "customize-assets" },
-                { text: "Create the campaign", value: "create-campaign" },
-              ],
-            };
-            break;
-
-          case "more-opportunities":
-            aiResponse = {
-              id: Date.now().toString(),
-              type: "ai",
-              content: `Beyond the Family Weekday Special, I see these additional opportunities:
-
-1. **Weekend Lunch Gap**: Your weekend business is strong for dinner but underperforms at lunch compared to competitors. A weekend lunch bundle could drive incremental revenue.
-
-2. **Online Ordering Enhancement**: Your online ordering flow has 15% higher abandonment than industry average. Streamlining this could improve conversion by 8-10%.
-
-3. **Loyalty Program**: Your repeat customer rate (22%) lags behind the industry average (27%). A simple points-based system could close this gap.
-
-4. **Student Special**: With 3 colleges within your delivery radius, there's potential to develop a student-focused offering for the upcoming semester.
-
-5. **Premium Ingredients Line**: For targeting Little Italy's customer segment, a premium specialty pizza line could capture higher-end customers and increase average order value.
-
-Would you like me to develop a campaign strategy for any of these opportunities after we complete the Family Weekday Special?`,
-              timestamp: new Date(),
-              responseOptions: [
-                {
-                  text: "Let's focus on the family campaign first",
-                  value: "create-campaign",
-                },
-                {
-                  text: "Tell me more about the loyalty program",
-                  value: "loyalty-program",
-                },
-              ],
-            };
-            break;
-
-          case "loyalty-program":
-            aiResponse = {
-              id: Date.now().toString(),
-              type: "ai",
-              content:
-                "Based on your customer data, a simple points-based loyalty program could increase your repeat customer rate by 15-20%. We should focus on the family campaign first, then I can help you design a loyalty program next.",
-              timestamp: new Date(),
-              responseOptions: [
-                {
-                  text: "Let's focus on the family campaign",
-                  value: "create-campaign",
-                },
-              ],
-            };
-            break;
-
-          default:
-            aiResponse = {
-              id: Date.now().toString(),
-              type: "ai",
-              content: isSeven
-                ? "I'm here to help you create effective campaigns for your 7-Eleven locations. What would you like to do next?"
-                : "I'm here to help you create effective campaigns for your pizza business. What would you like to do next?",
-              timestamp: new Date(),
-              responseOptions: [
-                { text: "Show me the data", value: "show-data" },
-                { text: "Create a campaign", value: "create-campaign" },
-              ],
-            };
+        // Clear any existing timeout
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
         }
 
-        setMessages((prev) => [...prev, aiResponse]);
-        setIsThinking(false);
-      }, 1500);
+        // Special handling for 7-Eleven offer creation demo
+        if (optionValue === "app-installs-objective") {
+          timeoutRef.current = setTimeout(() => {
+            const aiResponse: Message = {
+              id: Date.now().toString(),
+              type: "ai",
+              content:
+                "Thank you for sharing your business objective. To drive installs and transactions through your 7NOW delivery app, I recommend creating a special offer. Do you have an initial offer concept in mind?",
+              timestamp: new Date(),
+              responseOptions: [
+                {
+                  text: "Free pizza with 7NOW order",
+                  value: "free-pizza-offer",
+                },
+                {
+                  text: "What would you recommend?",
+                  value: "recommend-offer",
+                },
+              ],
+            };
+            setMessages((prev) => [...prev, aiResponse]);
+            setIsThinking(false);
+          }, 1500);
+          return;
+        }
+
+        if (optionValue === "need-objective-help") {
+          timeoutRef.current = setTimeout(() => {
+            const aiResponse: Message = {
+              id: Date.now().toString(),
+              type: "ai",
+              content:
+                "I can help you define your objective. Based on your previous campaigns and market trends, focusing on driving app installs and transactions would be most effective. Would you like to target specific regions?",
+              timestamp: new Date(),
+              responseOptions: [
+                {
+                  text: "Target Texas and Florida",
+                  value: "app-installs-objective",
+                },
+                {
+                  text: "Target all regions",
+                  value: "app-installs-nationwide",
+                },
+              ],
+            };
+            setMessages((prev) => [...prev, aiResponse]);
+            setIsThinking(false);
+          }, 1500);
+          return;
+        }
+
+        if (optionValue === "free-pizza-offer") {
+          timeoutRef.current = setTimeout(() => {
+            const aiResponse: Message = {
+              id: Date.now().toString(),
+              type: "ai",
+              content:
+                "Great choice! For your free pizza with 7NOW order promotion, I need a few more details to optimize the offer structure. Do you have specific parameters like promo code, limitations, or validity period in mind?",
+              timestamp: new Date(),
+              responseOptions: [
+                {
+                  text: "Promo code: BIGBITE, Limit 1 per customer, Valid through end of June",
+                  value: "offer-details",
+                },
+                {
+                  text: "No, please recommend the best parameters",
+                  value: "recommend-parameters",
+                },
+              ],
+            };
+            setMessages((prev) => [...prev, aiResponse]);
+            setIsThinking(false);
+          }, 1500);
+          return;
+        }
+
+        if (optionValue === "recommend-parameters") {
+          timeoutRef.current = setTimeout(() => {
+            const aiResponse: Message = {
+              id: Date.now().toString(),
+              type: "ai",
+              content:
+                "Based on our analysis, I recommend the following parameters:\n\nPromo code: BIGBITE (easy to remember and branded)\nLimitation: 1 per new customer (focuses on app installs)\nValidity: Through end of June (gives 4-5 weeks of runway)\n\nWould you like to proceed with these parameters?",
+              timestamp: new Date(),
+              responseOptions: [
+                {
+                  text: "Yes, use these parameters",
+                  value: "offer-details",
+                },
+                {
+                  text: "Let me make some adjustments",
+                  value: "adjust-parameters",
+                },
+              ],
+            };
+            setMessages((prev) => [...prev, aiResponse]);
+            setIsThinking(false);
+          }, 1500);
+          return;
+        }
+
+        if (optionValue === "discount-offer") {
+          timeoutRef.current = setTimeout(() => {
+            const aiResponse: Message = {
+              id: Date.now().toString(),
+              type: "ai",
+              content:
+                "The $5 off offer is a good alternative. However, our data indicates that the free pizza offer would likely drive 32% more app installs in your target markets. Would you like to reconsider the free pizza offer, or proceed with the $5 discount?",
+              timestamp: new Date(),
+              responseOptions: [
+                {
+                  text: "Let's go with the free pizza offer after all",
+                  value: "free-pizza-offer",
+                },
+                {
+                  text: "Still prefer the $5 discount offer",
+                  value: "confirm-discount-offer",
+                },
+              ],
+            };
+            setMessages((prev) => [...prev, aiResponse]);
+            setIsThinking(false);
+          }, 1500);
+          return;
+        }
+
+        if (optionValue === "confirm-discount-offer") {
+          timeoutRef.current = setTimeout(() => {
+            const aiResponse: Message = {
+              id: Date.now().toString(),
+              type: "ai",
+              content:
+                "I understand. Let's proceed with analyzing the $5 discount offer structure...",
+              timestamp: new Date(),
+            };
+
+            setMessages((prev) => [...prev, aiResponse]);
+
+            // After a brief delay, show the analysis process (similar to the pizza offer flow but with discount)
+            setTimeout(() => {
+              const analysisResponse: Message = {
+                id: Date.now().toString(),
+                type: "ai",
+                content: `
+### Analysis in Progress
+
+* Analyzing 7-Eleven's pricing structure and typical order values ✓
+* Examining historical performance data from similar discount-based promotions ✓
+* Evaluating market-specific trends in Texas and Florida app adoption rates ✓
+* Calculating optimal discount threshold to maximize both installs and completed transactions ✓
+* Determining the most effective validation method for tracking unique redemptions ✓
+                `,
+                timestamp: new Date(),
+              };
+
+              setMessages((prev) => [...prev, analysisResponse]);
+
+              // Show optimized offer after analysis
+              setTimeout(() => {
+                const finalOffer: Message = {
+                  id: Date.now().toString(),
+                  type: "ai",
+                  content: `
+### Optimized Discount Offer Structure
+
+**$5 Off Your First 7NOW Order of $15+**
+
+**Redemption flow:**
+- Install app → Create account → Enter code 'SAVE5' at checkout → $5 discount applied
+
+**Geographic targeting:** 
+- All 7-Eleven locations across Texas and Florida (1,842 stores)
+
+**Validation method:** 
+- Automated promo code redemption tracking with 1-per-customer limit enforced
+
+**Timing:** 
+- Immediate launch through June 30
+
+**Projected performance:**
+- 21% projected conversion rate from impression to app install
+- 68% projected completion rate from install to first order
+- $16.75 estimated average basket size on first order
+- 38% projected retention rate for second order within 30 days
+
+*The offer is configured and ready for campaign deployment. Would you like to proceed with this optimized structure?*
+                  `,
+                  timestamp: new Date(),
+                  responseOptions: [
+                    {
+                      text: "Yes, proceed with this offer",
+                      value: "approve-offer",
+                    },
+                    {
+                      text: "Make some adjustments",
+                      value: "adjust-offer",
+                    },
+                  ],
+                };
+
+                setMessages((prev) => [...prev, finalOffer]);
+                setIsThinking(false);
+              }, 4000);
+            }, 3000);
+            return;
+          }, 1500);
+          return;
+        }
+
+        if (optionValue === "approve-offer") {
+          timeoutRef.current = setTimeout(() => {
+            const aiResponse: Message = {
+              id: Date.now().toString(),
+              type: "ai",
+              content:
+                "Great! The offer has been finalized and is ready for deployment. The campaign will launch immediately and run through June 30th. Would you like me to help with anything else?",
+              timestamp: new Date(),
+              responseOptions: [
+                {
+                  text: "Help me create the campaign materials",
+                  value: "create-assets",
+                },
+                {
+                  text: "No, that's all for now",
+                  value: "end-session",
+                },
+              ],
+            };
+            setMessages((prev) => [...prev, aiResponse]);
+            setIsThinking(false);
+          }, 1500);
+          return;
+        }
+
+        if (optionValue === "recommend-offer") {
+          timeoutRef.current = setTimeout(() => {
+            const aiResponse: Message = {
+              id: Date.now().toString(),
+              type: "ai",
+              content:
+                "Based on your app usage data and purchase patterns, I recommend a 'Free pizza with first 7NOW order' promotion. This type of offer has shown strong conversion rates for app installs and first-time usage. Would you like to proceed with this concept?",
+              timestamp: new Date(),
+              responseOptions: [
+                {
+                  text: "Yes, let's use the free pizza offer",
+                  value: "free-pizza-offer",
+                },
+                {
+                  text: "Show me other options",
+                  value: "other-offer-options",
+                },
+              ],
+            };
+            setMessages((prev) => [...prev, aiResponse]);
+            setIsThinking(false);
+          }, 1500);
+          return;
+        }
+
+        if (optionValue === "other-offer-options") {
+          timeoutRef.current = setTimeout(() => {
+            const aiResponse: Message = {
+              id: Date.now().toString(),
+              type: "ai",
+              content:
+                "Here are some alternative offer concepts for driving app installs:\n\n1. Free delivery on first order\n2. $5 off orders over $15\n3. Buy one, get one free on select items\n\nHowever, our data shows that the free pizza offer has the strongest pull for new app installs and completed transactions.",
+              timestamp: new Date(),
+              responseOptions: [
+                {
+                  text: "Let's go with the free pizza offer",
+                  value: "free-pizza-offer",
+                },
+                {
+                  text: "I prefer the $5 off offer",
+                  value: "discount-offer",
+                },
+              ],
+            };
+            setMessages((prev) => [...prev, aiResponse]);
+            setIsThinking(false);
+          }, 1500);
+          return;
+        }
+
+        if (optionValue === "offer-details") {
+          timeoutRef.current = setTimeout(() => {
+            const aiResponse: Message = {
+              id: Date.now().toString(),
+              type: "ai",
+              content:
+                "I'm analyzing this offer to optimize its structure and performance...",
+              timestamp: new Date(),
+            };
+
+            setMessages((prev) => [...prev, aiResponse]);
+
+            // After a brief delay, show the analysis process
+            setTimeout(() => {
+              const analysisResponse: Message = {
+                id: Date.now().toString(),
+                type: "ai",
+                content: `
+### Analysis in Progress
+
+* Analyzing 7-Eleven's product catalog and margin data for pizza and typical delivery orders ✓
+* Examining historical performance data from similar app-based promotions ✓
+* Evaluating market-specific trends in Texas and Florida delivery patterns ✓
+* Calculating optimal promotion structure to maximize both installs and completed transactions ✓
+* Determining the most effective validation method for tracking unique redemptions ✓
+                `,
+                timestamp: new Date(),
+              };
+
+              setMessages((prev) => [...prev, analysisResponse]);
+
+              // After analysis, show the optimized offer
+              setTimeout(() => {
+                const finalOffer: Message = {
+                  id: Date.now().toString(),
+                  type: "ai",
+                  content: `
+### Optimized Offer Structure
+
+**Free Big Bite Pizza with Your First 7NOW Order**
+
+**Redemption flow:**
+- Install app → Create account → Enter code 'BIGBITE' at checkout → Free pizza added to order
+
+**Geographic targeting:** 
+- All 7-Eleven locations across Texas and Florida (1,842 stores)
+
+**Validation method:** 
+- Automated promo code redemption tracking with 1-per-customer limit enforced
+
+**Timing:** 
+- Immediate launch through June 30
+
+**Projected performance:**
+- 28% projected conversion rate from impression to app install
+- 64% projected completion rate from install to first order
+- $12.84 estimated average basket size on first order (excluding pizza)
+- 42% projected retention rate for second order within 30 days
+
+*The offer is configured and ready for campaign deployment. Would you like to proceed with this optimized structure?*
+                  `,
+                  timestamp: new Date(),
+                  responseOptions: [
+                    {
+                      text: "Yes, proceed with this offer",
+                      value: "approve-offer",
+                    },
+                    {
+                      text: "Make some adjustments",
+                      value: "adjust-offer",
+                    },
+                  ],
+                };
+
+                setMessages((prev) => [...prev, finalOffer]);
+                setIsThinking(false);
+              }, 4000);
+            }, 3000);
+            return;
+          }, 1500);
+          return;
+        }
+
+        if (
+          optionValue === "adjust-parameters" ||
+          optionValue === "adjust-offer"
+        ) {
+          timeoutRef.current = setTimeout(() => {
+            const aiResponse: Message = {
+              id: Date.now().toString(),
+              type: "ai",
+              content:
+                "What aspects of the offer would you like to adjust? You can modify the promo code, targeting, limitations, or validity period.",
+              timestamp: new Date(),
+              responseOptions: [
+                {
+                  text: "Change validity to end of July",
+                  value: "adjust-validity",
+                },
+                {
+                  text: "Let's go with the original parameters",
+                  value: "offer-details",
+                },
+              ],
+            };
+            setMessages((prev) => [...prev, aiResponse]);
+            setIsThinking(false);
+          }, 1500);
+          return;
+        }
+
+        if (optionValue === "adjust-validity") {
+          timeoutRef.current = setTimeout(() => {
+            const aiResponse: Message = {
+              id: Date.now().toString(),
+              type: "ai",
+              content:
+                "I've updated the validity period to end of July. This gives the campaign a full 8-week run, which should maximize app installs while maintaining operational feasibility. Would you like me to analyze this adjusted offer?",
+              timestamp: new Date(),
+              responseOptions: [
+                {
+                  text: "Yes, analyze the adjusted offer",
+                  value: "offer-details",
+                },
+                {
+                  text: "Make additional adjustments",
+                  value: "adjust-parameters",
+                },
+              ],
+            };
+            setMessages((prev) => [...prev, aiResponse]);
+            setIsThinking(false);
+          }, 1500);
+          return;
+        }
+
+        // Handle other option selections with standard response
+        timeoutRef.current = setTimeout(() => {
+          // Default response
+          let aiResponse: Message = {
+            id: Date.now().toString(),
+            type: "ai",
+            content:
+              "I'm analyzing your request. How would you like to proceed?",
+            timestamp: new Date(),
+            responseOptions: [
+              { text: "Continue", value: "continue" },
+              { text: "Start over", value: "start-over" },
+            ],
+          };
+
+          // ... the rest of the existing logic...
+
+          setMessages((prev) => [...prev, aiResponse]);
+          setIsThinking(false);
+        }, 1500);
+      }
     },
-    [onOptionSelected, clientId]
+    [messages, onOptionSelected]
   );
 
   // Clean up timeout on unmount
@@ -796,7 +993,7 @@ Would you like me to develop a campaign strategy for any of these opportunities 
           <ChatMessage
             key={message.id}
             message={message}
-            onOptionSelected={handleOptionClick}
+            onOptionSelected={handleOptionSelected}
           />
         ))}
 
