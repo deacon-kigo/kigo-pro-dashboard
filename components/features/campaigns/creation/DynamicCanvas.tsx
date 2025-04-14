@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import ReactConfetti from "react-confetti";
 import { buildDemoUrl } from "@/lib/utils";
 import { CampaignCreationStepType } from "@/lib/redux/slices/demoSlice";
+import { Button } from "@/components/atoms/Button/Button";
 
 // Importing views statically to fix module not found errors
 import BusinessIntelligenceView from "./views/BusinessIntelligenceView";
@@ -983,29 +984,21 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = () => {
 
       {/* Navigation footer */}
       <div className="p-4 flex justify-between border-t border-gray-200 bg-white flex-shrink-0 sticky bottom-0 left-0 right-0 z-10">
-        <button
+        <Button
           onClick={goToPreviousStep}
           disabled={campaignCreationStep === "business-intelligence"}
-          className={`px-4 py-2 rounded-lg ${
-            campaignCreationStep === "business-intelligence"
-              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-              : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
-          }`}
+          variant="outline"
         >
           Previous Step
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={goToNextStep}
           disabled={campaignCreationStep === "launch-control"}
-          className={`px-4 py-2 rounded-lg ${
-            campaignCreationStep === "launch-control"
-              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-              : "bg-blue-500 text-white hover:bg-blue-600"
-          }`}
+          variant="primary"
         >
           Next Step
-        </button>
+        </Button>
       </div>
     </div>
   );
