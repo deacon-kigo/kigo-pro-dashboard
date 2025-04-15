@@ -200,7 +200,7 @@ const campaignPerformanceData = {
   clicks: 31458,
   installs: 12761,
   completedOrders: 8209,
-  costPerInstall: 3.87, // target was 3.50 (previously $4.25)
+  costPerInstall: 3.25, // target was 3.50 (previously $4.25)
   costPerOrder: 6.02, // target was 8.75 (previously $9.75)
   roas: 4.1, // target was 3.6
   dailyData: [
