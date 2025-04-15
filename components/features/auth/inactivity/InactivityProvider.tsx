@@ -67,8 +67,8 @@ export const InactivityProvider: React.FC<InactivityProviderProps> = ({
     // and redirect to sign-in page
     expireUserSession();
 
-    // Redirect to sign-in page (the action also does this, but adding as a backup)
-    router.push("/sign-in");
+    // Redirect to SSO login page
+    router.push("/sso/login");
   }, [expireUserSession, hideTimeoutWarning, router]);
 
   // User chose to continue session
