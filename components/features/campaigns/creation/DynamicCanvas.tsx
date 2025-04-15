@@ -555,8 +555,8 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = () => {
           "Valid for first-time 7NOW app users only. Use promo code BIGBITE at checkout. Limited to one per customer. Valid through June 30.",
         code: "BIGBITE",
         budget: {
-          total: 12000,
-          dailyAverage: 400,
+          total: 120000,
+          dailyAverage: 3000,
         },
       };
     } else {
@@ -844,8 +844,8 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = () => {
           ],
         },
         budget: {
-          total: 12000,
-          dailyAverage: 400,
+          total: 120000,
+          dailyAverage: 3000,
         },
         assets: [
           {

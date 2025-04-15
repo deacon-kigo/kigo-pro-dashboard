@@ -419,29 +419,28 @@ const LaunchControlCenter: React.FC<LaunchControlCenterProps> = ({
                 </div>
 
                 <Button
-                  variant={allSectionsReviewed ? "primary" : "outline"}
-                  theme="cvs"
+                  variant={allSectionsReviewed ? "primary" : "secondary"}
                   disabled={
                     !allSectionsReviewed ||
                     launchStatus === "pending" ||
                     String(launchStatus) === "launched"
                   }
                   onClick={handleLaunch}
-                  className="min-w-[150px]"
+                  className="min-w-[150px] shadow-sm"
+                  icon={
+                    (launchStatus as string) === "pending" ? (
+                      <ArrowPathIcon className="w-5 h-5 animate-spin" />
+                    ) : (launchStatus as string) === "launched" ? (
+                      <CheckIcon className="w-5 h-5" />
+                    ) : null
+                  }
+                  size="lg"
                 >
-                  {(launchStatus as string) === "pending" && (
-                    <>
-                      <ArrowPathIcon className="w-5 h-5 mr-2 animate-spin" />
-                      Launching...
-                    </>
-                  )}
-                  {(launchStatus as string) === "launched" && (
-                    <>
-                      <CheckIcon className="w-5 h-5 mr-2" />
-                      Launched!
-                    </>
-                  )}
-                  {(launchStatus as string) === "ready" && <>Launch Campaign</>}
+                  {(launchStatus as string) === "pending"
+                    ? "Launching..."
+                    : (launchStatus as string) === "launched"
+                      ? "Launched!"
+                      : "Launch Campaign"}
                 </Button>
               </div>
             )}

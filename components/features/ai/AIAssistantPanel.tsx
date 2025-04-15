@@ -79,17 +79,16 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
         let initialMessage = {
           id: "1",
           type: "ai" as const,
-          content: `${greeting}, ${merchantName}! I'm your AI marketing assistant. Let me show you your business intelligence data to help identify opportunities for a new campaign.`,
+          content: `${greeting}, ${merchantName}! I'm your AI marketing assistant. Sounds like you'd like to create a new offer. Let's get started. To help you create an effective offer, tell me about your primary business objective.`,
           timestamp: new Date(),
           responseOptions: [
-            { text: "Show me the data", value: "show-data" },
             {
-              text: "What campaign would you suggest?",
-              value: "campaign-suggestion",
+              text: "Drive installs of and transactions through our 7NOW delivery app in Texas and Florida",
+              value: "app-installs-objective",
             },
             {
-              text: "What can I expect from a new campaign?",
-              value: "expected-results",
+              text: "I need help defining my objective",
+              value: "need-objective-help",
             },
           ],
         };
@@ -99,7 +98,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
           initialMessage = {
             id: "1",
             type: "ai",
-            content: `${greeting}, ${merchantName}! I'm your AI marketing assistant. To help you create an effective campaign, please share your primary business objective.`,
+            content: `${greeting}, ${merchantName}! I'm your AI marketing assistant. Sounds like you'd like to create a new offer. Let's get started. To help you create an effective offer, tell me about your primary business objective.`,
             timestamp: new Date(),
             responseOptions: [
               {
@@ -179,7 +178,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
             id: Date.now().toString(),
             type: "ai",
             content:
-              "Thank you for sharing your business objective. To help create an effective campaign, could you tell me more about your target audience demographics?",
+              "That sounds like an important business objective. To recommend an effective offer, tell me about the target audience you want to reach with the offer",
             timestamp: new Date(),
             responseOptions: [
               {
@@ -206,7 +205,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
             id: Date.now().toString(),
             type: "ai",
             content:
-              "Great. And what timeframe would you like this campaign to run?",
+              "Great. And when do you want to the offer to start and expire?",
             timestamp: new Date(),
             responseOptions: [
               {
@@ -233,7 +232,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
             id: Date.now().toString(),
             type: "ai",
             content:
-              "Perfect. Do you have any specific offer or promotion in mind for this campaign?",
+              "Perfect. Do you have a specific offer or promotion in mind that you would like to use?",
             timestamp: new Date(),
             responseOptions: [
               {
@@ -303,7 +302,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
 * Analyzing 7-Eleven's product catalog and margin data for pizza and typical delivery orders ✓
 * Examining historical performance data from similar app-based promotions ✓
 * Evaluating market-specific trends in Texas and Florida delivery patterns ✓
-* Calculating optimal promotion structure to maximize both installs and completed transactions ✓
+* Calculating optimal promotional pricing to maximize customer acquisition while ensuring ROI ✓
 * Determining the most effective validation method for tracking unique redemptions ✓
                   `,
                   timestamp: new Date(),
@@ -324,8 +323,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
 **Redemption flow:**
 - Install app → Create account → Enter code 'BIGBITE' at checkout → Free pizza added to order
 
-**Geographic targeting:** 
-- All 7-Eleven locations across Texas and Florida (1,842 stores)
+**Geographic Targeting:** Texas and Florida markets (covers 215 locations with estimated audience reach of 3.7M potential customers in app delivery zones)
 
 **Validation method:** 
 - Automated promo code redemption tracking with 1-per-customer limit enforced
@@ -391,7 +389,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
 * Analyzing 7-Eleven's product catalog and margin data for pizza and typical delivery orders ✓
 * Examining historical performance data from similar app-based promotions ✓
 * Evaluating market-specific trends in Texas and Florida delivery patterns ✓
-* Calculating optimal promotion structure to maximize both installs and completed transactions ✓
+* Calculating optimal promotional pricing to maximize customer acquisition while ensuring ROI ✓
 * Determining the most effective validation method for tracking unique redemptions ✓
               `,
               timestamp: new Date(),
@@ -412,8 +410,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
 **Redemption flow:**
 - Install app → Create account → Enter code 'BIGBITE' at checkout → Free pizza added to order
 
-**Geographic targeting:** 
-- All 7-Eleven locations across Texas and Florida (1,842 stores)
+**Geographic Targeting:** Texas and Florida markets (covers 215 locations with estimated audience reach of 3.7M potential customers in app delivery zones)
 
 **Validation method:** 
 - Automated promo code redemption tracking with 1-per-customer limit enforced
@@ -719,7 +716,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
                   id: Date.now().toString(),
                   type: "ai",
                   content:
-                    "Great. And what timeframe would you like this campaign to run?",
+                    "Great. And when do you want to the offer to start and expire?",
                   timestamp: new Date(),
                   responseOptions: [
                     {
@@ -747,7 +744,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
                   id: Date.now().toString(),
                   type: "ai",
                   content:
-                    "Perfect. Do you have any specific offer or promotion in mind for this campaign?",
+                    "Perfect. Do you have a specific offer or promotion in mind that you would like to use?",
                   timestamp: new Date(),
                   responseOptions: [
                     {
@@ -817,7 +814,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
 * Analyzing 7-Eleven's product catalog and margin data for pizza and typical delivery orders ✓
 * Examining historical performance data from similar app-based promotions ✓
 * Evaluating market-specific trends in Texas and Florida delivery patterns ✓
-* Calculating optimal promotion structure to maximize both installs and completed transactions ✓
+* Calculating optimal promotional pricing to maximize customer acquisition while ensuring ROI ✓
 * Determining the most effective validation method for tracking unique redemptions ✓
                         `,
                         timestamp: new Date(),
@@ -838,8 +835,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
 **Redemption flow:**
 - Install app → Create account → Enter code 'BIGBITE' at checkout → Free pizza added to order
 
-**Geographic targeting:** 
-- All 7-Eleven locations across Texas and Florida (1,842 stores)
+**Geographic Targeting:** Texas and Florida markets (covers 215 locations with estimated audience reach of 3.7M potential customers in app delivery zones)
 
 **Validation method:** 
 - Automated promo code redemption tracking with 1-per-customer limit enforced
@@ -1246,14 +1242,14 @@ The offer is now ready to be assigned to a campaign. Would you like to proceed w
 - 10% to Boosts during weekend dinner hours
 
 **Brand Safety Parameters:**
-- Automatically configured to exclude competitor locations and content categories with negative sentiment alignment
+- Automatically configured to exclude content categories with negative sentiment alignment
 
 **Pacing Controls:**
 - Higher budget allocation to evenings (5-9pm) and weekends
 
 **Performance Targets:**
-- Target cost per app install: $4.25
-- Target cost per completed order: $9.75
+- Target cost per app install: $3.50
+- Target cost per completed order: $8.75
 - Target ROAS based on average basket value: 3.6x
 
 The campaign is now fully configured and ready to publish. Would you like to make any adjustments, or shall we proceed with publishing?

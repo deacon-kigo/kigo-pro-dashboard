@@ -149,15 +149,15 @@ Placement Strategy:
 
 10% to Boosts during weekend dinner hours
 
-Brand Safety Parameters: Automatically configured to exclude competitor locations and content categories with negative sentiment alignment
+Brand Safety Parameters: Automatically configured to exclude content categories with negative sentiment alignment
 
 Pacing Controls: Higher budget allocation to evenings (5-9pm) and weekends
 
 Performance Targets:
 
-Target cost per app install: $4.25
+Target cost per app install: $3.50
 
-Target cost per completed order: $9.75
+Target cost per completed order: $8.75
 
 Target ROAS based on average basket value: 3.6x"
 
@@ -185,9 +185,9 @@ Scene 4: Intelligent Campaign Monitoring & Optimization (1.5 minutes)
 
 8,209 completed orders with 'BIGBITE' code
 
-$3.87 current cost per app install (beating the $4.25 target)
+$3.15 current cost per app install (beating the $3.50 target)
 
-$6.02 cost per completed order (significantly better than the $9.75 target)
+$5.89 cost per completed order (significantly better than the $8.75 target)
 
 4.1x current ROAS (exceeding the 3.6x target)"
 
