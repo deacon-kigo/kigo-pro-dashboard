@@ -37,10 +37,13 @@ function SevenElevenDashboardContent() {
 
     // Set client ID for the demo only once
     setClientId("seven-eleven");
+  }, [setClientId]);
 
-    // Get the parameters only once
-    const fromCampaignLaunch = fromParamRef.current === "campaign-launch";
-    const viewPerformance = viewParamRef.current === "performance";
+  // Separate effect for handling URL parameters
+  useEffect(() => {
+    // Get current parameters each time URL changes
+    const fromCampaignLaunch = searchParams.get("from") === "campaign-launch";
+    const viewPerformance = searchParams.get("view") === "performance";
 
     if (fromCampaignLaunch) {
       setNewCampaignAdded(true);
@@ -56,10 +59,10 @@ function SevenElevenDashboardContent() {
 
     if (viewPerformance) {
       setShowPerformance(true);
+    } else {
+      setShowPerformance(false);
     }
-
-    // Empty dependency array with initialization guard ensures this runs exactly once
-  }, [setClientId]);
+  }, [searchParams]);
 
   // Define the callbacks for the buttons in the dashboard
   const handleCreateCampaign = () => {
