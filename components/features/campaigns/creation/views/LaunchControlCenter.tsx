@@ -250,7 +250,7 @@ const LaunchControlCenter: React.FC<LaunchControlCenterProps> = ({
                         className="h-full"
                         style={{
                           width: "75%",
-                          backgroundColor: "#16a34a !important",
+                          backgroundColor: "#16a34a",
                         }}
                       ></div>
                     </div>
@@ -270,7 +270,7 @@ const LaunchControlCenter: React.FC<LaunchControlCenterProps> = ({
                         className="h-full"
                         style={{
                           width: "60%",
-                          backgroundColor: "#16a34a !important",
+                          backgroundColor: "#16a34a",
                         }}
                       ></div>
                     </div>
@@ -290,7 +290,7 @@ const LaunchControlCenter: React.FC<LaunchControlCenterProps> = ({
                         className="h-full"
                         style={{
                           width: "45%",
-                          backgroundColor: "#16a34a !important",
+                          backgroundColor: "#16a34a",
                         }}
                       ></div>
                     </div>
