@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useCallback, ReactNode } from "react";
+import React, { useEffect, useCallback, ReactNode, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   AlertDialog,
@@ -27,6 +27,10 @@ export const InactivityProvider: React.FC<InactivityProviderProps> = ({
   warningBeforeTimeoutInMinutes = 5, // Default to 5 minutes warning
 }) => {
   const router = useRouter();
+  // Local state for countdown instead of relying solely on Redux
+  const [localRemainingSeconds, setLocalRemainingSeconds] = useState(
+    warningBeforeTimeoutInMinutes * 60
+  );
 
   // Get session state and actions from Redux
   const {
@@ -52,6 +56,8 @@ export const InactivityProvider: React.FC<InactivityProviderProps> = ({
       sessionTimeoutMinutes: timeoutInMinutes,
       warningTimeoutMinutes: warningBeforeTimeoutInMinutes,
     });
+    // Initialize local countdown with the warning time
+    setLocalRemainingSeconds(warningBeforeTimeoutInMinutes * 60);
   }, [
     timeoutInMinutes,
     warningBeforeTimeoutInMinutes,
@@ -75,7 +81,9 @@ export const InactivityProvider: React.FC<InactivityProviderProps> = ({
   const handleStayActive = useCallback(() => {
     // Record new activity and hide warning
     recordActivity();
-  }, [recordActivity]);
+    // Reset local countdown
+    setLocalRemainingSeconds(warningTimeoutMinutes * 60);
+  }, [recordActivity, warningTimeoutMinutes]);
 
   // Set up inactivity detection timers
   useEffect(() => {
@@ -86,6 +94,8 @@ export const InactivityProvider: React.FC<InactivityProviderProps> = ({
     // Timer to show warning dialog
     const warningTimer = setTimeout(() => {
       showTimeoutWarning();
+      // Initialize countdown when showing warning
+      setLocalRemainingSeconds(warningTimeoutMinutes * 60);
 
       // Timer for actual logout
       const logoutTimer = setTimeout(
@@ -111,10 +121,15 @@ export const InactivityProvider: React.FC<InactivityProviderProps> = ({
   useEffect(() => {
     let countdownInterval: NodeJS.Timeout | null = null;
 
-    if (showWarning) {
+    if (showWarning && localRemainingSeconds > 0) {
       // Set up countdown interval
       countdownInterval = setInterval(() => {
-        updateRemainingTime(Math.max(0, remainingSeconds - 1));
+        setLocalRemainingSeconds((prevSeconds) => {
+          const newSeconds = Math.max(0, prevSeconds - 1);
+          // Keep Redux in sync with our local state
+          updateRemainingTime(newSeconds);
+          return newSeconds;
+        });
       }, 1000);
     }
 
@@ -123,7 +138,7 @@ export const InactivityProvider: React.FC<InactivityProviderProps> = ({
         clearInterval(countdownInterval);
       }
     };
-  }, [showWarning, remainingSeconds, updateRemainingTime]);
+  }, [showWarning, localRemainingSeconds, updateRemainingTime]);
 
   // Set up event listeners for user activity
   useEffect(() => {
@@ -161,8 +176,8 @@ export const InactivityProvider: React.FC<InactivityProviderProps> = ({
 
   // Format countdown time as MM:SS
   const formatCountdown = () => {
-    const minutes = Math.floor(remainingSeconds / 60);
-    const seconds = remainingSeconds % 60;
+    const minutes = Math.floor(localRemainingSeconds / 60);
+    const seconds = localRemainingSeconds % 60;
     return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
   };
 
