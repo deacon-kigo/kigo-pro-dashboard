@@ -568,7 +568,10 @@ const CampaignPerformanceMetrics = () => {
                   <YAxis tick={{ fontSize: 10 }} />
                   <CartesianGrid strokeDasharray="3 3" />
                   <Tooltip
-                    formatter={(value) => [formatNumber(value), undefined]}
+                    formatter={(value) => [
+                      formatNumber(Number(value)),
+                      undefined,
+                    ]}
                     contentStyle={{
                       backgroundColor: "white",
                       borderRadius: "0.375rem",
@@ -1026,7 +1029,7 @@ const TimePerformanceAnalysis = () => {
                 <Tooltip
                   formatter={(value, name) => {
                     if (name === "orders")
-                      return [formatNumber(value), "Orders"];
+                      return [formatNumber(Number(value)), "Orders"];
                     if (name === "avgBasket")
                       return [`$${value}`, "Avg Basket"];
                     return [value, name];
