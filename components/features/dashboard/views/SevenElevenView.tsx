@@ -29,6 +29,15 @@ import {
   TagIcon,
   CheckCircleIcon,
   ArrowRightIcon,
+  ChartBarIcon,
+  ChartBarSquareIcon,
+  ArrowLongUpIcon,
+  ArrowDownIcon,
+  ChartPieIcon,
+  ArrowPathIcon,
+  ShoppingCartIcon,
+  RocketLaunchIcon,
+  CheckIcon,
 } from "@heroicons/react/24/outline";
 
 // Custom CSS for banner pattern
@@ -185,6 +194,895 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
+// Campaign performance data (for 7NOW app campaign)
+const campaignPerformanceData = {
+  impressions: 387642,
+  clicks: 31458,
+  installs: 12761,
+  completedOrders: 8209,
+  costPerInstall: 3.87, // target was 3.50 (previously $4.25)
+  costPerOrder: 6.02, // target was 8.75 (previously $9.75)
+  roas: 4.1, // target was 3.6
+  dailyData: [
+    {
+      day: "06/01",
+      impressions: 18500,
+      clicks: 1480,
+      installs: 602,
+      orders: 380,
+    },
+    {
+      day: "06/02",
+      impressions: 19200,
+      clicks: 1537,
+      installs: 624,
+      orders: 395,
+    },
+    {
+      day: "06/03",
+      impressions: 21000,
+      clicks: 1680,
+      installs: 683,
+      orders: 432,
+    },
+    {
+      day: "06/04",
+      impressions: 25400,
+      clicks: 2035,
+      installs: 822,
+      orders: 520,
+    },
+    {
+      day: "06/05",
+      impressions: 27300,
+      clicks: 2185,
+      installs: 885,
+      orders: 561,
+    },
+    {
+      day: "06/06",
+      impressions: 28100,
+      clicks: 2245,
+      installs: 912,
+      orders: 578,
+    },
+    {
+      day: "06/07",
+      impressions: 29250,
+      clicks: 2342,
+      installs: 950,
+      orders: 602,
+    },
+    {
+      day: "06/08",
+      impressions: 30400,
+      clicks: 2435,
+      installs: 985,
+      orders: 625,
+    },
+    {
+      day: "06/09",
+      impressions: 31200,
+      clicks: 2498,
+      installs: 1010,
+      orders: 641,
+    },
+    {
+      day: "06/10",
+      impressions: 33450,
+      clicks: 2675,
+      installs: 1086,
+      orders: 688,
+    },
+    {
+      day: "06/11",
+      impressions: 34800,
+      clicks: 2785,
+      installs: 1128,
+      orders: 715,
+    },
+    {
+      day: "06/12",
+      impressions: 35700,
+      clicks: 2855,
+      installs: 1160,
+      orders: 735,
+    },
+    {
+      day: "06/13",
+      impressions: 36500,
+      clicks: 2920,
+      installs: 1185,
+      orders: 750,
+    },
+    {
+      day: "06/14",
+      impressions: 37842,
+      clicks: 3026,
+      installs: 1229,
+      orders: 777,
+    },
+  ],
+  regionPerformance: {
+    florida: {
+      impressions: 198720,
+      clicks: 18248,
+      installs: 7530,
+      orders: 5254,
+      conversionRate: 28.6,
+    },
+    texas: {
+      impressions: 188922,
+      clicks: 13210,
+      installs: 5231,
+      orders: 2955,
+      conversionRate: 20.8,
+    },
+  },
+  timePerformance: [
+    { time: "8-10am", orders: 820, avgBasket: 12.4 },
+    { time: "10am-12pm", orders: 985, avgBasket: 13.2 },
+    { time: "12-2pm", orders: 1245, avgBasket: 14.75 },
+    { time: "2-4pm", orders: 1050, avgBasket: 14.1 },
+    { time: "4-6pm", orders: 1320, avgBasket: 15.3 },
+    { time: "6-8pm", orders: 1652, avgBasket: 18.75 },
+    { time: "8-10pm", orders: 1137, avgBasket: 17.5 },
+  ],
+  optimizationRecommendations: [
+    {
+      id: "rec-001",
+      title: "Regional Performance Variance",
+      description:
+        "Florida locations are outperforming Texas by 37% in conversion rate.",
+      recommendation: "Shift budget allocation to 60% Florida/40% Texas.",
+      impact: "High",
+      savings: 12400,
+      selected: false,
+    },
+    {
+      id: "rec-002",
+      title: "Daypart Optimization",
+      description:
+        "Orders between 6-8pm show highest conversion rates and larger basket sizes.",
+      recommendation:
+        "Increase budget allocation during this timeframe by 25%.",
+      impact: "Medium",
+      savings: 8750,
+      selected: false,
+    },
+    {
+      id: "rec-003",
+      title: "Audience Refinement",
+      description:
+        "Users within actual delivery radius (vs. standard geo-targeting) show 52% higher conversion rates.",
+      recommendation:
+        "Switch to delivery zone targeting using 7-Eleven's actual service boundaries.",
+      impact: "High",
+      savings: 15200,
+      selected: false,
+    },
+    {
+      id: "rec-004",
+      title: "Creative Messaging Performance",
+      description:
+        'Adding "No Minimum Order" messaging increased click-through rate by 31% in test markets.',
+      recommendation: "Update creative across all placements.",
+      impact: "Medium",
+      savings: 9400,
+      selected: false,
+    },
+    {
+      id: "rec-005",
+      title: "Market Expansion Opportunity",
+      description:
+        "Based on demographic and behavioral similarities to high-performing Florida markets, the agent has identified Georgia, South Carolina, and Alabama as prime expansion candidates.",
+      recommendation:
+        "Extend campaign to these markets with a 15% test budget allocation.",
+      impact: "High",
+      savings: 21500,
+      selected: false,
+    },
+  ],
+};
+
+// Campaign Performance Metrics component
+const CampaignPerformanceMetrics = () => {
+  return (
+    <Card className="mb-6 overflow-hidden shadow-sm">
+      <div className="flex items-center justify-between p-4 border-b border-gray-100">
+        <div className="flex items-center gap-2">
+          <RocketLaunchIcon className="h-5 w-5 text-red-600" />
+          <h3 className="font-semibold text-gray-800">
+            7NOW App Campaign Performance
+          </h3>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-500">Two Weeks After Launch</span>
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            <span className="mr-1">•</span> Live
+          </span>
+        </div>
+      </div>
+
+      <div className="p-4 pt-2">
+        <div className="mb-4">
+          <p className="text-sm text-gray-500 mb-1">Campaign Summary</p>
+          <h4 className="text-lg font-bold">
+            Free Pizza with 7NOW App - Texas & Florida
+          </h4>
+          <p className="text-sm text-gray-600">
+            Promo code: BIGBITE | 14 days active | $120,000 total budget
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
+          {/* Impressions */}
+          <div className="bg-white shadow-sm rounded-lg p-3 border border-gray-100">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-gray-500">Impressions</p>
+              <span className="text-xs text-green-500 font-medium">
+                ↑ 12.4%
+              </span>
+            </div>
+            <p className="text-xl font-bold">
+              {formatNumber(campaignPerformanceData.impressions)}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">Target: 350K</p>
+          </div>
+
+          {/* Clicks */}
+          <div className="bg-white shadow-sm rounded-lg p-3 border border-gray-100">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-gray-500">Clicks</p>
+              <span className="text-xs text-green-500 font-medium">↑ 8.2%</span>
+            </div>
+            <p className="text-xl font-bold">
+              {formatNumber(campaignPerformanceData.clicks)}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">CTR: 8.1%</p>
+          </div>
+
+          {/* App Installs */}
+          <div className="bg-white shadow-sm rounded-lg p-3 border border-gray-100">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-gray-500">App Installs</p>
+              <span className="text-xs text-green-500 font-medium">
+                ↑ 10.5%
+              </span>
+            </div>
+            <p className="text-xl font-bold">
+              {formatNumber(campaignPerformanceData.installs)}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">CVR: 40.6%</p>
+          </div>
+
+          {/* Completed Orders */}
+          <div className="bg-white shadow-sm rounded-lg p-3 border border-gray-100">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-gray-500">Orders</p>
+              <span className="text-xs text-green-500 font-medium">
+                ↑ 15.8%
+              </span>
+            </div>
+            <p className="text-xl font-bold">
+              {formatNumber(campaignPerformanceData.completedOrders)}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">Using BIGBITE code</p>
+          </div>
+
+          {/* Cost Per Install */}
+          <div className="bg-white shadow-sm rounded-lg p-3 border border-gray-100">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-gray-500">Cost Per Install</p>
+              <span className="text-xs text-green-500 font-medium">
+                ↓ 10.6%
+              </span>
+            </div>
+            <p className="text-xl font-bold">
+              ${campaignPerformanceData.costPerInstall.toFixed(2)}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">Target: $3.50</p>
+          </div>
+
+          {/* ROAS */}
+          <div className="bg-white shadow-sm rounded-lg p-3 border border-gray-100">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-gray-500">ROAS</p>
+              <span className="text-xs text-green-500 font-medium">
+                ↑ 13.9%
+              </span>
+            </div>
+            <p className="text-xl font-bold">
+              {campaignPerformanceData.roas.toFixed(1)}x
+            </p>
+            <p className="text-xs text-gray-500 mt-1">Target: 3.6x</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Performance Graph */}
+          <div className="lg:col-span-2 bg-white p-4 rounded-lg border border-gray-100 shadow-sm">
+            <div className="flex justify-between items-center mb-3">
+              <h5 className="text-sm font-semibold">Daily Performance</h5>
+              <div className="flex gap-1 text-xs">
+                <button className="px-2 py-0.5 rounded-md bg-blue-100 text-blue-700 font-medium">
+                  14d
+                </button>
+                <button className="px-2 py-0.5 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-700">
+                  30d
+                </button>
+                <button className="px-2 py-0.5 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-700">
+                  All
+                </button>
+              </div>
+            </div>
+            <div className="h-56">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={campaignPerformanceData.dailyData}
+                  margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                >
+                  <defs>
+                    <linearGradient
+                      id="colorImpressions"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient
+                      id="colorClicks"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient
+                      id="colorInstalls"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient
+                      id="colorOrders"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="day" tick={{ fontSize: 10 }} />
+                  <YAxis tick={{ fontSize: 10 }} />
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <Tooltip
+                    formatter={(value) => [formatNumber(value), undefined]}
+                    contentStyle={{
+                      backgroundColor: "white",
+                      borderRadius: "0.375rem",
+                      boxShadow:
+                        "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
+                      fontSize: "0.75rem",
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="installs"
+                    stroke="#8b5cf6"
+                    fillOpacity={1}
+                    fill="url(#colorInstalls)"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="orders"
+                    stroke="#ef4444"
+                    fillOpacity={1}
+                    fill="url(#colorOrders)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex justify-center gap-6 mt-2">
+              <div className="flex items-center">
+                <span className="inline-block w-3 h-3 rounded-full bg-purple-500 mr-1.5"></span>
+                <span className="text-xs text-gray-600">App Installs</span>
+              </div>
+              <div className="flex items-center">
+                <span className="inline-block w-3 h-3 rounded-full bg-red-500 mr-1.5"></span>
+                <span className="text-xs text-gray-600">Orders</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Regional Performance */}
+          <div className="bg-white p-4 rounded-lg border border-gray-100 shadow-sm">
+            <h5 className="text-sm font-semibold mb-3">Regional Performance</h5>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-xs font-medium text-gray-700">
+                    Florida
+                  </span>
+                  <span className="text-xs font-medium text-gray-700">
+                    {
+                      campaignPerformanceData.regionPerformance.florida
+                        .conversionRate
+                    }
+                    % CVR
+                  </span>
+                </div>
+                <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden relative">
+                  <div
+                    className="h-full rounded-full absolute top-0 left-0"
+                    style={{
+                      width: `max(${campaignPerformanceData.regionPerformance.florida.conversionRate}%, 10px)`,
+                      backgroundColor: "#10b981" /* Tailwind green-500 */,
+                    }}
+                  ></div>
+                </div>
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>
+                    {formatNumber(
+                      campaignPerformanceData.regionPerformance.florida.installs
+                    )}{" "}
+                    installs
+                  </span>
+                  <span>
+                    {formatNumber(
+                      campaignPerformanceData.regionPerformance.florida.orders
+                    )}{" "}
+                    orders
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-xs font-medium text-gray-700">
+                    Texas
+                  </span>
+                  <span className="text-xs font-medium text-gray-700">
+                    {
+                      campaignPerformanceData.regionPerformance.texas
+                        .conversionRate
+                    }
+                    % CVR
+                  </span>
+                </div>
+                <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden relative">
+                  <div
+                    className="h-full rounded-full absolute top-0 left-0"
+                    style={{
+                      width: `max(${campaignPerformanceData.regionPerformance.texas.conversionRate}%, 10px)`,
+                      backgroundColor: "#3b82f6" /* Tailwind blue-500 */,
+                    }}
+                  ></div>
+                </div>
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>
+                    {formatNumber(
+                      campaignPerformanceData.regionPerformance.texas.installs
+                    )}{" "}
+                    installs
+                  </span>
+                  <span>
+                    {formatNumber(
+                      campaignPerformanceData.regionPerformance.texas.orders
+                    )}{" "}
+                    orders
+                  </span>
+                </div>
+              </div>
+
+              <div className="pt-3 mt-3 border-t border-gray-100">
+                <h6 className="text-xs font-semibold mb-2">Key Findings</h6>
+                <div className="bg-yellow-50 border border-yellow-100 rounded-md p-2 text-xs text-yellow-800">
+                  <div className="font-medium mb-1">
+                    Regional Variance Alert
+                  </div>
+                  <p>
+                    Florida locations outperforming Texas by 37% in conversion
+                    rate.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+};
+
+// Optimization Recommendations component
+const OptimizationRecommendations = () => {
+  const [applyingRecommendations, setApplyingRecommendations] =
+    React.useState(false);
+  const [recommendationsApplied, setRecommendationsApplied] =
+    React.useState(false);
+  const [selectedRecommendations, setSelectedRecommendations] = React.useState<{
+    [key: string]: boolean;
+  }>({});
+  const [appliedRecommendations, setAppliedRecommendations] = React.useState<
+    string[]
+  >([]);
+
+  // Calculate total savings from selected recommendations
+  const totalSavings = React.useMemo(() => {
+    return campaignPerformanceData.optimizationRecommendations
+      .filter((rec) => selectedRecommendations[rec.id])
+      .reduce((total, rec) => total + rec.savings, 0);
+  }, [selectedRecommendations]);
+
+  // Calculate total ROI improvement (assume 1.8% improvement per recommendation)
+  const roiImprovement = React.useMemo(() => {
+    const selectedCount = Object.values(selectedRecommendations).filter(
+      Boolean
+    ).length;
+    return selectedCount * 1.8;
+  }, [selectedRecommendations]);
+
+  // Toggle recommendation selection
+  const toggleRecommendation = (id: string) => {
+    setSelectedRecommendations((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  // Handle selecting all recommendations
+  const selectAllRecommendations = () => {
+    const allSelected =
+      campaignPerformanceData.optimizationRecommendations.reduce(
+        (acc, rec) => {
+          acc[rec.id] = true;
+          return acc;
+        },
+        {} as { [key: string]: boolean }
+      );
+
+    setSelectedRecommendations(allSelected);
+  };
+
+  // Apply selected recommendations
+  const handleApplyRecommendations = () => {
+    setApplyingRecommendations(true);
+
+    // Get IDs of selected recommendations
+    const selectedIds = Object.entries(selectedRecommendations)
+      .filter(([_, isSelected]) => isSelected)
+      .map(([id]) => id);
+
+    // Simulate applying recommendations
+    setTimeout(() => {
+      setApplyingRecommendations(false);
+      setRecommendationsApplied(true);
+      setAppliedRecommendations(selectedIds);
+    }, 2000);
+  };
+
+  // Count selected recommendations
+  const selectedCount = Object.values(selectedRecommendations).filter(
+    Boolean
+  ).length;
+  const hasSelections = selectedCount > 0;
+
+  return (
+    <Card className="mb-6 overflow-hidden shadow-sm">
+      <div className="flex items-center justify-between p-4 border-b border-gray-100">
+        <div className="flex items-center gap-2">
+          <LightBulbIcon className="h-5 w-5 text-yellow-500" />
+          <h3 className="font-semibold text-gray-800">
+            AI Optimization Recommendations
+          </h3>
+        </div>
+        <div className="flex gap-2">
+          {!recommendationsApplied ? (
+            <>
+              <Button
+                variant="outline"
+                size="xs"
+                onClick={selectAllRecommendations}
+                disabled={applyingRecommendations}
+              >
+                Select All
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={applyingRecommendations || !hasSelections}
+                onClick={handleApplyRecommendations}
+                className="shadow-sm"
+                icon={
+                  applyingRecommendations ? (
+                    <ArrowPathIcon className="w-4 h-4 animate-spin" />
+                  ) : undefined
+                }
+              >
+                {applyingRecommendations
+                  ? "Applying..."
+                  : `Apply ${selectedCount} Recommendation${selectedCount !== 1 ? "s" : ""}`}
+              </Button>
+            </>
+          ) : (
+            <div className="flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-md text-sm">
+              <CheckIcon className="w-4 h-4 mr-1" />
+              {appliedRecommendations.length} Optimizations Applied
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="p-4">
+        <div className="bg-blue-50 border border-blue-100 rounded-md p-3 mb-4">
+          <h4 className="text-sm font-medium text-blue-800 mb-1">
+            Our AI has analyzed your campaign performance
+          </h4>
+          <p className="text-xs text-blue-700">
+            We've identified 5 opportunities to improve campaign performance.
+            {hasSelections && !recommendationsApplied && (
+              <span className="font-medium">
+                {" "}
+                Your selected optimizations could improve ROAS by up to{" "}
+                {roiImprovement.toFixed(1)}% and save an estimated $
+                {formatNumber(totalSavings)}.
+              </span>
+            )}
+            {!hasSelections && !recommendationsApplied && (
+              <span>
+                {" "}
+                Select recommendations below to see potential improvements.
+              </span>
+            )}
+            {recommendationsApplied && (
+              <span className="font-medium">
+                {" "}
+                Applied optimizations are projected to improve ROAS by{" "}
+                {roiImprovement.toFixed(1)}% and save $
+                {formatNumber(totalSavings)}.
+              </span>
+            )}
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          {campaignPerformanceData.optimizationRecommendations.map(
+            (recommendation) => {
+              const isSelected =
+                selectedRecommendations[recommendation.id] || false;
+              const isApplied =
+                recommendationsApplied &&
+                appliedRecommendations.includes(recommendation.id);
+
+              return (
+                <div
+                  key={recommendation.id}
+                  className={`border rounded-lg transition-all ${
+                    isApplied
+                      ? "border-green-200 bg-green-50"
+                      : isSelected
+                        ? "border-blue-200 bg-blue-50"
+                        : "border-gray-200 bg-white"
+                  }`}
+                >
+                  <div className="p-3">
+                    <div className="flex items-start">
+                      <div
+                        className={`p-1.5 rounded-md mr-3 cursor-pointer ${
+                          isApplied
+                            ? "bg-green-100 text-green-700"
+                            : recommendation.impact === "High"
+                              ? "bg-red-100 text-red-700"
+                              : recommendation.impact === "Medium"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : "bg-blue-100 text-blue-700"
+                        }`}
+                        onClick={() =>
+                          !recommendationsApplied &&
+                          toggleRecommendation(recommendation.id)
+                        }
+                      >
+                        {isApplied ? (
+                          <CheckIcon className="w-4 h-4" />
+                        ) : isSelected ? (
+                          <CheckIcon className="w-4 h-4" />
+                        ) : (
+                          <LightBulbIcon className="w-4 h-4" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <h5 className="text-sm font-semibold flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() =>
+                                !recommendationsApplied &&
+                                toggleRecommendation(recommendation.id)
+                              }
+                              disabled={recommendationsApplied}
+                              className="mr-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                            {recommendation.title}
+                          </h5>
+                          <span
+                            className={`text-xs px-2 py-0.5 rounded-full ${
+                              recommendation.impact === "High"
+                                ? "bg-red-100 text-red-700"
+                                : recommendation.impact === "Medium"
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : "bg-blue-100 text-blue-700"
+                            }`}
+                          >
+                            {recommendation.impact} Impact
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-600 mb-2">
+                          {recommendation.description}
+                        </p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs font-medium text-gray-700">
+                            <span className="text-gray-500">
+                              Recommendation:
+                            </span>{" "}
+                            {recommendation.recommendation}
+                          </p>
+                          <span className="text-xs font-medium text-green-600">
+                            Est. savings: $
+                            {formatNumber(recommendation.savings)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {isApplied && (
+                    <div className="px-3 py-2 bg-green-100 border-t border-green-200 rounded-b-lg flex justify-between items-center">
+                      <span className="text-xs text-green-800">
+                        Optimization applied successfully
+                      </span>
+                      <CheckIcon className="w-4 h-4 text-green-600" />
+                    </div>
+                  )}
+                  {isSelected && !isApplied && (
+                    <div className="px-3 py-2 bg-blue-100 border-t border-blue-200 rounded-b-lg flex justify-between items-center">
+                      <span className="text-xs text-blue-800">
+                        Selected for optimization
+                      </span>
+                    </div>
+                  )}
+                </div>
+              );
+            }
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+};
+
+// Time Performance Analysis component
+const TimePerformanceAnalysis = () => {
+  return (
+    <Card className="mb-6 overflow-hidden shadow-sm">
+      <div className="flex items-center justify-between p-4 border-b border-gray-100">
+        <div className="flex items-center gap-2">
+          <ChartBarIcon className="h-5 w-5 text-purple-600" />
+          <h3 className="font-semibold text-gray-800">
+            Time Performance Analysis
+          </h3>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" theme="cvs" size="xs">
+            Weekdays
+          </Button>
+          <Button variant="outline" theme="cvs" size="xs">
+            Weekends
+          </Button>
+          <Button variant="primary" theme="cvs" size="xs">
+            All Days
+          </Button>
+        </div>
+      </div>
+
+      <div className="p-4">
+        <div className="mb-4">
+          <h4 className="text-sm font-medium text-gray-700 mb-2">
+            Order Volume & Average Basket by Time
+          </h4>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={campaignPerformanceData.timePerformance}
+                margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="time" tick={{ fontSize: 10 }} />
+                <YAxis
+                  yAxisId="left"
+                  orientation="left"
+                  stroke="#8884d8"
+                  tick={{ fontSize: 10 }}
+                  tickFormatter={(value) => formatNumber(value)}
+                />
+                <YAxis
+                  yAxisId="right"
+                  orientation="right"
+                  stroke="#82ca9d"
+                  tick={{ fontSize: 10 }}
+                  tickFormatter={(value) => `$${value}`}
+                />
+                <Tooltip
+                  formatter={(value, name) => {
+                    if (name === "orders")
+                      return [formatNumber(value), "Orders"];
+                    if (name === "avgBasket")
+                      return [`$${value}`, "Avg Basket"];
+                    return [value, name];
+                  }}
+                  contentStyle={{
+                    backgroundColor: "white",
+                    borderRadius: "0.375rem",
+                    boxShadow:
+                      "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
+                    fontSize: "0.75rem",
+                  }}
+                />
+                <Bar
+                  yAxisId="left"
+                  dataKey="orders"
+                  fill="#8884d8"
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar
+                  yAxisId="right"
+                  dataKey="avgBasket"
+                  fill="#82ca9d"
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="flex justify-center gap-6 mt-2 mb-4">
+          <div className="flex items-center">
+            <span className="inline-block w-3 h-3 rounded-full bg-purple-500 mr-1.5"></span>
+            <span className="text-xs text-gray-600">Order Volume</span>
+          </div>
+          <div className="flex items-center">
+            <span className="inline-block w-3 h-3 rounded-full bg-green-500 mr-1.5"></span>
+            <span className="text-xs text-gray-600">Average Basket Size</span>
+          </div>
+        </div>
+
+        <div className="bg-yellow-50 border border-yellow-100 rounded-md p-3">
+          <h4 className="text-sm font-medium text-yellow-800 mb-1">
+            Key Insight: Evening Peak
+          </h4>
+          <p className="text-xs text-yellow-700">
+            Orders between 6-8pm show highest conversion rates (23.4%) and
+            largest average basket size ($18.75). Increasing budget allocation
+            during this timeframe by 25% could boost overall ROAS by an
+            estimated 14%.
+          </p>
+        </div>
+      </div>
+    </Card>
+  );
+};
+
 // Function component interface
 interface SevenElevenViewProps {
   newCampaignAdded?: boolean;
@@ -193,6 +1091,7 @@ interface SevenElevenViewProps {
   onCreateCampaign?: () => void;
   onCreateOffer?: () => void;
   onViewCampaign?: (campaignId: string) => void;
+  showCampaignPerformance?: boolean;
 }
 
 export default function SevenElevenView({
@@ -202,6 +1101,7 @@ export default function SevenElevenView({
   onCreateCampaign = () => console.log("Create campaign clicked"),
   onCreateOffer = () => console.log("Create offer clicked"),
   onViewCampaign = (id) => console.log(`View campaign ${id} clicked`),
+  showCampaignPerformance = false,
 }: SevenElevenViewProps) {
   const demoState = useDemoState();
   const mockUserProfile = demoState.userProfile;
@@ -1229,87 +2129,6 @@ export default function SevenElevenView({
     </div>
   );
 
-  // Personal greeting banner
-  const greetingBanner = (
-    <Card
-      className="p-6 mb-6 relative"
-      style={{
-        background: sevenElevenGradients.horizontal,
-        color: "#333333",
-        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-      }}
-    >
-      {/* Pattern overlay for texture */}
-      <div
-        className="absolute inset-0 opacity-20"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23333333' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E")`,
-          backgroundSize: "150px 150px",
-        }}
-      ></div>
-      <div className="relative z-10">
-        <div className="flex flex-col md:flex-row justify-between">
-          <div className="flex items-start">
-            <div className="bg-white/50 backdrop-blur-sm rounded-lg p-1.5 mr-4 shadow-sm">
-              <Image
-                src="/logos/seven-eleven.svg"
-                alt="7-Eleven"
-                width={48}
-                height={48}
-                className="rounded"
-                priority
-                onError={(e) => {
-                  // Fallback if image doesn't exist
-                  e.currentTarget.src =
-                    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='%23c00200' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 10.2V14h1.5v-5h-2l-1.5 5h1.5l.2-.8h1.5L7 10.2zM15.5 9h-2v5h1.5v-1.8l1 1.8h2l-1.7-2.5L17.8 9h-1.8l-1 1.8V9z'/%3E%3Ccircle cx='12' cy='12' r='10' stroke-width='1'/%3E%3C/svg%3E";
-                }}
-              />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold mb-1 text-gray-800">
-                {getGreeting()}, {userName}!
-              </h2>
-              <p className="opacity-90 text-sm text-gray-700">
-                {getFormattedDate()} • National Account Manager
-              </p>
-              <p className="text-sm text-gray-600 mt-1">
-                Driving national promotions for convenience across the country.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-4 md:mt-0 md:ml-4 min-w-[250px]">
-            <div className="mb-2 flex justify-between">
-              <span className="text-sm font-medium text-gray-700">
-                Weekly Progress
-              </span>
-              <span className="text-sm font-medium text-gray-700">78%</span>
-            </div>
-            <div className="h-2.5 w-full bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className="h-2.5 rounded-full bg-red-500"
-                style={{
-                  width: "78%",
-                  boxShadow: "0 1px 3px rgba(192, 2, 0, 0.2)",
-                }}
-              ></div>
-            </div>
-            <div className="mt-2 flex justify-between text-sm text-gray-600">
-              <div className="flex items-center">
-                <span className="inline-block w-3 h-3 rounded-full bg-green-400 mr-1.5 shadow-sm"></span>
-                <span>Complete: 18</span>
-              </div>
-              <div className="flex items-center">
-                <span className="inline-block w-3 h-3 rounded-full bg-gray-400 mr-1.5 shadow-sm"></span>
-                <span>Total: 23</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Card>
-  );
-
   // Main render
   return (
     <div className="bg-gray-50 space-y-6">
@@ -1317,15 +2136,103 @@ export default function SevenElevenView({
       <style dangerouslySetInnerHTML={{ __html: headerStyles }} />
 
       {/* Greeting Banner */}
-      {greetingBanner}
+      <Card
+        className="p-6 mb-6 relative"
+        style={{
+          background: sevenElevenGradients.horizontal,
+          color: "#333333",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        {/* Pattern overlay for texture */}
+        <div
+          className="absolute inset-0 opacity-20"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23333333' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E")`,
+            backgroundSize: "150px 150px",
+          }}
+        ></div>
+        <div className="relative z-10">
+          <div className="flex flex-col md:flex-row justify-between">
+            <div className="flex items-start">
+              <div className="bg-white/50 backdrop-blur-sm rounded-lg p-1.5 mr-4 shadow-sm">
+                <Image
+                  src="/logos/seven-eleven.svg"
+                  alt="7-Eleven"
+                  width={48}
+                  height={48}
+                  className="rounded"
+                  priority
+                  onError={(e) => {
+                    // Fallback if image doesn't exist
+                    e.currentTarget.src =
+                      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='%23c00200' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 10.2V14h1.5v-5h-2l-1.5 5h1.5l.2-.8h1.5L7 10.2zM15.5 9h-2v5h1.5v-1.8l1 1.8h2l-1.7-2.5L17.8 9h-1.8l-1 1.8V9z'/%3E%3Ccircle cx='12' cy='12' r='10' stroke-width='1'/%3E%3C/svg%3E";
+                  }}
+                />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold mb-1 text-gray-800">
+                  {getGreeting()}, {userName}!
+                </h2>
+                <p className="opacity-90 text-sm text-gray-700">
+                  {getFormattedDate()} • National Account Manager
+                </p>
+                <p className="text-sm text-gray-600 mt-1">
+                  Driving national promotions for convenience across the
+                  country.
+                </p>
+              </div>
+            </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {statsSection}
-      </div>
+            <div className="mt-4 md:mt-0 md:ml-4 min-w-[250px]">
+              <div className="mb-2 flex justify-between">
+                <span className="text-sm font-medium text-gray-700">
+                  Weekly Progress
+                </span>
+                <span className="text-sm font-medium text-gray-700">78%</span>
+              </div>
+              <div className="h-2.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-2.5 rounded-full bg-red-500"
+                  style={{
+                    width: "78%",
+                    boxShadow: "0 1px 3px rgba(192, 2, 0, 0.2)",
+                  }}
+                ></div>
+              </div>
+              <div className="mt-2 flex justify-between text-sm text-gray-600">
+                <div className="flex items-center">
+                  <span className="inline-block w-3 h-3 rounded-full bg-green-400 mr-1.5 shadow-sm"></span>
+                  <span>Complete: 18</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="inline-block w-3 h-3 rounded-full bg-gray-400 mr-1.5 shadow-sm"></span>
+                  <span>Total: 23</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
 
-      {/* Main Dashboard Content */}
-      {mainContent}
+      {/* Campaign Performance Dashboard (conditionally rendered) */}
+      {showCampaignPerformance ? (
+        <>
+          <CampaignPerformanceMetrics />
+          <OptimizationRecommendations />
+          <TimePerformanceAnalysis />
+        </>
+      ) : (
+        <>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            {statsSection}
+          </div>
+
+          {/* Main Dashboard Content */}
+          {mainContent}
+        </>
+      )}
     </div>
   );
 }

@@ -816,11 +816,24 @@ const DynamicCanvas: React.FC<DynamicCanvasProps> = () => {
     // Wait a bit then redirect to dashboard with new campaign added
     setTimeout(() => {
       if (clientId === "seven-eleven") {
+        // Show a "Campaign successfully launched" message
         router.push(`${buildDemoUrl("seven-eleven", "")}?from=campaign-launch`);
+
+        // After a short delay, show a modal or notification for viewing performance
+        setTimeout(() => {
+          const viewPerformance = window.confirm(
+            "Campaign successfully launched! Would you like to see the campaign performance after two weeks?"
+          );
+
+          if (viewPerformance) {
+            // Redirect to the performance view
+            router.push(`${buildDemoUrl("seven-eleven", "")}?view=performance`);
+          }
+        }, 3000);
       } else {
         router.push(`${buildDemoUrl("deacons", "pizza")}?from=campaign-launch`);
       }
-    }, 3000);
+    }, 2000);
   }, [router, clientId]);
 
   // Initialize mock launch details

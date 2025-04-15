@@ -11,12 +11,14 @@ function SevenElevenDashboardContent() {
   const searchParams = useSearchParams();
   const { setClientId } = useDemoActions();
   const [newCampaignAdded, setNewCampaignAdded] = useState(false);
+  const [showPerformance, setShowPerformance] = useState(false);
 
   // Add initialization ref to ensure the effect only runs exactly once
   const isInitializedRef = useRef(false);
 
-  // Store fromParam in a ref to avoid dependency on searchParams
+  // Store params in refs to avoid dependency on searchParams
   const fromParamRef = useRef(searchParams.get("from"));
+  const viewParamRef = useRef(searchParams.get("view"));
 
   // Improved useEffect with strict one-time execution
   useEffect(() => {
@@ -36,8 +38,9 @@ function SevenElevenDashboardContent() {
     // Set client ID for the demo only once
     setClientId("seven-eleven");
 
-    // Get the parameter only once
+    // Get the parameters only once
     const fromCampaignLaunch = fromParamRef.current === "campaign-launch";
+    const viewPerformance = viewParamRef.current === "performance";
 
     if (fromCampaignLaunch) {
       setNewCampaignAdded(true);
@@ -49,6 +52,10 @@ function SevenElevenDashboardContent() {
 
       // Clean up timer to prevent memory leaks
       return () => clearTimeout(timer);
+    }
+
+    if (viewPerformance) {
+      setShowPerformance(true);
     }
 
     // Empty dependency array with initialization guard ensures this runs exactly once
@@ -73,6 +80,7 @@ function SevenElevenDashboardContent() {
       onCreateCampaign={handleCreateCampaign}
       onCreateOffer={handleCreateOffer}
       onViewCampaign={handleViewCampaign}
+      showCampaignPerformance={showPerformance}
     />
   );
 }
