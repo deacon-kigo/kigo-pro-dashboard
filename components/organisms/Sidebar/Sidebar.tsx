@@ -165,10 +165,10 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     // Use the campaign-manager URL when in campaign manager context
     const dashboardUrl = isCampaignManagerView
       ? "/campaign-manager"
-      : buildDemoUrl("cvs", "dashboard");
-    const customersUrl = buildDemoUrl("cvs", "token-management");
-    const tokenManagementUrl = buildDemoUrl("cvs", "token-catalog");
-    const ticketsUrl = buildDemoUrl("cvs", "tickets");
+      : "/demos/cvs-dashboard";
+    const customersUrl = "/demos/cvs-token-management";
+    const tokenManagementUrl = "/demos/cvs-token-catalog";
+    const ticketsUrl = "/demos/cvs-tickets";
 
     return (
       <>
