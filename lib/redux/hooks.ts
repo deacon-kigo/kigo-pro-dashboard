@@ -32,6 +32,7 @@ import {
   selectWarningTimeoutMinutes,
 } from "./slices/sessionSlice";
 import { logout } from "./slices/userSlice";
+import { useRef, useCallback, useEffect } from "react";
 
 // Use throughout your app instead of plain `useDispatch` and `useSelector`
 export const useAppDispatch = () => useDispatch<AppDispatch>();
@@ -93,6 +94,7 @@ export const useSessionActions = () => {
     hideTimeoutWarning: () => dispatch(hideWarning()),
     updateRemainingTime: (seconds: number) =>
       dispatch(updateCountdown(seconds)),
+    startCountdown: (seconds: number) => dispatch(updateCountdown(seconds)),
     expireUserSession: () => {
       dispatch(expireSession());
       dispatch(logout());

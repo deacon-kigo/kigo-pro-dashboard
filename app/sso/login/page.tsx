@@ -93,8 +93,8 @@ export default function LoginPage() {
                 <span>
                   Contact{" "}
                   <a
-                    href="mailto:it-support@augeocorp.net"
-                    className="text-blue-600 hover:underline"
+                    href="mailto:sysadmin@kigo.io"
+                    className="text-blue-600 font-bold hover:underline"
                   >
                     IT Support
                   </a>{" "}
