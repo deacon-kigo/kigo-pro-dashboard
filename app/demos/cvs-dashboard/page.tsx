@@ -34,6 +34,7 @@ import {
 import { buildDemoUrl } from "@/lib/utils";
 import { fetchCallVolumeData } from "@/lib/redux/slices/analyticsSlice";
 import CallAnalyticsSection from "@/components/features/analytics/CallAnalyticsSection";
+import AppLayout from "@/components/templates/AppLayout/AppLayout";
 
 // Mock data for the dashboard
 const recentTickets = [
@@ -146,9 +147,6 @@ export default function CVSDashboard() {
   const [greeting, setGreeting] = useState("");
   const [dateString, setDateString] = useState("");
 
-  // Get the sidebar width from Redux state
-  const { sidebarWidth } = useAppSelector((state) => state.ui);
-
   // CVS branding colors
   const cvsRed = "#CC0000";
   const cvsBlue = "#2563EB";
@@ -225,9 +223,9 @@ export default function CVSDashboard() {
     router.push("/demos/cvs-tickets?action=create");
   };
 
-  // Return the dashboard content directly without the AppLayout wrapper
-  return (
-    <div className="bg-gray-50">
+  // Dashboard content to be wrapped in AppLayout
+  const dashboardContent = (
+    <div className="w-full">
       {/* Dashboard Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         {/* Welcome Card */}
@@ -349,7 +347,9 @@ export default function CVSDashboard() {
                   {recentTickets.map((ticket, index) => (
                     <tr
                       key={ticket.id}
-                      className={`border-t border-gray-100 ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
+                      className={`border-t border-gray-100 ${
+                        index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                      }`}
                     >
                       <td className="px-5 py-4">
                         <Link
@@ -388,13 +388,13 @@ export default function CVSDashboard() {
                               ? "bg-blue-100 text-blue-800"
                               : ticket.status === "In Progress"
                                 ? "bg-purple-100 text-purple-800"
-                                : "bg-green-100 text-green-800"
+                                : "bg-gray-100 text-gray-800"
                           }`}
                         >
                           {ticket.status}
                         </span>
                       </td>
-                      <td className="px-5 py-4 text-gray-500 text-sm">
+                      <td className="px-5 py-4 text-sm text-gray-500">
                         {ticket.timeCreated}
                       </td>
                     </tr>
@@ -405,36 +405,36 @@ export default function CVSDashboard() {
           </div>
         </div>
 
-        {/* Quick Tasks */}
+        {/* Action Items & Resources */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow-sm">
+          {/* Action Items */}
+          <div className="bg-white rounded-lg shadow-sm mb-6">
             <div className="p-5 border-b">
-              <h2 className="text-lg font-semibold">Today's Tasks</h2>
+              <h2 className="text-lg font-semibold">Action Items</h2>
             </div>
-            <div>
-              <ul>
-                {actionItems.map((item, index) => (
-                  <li
-                    key={item.id}
-                    className={`px-5 py-3 flex items-center ${
-                      index < actionItems.length - 1
-                        ? "border-b border-gray-100"
-                        : ""
-                    }`}
-                  >
-                    <div
-                      className={`flex-shrink-0 h-5 w-5 rounded-full border ${
-                        item.completed
-                          ? "bg-green-500 border-green-500"
-                          : "border-gray-300"
-                      } mr-3 flex items-center justify-center`}
-                    >
-                      {item.completed && (
-                        <CheckCircleIcon className="h-5 w-5 text-white" />
-                      )}
-                    </div>
+            <div className="p-5">
+              <ul className="space-y-3">
+                {actionItems.map((item) => (
+                  <li key={item.id} className="flex items-start">
                     <span
-                      className={`text-sm ${item.completed ? "line-through text-gray-400" : "text-gray-700"}`}
+                      className={`flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full mr-3 mt-0.5 ${
+                        item.completed
+                          ? "bg-green-100 text-green-600"
+                          : "bg-gray-100 text-gray-400"
+                      }`}
+                    >
+                      {item.completed ? (
+                        <CheckCircleIcon className="h-5 w-5" />
+                      ) : (
+                        <ClockIcon className="h-4 w-4" />
+                      )}
+                    </span>
+                    <span
+                      className={`text-sm ${
+                        item.completed
+                          ? "line-through text-gray-500"
+                          : "text-gray-700"
+                      }`}
                     >
                       {item.task}
                     </span>
@@ -444,9 +444,10 @@ export default function CVSDashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm mt-6">
+          {/* Resources */}
+          <div className="bg-white rounded-lg shadow-sm">
             <div className="p-5 border-b">
-              <h2 className="text-lg font-semibold">Support Resources</h2>
+              <h2 className="text-lg font-semibold">Resources</h2>
             </div>
             <div className="p-5">
               <ul className="space-y-3">
@@ -503,4 +504,7 @@ export default function CVSDashboard() {
       </div>
     </div>
   );
+
+  // Wrap the dashboard content in the AppLayout component
+  return dashboardContent;
 }
