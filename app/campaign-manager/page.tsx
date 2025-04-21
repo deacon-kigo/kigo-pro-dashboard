@@ -3,7 +3,6 @@
 import React, { useEffect, Suspense } from "react";
 import CampaignManagerView from "@/components/features/dashboard/views/CampaignManagerView";
 import AppLayout from "@/components/templates/AppLayout/AppLayout";
-import { InactivityProvider } from "@/components/features/auth/inactivity";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -39,17 +38,11 @@ export default function CampaignManagerPage() {
         </div>
       }
     >
-      {/* For demonstration purposes, we're using much shorter timeouts */}
-      <InactivityProvider
-        timeoutInMinutes={1}
-        warningBeforeTimeoutInMinutes={0.5}
-      >
-        <AppLayout customBreadcrumb={dashboardBreadcrumb}>
-          <div className="pt-0 mt-0">
-            <CampaignManagerView />
-          </div>
-        </AppLayout>
-      </InactivityProvider>
+      <AppLayout customBreadcrumb={dashboardBreadcrumb}>
+        <div className="pt-0 mt-0">
+          <CampaignManagerView />
+        </div>
+      </AppLayout>
     </Suspense>
   );
 }

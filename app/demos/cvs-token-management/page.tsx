@@ -33,6 +33,15 @@ import {
   ArrowDownIcon,
   FunnelIcon,
 } from "@heroicons/react/24/outline";
+import { Button } from "@/components/atoms/Button/Button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/molecules/dialog/Dialog";
 
 // Import Redux actions
 import {
@@ -1838,124 +1847,102 @@ export default function CVSTokenManagement() {
     if (!selectedToken) return null;
 
     return (
-      <div
-        className={`fixed inset-0 overflow-y-auto ${selectedToken ? "block" : "hidden"}`}
+      <Dialog
+        open={!!selectedToken}
+        onOpenChange={(open) => {
+          if (!open) {
+            dispatch(selectToken(null));
+          }
+        }}
       >
-        <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-          <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-            <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
-          </div>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Token Details</DialogTitle>
+          </DialogHeader>
 
-          <span
-            className="hidden sm:inline-block sm:align-middle sm:h-screen"
-            aria-hidden="true"
-          >
-            &#8203;
-          </span>
+          <div className="mt-2 space-y-3">
+            <div>
+              <p className="text-sm text-gray-500">Name</p>
+              <p className="font-medium">{selectedToken.name}</p>
+            </div>
 
-          <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-              <div className="sm:flex sm:items-start">
-                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-                    Token Details
-                  </h3>
+            <div>
+              <p className="text-sm text-gray-500">Description</p>
+              <p>{selectedToken.description}</p>
+            </div>
 
-                  <div className="mt-2 space-y-3">
-                    <div>
-                      <p className="text-sm text-gray-500">Name</p>
-                      <p className="font-medium">{selectedToken.name}</p>
-                    </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Type</p>
+                <span
+                  className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTokenTypeBadgeColor(selectedToken.type)}`}
+                >
+                  {selectedToken.type}
+                </span>
+              </div>
 
-                    <div>
-                      <p className="text-sm text-gray-500">Description</p>
-                      <p>{selectedToken.description}</p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-gray-500">Type</p>
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTokenTypeBadgeColor(selectedToken.type)}`}
-                        >
-                          {selectedToken.type}
-                        </span>
-                      </div>
-
-                      <div>
-                        <p className="text-sm text-gray-500">Status</p>
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTokenStateBadgeColor(selectedToken.state)}`}
-                        >
-                          {selectedToken.state}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-gray-500">Value</p>
-                        <p className="font-medium">{selectedToken.value}</p>
-                      </div>
-
-                      <div>
-                        <p className="text-sm text-gray-500">Merchant</p>
-                        <p>{selectedToken.merchantName || "N/A"}</p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-gray-500">Claim Date</p>
-                        <p>{formatDate(selectedToken.claimDate)}</p>
-                      </div>
-
-                      <div>
-                        <p className="text-sm text-gray-500">Expiration Date</p>
-                        <p>{formatDate(selectedToken.expirationDate)}</p>
-                      </div>
-                    </div>
-
-                    {selectedToken.useDate && (
-                      <div>
-                        <p className="text-sm text-gray-500">Used Date</p>
-                        <p>{formatDate(selectedToken.useDate)}</p>
-                      </div>
-                    )}
-
-                    {selectedToken.shareDate && (
-                      <div>
-                        <p className="text-sm text-gray-500">Shared Date</p>
-                        <p>{formatDate(selectedToken.shareDate)}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
+              <div>
+                <p className="text-sm text-gray-500">Status</p>
+                <span
+                  className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTokenStateBadgeColor(selectedToken.state)}`}
+                >
+                  {selectedToken.state}
+                </span>
               </div>
             </div>
-            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-              <button
-                type="button"
-                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                onClick={() => dispatch(selectToken(null))}
-              >
-                Close
-              </button>
-              {selectedToken.externalUrl && (
-                <button
-                  type="button"
-                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
-                  onClick={() =>
-                    handleViewInExtraCare(selectedToken.externalUrl)
-                  }
-                >
-                  View in ExtraCare
-                </button>
-              )}
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Value</p>
+                <p className="font-medium">{selectedToken.value}</p>
+              </div>
+
+              <div>
+                <p className="text-sm text-gray-500">Merchant</p>
+                <p>{selectedToken.merchantName || "N/A"}</p>
+              </div>
             </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Claim Date</p>
+                <p>{formatDate(selectedToken.claimDate)}</p>
+              </div>
+
+              <div>
+                <p className="text-sm text-gray-500">Expiration Date</p>
+                <p>{formatDate(selectedToken.expirationDate)}</p>
+              </div>
+            </div>
+
+            {selectedToken.useDate && (
+              <div>
+                <p className="text-sm text-gray-500">Used Date</p>
+                <p>{formatDate(selectedToken.useDate)}</p>
+              </div>
+            )}
+
+            {selectedToken.shareDate && (
+              <div>
+                <p className="text-sm text-gray-500">Shared Date</p>
+                <p>{formatDate(selectedToken.shareDate)}</p>
+              </div>
+            )}
           </div>
-        </div>
-      </div>
+
+          <DialogFooter>
+            {selectedToken.externalUrl && (
+              <Button
+                variant="primary"
+                theme="cvs"
+                onClick={() => handleViewInExtraCare(selectedToken.externalUrl)}
+              >
+                View in ExtraCare
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     );
   };
 
@@ -1985,222 +1972,99 @@ export default function CVSTokenManagement() {
 
   // Render token catalog modal for adding tokens to customers
   const renderTokenCatalogModal = () => {
-    if (!showTokenCatalog) return null;
-
     return (
-      <div className="fixed inset-0 overflow-y-auto z-50">
-        {/* Full page overlay */}
-        <div
-          className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-          aria-hidden="true"
-        ></div>
+      <Dialog
+        open={showTokenCatalog}
+        onOpenChange={(open) => {
+          if (!open) {
+            dispatch(toggleTokenCatalog());
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-4xl">
+          <DialogHeader>
+            <div className="flex items-center justify-between">
+              <DialogTitle>Add Token to Customer</DialogTitle>
+            </div>
+          </DialogHeader>
 
-        <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-          <span
-            className="hidden sm:inline-block sm:align-middle sm:h-screen"
-            aria-hidden="true"
-          >
-            &#8203;
-          </span>
+          <div className="mb-4">
+            <label htmlFor="token-search" className="sr-only">
+              Search tokens
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                id="token-search"
+                className="block w-full py-2 pl-10 pr-3 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Search tokens by name, description, type..."
+                value={catalogSearchInput}
+                onChange={(e) => {
+                  setCatalogSearchInput(e.target.value);
+                  filterCatalogTokens(e.target.value);
+                }}
+              />
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+              </div>
+            </div>
+          </div>
 
-          <div className="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-              <div className="sm:flex sm:items-start">
-                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center justify-between border-b pb-3 mb-4">
-                    <span>Add Token to Customer</span>
-                    <button
-                      onClick={() => dispatch(toggleTokenCatalog())}
-                      className="text-gray-400 hover:text-gray-500"
-                    >
-                      <XMarkIcon className="h-5 w-5" />
-                    </button>
-                  </h3>
-
-                  <div className="mt-4">
-                    <p className="text-sm text-gray-500 mb-4">
-                      Select a token to add to{" "}
-                      {selectedCustomer
-                        ? `${selectedCustomer.firstName} ${selectedCustomer.lastName}`
-                        : "customer"}
-                    </p>
-
-                    {/* Add search input for token catalog */}
-                    <div className="mb-4">
-                      <div className="relative rounded-md shadow-sm">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <MagnifyingGlassIcon
-                            className="h-5 w-5 text-gray-400"
-                            aria-hidden="true"
-                          />
-                        </div>
-                        <input
-                          type="text"
-                          className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 pr-12 sm:text-sm border-gray-300 rounded-md py-2"
-                          placeholder="Search tokens by name, description, type or value..."
-                          value={catalogSearchInput}
-                          onChange={(e) => {
-                            setCatalogSearchInput(e.target.value);
-                            filterCatalogTokens(e.target.value);
-                          }}
-                        />
-                        {catalogSearchInput && (
-                          <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setCatalogSearchInput("");
-                                filterCatalogTokens("");
-                              }}
-                              className="text-gray-400 hover:text-gray-500"
-                            >
-                              <XMarkIcon
-                                className="h-5 w-5"
-                                aria-hidden="true"
-                              />
-                            </button>
-                          </div>
-                        )}
-                      </div>
+          <div className="max-h-[50vh] overflow-y-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {filteredCatalogTokens.map((token) => (
+                <div
+                  key={token.id}
+                  className="border rounded-lg shadow-sm p-4 hover:bg-gray-50 cursor-pointer"
+                  onClick={() => {
+                    addTokenToCustomerHandler(token.id);
+                    dispatch(toggleTokenCatalog());
+                  }}
+                >
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-blue-100 rounded-full">
+                      <TicketIcon className="h-6 w-6 text-blue-600" />
                     </div>
-
-                    {/* Table display for tokens */}
-                    <div className="overflow-x-auto max-h-96 border rounded-md">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50 sticky top-0">
-                          <tr>
-                            <th
-                              scope="col"
-                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                            >
-                              Name
-                            </th>
-                            <th
-                              scope="col"
-                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                            >
-                              Type
-                            </th>
-                            <th
-                              scope="col"
-                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                            >
-                              Value
-                            </th>
-                            <th
-                              scope="col"
-                              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                            >
-                              Expires
-                            </th>
-                            <th
-                              scope="col"
-                              className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                            >
-                              Action
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {filteredCatalogTokens.length > 0 ? (
-                            filteredCatalogTokens.map((token) => (
-                              <tr
-                                key={token.id}
-                                className="hover:bg-gray-50 cursor-pointer"
-                                onClick={() => {
-                                  addTokenToCustomerHandler(token.id);
-                                  dispatch(toggleTokenCatalog());
-                                }}
-                              >
-                                <td className="px-6 py-4">
-                                  <div className="flex items-center">
-                                    <div className="flex-shrink-0 h-8 w-8 flex items-center justify-center bg-blue-100 rounded-full">
-                                      <TicketIcon className="h-4 w-4 text-blue-600" />
-                                    </div>
-                                    <div className="ml-4">
-                                      <div className="text-sm font-medium text-gray-900">
-                                        <HighlightedText
-                                          text={token.name}
-                                          searchTerm={catalogSearchInput}
-                                        />
-                                      </div>
-                                      <div className="text-xs text-gray-500 line-clamp-1">
-                                        <HighlightedText
-                                          text={token.description}
-                                          searchTerm={catalogSearchInput}
-                                        />
-                                      </div>
-                                    </div>
-                                  </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <span
-                                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTokenTypeBadgeColor(token.type)}`}
-                                  >
-                                    <HighlightedText
-                                      text={token.type}
-                                      searchTerm={catalogSearchInput}
-                                    />
-                                  </span>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                  <HighlightedText
-                                    text={token.value}
-                                    searchTerm={catalogSearchInput}
-                                  />
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                  {formatDate(token.expirationDate)}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-right">
-                                  <button className="text-blue-600 hover:text-blue-900 text-sm font-medium flex items-center justify-end">
-                                    <PlusCircleIcon className="h-4 w-4 mr-1" />
-                                    Add
-                                  </button>
-                                </td>
-                              </tr>
-                            ))
-                          ) : (
-                            <tr>
-                              <td
-                                colSpan={5}
-                                className="px-6 py-8 text-center text-gray-500"
-                              >
-                                <p className="text-base font-medium">
-                                  No tokens found
-                                </p>
-                                <p className="text-sm mt-1">
-                                  Try with a different search term
-                                </p>
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
+                    <div className="ml-3">
+                      <h4 className="text-sm font-medium text-gray-900">
+                        {token.name}
+                      </h4>
+                      <p className="mt-1 text-xs text-gray-500 line-clamp-2">
+                        {token.description}
+                      </p>
+                      <div className="mt-2 flex items-center space-x-2">
+                        <span
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getTokenTypeBadgeColor(token.type)}`}
+                        >
+                          {token.type}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {token.value}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-              <button
-                type="button"
-                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                onClick={() => dispatch(toggleTokenCatalog())}
-              >
-                Cancel
-              </button>
+              ))}
             </div>
           </div>
-        </div>
-      </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              theme="cvs"
+              onClick={() => dispatch(toggleTokenCatalog())}
+            >
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     );
   };
 
-  // Render confirmation modal for actions like reissue, remove, etc.
+  // Replace the renderConfirmModal function with this implementation
   const renderConfirmModal = () => {
-    if (!showConfirmModal) return null;
-
     const getModalTitle = () => {
       switch (confirmAction) {
         case "reissue":
@@ -2214,216 +2078,190 @@ export default function CVSTokenManagement() {
       }
     };
 
+    const getModalIcon = () => {
+      switch (confirmAction) {
+        case "remove":
+          return <TrashIcon className="h-6 w-6 text-red-600" />;
+        case "reissue":
+          return <ArrowPathIcon className="h-6 w-6 text-green-600" />;
+        case "dispute":
+          return <ExclamationCircleIcon className="h-6 w-6 text-yellow-600" />;
+        default:
+          return null;
+      }
+    };
+
     return (
-      <div className="fixed inset-0 overflow-y-auto">
-        <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-          <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-            <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
-          </div>
+      <Dialog
+        open={showConfirmModal}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowConfirmModal(false);
+            setConfirmAction(null);
+            setConfirmTokenId(null);
+            setConfirmReason("");
+            setConfirmComments("");
+            setNotHonored(false);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <div className="flex items-start">
+              <div
+                className={`mr-4 flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full ${
+                  confirmAction === "remove"
+                    ? "bg-red-100"
+                    : confirmAction === "reissue"
+                      ? "bg-green-100"
+                      : "bg-yellow-100"
+                }`}
+              >
+                {getModalIcon()}
+              </div>
+              <DialogTitle>{getModalTitle()}</DialogTitle>
+            </div>
+          </DialogHeader>
 
-          <span
-            className="hidden sm:inline-block sm:align-middle sm:h-screen"
-            aria-hidden="true"
-          >
-            &#8203;
-          </span>
+          <div className="mt-4 space-y-4">
+            {confirmAction === "remove" && (
+              <DialogDescription>
+                Are you sure you want to remove this token? This action cannot
+                be undone.
+              </DialogDescription>
+            )}
 
-          <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-              <div className="sm:flex sm:items-start">
-                <div
-                  className={`mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full ${
-                    confirmAction === "remove"
-                      ? "bg-red-100"
-                      : confirmAction === "reissue"
-                        ? "bg-green-100"
-                        : "bg-yellow-100"
-                  } sm:mx-0 sm:h-10 sm:w-10`}
-                >
-                  {confirmAction === "remove" && (
-                    <TrashIcon className="h-6 w-6 text-red-600" />
-                  )}
-                  {confirmAction === "reissue" && (
-                    <ArrowPathIcon className="h-6 w-6 text-green-600" />
-                  )}
-                  {confirmAction === "dispute" && (
-                    <ExclamationCircleIcon className="h-6 w-6 text-yellow-600" />
-                  )}
-                </div>
-                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900">
-                    {getModalTitle()}
-                  </h3>
-
-                  <div className="mt-4 space-y-4">
-                    {confirmAction === "remove" && (
-                      <p className="text-sm text-gray-500">
-                        Are you sure you want to remove this token? This action
-                        cannot be undone.
-                      </p>
-                    )}
-
-                    {(confirmAction === "reissue" ||
-                      confirmAction === "dispute") && (
+            {(confirmAction === "reissue" || confirmAction === "dispute") && (
+              <>
+                <div>
+                  <label
+                    htmlFor="reason"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Reason
+                  </label>
+                  <select
+                    id="reason"
+                    name="reason"
+                    className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    value={confirmReason}
+                    onChange={(e) => setConfirmReason(e.target.value)}
+                  >
+                    <option value="">Select a reason...</option>
+                    {confirmAction === "reissue" ? (
                       <>
-                        <div>
-                          <label
-                            htmlFor="reason"
-                            className="block text-sm font-medium text-gray-700"
-                          >
-                            Reason
-                          </label>
-                          <select
-                            id="reason"
-                            name="reason"
-                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            value={confirmReason}
-                            onChange={(e) => setConfirmReason(e.target.value)}
-                          >
-                            <option value="">Select a reason...</option>
-                            {confirmAction === "reissue" ? (
-                              <>
-                                <option value="technical_error">
-                                  Technical Error
-                                </option>
-                                <option value="expired_prematurely">
-                                  Expired Prematurely
-                                </option>
-                                <option value="merchant_reported">
-                                  Merchant Reported Issue
-                                </option>
-                                <option value="customer_assistance">
-                                  Customer Assistance
-                                </option>
-                              </>
-                            ) : (
-                              <>
-                                <option value="not_honored">
-                                  Not Honored by Merchant
-                                </option>
-                                <option value="error_on_receipt">
-                                  Error on Receipt
-                                </option>
-                                <option value="display_issue">
-                                  Display Issue in App
-                                </option>
-                                <option value="other">Other</option>
-                              </>
-                            )}
-                          </select>
-                        </div>
-
-                        {confirmAction === "dispute" && (
-                          <div className="flex items-center">
-                            <input
-                              id="not-honored"
-                              name="not-honored"
-                              type="checkbox"
-                              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                              checked={notHonored}
-                              onChange={(e) => setNotHonored(e.target.checked)}
-                            />
-                            <label
-                              htmlFor="not-honored"
-                              className="ml-2 block text-sm text-gray-900"
-                            >
-                              Token was not honored by merchant
-                            </label>
-                          </div>
-                        )}
-
-                        <div>
-                          <label
-                            htmlFor="comments"
-                            className="block text-sm font-medium text-gray-700"
-                          >
-                            Additional Comments
-                          </label>
-                          <textarea
-                            id="comments"
-                            name="comments"
-                            rows={3}
-                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            placeholder="Enter any additional details..."
-                            value={confirmComments}
-                            onChange={(e) => setConfirmComments(e.target.value)}
-                          />
-                        </div>
+                        <option value="technical_error">Technical Error</option>
+                        <option value="expired_prematurely">
+                          Expired Prematurely
+                        </option>
+                        <option value="merchant_reported">
+                          Merchant Reported Issue
+                        </option>
+                        <option value="customer_assistance">
+                          Customer Assistance
+                        </option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="not_honored">
+                          Not Honored by Merchant
+                        </option>
+                        <option value="error_on_receipt">
+                          Error on Receipt
+                        </option>
+                        <option value="display_issue">
+                          Display Issue in App
+                        </option>
+                        <option value="other">Other</option>
                       </>
                     )}
-                  </div>
+                  </select>
                 </div>
-              </div>
-            </div>
-            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-              <button
-                type="button"
-                className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 ${
-                  confirmAction === "remove"
-                    ? "bg-red-600 hover:bg-red-700"
-                    : confirmAction === "reissue"
-                      ? "bg-green-600 hover:bg-green-700"
-                      : "bg-yellow-600 hover:bg-yellow-700"
-                } text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                  confirmAction === "remove"
-                    ? "focus:ring-red-500"
-                    : confirmAction === "reissue"
-                      ? "focus:ring-green-500"
-                      : "focus:ring-yellow-500"
-                } sm:ml-3 sm:w-auto sm:text-sm`}
-                onClick={handleConfirmAction}
-                disabled={
-                  (confirmAction === "reissue" ||
-                    confirmAction === "dispute") &&
-                  !confirmReason
-                }
-              >
-                {confirmAction === "remove"
-                  ? "Remove"
-                  : confirmAction === "reissue"
-                    ? "Reissue"
-                    : "Mark as Disputed"}
-              </button>
-              <button
-                type="button"
-                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                onClick={() => {
-                  setShowConfirmModal(false);
-                  setConfirmAction(null);
-                  setConfirmTokenId(null);
-                  setConfirmReason("");
-                  setConfirmComments("");
-                  setNotHonored(false);
-                }}
-              >
-                Cancel
-              </button>
-            </div>
+
+                {confirmAction === "dispute" && (
+                  <div className="flex items-center">
+                    <input
+                      id="not-honored"
+                      name="not-honored"
+                      type="checkbox"
+                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      checked={notHonored}
+                      onChange={(e) => setNotHonored(e.target.checked)}
+                    />
+                    <label
+                      htmlFor="not-honored"
+                      className="ml-2 block text-sm text-gray-900"
+                    >
+                      Token was not honored by merchant
+                    </label>
+                  </div>
+                )}
+
+                <div>
+                  <label
+                    htmlFor="comments"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Additional Comments
+                  </label>
+                  <textarea
+                    id="comments"
+                    name="comments"
+                    rows={3}
+                    className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    placeholder="Enter any additional details..."
+                    value={confirmComments}
+                    onChange={(e) => setConfirmComments(e.target.value)}
+                  />
+                </div>
+              </>
+            )}
           </div>
-        </div>
-      </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              theme="cvs"
+              onClick={() => {
+                setShowConfirmModal(false);
+                setConfirmAction(null);
+                setConfirmTokenId(null);
+                setConfirmReason("");
+                setConfirmComments("");
+                setNotHonored(false);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant={confirmAction === "remove" ? "destructive" : "primary"}
+              theme="cvs"
+              onClick={handleConfirmAction}
+              disabled={
+                (confirmAction === "reissue" || confirmAction === "dispute") &&
+                !confirmReason
+              }
+            >
+              {confirmAction === "remove"
+                ? "Remove"
+                : confirmAction === "reissue"
+                  ? "Reissue"
+                  : "Mark as Disputed"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     );
   };
 
   // Make sure the main component returns the UI
-  return <AppLayout>{renderContent()}</AppLayout>;
+  return renderContent();
 
   function renderContent() {
     return (
       <div className="min-h-screen bg-gray-50">
         {/* Main Content */}
-        <main
-          className="py-6 px-8 overflow-auto"
-          style={{
-            position: "fixed",
-            top: "72px", // Header height
-            bottom: "56px", // Footer height
-            right: 0,
-            left: sidebarWidth,
-            width: `calc(100% - ${sidebarWidth})`,
-            transition: "all 0.3s ease-in-out",
-          }}
-        >
+        <main>
           {/* Action Message */}
           {actionMessage && (
             <div
@@ -2439,37 +2277,16 @@ export default function CVSTokenManagement() {
             </div>
           )}
 
-          {/* Breadcrumbs navigation - only on detail view */}
+          {/* Add Token button - only on detail view */}
           {viewState === "detail" && selectedCustomer && (
-            <div className="flex justify-between items-center mb-4">
-              <nav>
-                <ol className="flex items-center space-x-2 text-sm">
-                  <li>
-                    <button
-                      onClick={backToMainView}
-                      className="text-blue-600 hover:text-blue-800 font-medium"
-                    >
-                      Customer Lookup
-                    </button>
-                  </li>
-                  <li className="text-gray-500">/</li>
-                  <li className="text-gray-700 font-medium">
-                    {selectedCustomer.firstName} {selectedCustomer.lastName}
-                  </li>
-                </ol>
-              </nav>
-
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => dispatch(toggleTokenCatalog())}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  <span className="flex items-center">
-                    <PlusCircleIcon className="h-4 w-4 mr-1" />
-                    Add Token
-                  </span>
-                </button>
-              </div>
+            <div className="flex justify-end items-center mb-4">
+              <Button
+                variant="primary"
+                onClick={() => dispatch(toggleTokenCatalog())}
+                icon={<PlusCircleIcon className="h-4 w-4" />}
+              >
+                Add Token
+              </Button>
             </div>
           )}
 
@@ -2490,12 +2307,14 @@ export default function CVSTokenManagement() {
                   <MagnifyingGlassIcon className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
                 </div>
 
-                <button
+                <Button
+                  variant="primary"
+                  theme="cvs"
                   onClick={handleSearch}
-                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                  icon={<MagnifyingGlassIcon className="h-5 w-5" />}
                 >
                   Search
-                </button>
+                </Button>
               </div>
 
               {/* Search Results */}
@@ -2755,18 +2574,7 @@ export default function CVSTokenManagement() {
         </main>
 
         {/* Footer */}
-        <footer
-          className="bg-white shadow-inner border-t border-gray-200 py-4"
-          style={{
-            position: "fixed",
-            bottom: 0,
-            right: 0,
-            left: sidebarWidth,
-            width: `calc(100% - ${sidebarWidth})`,
-            height: "56px",
-            transition: "all 0.3s ease-in-out",
-          }}
-        >
+        <footer className="bg-white shadow-inner border-t border-gray-200 py-4 mt-8">
           <div className="px-8 flex justify-between items-center h-full">
             <div>
               <p className="text-xs text-gray-500">
