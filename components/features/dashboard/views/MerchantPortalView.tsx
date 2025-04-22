@@ -16,6 +16,9 @@ import {
   ChevronUpIcon,
   ChevronDownIcon,
   ArrowsRightLeftIcon,
+  SparklesIcon,
+  ChartPieIcon,
+  UsersIcon,
 } from "@heroicons/react/24/outline";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
@@ -160,21 +163,20 @@ export default function MerchantPortalView() {
 
   const [selectedMerchantId, setSelectedMerchantId] = useState("All");
   const [selectedMerchantName, setSelectedMerchantName] = useState("All");
-  const [selectedMerchantOfMonth, setSelectedMerchantOfMonth] = useState("All");
 
   // Sample scorecard metrics data
   const scorecardMetrics = {
     activeMerchants: 2863,
     activeMerchantsChange: 5.2,
     activeLocations: 12945,
-    activeLocationsChange: 3.7,
+    activeLocationsChange: -3.7,
     activeOffers: 342,
     activeOffersChange: 8.9,
     totalRedemptions12m: 1287652,
-    totalRedemptions12mChange: 12.3,
+    totalRedemptions12mChange: -2.5,
     redemptionsLast30d: 127549,
     redemptionsLast30dWoWChange: 4.6,
-    redemptionsLast30dMoMChange: 7.8,
+    redemptionsLast30dMoMChange: -1.2,
   };
 
   // Function to render a metric card with change indicator
@@ -187,83 +189,122 @@ export default function MerchantPortalView() {
     secondaryChangeLabel = null,
   }: MetricCardProps) => {
     const isPositive = change >= 0;
+    const isSecondaryPositive =
+      secondaryChange !== null ? secondaryChange >= 0 : true;
 
     // Format large numbers with commas
     const formattedValue = value.toLocaleString();
 
-    // Background colors based on metric type
-    const getBgColor = () => {
+    // Get a consistent card background
+    const getCardStyle = () => {
+      return {
+        background: "#FFFFFF",
+        borderColor: "#E2E8F0",
+        position: "relative" as const,
+        overflow: "hidden" as const,
+        boxShadow: "0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03)",
+      };
+    };
+
+    // Get distinctive background color for each metric type's icon
+    const getIconBg = () => {
       switch (title) {
         case "Active Merchants":
-          return "bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200";
+          return { background: "#EFF6FF" }; // Light blue
         case "Active Locations":
-          return "bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200";
+          return { background: "#F5F3FF" }; // Light purple
         case "Active Offers":
-          return "bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200";
+          return { background: "#FFFBEB" }; // Light amber
         case "Redemptions (12m)":
-          return "bg-gradient-to-br from-green-50 to-green-100 border-green-200";
+          return { background: "#ECFDF5" }; // Light green
         case "Redemptions (30d)":
-          return "bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200";
+          return { background: "#F0FDFA" }; // Light teal
         default:
-          return "bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200";
+          return { background: "#F9FAFB" }; // Light gray
       }
     };
 
-    // Icon colors based on metric type
+    // Get distinctive text color for each metric type's icon
     const getIconColor = () => {
       switch (title) {
         case "Active Merchants":
-          return "text-blue-600 bg-blue-100";
+          return "text-blue-600";
         case "Active Locations":
-          return "text-purple-600 bg-purple-100";
+          return "text-purple-600";
         case "Active Offers":
-          return "text-amber-600 bg-amber-100";
+          return "text-amber-600";
         case "Redemptions (12m)":
-          return "text-green-600 bg-green-100";
+          return "text-green-600";
         case "Redemptions (30d)":
-          return "text-emerald-600 bg-emerald-100";
+          return "text-teal-600";
         default:
-          return "text-gray-600 bg-gray-100";
+          return "text-gray-600";
       }
     };
 
+    // Get accessible colors for percentage indicators
+    const getPercentageColor = () => {
+      return isPositive ? "text-green-700" : "text-red-700"; // High contrast accessible colors
+    };
+
+    const getPercentageBg = () => {
+      return isPositive ? "bg-green-100" : "bg-red-100";
+    };
+
     return (
-      <div className={`rounded-lg border p-4 h-full ${getBgColor()}`}>
+      <div
+        className="rounded-lg border p-4 h-full shadow-sm"
+        style={getCardStyle()}
+      >
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center text-gray-700">
-            <div className={`p-2 rounded-full ${getIconColor()}`}>{icon}</div>
+            <div
+              className={`p-2.5 rounded-full ${getIconColor()}`}
+              style={getIconBg()}
+            >
+              {icon}
+            </div>
             <span className="ml-2 text-sm font-medium">{title}</span>
           </div>
         </div>
 
-        <div className="flex items-end justify-between">
+        <div className="flex items-end justify-between mt-2">
           <div>
-            <div className="text-2xl font-bold">{formattedValue}</div>
-            <div
-              className={`flex items-center text-sm mt-1 ${isPositive ? "text-green-600" : "text-red-600"}`}
-            >
-              {isPositive ? (
-                <ChevronUpIcon className="h-4 w-4 bg-green-100 rounded-full p-0.5" />
-              ) : (
-                <ChevronDownIcon className="h-4 w-4 bg-red-100 rounded-full p-0.5" />
-              )}
-              <span className="ml-1">{Math.abs(change)}%</span>
+            <div className="text-2xl font-bold text-gray-800">
+              {formattedValue}
+            </div>
+            <div className="flex items-center text-sm mt-1">
+              <span
+                className={`px-1.5 py-0.5 rounded-md ${getPercentageBg()} ${getPercentageColor()} font-medium flex items-center`}
+              >
+                {isPositive ? (
+                  <ChevronUpIcon className="h-3.5 w-3.5 mr-0.5" />
+                ) : (
+                  <ChevronDownIcon className="h-3.5 w-3.5 mr-0.5" />
+                )}
+                {Math.abs(change)}%
+              </span>
+              <span className="ml-1.5 text-gray-500 text-xs">
+                vs. last month
+              </span>
             </div>
           </div>
 
           {secondaryChange !== null && (
             <div className="text-xs text-gray-500">
-              <div
-                className={`flex items-center justify-end ${secondaryChange >= 0 ? "text-green-600" : "text-red-600"}`}
-              >
-                {secondaryChange >= 0 ? (
-                  <ChevronUpIcon className="h-3 w-3 bg-green-100 rounded-full p-0.5" />
-                ) : (
-                  <ChevronDownIcon className="h-3 w-3 bg-red-100 rounded-full p-0.5" />
-                )}
-                <span className="ml-1">{Math.abs(secondaryChange)}%</span>
+              <div className={`flex items-center justify-end`}>
+                <span
+                  className={`px-1.5 py-0.5 rounded-md ${isSecondaryPositive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"} font-medium flex items-center`}
+                >
+                  {isSecondaryPositive ? (
+                    <ChevronUpIcon className="h-3 w-3 mr-0.5" />
+                  ) : (
+                    <ChevronDownIcon className="h-3 w-3 mr-0.5" />
+                  )}
+                  {Math.abs(secondaryChange)}%
+                </span>
               </div>
-              <div className="mt-1">{secondaryChangeLabel}</div>
+              <div className="mt-1 text-right">{secondaryChangeLabel}</div>
             </div>
           )}
         </div>
@@ -281,27 +322,64 @@ export default function MerchantPortalView() {
     textColor,
     buttonText = "View Report",
   }: ReportCardProps) => {
+    // Get color based on card type
+    const getCardColor = () => {
+      switch (title) {
+        case "Overview Dashboard":
+          return {
+            bgColor: "#F9FAFB",
+            textColor: "#3B82F6",
+            iconBg: "#EFF6FF",
+          }; // Blue
+        case "Redemption Report":
+          return {
+            bgColor: "#F9FAFB",
+            textColor: "#10B981",
+            iconBg: "#ECFDF5",
+          }; // Green
+        case "Advertiser Reporting":
+          return {
+            bgColor: "#F9FAFB",
+            textColor: "#8B5CF6",
+            iconBg: "#F5F3FF",
+          }; // Purple
+        default:
+          return {
+            bgColor: "#F9FAFB",
+            textColor: "#6B7280",
+            iconBg: "#F3F4F6",
+          }; // Gray
+      }
+    };
+
+    const colors = getCardColor();
+
     return (
-      <div className="flex flex-col h-full rounded-lg border border-gray-200 overflow-hidden transition-all duration-200 hover:shadow-md">
-        <div className="p-4 flex-1">
+      <div
+        className="flex flex-col h-full rounded-lg border border-gray-200 overflow-hidden bg-white"
+        style={{
+          boxShadow: "0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03)",
+        }}
+      >
+        <div className="p-5 flex-1" style={{ background: colors.bgColor }}>
           <div
-            className={`mx-auto flex h-10 w-10 items-center justify-center rounded-full ${iconBgColor} mb-3`}
+            className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-gray-100 mb-4"
+            style={{ background: colors.iconBg }}
           >
-            {icon}
+            <div style={{ color: colors.textColor }}>{icon}</div>
           </div>
-          <h3 className="text-base font-medium text-center text-gray-900">
+          <h3 className="text-base font-semibold text-center text-gray-900 mb-2">
             {title}
           </h3>
-          <p className="mt-2 text-sm text-center text-gray-500">
-            {description}
-          </p>
+          <p className="text-sm text-center text-gray-600">{description}</p>
         </div>
-        <div className={`${bgColor} px-4 py-3 border-t border-gray-200`}>
+        <div className="px-4 py-3 border-t border-gray-200">
           <Button
             variant="link"
-            className={`w-full text-sm font-medium ${textColor}`}
+            className="w-full text-sm font-medium flex items-center justify-center"
+            style={{ color: colors.textColor }}
           >
-            {buttonText}
+            {buttonText} <span className="ml-1">→</span>
           </Button>
         </div>
       </div>
@@ -310,211 +388,178 @@ export default function MerchantPortalView() {
 
   return (
     <div className="h-full flex flex-col">
-      {/* Personalized greeting header */}
+      {/* Personalized greeting header - kept outside iframe */}
       <GreetingHeader />
 
-      {/* Page title and actions */}
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-semibold text-gray-900">
-          Merchant Reporting Portal
-        </h1>
-        <div className="flex space-x-2">
-          <Button variant="outline" size="sm" className="flex items-center">
-            <ArrowPathIcon className="h-4 w-4 mr-1.5" />
-            Refresh Data
-          </Button>
-          <Button variant="outline" size="sm" className="flex items-center">
-            <CalendarIcon className="h-4 w-4 mr-1.5" />
-            Last Updated: April 21, 2024
-          </Button>
-        </div>
-      </div>
-
-      {/* Scorecard metrics section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
-        <MetricCard
-          title="Active Merchants"
-          value={scorecardMetrics.activeMerchants}
-          change={scorecardMetrics.activeMerchantsChange}
-          icon={<BuildingStorefrontIcon className="h-5 w-5" />}
-        />
-
-        <MetricCard
-          title="Active Locations"
-          value={scorecardMetrics.activeLocations}
-          change={scorecardMetrics.activeLocationsChange}
-          icon={<MapPinIcon className="h-5 w-5" />}
-        />
-
-        <MetricCard
-          title="Active Offers"
-          value={scorecardMetrics.activeOffers}
-          change={scorecardMetrics.activeOffersChange}
-          icon={<TagIcon className="h-5 w-5" />}
-        />
-
-        <MetricCard
-          title="Redemptions (12m)"
-          value={scorecardMetrics.totalRedemptions12m}
-          change={scorecardMetrics.totalRedemptions12mChange}
-          icon={<ReceiptRefundIcon className="h-5 w-5" />}
-        />
-
-        <MetricCard
-          title="Redemptions (30d)"
-          value={scorecardMetrics.redemptionsLast30d}
-          change={scorecardMetrics.redemptionsLast30dWoWChange}
-          secondaryChange={scorecardMetrics.redemptionsLast30dMoMChange}
-          secondaryChangeLabel="MoM"
-          icon={<ReceiptRefundIcon className="h-5 w-5" />}
-        />
-      </div>
-
-      {/* Main dashboard content */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-4">
-        {/* Left side: Filters and Reports */}
-        <div className="lg:col-span-3 flex flex-col space-y-4">
-          {/* Filter section */}
-          <Card className="p-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Merchant ID
-                </label>
-                <Select
-                  value={selectedMerchantId}
-                  onValueChange={(value) => setSelectedMerchantId(value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Merchant ID" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="All">All</SelectItem>
-                    <SelectItem value="M1001">M1001</SelectItem>
-                    <SelectItem value="M1002">M1002</SelectItem>
-                    <SelectItem value="M1003">M1003</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Merchant Name
-                </label>
-                <Select
-                  value={selectedMerchantName}
-                  onValueChange={(value) => setSelectedMerchantName(value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Merchant Name" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="All">All</SelectItem>
-                    <SelectItem value="Target">Target</SelectItem>
-                    <SelectItem value="Walmart">Walmart</SelectItem>
-                    <SelectItem value="Kroger">Kroger</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Date Range
-                </label>
-                <div className="flex items-center space-x-2">
-                  <DatePicker
-                    date={dateRange.startDate}
-                    onSelect={(date) =>
-                      date && setDateRange({ ...dateRange, startDate: date })
-                    }
-                  />
-                  <ArrowsRightLeftIcon className="h-4 w-4 text-gray-400" />
-                  <DatePicker
-                    date={dateRange.endDate}
-                    onSelect={(date) =>
-                      date && setDateRange({ ...dateRange, endDate: date })
-                    }
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Merchant of the Month
-                </label>
-                <Select
-                  value={selectedMerchantOfMonth}
-                  onValueChange={(value) => setSelectedMerchantOfMonth(value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Merchant" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="All">All</SelectItem>
-                    <SelectItem value="Target">Target</SelectItem>
-                    <SelectItem value="Walmart">Walmart</SelectItem>
-                    <SelectItem value="Kroger">Kroger</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </Card>
-
-          {/* Report types section */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
-            <ReportCard
-              title="Overview Dashboard"
-              icon={<ChartBarIcon className="h-5 w-5 text-blue-600" />}
-              description="Get a comprehensive view of your campaign performance metrics"
-              bgColor="bg-blue-50"
-              iconBgColor="bg-blue-100"
-              textColor="text-blue-600"
-              buttonText="View Dashboard"
-            />
-
-            <ReportCard
-              title="Redemption Report"
-              icon={<ReceiptRefundIcon className="h-5 w-5 text-green-600" />}
-              description="Track and analyze coupon redemptions across all merchants"
-              bgColor="bg-green-50"
-              iconBgColor="bg-green-100"
-              textColor="text-green-600"
-            />
-
-            <ReportCard
-              title="Advertiser Reporting"
-              icon={<TagIcon className="h-5 w-5 text-purple-600" />}
-              description="Review detailed performance metrics for all advertising campaigns"
-              bgColor="bg-purple-50"
-              iconBgColor="bg-purple-100"
-              textColor="text-purple-600"
-            />
-          </div>
-        </div>
-
-        {/* Right side: Merchant of the Month */}
-        <div className="lg:col-span-1">
-          <Card className="h-full">
-            <div className="text-base font-semibold px-4 pt-4 pb-2">
-              Merchant of the Month
-            </div>
-            <div className="flex flex-col items-center justify-center h-full p-4">
-              <div className="bg-blue-100 p-3 rounded-full mb-3">
-                <BuildingStorefrontIcon className="h-8 w-8 text-blue-600" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-900">Target</h3>
-              <p className="text-sm text-gray-500 mt-1">April 2024</p>
-              <div className="mt-3 text-center bg-green-50 p-2 rounded-lg border border-green-100">
-                <p className="text-sm text-gray-600">
-                  Highest redemption rate increase:{" "}
-                  <span className="font-semibold text-green-600">+22%</span>
-                </p>
-              </div>
-              <Button variant="outline" size="sm" className="mt-4 w-full">
-                View Performance Report
+      {/* Power BI iframe simulator - everything inside this div represents embedded content */}
+      <div
+        className="mt-4 flex-1 bg-white rounded-lg p-4 overflow-auto"
+        style={{
+          border: "1px solid #E2E8F0",
+          boxSizing: "border-box",
+          boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.05)",
+          position: "relative",
+        }}
+      >
+        {/* PowerBI embedded dashboard content starts here */}
+        <div className="h-full flex flex-col">
+          {/* Page title and actions */}
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-xl font-semibold text-gray-900">
+              Merchant Reporting Portal
+            </h1>
+            <div className="flex space-x-2">
+              <Button variant="outline" size="sm" className="flex items-center">
+                <CalendarIcon className="h-4 w-4 mr-1.5" />
+                Last Updated: April 21, 2024
               </Button>
             </div>
-          </Card>
+          </div>
+
+          {/* Scorecard metrics section */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
+            <MetricCard
+              title="Active Merchants"
+              value={scorecardMetrics.activeMerchants}
+              change={scorecardMetrics.activeMerchantsChange}
+              icon={<BuildingStorefrontIcon className="h-5 w-5" />}
+            />
+
+            <MetricCard
+              title="Active Locations"
+              value={scorecardMetrics.activeLocations}
+              change={scorecardMetrics.activeLocationsChange}
+              icon={<MapPinIcon className="h-5 w-5" />}
+            />
+
+            <MetricCard
+              title="Active Offers"
+              value={scorecardMetrics.activeOffers}
+              change={scorecardMetrics.activeOffersChange}
+              icon={<TagIcon className="h-5 w-5" />}
+            />
+
+            <MetricCard
+              title="Redemptions (12m)"
+              value={scorecardMetrics.totalRedemptions12m}
+              change={scorecardMetrics.totalRedemptions12mChange}
+              icon={<ReceiptRefundIcon className="h-5 w-5" />}
+            />
+
+            <MetricCard
+              title="Redemptions (30d)"
+              value={scorecardMetrics.redemptionsLast30d}
+              change={scorecardMetrics.redemptionsLast30dWoWChange}
+              secondaryChange={scorecardMetrics.redemptionsLast30dMoMChange}
+              secondaryChangeLabel="MoM"
+              icon={<ReceiptRefundIcon className="h-5 w-5" />}
+            />
+          </div>
+
+          {/* Main dashboard content */}
+          <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Left side: Filters */}
+            <div className="lg:col-span-3">
+              {/* Filter section */}
+              <Card className="p-4 mb-4 bg-white shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Merchant ID
+                    </label>
+                    <Select
+                      value={selectedMerchantId}
+                      onValueChange={(value) => setSelectedMerchantId(value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Merchant ID" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="All">All</SelectItem>
+                        <SelectItem value="M1001">M1001</SelectItem>
+                        <SelectItem value="M1002">M1002</SelectItem>
+                        <SelectItem value="M1003">M1003</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Merchant Name
+                    </label>
+                    <Select
+                      value={selectedMerchantName}
+                      onValueChange={(value) => setSelectedMerchantName(value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Merchant Name" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="All">All</SelectItem>
+                        <SelectItem value="Target">Target</SelectItem>
+                        <SelectItem value="Walmart">Walmart</SelectItem>
+                        <SelectItem value="Kroger">Kroger</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Date Range
+                    </label>
+                    <div className="flex items-center space-x-2">
+                      <DatePicker
+                        date={dateRange.startDate}
+                        onSelect={(date) =>
+                          date &&
+                          setDateRange({ ...dateRange, startDate: date })
+                        }
+                      />
+                      <ArrowsRightLeftIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                      <DatePicker
+                        date={dateRange.endDate}
+                        onSelect={(date) =>
+                          date && setDateRange({ ...dateRange, endDate: date })
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Report types section - removed Merchant of the Month */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <ReportCard
+                  title="Overview Dashboard"
+                  icon={<ChartBarIcon className="h-6 w-6" />}
+                  description="Get a comprehensive view of your campaign performance metrics"
+                  bgColor="bg-blue-50"
+                  iconBgColor="bg-blue-100"
+                  textColor="text-blue-600"
+                  buttonText="View Dashboard"
+                />
+
+                <ReportCard
+                  title="Redemption Report"
+                  icon={<ReceiptRefundIcon className="h-6 w-6" />}
+                  description="Track and analyze coupon redemptions across all merchants"
+                  bgColor="bg-green-50"
+                  iconBgColor="bg-green-100"
+                  textColor="text-green-600"
+                />
+
+                <ReportCard
+                  title="Advertiser Reporting"
+                  icon={<ChartPieIcon className="h-6 w-6" />}
+                  description="Review detailed performance metrics for all advertising campaigns"
+                  bgColor="bg-purple-50"
+                  iconBgColor="bg-purple-100"
+                  textColor="text-purple-600"
+                />
+              </div>
+            </div>
+          </div>
+          {/* PowerBI embedded dashboard content ends here */}
         </div>
       </div>
     </div>
