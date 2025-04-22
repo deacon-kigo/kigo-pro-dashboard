@@ -201,10 +201,8 @@ export const InactivityProvider: React.FC<InactivityProviderProps> = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Session Timeout Warning</AlertDialogTitle>
             <AlertDialogDescription>
-              Due to inactivity, your session will automatically log out in{" "}
-              <span className="font-semibold text-red-500">
-                {formatCountdown()}
-              </span>
+              Due to inactivity, your session will automatically sign out in{" "}
+              <span className="font-semibold text-red-500">5 minutes</span>
               .
               <br />
               <br />
