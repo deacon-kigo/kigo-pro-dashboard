@@ -3,6 +3,15 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/atoms/Button";
 import { useRouter } from "next/navigation";
+import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Define the shape of our data
 export type ProductFilter = {
@@ -15,17 +24,86 @@ export type ProductFilter = {
   status: "Active" | "Expired" | "Draft";
 };
 
+// Separate ActionCell component
+const ActionCell = ({ filterId }: { filterId: string }) => {
+  const router = useRouter();
+  return (
+    <div className="text-right">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuItem
+            onClick={() =>
+              router.push(`/campaigns/product-filters/${filterId}`)
+            }
+          >
+            View Details
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => navigator.clipboard.writeText(filterId)}
+          >
+            Copy Filter ID
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() =>
+              router.push(`/campaigns/product-filters/${filterId}/edit`)
+            }
+          >
+            Edit Filter
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() =>
+              router.push(`/campaigns/product-filters/${filterId}/criteria`)
+            }
+          >
+            Manage Criteria
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+};
+
 export const columns: ColumnDef<ProductFilter>[] = [
   {
     accessorKey: "name",
-    header: "Filter Name",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent"
+        >
+          Filter Name
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
     cell: ({ row }) => (
       <div className="font-medium">{row.getValue("name")}</div>
     ),
   },
   {
     accessorKey: "queryView",
-    header: "Query View",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent"
+        >
+          Query View
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
   },
   {
     accessorKey: "createdBy",
@@ -33,11 +111,33 @@ export const columns: ColumnDef<ProductFilter>[] = [
   },
   {
     accessorKey: "createdDate",
-    header: "Created Date",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent"
+        >
+          Created Date
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
   },
   {
     accessorKey: "expiryDate",
-    header: "Expiry Date",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent"
+        >
+          Expiry Date
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
   },
   {
     accessorKey: "status",
@@ -66,26 +166,7 @@ export const columns: ColumnDef<ProductFilter>[] = [
     id: "actions",
     cell: ({ row }) => {
       const filter = row.original;
-
-      // We need to use the useRouter hook outside this component
-      const ActionCell = () => {
-        const router = useRouter();
-        return (
-          <div className="text-right">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                router.push(`/campaigns/product-filters/${filter.id}`)
-              }
-            >
-              View Details
-            </Button>
-          </div>
-        );
-      };
-
-      return <ActionCell />;
+      return <ActionCell filterId={filter.id} />;
     },
   },
 ];
