@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import AppLayout from "@/components/templates/AppLayout/AppLayout";
 import {
   Breadcrumb,
@@ -12,9 +12,14 @@ import {
 } from "@/components/atoms/Breadcrumb";
 import { ProductFiltersListView } from "@/components/features/campaigns/product-filters";
 
+/**
+ * Product Filters Page
+ * 
+ * Top-level page component for the product filters section
+ */
 export default function ProductFiltersPage() {
-  // Breadcrumb showing the navigation path
-  const productFilterBreadcrumb = (
+  // Memoize the breadcrumb to prevent unnecessary recreations
+  const productFilterBreadcrumb = useMemo(() => (
     <Breadcrumb className="mb-4">
       <BreadcrumbList>
         <BreadcrumbItem>
@@ -26,7 +31,7 @@ export default function ProductFiltersPage() {
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>
-  );
+  ), []);
 
   return (
     <AppLayout customBreadcrumb={productFilterBreadcrumb}>

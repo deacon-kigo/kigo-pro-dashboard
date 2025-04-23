@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo, memo } from "react";
 import { Button } from "@/components/atoms/Button";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import {
@@ -14,7 +14,13 @@ import { PageHeader } from "@/components/molecules/PageHeader";
 import { ProductFilterTable } from "./ProductFilterTable";
 import { ProductFilter } from "./productFilterColumns";
 
-export default function ProductFiltersListView() {
+/**
+ * ProductFiltersListView Component
+ * 
+ * Displays a list of product filters in a tabbed interface
+ * with options to view active, expired, or all filters.
+ */
+const ProductFiltersListView = memo(function ProductFiltersListView() {
   const router = useRouter();
 
   // Navigate to the new product filter page
@@ -22,8 +28,8 @@ export default function ProductFiltersListView() {
     router.push("/campaigns/product-filters/new");
   };
 
-  // Data for the tables
-  const filters: ProductFilter[] = [
+  // Sample data for the tables - in a real app, this would be fetched from an API
+  const filters = useMemo<ProductFilter[]>(() => [
     {
       id: "1",
       name: "Pizza Edition",
@@ -60,18 +66,33 @@ export default function ProductFiltersListView() {
       expiryDate: "2024-08-01",
       status: "Active",
     },
-  ];
+  ], []);
 
-  // In a real app, these would be fetched based on status
-  const activeFilters = filters.filter((filter) => filter.status === "Active");
-  const expiredFilters: ProductFilter[] = [];
+  // Derived data - memoized to prevent recalculation on every render
+  const activeFilters = useMemo(() => 
+    filters.filter((filter) => filter.status === "Active"),
+    [filters]
+  );
+  
+  const expiredFilters = useMemo<ProductFilter[]>(() => [], []);
 
-  const createFilterButton = (
+  // Memoize UI elements that don't need to be recreated on every render
+  const createFilterButton = useMemo(() => (
     <Button onClick={handleCreateFilter} className="flex items-center gap-1">
       <PlusIcon className="h-4 w-4" />
       Create Filter
     </Button>
-  );
+  ), [handleCreateFilter]);
+
+  const emptyStateContent = useMemo(() => (
+    <div className="bg-white rounded-lg border border-gray-200 p-6 flex justify-center items-center text-center overflow-hidden shadow-sm">
+      <div>
+        <p className="text-muted-foreground">
+          No expired product filters
+        </p>
+      </div>
+    </div>
+  ), []);
 
   return (
     <div className="space-y-6">
@@ -97,15 +118,7 @@ export default function ProductFiltersListView() {
         <TabsContent value="expired" className="mt-4">
           {expiredFilters.length > 0 ? (
             <ProductFilterTable data={expiredFilters} />
-          ) : (
-            <div className="bg-white rounded-lg border border-gray-200 p-6 flex justify-center items-center text-center overflow-hidden shadow-sm">
-              <div>
-                <p className="text-muted-foreground">
-                  No expired product filters
-                </p>
-              </div>
-            </div>
-          )}
+          ) : emptyStateContent}
         </TabsContent>
 
         <TabsContent value="all" className="mt-4">
@@ -114,4 +127,6 @@ export default function ProductFiltersListView() {
       </Tabs>
     </div>
   );
-}
+});
+
+export default ProductFiltersListView;

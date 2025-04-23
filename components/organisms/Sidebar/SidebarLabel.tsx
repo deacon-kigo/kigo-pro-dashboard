@@ -43,6 +43,13 @@ export default function SidebarLabel({
   isSubmenuOpen,
   onToggleSubmenu,
 }: SidebarLabelProps) {
+  // Validate that Icon is defined - MOVED BEFORE ANY HOOKS
+  if (!Icon) {
+    console.error("SidebarLabel: Icon prop is undefined");
+    // Return a placeholder instead of null to maintain component structure
+    return <div className="w-full"></div>;
+  }
+
   // Track hydration state
   const [isHydrated, setIsHydrated] = useState(false);
 
@@ -55,11 +62,20 @@ export default function SidebarLabel({
   const { clientId } = useSelector((state: RootState) => state.demo);
 
   // Memoize theme calculations
-  const { themeName, theme, isCvsTheme, activeClasses, inactiveClasses, hoverClasses } = useMemo(() => {
+  const {
+    themeName,
+    theme,
+    isCvsTheme,
+    activeClasses,
+    inactiveClasses,
+    hoverClasses,
+  } = useMemo(() => {
     const themeName = clientId === "cvs" ? "cvs" : "default";
-    const theme = themeConfigs[themeName]?.sidebar?.item || themeConfigs.default.sidebar.item;
+    const theme =
+      themeConfigs[themeName]?.sidebar?.item ||
+      themeConfigs.default.sidebar.item;
     const isCvsTheme = themeName === "cvs";
-    
+
     // Classes for active and inactive states
     const activeClasses = theme.active;
     const inactiveClasses = theme.inactive;
@@ -68,15 +84,16 @@ export default function SidebarLabel({
     const hoverClasses = isCvsTheme
       ? "hover:bg-gradient-to-r hover:from-pastel-blue hover:to-pastel-red hover:text-gray-800"
       : "hover:bg-pastel-blue hover:text-gray-800";
-      
-    return { themeName, theme, isCvsTheme, activeClasses, inactiveClasses, hoverClasses };
-  }, [clientId]);
 
-  // Validate that Icon is defined
-  if (!Icon) {
-    console.error("SidebarLabel: Icon prop is undefined");
-    return null;
-  }
+    return {
+      themeName,
+      theme,
+      isCvsTheme,
+      activeClasses,
+      inactiveClasses,
+      hoverClasses,
+    };
+  }, [clientId]);
 
   // Memoize icon and text classes to prevent recalculation on every render
   const getIconClasses = useCallback(() => {
@@ -108,7 +125,7 @@ export default function SidebarLabel({
     );
 
     const serverIconClasses = "w-5 h-5 mr-3 text-gray-500";
-    
+
     return { serverLinkClasses, serverIconClasses };
   }, [isActive, activeClasses, inactiveClasses, hoverClasses, className]);
 
@@ -131,15 +148,35 @@ export default function SidebarLabel({
       getIconClasses(),
       "transition-colors duration-200"
     );
-    
-    return { linkClasses, iconClasses };
-  }, [isCollapsed, isActive, activeClasses, inactiveClasses, hoverClasses, className, getIconClasses]);
 
-  // For server-side rendering or initial render, use a consistent non-collapsed layout
-  // This ensures hydration matches between server and client
+    return { linkClasses, iconClasses };
+  }, [
+    isCollapsed,
+    isActive,
+    activeClasses,
+    inactiveClasses,
+    hoverClasses,
+    className,
+    getIconClasses,
+  ]);
+
+  // Handle submenu toggle in a way that prevents propagation - MOVED UP from conditional section
+  const handleSubmenuToggle = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onToggleSubmenu?.();
+    },
+    [onToggleSubmenu]
+  );
+
+  // Always compute all values regardless of hydration state
+  const { serverLinkClasses, serverIconClasses } = serverClasses;
+  const { linkClasses, iconClasses } = clientClasses;
+  const textClasses = getTextClasses();
+
+  // Use conditional rendering only for the returned JSX, not for hook calculation
   if (!isHydrated) {
-    const { serverLinkClasses, serverIconClasses } = serverClasses;
-    
     return (
       <div className="w-full">
         <Link
@@ -159,17 +196,6 @@ export default function SidebarLabel({
       </div>
     );
   }
-
-  // Use memoized classes for client-side rendering
-  const { linkClasses, iconClasses } = clientClasses;
-  const textClasses = getTextClasses();
-
-  // Handle submenu toggle in a way that prevents propagation
-  const handleSubmenuToggle = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onToggleSubmenu?.();
-  }, [onToggleSubmenu]);
 
   // Handle the case when submenu is present
   return (

@@ -38,12 +38,12 @@ export function parseDemoUrl(pathname: string) {
  * Check if a path is active by comparing it with the current pathname
  * Works for exact matches or parent routes
  */
-export function isPathActive(pathname: string, path: string) {
+export function isPathActive(pathname: string, path: string): boolean {
   // For root paths like '/' match exactly
   if (path === '/') {
     return pathname === path;
   }
   
   // For other paths, check if the current path starts with the given path
-  return pathname && pathname.startsWith(path);
+  return Boolean(pathname && pathname.startsWith(path));
 }
