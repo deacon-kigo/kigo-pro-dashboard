@@ -92,7 +92,7 @@ export default function PageHeader({
             <div>
               <h1 className="text-2xl font-bold text-blue-600">{title}</h1>
               {description && (
-                <p className="text-sm text-blue-500 mt-1">{description}</p>
+                <p className="text-base text-blue-500 mt-1">{description}</p>
               )}
             </div>
           </div>
