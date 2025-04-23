@@ -83,10 +83,7 @@ export default function ProductFiltersListView() {
         description="Manage product filters to control offer display in the TOP platform."
         emoji="🏷️"
         actions={createFilterButton}
-        gradientColors={{
-          from: "rgba(226, 240, 253, 0.9)",
-          to: "rgba(226, 232, 255, 0.85)",
-        }}
+        variant="aurora"
       />
 
       <Tabs defaultValue="active" className="w-full">

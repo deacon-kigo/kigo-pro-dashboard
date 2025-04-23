@@ -144,6 +144,7 @@ export default {
         "rainbow-border": "rainbowBorder 4s linear infinite",
         spring: "spring 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)",
         "spin-slow": "spin 8s linear infinite",
+        aurora: "aurora 60s linear infinite",
       },
       keyframes: {
         fadeIn: {
@@ -239,6 +240,17 @@ export default {
           "100%": {
             transform: "scale(1)",
             opacity: 1,
+          },
+        },
+        aurora: {
+          "0%": {
+            backgroundPosition: "0% 0%, 0% 0%",
+          },
+          "50%": {
+            backgroundPosition: "100% 0%, 100% 0%",
+          },
+          "100%": {
+            backgroundPosition: "0% 0%, 0% 0%",
           },
         },
       },

@@ -3,6 +3,16 @@
 @tailwind utilities;
 
 :root {
+  /* Aurora effect variables */
+  --white: rgba(255, 255, 255, 1);
+  --black: rgba(0, 0, 0, 1);
+  --transparent: rgba(0, 0, 0, 0);
+  --blue-300: #93c5fd;
+  --blue-400: #60a5fa;
+  --blue-500: #3b82f6;
+  --indigo-300: #a5b4fc;
+  --violet-200: #ddd6fe;
+
   --primary-light: #e6e7ff;
   --bg-light: #f6f5f1;
   --text-dark: #231f20;
