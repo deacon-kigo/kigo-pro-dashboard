@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/atoms/Select";
 import { Calendar } from "@/components/atoms/Calendar";
+import { PageHeader } from "@/components/molecules/PageHeader";
 
 // Interface for filter criteria
 interface FilterCriteria {
@@ -188,19 +189,30 @@ export default function ProductFilterCreationView() {
     }
   };
 
+  // Create the back button for the header
+  const backButton = (
+    <Button
+      variant="outline"
+      onClick={handleCancel}
+      className="flex items-center gap-1"
+    >
+      <ArrowLeftIcon className="h-4 w-4" />
+      Back to Filters
+    </Button>
+  );
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Create New Product Filter
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Add a new product filter to control offer display in the TOP
-            platform.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Create New Product Filter"
+        description="Add a new product filter to control offer display in the TOP platform."
+        emoji="✨"
+        actions={backButton}
+        gradientColors={{
+          from: "rgba(226, 240, 253, 0.9)",
+          to: "rgba(226, 232, 255, 0.85)",
+        }}
+      />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList>

@@ -19,6 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useRouter } from "next/navigation";
+import { PageHeader } from "@/components/molecules/PageHeader";
 
 export default function ProductFiltersListView() {
   const router = useRouter();
@@ -68,23 +69,25 @@ export default function ProductFiltersListView() {
     },
   ];
 
+  const createFilterButton = (
+    <Button onClick={handleCreateFilter} className="flex items-center gap-1">
+      <PlusIcon className="h-4 w-4" />
+      Create Filter
+    </Button>
+  );
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Product Filters</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage product filters to control offer display in the TOP platform.
-          </p>
-        </div>
-        <Button
-          onClick={handleCreateFilter}
-          className="flex items-center gap-1"
-        >
-          <PlusIcon className="h-4 w-4" />
-          Create Filter
-        </Button>
-      </div>
+      <PageHeader
+        title="Product Filters"
+        description="Manage product filters to control offer display in the TOP platform."
+        emoji="🏷️"
+        actions={createFilterButton}
+        gradientColors={{
+          from: "rgba(226, 240, 253, 0.9)",
+          to: "rgba(226, 232, 255, 0.85)",
+        }}
+      />
 
       <Tabs defaultValue="active" className="w-full">
         <TabsList>
