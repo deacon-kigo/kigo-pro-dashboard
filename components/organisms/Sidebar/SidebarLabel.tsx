@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useSelector } from "react-redux";
@@ -54,10 +54,39 @@ export default function SidebarLabel({
   // Get theme information directly from Redux
   const { clientId } = useSelector((state: RootState) => state.demo);
 
-  // Determine theme based on client ID
-  const themeName = clientId === "cvs" ? "cvs" : "default";
-  const theme =
-    themeConfigs[themeName]?.sidebar?.item || themeConfigs.default.sidebar.item;
+  // Memoize theme calculations
+  const {
+    themeName,
+    theme,
+    isCvsTheme,
+    activeClasses,
+    inactiveClasses,
+    hoverClasses,
+  } = useMemo(() => {
+    const themeName = clientId === "cvs" ? "cvs" : "default";
+    const theme =
+      themeConfigs[themeName]?.sidebar?.item ||
+      themeConfigs.default.sidebar.item;
+    const isCvsTheme = themeName === "cvs";
+
+    // Classes for active and inactive states
+    const activeClasses = theme.active;
+    const inactiveClasses = theme.inactive;
+
+    // Hover classes that match the active state
+    const hoverClasses = isCvsTheme
+      ? "hover:bg-gradient-to-r hover:from-pastel-blue hover:to-pastel-red hover:text-gray-800"
+      : "hover:bg-pastel-blue hover:text-gray-800";
+
+    return {
+      themeName,
+      theme,
+      isCvsTheme,
+      activeClasses,
+      inactiveClasses,
+      hoverClasses,
+    };
+  }, [clientId]);
 
   // Validate that Icon is defined
   if (!Icon) {
@@ -65,22 +94,27 @@ export default function SidebarLabel({
     return null;
   }
 
-  // Determine if we're using CVS theme
-  const isCvsTheme = themeName === "cvs";
+  // Memoize icon and text classes to prevent recalculation on every render
+  const getIconClasses = useCallback(() => {
+    if (isActive) {
+      // For CVS, ensure icon is dark on the gradient background
+      return isCvsTheme ? "text-gray-800" : theme.icon.active;
+    } else {
+      return `${theme.icon.inactive} ${isCvsTheme ? "group-hover:text-gray-800" : "group-hover:text-primary"}`;
+    }
+  }, [isActive, isCvsTheme, theme]);
 
-  // Classes for active and inactive states
-  const activeClasses = theme.active;
-  const inactiveClasses = theme.inactive;
+  const getTextClasses = useCallback(() => {
+    if (isActive) {
+      // For CVS, ensure text is semibold when active
+      return isCvsTheme ? "font-semibold" : theme.text.active;
+    } else {
+      return `${theme.text.inactive} ${isCvsTheme ? "group-hover:font-semibold" : "group-hover:font-medium"}`;
+    }
+  }, [isActive, isCvsTheme, theme]);
 
-  // Hover classes that match the active state
-  const hoverClasses = isCvsTheme
-    ? "hover:bg-gradient-to-r hover:from-pastel-blue hover:to-pastel-red hover:text-gray-800"
-    : "hover:bg-pastel-blue hover:text-gray-800";
-
-  // For server-side rendering or initial render, use a consistent non-collapsed layout
-  // This ensures hydration matches between server and client
-  if (!isHydrated) {
-    // Server-side consistent render
+  // Memoize class calculations to prevent recalculation on every render
+  const serverClasses = useMemo(() => {
     const serverLinkClasses = cn(
       "flex items-center py-2 text-sm font-medium rounded-lg group px-3",
       isActive ? activeClasses : inactiveClasses,
@@ -90,6 +124,45 @@ export default function SidebarLabel({
     );
 
     const serverIconClasses = "w-5 h-5 mr-3 text-gray-500";
+
+    return { serverLinkClasses, serverIconClasses };
+  }, [isActive, activeClasses, inactiveClasses, hoverClasses, className]);
+
+  // Memoize client-side classes
+  const clientClasses = useMemo(() => {
+    // Combine all classes for the link
+    const linkClasses = cn(
+      "flex items-center justify-between py-2 text-sm font-medium rounded-lg group w-full",
+      isCollapsed ? "justify-center px-2" : "px-3",
+      isActive ? activeClasses : inactiveClasses,
+      !isActive ? hoverClasses : "",
+      "transition-all duration-200",
+      className
+    );
+
+    // Icon classes - use a consistent class string
+    const iconClasses = cn(
+      "w-5 h-5",
+      isCollapsed ? "" : "mr-3",
+      getIconClasses(),
+      "transition-colors duration-200"
+    );
+
+    return { linkClasses, iconClasses };
+  }, [
+    isCollapsed,
+    isActive,
+    activeClasses,
+    inactiveClasses,
+    hoverClasses,
+    className,
+    getIconClasses,
+  ]);
+
+  // For server-side rendering or initial render, use a consistent non-collapsed layout
+  // This ensures hydration matches between server and client
+  if (!isHydrated) {
+    const { serverLinkClasses, serverIconClasses } = serverClasses;
 
     return (
       <div className="w-full">
@@ -111,61 +184,19 @@ export default function SidebarLabel({
     );
   }
 
-  // After hydration, use the full dynamic rendering
-  // Icon classes based on state and theme
-  const getIconClasses = () => {
-    if (isActive) {
-      // For CVS, ensure icon is dark on the gradient background
-      return isCvsTheme ? "text-gray-800" : theme.icon.active;
-    } else {
-      return `${theme.icon.inactive} ${isCvsTheme ? "group-hover:text-gray-800" : "group-hover:text-primary"}`;
-    }
-  };
+  // Use memoized classes for client-side rendering
+  const { linkClasses, iconClasses } = clientClasses;
+  const textClasses = getTextClasses();
 
-  // Text classes based on state and theme
-  const getTextClasses = () => {
-    if (isActive) {
-      // For CVS, ensure text is semibold when active
-      return isCvsTheme ? "font-semibold" : theme.text.active;
-    } else {
-      return `${theme.text.inactive} ${isCvsTheme ? "group-hover:font-semibold" : "group-hover:font-medium"}`;
-    }
-  };
-
-  // Combine all classes for the link
-  const linkClasses = cn(
-    "flex items-center justify-between py-2 text-sm font-medium rounded-lg group w-full",
-    isCollapsed ? "justify-center px-2" : "px-3",
-    isActive ? activeClasses : inactiveClasses,
-    !isActive ? hoverClasses : "",
-    "transition-all duration-200",
-    className // Add custom className
+  // Handle submenu toggle in a way that prevents propagation
+  const handleSubmenuToggle = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onToggleSubmenu?.();
+    },
+    [onToggleSubmenu]
   );
-
-  // Icon classes - use a consistent class string
-  const iconClasses = cn(
-    "w-5 h-5",
-    isCollapsed ? "" : "mr-3",
-    getIconClasses(),
-    "transition-colors duration-200"
-  );
-
-  // Submenu classes for each submenu item
-  const submenuItemClasses = (isItemActive: boolean) =>
-    cn(
-      "py-2 text-sm rounded-md transition-colors w-full block",
-      isItemActive
-        ? "text-primary font-medium bg-blue-50"
-        : "text-gray-600 hover:bg-gray-100"
-    );
-
-  // Get left padding for submenu items to align with parent text
-  const getSubmenuPadding = () => {
-    // When collapsed, just use minimal padding
-    if (isCollapsed) return "pl-2";
-    // When expanded, align with the parent text (not the icon)
-    return ""; // We'll handle this with proper structure
-  };
 
   // Handle the case when submenu is present
   return (
@@ -173,7 +204,7 @@ export default function SidebarLabel({
       <div className={linkClasses}>
         <div className="flex items-center">
           <Icon className={iconClasses} />
-          {!isCollapsed && <span className={getTextClasses()}>{title}</span>}
+          {!isCollapsed && <span className={textClasses}>{title}</span>}
           {!isCollapsed && hasNotification && (
             <span className="bg-pastel-red text-red-600 text-xs rounded-full px-1.5 py-0.5 ml-2">
               {notificationCount}
@@ -184,11 +215,7 @@ export default function SidebarLabel({
         {/* Add submenu toggle button if hasSubmenu is true */}
         {!isCollapsed && hasSubmenu && (
           <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onToggleSubmenu?.();
-            }}
+            onClick={handleSubmenuToggle}
             className="p-1 rounded-md"
             aria-label={`Toggle ${title} submenu`}
           >
