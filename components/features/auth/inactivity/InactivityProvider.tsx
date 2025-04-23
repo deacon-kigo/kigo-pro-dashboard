@@ -4,8 +4,6 @@ import React, { useEffect, useCallback, ReactNode, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -180,13 +178,6 @@ export const InactivityProvider: React.FC<InactivityProviderProps> = ({
     };
   }, [showWarning, recordActivity]);
 
-  // Format countdown time as MM:SS
-  const formatCountdown = () => {
-    const minutes = Math.floor(remainingSeconds / 60);
-    const seconds = remainingSeconds % 60;
-    return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-  };
-
   return (
     <>
       {children}
@@ -199,25 +190,27 @@ export const InactivityProvider: React.FC<InactivityProviderProps> = ({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Session Timeout Warning</AlertDialogTitle>
-            <AlertDialogDescription>
-              Due to inactivity, your session will automatically sign out in{" "}
-              <span className="font-semibold text-red-500">5 minutes</span>
-              .
-              <br />
-              <br />
-              Please click "Stay Signed In" to continue your session.
+            <AlertDialogTitle className="mb-3" style={{ fontSize: "16px" }}>
+              Session Timeout Warning
+            </AlertDialogTitle>
+            <AlertDialogDescription
+              className="space-y-2"
+              style={{ fontSize: "14px" }}
+            >
+              <p>
+                Due to inactivity, you will be automatically signed out in{" "}
+                <span className="font-semibold text-red-500">05m 00s</span>.
+              </p>
+              <p>Please click "Stay Signed In" to continue your session.</p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex items-center gap-2">
-            <AlertDialogCancel asChild>
-              <Button variant="outline" onClick={handleSignOut}>
-                Sign Out Now
-              </Button>
-            </AlertDialogCancel>
-            <AlertDialogAction asChild>
-              <Button onClick={handleStayActive}>Stay Signed In</Button>
-            </AlertDialogAction>
+            <Button variant="destructive" onClick={handleSignOut}>
+              Sign Out Now
+            </Button>
+            <Button variant="primary" onClick={handleStayActive}>
+              Stay Signed In
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
