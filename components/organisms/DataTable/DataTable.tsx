@@ -2,15 +2,10 @@
 
 import {
   ColumnDef,
-  ColumnFiltersState,
   flexRender,
   getCoreRowModel,
   useReactTable,
   getPaginationRowModel,
-  SortingState,
-  getSortedRowModel,
-  getFilteredRowModel,
-  VisibilityState,
 } from "@tanstack/react-table";
 
 import {
@@ -21,36 +16,35 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, memo } from "react";
 import Card from "@/components/atoms/Card/Card";
 import { Button } from "@/components/atoms/Button";
-import { Input } from "@/components/ui/input";
-import { ChevronDown } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
-interface DataTableProps<TData, TValue> {
+export interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  filterColumn?: string;
-  filterPlaceholder?: string;
-  hideColumnVisibility?: boolean;
 }
 
-export function DataTable<TData, TValue>({
+/**
+ * DataTable Component
+ * 
+ * A minimal reusable table component with support for:
+ * - Pagination
+ * 
+ * This component is heavily optimized to prevent unnecessary re-renders using:
+ * - useMemo for complex calculations and JSX elements
+ * - useCallback for event handlers
+ * - Carefully organized dependency arrays
+ * - React.memo for the entire component
+ * 
+ * When implementing a specialized table, create a wrapper component that
+ * uses this DataTable rather than duplicating the implementation.
+ */
+export const DataTable = memo(function DataTable<TData, TValue>({
   columns,
   data,
-  filterColumn,
-  filterPlaceholder = "Filter...",
-  hideColumnVisibility = false,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  // State declarations - these don't need memoization
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   // Memoize table options to prevent unnecessary recalculations
@@ -60,36 +54,24 @@ export function DataTable<TData, TValue>({
       columns,
       getCoreRowModel: getCoreRowModel(),
       getPaginationRowModel: getPaginationRowModel(),
-      getSortedRowModel: getSortedRowModel(),
-      getFilteredRowModel: getFilteredRowModel(),
       state: {
-        sorting,
-        columnFilters,
-        columnVisibility,
         pagination: {
           pageIndex: 0,
           pageSize: rowsPerPage,
         },
       },
-      onSortingChange: setSorting,
-      onColumnFiltersChange: setColumnFilters,
-      onColumnVisibilityChange: setColumnVisibility,
     }),
-    [data, columns, sorting, columnFilters, columnVisibility, rowsPerPage]
+    [
+      // First list stable dependencies (props and constants)
+      columns, 
+      rowsPerPage,
+      // Then list data which might change more frequently
+      data
+    ]
   );
 
   // Create the table instance with memoized options
   const table = useReactTable(tableOptions);
-
-  // Memoize handlers to prevent recreation on each render
-  const handleFilterChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      if (filterColumn) {
-        table.getColumn(filterColumn)?.setFilterValue(event.target.value);
-      }
-    },
-    [table, filterColumn]
-  );
 
   const handlePreviousPage = useCallback(() => {
     table.previousPage();
@@ -119,7 +101,7 @@ export function DataTable<TData, TValue>({
         ))}
       </TableHeader>
     ),
-    [table.getHeaderGroups()]
+    [table]
   );
 
   const tableBodyContent = useMemo(
@@ -147,59 +129,52 @@ export function DataTable<TData, TValue>({
         )}
       </TableBody>
     ),
-    [table.getRowModel, columns.length]
+    [table, columns.length]
   );
 
-  const columnVisibilityDropdown = useMemo(() => {
-    if (hideColumnVisibility) return null;
+  // Pagination info and controls - memoized to prevent recreation
+  const paginationControls = useMemo(() => {
+    // Extract only the necessary data from the table
+    const totalItems = table.getRowModel().rows.length;
+    const canPreviousPage = table.getCanPreviousPage();
+    const canNextPage = table.getCanNextPage();
 
     return (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="ml-auto">
-            Columns <ChevronDown className="ml-2 h-4 w-4" />
+      <div className="flex items-center justify-end space-x-2 p-4 border-t">
+        <div className="flex-1 text-sm text-muted-foreground">
+          {totalItems} item(s) found.
+        </div>
+        <div className="space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePreviousPage}
+            disabled={!canPreviousPage}
+          >
+            Previous
           </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          {table
-            .getAllColumns()
-            .filter((column) => column.getCanHide())
-            .map((column) => (
-              <DropdownMenuCheckboxItem
-                key={column.id}
-                className="capitalize"
-                checked={column.getIsVisible()}
-                onCheckedChange={(value) => column.toggleVisibility(!!value)}
-              >
-                {column.id}
-              </DropdownMenuCheckboxItem>
-            ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleNextPage}
+            disabled={!canNextPage}
+          >
+            Next
+          </Button>
+        </div>
+      </div>
     );
-  }, [table.getAllColumns, hideColumnVisibility]);
-
-  const filterInput = useMemo(() => {
-    if (!filterColumn) return null;
-
-    return (
-      <Input
-        placeholder={filterPlaceholder}
-        value={
-          (table.getColumn(filterColumn)?.getFilterValue() as string) ?? ""
-        }
-        onChange={handleFilterChange}
-        className="max-w-sm"
-      />
-    );
-  }, [table, filterColumn, filterPlaceholder, handleFilterChange]);
+  }, [
+    // More selective dependencies
+    table.getRowModel().rows.length,
+    table.getCanPreviousPage(),
+    table.getCanNextPage(),
+    handlePreviousPage,
+    handleNextPage
+  ]);
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        {filterInput}
-        {columnVisibilityDropdown}
-      </div>
       <Card className="overflow-hidden rounded-lg">
         <div className="p-0">
           <Table>
@@ -207,30 +182,8 @@ export function DataTable<TData, TValue>({
             {tableBodyContent}
           </Table>
         </div>
-        <div className="flex items-center justify-end space-x-2 p-4 border-t">
-          <div className="flex-1 text-sm text-muted-foreground">
-            {table.getFilteredRowModel().rows.length} item(s) found.
-          </div>
-          <div className="space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handlePreviousPage}
-              disabled={!table.getCanPreviousPage()}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleNextPage}
-              disabled={!table.getCanNextPage()}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
+        {paginationControls}
       </Card>
     </div>
   );
-}
+});

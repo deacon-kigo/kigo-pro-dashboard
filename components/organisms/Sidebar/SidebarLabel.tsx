@@ -55,20 +55,11 @@ export default function SidebarLabel({
   const { clientId } = useSelector((state: RootState) => state.demo);
 
   // Memoize theme calculations
-  const {
-    themeName,
-    theme,
-    isCvsTheme,
-    activeClasses,
-    inactiveClasses,
-    hoverClasses,
-  } = useMemo(() => {
+  const { themeName, theme, isCvsTheme, activeClasses, inactiveClasses, hoverClasses } = useMemo(() => {
     const themeName = clientId === "cvs" ? "cvs" : "default";
-    const theme =
-      themeConfigs[themeName]?.sidebar?.item ||
-      themeConfigs.default.sidebar.item;
+    const theme = themeConfigs[themeName]?.sidebar?.item || themeConfigs.default.sidebar.item;
     const isCvsTheme = themeName === "cvs";
-
+    
     // Classes for active and inactive states
     const activeClasses = theme.active;
     const inactiveClasses = theme.inactive;
@@ -77,15 +68,8 @@ export default function SidebarLabel({
     const hoverClasses = isCvsTheme
       ? "hover:bg-gradient-to-r hover:from-pastel-blue hover:to-pastel-red hover:text-gray-800"
       : "hover:bg-pastel-blue hover:text-gray-800";
-
-    return {
-      themeName,
-      theme,
-      isCvsTheme,
-      activeClasses,
-      inactiveClasses,
-      hoverClasses,
-    };
+      
+    return { themeName, theme, isCvsTheme, activeClasses, inactiveClasses, hoverClasses };
   }, [clientId]);
 
   // Validate that Icon is defined
@@ -124,7 +108,7 @@ export default function SidebarLabel({
     );
 
     const serverIconClasses = "w-5 h-5 mr-3 text-gray-500";
-
+    
     return { serverLinkClasses, serverIconClasses };
   }, [isActive, activeClasses, inactiveClasses, hoverClasses, className]);
 
@@ -147,23 +131,15 @@ export default function SidebarLabel({
       getIconClasses(),
       "transition-colors duration-200"
     );
-
+    
     return { linkClasses, iconClasses };
-  }, [
-    isCollapsed,
-    isActive,
-    activeClasses,
-    inactiveClasses,
-    hoverClasses,
-    className,
-    getIconClasses,
-  ]);
+  }, [isCollapsed, isActive, activeClasses, inactiveClasses, hoverClasses, className, getIconClasses]);
 
   // For server-side rendering or initial render, use a consistent non-collapsed layout
   // This ensures hydration matches between server and client
   if (!isHydrated) {
     const { serverLinkClasses, serverIconClasses } = serverClasses;
-
+    
     return (
       <div className="w-full">
         <Link
@@ -189,14 +165,11 @@ export default function SidebarLabel({
   const textClasses = getTextClasses();
 
   // Handle submenu toggle in a way that prevents propagation
-  const handleSubmenuToggle = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      onToggleSubmenu?.();
-    },
-    [onToggleSubmenu]
-  );
+  const handleSubmenuToggle = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onToggleSubmenu?.();
+  }, [onToggleSubmenu]);
 
   // Handle the case when submenu is present
   return (
