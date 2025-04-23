@@ -1,16 +1,10 @@
-"use client";
-
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ComponentType, SVGProps, MouseEvent } from "react";
+import { cn } from "@/lib/utils";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
-import { themeConfigs } from "@/lib/redux/slices/uiSlice";
-import { cn } from "@/lib/utils";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
-
-// Type for HeroIcon components
-type HeroIcon = ComponentType<SVGProps<SVGSVGElement>>;
+import { themeConfigs } from "@/lib/redux/slices/uiSlice";
 
 export interface SubmenuItem {
   href: string;
@@ -20,7 +14,7 @@ export interface SubmenuItem {
 
 export interface SidebarLabelProps {
   href: string;
-  icon: HeroIcon;
+  icon: React.ElementType;
   title: string;
   isActive: boolean;
   isCollapsed: boolean;
@@ -98,20 +92,22 @@ export default function SidebarLabel({
     const serverIconClasses = "w-5 h-5 mr-3 text-gray-500";
 
     return (
-      <Link
-        href={href}
-        className={serverLinkClasses}
-        title={title}
-        onClick={onClick}
-      >
-        <Icon className={serverIconClasses} />
-        <span className="group-hover:font-medium">{title}</span>
-        {hasNotification && (
-          <span className="bg-pastel-red text-red-600 text-xs rounded-full px-1.5 py-0.5 ml-auto">
-            {notificationCount}
-          </span>
-        )}
-      </Link>
+      <div className="w-full">
+        <Link
+          href={href}
+          className={serverLinkClasses}
+          title={title}
+          onClick={onClick}
+        >
+          <Icon className={serverIconClasses} />
+          <span className="group-hover:font-medium">{title}</span>
+          {hasNotification && (
+            <span className="bg-pastel-red text-red-600 text-xs rounded-full px-1.5 py-0.5 ml-auto">
+              {notificationCount}
+            </span>
+          )}
+        </Link>
+      </div>
     );
   }
 
@@ -157,7 +153,7 @@ export default function SidebarLabel({
   // Submenu classes for each submenu item
   const submenuItemClasses = (isItemActive: boolean) =>
     cn(
-      "py-2 px-2 text-sm rounded-md transition-colors w-full block",
+      "py-2 text-sm rounded-md transition-colors w-full block",
       isItemActive
         ? "text-primary font-medium bg-blue-50"
         : "text-gray-600 hover:bg-gray-100"
@@ -165,76 +161,75 @@ export default function SidebarLabel({
 
   // Get left padding for submenu items to align with parent text
   const getSubmenuPadding = () => {
-    // 20px = icon (w-5) + marginRight (mr-3)
-    return isCollapsed ? "pl-2" : "pl-8";
+    // When collapsed, just use minimal padding
+    if (isCollapsed) return "pl-2";
+    // When expanded, align with the parent text (not the icon)
+    return ""; // We'll handle this with proper structure
   };
 
   // Handle the case when submenu is present
-  if (hasSubmenu && !isCollapsed) {
-    return (
-      <div className="w-full">
-        <div className={linkClasses}>
-          <div className="flex items-center">
-            <Icon className={iconClasses} />
-            {!isCollapsed && <span className={getTextClasses()}>{title}</span>}
-            {!isCollapsed && hasNotification && (
-              <span className="bg-pastel-red text-red-600 text-xs rounded-full px-1.5 py-0.5 ml-2">
-                {notificationCount}
-              </span>
-            )}
-          </div>
-
-          {/* Add submenu toggle button if hasSubmenu is true */}
-          {!isCollapsed && (
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onToggleSubmenu?.();
-              }}
-              className="p-1 rounded-md"
-              aria-label={`Toggle ${title} submenu`}
-            >
-              <ChevronDownIcon
-                className={`w-4 h-4 transition-transform ${
-                  isSubmenuOpen ? "rotate-180" : ""
-                }`}
-              />
-            </button>
+  return (
+    <div className="w-full">
+      <div className={linkClasses}>
+        <div className="flex items-center">
+          <Icon className={iconClasses} />
+          {!isCollapsed && <span className={getTextClasses()}>{title}</span>}
+          {!isCollapsed && hasNotification && (
+            <span className="bg-pastel-red text-red-600 text-xs rounded-full px-1.5 py-0.5 ml-2">
+              {notificationCount}
+            </span>
           )}
         </div>
 
-        {/* Render submenu items */}
-        {!isCollapsed && isSubmenuOpen && submenuItems && (
-          <ul className={`mt-1 space-y-1 ${getSubmenuPadding()}`}>
+        {/* Add submenu toggle button if hasSubmenu is true */}
+        {!isCollapsed && hasSubmenu && (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onToggleSubmenu?.();
+            }}
+            className="p-1 rounded-md"
+            aria-label={`Toggle ${title} submenu`}
+          >
+            <ChevronDownIcon
+              className={`w-4 h-4 transition-transform ${
+                isSubmenuOpen ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+        )}
+      </div>
+
+      {/* Render submenu items */}
+      {!isCollapsed && hasSubmenu && isSubmenuOpen && submenuItems && (
+        <div className="pl-8 mt-1 relative">
+          {/* Vertical line to connect parent and children */}
+          <div
+            className="absolute top-0 bottom-0 w-px bg-gray-200"
+            style={{ left: "20px" }}
+            aria-hidden="true"
+          ></div>
+          <ul className="space-y-1">
             {submenuItems.map((item, index) => (
               <li key={`submenu-${index}`}>
                 <Link
                   href={item.href}
-                  className={submenuItemClasses(item.isActive)}
+                  className={cn(
+                    "flex items-center py-2 px-3 text-sm font-medium rounded-lg transition-all duration-200 w-full",
+                    item.isActive
+                      ? activeClasses // Use same active classes as parent
+                      : inactiveClasses, // Use same inactive classes as parent
+                    !item.isActive ? hoverClasses : "" // Use same hover classes as parent
+                  )}
                 >
                   {item.title}
                 </Link>
               </li>
             ))}
           </ul>
-        )}
-      </div>
-    );
-  }
-
-  // Regular sidebar label without submenu
-  return (
-    <Link href={href} className={linkClasses} title={title} onClick={onClick}>
-      <div className="flex items-center">
-        <Icon className={iconClasses} />
-        {!isCollapsed && <span className={getTextClasses()}>{title}</span>}
-      </div>
-      {!isCollapsed && hasNotification && (
-        <span className="bg-pastel-red text-red-600 text-xs rounded-full px-1.5 py-0.5 ml-auto">
-          {notificationCount}
-        </span>
+        </div>
       )}
-    </Link>
+    </div>
   );
 }

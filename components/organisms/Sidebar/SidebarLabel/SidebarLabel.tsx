@@ -2,15 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ComponentType, SVGProps, MouseEvent } from "react";
+import { cn } from "@/lib/utils";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
-import { themeConfigs } from "@/lib/redux/slices/uiSlice";
-import { cn } from "@/lib/utils";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
-
-// Type for HeroIcon components
-type HeroIcon = ComponentType<SVGProps<SVGSVGElement>>;
+import { themeConfigs } from "@/lib/redux/slices/uiSlice";
 
 export interface SubmenuItem {
   href: string;
@@ -20,7 +16,7 @@ export interface SubmenuItem {
 
 export interface SidebarLabelProps {
   href: string;
-  icon: HeroIcon;
+  icon: React.ElementType;
   title: string;
   isActive: boolean;
   isCollapsed: boolean;
@@ -98,20 +94,22 @@ export default function SidebarLabel({
     const serverIconClasses = "w-5 h-5 mr-3 text-gray-500";
 
     return (
-      <Link
-        href={href}
-        className={serverLinkClasses}
-        title={title}
-        onClick={onClick}
-      >
-        <Icon className={serverIconClasses} />
-        <span className="group-hover:font-medium">{title}</span>
-        {hasNotification && (
-          <span className="bg-pastel-red text-red-600 text-xs rounded-full px-1.5 py-0.5 ml-auto">
-            {notificationCount}
-          </span>
-        )}
-      </Link>
+      <div className="w-full">
+        <Link
+          href={href}
+          className={serverLinkClasses}
+          title={title}
+          onClick={onClick}
+        >
+          <Icon className={serverIconClasses} />
+          <span className="group-hover:font-medium">{title}</span>
+          {hasNotification && (
+            <span className="bg-pastel-red text-red-600 text-xs rounded-full px-1.5 py-0.5 ml-auto">
+              {notificationCount}
+            </span>
+          )}
+        </Link>
+      </div>
     );
   }
 
@@ -165,7 +163,7 @@ export default function SidebarLabel({
 
   // Get left padding for submenu items to align with parent text
   const getSubmenuPadding = () => {
-    // 20px = icon (w-5) + marginRight (mr-3)
+    // Match the horizontal position of the parent text
     return isCollapsed ? "pl-2" : "pl-8";
   };
 

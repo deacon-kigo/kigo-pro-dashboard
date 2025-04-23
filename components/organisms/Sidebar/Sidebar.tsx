@@ -17,6 +17,8 @@ import {
   TicketIcon,
   BuildingStorefrontIcon,
   ArrowRightOnRectangleIcon,
+  ChevronDownIcon,
+  AdjustmentsHorizontalIcon,
 } from "@heroicons/react/24/outline";
 import { useDemoState } from "@/lib/redux/hooks";
 import { toggleSidebar, setSidebarCollapsed } from "@/lib/redux/slices/uiSlice";
@@ -25,7 +27,7 @@ import { buildDemoUrl, isPathActive } from "@/lib/utils";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
 // Import SidebarLabel component with standard path
-import SidebarLabel from "./SidebarLabel";
+import SidebarLabel, { SubmenuItem } from "./SidebarLabel";
 // Import Dialog components for the confirmation
 import {
   Dialog,
@@ -99,6 +101,19 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     dispatch(toggleSidebar());
   };
 
+  // Add state for open submenus
+  const [openSubmenus, setOpenSubmenus] = useState<{ [key: string]: boolean }>({
+    campaigns: false,
+  });
+
+  // Add a function to toggle submenu state
+  const toggleSubmenu = (key: string) => {
+    setOpenSubmenus((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
   const isLinkActive = (path: string) => {
     // Special case for analytics - active for both regular and campaign manager analytics
     if (
@@ -158,6 +173,27 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     }
 
     return isPathActive(pathname, path);
+  };
+
+  // Get submenu items for campaigns
+  const getCampaignSubmenuItems = (): SubmenuItem[] => {
+    return [
+      {
+        href: "/campaigns",
+        title: "All Campaigns",
+        isActive: pathname === "/campaigns",
+      },
+      {
+        href: "/campaigns/active",
+        title: "Active Campaigns",
+        isActive: pathname === "/campaigns/active",
+      },
+      {
+        href: "/campaigns/product-filters",
+        title: "Product Filters",
+        isActive: pathname.includes("/campaigns/product-filters"),
+      },
+    ];
   };
 
   // Get CVS-specific navigation items
@@ -226,7 +262,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     );
   };
 
-  // Role-specific navigation items
+  // Modify the getNavigationItems function to include submenus in SidebarLabel
   const getNavigationItems = () => {
     // Determine dashboard URL based on context
     const dashboardUrl = isCampaignManagerView ? "/campaign-manager" : "/";
@@ -256,6 +292,10 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 title="Campaigns"
                 isActive={Boolean(isLinkActive("/campaigns"))}
                 isCollapsed={sidebarCollapsed}
+                hasSubmenu={true}
+                submenuItems={getCampaignSubmenuItems()}
+                isSubmenuOpen={openSubmenus.campaigns}
+                onToggleSubmenu={() => toggleSubmenu("campaigns")}
               />
             </li>
             <li className="nav-item px-3 py-1">
@@ -311,6 +351,19 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 title="Dashboard"
                 isActive={Boolean(isLinkActive("/"))}
                 isCollapsed={sidebarCollapsed}
+              />
+            </li>
+            <li className="nav-item px-3 py-1">
+              <SidebarLabel
+                href="/campaigns"
+                icon={RocketLaunchIcon}
+                title="Campaigns"
+                isActive={Boolean(isLinkActive("/campaigns"))}
+                isCollapsed={sidebarCollapsed}
+                hasSubmenu={true}
+                submenuItems={getCampaignSubmenuItems()}
+                isSubmenuOpen={openSubmenus.campaigns}
+                onToggleSubmenu={() => toggleSubmenu("campaigns")}
               />
             </li>
             <li className="nav-item px-3 py-1">
