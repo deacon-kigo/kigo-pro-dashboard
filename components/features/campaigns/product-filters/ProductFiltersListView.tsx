@@ -98,7 +98,7 @@ export default function ProductFiltersListView() {
           {expiredFilters.length > 0 ? (
             <DataTable columns={columns} data={expiredFilters} />
           ) : (
-            <div className="bg-white rounded-lg border border-gray-200 p-6 flex justify-center items-center text-center">
+            <div className="bg-white rounded-lg border border-gray-200 p-6 flex justify-center items-center text-center overflow-hidden shadow-sm">
               <div>
                 <p className="text-muted-foreground">
                   No expired product filters

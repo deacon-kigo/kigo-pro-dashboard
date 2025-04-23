@@ -48,7 +48,7 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <Card>
+    <Card className="overflow-hidden rounded-lg">
       <div className="p-0">
         <Table>
           <TableHeader>
