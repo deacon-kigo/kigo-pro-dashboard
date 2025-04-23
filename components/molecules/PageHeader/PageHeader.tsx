@@ -35,7 +35,7 @@ export default function PageHeader({
       className={cn(
         "relative overflow-hidden rounded-lg mb-4",
         variant === "default" && "shadow-sm",
-        variant === "aurora" && "bg-white/90 shadow-[0_0_15px_rgba(0,0,0,0.05)]"
+        variant === "aurora" && "banner-aurora"
       )}
       style={
         variant === "default"
