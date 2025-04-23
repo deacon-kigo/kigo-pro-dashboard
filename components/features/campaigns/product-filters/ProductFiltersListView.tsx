@@ -1,25 +1,18 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/atoms/Button";
 import { PlusIcon } from "@heroicons/react/24/outline";
-import Card from "@/components/atoms/Card/Card";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@/components/atoms/Tabs";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/molecules/PageHeader";
+import { DataTable } from "./data-table";
+import { ProductFilter, columns } from "./columns";
 
 export default function ProductFiltersListView() {
   const router = useRouter();
@@ -29,8 +22,8 @@ export default function ProductFiltersListView() {
     router.push("/campaigns/product-filters/new");
   };
 
-  // Mock data for the table
-  const mockFilters = [
+  // Data for the tables
+  const filters: ProductFilter[] = [
     {
       id: "1",
       name: "Pizza Edition",
@@ -69,6 +62,10 @@ export default function ProductFiltersListView() {
     },
   ];
 
+  // In a real app, these would be fetched based on status
+  const activeFilters = filters.filter((filter) => filter.status === "Active");
+  const expiredFilters: ProductFilter[] = [];
+
   const createFilterButton = (
     <Button onClick={handleCreateFilter} className="flex items-center gap-1">
       <PlusIcon className="h-4 w-4" />
@@ -92,118 +89,27 @@ export default function ProductFiltersListView() {
           <TabsTrigger value="expired">Expired Filters</TabsTrigger>
           <TabsTrigger value="all">All Filters</TabsTrigger>
         </TabsList>
+
         <TabsContent value="active" className="mt-4">
-          <Card>
-            <div className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Filter Name</TableHead>
-                    <TableHead>Query View</TableHead>
-                    <TableHead>Created By</TableHead>
-                    <TableHead>Created Date</TableHead>
-                    <TableHead>Expiry Date</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {mockFilters.map((filter) => (
-                    <TableRow key={filter.id}>
-                      <TableCell className="font-medium">
-                        {filter.name}
-                      </TableCell>
-                      <TableCell>{filter.queryView}</TableCell>
-                      <TableCell>{filter.createdBy}</TableCell>
-                      <TableCell>{filter.createdDate}</TableCell>
-                      <TableCell>{filter.expiryDate}</TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                          {filter.status}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            router.push(
-                              `/campaigns/product-filters/${filter.id}`
-                            )
-                          }
-                        >
-                          View Details
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </Card>
+          <DataTable columns={columns} data={activeFilters} />
         </TabsContent>
 
         <TabsContent value="expired" className="mt-4">
-          <Card>
-            <div className="p-6 flex justify-center items-center text-center">
+          {expiredFilters.length > 0 ? (
+            <DataTable columns={columns} data={expiredFilters} />
+          ) : (
+            <div className="bg-white rounded-lg border border-gray-200 p-6 flex justify-center items-center text-center">
               <div>
                 <p className="text-muted-foreground">
                   No expired product filters
                 </p>
               </div>
             </div>
-          </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="all" className="mt-4">
-          <Card>
-            <div className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Filter Name</TableHead>
-                    <TableHead>Query View</TableHead>
-                    <TableHead>Created By</TableHead>
-                    <TableHead>Created Date</TableHead>
-                    <TableHead>Expiry Date</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {mockFilters.map((filter) => (
-                    <TableRow key={filter.id}>
-                      <TableCell className="font-medium">
-                        {filter.name}
-                      </TableCell>
-                      <TableCell>{filter.queryView}</TableCell>
-                      <TableCell>{filter.createdBy}</TableCell>
-                      <TableCell>{filter.createdDate}</TableCell>
-                      <TableCell>{filter.expiryDate}</TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                          {filter.status}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            router.push(
-                              `/campaigns/product-filters/${filter.id}`
-                            )
-                          }
-                        >
-                          View Details
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </Card>
+          <DataTable columns={columns} data={filters} />
         </TabsContent>
       </Tabs>
     </div>
