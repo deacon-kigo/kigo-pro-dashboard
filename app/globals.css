@@ -13,6 +13,9 @@
   --indigo-300: #a5b4fc;
   --violet-200: #ddd6fe;
 
+  /* Shadows */
+  --shadow-aurora: 0 0 15px rgba(0, 0, 0, 0.05);
+
   --primary-light: #e6e7ff;
   --bg-light: #f6f5f1;
   --text-dark: #231f20;
@@ -99,6 +102,16 @@ body.spotlight-open {
 
   .status-badge {
     @apply text-xs font-medium px-2 py-1 rounded-full;
+  }
+
+  /* Aurora effect utilities */
+  .shadow-aurora {
+    box-shadow: var(--shadow-aurora);
+  }
+
+  .banner-aurora {
+    @apply bg-white/90 border shadow-aurora;
+    border-color: rgba(219, 234, 254, 0.5); /* blue-100 at 50% opacity */
   }
 
   /* Glassmorphism Components */
