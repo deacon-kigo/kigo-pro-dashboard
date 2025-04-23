@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@/components/atoms/Button";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import {
@@ -11,8 +11,8 @@ import {
 } from "@/components/atoms/Tabs";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/molecules/PageHeader";
-import { DataTable } from "./data-table";
-import { ProductFilter, columns } from "./columns";
+import { ProductFilterTable } from "./ProductFilterTable";
+import { ProductFilter } from "./productFilterColumns";
 
 export default function ProductFiltersListView() {
   const router = useRouter();
@@ -91,12 +91,12 @@ export default function ProductFiltersListView() {
         </TabsList>
 
         <TabsContent value="active" className="mt-4">
-          <DataTable columns={columns} data={activeFilters} />
+          <ProductFilterTable data={activeFilters} />
         </TabsContent>
 
         <TabsContent value="expired" className="mt-4">
           {expiredFilters.length > 0 ? (
-            <DataTable columns={columns} data={expiredFilters} />
+            <ProductFilterTable data={expiredFilters} />
           ) : (
             <div className="bg-white rounded-lg border border-gray-200 p-6 flex justify-center items-center text-center overflow-hidden shadow-sm">
               <div>
@@ -109,7 +109,7 @@ export default function ProductFiltersListView() {
         </TabsContent>
 
         <TabsContent value="all" className="mt-4">
-          <DataTable columns={columns} data={filters} />
+          <ProductFilterTable data={filters} />
         </TabsContent>
       </Tabs>
     </div>

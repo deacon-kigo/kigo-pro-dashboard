@@ -23,7 +23,7 @@ export type ProductFilter = {
   status: "Active" | "Expired" | "Draft";
 };
 
-export const columns: ColumnDef<ProductFilter>[] = [
+export const productFilterColumns: ColumnDef<ProductFilter>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => {
