@@ -1,8 +1,12 @@
 "use client";
 import * as React from "react";
 import { Button as ShadcnButton } from "@/components/ui/button";
+import { buttonVariants as shadcnButtonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { GlowEffect, GlowEffectProps } from "@/components/effects/GlowEffect";
+
+// Re-export buttonVariants for use in other components
+export const buttonVariants = shadcnButtonVariants;
 
 // Simple type definition
 type ButtonVariant =
