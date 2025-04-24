@@ -301,7 +301,7 @@ export default function ProductFilterCreationView() {
                       <SelectValue placeholder="Select criteria type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="" disabled>
+                      <SelectItem value="required_header" disabled>
                         -- Required Criteria Types --
                       </SelectItem>
                       {requiredCriteriaTypes.map((type) => (
@@ -310,7 +310,7 @@ export default function ProductFilterCreationView() {
                           {filterCriteria.some((c) => c.type === type) && "✓"}
                         </SelectItem>
                       ))}
-                      <SelectItem value="" disabled>
+                      <SelectItem value="optional_header" disabled>
                         -- Optional Criteria Types --
                       </SelectItem>
                       {optionalCriteriaTypes.map((type) => (
