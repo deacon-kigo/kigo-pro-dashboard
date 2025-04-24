@@ -4,3 +4,4 @@ export * from "./alert-dialog";
 export * from "./PageHeader";
 export * from "./charts";
 export * from "./DemoSelector";
+export * from "./Toaster";

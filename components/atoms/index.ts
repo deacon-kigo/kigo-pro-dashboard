@@ -8,3 +8,4 @@ export * from "./Card";
 export * from "./Tabs";
 export { default as Progress } from "./Progress";
 export * from "./Breadcrumb";
+export * from "./Toast";

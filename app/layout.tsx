@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import "./globals.css";
 import { ReduxProvider } from "@/lib/redux/provider";
 import URLSyncProvider from "@/lib/providers/URLSyncProvider";
+import { Toaster } from "@/components/molecules/Toaster";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -38,6 +39,7 @@ export default function RootLayout({
             </Suspense>
           </URLSyncProvider>
         </ReduxProvider>
+        <Toaster />
       </body>
     </html>
   );

@@ -1,27 +1,36 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/atoms/Button";
-import { LockIcon } from "@/components/atoms/icons/LockIcon";
+import { toast } from "@/lib/hooks/use-toast";
 
 /**
- * SSO Login page for Kigo PRO
- * Provides authentication via Okta SSO for Augeo users
+ * SSO Login Demo Error Page
+ * Shows what happens when a user without proper Kigo Pro access group tries to sign in
  */
-export default function LoginPage() {
+export default function LoginDemoErrorPage() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleOktaLogin = () => {
-    setIsLoading(true);
+  // Auto trigger the error toast on page load
+  useEffect(() => {
+    // Show the unauthorized access toast
+    toast({
+      variant: "destructive",
+      title: "Access Denied",
+      description:
+        "You are not authorized to access Kigo Pro, please contact IT Support at sysadmin@kigo.io",
+    });
 
-    // For demo purposes, simulate redirect after a delay
-    setTimeout(() => {
-      router.push("/campaign-manager");
-    }, 1500);
-  };
+    // Simulate a loading state for a short period
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-r from-blue-50 via-blue-50/80 to-pastel-purple/10 p-4">
@@ -54,7 +63,6 @@ export default function LoginPage() {
             variant="primary"
             size="lg"
             className="w-full mb-6 flex items-center justify-center"
-            onClick={handleOktaLogin}
             disabled={isLoading}
           >
             <div className="flex items-center justify-center">
@@ -68,7 +76,7 @@ export default function LoginPage() {
                 />
               </div>
               <span>
-                {isLoading ? "Redirecting to Okta..." : "Sign in with Okta SSO"}
+                {isLoading ? "Authenticating..." : "Sign in with Okta SSO"}
               </span>
             </div>
           </Button>
