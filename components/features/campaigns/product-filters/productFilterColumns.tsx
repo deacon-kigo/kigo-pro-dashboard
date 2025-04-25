@@ -4,8 +4,9 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/atoms/Button";
 import {
   CheckCircleIcon,
-  ExclamationCircleIcon,
+  ExclamationTriangleIcon,
   EyeIcon,
+  PencilIcon,
 } from "@heroicons/react/24/outline";
 import {
   Tooltip,
@@ -30,6 +31,25 @@ export type ProductFilter = {
   criteriaCount: number;
   mandatoryCriteriaCount: number;
 };
+
+// Helper function to format dates in the required format
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const month = date.toLocaleString("en-US", { month: "short" });
+  // Format month with period if not already ending with period
+  const formattedMonth = month.endsWith(".") ? month : `${month}.`;
+  const day = date.getDate();
+  const year = date.getFullYear();
+  return `${formattedMonth} ${day}, ${year}`;
+};
+
+// The required criteria types
+const MANDATORY_CRITERIA = [
+  "MerchantKeyword",
+  "MerchantName",
+  "OfferCommodity",
+  "OfferKeyword",
+];
 
 export const productFilterColumns: ColumnDef<ProductFilter>[] = [
   {
@@ -62,28 +82,37 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
   {
     accessorKey: "createdDate",
     header: "Created Date",
+    cell: ({ row }) => {
+      const dateString = row.getValue("createdDate") as string;
+      return <div>{formatDate(dateString)}</div>;
+    },
   },
   {
     accessorKey: "expiryDate",
     header: "Expiry Date",
+    cell: ({ row }) => {
+      const dateString = row.getValue("expiryDate") as string;
+      return <div>{formatDate(dateString)}</div>;
+    },
   },
   {
     accessorKey: "criteria",
     header: "Criteria",
     cell: ({ row }) => {
-      const criteriaMet = row.original.criteriaMet;
+      const status = row.getValue("status") as string;
       const criteriaCount = row.original.criteriaCount;
       const mandatoryCriteriaCount = row.original.mandatoryCriteriaCount;
+      const isDraft = status === "Draft";
 
       return (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="flex items-center gap-2 cursor-help">
-                {criteriaMet ? (
-                  <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                {isDraft ? (
+                  <ExclamationTriangleIcon className="h-5 w-5 text-amber-500" />
                 ) : (
-                  <ExclamationCircleIcon className="h-5 w-5 text-amber-500" />
+                  <CheckCircleIcon className="h-5 w-5 text-green-500" />
                 )}
                 <span>{criteriaCount} criteria</span>
               </div>
@@ -138,6 +167,9 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
     id: "actions",
     header: "Actions",
     cell: ({ row }) => {
+      const status = row.getValue("status") as string;
+      const isDraft = status === "Draft";
+
       return (
         <div className="flex space-x-2 justify-end">
           <Button
@@ -146,8 +178,14 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
             className="h-8 w-8 p-0"
             onClick={() => {}}
           >
-            <EyeIcon className="h-4 w-4" />
-            <span className="sr-only">View details</span>
+            {isDraft ? (
+              <PencilIcon className="h-4 w-4" />
+            ) : (
+              <EyeIcon className="h-4 w-4" />
+            )}
+            <span className="sr-only">
+              {isDraft ? "Edit filter" : "View details"}
+            </span>
           </Button>
         </div>
       );

@@ -67,9 +67,9 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
         createdBy: "admin",
         createdDate: "2023-09-20",
         expiryDate: "2024-09-20",
-        status: "Active",
+        status: "Draft",
         criteriaMet: false,
-        criteriaCount: 3,
+        criteriaCount: 5,
         mandatoryCriteriaCount: 3,
         publisherSpecific: false,
       },
@@ -113,7 +113,7 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
         expiryDate: "2024-12-31",
         status: "Draft",
         criteriaMet: false,
-        criteriaCount: 2,
+        criteriaCount: 4,
         mandatoryCriteriaCount: 2,
         publisherSpecific: false,
       },
@@ -212,7 +212,7 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
         expiryDate: "2024-09-01",
         status: "Draft",
         criteriaMet: false,
-        criteriaCount: 3,
+        criteriaCount: 5,
         mandatoryCriteriaCount: 3,
         publisherSpecific: false,
       },
@@ -224,9 +224,9 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
         createdBy: "admin",
         createdDate: "2023-07-10",
         expiryDate: "2024-07-10",
-        status: "Active",
+        status: "Draft",
         criteriaMet: false,
-        criteriaCount: 2,
+        criteriaCount: 4,
         mandatoryCriteriaCount: 2,
         publisherSpecific: false,
       },
@@ -242,6 +242,11 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
 
   const expiredFilters = useMemo(
     () => filters.filter((filter) => filter.status === "Expired"),
+    [filters]
+  );
+
+  const draftFilters = useMemo(
+    () => filters.filter((filter) => filter.status === "Draft"),
     [filters]
   );
 
@@ -281,6 +286,7 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
         <TabsList>
           <TabsTrigger value="active">Active Filters</TabsTrigger>
           <TabsTrigger value="expired">Expired Filters</TabsTrigger>
+          <TabsTrigger value="draft">Draft Filters</TabsTrigger>
           <TabsTrigger value="all">All Filters</TabsTrigger>
         </TabsList>
 
@@ -293,6 +299,20 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
             <ProductFilterTable data={expiredFilters} />
           ) : (
             emptyStateContent
+          )}
+        </TabsContent>
+
+        <TabsContent value="draft" className="mt-4">
+          {draftFilters.length > 0 ? (
+            <ProductFilterTable data={draftFilters} />
+          ) : (
+            <div className="bg-white rounded-md border border-gray-200 p-6 flex justify-center items-center text-center overflow-hidden shadow-sm">
+              <div>
+                <p className="text-muted-foreground">
+                  No draft product filters
+                </p>
+              </div>
+            </div>
           )}
         </TabsContent>
 
