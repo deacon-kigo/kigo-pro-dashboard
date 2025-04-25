@@ -6,6 +6,8 @@ import {
   getCoreRowModel,
   useReactTable,
   getPaginationRowModel,
+  getSortedRowModel,
+  SortingState,
 } from "@tanstack/react-table";
 
 import {
@@ -32,6 +34,7 @@ export interface DataTableProps<TData, TValue> {
  *
  * A minimal reusable table component with support for:
  * - Pagination
+ * - Sorting
  *
  * This component is heavily optimized to prevent unnecessary re-renders using:
  * - useMemo for complex calculations and JSX elements
@@ -49,6 +52,7 @@ export const DataTable = memo(function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   // State declarations - these don't need memoization
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   // Memoize table options to prevent unnecessary recalculations
   const tableOptions = useMemo(
@@ -57,11 +61,14 @@ export const DataTable = memo(function DataTable<TData, TValue>({
       columns,
       getCoreRowModel: getCoreRowModel(),
       getPaginationRowModel: getPaginationRowModel(),
+      getSortedRowModel: getSortedRowModel(),
+      onSortingChange: setSorting,
       state: {
         pagination: {
           pageIndex: 0,
           pageSize: rowsPerPage,
         },
+        sorting,
       },
     }),
     [
@@ -70,6 +77,7 @@ export const DataTable = memo(function DataTable<TData, TValue>({
       rowsPerPage,
       // Then list data which might change more frequently
       data,
+      sorting
     ]
   );
 
@@ -173,12 +181,12 @@ export const DataTable = memo(function DataTable<TData, TValue>({
     table.getCanPreviousPage(),
     table.getCanNextPage(),
     handlePreviousPage,
-    handleNextPage,
+    handleNextPage
   ]);
 
   return (
     <div className={cn("space-y-4", className)}>
-      <Card className="overflow-hidden rounded-md">
+      <Card className="overflow-hidden rounded-sm">
         <div className="p-0">
           <Table>
             {tableHeaderContent}

@@ -7,7 +7,10 @@ import {
   ExclamationTriangleIcon,
   EyeIcon,
   PencilIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
 } from "@heroicons/react/24/outline";
+import { ArrowUpDown } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -51,21 +54,50 @@ const MANDATORY_CRITERIA = [
   "OfferKeyword",
 ];
 
+// Component for sort icon
+const SortIcon = ({ sorted }: { sorted?: "asc" | "desc" | false }) => {
+  if (sorted === "asc") return <ChevronUpIcon className="ml-2 h-4 w-4 text-primary" />;
+  if (sorted === "desc") return <ChevronDownIcon className="ml-2 h-4 w-4 text-primary" />;
+  return <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground opacity-50" />;
+};
+
 export const productFilterColumns: ColumnDef<ProductFilter>[] = [
   {
     accessorKey: "name",
-    header: "Filter Name",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
+        >
+          Filter Name
+          <SortIcon sorted={column.getIsSorted()} />
+        </Button>
+      );
+    },
     cell: ({ row }) => (
-      <div className="font-medium">{row.getValue("name")}</div>
+      <div className="font-medium text-left">{row.getValue("name")}</div>
     ),
   },
   {
     accessorKey: "description",
-    header: "Description",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
+        >
+          Description
+          <SortIcon sorted={column.getIsSorted()} />
+        </Button>
+      );
+    },
     cell: ({ row }) => {
       const description = row.getValue("description") as string;
       return (
-        <div className="max-w-[250px] truncate" title={description}>
+        <div className="max-w-[250px] truncate text-left" title={description}>
           {description || "—"}
         </div>
       );
@@ -73,31 +105,94 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
   },
   {
     accessorKey: "queryView",
-    header: "Query View",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
+        >
+          Query View
+          <SortIcon sorted={column.getIsSorted()} />
+        </Button>
+      );
+    },
+    cell: ({ row }) => (
+      <div className="text-left">{row.getValue("queryView") as string}</div>
+    ),
   },
   {
     accessorKey: "createdBy",
-    header: "Created By",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
+        >
+          Created By
+          <SortIcon sorted={column.getIsSorted()} />
+        </Button>
+      );
+    },
+    cell: ({ row }) => (
+      <div className="text-left">{row.getValue("createdBy") as string}</div>
+    ),
   },
   {
     accessorKey: "createdDate",
-    header: "Created Date",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
+        >
+          Created Date
+          <SortIcon sorted={column.getIsSorted()} />
+        </Button>
+      );
+    },
     cell: ({ row }) => {
       const dateString = row.getValue("createdDate") as string;
-      return <div>{formatDate(dateString)}</div>;
+      return <div className="text-left">{formatDate(dateString)}</div>;
     },
+    sortingFn: "datetime",
   },
   {
     accessorKey: "expiryDate",
-    header: "Expiry Date",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
+        >
+          Expiry Date
+          <SortIcon sorted={column.getIsSorted()} />
+        </Button>
+      );
+    },
     cell: ({ row }) => {
       const dateString = row.getValue("expiryDate") as string;
-      return <div>{formatDate(dateString)}</div>;
+      return <div className="text-left">{formatDate(dateString)}</div>;
     },
+    sortingFn: "datetime",
   },
   {
     accessorKey: "criteria",
-    header: "Criteria",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
+        >
+          Criteria
+          <SortIcon sorted={column.getIsSorted()} />
+        </Button>
+      );
+    },
     cell: ({ row }) => {
       const status = row.getValue("status") as string;
       const criteriaCount = row.original.criteriaCount;
@@ -125,29 +220,61 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
         </TooltipProvider>
       );
     },
+    sortingFn: (rowA, rowB, columnId) => {
+      const countA = rowA.original.criteriaCount;
+      const countB = rowB.original.criteriaCount;
+      return countA > countB ? 1 : countA < countB ? -1 : 0;
+    },
   },
   {
     accessorKey: "publisherSpecific",
-    header: "Publisher",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
+        >
+          Publisher
+          <SortIcon sorted={column.getIsSorted()} />
+        </Button>
+      );
+    },
     cell: ({ row }) => {
       const publisherSpecific = row.original.publisherSpecific;
       const publisherName = row.original.publisherName;
 
       if (!publisherSpecific) {
-        return <span className="text-muted-foreground">General</span>;
+        return <span className="text-muted-foreground text-left">General</span>;
       }
 
-      return <span>{publisherName || "Publisher Specific"}</span>;
+      return <span className="text-left">{publisherName || "Publisher Specific"}</span>;
+    },
+    sortingFn: (rowA, rowB, columnId) => {
+      const publisherA = rowA.original.publisherSpecific ? (rowA.original.publisherName || "Publisher Specific") : "General";
+      const publisherB = rowB.original.publisherSpecific ? (rowB.original.publisherName || "Publisher Specific") : "General";
+      return publisherA.localeCompare(publisherB);
     },
   },
   {
     accessorKey: "status",
-    header: "Status",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
+        >
+          Status
+          <SortIcon sorted={column.getIsSorted()} />
+        </Button>
+      );
+    },
     cell: ({ row }) => {
       const status = row.getValue("status") as string;
 
       return (
-        <div className="flex items-center">
+        <div className="flex items-center text-left">
           <span
             className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
               status === "Active"
@@ -165,13 +292,15 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
   },
   {
     id: "actions",
-    header: "Actions",
+    header: () => (
+      <div className="text-left font-medium">Actions</div>
+    ),
     cell: ({ row }) => {
       const status = row.getValue("status") as string;
       const isDraft = status === "Draft";
 
       return (
-        <div className="flex space-x-2 justify-end">
+        <div className="flex space-x-2 justify-start">
           <Button
             variant="ghost"
             size="sm"
