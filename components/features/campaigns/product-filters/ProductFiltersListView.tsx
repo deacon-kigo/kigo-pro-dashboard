@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, memo } from "react";
+import React, { useMemo, memo, useState } from "react";
 import { Button } from "@/components/atoms/Button";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import {
@@ -12,20 +12,28 @@ import {
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/molecules/PageHeader";
 import { ProductFilterTable } from "./ProductFilterTable";
-import { ProductFilter } from "./productFilterColumns";
+import { ProductFilter, formatDate } from "./productFilterColumns";
+import { ProductFilterSearchBar, SearchField } from "./ProductFilterSearchBar";
 
 /**
  * ProductFiltersListView Component
  *
  * Displays a list of product filters in a tabbed interface
  * with options to view active, expired, or all filters.
+ * Includes a global search box to search across all fields.
  */
 const ProductFiltersListView = memo(function ProductFiltersListView() {
   const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Navigate to the new product filter page
   const handleCreateFilter = () => {
     router.push("/campaigns/product-filters/new");
+  };
+
+  // Handle search
+  const handleSearch = (query: string, field: SearchField) => {
+    setSearchQuery(query);
   };
 
   // Sample data for the tables - in a real app, this would be fetched from an API
@@ -250,6 +258,60 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
     [filters]
   );
 
+  // Filter data based on search query
+  const filterDataBySearch = (data: ProductFilter[]) => {
+    if (!searchQuery.trim()) {
+      return data;
+    }
+
+    const query = searchQuery.toLowerCase();
+    return data.filter((filter) => {
+      // Publisher logic
+      const publisherLabel = filter.publisherSpecific
+        ? filter.publisherName?.toLowerCase() || ""
+        : "general";
+      // Date logic
+      const createdDateFormatted = formatDate(filter.createdDate).toLowerCase();
+      const expiryDateFormatted = formatDate(filter.expiryDate).toLowerCase();
+      // All searchable fields
+      const fields = [
+        filter.name,
+        filter.description,
+        filter.queryView,
+        filter.createdBy,
+        filter.createdDate,
+        filter.expiryDate,
+        createdDateFormatted,
+        expiryDateFormatted,
+        publisherLabel,
+      ];
+      return fields.some(
+        (field) => field && field.toLowerCase().includes(query)
+      );
+    });
+  };
+
+  // Apply search filter to all data sets
+  const filteredActiveFilters = useMemo(
+    () => filterDataBySearch(activeFilters),
+    [activeFilters, searchQuery]
+  );
+
+  const filteredExpiredFilters = useMemo(
+    () => filterDataBySearch(expiredFilters),
+    [expiredFilters, searchQuery]
+  );
+
+  const filteredDraftFilters = useMemo(
+    () => filterDataBySearch(draftFilters),
+    [draftFilters, searchQuery]
+  );
+
+  const filteredAllFilters = useMemo(
+    () => filterDataBySearch(filters),
+    [filters, searchQuery]
+  );
+
   // Memoize UI elements that don't need to be recreated on every render
   const createFilterButton = useMemo(
     () => (
@@ -283,28 +345,41 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
       />
 
       <Tabs defaultValue="active" className="w-full">
-        <TabsList>
-          <TabsTrigger value="active">Active Filters</TabsTrigger>
-          <TabsTrigger value="expired">Expired Filters</TabsTrigger>
-          <TabsTrigger value="draft">Draft Filters</TabsTrigger>
-          <TabsTrigger value="all">All Filters</TabsTrigger>
-        </TabsList>
+        <div className="flex items-center justify-between mb-4">
+          <ProductFilterSearchBar onSearch={handleSearch} />
+          <TabsList>
+            <TabsTrigger value="active">Active Filters</TabsTrigger>
+            <TabsTrigger value="expired">Expired Filters</TabsTrigger>
+            <TabsTrigger value="draft">Draft Filters</TabsTrigger>
+            <TabsTrigger value="all">All Filters</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="active" className="mt-4">
-          <ProductFilterTable data={activeFilters} />
+          <ProductFilterTable
+            data={filteredActiveFilters}
+            searchQuery={searchQuery}
+            className=""
+          />
         </TabsContent>
 
         <TabsContent value="expired" className="mt-4">
-          {expiredFilters.length > 0 ? (
-            <ProductFilterTable data={expiredFilters} />
+          {filteredExpiredFilters.length > 0 ? (
+            <ProductFilterTable
+              data={filteredExpiredFilters}
+              searchQuery={searchQuery}
+            />
           ) : (
             emptyStateContent
           )}
         </TabsContent>
 
         <TabsContent value="draft" className="mt-4">
-          {draftFilters.length > 0 ? (
-            <ProductFilterTable data={draftFilters} />
+          {filteredDraftFilters.length > 0 ? (
+            <ProductFilterTable
+              data={filteredDraftFilters}
+              searchQuery={searchQuery}
+            />
           ) : (
             <div className="bg-white rounded-md border border-gray-200 p-6 flex justify-center items-center text-center overflow-hidden shadow-sm">
               <div>
@@ -317,7 +392,10 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
         </TabsContent>
 
         <TabsContent value="all" className="mt-4">
-          <ProductFilterTable data={filters} />
+          <ProductFilterTable
+            data={filteredAllFilters}
+            searchQuery={searchQuery}
+          />
         </TabsContent>
       </Tabs>
     </div>

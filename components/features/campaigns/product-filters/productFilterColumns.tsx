@@ -36,7 +36,7 @@ export type ProductFilter = {
 };
 
 // Helper function to format dates in the required format
-const formatDate = (dateString: string) => {
+export const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   const month = date.toLocaleString("en-US", { month: "short" });
   // Format month with period if not already ending with period
@@ -56,9 +56,13 @@ const MANDATORY_CRITERIA = [
 
 // Component for sort icon
 const SortIcon = ({ sorted }: { sorted?: "asc" | "desc" | false }) => {
-  if (sorted === "asc") return <ChevronUpIcon className="ml-2 h-4 w-4 text-primary" />;
-  if (sorted === "desc") return <ChevronDownIcon className="ml-2 h-4 w-4 text-primary" />;
-  return <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground opacity-50" />;
+  if (sorted === "asc")
+    return <ChevronUpIcon className="ml-2 h-4 w-4 text-primary" />;
+  if (sorted === "desc")
+    return <ChevronDownIcon className="ml-2 h-4 w-4 text-primary" />;
+  return (
+    <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground opacity-50" />
+  );
 };
 
 export const productFilterColumns: ColumnDef<ProductFilter>[] = [
@@ -248,11 +252,19 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
         return <span className="text-muted-foreground text-left">General</span>;
       }
 
-      return <span className="text-left">{publisherName || "Publisher Specific"}</span>;
+      return (
+        <span className="text-left">
+          {publisherName || "Publisher Specific"}
+        </span>
+      );
     },
     sortingFn: (rowA, rowB, columnId) => {
-      const publisherA = rowA.original.publisherSpecific ? (rowA.original.publisherName || "Publisher Specific") : "General";
-      const publisherB = rowB.original.publisherSpecific ? (rowB.original.publisherName || "Publisher Specific") : "General";
+      const publisherA = rowA.original.publisherSpecific
+        ? rowA.original.publisherName || "Publisher Specific"
+        : "General";
+      const publisherB = rowB.original.publisherSpecific
+        ? rowB.original.publisherName || "Publisher Specific"
+        : "General";
       return publisherA.localeCompare(publisherB);
     },
   },
@@ -292,9 +304,7 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
   },
   {
     id: "actions",
-    header: () => (
-      <div className="text-left font-medium">Actions</div>
-    ),
+    header: () => <div className="text-left font-medium">Actions</div>,
     cell: ({ row }) => {
       const status = row.getValue("status") as string;
       const isDraft = status === "Draft";
