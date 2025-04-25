@@ -19,30 +19,33 @@ import {
 import { useState, useCallback, useMemo, memo } from "react";
 import Card from "@/components/atoms/Card/Card";
 import { Button } from "@/components/atoms/Button";
+import { cn } from "@/lib/utils";
 
 export interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  className?: string;
 }
 
 /**
  * DataTable Component
- * 
+ *
  * A minimal reusable table component with support for:
  * - Pagination
- * 
+ *
  * This component is heavily optimized to prevent unnecessary re-renders using:
  * - useMemo for complex calculations and JSX elements
  * - useCallback for event handlers
  * - Carefully organized dependency arrays
  * - React.memo for the entire component
- * 
+ *
  * When implementing a specialized table, create a wrapper component that
  * uses this DataTable rather than duplicating the implementation.
  */
 export const DataTable = memo(function DataTable<TData, TValue>({
   columns,
   data,
+  className,
 }: DataTableProps<TData, TValue>) {
   // State declarations - these don't need memoization
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -63,10 +66,10 @@ export const DataTable = memo(function DataTable<TData, TValue>({
     }),
     [
       // First list stable dependencies (props and constants)
-      columns, 
+      columns,
       rowsPerPage,
       // Then list data which might change more frequently
-      data
+      data,
     ]
   );
 
@@ -170,12 +173,12 @@ export const DataTable = memo(function DataTable<TData, TValue>({
     table.getCanPreviousPage(),
     table.getCanNextPage(),
     handlePreviousPage,
-    handleNextPage
+    handleNextPage,
   ]);
 
   return (
-    <div className="space-y-4">
-      <Card className="overflow-hidden rounded-lg">
+    <div className={cn("space-y-4", className)}>
+      <Card className="overflow-hidden rounded-md">
         <div className="p-0">
           <Table>
             {tableHeaderContent}
