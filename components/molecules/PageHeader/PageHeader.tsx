@@ -7,6 +7,7 @@ interface PageHeaderProps {
   title: string;
   description?: string;
   emoji?: string;
+  logo?: ReactNode;
   actions?: ReactNode;
   gradientColors?: {
     from: string;
@@ -23,6 +24,7 @@ export default function PageHeader({
   title,
   description,
   emoji = "✨",
+  logo,
   actions,
   gradientColors = {
     from: "rgba(226, 240, 253, 0.9)",
@@ -88,7 +90,11 @@ export default function PageHeader({
       <div className="relative p-5 z-10">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center">
-            <span className="text-4xl mr-3">{emoji}</span>
+            {logo ? (
+              <div className="mr-3">{logo}</div>
+            ) : (
+              <span className="text-4xl mr-3">{emoji}</span>
+            )}
             <div>
               <h1 className="text-2xl font-bold text-blue-600">{title}</h1>
               {description && (
