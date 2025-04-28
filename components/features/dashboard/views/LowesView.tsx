@@ -35,6 +35,8 @@ import {
   CheckIcon,
   PlusIcon,
   ClockIcon,
+  SparklesIcon,
+  CommandLineIcon,
 } from "@heroicons/react/24/outline";
 
 // Custom CSS for banner pattern
@@ -890,87 +892,611 @@ export default function LowesView({
 
       {/* Analytics Overview Section */}
       {showAnalytics && (
-        <Card className="bg-white rounded-lg shadow-md">
-          <div className="p-6">
-            <div className="flex items-center mb-4">
-              <div className="flex-shrink-0 bg-indigo-100 p-2 rounded-full mr-3">
-                <ChartBarIcon className="h-5 w-5 text-indigo-600" />
+        <>
+          {/* AI Prompt Assistant */}
+          <Card className="bg-white rounded-lg shadow-md">
+            <div className="p-6">
+              <div className="flex items-center mb-4">
+                <div className="flex-shrink-0 bg-purple-100 p-2 rounded-full mr-3">
+                  <SparklesIcon className="h-5 w-5 text-purple-600" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-800">
+                  AI Insights Assistant
+                </h2>
               </div>
-              <h2 className="text-xl font-bold text-gray-800">
-                Analytics Overview
-              </h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Revenue Chart */}
-              <div className="bg-white p-4 rounded-lg border border-gray-100">
-                <h3 className="text-md font-semibold mb-4 text-gray-700">
-                  Monthly Revenue
-                </h3>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart
-                      data={revenueData}
-                      margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                    >
-                      <defs>
-                        <linearGradient
-                          id="colorRevenue"
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
-                        >
-                          <stop
-                            offset="5%"
-                            stopColor="#4a85c9"
-                            stopOpacity={0.8}
-                          />
-                          <stop
-                            offset="95%"
-                            stopColor="#4a85c9"
-                            stopOpacity={0.1}
-                          />
-                        </linearGradient>
-                      </defs>
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <Tooltip />
-                      <Area
-                        type="monotone"
-                        dataKey="revenue"
-                        stroke="#4a85c9"
-                        fillOpacity={1}
-                        fill="url(#colorRevenue)"
+              <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <CommandLineIcon className="h-5 w-5 text-gray-500" />
+                  </div>
+                  <div className="ml-3 flex-1">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="Ask about your campaign performance..."
+                        className="w-full border-0 bg-white px-4 py-3 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
                       />
-                    </AreaChart>
-                  </ResponsiveContainer>
+                      <button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-800">
+                        <ArrowRightIcon className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                  <h4 className="font-medium text-blue-800 mb-1">
+                    Suggested Prompts:
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <button className="text-left text-sm bg-white p-2 rounded border border-blue-200 hover:bg-blue-50">
+                      "Which channel has the highest conversion rate?"
+                    </button>
+                    <button className="text-left text-sm bg-white p-2 rounded border border-blue-200 hover:bg-blue-50">
+                      "Compare this month's ROI to last month"
+                    </button>
+                    <button className="text-left text-sm bg-white p-2 rounded border border-blue-200 hover:bg-blue-50">
+                      "Show me redemption trends by offer type"
+                    </button>
+                    <button className="text-left text-sm bg-white p-2 rounded border border-blue-200 hover:bg-blue-50">
+                      "Which audience segment has highest engagement?"
+                    </button>
+                  </div>
+                </div>
+                <div className="p-3 rounded-lg border border-gray-100 bg-white">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 p-1 bg-purple-100 rounded-full mt-0.5 mr-2">
+                      <SparklesIcon className="h-4 w-4 text-purple-600" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-800 font-medium">
+                        Recent insight:
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Your Spring Home Improvement campaign is generating
+                        32.1% higher ROI compared to similar campaigns from last
+                        year. Consider allocating more budget to this type of
+                        promotion.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Dashboard Overview */}
+          <Card className="bg-white rounded-lg shadow-md mt-6">
+            <div className="p-6">
+              <div className="flex items-center mb-6">
+                <div className="flex-shrink-0 bg-indigo-100 p-2 rounded-full mr-3">
+                  <ChartBarIcon className="h-5 w-5 text-indigo-600" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-800">
+                  Analytics Overview
+                </h2>
+              </div>
+
+              {/* Key Metrics Summary */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 p-1.5 bg-blue-100 rounded-lg mr-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 text-blue-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Total Audience</p>
+                      <p className="text-xl font-bold">
+                        {formatNumber(analyticsData.totalAudience)}
+                      </p>
+                      <div className="flex items-center mt-1">
+                        <ArrowLongUpIcon className="h-3 w-3 text-green-500" />
+                        <span className="text-xs text-green-500 ml-1">
+                          8.7% vs last month
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 p-1.5 bg-green-100 rounded-lg mr-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 text-green-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Total Redemptions</p>
+                      <p className="text-xl font-bold">
+                        {formatNumber(analyticsData.totalEngagement.redeemed)}
+                      </p>
+                      <div className="flex items-center mt-1">
+                        <ArrowLongUpIcon className="h-3 w-3 text-green-500" />
+                        <span className="text-xs text-green-500 ml-1">
+                          15.3% vs last month
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 p-1.5 bg-yellow-100 rounded-lg mr-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 text-yellow-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Avg. Click Rate</p>
+                      <p className="text-xl font-bold">
+                        {(
+                          (analyticsData.totalEngagement.clicked /
+                            analyticsData.totalEngagement.sent) *
+                          100
+                        ).toFixed(1)}
+                        %
+                      </p>
+                      <div className="flex items-center mt-1">
+                        <ArrowLongUpIcon className="h-3 w-3 text-green-500" />
+                        <span className="text-xs text-green-500 ml-1">
+                          5.2% vs last month
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 p-1.5 bg-red-100 rounded-lg mr-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 text-red-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Campaign ROI</p>
+                      <p className="text-xl font-bold">248%</p>
+                      <div className="flex items-center mt-1">
+                        <ArrowLongUpIcon className="h-3 w-3 text-green-500" />
+                        <span className="text-xs text-green-500 ml-1">
+                          32.1% vs last month
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Offer Performance Chart */}
-              <div className="bg-white p-4 rounded-lg border border-gray-100">
-                <h3 className="text-md font-semibold mb-4 text-gray-700">
-                  Offer Performance
-                </h3>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={analyticsData.offerPerformance}
-                      margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                    >
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <Tooltip />
-                      <Bar dataKey="redemptions" fill="#6cb07b" />
-                    </BarChart>
-                  </ResponsiveContainer>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Revenue Chart */}
+                <div className="bg-white p-4 rounded-lg border border-gray-100">
+                  <h3 className="text-md font-semibold mb-4 text-gray-700">
+                    Monthly Revenue
+                  </h3>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart
+                        data={revenueData}
+                        margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                      >
+                        <defs>
+                          <linearGradient
+                            id="colorRevenue"
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                          >
+                            <stop
+                              offset="5%"
+                              stopColor="#4a85c9"
+                              stopOpacity={0.8}
+                            />
+                            <stop
+                              offset="95%"
+                              stopColor="#4a85c9"
+                              stopOpacity={0.1}
+                            />
+                          </linearGradient>
+                        </defs>
+                        <XAxis dataKey="month" />
+                        <YAxis />
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <Tooltip />
+                        <Area
+                          type="monotone"
+                          dataKey="revenue"
+                          stroke="#4a85c9"
+                          fillOpacity={1}
+                          fill="url(#colorRevenue)"
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Offer Performance Chart */}
+                <div className="bg-white p-4 rounded-lg border border-gray-100">
+                  <h3 className="text-md font-semibold mb-4 text-gray-700">
+                    Offer Performance
+                  </h3>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={analyticsData.offerPerformance}
+                        margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                      >
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <Tooltip />
+                        <Bar dataKey="redemptions" fill="#6cb07b" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+
+          {/* Engagement Funnel and Channel Breakdown */}
+          <Card className="bg-white rounded-lg shadow-md mt-6">
+            <div className="p-6">
+              <div className="flex items-center mb-6">
+                <div className="flex-shrink-0 bg-green-100 p-2 rounded-full mr-3">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 text-green-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                    />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-bold text-gray-800">
+                  Engagement Funnel & Channel Breakdown
+                </h2>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Engagement Funnel */}
+                <div className="bg-white p-4 rounded-lg border border-gray-100">
+                  <h3 className="text-md font-semibold mb-4 text-gray-700">
+                    Engagement Funnel
+                  </h3>
+                  <div className="relative pt-4">
+                    {/* Funnel Steps */}
+                    <div className="flex mb-2">
+                      <div className="flex-1 relative">
+                        <div className="h-16 bg-blue-500 rounded-t-lg flex items-center justify-center text-white font-medium text-sm">
+                          Sent
+                          <br />
+                          {formatNumber(analyticsData.totalEngagement.sent)}
+                        </div>
+                        <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-blue-500"></div>
+                      </div>
+                    </div>
+                    <div className="flex my-8">
+                      <div className="flex-1 mx-8 relative">
+                        <div className="h-16 bg-indigo-500 rounded-t-lg flex items-center justify-center text-white font-medium text-sm">
+                          Opened
+                          <br />
+                          {formatNumber(analyticsData.totalEngagement.opened)}
+                        </div>
+                        <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-indigo-500"></div>
+                      </div>
+                    </div>
+                    <div className="flex my-8">
+                      <div className="flex-1 mx-16 relative">
+                        <div className="h-16 bg-purple-500 rounded-t-lg flex items-center justify-center text-white font-medium text-sm">
+                          Clicked
+                          <br />
+                          {formatNumber(analyticsData.totalEngagement.clicked)}
+                        </div>
+                        <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-purple-500"></div>
+                      </div>
+                    </div>
+                    <div className="flex">
+                      <div className="flex-1 mx-24 relative">
+                        <div className="h-16 bg-green-500 rounded-t-lg flex items-center justify-center text-white font-medium text-sm">
+                          Redeemed
+                          <br />
+                          {formatNumber(analyticsData.totalEngagement.redeemed)}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Conversion Rates */}
+                    <div className="mt-6 grid grid-cols-3 gap-2">
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Open Rate</p>
+                        <p className="text-sm font-bold text-gray-800">
+                          {(
+                            (analyticsData.totalEngagement.opened /
+                              analyticsData.totalEngagement.sent) *
+                            100
+                          ).toFixed(1)}
+                          %
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Click Rate</p>
+                        <p className="text-sm font-bold text-gray-800">
+                          {(
+                            (analyticsData.totalEngagement.clicked /
+                              analyticsData.totalEngagement.opened) *
+                            100
+                          ).toFixed(1)}
+                          %
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Redemption Rate</p>
+                        <p className="text-sm font-bold text-gray-800">
+                          {(
+                            (analyticsData.totalEngagement.redeemed /
+                              analyticsData.totalEngagement.clicked) *
+                            100
+                          ).toFixed(1)}
+                          %
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Channel Performance */}
+                <div className="bg-white p-4 rounded-lg border border-gray-100">
+                  <h3 className="text-md font-semibold mb-4 text-gray-700">
+                    Channel Performance
+                  </h3>
+                  <div className="space-y-4">
+                    {/* Email Channel */}
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <div className="flex items-center">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4 text-blue-600 mr-1.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                            />
+                          </svg>
+                          <span className="text-sm font-medium">Email</span>
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          {(
+                            (analyticsData.channelPerformance.email.redeemed /
+                              analyticsData.channelPerformance.email.sent) *
+                            100
+                          ).toFixed(1)}
+                          % Redemption
+                        </span>
+                      </div>
+                      <div className="h-2 w-full bg-gray-200 rounded-full">
+                        <div
+                          className="h-2 bg-blue-500 rounded-full"
+                          style={{
+                            width: `${(analyticsData.channelPerformance.email.redeemed / analyticsData.channelPerformance.email.sent) * 100}%`,
+                          }}
+                        ></div>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>
+                          Sent:{" "}
+                          {formatNumber(
+                            analyticsData.channelPerformance.email.sent
+                          )}
+                        </span>
+                        <span>
+                          Redeemed:{" "}
+                          {formatNumber(
+                            analyticsData.channelPerformance.email.redeemed
+                          )}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* SMS Channel */}
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <div className="flex items-center">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4 text-green-600 mr-1.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                            />
+                          </svg>
+                          <span className="text-sm font-medium">SMS</span>
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          {(
+                            (analyticsData.channelPerformance.sms.redeemed /
+                              analyticsData.channelPerformance.sms.sent) *
+                            100
+                          ).toFixed(1)}
+                          % Redemption
+                        </span>
+                      </div>
+                      <div className="h-2 w-full bg-gray-200 rounded-full">
+                        <div
+                          className="h-2 bg-green-500 rounded-full"
+                          style={{
+                            width: `${(analyticsData.channelPerformance.sms.redeemed / analyticsData.channelPerformance.sms.sent) * 100}%`,
+                          }}
+                        ></div>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>
+                          Sent:{" "}
+                          {formatNumber(
+                            analyticsData.channelPerformance.sms.sent
+                          )}
+                        </span>
+                        <span>
+                          Redeemed:{" "}
+                          {formatNumber(
+                            analyticsData.channelPerformance.sms.redeemed
+                          )}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Mobile App Channel */}
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <div className="flex items-center">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4 text-purple-600 mr-1.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
+                            />
+                          </svg>
+                          <span className="text-sm font-medium">
+                            Mobile App
+                          </span>
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          {(
+                            (analyticsData.channelPerformance.app.redeemed /
+                              analyticsData.channelPerformance.app.sent) *
+                            100
+                          ).toFixed(1)}
+                          % Redemption
+                        </span>
+                      </div>
+                      <div className="h-2 w-full bg-gray-200 rounded-full">
+                        <div
+                          className="h-2 bg-purple-500 rounded-full"
+                          style={{
+                            width: `${(analyticsData.channelPerformance.app.redeemed / analyticsData.channelPerformance.app.sent) * 100}%`,
+                          }}
+                        ></div>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>
+                          Sent:{" "}
+                          {formatNumber(
+                            analyticsData.channelPerformance.app.sent
+                          )}
+                        </span>
+                        <span>
+                          Redeemed:{" "}
+                          {formatNumber(
+                            analyticsData.channelPerformance.app.redeemed
+                          )}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 mt-4 border-t border-gray-100">
+                      <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                        Channel Effectiveness
+                      </h4>
+                      <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center">
+                          <span className="inline-block w-3 h-3 bg-purple-500 rounded-full mr-1.5"></span>
+                          <span>Mobile App</span>
+                          <span className="ml-1 text-green-600 font-medium">
+                            11.7%
+                          </span>
+                        </div>
+                        <div className="flex items-center">
+                          <span className="inline-block w-3 h-3 bg-green-500 rounded-full mr-1.5"></span>
+                          <span>SMS</span>
+                          <span className="ml-1 text-green-600 font-medium">
+                            18.3%
+                          </span>
+                        </div>
+                        <div className="flex items-center">
+                          <span className="inline-block w-3 h-3 bg-blue-500 rounded-full mr-1.5"></span>
+                          <span>Email</span>
+                          <span className="ml-1 text-green-600 font-medium">
+                            12.6%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </>
       )}
 
       {/* Campaign Performance Section */}
