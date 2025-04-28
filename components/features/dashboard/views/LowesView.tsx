@@ -783,14 +783,24 @@ export default function LowesView({
                 </p>
               </div>
             </div>
-            <Button
-              onClick={onCreateCampaign}
-              variant="primary"
-              size="sm"
-              icon={<PlusIcon className="h-4 w-4" />}
-            >
-              New Campaign
-            </Button>
+            <div className="flex space-x-2">
+              <Button
+                onClick={() => router.push("/dashboard/campaigns/manage")}
+                variant="outline"
+                size="sm"
+                icon={<ChartBarIcon className="h-4 w-4" />}
+              >
+                Manage Campaigns
+              </Button>
+              <Button
+                onClick={onCreateCampaign}
+                variant="primary"
+                size="sm"
+                icon={<PlusIcon className="h-4 w-4" />}
+              >
+                New Campaign
+              </Button>
+            </div>
           </div>
         </div>
         <div className="overflow-x-auto">
