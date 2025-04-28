@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/atoms";
 import Card from "@/components/atoms/Card/Card";
 import { useDemoState } from "@/lib/redux/hooks";
@@ -530,6 +531,12 @@ export default function LowesView({
 }: LowesViewProps) {
   const { userProfile } = useDemoState();
   const [currentDate, setCurrentDate] = useState("");
+  const router = useRouter();
+
+  // Navigate to offer creation page
+  const handleCreateOffer = () => {
+    router.push("/dashboard/offers/create");
+  };
 
   // Set current date on component mount
   useEffect(() => {
@@ -554,16 +561,16 @@ export default function LowesView({
 
   // Header content for the dashboard
   const headerContent = (
-    <div>
+    <>
       <style>{headerStyles}</style>
       <PageHeader
         title={`${getGreeting()}, ${userProfile.firstName}!`}
         description={`${currentDate} • Home Improvement Offer Management Platform`}
-        variant="aurora"
+        variant="default"
         logo={
           <div className="h-14 w-24 relative">
             <Image
-              src="/logos/lowes-logo.svg"
+              src="/logos/lowes-logo.png"
               alt="Lowes Logo"
               fill
               style={{ objectFit: "contain" }}
@@ -573,7 +580,7 @@ export default function LowesView({
         actions={
           <div className="flex space-x-2">
             <Button
-              onClick={onCreateOffer}
+              onClick={handleCreateOffer}
               variant="outline"
               size="sm"
               icon={<TagIcon className="h-4 w-4" />}
@@ -610,7 +617,7 @@ export default function LowesView({
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 
   // Stats section for the dashboard
