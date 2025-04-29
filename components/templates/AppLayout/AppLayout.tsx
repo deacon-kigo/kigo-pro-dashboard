@@ -22,33 +22,31 @@ interface AppLayoutProps {
 
 export const AppLayout = ({ children, customBreadcrumb }: AppLayoutProps) => {
   const { sidebarCollapsed } = useAppSelector((state) => state.ui);
-  const sidebarWidth = sidebarCollapsed ? "70px" : "225px";
   const pathname = usePathname();
 
   // Add client-side detection to avoid hydration errors
   const [isClient, setIsClient] = useState(false);
 
-  // Ensure CSS variable matches the actual sidebar width
+  // Ensure client-side rendering is detected
   useEffect(() => {
-    document.documentElement.style.setProperty("--sidebar-width", sidebarWidth);
     setIsClient(true);
-  }, [sidebarWidth]);
+  }, []);
 
-  // Add a more stable way to calculate the content width
+  // Main content style using CSS variables
   const mainContentStyle = useMemo(() => {
     return {
-      paddingLeft: isClient ? `calc(${sidebarWidth} + 1.5rem)` : "1.5rem",
-      transition: "padding-left 300ms ease-in-out",
+      paddingLeft: isClient ? "var(--content-padding-left, 1.5rem)" : "1.5rem",
+      transition: "padding-left 300ms cubic-bezier(0.4, 0, 0.2, 1)",
       willChange: "padding-left",
     };
-  }, [isClient, sidebarWidth]);
+  }, [isClient]);
 
   const contentContainerStyle = useMemo(() => {
     return {
       width: "100%",
       maxWidth: "1600px",
       margin: "0 auto",
-      transition: "width 300ms ease-in-out",
+      transition: "width 300ms cubic-bezier(0.4, 0, 0.2, 1)",
       transform: "translateZ(0)",
     };
   }, []);

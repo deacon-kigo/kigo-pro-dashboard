@@ -1,5 +1,12 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+// Default values for sidebar
+const COLLAPSED_WIDTH = "70px";
+const EXPANDED_WIDTH = "225px";
+
+// These must match the server-side defaults to prevent hydration errors
+const DEFAULT_SIDEBAR_COLLAPSED = true;
+
 export interface UIState {
   // Sidebar state
   sidebarCollapsed: boolean;
@@ -18,17 +25,21 @@ export interface UIState {
   demoSelectorOpen: boolean;
   demoSelectorPinned: boolean;
   demoSelectorCollapsed: boolean;
+
+  // Track whether client-side hydration has occurred
+  isHydrated: boolean;
 }
 
 const initialState: UIState = {
-  sidebarCollapsed: true,
-  sidebarWidth: "70px",
+  sidebarCollapsed: DEFAULT_SIDEBAR_COLLAPSED,
+  sidebarWidth: DEFAULT_SIDEBAR_COLLAPSED ? COLLAPSED_WIDTH : EXPANDED_WIDTH,
   chatOpen: false,
   spotlightOpen: false,
   isMobileView: false,
   demoSelectorOpen: true,
   demoSelectorPinned: false,
   demoSelectorCollapsed: false,
+  isHydrated: false,
 };
 
 // Theme definitions - composable and extensible
@@ -75,40 +86,40 @@ export const uiSlice = createSlice({
   name: "ui",
   initialState,
   reducers: {
+    setHydrated: (state, action: PayloadAction<boolean>) => {
+      state.isHydrated = action.payload;
+    },
+
+    loadSavedState: (state, action: PayloadAction<Partial<UIState>>) => {
+      // Only update state after hydration to prevent mismatches
+      if (state.isHydrated) {
+        // Only restore specifically allowed properties
+        if (action.payload.sidebarCollapsed !== undefined) {
+          state.sidebarCollapsed = action.payload.sidebarCollapsed;
+          state.sidebarWidth = action.payload.sidebarCollapsed
+            ? COLLAPSED_WIDTH
+            : EXPANDED_WIDTH;
+
+          // Apply CSS variables but don't store them in localStorage
+          updateCssVariables(state);
+        }
+      }
+    },
+
     setSidebarCollapsed: (state, action: PayloadAction<boolean>) => {
       state.sidebarCollapsed = action.payload;
-      state.sidebarWidth = action.payload ? "70px" : "225px";
+      state.sidebarWidth = action.payload ? COLLAPSED_WIDTH : EXPANDED_WIDTH;
 
-      // Update CSS variable
-      if (typeof document !== "undefined") {
-        document.documentElement.style.setProperty(
-          "--sidebar-width",
-          state.sidebarWidth
-        );
-      }
+      updateCssVariables(state);
     },
 
     toggleSidebar: (state) => {
       state.sidebarCollapsed = !state.sidebarCollapsed;
-      state.sidebarWidth = state.sidebarCollapsed ? "70px" : "225px";
+      state.sidebarWidth = state.sidebarCollapsed
+        ? COLLAPSED_WIDTH
+        : EXPANDED_WIDTH;
 
-      // Update CSS variable
-      if (typeof document !== "undefined") {
-        document.documentElement.style.setProperty(
-          "--sidebar-width",
-          state.sidebarWidth
-        );
-
-        // Persist to localStorage directly
-        try {
-          localStorage.setItem(
-            "sidebarCollapsed",
-            state.sidebarCollapsed.toString()
-          );
-        } catch (error) {
-          console.warn("Unable to access localStorage:", error);
-        }
-      }
+      updateCssVariables(state);
     },
 
     setChatOpen: (state, action: PayloadAction<boolean>) => {
@@ -133,14 +144,9 @@ export const uiSlice = createSlice({
       // Auto-collapse sidebar on mobile
       if (action.payload && !state.sidebarCollapsed) {
         state.sidebarCollapsed = true;
-        state.sidebarWidth = "70px";
+        state.sidebarWidth = COLLAPSED_WIDTH;
 
-        if (typeof document !== "undefined") {
-          document.documentElement.style.setProperty(
-            "--sidebar-width",
-            state.sidebarWidth
-          );
-        }
+        updateCssVariables(state);
       }
     },
 
@@ -165,7 +171,24 @@ export const uiSlice = createSlice({
   },
 });
 
+// Helper function to update CSS variables based on state
+function updateCssVariables(state: UIState) {
+  if (typeof document !== "undefined") {
+    document.documentElement.style.setProperty(
+      "--sidebar-width",
+      state.sidebarWidth
+    );
+
+    document.documentElement.style.setProperty(
+      "--content-padding-left",
+      `calc(${state.sidebarWidth} + 1.5rem)`
+    );
+  }
+}
+
 export const {
+  setHydrated,
+  loadSavedState,
   setSidebarCollapsed,
   toggleSidebar,
   setChatOpen,
