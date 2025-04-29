@@ -40,7 +40,7 @@ export default function CampaignManagementView({
         logo={
           <div className="h-14 w-24 relative">
             <img
-              src="/logos/lowes-logo.png"
+              src="/logos/lowes-logo-white.png"
               alt="Lowes Logo"
               className="w-full h-full object-contain"
             />

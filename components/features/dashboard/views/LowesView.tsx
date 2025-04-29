@@ -195,13 +195,13 @@ const defaultAnalyticsData = {
 
 // Lowes brand colors and styling
 const lowesStyles = {
-  primary: "#012168", // Lowes blue
-  secondary: "#509e33", // Lowes green
+  primary: "#012069", // Lowes blue
+  secondary: "#4c9e32", // Lowes green
   cardShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
   gradient: {
-    blue: "linear-gradient(135deg, #012168 0%, #1e3a7b 100%)",
-    green: "linear-gradient(135deg, #509e33 0%, #3c8223 100%)",
-    diagonal: "linear-gradient(135deg, #012168 0%, #509e33 100%)",
+    blue: "linear-gradient(135deg, #012069 0%, #1e3a7b 100%)",
+    green: "linear-gradient(135deg, #4c9e32 0%, #3c8223 100%)",
+    diagonal: "linear-gradient(135deg, #012069 0%, #4c9e32 100%)",
   },
 };
 
@@ -568,12 +568,11 @@ export default function LowesView({
         description={`${currentDate} • Home Improvement Offer Management Platform`}
         variant="default"
         logo={
-          <div className="h-14 w-24 relative">
-            <Image
-              src="/logos/lowes-logo.png"
+          <div className="h-16 w-28 relative bg-white p-2 rounded shadow-sm">
+            <img
+              src="/logos/lowes-logo-white.png"
               alt="Lowes Logo"
-              fill
-              style={{ objectFit: "contain" }}
+              className="w-full h-full object-contain"
             />
           </div>
         }
@@ -1714,6 +1713,108 @@ export default function LowesView({
             <Button variant="ghost" size="sm" className="w-full text-center">
               View All Templates
             </Button>
+          </div>
+        </div>
+      </Card>
+
+      {/* Deep Links QR Code */}
+      <Card className="bg-white rounded-lg shadow-sm mb-6">
+        <div className="p-5">
+          <div className="flex items-center mb-4">
+            <div className="flex-shrink-0 bg-blue-100 p-1.5 rounded-lg mr-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 text-blue-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
+              </svg>
+            </div>
+            <h3 className="font-semibold text-gray-800">Deep Links</h3>
+          </div>
+
+          <div className="flex flex-col">
+            {/* QR Code Generator */}
+            <div className="mb-4">
+              <label
+                htmlFor="qr-url"
+                className="block text-xs font-medium text-gray-700 mb-1"
+              >
+                Generate QR Code
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  id="qr-url"
+                  placeholder="Enter URL or deep link"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  defaultValue="https://lowes.com/app"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  icon={<ArrowPathIcon className="h-4 w-4" />}
+                >
+                  Generate
+                </Button>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Create custom QR codes for specific product pages or promotions
+              </p>
+            </div>
+
+            <div className="flex flex-col items-center">
+              <div className="relative w-full h-56 mb-3">
+                <Image
+                  src="/images/lowes/QRcode.png"
+                  alt="Lowes App QR Code"
+                  fill
+                  style={{ objectFit: "contain" }}
+                />
+              </div>
+              <p className="text-xs text-gray-600 text-center">
+                Scan this code to download the Lowe's app and access exclusive
+                offers
+              </p>
+              <div className="flex gap-2 mt-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  icon={<ArrowRightIcon className="h-4 w-4" />}
+                >
+                  Share Link
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  icon={
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
+                    </svg>
+                  }
+                >
+                  Download
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </Card>

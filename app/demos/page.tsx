@@ -10,6 +10,7 @@ import {
   CurrencyDollarIcon,
   ChartBarIcon,
   UserGroupIcon,
+  LinkIcon,
 } from "@heroicons/react/24/outline";
 import { buildDemoUrl } from "@/lib/utils";
 
@@ -324,6 +325,69 @@ export default function DemosPage() {
                 <Link
                   href="/demos/cvs-dashboard"
                   className="inline-flex items-center px-3 py-1.5 bg-[#CC0000] hover:bg-[#AA0000] text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  View Demo
+                  <ArrowRightIcon className="ml-1.5 h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* John Deere Demo */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+            <div className="p-6">
+              <div className="flex items-center mb-4">
+                <div className="h-12 w-12 bg-green-100 rounded-full overflow-hidden flex items-center justify-center mr-4">
+                  <img
+                    src="/images/john-deere/330p-tier.avif"
+                    alt="John Deere"
+                    className="h-10 w-10 object-cover"
+                  />
+                </div>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  John Deere Influencer Campaign
+                </h2>
+              </div>
+
+              <p className="text-gray-600 mb-6 h-20">
+                Explore a specialized influencer marketing platform for John
+                Deere's 330 P-Tier Skid Steer, featuring campaign creation,
+                influencer video content, and performance tracking for
+                Construction & Forestry products.
+              </p>
+
+              <div className="grid grid-cols-3 gap-2 mb-6">
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <UserGroupIcon className="h-5 w-5 text-green-600 mx-auto mb-1" />
+                  <span className="text-xs text-gray-600">
+                    Influencer Management
+                  </span>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <LinkIcon className="h-5 w-5 text-green-600 mx-auto mb-1" />
+                  <span className="text-xs text-gray-600">Tracking Links</span>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <ChartBarIcon className="h-5 w-5 text-green-600 mx-auto mb-1" />
+                  <span className="text-xs text-gray-600">
+                    Campaign Analytics
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <div className="space-x-1">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Agriculture
+                  </span>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                    Construction
+                  </span>
+                </div>
+
+                <Link
+                  href="/demos/john-deere"
+                  className="inline-flex items-center px-3 py-1.5 bg-[#367C2B] hover:bg-[#2B6522] text-white text-sm font-medium rounded-lg transition-colors"
                 >
                   View Demo
                   <ArrowRightIcon className="ml-1.5 h-4 w-4" />
