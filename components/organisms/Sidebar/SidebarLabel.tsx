@@ -117,7 +117,7 @@ export default function SidebarLabel({
   // Memoize class calculations to prevent recalculation on every render
   const serverClasses = useMemo(() => {
     const serverLinkClasses = cn(
-      "flex items-center py-2 text-sm font-medium rounded-lg group px-3",
+      "flex items-center py-2 text-sm font-medium rounded-lg group px-3 h-10",
       isActive ? activeClasses : inactiveClasses,
       !isActive ? hoverClasses : "",
       "transition-all duration-200",
@@ -133,7 +133,7 @@ export default function SidebarLabel({
   const clientClasses = useMemo(() => {
     // Combine all classes for the link
     const linkClasses = cn(
-      "flex items-center justify-between py-2 text-sm font-medium rounded-lg group w-full",
+      "flex items-center justify-between py-2 text-sm font-medium rounded-lg group w-full h-10",
       isCollapsed ? "justify-center px-2" : "px-3",
       isActive ? activeClasses : inactiveClasses,
       !isActive ? hoverClasses : "",

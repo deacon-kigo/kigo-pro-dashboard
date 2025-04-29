@@ -141,6 +141,22 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         return true;
       }
 
+      // Special case for campaigns - don't highlight when on product filters
+      if (
+        path === "/campaigns" &&
+        pathname.includes("/campaigns/product-filters")
+      ) {
+        return false;
+      }
+
+      // Special case for product filters
+      if (
+        path.includes("/campaigns/product-filters") &&
+        pathname.includes("/campaigns/product-filters")
+      ) {
+        return true;
+      }
+
       // Special cases for other CVS pages
       if (isCVSContextBool) {
         if (path.includes("customers") && pathname.includes("customers"))
@@ -168,11 +184,6 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         href: "/campaigns/active",
         title: "Active Campaigns",
         isActive: pathname === "/campaigns/active",
-      },
-      {
-        href: "/campaigns/product-filters",
-        title: "Product Filters",
-        isActive: pathname.includes("/campaigns/product-filters"),
       },
     ];
   }, [pathname]);
@@ -275,6 +286,15 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
             </li>
             <li className="nav-item px-3 py-1">
               <SidebarLabel
+                href="/campaigns/product-filters"
+                icon={AdjustmentsHorizontalIcon}
+                title="Product Filters"
+                isActive={isLinkActive("/campaigns/product-filters")}
+                isCollapsed={sidebarCollapsed}
+              />
+            </li>
+            <li className="nav-item px-3 py-1">
+              <SidebarLabel
                 href="/analytics"
                 icon={ChartBarIcon}
                 title="Analytics"
@@ -339,6 +359,15 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 submenuItems={campaignSubmenuItems}
                 isSubmenuOpen={openSubmenus.campaigns}
                 onToggleSubmenu={() => toggleSubmenu("campaigns")}
+              />
+            </li>
+            <li className="nav-item px-3 py-1">
+              <SidebarLabel
+                href="/campaigns/product-filters"
+                icon={AdjustmentsHorizontalIcon}
+                title="Product Filters"
+                isActive={isLinkActive("/campaigns/product-filters")}
+                isCollapsed={sidebarCollapsed}
               />
             </li>
             <li className="nav-item px-3 py-1">
