@@ -1,6 +1,6 @@
 "use client";
 
-import React, { ReactNode, useEffect, useState } from "react";
+import React, { ReactNode, useEffect, useState, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import Header from "@/components/organisms/Header/Header";
 import Sidebar from "@/components/organisms/Sidebar/Sidebar";
@@ -33,6 +33,25 @@ export const AppLayout = ({ children, customBreadcrumb }: AppLayoutProps) => {
     document.documentElement.style.setProperty("--sidebar-width", sidebarWidth);
     setIsClient(true);
   }, [sidebarWidth]);
+
+  // Add a more stable way to calculate the content width
+  const mainContentStyle = useMemo(() => {
+    return {
+      paddingLeft: isClient ? `calc(${sidebarWidth} + 1.5rem)` : "1.5rem",
+      transition: "padding-left 300ms ease-in-out",
+      willChange: "padding-left",
+    };
+  }, [isClient, sidebarWidth]);
+
+  const contentContainerStyle = useMemo(() => {
+    return {
+      width: "100%",
+      maxWidth: "1600px",
+      margin: "0 auto",
+      transition: "width 300ms ease-in-out",
+      transform: "translateZ(0)",
+    };
+  }, []);
 
   // Generate breadcrumb items based on current path
   const getBreadcrumbItems = () => {
@@ -83,16 +102,13 @@ export const AppLayout = ({ children, customBreadcrumb }: AppLayoutProps) => {
   return (
     <div className="flex min-h-screen bg-bg-light">
       <Sidebar />
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col w-full overflow-hidden">
         <Header />
         <main
-          className="pt-[72px] p-6 min-h-screen overflow-auto transition-all duration-300"
-          style={{
-            paddingLeft: isClient ? `calc(${sidebarWidth} + 1.5rem)` : "1.5rem",
-            width: "100%",
-          }}
+          className="pt-[72px] p-6 min-h-screen overflow-hidden transition-all duration-300 ease-in-out will-change-padding"
+          style={mainContentStyle}
         >
-          <div className="h-full w-full max-w-[1600px] mx-auto pt-4">
+          <div className="h-full w-full pt-4" style={contentContainerStyle}>
             {customBreadcrumb || getBreadcrumbItems()}
             {children}
           </div>

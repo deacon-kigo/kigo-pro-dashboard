@@ -84,9 +84,23 @@ export default function PageHeader({
               <span className="text-4xl mr-3">{emoji}</span>
             )}
             <div>
-              <h1 className="text-2xl font-bold text-white">{title}</h1>
+              <h1
+                className={cn(
+                  "text-2xl font-bold",
+                  variant === "default" ? "text-white" : ""
+                )}
+              >
+                {title}
+              </h1>
               {description && (
-                <p className="text-base text-white/80 mt-1">{description}</p>
+                <p
+                  className={cn(
+                    "text-base mt-1",
+                    variant === "default" ? "text-white/80" : ""
+                  )}
+                >
+                  {description}
+                </p>
               )}
             </div>
           </div>

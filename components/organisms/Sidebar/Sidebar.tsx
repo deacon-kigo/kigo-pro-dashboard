@@ -58,10 +58,11 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
   const { sidebarCollapsed } = useSelector((state: RootState) => state.ui);
   const { clientId } = useSelector((state: RootState) => state.demo);
   const { clientName } = useDemoState();
-  
+
   // Get search params to check for view=campaign-manager
   const searchParams = useSearchParams();
-  const isCampaignManagerView = searchParams?.get("view") === "campaign-manager";
+  const isCampaignManagerView =
+    searchParams?.get("view") === "campaign-manager";
 
   // State for sign out dialog and hydration
   const [signOutDialogOpen, setSignOutDialogOpen] = useState(false);
@@ -71,7 +72,10 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
   const rawPathname = usePathname();
   const pathname = useMemo(() => {
     if (rawPathname === null) {
-      return (typeof window !== "undefined" && window.__NEXT_MOCK_PATHNAME) || "/dashboard";
+      return (
+        (typeof window !== "undefined" && window.__NEXT_MOCK_PATHNAME) ||
+        "/dashboard"
+      );
     }
     return rawPathname;
   }, [rawPathname]);
@@ -105,46 +109,52 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
   }, []);
 
   // Memoize the isLinkActive function to prevent unnecessary recalculations
-  const isLinkActive = useCallback((path: string): boolean => {
-    // Special case for analytics
-    if (
-      path.includes("/analytics") &&
-      (pathname.includes("/analytics") ||
-        pathname.includes("/campaign-manager/analytics"))
-    ) {
-      return true;
-    }
+  const isLinkActive = useCallback(
+    (path: string): boolean => {
+      // Special case for analytics
+      if (
+        path.includes("/analytics") &&
+        (pathname.includes("/analytics") ||
+          pathname.includes("/campaign-manager/analytics"))
+      ) {
+        return true;
+      }
 
-    // Special case for token management
-    if (
-      path.includes("token-management") &&
-      (pathname.includes("token-management") ||
-        pathname.includes("cvs-token-management"))
-    ) {
-      return true;
-    }
+      // Special case for token management
+      if (
+        path.includes("token-management") &&
+        (pathname.includes("token-management") ||
+          pathname.includes("cvs-token-management"))
+      ) {
+        return true;
+      }
 
-    // Special case for dashboard
-    if (
-      (path === "/" || path.includes("/dashboard")) &&
-      (pathname === "/" ||
-        pathname === "/demos/cvs-dashboard" ||
-        pathname.includes("cvs-dashboard") ||
-        pathname.includes("/campaign-manager") ||
-        isCampaignManagerView)
-    ) {
-      return true;
-    }
+      // Special case for dashboard
+      if (
+        (path === "/" || path.includes("/dashboard")) &&
+        (pathname === "/" ||
+          pathname === "/demos/cvs-dashboard" ||
+          pathname.includes("cvs-dashboard") ||
+          pathname.includes("/campaign-manager") ||
+          isCampaignManagerView)
+      ) {
+        return true;
+      }
 
-    // Special cases for other CVS pages
-    if (isCVSContextBool) {
-      if (path.includes("customers") && pathname.includes("customers")) return true;
-      if (path.includes("tickets") && pathname.includes("tickets")) return true;
-      if (path.includes("settings") && pathname.includes("settings")) return true;
-    }
+      // Special cases for other CVS pages
+      if (isCVSContextBool) {
+        if (path.includes("customers") && pathname.includes("customers"))
+          return true;
+        if (path.includes("tickets") && pathname.includes("tickets"))
+          return true;
+        if (path.includes("settings") && pathname.includes("settings"))
+          return true;
+      }
 
-    return isPathActive(pathname, path);
-  }, [pathname, isCampaignManagerView, isCVSContextBool]);
+      return isPathActive(pathname, path);
+    },
+    [pathname, isCampaignManagerView, isCVSContextBool]
+  );
 
   // Memoize campaign submenu items to prevent recreation on each render
   const campaignSubmenuItems = useMemo((): SubmenuItem[] => {
@@ -174,7 +184,9 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
 
     // If in CVS context, show CVS-specific navigation
     if (isCVSContextBool) {
-      const cvsUrl = isCampaignManagerView ? "/campaign-manager" : "/demos/cvs-dashboard";
+      const cvsUrl = isCampaignManagerView
+        ? "/campaign-manager"
+        : "/demos/cvs-dashboard";
       const customersUrl = "/demos/cvs-token-management";
       const tokenManagementUrl = "/demos/cvs-token-catalog";
       const ticketsUrl = "/demos/cvs-tickets";
@@ -353,23 +365,27 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         return null;
     }
   }, [
-    isCampaignManagerView, 
-    isCVSContextBool, 
-    role, 
-    sidebarCollapsed, 
-    isLinkActive, 
-    campaignSubmenuItems, 
-    openSubmenus.campaigns, 
-    toggleSubmenu
+    isCampaignManagerView,
+    isCVSContextBool,
+    role,
+    sidebarCollapsed,
+    isLinkActive,
+    campaignSubmenuItems,
+    openSubmenus.campaigns,
+    toggleSubmenu,
   ]);
 
   // Memoize the role title
   const roleTitle = useMemo(() => {
     switch (role) {
-      case "merchant": return "Business Owner";
-      case "support": return "Support Agent";
-      case "admin": return "Administrator";
-      default: return "User";
+      case "merchant":
+        return "Business Owner";
+      case "support":
+        return "Support Agent";
+      case "admin":
+        return "Administrator";
+      default:
+        return "User";
     }
   }, [role]);
 
@@ -441,7 +457,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         </Link>
       );
     }
-    
+
     return (
       <Link href="/" className="flex items-center">
         {isCVSContextBool ? (
@@ -521,10 +537,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
           />
         </li>
         <li className="nav-item px-3 py-1">
-          <Dialog
-            open={signOutDialogOpen}
-            onOpenChange={setSignOutDialogOpen}
-          >
+          <Dialog open={signOutDialogOpen} onOpenChange={setSignOutDialogOpen}>
             <DialogTrigger asChild>
               <div className="w-full">
                 <SidebarLabel
@@ -564,7 +577,13 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         </li>
       </>
     );
-  }, [isCVSContextBool, sidebarCollapsed, isLinkActive, signOutDialogOpen, handleSignOut]);
+  }, [
+    isCVSContextBool,
+    sidebarCollapsed,
+    isLinkActive,
+    signOutDialogOpen,
+    handleSignOut,
+  ]);
 
   // User profile info - memoized
   const userProfileInfo = useMemo(() => {
@@ -614,6 +633,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
       `}
       style={{
         boxShadow: "0 4px 12px rgba(0, 0, 0, 0.03)",
+        willChange: "width",
       }}
     >
       <div className="flex flex-col h-full">
@@ -632,7 +652,9 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
           <button
             onClick={handleToggleSidebar}
             className="absolute top-24 -right-3 transform -translate-y-1/2 bg-white border border-border-light rounded-full p-1.5 shadow-sm hover:bg-gray-50 z-50 transition-colors"
-            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={
+              sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
+            }
           >
             {sidebarCollapsed ? (
               <ChevronRightIcon className="w-3.5 h-3.5 text-gray-500" />

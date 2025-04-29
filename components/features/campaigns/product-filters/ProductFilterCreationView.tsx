@@ -202,16 +202,13 @@ export default function ProductFilterCreationView() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-hidden">
       <PageHeader
         title="Create New Product Filter"
         description="Add a new product filter to control offer display in the TOP platform."
         emoji="✨"
         actions={backButton}
-        gradientColors={{
-          from: "rgba(226, 240, 253, 0.9)",
-          to: "rgba(226, 232, 255, 0.85)",
-        }}
+        variant="aurora"
       />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -223,7 +220,7 @@ export default function ProductFilterCreationView() {
         </TabsList>
 
         <TabsContent value="details" className="mt-4 space-y-4">
-          <Card className="p-6">
+          <Card className="p-6 overflow-hidden">
             <div className="space-y-4">
               <div>
                 <Label htmlFor="filter-name">Filter Name*</Label>
@@ -283,7 +280,7 @@ export default function ProductFilterCreationView() {
         </TabsContent>
 
         <TabsContent value="criteria" className="mt-4 space-y-4">
-          <Card className="p-6">
+          <Card className="p-6 overflow-hidden">
             <div className="space-y-6">
               <div>
                 <h3 className="text-lg font-medium">Add Filter Criteria</h3>
