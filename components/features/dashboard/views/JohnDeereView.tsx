@@ -117,8 +117,8 @@ export default function JohnDeereView({
         description="Create and manage influencer campaigns for John Deere products"
         variant="default"
         gradientColors={{
-          from: `${johnDeereGreen}20`, // Light version of John Deere green (with opacity)
-          to: `${johnDeereGreen}40`, // Slightly darker version of John Deere green
+          from: `${johnDeereGreen}`, // John Deere green on the left
+          to: `${johnDeereYellow}`, // John Deere yellow on the right
         }}
         logo={
           <div className="h-16 w-28 relative bg-white p-2 rounded shadow-sm">
