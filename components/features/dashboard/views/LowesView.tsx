@@ -568,7 +568,7 @@ export default function LowesView({
         description={`${currentDate} • Home Improvement Offer Management Platform`}
         variant="default"
         logo={
-          <div className="h-16 w-28 relative bg-white p-2 rounded shadow-sm">
+          <div className="h-16 w-28 relative p-2 rounded shadow-sm">
             <img
               src="/logos/lowes-logo-white.png"
               alt="Lowes Logo"
