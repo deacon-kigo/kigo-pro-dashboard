@@ -7,8 +7,10 @@ import featureConfigReducer from "./slices/featureConfigSlice";
 import analyticsReducer from "./slices/analyticsSlice";
 import externalTicketingReducer from "./slices/externalTicketingSlice";
 import sessionReducer from "./slices/sessionSlice";
+import aiAssistantReducer from "./slices/ai-assistantSlice";
 import { useDispatch } from "react-redux";
 import { ActionWithType } from "../../types/redux";
+import aiAssistantMiddleware from "./middleware/ai-assistantMiddleware";
 
 // Simple flag to disable all middleware logging if needed
 const ENABLE_ACTION_LOGGING = true;
@@ -41,22 +43,30 @@ const demoActionLoggerMiddleware =
     return result;
   };
 
-export const store = configureStore({
-  reducer: {
-    demo: demoReducer,
-    ui: uiReducer,
-    user: userReducer,
-    cvsToken: cvsTokenReducer,
-    featureConfig: featureConfigReducer,
-    analytics: analyticsReducer,
-    externalTicketing: externalTicketingReducer,
-    session: sessionReducer,
-  },
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(demoActionLoggerMiddleware),
-  // Enable Redux DevTools in development
-  devTools: process.env.NODE_ENV !== "production",
-});
+export function makeStore() {
+  return configureStore({
+    reducer: {
+      demo: demoReducer,
+      ui: uiReducer,
+      user: userReducer,
+      cvsToken: cvsTokenReducer,
+      featureConfig: featureConfigReducer,
+      analytics: analyticsReducer,
+      externalTicketing: externalTicketingReducer,
+      session: sessionReducer,
+      aiAssistant: aiAssistantReducer,
+    },
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware().concat([
+        demoActionLoggerMiddleware,
+        aiAssistantMiddleware,
+      ]),
+    // Enable Redux DevTools in development
+    devTools: process.env.NODE_ENV !== "production",
+  });
+}
 
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
+// Use ReturnType to infer the RootState from the store
+export type AppStore = ReturnType<typeof makeStore>;
+export type RootState = ReturnType<AppStore["getState"]>;
+export type AppDispatch = AppStore["dispatch"];

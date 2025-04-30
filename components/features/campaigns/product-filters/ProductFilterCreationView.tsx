@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/atoms/Button";
 import { Input } from "@/components/atoms/Input";
@@ -24,6 +24,10 @@ import {
 } from "@/components/atoms/Select";
 import { Calendar } from "@/components/atoms/Calendar";
 import { PageHeader } from "@/components/molecules/PageHeader";
+import { addDays } from "date-fns";
+import { AIAssistantPanel } from "@/components/features/ai";
+import { useDispatch } from "react-redux";
+import { setProductFilterContext } from "@/lib/redux/slices/ai-assistantSlice";
 
 // Interface for filter criteria
 interface FilterCriteria {
@@ -52,6 +56,14 @@ const DatePicker = ({
 }: DatePickerProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
+  // Get tomorrow's date for minimum selectable date
+  const tomorrow = addDays(new Date(), 1);
+
+  // Function to disable dates before tomorrow
+  const disablePastDates = (date: Date) => {
+    return date < tomorrow;
+  };
+
   return (
     <div className={className}>
       <Input
@@ -70,6 +82,7 @@ const DatePicker = ({
               onSelect(date);
               setIsOpen(false);
             }}
+            disabled={disablePastDates}
             initialFocus
           />
         </div>
@@ -80,6 +93,7 @@ const DatePicker = ({
 
 export default function ProductFilterCreationView() {
   const router = useRouter();
+  const dispatch = useDispatch();
   const [activeTab, setActiveTab] = useState("details");
 
   // Form state
@@ -201,6 +215,45 @@ export default function ProductFilterCreationView() {
     </Button>
   );
 
+  // Initialize AI assistant with product filter context
+  useEffect(() => {
+    dispatch(
+      setProductFilterContext({ filterName, filterDescription: description })
+    );
+  }, [dispatch, filterName, description]);
+
+  // Update AI context when filter name or description changes
+  useEffect(() => {
+    // Only update if we have meaningful content to avoid unnecessary updates
+    if (filterName.trim() || description.trim()) {
+      dispatch(
+        setProductFilterContext({ filterName, filterDescription: description })
+      );
+    }
+  }, [dispatch, filterName, description]);
+
+  // Handle option selected from AI Assistant
+  const handleOptionSelected = (optionId: string) => {
+    // Handle different AI suggestions for product filters
+    if (optionId.startsWith("suggest_name:")) {
+      const suggestedName = optionId.replace("suggest_name:", "");
+      setFilterName(suggestedName);
+    } else if (optionId.startsWith("suggest_criteria:")) {
+      try {
+        const criteriaData = JSON.parse(
+          optionId.replace("suggest_criteria:", "")
+        );
+        if (criteriaData.type && criteriaData.value) {
+          setCriteriaType(criteriaData.type);
+          setCriteriaValue(criteriaData.value);
+          setCriteriaOperator(criteriaData.operator || "equals");
+        }
+      } catch (e) {
+        console.error("Failed to parse criteria suggestion", e);
+      }
+    }
+  };
+
   return (
     <div className="space-y-6 overflow-hidden">
       <PageHeader
@@ -211,229 +264,258 @@ export default function ProductFilterCreationView() {
         variant="aurora"
       />
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList>
-          <TabsTrigger value="details">Basic Details</TabsTrigger>
-          <TabsTrigger value="criteria" disabled={!isFormValid()}>
-            Filter Criteria
-          </TabsTrigger>
-        </TabsList>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Main content - Product filter form */}
+        <div className="lg:col-span-8">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
+            <TabsList>
+              <TabsTrigger value="details">Basic Details</TabsTrigger>
+              <TabsTrigger value="criteria" disabled={!isFormValid()}>
+                Filter Criteria
+              </TabsTrigger>
+            </TabsList>
 
-        <TabsContent value="details" className="mt-4 space-y-4">
-          <Card className="p-6 overflow-hidden">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="filter-name">Filter Name*</Label>
-                <Input
-                  id="filter-name"
-                  placeholder="Enter filter name"
-                  value={filterName}
-                  onChange={(e) => setFilterName(e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="query-view">Query View Name*</Label>
-                <Input
-                  id="query-view"
-                  placeholder="Enter query view name"
-                  value={queryViewName}
-                  onChange={(e) => setQueryViewName(e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Enter filter description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="mt-1"
-                  rows={4}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="expiry-date">Expiry Date*</Label>
-                <DatePicker
-                  id="expiry-date"
-                  selected={expiryDate}
-                  onSelect={setExpiryDate}
-                  placeholder="Select expiry date"
-                  className="mt-1 w-full"
-                />
-              </div>
-            </div>
-          </Card>
-
-          <div className="flex justify-between">
-            <Button variant="outline" onClick={handleCancel}>
-              Cancel
-            </Button>
-            <Button onClick={nextTab} disabled={!isFormValid()}>
-              Next: Filter Criteria
-            </Button>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="criteria" className="mt-4 space-y-4">
-          <Card className="p-6 overflow-hidden">
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-medium">Add Filter Criteria</h3>
-                <p className="text-muted-foreground text-sm mt-1">
-                  Define the criteria that will be used to filter offers. All
-                  required criteria types must be added.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="criteria-type">Criteria Type*</Label>
-                  <Select value={criteriaType} onValueChange={setCriteriaType}>
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select criteria type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="required_header" disabled>
-                        -- Required Criteria Types --
-                      </SelectItem>
-                      {requiredCriteriaTypes.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}{" "}
-                          {filterCriteria.some((c) => c.type === type) && "✓"}
-                        </SelectItem>
-                      ))}
-                      <SelectItem value="optional_header" disabled>
-                        -- Optional Criteria Types --
-                      </SelectItem>
-                      {optionalCriteriaTypes.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="criteria-operator">Operator</Label>
-                  <Select
-                    value={criteriaOperator}
-                    onValueChange={setCriteriaOperator}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select operator" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="equals">Equals</SelectItem>
-                      <SelectItem value="contains">Contains</SelectItem>
-                      <SelectItem value="startsWith">Starts With</SelectItem>
-                      <SelectItem value="endsWith">Ends With</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="criteria-value">Value*</Label>
-                  <div className="flex mt-1">
+            <TabsContent value="details" className="mt-4 space-y-4">
+              <Card className="p-6 overflow-hidden">
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="filter-name">Filter Name*</Label>
                     <Input
-                      id="criteria-value"
-                      placeholder="Enter value"
-                      value={criteriaValue}
-                      onChange={(e) => setCriteriaValue(e.target.value)}
-                      className="flex-1"
+                      id="filter-name"
+                      placeholder="Enter filter name"
+                      value={filterName}
+                      onChange={(e) => setFilterName(e.target.value)}
+                      className="mt-1"
                     />
-                    <Button
-                      onClick={addCriteria}
-                      disabled={!criteriaType || !criteriaValue}
-                      className="ml-2 p-2 h-9 w-9"
-                    >
-                      <PlusIcon className="h-4 w-4" />
-                    </Button>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="query-view">Query View Name*</Label>
+                    <Input
+                      id="query-view"
+                      placeholder="Enter query view name"
+                      value={queryViewName}
+                      onChange={(e) => setQueryViewName(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      placeholder="Enter filter description"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      className="mt-1"
+                      rows={4}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="expiry-date">Expiry Date*</Label>
+                    <DatePicker
+                      id="expiry-date"
+                      selected={expiryDate}
+                      onSelect={setExpiryDate}
+                      placeholder="Select expiry date"
+                      className="mt-1 w-full"
+                    />
                   </div>
                 </div>
+              </Card>
+
+              <div className="flex justify-between">
+                <Button variant="outline" onClick={handleCancel}>
+                  Cancel
+                </Button>
+                <Button onClick={nextTab} disabled={!isFormValid()}>
+                  Next: Filter Criteria
+                </Button>
               </div>
+            </TabsContent>
 
-              <div className="mt-4">
-                <h4 className="text-sm font-medium mb-2">Current Criteria</h4>
-
-                {filterCriteria.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    No criteria added yet. All required criteria must be added
-                    before saving.
-                  </p>
-                ) : (
-                  <div className="border rounded-md overflow-hidden">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="bg-muted border-b">
-                          <th className="text-left py-2 px-3 font-medium">
-                            Type
-                          </th>
-                          <th className="text-left py-2 px-3 font-medium">
-                            Operator
-                          </th>
-                          <th className="text-left py-2 px-3 font-medium">
-                            Value
-                          </th>
-                          <th className="text-left py-2 px-3 font-medium">
-                            Required
-                          </th>
-                          <th className="text-right py-2 px-3 font-medium">
-                            Actions
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filterCriteria.map((criteria) => (
-                          <tr
-                            key={criteria.id}
-                            className="border-b last:border-b-0"
-                          >
-                            <td className="py-2 px-3">{criteria.type}</td>
-                            <td className="py-2 px-3">{criteria.operator}</td>
-                            <td className="py-2 px-3">{criteria.value}</td>
-                            <td className="py-2 px-3">
-                              {criteria.isRequired ? "Yes" : "No"}
-                            </td>
-                            <td className="py-2 px-3 text-right">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => removeCriteria(criteria.id)}
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                              >
-                                Remove
-                              </Button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+            <TabsContent value="criteria" className="mt-4 space-y-4">
+              <Card className="p-6 overflow-hidden">
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-medium">Add Filter Criteria</h3>
+                    <p className="text-muted-foreground text-sm mt-1">
+                      Define the criteria that will be used to filter offers.
+                      All required criteria types must be added.
+                    </p>
                   </div>
-                )}
-              </div>
-            </div>
-          </Card>
 
-          <div className="flex justify-between">
-            <Button variant="outline" onClick={prevTab}>
-              <ArrowLeftIcon className="h-4 w-4 mr-1" />
-              Back to Details
-            </Button>
-            <Button
-              onClick={handleCreateFilter}
-              disabled={!hasAllRequiredCriteria()}
-            >
-              Create Product Filter
-            </Button>
-          </div>
-        </TabsContent>
-      </Tabs>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="criteria-type">Criteria Type*</Label>
+                      <Select
+                        value={criteriaType}
+                        onValueChange={setCriteriaType}
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Select criteria type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="required_header" disabled>
+                            -- Required Criteria Types --
+                          </SelectItem>
+                          {requiredCriteriaTypes.map((type) => (
+                            <SelectItem key={type} value={type}>
+                              {type}{" "}
+                              {filterCriteria.some((c) => c.type === type) &&
+                                "✓"}
+                            </SelectItem>
+                          ))}
+                          <SelectItem value="optional_header" disabled>
+                            -- Optional Criteria Types --
+                          </SelectItem>
+                          {optionalCriteriaTypes.map((type) => (
+                            <SelectItem key={type} value={type}>
+                              {type}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="criteria-operator">Operator</Label>
+                      <Select
+                        value={criteriaOperator}
+                        onValueChange={setCriteriaOperator}
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Select operator" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="equals">Equals</SelectItem>
+                          <SelectItem value="contains">Contains</SelectItem>
+                          <SelectItem value="startsWith">
+                            Starts With
+                          </SelectItem>
+                          <SelectItem value="endsWith">Ends With</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="criteria-value">Value*</Label>
+                      <div className="flex mt-1">
+                        <Input
+                          id="criteria-value"
+                          placeholder="Enter value"
+                          value={criteriaValue}
+                          onChange={(e) => setCriteriaValue(e.target.value)}
+                          className="flex-1"
+                        />
+                        <Button
+                          onClick={addCriteria}
+                          disabled={!criteriaType || !criteriaValue}
+                          className="ml-2 p-2 h-9 w-9"
+                        >
+                          <PlusIcon className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <h4 className="text-sm font-medium mb-2">
+                      Current Criteria
+                    </h4>
+
+                    {filterCriteria.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">
+                        No criteria added yet. All required criteria must be
+                        added before saving.
+                      </p>
+                    ) : (
+                      <div className="border rounded-md overflow-hidden">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="bg-muted border-b">
+                              <th className="text-left py-2 px-3 font-medium">
+                                Type
+                              </th>
+                              <th className="text-left py-2 px-3 font-medium">
+                                Operator
+                              </th>
+                              <th className="text-left py-2 px-3 font-medium">
+                                Value
+                              </th>
+                              <th className="text-left py-2 px-3 font-medium">
+                                Required
+                              </th>
+                              <th className="text-right py-2 px-3 font-medium">
+                                Actions
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {filterCriteria.map((criteria) => (
+                              <tr
+                                key={criteria.id}
+                                className="border-b last:border-b-0"
+                              >
+                                <td className="py-2 px-3">{criteria.type}</td>
+                                <td className="py-2 px-3">
+                                  {criteria.operator}
+                                </td>
+                                <td className="py-2 px-3">{criteria.value}</td>
+                                <td className="py-2 px-3">
+                                  {criteria.isRequired ? "Yes" : "No"}
+                                </td>
+                                <td className="py-2 px-3 text-right">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removeCriteria(criteria.id)}
+                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  >
+                                    Remove
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </Card>
+
+              <div className="flex justify-between">
+                <Button variant="outline" onClick={prevTab}>
+                  <ArrowLeftIcon className="h-4 w-4 mr-1" />
+                  Back to Details
+                </Button>
+                <Button
+                  onClick={handleCreateFilter}
+                  disabled={!hasAllRequiredCriteria()}
+                >
+                  Create Product Filter
+                </Button>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        {/* AI Assistant Panel */}
+        <div className="lg:col-span-4">
+          <Card className="h-full p-0 overflow-hidden flex flex-col">
+            <AIAssistantPanel
+              onOptionSelected={handleOptionSelected}
+              className="h-full"
+            />
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

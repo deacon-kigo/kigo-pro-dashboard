@@ -136,7 +136,7 @@ export default function Header() {
         return (
           <Button
             variant="primary"
-            href={buildDemoUrl("deacons", "ai-campaign-creation")}
+            href="/campaign-manager/ai-create"
             icon={<PlusIcon className="w-5 h-5" />}
             glow={{
               mode: "colorShift",

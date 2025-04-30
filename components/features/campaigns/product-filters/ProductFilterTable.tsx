@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo, useMemo } from "react";
+import React, { memo, useMemo, useState } from "react";
 import { DataTable } from "@/components/organisms/DataTable";
 import { ColumnDef, CellContext } from "@tanstack/react-table";
 import {
@@ -8,11 +8,24 @@ import {
   productFilterColumns,
   formatDate,
 } from "./productFilterColumns";
+import { Pagination } from "@/components/atoms/Pagination";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/atoms/Select";
+import { cn } from "@/lib/utils";
 
 interface ProductFilterTableProps {
   data: ProductFilter[];
   className?: string;
   searchQuery?: string; // Optional search query for highlighting
+  currentPage?: number;
+  pageSize?: number;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (value: string) => void;
 }
 
 /**
@@ -26,7 +39,51 @@ export const ProductFilterTable = memo(function ProductFilterTable({
   data,
   className,
   searchQuery = "", // Default to empty string
+  currentPage: externalCurrentPage,
+  pageSize: externalPageSize,
+  onPageChange: externalPageChange,
+  onPageSizeChange: externalPageSizeChange,
 }: ProductFilterTableProps) {
+  // Use internal state only if external state is not provided
+  const [internalCurrentPage, setInternalCurrentPage] = useState(1);
+  const [internalPageSize, setInternalPageSize] = useState(5); // Default page size
+
+  // Determine which state to use (external or internal)
+  const currentPage =
+    externalCurrentPage !== undefined
+      ? externalCurrentPage
+      : internalCurrentPage;
+  const pageSize =
+    externalPageSize !== undefined ? externalPageSize : internalPageSize;
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    if (externalPageChange) {
+      externalPageChange(page);
+    } else {
+      setInternalCurrentPage(page);
+    }
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (value: string) => {
+    if (externalPageSizeChange) {
+      externalPageSizeChange(value);
+    } else {
+      const newPageSize = parseInt(value, 10);
+      setInternalPageSize(newPageSize);
+      // Reset to page 1 when changing page size
+      setInternalCurrentPage(1);
+    }
+  };
+
+  // Calculate pagination
+  const totalItems = data.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const currentPageData = data.slice(startIndex, endIndex);
+
   // Create modified column definitions with highlighting for search matches
   const highlightedColumns = useMemo(() => {
     const textFields = [
@@ -166,10 +223,53 @@ export const ProductFilterTable = memo(function ProductFilterTable({
   >[];
 
   return (
-    <DataTable
-      columns={columns}
-      data={data as unknown[]}
-      className={className}
-    />
+    <div className={cn("space-y-4", className)}>
+      <DataTable
+        columns={columns}
+        data={currentPageData as unknown[]}
+        className={className}
+        disablePagination={false}
+        customPagination={
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+              <div>
+                {totalItems === 0 ? (
+                  <span>No items</span>
+                ) : (
+                  <span>
+                    Showing {startIndex + 1}-{endIndex} of {totalItems} items
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center ml-4">
+                <span className="mr-2">Items per page:</span>
+                <Select
+                  value={pageSize.toString()}
+                  onValueChange={handlePageSizeChange}
+                >
+                  <SelectTrigger className="h-8 w-20">
+                    <SelectValue>{pageSize}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">5</SelectItem>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="20">20</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <Pagination
+              totalItems={totalItems}
+              pageSize={pageSize}
+              currentPage={currentPage}
+              onPageChange={handlePageChange}
+            />
+          </div>
+        }
+      />
+    </div>
   );
 });

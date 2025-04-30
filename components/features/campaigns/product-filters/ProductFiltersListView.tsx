@@ -15,6 +15,12 @@ import { ProductFilterTable } from "./ProductFilterTable";
 import { ProductFilter, formatDate } from "./productFilterColumns";
 import { ProductFilterSearchBar, SearchField } from "./ProductFilterSearchBar";
 
+// Type for pagination state
+interface PaginationState {
+  currentPage: number;
+  pageSize: number;
+}
+
 /**
  * ProductFiltersListView Component
  *
@@ -25,6 +31,52 @@ import { ProductFilterSearchBar, SearchField } from "./ProductFilterSearchBar";
 const ProductFiltersListView = memo(function ProductFiltersListView() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("active");
+
+  // Tab-specific pagination state
+  const [paginationState, setPaginationState] = useState<
+    Record<string, PaginationState>
+  >({
+    active: { currentPage: 1, pageSize: 5 },
+    expired: { currentPage: 1, pageSize: 5 },
+    draft: { currentPage: 1, pageSize: 5 },
+    all: { currentPage: 1, pageSize: 5 },
+  });
+
+  // Handle tab change
+  const handleTabChange = (value: string) => {
+    console.log(`Switching to tab: ${value}, state:`, paginationState[value]);
+    setActiveTab(value);
+  };
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setPaginationState((prev) => ({
+      ...prev,
+      [activeTab]: {
+        ...prev[activeTab],
+        currentPage: page,
+      },
+    }));
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (value: string) => {
+    const newPageSize = parseInt(value, 10);
+    console.log(`Changing page size to: ${newPageSize} on tab: ${activeTab}`);
+    setPaginationState((prev) => {
+      const newState = {
+        ...prev,
+        [activeTab]: {
+          ...prev[activeTab],
+          pageSize: newPageSize,
+          currentPage: 1, // Reset to page 1 when changing page size
+        },
+      };
+      console.log("New pagination state:", newState);
+      return newState;
+    });
+  };
 
   // Navigate to the new product filter page
   const handleCreateFilter = () => {
@@ -34,6 +86,13 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
   // Handle search
   const handleSearch = (query: string, field: SearchField) => {
     setSearchQuery(query);
+    // Reset to page 1 on all tabs when search query changes
+    setPaginationState((prev) => ({
+      active: { ...prev.active, currentPage: 1 },
+      expired: { ...prev.expired, currentPage: 1 },
+      draft: { ...prev.draft, currentPage: 1 },
+      all: { ...prev.all, currentPage: 1 },
+    }));
   };
 
   // Sample data for the tables - in a real app, this would be fetched from an API
@@ -238,6 +297,203 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
         mandatoryCriteriaCount: 2,
         publisherSpecific: false,
       },
+      {
+        id: "15",
+        name: "Tech Gadgets Deals",
+        queryView: "tech_gadgets_view",
+        description: "Latest discounts on technology and electronics",
+        createdBy: "admin",
+        createdDate: "2023-08-15",
+        expiryDate: "2024-08-15",
+        status: "Active",
+        criteriaMet: true,
+        criteriaCount: 7,
+        mandatoryCriteriaCount: 4,
+        publisherSpecific: false,
+      },
+      {
+        id: "16",
+        name: "Travel Experiences",
+        queryView: "travel_experiences_view",
+        description: "Discounted travel packages and experiences",
+        createdBy: "admin",
+        createdDate: "2023-09-05",
+        expiryDate: "2024-09-05",
+        status: "Active",
+        criteriaMet: true,
+        criteriaCount: 8,
+        mandatoryCriteriaCount: 4,
+        publisherSpecific: false,
+      },
+      {
+        id: "17",
+        name: "Home Improvement",
+        queryView: "home_improvement_view",
+        description: "Deals on home renovation and improvements",
+        createdBy: "admin",
+        createdDate: "2023-10-10",
+        expiryDate: "2024-10-10",
+        status: "Active",
+        criteriaMet: true,
+        criteriaCount: 6,
+        mandatoryCriteriaCount: 4,
+        publisherSpecific: false,
+      },
+      {
+        id: "18",
+        name: "Fitness & Wellness Essentials",
+        queryView: "fitness_wellness_view",
+        description: "Promotions on fitness equipment and wellness products",
+        createdBy: "admin",
+        createdDate: "2023-11-20",
+        expiryDate: "2024-11-20",
+        status: "Draft",
+        criteriaMet: false,
+        criteriaCount: 5,
+        mandatoryCriteriaCount: 3,
+        publisherSpecific: false,
+      },
+      {
+        id: "19",
+        name: "Beauty Products",
+        queryView: "beauty_products_view",
+        description: "Discounts on beauty and skincare products",
+        createdBy: "admin",
+        createdDate: "2023-12-05",
+        expiryDate: "2024-12-05",
+        status: "Active",
+        criteriaMet: true,
+        criteriaCount: 6,
+        mandatoryCriteriaCount: 4,
+        publisherSpecific: false,
+      },
+      {
+        id: "20",
+        name: "Educational Resources",
+        queryView: "educational_resources_view",
+        description:
+          "Special offers on books, courses, and educational materials",
+        createdBy: "admin",
+        createdDate: "2023-08-25",
+        expiryDate: "2024-08-25",
+        status: "Active",
+        criteriaMet: true,
+        criteriaCount: 5,
+        mandatoryCriteriaCount: 4,
+        publisherSpecific: false,
+      },
+      {
+        id: "21",
+        name: "Pet Supplies",
+        queryView: "pet_supplies_view",
+        description: "Discounts on pet food, toys, and accessories",
+        createdBy: "admin",
+        createdDate: "2023-09-15",
+        expiryDate: "2024-09-15",
+        status: "Draft",
+        criteriaMet: false,
+        criteriaCount: 4,
+        mandatoryCriteriaCount: 3,
+        publisherSpecific: false,
+      },
+      {
+        id: "22",
+        name: "Outdoor Activities",
+        queryView: "outdoor_activities_view",
+        description: "Offers on camping, hiking, and outdoor equipment",
+        createdBy: "admin",
+        createdDate: "2023-10-25",
+        expiryDate: "2024-10-25",
+        status: "Active",
+        criteriaMet: true,
+        criteriaCount: 7,
+        mandatoryCriteriaCount: 4,
+        publisherSpecific: false,
+      },
+      {
+        id: "23",
+        name: "Children's Products",
+        queryView: "children_products_view",
+        description: "Discounts on toys, clothes, and products for children",
+        createdBy: "admin",
+        createdDate: "2023-11-10",
+        expiryDate: "2024-11-10",
+        status: "Active",
+        criteriaMet: true,
+        criteriaCount: 6,
+        mandatoryCriteriaCount: 4,
+        publisherSpecific: false,
+      },
+      {
+        id: "24",
+        name: "Black Friday 2022",
+        queryView: "black_friday_2022_view",
+        description: "Special Black Friday deals and discounts",
+        createdBy: "admin",
+        createdDate: "2022-11-20",
+        expiryDate: "2022-11-30",
+        status: "Expired",
+        criteriaMet: true,
+        criteriaCount: 8,
+        mandatoryCriteriaCount: 4,
+        publisherSpecific: false,
+      },
+      {
+        id: "25",
+        name: "Valentine's Day Specials",
+        queryView: "valentines_specials_view",
+        description: "Valentine's Day gifts and special offers",
+        createdBy: "admin",
+        createdDate: "2023-01-15",
+        expiryDate: "2023-02-15",
+        status: "Expired",
+        criteriaMet: true,
+        criteriaCount: 5,
+        mandatoryCriteriaCount: 4,
+        publisherSpecific: false,
+      },
+      {
+        id: "26",
+        name: "Spring Cleaning",
+        queryView: "spring_cleaning_view",
+        description: "Deals on cleaning supplies and home organization",
+        createdBy: "admin",
+        createdDate: "2023-03-01",
+        expiryDate: "2023-04-30",
+        status: "Expired",
+        criteriaMet: true,
+        criteriaCount: 6,
+        mandatoryCriteriaCount: 4,
+        publisherSpecific: false,
+      },
+      {
+        id: "27",
+        name: "Office Supplies",
+        queryView: "office_supplies_view",
+        description: "Discounts on office furniture, stationery, and equipment",
+        createdBy: "admin",
+        createdDate: "2023-05-05",
+        expiryDate: "2024-05-05",
+        status: "Active",
+        criteriaMet: true,
+        criteriaCount: 6,
+        mandatoryCriteriaCount: 4,
+        publisherSpecific: false,
+      },
+      {
+        id: "28",
+        name: "Gift Cards & Promotions",
+        queryView: "gift_cards_promos_view",
+        description: "Special offers on gift cards and promotional items",
+        createdBy: "admin",
+        createdDate: "2023-06-10",
+        expiryDate: "2024-06-10",
+        status: "Active",
+        criteriaMet: true,
+        criteriaCount: 5,
+        mandatoryCriteriaCount: 4,
+        publisherSpecific: false,
+      },
     ],
     []
   );
@@ -344,7 +600,11 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
         variant="aurora"
       />
 
-      <Tabs defaultValue="active" className="w-full">
+      <Tabs
+        defaultValue="active"
+        className="w-full"
+        onValueChange={handleTabChange}
+      >
         <div className="flex items-center justify-between mb-4">
           <ProductFilterSearchBar onSearch={handleSearch} />
           <TabsList>
@@ -360,6 +620,10 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
             data={filteredActiveFilters}
             searchQuery={searchQuery}
             className=""
+            currentPage={paginationState.active.currentPage}
+            pageSize={paginationState.active.pageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
           />
         </TabsContent>
 
@@ -368,6 +632,10 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
             <ProductFilterTable
               data={filteredExpiredFilters}
               searchQuery={searchQuery}
+              currentPage={paginationState.expired.currentPage}
+              pageSize={paginationState.expired.pageSize}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
             />
           ) : (
             emptyStateContent
@@ -379,6 +647,10 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
             <ProductFilterTable
               data={filteredDraftFilters}
               searchQuery={searchQuery}
+              currentPage={paginationState.draft.currentPage}
+              pageSize={paginationState.draft.pageSize}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
             />
           ) : (
             <div className="bg-white rounded-md border border-gray-200 p-6 flex justify-center items-center text-center overflow-hidden shadow-sm">
@@ -395,6 +667,10 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
           <ProductFilterTable
             data={filteredAllFilters}
             searchQuery={searchQuery}
+            currentPage={paginationState.all.currentPage}
+            pageSize={paginationState.all.pageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
           />
         </TabsContent>
       </Tabs>

@@ -6,10 +6,13 @@ import { useDemoState } from "@/lib/redux/hooks";
 import ReactMarkdown from "react-markdown";
 import Image from "next/image";
 import { Button } from "@/components/atoms/Button/Button";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "@/lib/redux/store";
+import { addMessage } from "@/lib/redux/slices/ai-assistantSlice";
 
 interface Message {
   id: string;
-  type: "user" | "ai";
+  type: "user" | "ai" | "system";
   content: string;
   timestamp: Date;
   responseOptions?: ResponseOption[];
@@ -41,12 +44,40 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
   className = "",
 }) => {
   const { clientId } = useDemoState();
+  const dispatch = useDispatch();
+
+  // Get AI assistant state from Redux
+  const { messages: aiMessages, isProcessing } = useSelector(
+    (state: RootState) => state.aiAssistant
+  );
+
+  // Use either demo state or Redux state depending on context
+  const isProductFilterContext =
+    window.location.pathname.includes("/product-filters");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isThinking, setIsThinking] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const [clarifyingQuestionStep, setClarifyingQuestionStep] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Use Redux state for product filter context
+  useEffect(() => {
+    if (isProductFilterContext && aiMessages.length > 0) {
+      // Convert from Redux format to component format
+      const convertedMessages: Message[] = aiMessages.map((msg) => ({
+        id: msg.id,
+        type: msg.type,
+        content: msg.content,
+        timestamp: msg.timestamp,
+        responseOptions: msg.responseOptions,
+        severity: msg.severity,
+      }));
+
+      setMessages(convertedMessages);
+      setIsThinking(isProcessing);
+    }
+  }, [isProductFilterContext, aiMessages, isProcessing]);
 
   // Helper function to get appropriate greeting based on time of day
   const getGreeting = () => {
@@ -134,6 +165,21 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
   const handleSendMessage = useCallback(() => {
     if (!newMessage.trim()) return;
 
+    // For product filter context, use Redux for state management
+    if (isProductFilterContext) {
+      // Dispatch the message to Redux
+      dispatch(
+        addMessage({
+          type: "user",
+          content: newMessage,
+        })
+      );
+
+      setNewMessage("");
+      return;
+    }
+
+    // Original implementation for demo mode
     // Add the user message
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -659,11 +705,29 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
       setMessages((prev) => [...prev, aiResponse]);
       setIsThinking(false);
     }, 1500);
-  }, [newMessage, onOptionSelected, clientId, onSend, clarifyingQuestionStep]);
+  }, [
+    newMessage,
+    onOptionSelected,
+    clientId,
+    onSend,
+    clarifyingQuestionStep,
+    isProductFilterContext,
+    dispatch,
+  ]);
 
   // Memoize option click handler to avoid recreation on each render
   const handleOptionSelected = useCallback(
     (optionValue: string) => {
+      // For product filter context, dispatch an option selected action
+      if (isProductFilterContext) {
+        dispatch({ type: "aiAssistant/optionSelected", payload: optionValue });
+
+        // Also call the passed callback
+        onOptionSelected(optionValue);
+        return;
+      }
+
+      // Original implementation for demo mode
       // Notify parent component
       onOptionSelected && onOptionSelected(optionValue);
 
@@ -1352,7 +1416,14 @@ Your campaign performance dashboard is now available. You'll receive daily perfo
         }
       }
     },
-    [messages, onOptionSelected, timeoutRef, clarifyingQuestionStep]
+    [
+      messages,
+      onOptionSelected,
+      timeoutRef,
+      clarifyingQuestionStep,
+      isProductFilterContext,
+      dispatch,
+    ]
   );
 
   // Clean up timeout on unmount

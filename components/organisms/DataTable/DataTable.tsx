@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useState, memo } from "react";
+import { useState, memo, ReactNode } from "react";
 import Card from "@/components/atoms/Card/Card";
 import { Button } from "@/components/atoms/Button";
 import { cn } from "@/lib/utils";
@@ -27,6 +27,8 @@ export interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   className?: string;
+  disablePagination?: boolean;
+  customPagination?: ReactNode;
 }
 
 /**
@@ -40,6 +42,8 @@ export const DataTable = memo(function DataTable<TData, TValue>({
   columns,
   data,
   className,
+  disablePagination = false,
+  customPagination,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pageIndex, setPageIndex] = useState(0);
@@ -113,29 +117,37 @@ export const DataTable = memo(function DataTable<TData, TValue>({
             </TableBody>
           </Table>
         </div>
-        <div className="flex items-center justify-end space-x-2 p-4 border-t">
-          <div className="flex-1 text-sm text-muted-foreground">
-            {table.getRowModel().rows.length} item(s) found.
+        {(!disablePagination || customPagination) && (
+          <div className="flex items-center justify-end space-x-2 p-4 border-t">
+            {customPagination ? (
+              <div className="w-full">{customPagination}</div>
+            ) : (
+              <>
+                <div className="flex-1 text-sm text-muted-foreground">
+                  {table.getRowModel().rows.length} item(s) found.
+                </div>
+                <div className="space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => table.previousPage()}
+                    disabled={!table.getCanPreviousPage()}
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => table.nextPage()}
+                    disabled={!table.getCanNextPage()}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
-          <div className="space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
+        )}
       </Card>
     </div>
   );
