@@ -265,7 +265,17 @@ export default function ProductFilterCreationView() {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Main content - Product filter form */}
+        {/* AI Assistant Panel - Left Side */}
+        <div className="lg:col-span-4 h-full overflow-hidden flex flex-col">
+          <Card className="h-full p-0 overflow-hidden flex flex-col">
+            <AIAssistantPanel
+              onOptionSelected={handleOptionSelected}
+              className="h-full"
+            />
+          </Card>
+        </div>
+
+        {/* Main content - Product filter form - Right Side */}
         <div className="lg:col-span-8">
           <Tabs
             value={activeTab}
@@ -504,16 +514,6 @@ export default function ProductFilterCreationView() {
               </div>
             </TabsContent>
           </Tabs>
-        </div>
-
-        {/* AI Assistant Panel */}
-        <div className="lg:col-span-4">
-          <Card className="h-full p-0 overflow-hidden flex flex-col">
-            <AIAssistantPanel
-              onOptionSelected={handleOptionSelected}
-              className="h-full"
-            />
-          </Card>
         </div>
       </div>
     </div>
