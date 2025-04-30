@@ -1,11 +1,51 @@
-import { Middleware } from "redux";
+import { Middleware, AnyAction } from "redux";
 import {
   addMessage,
   setIsProcessing,
   setError,
+  AIMessage,
 } from "../slices/ai-assistantSlice";
 import { createChatService } from "@/services/ai/chat";
 import { createProductFilterCriteriaTool } from "@/services/ai/tools";
+import { RootState } from "../store";
+
+// Define action types for type checking
+interface AddMessageAction extends AnyAction {
+  type: "aiAssistant/addMessage";
+  payload: {
+    type: string;
+    content: string;
+  };
+}
+
+interface OptionSelectedAction extends AnyAction {
+  type: "aiAssistant/optionSelected";
+  payload: string;
+}
+
+// Type guard for actions
+function isAddMessageAction(action: AnyAction): action is AddMessageAction {
+  return action.type === "aiAssistant/addMessage";
+}
+
+function isOptionSelectedAction(
+  action: AnyAction
+): action is OptionSelectedAction {
+  return action.type === "aiAssistant/optionSelected";
+}
+
+// Type for response options
+interface ResponseOption {
+  text: string;
+  value: string;
+}
+
+// Type for AI response
+interface AIResponse {
+  content: string;
+  responseOptions?: ResponseOption[];
+  severity?: "info" | "warning" | "success" | "error";
+}
 
 // Helper to create a unique option ID that encodes data
 const createOptionId = (prefix: string, data: any) => {
@@ -20,7 +60,7 @@ const handleOptionSelected = async (
   optionId: string,
   filterName?: string,
   filterDescription?: string
-) => {
+): Promise<AIResponse> => {
   // For product filter context
   if (optionId === "explain_criteria_types") {
     return {
@@ -194,19 +234,24 @@ Would you like to use any of these suggestions?`,
   };
 };
 
+// Extend RootState with productFilter
+interface ExtendedState extends RootState {
+  productFilter?: {
+    filterName?: string;
+    description?: string;
+  };
+}
+
 const aiAssistantMiddleware: Middleware =
-  (store) => (next) => async (action) => {
+  (store) => (next) => async (action: any) => {
     // First pass the action to the next middleware
     const result = next(action);
 
     // Get current state
-    const state = store.getState();
+    const state = store.getState() as ExtendedState;
 
     // Handle user message submissions
-    if (
-      action.type === "aiAssistant/addMessage" &&
-      action.payload.type === "user"
-    ) {
+    if (isAddMessageAction(action) && action.payload.type === "user") {
       const userMessage = action.payload.content;
       const systemPrompt = state.aiAssistant.systemPrompt;
 
@@ -262,7 +307,7 @@ const aiAssistantMiddleware: Middleware =
     }
 
     // Handle option selection
-    if (action.type === "aiAssistant/optionSelected") {
+    if (isOptionSelectedAction(action)) {
       const optionId = action.payload;
 
       // Get current filter name and description from state if available
@@ -274,8 +319,8 @@ const aiAssistantMiddleware: Middleware =
       try {
         // Add user message showing the selected option
         const selectedOption = state.aiAssistant.messages
-          .flatMap((msg) => msg.responseOptions || [])
-          .find((option) => option.value === optionId);
+          .flatMap((msg: AIMessage) => msg.responseOptions || [])
+          .find((option: ResponseOption) => option.value === optionId);
 
         if (selectedOption) {
           store.dispatch(
