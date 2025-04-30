@@ -66,6 +66,9 @@ export function makeStore() {
   });
 }
 
+// Create the store instance
+export const store = makeStore();
+
 // Use ReturnType to infer the RootState from the store
 export type AppStore = ReturnType<typeof makeStore>;
 export type RootState = ReturnType<AppStore["getState"]>;
