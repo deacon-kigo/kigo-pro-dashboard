@@ -9,12 +9,13 @@ import { Button } from "@/components/atoms/Button/Button";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/lib/redux/store";
 import { addMessage } from "@/lib/redux/slices/ai-assistantSlice";
+import { usePathname } from "next/navigation";
 
 interface Message {
   id: string;
   type: "user" | "ai" | "system";
   content: string;
-  timestamp: Date;
+  timestamp: string;
   responseOptions?: ResponseOption[];
   attachments?: Attachment[];
   severity?: "info" | "warning" | "success" | "error";
@@ -45,21 +46,28 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
 }) => {
   const { clientId } = useDemoState();
   const dispatch = useDispatch();
+  const pathname = usePathname();
 
   // Get AI assistant state from Redux
   const { messages: aiMessages, isProcessing } = useSelector(
     (state: RootState) => state.aiAssistant
   );
 
-  // Use either demo state or Redux state depending on context
-  const isProductFilterContext =
-    window.location.pathname.includes("/product-filters");
+  // Initialize with false and update in useEffect
+  const [isProductFilterContext, setIsProductFilterContext] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isThinking, setIsThinking] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const [clarifyingQuestionStep, setClarifyingQuestionStep] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Set the product filter context based on the pathname
+  useEffect(() => {
+    if (pathname) {
+      setIsProductFilterContext(pathname.includes("/product-filters"));
+    }
+  }, [pathname]);
 
   // Use Redux state for product filter context
   useEffect(() => {
@@ -111,7 +119,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
           id: "1",
           type: "ai" as const,
           content: `${greeting}, ${merchantName}! I'm your AI marketing assistant. Sounds like you'd like to create a new offer. Let's get started. To help you create an effective offer, tell me about your primary business objective.`,
-          timestamp: new Date(),
+          timestamp: new Date().toISOString(),
           responseOptions: [
             {
               text: "Drive installs of and transactions through our 7NOW delivery app in Texas and Florida",
@@ -130,7 +138,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
             id: "1",
             type: "ai",
             content: `${greeting}, ${merchantName}! I'm your AI marketing assistant. Sounds like you'd like to create a new offer. Let's get started. To help you create an effective offer, tell me about your primary business objective.`,
-            timestamp: new Date(),
+            timestamp: new Date().toISOString(),
             responseOptions: [
               {
                 text: "Drive installs of and transactions through our 7NOW delivery app in Texas and Florida",
@@ -185,7 +193,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
       id: Date.now().toString(),
       type: "user",
       content: newMessage,
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
     };
 
     setMessages((prev) => [...prev, userMessage]);
@@ -225,7 +233,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
             type: "ai",
             content:
               "That sounds like an important business objective. To recommend an effective offer, tell me about the target audience you want to reach with the offer",
-            timestamp: new Date(),
+            timestamp: new Date().toISOString(),
             responseOptions: [
               {
                 text: "Primarily young adults 18-34 who are tech-savvy",
@@ -252,7 +260,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
             type: "ai",
             content:
               "Great. And when do you want to the offer to start and expire?",
-            timestamp: new Date(),
+            timestamp: new Date().toISOString(),
             responseOptions: [
               {
                 text: "For the next 4 weeks",
@@ -279,7 +287,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
             type: "ai",
             content:
               "Perfect. Do you have a specific offer or promotion in mind that you would like to use?",
-            timestamp: new Date(),
+            timestamp: new Date().toISOString(),
             responseOptions: [
               {
                 text: "Free pizza with 7NOW order",
@@ -305,7 +313,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
             type: "ai",
             content:
               "Based on our conversation, here's what I understand about your initial offer concept:",
-            timestamp: new Date(),
+            timestamp: new Date().toISOString(),
           };
 
           setMessages((prev) => [...prev, aiResponse]);
@@ -320,7 +328,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
               type: "ai",
               content:
                 "Free pizza with 7NOW order\n\nPromo code: BIGBITE\n\nLimit 1 per customer\n\nValid through end of June",
-              timestamp: new Date(),
+              timestamp: new Date().toISOString(),
             };
 
             setMessages((prev) => [...prev, offerResponse]);
@@ -332,7 +340,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
                 type: "ai",
                 content:
                   "I'm analyzing this offer to optimize its structure and performance...",
-                timestamp: new Date(),
+                timestamp: new Date().toISOString(),
               };
 
               setMessages((prev) => [...prev, analysisStartResponse]);
@@ -351,7 +359,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
 * Calculating optimal promotional pricing to maximize customer acquisition while ensuring ROI ✓
 * Determining the most effective validation method for tracking unique redemptions ✓
                   `,
-                  timestamp: new Date(),
+                  timestamp: new Date().toISOString(),
                 };
 
                 setMessages((prev) => [...prev, analysisResponse]);
@@ -385,7 +393,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
 
 *The offer is configured and ready for campaign deployment. Would you like to proceed with this optimized structure?*
                     `,
-                    timestamp: new Date(),
+                    timestamp: new Date().toISOString(),
                     responseOptions: [
                       {
                         text: "Yes, proceed with this offer",
@@ -419,7 +427,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
             type: "ai",
             content:
               "I'm analyzing this offer to optimize its structure and performance...",
-            timestamp: new Date(),
+            timestamp: new Date().toISOString(),
           };
 
           setMessages((prev) => [...prev, aiResponse]);
@@ -438,7 +446,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
 * Calculating optimal promotional pricing to maximize customer acquisition while ensuring ROI ✓
 * Determining the most effective validation method for tracking unique redemptions ✓
               `,
-              timestamp: new Date(),
+              timestamp: new Date().toISOString(),
             };
 
             setMessages((prev) => [...prev, analysisResponse]);
@@ -472,7 +480,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
 
 *The offer is configured and ready for campaign deployment. Would you like to proceed with this optimized structure?*
                 `,
-                timestamp: new Date(),
+                timestamp: new Date().toISOString(),
                 responseOptions: [
                   {
                     text: "Yes, proceed with this offer",
@@ -497,7 +505,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
             type: "ai",
             content:
               "I understand you want to drive installs and transactions for your 7NOW delivery app. Could you tell me more about your target audience demographics?",
-            timestamp: new Date(),
+            timestamp: new Date().toISOString(),
             responseOptions: [
               {
                 text: "Primarily young adults 18-34 who are tech-savvy",
@@ -522,7 +530,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
           id: Date.now().toString(),
           type: "ai",
           content: `Hello! I'm your AI marketing assistant. How can I help you create a successful campaign for your ${isSeven ? "7-Eleven locations" : "pizza business"} today?`,
-          timestamp: new Date(),
+          timestamp: new Date().toISOString(),
           responseOptions: [
             { text: "Show me the data", value: "show-data" },
             {
@@ -540,7 +548,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
             id: Date.now().toString(),
             type: "ai",
             content: `Your main competitors include other convenience store chains and quick-service food outlets. They're running 2-3x more promotions than you are currently, especially focused on app-based ordering and loyalty programs.`,
-            timestamp: new Date(),
+            timestamp: new Date().toISOString(),
             responseOptions: [
               { text: "Let's create our campaign", value: "create-campaign" },
               {
@@ -554,7 +562,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
             id: Date.now().toString(),
             type: "ai",
             content: `Your main competitor is Pizza Palace. They run more frequent promotions but have lower customer satisfaction. They focus on price while your strength is quality and portion size.`,
-            timestamp: new Date(),
+            timestamp: new Date().toISOString(),
             responseOptions: [
               {
                 text: "Tell me more about Pizza Palace",
@@ -574,7 +582,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
             id: Date.now().toString(),
             type: "ai",
             content: `Based on your data, I recommend a weekday 7NOW delivery promotion. This would address your slower weekday sales while leveraging your delivery service advantage over competitors.`,
-            timestamp: new Date(),
+            timestamp: new Date().toISOString(),
             responseOptions: [
               { text: "Let's create this campaign", value: "create-campaign" },
               { text: "What results can I expect?", value: "expected-results" },
@@ -585,7 +593,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
             id: Date.now().toString(),
             type: "ai",
             content: `Based on your data, a Family Weekday Special would be most effective. It offers a complete family meal at a competitive price point, targeting your underperforming weekday periods.`,
-            timestamp: new Date(),
+            timestamp: new Date().toISOString(),
             responseOptions: [
               { text: "Let's create this campaign", value: "create-campaign" },
               { text: "What results can I expect?", value: "expected-results" },
@@ -605,7 +613,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
               content: isSeven
                 ? "Here's your business intelligence data showing sales by day, delivery vs. in-store trends, competitor activity, and customer segments. The weekday opportunity for delivery is clear."
                 : "Here's your business intelligence data showing sales by day, performance trends, competitor activity, and customer segments. The weekday dinner opportunity is clear.",
-              timestamp: new Date(),
+              timestamp: new Date().toISOString(),
               responseOptions: [
                 { text: "Let's create a campaign", value: "create-campaign" },
                 { text: "What should I focus on?", value: "focus-suggestion" },
@@ -623,7 +631,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
               content: isSeven
                 ? "I've created three campaign options for you, each optimized for your 7-Eleven customer base and sales patterns. View them in the canvas to compare."
                 : "I've created three campaign options for you, each with offer structure, promo copy, visuals, and targeting. View them in the canvas to compare.",
-              timestamp: new Date(),
+              timestamp: new Date().toISOString(),
               responseOptions: [
                 {
                   text: isSeven
@@ -653,7 +661,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
                   type: "ai",
                   content:
                     "Your sales data shows strong weekend performance but relatively lower weekday sales. Tuesday is your weakest day, with approximately 35% lower revenue than weekend days. Your delivery orders are growing at 18% month over month.",
-                  timestamp: new Date(),
+                  timestamp: new Date().toISOString(),
                   responseOptions: [
                     {
                       text: "What campaign would you suggest?",
@@ -671,7 +679,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
                   type: "ai",
                   content:
                     "Your sales data shows strong weekend performance but relatively lower weekday sales. Monday is your weakest day, with approximately 50% lower revenue than weekend days. However, delivery orders are growing at 15% month over month.",
-                  timestamp: new Date(),
+                  timestamp: new Date().toISOString(),
                   responseOptions: [
                     {
                       text: "What campaign would you suggest?",
@@ -692,7 +700,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
                 content: isSeven
                   ? "Based on your business data, I can help you create a targeted marketing campaign for your 7-Eleven locations. Would you like to see the data or start creating a campaign?"
                   : "Based on your business data, I can help you create a targeted marketing campaign for your pizza business. Would you like to see the data or start creating a campaign?",
-                timestamp: new Date(),
+                timestamp: new Date().toISOString(),
                 responseOptions: [
                   { text: "Show me the data", value: "show-data" },
                   { text: "Let's create a campaign", value: "create-campaign" },
@@ -757,7 +765,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
               id: Date.now().toString(),
               type: "user",
               content: selectedOption.text,
-              timestamp: new Date(),
+              timestamp: new Date().toISOString(),
             };
 
             setMessages((prev) => [...prev, userMessage]);
@@ -781,7 +789,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
                   type: "ai",
                   content:
                     "Great. And when do you want to the offer to start and expire?",
-                  timestamp: new Date(),
+                  timestamp: new Date().toISOString(),
                   responseOptions: [
                     {
                       text: "For the next 4 weeks",
@@ -809,7 +817,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
                   type: "ai",
                   content:
                     "Perfect. Do you have a specific offer or promotion in mind that you would like to use?",
-                  timestamp: new Date(),
+                  timestamp: new Date().toISOString(),
                   responseOptions: [
                     {
                       text: "Free pizza with 7NOW order",
@@ -837,7 +845,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
                   type: "ai",
                   content:
                     "Based on our conversation, here's what I understand about your initial offer concept:",
-                  timestamp: new Date(),
+                  timestamp: new Date().toISOString(),
                 };
 
                 setMessages((prev) => [...prev, aiSummary]);
@@ -849,7 +857,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
                     type: "ai",
                     content:
                       "Free pizza with 7NOW order\n\nPromo code: BIGBITE\n\nLimit 1 per customer\n\nValid through end of June",
-                    timestamp: new Date(),
+                    timestamp: new Date().toISOString(),
                   };
 
                   setMessages((prev) => [...prev, offerResponse]);
@@ -861,7 +869,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
                       type: "ai",
                       content:
                         "I'm analyzing this offer to optimize its structure and performance...",
-                      timestamp: new Date(),
+                      timestamp: new Date().toISOString(),
                     };
 
                     setMessages((prev) => [...prev, analysisStartResponse]);
@@ -881,7 +889,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
 * Calculating optimal promotional pricing to maximize customer acquisition while ensuring ROI ✓
 * Determining the most effective validation method for tracking unique redemptions ✓
                         `,
-                        timestamp: new Date(),
+                        timestamp: new Date().toISOString(),
                       };
 
                       setMessages((prev) => [...prev, analysisResponse]);
@@ -915,7 +923,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
 
 *The offer is configured and ready for campaign deployment. Would you like to proceed with this optimized structure?*
                           `,
-                          timestamp: new Date(),
+                          timestamp: new Date().toISOString(),
                           responseOptions: [
                             {
                               text: "Yes, proceed with this offer",
@@ -950,7 +958,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
               id: Date.now().toString(),
               type: "user",
               content: selectedOption.text,
-              timestamp: new Date(),
+              timestamp: new Date().toISOString(),
             };
 
             setMessages((prev) => [...prev, userMessage]);
@@ -969,7 +977,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
                 type: "ai",
                 content:
                   "Great choice! Can you provide any specific details for this offer, such as promo code, limitations, or validity period?",
-                timestamp: new Date(),
+                timestamp: new Date().toISOString(),
                 responseOptions: [
                   {
                     text: "Promo code: BIGBITE, Limit 1 per customer, Valid through end of June",
@@ -992,7 +1000,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
               id: Date.now().toString(),
               type: "user",
               content: selectedOption.text,
-              timestamp: new Date(),
+              timestamp: new Date().toISOString(),
             };
 
             setMessages((prev) => [...prev, userMessage]);
@@ -1011,7 +1019,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
                 type: "ai",
                 content:
                   "Creating offer in system... Please wait while I configure all parameters.",
-                timestamp: new Date(),
+                timestamp: new Date().toISOString(),
               };
 
               setMessages((prev) => [...prev, processingMessage]);
@@ -1033,7 +1041,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
 - Valid Through: June 30, 2023
 
 The offer is now ready to be assigned to a campaign. Would you like to proceed with creating the campaign for this offer?`,
-                  timestamp: new Date(),
+                  timestamp: new Date().toISOString(),
                   responseOptions: [
                     {
                       text: "Next Step",
@@ -1057,7 +1065,7 @@ The offer is now ready to be assigned to a campaign. Would you like to proceed w
               id: Date.now().toString(),
               type: "user",
               content: selectedOption.text,
-              timestamp: new Date(),
+              timestamp: new Date().toISOString(),
             };
 
             setMessages((prev) => [...prev, userMessage]);
@@ -1076,7 +1084,7 @@ The offer is now ready to be assigned to a campaign. Would you like to proceed w
                 type: "ai",
                 content:
                   "Let's create a campaign to deliver this offer. What would you like to name this campaign?",
-                timestamp: new Date(),
+                timestamp: new Date().toISOString(),
                 responseOptions: [
                   {
                     text: "7NOW App Texas & Florida Pizza Promotion",
@@ -1099,7 +1107,7 @@ The offer is now ready to be assigned to a campaign. Would you like to proceed w
               id: Date.now().toString(),
               type: "user",
               content: selectedOption.text,
-              timestamp: new Date(),
+              timestamp: new Date().toISOString(),
             };
 
             setMessages((prev) => [...prev, userMessage]);
@@ -1118,7 +1126,7 @@ The offer is now ready to be assigned to a campaign. Would you like to proceed w
                 type: "ai",
                 content:
                   "The offer is set to run through June 30th. Would you like the campaign to follow the same timeline?",
-                timestamp: new Date(),
+                timestamp: new Date().toISOString(),
                 responseOptions: [
                   {
                     text: "Yes, but let's start next Monday to give us time for final approvals",
@@ -1141,7 +1149,7 @@ The offer is now ready to be assigned to a campaign. Would you like to proceed w
               id: Date.now().toString(),
               type: "user",
               content: selectedOption.text,
-              timestamp: new Date(),
+              timestamp: new Date().toISOString(),
             };
 
             setMessages((prev) => [...prev, userMessage]);
@@ -1159,7 +1167,7 @@ The offer is now ready to be assigned to a campaign. Would you like to proceed w
                 id: Date.now().toString(),
                 type: "ai",
                 content: "What's your total budget for this campaign?",
-                timestamp: new Date(),
+                timestamp: new Date().toISOString(),
                 responseOptions: [
                   {
                     text: "$120,000",
@@ -1182,7 +1190,7 @@ The offer is now ready to be assigned to a campaign. Would you like to proceed w
               id: Date.now().toString(),
               type: "user",
               content: selectedOption.text,
-              timestamp: new Date(),
+              timestamp: new Date().toISOString(),
             };
 
             setMessages((prev) => [...prev, userMessage]);
@@ -1200,7 +1208,7 @@ The offer is now ready to be assigned to a campaign. Would you like to proceed w
                 id: Date.now().toString(),
                 type: "ai",
                 content: "What's your maximum daily spend?",
-                timestamp: new Date(),
+                timestamp: new Date().toISOString(),
                 responseOptions: [
                   {
                     text: "$3,000",
@@ -1223,7 +1231,7 @@ The offer is now ready to be assigned to a campaign. Would you like to proceed w
               id: Date.now().toString(),
               type: "user",
               content: selectedOption.text,
-              timestamp: new Date(),
+              timestamp: new Date().toISOString(),
             };
 
             setMessages((prev) => [...prev, userMessage]);
@@ -1241,7 +1249,7 @@ The offer is now ready to be assigned to a campaign. Would you like to proceed w
                 id: Date.now().toString(),
                 type: "ai",
                 content: "What High Value Actions would you like to track?",
-                timestamp: new Date(),
+                timestamp: new Date().toISOString(),
                 responseOptions: [
                   {
                     text: "App installs, account creations, first orders, and repeat orders",
@@ -1264,7 +1272,7 @@ The offer is now ready to be assigned to a campaign. Would you like to proceed w
               id: Date.now().toString(),
               type: "user",
               content: selectedOption.text,
-              timestamp: new Date(),
+              timestamp: new Date().toISOString(),
             };
 
             setMessages((prev) => [...prev, userMessage]);
@@ -1283,7 +1291,7 @@ The offer is now ready to be assigned to a campaign. Would you like to proceed w
                 type: "ai",
                 content:
                   "Based on your inputs, I'm configuring the optimal campaign settings. This will just take a moment...",
-                timestamp: new Date(),
+                timestamp: new Date().toISOString(),
               };
 
               setMessages((prev) => [...prev, configurationProcessingMessage]);
@@ -1318,7 +1326,7 @@ The offer is now ready to be assigned to a campaign. Would you like to proceed w
 
 The campaign is now fully configured and ready to publish. Would you like to make any adjustments, or shall we proceed with publishing?
                   `,
-                  timestamp: new Date(),
+                  timestamp: new Date().toISOString(),
                   responseOptions: [
                     {
                       text: "Publish Campaign",
@@ -1349,7 +1357,7 @@ The campaign is now fully configured and ready to publish. Would you like to mak
               id: Date.now().toString(),
               type: "user",
               content: selectedOption.text,
-              timestamp: new Date(),
+              timestamp: new Date().toISOString(),
             };
 
             setMessages((prev) => [...prev, userMessage]);
@@ -1367,7 +1375,7 @@ The campaign is now fully configured and ready to publish. Would you like to mak
                 id: Date.now().toString(),
                 type: "ai",
                 content: "Publishing your campaign across the network...",
-                timestamp: new Date(),
+                timestamp: new Date().toISOString(),
               };
 
               setMessages((prev) => [...prev, publishingMessage]);
@@ -1392,7 +1400,7 @@ Your 7NOW App Texas & Florida Pizza Promotion campaign is now live and running a
 
 Your campaign performance dashboard is now available. You'll receive daily performance updates, and our AI will continuously optimize your campaign to maximize results.
                   `,
-                  timestamp: new Date(),
+                  timestamp: new Date().toISOString(),
                   responseOptions: [
                     {
                       text: "View Campaign Performance",
@@ -1445,7 +1453,7 @@ Your campaign performance dashboard is now available. You'll receive daily perfo
   );
 
   return (
-    <div className={`flex flex-col h-full ${className}`}>
+    <div className={`flex flex-col w-full h-full ${className}`}>
       {/* Header */}
       <div className="p-4 border-b border-gray-200 flex-shrink-0">
         <h3 className="text-lg font-semibold">AI Marketing Assistant</h3>
@@ -1454,23 +1462,25 @@ Your campaign performance dashboard is now available. You'll receive daily perfo
         </p>
       </div>
 
-      {/* Messages - Change to take all available space except for input height */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin">
-        {messages.map((message) => (
-          <ChatMessage
-            key={message.id}
-            message={message}
-            onOptionSelected={handleOptionSelected}
-          />
-        ))}
+      {/* Messages - Scrollable area with min-height:0 for proper flex scrolling */}
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 scrollbar-thin">
+        <div className="space-y-4">
+          {messages.map((message) => (
+            <ChatMessage
+              key={message.id}
+              message={message}
+              onOptionSelected={handleOptionSelected}
+            />
+          ))}
 
-        {isThinking && <AIThinkingIndicator />}
+          {isThinking && <AIThinkingIndicator />}
 
-        <div ref={messagesEndRef} />
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
-      {/* Input - Change from absolute to sticky positioning */}
-      <div className="p-4 border-t border-gray-200 bg-white flex-shrink-0 sticky bottom-0 left-0 right-0 z-10">
+      {/* Input - Fixed at bottom */}
+      <div className="p-4 border-t border-gray-200 bg-white flex-shrink-0">
         <form
           className="flex items-center space-x-2"
           onSubmit={handleFormSubmit}

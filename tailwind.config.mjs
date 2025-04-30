@@ -145,6 +145,8 @@ export default {
         spring: "spring 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)",
         "spin-slow": "spin 8s linear infinite",
         aurora: "aurora 60s linear infinite",
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
       },
       keyframes: {
         fadeIn: {
@@ -251,6 +253,22 @@ export default {
           },
           "100%": {
             backgroundPosition: "0% 0%, 0% 0%",
+          },
+        },
+        "accordion-down": {
+          from: {
+            height: "0",
+          },
+          to: {
+            height: "var(--radix-accordion-content-height)",
+          },
+        },
+        "accordion-up": {
+          from: {
+            height: "var(--radix-accordion-content-height)",
+          },
+          to: {
+            height: "0",
           },
         },
       },

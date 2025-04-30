@@ -6,14 +6,21 @@ import { Button } from "@/components/atoms/Button";
 import { Input } from "@/components/atoms/Input";
 import Card from "@/components/atoms/Card/Card";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/atoms/Tabs";
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Label } from "@/components/atoms/Label";
 import { Textarea } from "@/components/atoms/Textarea";
-import { ArrowLeftIcon, PlusIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowLeftIcon,
+  PlusIcon,
+  CheckCircleIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+} from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import {
   Select,
@@ -28,13 +35,24 @@ import { addDays } from "date-fns";
 import { AIAssistantPanel } from "@/components/features/ai";
 import { useDispatch } from "react-redux";
 import { setProductFilterContext } from "@/lib/redux/slices/ai-assistantSlice";
+import { Badge } from "@/components/atoms/Badge";
+import {
+  InformationCircleIcon,
+  XCircleIcon,
+  LightBulbIcon,
+  FunnelIcon,
+  PencilIcon,
+} from "@heroicons/react/24/outline";
+import { Tooltip } from "@/components/atoms/Tooltip";
+import { cn } from "@/lib/utils";
 
 // Interface for filter criteria
 interface FilterCriteria {
   id: string;
   type: string;
   value: string;
-  operator: string;
+  rule: string;
+  and_or: string;
   isRequired: boolean;
 }
 
@@ -106,7 +124,8 @@ export default function ProductFilterCreationView() {
   const [filterCriteria, setFilterCriteria] = useState<FilterCriteria[]>([]);
   const [criteriaType, setCriteriaType] = useState("");
   const [criteriaValue, setCriteriaValue] = useState("");
-  const [criteriaOperator, setCriteriaOperator] = useState("equals");
+  const [criteriaRule, setCriteriaRule] = useState("equals");
+  const [criteriaAndOr, setCriteriaAndOr] = useState("OR");
 
   // Required criteria types based on ticket
   const requiredCriteriaTypes = [
@@ -151,14 +170,16 @@ export default function ProductFilterCreationView() {
         id: Date.now().toString(),
         type: criteriaType,
         value: criteriaValue,
-        operator: criteriaOperator,
+        rule: criteriaRule,
+        and_or: criteriaAndOr,
         isRequired,
       };
 
       setFilterCriteria([...filterCriteria, newCriteria]);
       setCriteriaType("");
       setCriteriaValue("");
-      setCriteriaOperator("equals");
+      setCriteriaRule("equals");
+      setCriteriaAndOr("OR");
     }
   };
 
@@ -227,10 +248,23 @@ export default function ProductFilterCreationView() {
     // Only update if we have meaningful content to avoid unnecessary updates
     if (filterName.trim() || description.trim()) {
       dispatch(
-        setProductFilterContext({ filterName, filterDescription: description })
+        setProductFilterContext({
+          filterName,
+          filterDescription: description,
+        })
       );
     }
   }, [dispatch, filterName, description]);
+
+  // Share filter criteria changes with AI assistant by sending messages
+  useEffect(() => {
+    if (filterCriteria.length > 0) {
+      // This would ideally update the AI assistant with the current criteria
+      // For now we're just logging it, but in a real implementation,
+      // we would send this to the AI assistant
+      console.log("Filter criteria updated:", filterCriteria);
+    }
+  }, [filterCriteria]);
 
   // Handle option selected from AI Assistant
   const handleOptionSelected = (optionId: string) => {
@@ -246,7 +280,16 @@ export default function ProductFilterCreationView() {
         if (criteriaData.type && criteriaData.value) {
           setCriteriaType(criteriaData.type);
           setCriteriaValue(criteriaData.value);
-          setCriteriaOperator(criteriaData.operator || "equals");
+
+          // Handle new rule and and_or fields
+          if (criteriaData.rule) {
+            setCriteriaRule(criteriaData.rule);
+          } else if (criteriaData.operator) {
+            // For backward compatibility with old operator field
+            setCriteriaRule(criteriaData.operator);
+          }
+
+          setCriteriaAndOr(criteriaData.and_or || "OR");
         }
       } catch (e) {
         console.error("Failed to parse criteria suggestion", e);
@@ -254,8 +297,42 @@ export default function ProductFilterCreationView() {
     }
   };
 
+  // AI Panel examples for the assistant
+  const aiExamples = [
+    "Show me all offers with 'discount' in the title",
+    "Create a filter for Amazon merchants only",
+    "I need a filter for holiday promotions",
+    "Help me set up a filter for electronics offers",
+  ];
+
+  // Friendly names mapping for technical terms
+  const friendlyTypeNames: Record<string, string> = {
+    MerchantKeyword: "Merchant Contains Keyword",
+    MerchantName: "Merchant Name",
+    OfferCommodity: "Offer Commodity",
+    OfferKeyword: "Offer Contains Keyword",
+    Client: "Client",
+    MerchantId: "Merchant ID",
+    OfferCategory: "Offer Category",
+    OfferExpiry: "Offer Expiry Date",
+    OfferId: "Offer ID",
+    OfferRedemptionControlLimit: "Redemption Limit",
+    OfferRedemptionType: "Redemption Type",
+    OfferType: "Offer Type",
+  };
+
+  // Friendly names for rules
+  const friendlyRuleNames: Record<string, string> = {
+    equals: "is exactly",
+    contains: "contains",
+    startsWith: "starts with",
+    endsWith: "ends with",
+    greaterThan: "is greater than",
+    lessThan: "is less than",
+  };
+
   return (
-    <div className="space-y-6 overflow-hidden">
+    <div className="space-y-2 h-full flex flex-col">
       <PageHeader
         title="Create New Product Filter"
         description="Add a new product filter to control offer display in the TOP platform."
@@ -264,256 +341,475 @@ export default function ProductFilterCreationView() {
         variant="aurora"
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* AI Assistant Panel - Left Side */}
-        <div className="lg:col-span-4 h-full overflow-hidden flex flex-col">
-          <Card className="h-full p-0 overflow-hidden flex flex-col">
-            <AIAssistantPanel
-              onOptionSelected={handleOptionSelected}
-              className="h-full"
-            />
-          </Card>
-        </div>
+      {/* Main content container with strict viewport-based height */}
+      <div className="flex-1 min-h-0" style={{ height: "calc(100vh - 160px)" }}>
+        <div className="grid grid-cols-12 gap-3 h-full">
+          {/* Left Column - AI Assistant Panel */}
+          <div className="col-span-3 h-full overflow-hidden flex flex-col">
+            <Card className="p-0 h-full flex flex-col">
+              <div className="p-2 border-b bg-muted/50 flex items-center">
+                <LightBulbIcon className="h-4 w-4 text-primary mr-2" />
+                <div>
+                  <h3 className="text-sm font-medium">AI Filter Assistant</h3>
+                  <p className="text-xs text-muted-foreground">
+                    Tell me what offers you want to filter
+                  </p>
+                </div>
+              </div>
 
-        {/* Main content - Product filter form - Right Side */}
-        <div className="lg:col-span-8">
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="w-full"
-          >
-            <TabsList>
-              <TabsTrigger value="details">Basic Details</TabsTrigger>
-              <TabsTrigger value="criteria" disabled={!isFormValid()}>
-                Filter Criteria
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="details" className="mt-4 space-y-4">
-              <Card className="p-6 overflow-hidden">
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="filter-name">Filter Name*</Label>
-                    <Input
-                      id="filter-name"
-                      placeholder="Enter filter name"
-                      value={filterName}
-                      onChange={(e) => setFilterName(e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="query-view">Query View Name*</Label>
-                    <Input
-                      id="query-view"
-                      placeholder="Enter query view name"
-                      value={queryViewName}
-                      onChange={(e) => setQueryViewName(e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea
-                      id="description"
-                      placeholder="Enter filter description"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      className="mt-1"
-                      rows={4}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="expiry-date">Expiry Date*</Label>
-                    <DatePicker
-                      id="expiry-date"
-                      selected={expiryDate}
-                      onSelect={setExpiryDate}
-                      placeholder="Select expiry date"
-                      className="mt-1 w-full"
-                    />
+              {filterCriteria.length === 0 && (
+                <div className="p-2 border-b">
+                  <h4 className="text-xs font-medium mb-1">Try asking me:</h4>
+                  <div className="space-y-1">
+                    {aiExamples.map((example, index) => (
+                      <div
+                        key={index}
+                        className="text-xs p-1 bg-primary/10 rounded-md cursor-pointer hover:bg-primary/20"
+                        onClick={() => {
+                          console.log("Example clicked:", example);
+                        }}
+                      >
+                        "{example}"
+                      </div>
+                    ))}
                   </div>
                 </div>
-              </Card>
+              )}
 
-              <div className="flex justify-between">
-                <Button variant="outline" onClick={handleCancel}>
-                  Cancel
-                </Button>
-                <Button onClick={nextTab} disabled={!isFormValid()}>
-                  Next: Filter Criteria
-                </Button>
+              <AIAssistantPanel
+                onOptionSelected={handleOptionSelected}
+                className="flex-grow"
+              />
+            </Card>
+          </div>
+
+          {/* Right Column - Filter Configuration */}
+          <div className="col-span-9 h-full">
+            <Card className="p-0 h-full flex flex-col">
+              <div className="flex items-center justify-between p-3 border-b bg-muted/20">
+                <div className="flex items-center">
+                  <FunnelIcon className="h-5 w-5 mr-2 text-primary" />
+                  <h3 className="font-medium">Product Filter Configuration</h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" onClick={handleCancel} size="sm">
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleCreateFilter}
+                    disabled={!isFormValid() || !hasAllRequiredCriteria()}
+                    size="sm"
+                  >
+                    Create Filter
+                  </Button>
+                </div>
               </div>
-            </TabsContent>
 
-            <TabsContent value="criteria" className="mt-4 space-y-4">
-              <Card className="p-6 overflow-hidden">
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-lg font-medium">Add Filter Criteria</h3>
-                    <p className="text-muted-foreground text-sm mt-1">
-                      Define the criteria that will be used to filter offers.
-                      All required criteria types must be added.
-                    </p>
-                  </div>
+              <div className="flex-grow p-4 overflow-auto">
+                <div className="grid grid-cols-12 gap-6 h-full">
+                  {/* Left side - Basic Information and Status */}
+                  <div className="col-span-5 space-y-6">
+                    {/* Basic Information Section */}
+                    <Accordion
+                      type="single"
+                      collapsible
+                      defaultValue="basic-info"
+                      className="border rounded-md"
+                    >
+                      <AccordionItem value="basic-info" className="border-none">
+                        <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                          Basic Information
+                        </AccordionTrigger>
+                        <AccordionContent className="px-4">
+                          <div className="space-y-4 pb-2">
+                            <div>
+                              <Label htmlFor="filter-name" className="text-sm">
+                                Filter Name*
+                              </Label>
+                              <Input
+                                id="filter-name"
+                                placeholder="Enter filter name"
+                                value={filterName}
+                                onChange={(e) => setFilterName(e.target.value)}
+                                className="mt-1"
+                              />
+                            </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <Label htmlFor="criteria-type">Criteria Type*</Label>
-                      <Select
-                        value={criteriaType}
-                        onValueChange={setCriteriaType}
-                      >
-                        <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="Select criteria type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="required_header" disabled>
-                            -- Required Criteria Types --
-                          </SelectItem>
-                          {requiredCriteriaTypes.map((type) => (
-                            <SelectItem key={type} value={type}>
-                              {type}{" "}
-                              {filterCriteria.some((c) => c.type === type) &&
-                                "✓"}
-                            </SelectItem>
-                          ))}
-                          <SelectItem value="optional_header" disabled>
-                            -- Optional Criteria Types --
-                          </SelectItem>
-                          {optionalCriteriaTypes.map((type) => (
-                            <SelectItem key={type} value={type}>
-                              {type}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                            <div>
+                              <Label htmlFor="query-view" className="text-sm">
+                                Query View Name*
+                              </Label>
+                              <Input
+                                id="query-view"
+                                placeholder="Enter query view name"
+                                value={queryViewName}
+                                onChange={(e) =>
+                                  setQueryViewName(e.target.value)
+                                }
+                                className="mt-1"
+                              />
+                            </div>
 
-                    <div>
-                      <Label htmlFor="criteria-operator">Operator</Label>
-                      <Select
-                        value={criteriaOperator}
-                        onValueChange={setCriteriaOperator}
-                      >
-                        <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="Select operator" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="equals">Equals</SelectItem>
-                          <SelectItem value="contains">Contains</SelectItem>
-                          <SelectItem value="startsWith">
-                            Starts With
-                          </SelectItem>
-                          <SelectItem value="endsWith">Ends With</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                            <div>
+                              <Label htmlFor="description" className="text-sm">
+                                Description
+                              </Label>
+                              <Textarea
+                                id="description"
+                                placeholder="Describe what this filter does"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                className="mt-1"
+                                rows={2}
+                              />
+                            </div>
 
-                    <div>
-                      <Label htmlFor="criteria-value">Value*</Label>
-                      <div className="flex mt-1">
-                        <Input
-                          id="criteria-value"
-                          placeholder="Enter value"
-                          value={criteriaValue}
-                          onChange={(e) => setCriteriaValue(e.target.value)}
-                          className="flex-1"
-                        />
-                        <Button
-                          onClick={addCriteria}
-                          disabled={!criteriaType || !criteriaValue}
-                          className="ml-2 p-2 h-9 w-9"
-                        >
-                          <PlusIcon className="h-4 w-4" />
-                        </Button>
+                            <div>
+                              <Label htmlFor="expiry-date" className="text-sm">
+                                Expiry Date*
+                              </Label>
+                              <DatePicker
+                                id="expiry-date"
+                                selected={expiryDate}
+                                onSelect={setExpiryDate}
+                                placeholder="Select expiry date"
+                                className="mt-1 w-full"
+                              />
+                            </div>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+
+                    {/* Required Fields Status */}
+                    <div className="border rounded-md p-4">
+                      <h4 className="text-sm font-medium mb-3 flex items-center">
+                        <span>Required Fields</span>
+                        <Badge variant="outline" className="ml-2 text-xs">
+                          {
+                            requiredCriteriaTypes.filter((type) =>
+                              filterCriteria.some((c) => c.type === type)
+                            ).length
+                          }{" "}
+                          / {requiredCriteriaTypes.length}
+                        </Badge>
+                      </h4>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        {requiredCriteriaTypes.map((type) => (
+                          <div
+                            key={type}
+                            className={`text-xs p-2 rounded-md flex items-center ${
+                              filterCriteria.some((c) => c.type === type)
+                                ? "bg-green-50 text-green-800"
+                                : "bg-gray-50 text-gray-500"
+                            }`}
+                          >
+                            {filterCriteria.some((c) => c.type === type) ? (
+                              <CheckCircleIcon className="h-3.5 w-3.5 mr-1.5" />
+                            ) : (
+                              <span className="h-3.5 w-3.5 mr-1.5 rounded-full bg-gray-200" />
+                            )}
+                            <span className="truncate">
+                              {friendlyTypeNames[type] || type}
+                            </span>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-4">
-                    <h4 className="text-sm font-medium mb-2">
-                      Current Criteria
-                    </h4>
+                  {/* Right side - Filter Builder and Conditions */}
+                  <div className="col-span-7 flex flex-col space-y-4">
+                    {/* Condition Builder */}
+                    <Accordion
+                      type="single"
+                      collapsible
+                      defaultValue="condition-builder"
+                      className="border rounded-md"
+                    >
+                      <AccordionItem
+                        value="condition-builder"
+                        className="border-none"
+                      >
+                        <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                          Add Filter Condition
+                        </AccordionTrigger>
+                        <AccordionContent className="px-4">
+                          <div className="space-y-3 pb-2">
+                            <div className="flex flex-wrap items-center gap-2 text-xs">
+                              <span>Find offers where</span>
 
-                    {filterCriteria.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">
-                        No criteria added yet. All required criteria must be
-                        added before saving.
-                      </p>
-                    ) : (
-                      <div className="border rounded-md overflow-hidden">
-                        <table className="w-full text-sm">
-                          <thead>
-                            <tr className="bg-muted border-b">
-                              <th className="text-left py-2 px-3 font-medium">
-                                Type
-                              </th>
-                              <th className="text-left py-2 px-3 font-medium">
-                                Operator
-                              </th>
-                              <th className="text-left py-2 px-3 font-medium">
-                                Value
-                              </th>
-                              <th className="text-left py-2 px-3 font-medium">
-                                Required
-                              </th>
-                              <th className="text-right py-2 px-3 font-medium">
-                                Actions
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {filterCriteria.map((criteria) => (
-                              <tr
-                                key={criteria.id}
-                                className="border-b last:border-b-0"
+                              <Select
+                                value={criteriaType}
+                                onValueChange={setCriteriaType}
                               >
-                                <td className="py-2 px-3">{criteria.type}</td>
-                                <td className="py-2 px-3">
-                                  {criteria.operator}
-                                </td>
-                                <td className="py-2 px-3">{criteria.value}</td>
-                                <td className="py-2 px-3">
-                                  {criteria.isRequired ? "Yes" : "No"}
-                                </td>
-                                <td className="py-2 px-3 text-right">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => removeCriteria(criteria.id)}
-                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                  >
-                                    Remove
-                                  </Button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                                <SelectTrigger className="min-w-[160px] h-8">
+                                  <SelectValue placeholder="select a field" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="required_header" disabled>
+                                    -- Required Fields --
+                                  </SelectItem>
+                                  {requiredCriteriaTypes.map((type) => (
+                                    <SelectItem key={type} value={type}>
+                                      {friendlyTypeNames[type] || type}{" "}
+                                      {filterCriteria.some(
+                                        (c) => c.type === type
+                                      ) && "✓"}
+                                    </SelectItem>
+                                  ))}
+                                  <SelectItem value="optional_header" disabled>
+                                    -- Optional Fields --
+                                  </SelectItem>
+                                  {optionalCriteriaTypes.map((type) => (
+                                    <SelectItem key={type} value={type}>
+                                      {friendlyTypeNames[type] || type}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+
+                              <Select
+                                value={criteriaRule}
+                                onValueChange={setCriteriaRule}
+                              >
+                                <SelectTrigger className="min-w-[130px] h-8">
+                                  <SelectValue placeholder="comparison" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {Object.entries(friendlyRuleNames).map(
+                                    ([value, label]) => (
+                                      <SelectItem key={value} value={value}>
+                                        {label}
+                                      </SelectItem>
+                                    )
+                                  )}
+                                </SelectContent>
+                              </Select>
+
+                              <Input
+                                placeholder="value"
+                                value={criteriaValue}
+                                onChange={(e) =>
+                                  setCriteriaValue(e.target.value)
+                                }
+                                className="h-8 w-[130px]"
+                              />
+
+                              <span>connect with</span>
+
+                              <Select
+                                value={criteriaAndOr}
+                                onValueChange={setCriteriaAndOr}
+                              >
+                                <SelectTrigger className="w-[90px] h-8">
+                                  <SelectValue placeholder="operator" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="OR">
+                                    <span className="font-medium">OR</span>
+                                  </SelectItem>
+                                  <SelectItem value="AND">
+                                    <span className="font-medium">AND</span>
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+
+                              <Button
+                                onClick={addCriteria}
+                                disabled={!criteriaType || !criteriaValue}
+                                size="sm"
+                                className="h-8"
+                              >
+                                <PlusIcon className="h-3.5 w-3.5 mr-1" />
+                                Add
+                              </Button>
+                            </div>
+
+                            <div className="text-xs text-muted-foreground">
+                              {criteriaType &&
+                              requiredCriteriaTypes.includes(criteriaType)
+                                ? "This is a required field. Offers matching this condition will be included."
+                                : criteriaType
+                                  ? "This is an optional field. Offers matching this condition will be excluded."
+                                  : "Select a field to get started."}
+                            </div>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+
+                    {/* Current Conditions */}
+                    <div className="flex-grow flex flex-col border rounded-md overflow-hidden">
+                      <div className="border-b p-3">
+                        <h4 className="text-sm font-medium flex items-center">
+                          Current Conditions
+                          <Tooltip content="All required conditions must be added before saving">
+                            <InformationCircleIcon className="h-4 w-4 ml-1 text-muted-foreground" />
+                          </Tooltip>
+                        </h4>
                       </div>
-                    )}
+
+                      <div className="grid grid-cols-2 flex-grow overflow-hidden">
+                        {/* Include Rules */}
+                        <div className="border-r flex flex-col">
+                          <div className="bg-green-50 text-green-800 px-3 py-1.5 text-xs font-medium flex items-center justify-between border-b">
+                            <div className="flex items-center">
+                              <CheckCircleIcon className="h-3.5 w-3.5 mr-1.5" />
+                              <span>INCLUDE OFFERS</span>
+                            </div>
+                            <Badge
+                              variant="secondary"
+                              className="text-[10px] bg-green-100"
+                            >
+                              {
+                                filterCriteria.filter((c) => c.isRequired)
+                                  .length
+                              }
+                            </Badge>
+                          </div>
+
+                          <ScrollArea className="flex-grow p-2">
+                            {filterCriteria.filter((c) => c.isRequired)
+                              .length === 0 ? (
+                              <div className="text-xs text-muted-foreground p-4 text-center">
+                                No include conditions added yet
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                {filterCriteria
+                                  .filter((c) => c.isRequired)
+                                  .map((criteria) => (
+                                    <div
+                                      key={criteria.id}
+                                      className="border rounded-md p-2.5 relative hover:shadow-sm transition-all group"
+                                    >
+                                      <button
+                                        onClick={() =>
+                                          removeCriteria(criteria.id)
+                                        }
+                                        className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        aria-label="Remove condition"
+                                      >
+                                        <XCircleIcon className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                                      </button>
+
+                                      <div className="text-xs">
+                                        <div className="font-medium mb-1.5">
+                                          {friendlyTypeNames[criteria.type] ||
+                                            criteria.type}
+                                        </div>
+                                        <div className="flex items-center flex-wrap gap-1">
+                                          <span className="text-muted-foreground">
+                                            {friendlyRuleNames[criteria.rule] ||
+                                              criteria.rule}
+                                          </span>
+                                          <Badge
+                                            variant="outline"
+                                            className="font-mono text-[10px]"
+                                          >
+                                            {criteria.value}
+                                          </Badge>
+                                        </div>
+                                        <div className="mt-2 flex justify-between items-center">
+                                          <Badge
+                                            variant="secondary"
+                                            className="text-[10px]"
+                                          >
+                                            {criteria.and_or}
+                                          </Badge>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                              </div>
+                            )}
+                          </ScrollArea>
+                        </div>
+
+                        {/* Exclude Rules */}
+                        <div className="flex flex-col">
+                          <div className="bg-red-50 text-red-800 px-3 py-1.5 text-xs font-medium flex items-center justify-between border-b">
+                            <div className="flex items-center">
+                              <XCircleIcon className="h-3.5 w-3.5 mr-1.5" />
+                              <span>EXCLUDE OFFERS</span>
+                            </div>
+                            <Badge
+                              variant="secondary"
+                              className="text-[10px] bg-red-100"
+                            >
+                              {
+                                filterCriteria.filter((c) => !c.isRequired)
+                                  .length
+                              }
+                            </Badge>
+                          </div>
+
+                          <ScrollArea className="flex-grow p-2">
+                            {filterCriteria.filter((c) => !c.isRequired)
+                              .length === 0 ? (
+                              <div className="text-xs text-muted-foreground p-4 text-center">
+                                No exclude conditions added yet
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                {filterCriteria
+                                  .filter((c) => !c.isRequired)
+                                  .map((criteria) => (
+                                    <div
+                                      key={criteria.id}
+                                      className="border rounded-md p-2.5 relative hover:shadow-sm transition-all group"
+                                    >
+                                      <button
+                                        onClick={() =>
+                                          removeCriteria(criteria.id)
+                                        }
+                                        className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        aria-label="Remove condition"
+                                      >
+                                        <XCircleIcon className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                                      </button>
+
+                                      <div className="text-xs">
+                                        <div className="font-medium mb-1.5">
+                                          {friendlyTypeNames[criteria.type] ||
+                                            criteria.type}
+                                        </div>
+                                        <div className="flex items-center flex-wrap gap-1">
+                                          <span className="text-muted-foreground">
+                                            {friendlyRuleNames[criteria.rule] ||
+                                              criteria.rule}
+                                          </span>
+                                          <Badge
+                                            variant="outline"
+                                            className="font-mono text-[10px]"
+                                          >
+                                            {criteria.value}
+                                          </Badge>
+                                        </div>
+                                        <div className="mt-2 flex justify-between items-center">
+                                          <Badge
+                                            variant="secondary"
+                                            className="text-[10px]"
+                                          >
+                                            {criteria.and_or}
+                                          </Badge>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                              </div>
+                            )}
+                          </ScrollArea>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </Card>
-
-              <div className="flex justify-between">
-                <Button variant="outline" onClick={prevTab}>
-                  <ArrowLeftIcon className="h-4 w-4 mr-1" />
-                  Back to Details
-                </Button>
-                <Button
-                  onClick={handleCreateFilter}
-                  disabled={!hasAllRequiredCriteria()}
-                >
-                  Create Product Filter
-                </Button>
               </div>
-            </TabsContent>
-          </Tabs>
+            </Card>
+          </div>
         </div>
       </div>
     </div>

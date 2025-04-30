@@ -5,7 +5,7 @@ export interface AIMessage {
   id: string;
   type: "user" | "ai" | "system";
   content: string;
-  timestamp: Date;
+  timestamp: string;
   responseOptions?: Array<{
     text: string;
     value: string;
@@ -44,7 +44,7 @@ export const aiAssistantSlice = createSlice({
       state.messages.push({
         ...action.payload,
         id: Date.now().toString(),
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
       });
     },
 
@@ -94,7 +94,7 @@ export const aiAssistantSlice = createSlice({
         id: Date.now().toString(),
         type: "ai",
         content: greeting,
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
         responseOptions: [
           {
             text: "What criteria should I include for this filter?",
