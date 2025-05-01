@@ -335,9 +335,12 @@ export default function ProductFilterCreationView() {
 
       {/* Main content container with strict viewport-based height */}
       <div className="flex-1 min-h-0" style={{ height: "calc(100vh - 160px)" }}>
-        <div className="grid grid-cols-12 gap-3 h-full">
+        <div className="flex gap-3 h-full">
           {/* Left Column - AI Assistant Panel */}
-          <div className="col-span-3 h-full overflow-hidden flex flex-col">
+          <div
+            className="h-full overflow-hidden flex flex-col"
+            style={{ width: "448px" }}
+          >
             <Card className="p-0 h-full flex flex-col">
               <AIAssistantPanel
                 onOptionSelected={handleOptionSelected}
@@ -349,7 +352,7 @@ export default function ProductFilterCreationView() {
           </div>
 
           {/* Right Column - Filter Configuration */}
-          <div className="col-span-9 h-full">
+          <div className="flex-1 h-full">
             <Card className="p-0 h-full flex flex-col">
               <div className="flex items-center justify-between p-3 border-b bg-muted/20">
                 <div className="flex items-center">
