@@ -8,9 +8,11 @@ import analyticsReducer from "./slices/analyticsSlice";
 import externalTicketingReducer from "./slices/externalTicketingSlice";
 import sessionReducer from "./slices/sessionSlice";
 import aiAssistantReducer from "./slices/ai-assistantSlice";
+import productFilterReducer from "./slices/productFilterSlice";
 import { useDispatch } from "react-redux";
 import { ActionWithType } from "../../types/redux";
 import aiAssistantMiddleware from "./middleware/ai-assistantMiddleware";
+import { ProductFilterState } from "./slices/productFilterSlice";
 
 // Simple flag to disable all middleware logging if needed
 const ENABLE_ACTION_LOGGING = true;
@@ -55,12 +57,21 @@ export function makeStore() {
       externalTicketing: externalTicketingReducer,
       session: sessionReducer,
       aiAssistant: aiAssistantReducer,
+      productFilter: productFilterReducer,
     },
     middleware: (getDefaultMiddleware) =>
-      getDefaultMiddleware().concat([
-        demoActionLoggerMiddleware,
-        aiAssistantMiddleware,
-      ]),
+      getDefaultMiddleware({
+        // Configure serializableCheck to ignore certain action types
+        serializableCheck: {
+          // Ignore these action types
+          ignoredActions: [
+            "productFilter/setExpiryDate",
+            "productFilter/applyFilterUpdate",
+          ],
+          // Ignore these field paths in the state
+          ignoredPaths: ["productFilter.expiryDate"],
+        },
+      }).concat([demoActionLoggerMiddleware, aiAssistantMiddleware]),
     // Enable Redux DevTools in development
     devTools: process.env.NODE_ENV !== "production",
   });

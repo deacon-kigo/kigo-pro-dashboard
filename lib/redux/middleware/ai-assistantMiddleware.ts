@@ -12,6 +12,14 @@ import {
   createFilterConversationGuideTool,
 } from "@/services/ai/tools";
 import { RootState } from "../store";
+import {
+  selectFilterName,
+  selectQueryViewName,
+  selectDescription,
+  selectExpiryDate,
+  selectCriteria,
+  selectCompleteFilterContext,
+} from "../selectors/productFilterSelectors";
 
 // Define action types for type checking
 interface AddMessageAction extends AnyAction {
@@ -248,21 +256,13 @@ Would you like to use any of these suggestions?`,
   };
 };
 
-// Extend RootState with productFilter
-interface ExtendedState extends RootState {
-  productFilter?: {
-    filterName?: string;
-    description?: string;
-  };
-}
-
 const aiAssistantMiddleware: Middleware =
   (store) => (next) => async (action: any) => {
     // First pass the action to the next middleware
     const result = next(action);
 
     // Get current state
-    const state = store.getState() as ExtendedState;
+    const state = store.getState();
 
     // Handle user message submissions
     if (isAddMessageAction(action) && action.payload.type === "user") {
@@ -273,103 +273,99 @@ const aiAssistantMiddleware: Middleware =
       store.dispatch(setIsProcessing(true));
 
       try {
-        // Check if we're in product filter mode based on context
-        if (state.aiAssistant.contextId === "productFilterContext") {
-          // Use conversational filter guide for product filter mode
-          const conversationGuideTool = createFilterConversationGuideTool();
+        // Always use the conversation guide tool for better context awareness
+        const conversationGuideTool = createFilterConversationGuideTool();
 
-          // Prepare context for the tool
-          const conversationHistory = state.aiAssistant.messages;
-          const currentCriteria = state.aiAssistant.currentCriteria || [];
+        // Prepare context for the tool
+        const conversationHistory = state.aiAssistant.messages;
+        const currentCriteria = state.aiAssistant.currentCriteria || [];
 
-          // Invoke the tool
-          const toolResponse = await conversationGuideTool.invoke(
-            JSON.stringify({
-              userMessage,
-              conversationHistory,
-              currentCriteria,
-            })
-          );
+        // Get complete context using the selector that combines everything
+        const filterContext = selectCompleteFilterContext(state);
 
-          // Parse the response
-          const response = JSON.parse(toolResponse);
+        // If the selector isn't working, use a manually constructed context
+        // const filterContext = {
+        //   filterName: selectFilterName(state) || "",
+        //   queryViewName: selectQueryViewName(state) || "",
+        //   description: selectDescription(state) || "",
+        //   expiryDate: selectExpiryDate(state),
+        //   currentCriteria: selectCriteria(state) || currentCriteria,
+        //   conversationHistory,
+        // };
 
-          if (response.error) {
-            // Handle error
-            store.dispatch(
-              addMessage({
-                type: "ai",
-                content: `I encountered an error: ${response.details || "Unknown error"}`,
-                severity: "error",
-              })
-            );
-          } else {
-            // Add AI response with options
-            store.dispatch(
-              addMessage({
-                type: "ai",
-                content: response.responseMessage,
-                responseOptions: response.responseOptions || [],
-              })
-            );
+        // Convert date string to Date object for the AI if needed
+        const enhancedContext = {
+          ...filterContext,
+          expiryDate: filterContext.expiryDate
+            ? typeof filterContext.expiryDate === "string"
+              ? new Date(filterContext.expiryDate)
+              : filterContext.expiryDate
+            : null,
+        };
 
-            // If there are criteria to add immediately
-            if (
-              response.actionType === "suggest_criteria" ||
-              response.actionType === "complete_filter"
-            ) {
-              if (response.criteriaToAdd && response.criteriaToAdd.length > 0) {
-                // Create payload for applying updates
-                const updatePayload = {
-                  criteriaToAdd: response.criteriaToAdd,
-                };
+        // Invoke the tool with complete context
+        const toolResponse = await conversationGuideTool.invoke(
+          JSON.stringify({
+            userMessage,
+            conversationHistory,
+            currentCriteria: filterContext.criteria || currentCriteria,
+            filterContext: enhancedContext,
+          })
+        );
 
-                // Add a follow-up message with options to apply
-                store.dispatch(
-                  addMessage({
-                    type: "ai",
-                    content:
-                      "I've identified some criteria based on our conversation. Would you like me to apply these to your filter?",
-                    responseOptions: [
-                      {
-                        text: "Yes, apply these criteria",
-                        value: `apply_updates:${JSON.stringify(updatePayload)}`,
-                      },
-                      {
-                        text: "No, let me adjust manually",
-                        value: "cancel_generate",
-                      },
-                    ],
-                  })
-                );
-              }
-            }
-          }
-        } else {
-          // For non-product filter modes, use the standard chat service
-          const chatService = createChatService(systemPrompt);
-          const response = await chatService.sendMessage(userMessage);
+        // Parse the response
+        const response = JSON.parse(toolResponse);
 
-          // Add AI response to the store
+        if (response.error) {
+          // Handle error
           store.dispatch(
             addMessage({
               type: "ai",
-              content: response,
-              responseOptions:
-                systemPrompt === "PRODUCT_FILTER_ASSISTANT"
-                  ? [
-                      {
-                        text: "What criteria types should I include?",
-                        value: "explain_criteria_types",
-                      },
-                      {
-                        text: "How do I choose good values?",
-                        value: "explain_criteria_values",
-                      },
-                    ]
-                  : undefined,
+              content: `I encountered an error: ${response.details || "Unknown error"}`,
+              severity: "error",
             })
           );
+        } else {
+          // Add AI response with options
+          store.dispatch(
+            addMessage({
+              type: "ai",
+              content: response.responseMessage,
+              responseOptions: response.responseOptions || [],
+            })
+          );
+
+          // If there are criteria to add immediately
+          if (
+            response.actionType === "suggest_criteria" ||
+            response.actionType === "complete_filter"
+          ) {
+            if (response.criteriaToAdd && response.criteriaToAdd.length > 0) {
+              // Create payload for applying updates
+              const updatePayload = {
+                criteriaToAdd: response.criteriaToAdd,
+              };
+
+              // Add a follow-up message with options to apply
+              store.dispatch(
+                addMessage({
+                  type: "ai",
+                  content:
+                    "I've identified some criteria based on our conversation. Would you like me to apply these to your filter?",
+                  responseOptions: [
+                    {
+                      text: "Yes, apply these criteria",
+                      value: `apply_updates:${JSON.stringify(updatePayload)}`,
+                    },
+                    {
+                      text: "No, let me adjust manually",
+                      value: "cancel_generate",
+                    },
+                  ],
+                })
+              );
+            }
+          }
         }
       } catch (error) {
         console.error("Error in AI assistant middleware:", error);

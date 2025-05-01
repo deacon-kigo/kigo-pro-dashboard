@@ -336,7 +336,7 @@ export const createFilterConversationGuideTool = () => {
   return new DynamicTool({
     name: "filter_conversation_guide",
     description:
-      "Guides users through creating product filters with a conversational approach. Input must be a JSON string with keys: userMessage (string), conversationHistory (array of message objects), currentCriteria (array of existing criteria, optional).",
+      "Guides users through creating product filters with a conversational approach. Input must be a JSON string with keys: userMessage (string), conversationHistory (array of message objects), currentCriteria (array of existing criteria, optional), filterContext (object containing form state, optional).",
     func: async (
       input: string,
       runManager?: CallbackManagerForToolRun | undefined,
@@ -348,6 +348,7 @@ export const createFilterConversationGuideTool = () => {
           userMessage = "",
           conversationHistory = [],
           currentCriteria = [],
+          filterContext = null,
         } = JSON.parse(input);
 
         const model = getDefaultModel({ temperature: 0.7 });
@@ -360,16 +361,35 @@ export const createFilterConversationGuideTool = () => {
           )
           .join("\n");
 
+        // Get criteria from filter context if available, otherwise use currentCriteria
+        const criteriaToUse = filterContext?.currentCriteria || currentCriteria;
+
         // Format current criteria
         const currentCriteriaString =
-          currentCriteria.length > 0
-            ? currentCriteria
+          criteriaToUse.length > 0
+            ? criteriaToUse
                 .map(
                   (c: any) =>
                     `Type: ${c.type}, Value: ${c.value}, Rule: ${c.rule || "equals"}`
                 )
                 .join("\n")
             : "No criteria set yet.";
+
+        // Format form state if available
+        const formStateString = filterContext
+          ? `
+          Filter Name: ${filterContext.filterName || "Not set"}
+          Query View Name: ${filterContext.queryViewName || "Not set"}
+          Description: ${filterContext.description || "Not set"}
+          Expiry Date: ${
+            filterContext.expiryDate
+              ? filterContext.expiryDate instanceof Date
+                ? filterContext.expiryDate.toLocaleDateString()
+                : new Date(filterContext.expiryDate).toLocaleDateString()
+              : "Not set"
+          }
+          `
+          : "Form state not available";
 
         const requiredTypes = [
           "MerchantKeyword",
@@ -380,11 +400,14 @@ export const createFilterConversationGuideTool = () => {
 
         // Check which required criteria are missing
         const missingRequiredTypes = requiredTypes.filter(
-          (type) => !currentCriteria.some((c: any) => c.type === type)
+          (type) => !criteriaToUse.some((c: any) => c.type === type)
         );
 
         const promptTemplate = ChatPromptTemplate.fromTemplate(`
           You are an AI assistant helping users create product filters in a conversational way.
+          
+          Current Form State:
+          {formStateString}
           
           Current Conversation:
           {conversationString}
@@ -415,7 +438,7 @@ export const createFilterConversationGuideTool = () => {
                 "value": "option_value"
               }}
             ],
-            "actionType": "ask_question" | "suggest_criteria" | "complete_filter",
+            "actionType": "ask_question" | "suggest_criteria" | "complete_filter" | "provide_info",
             "criteriaToAdd": [
               {{
                 "type": "string - criteria type",
@@ -434,6 +457,7 @@ export const createFilterConversationGuideTool = () => {
         const chain = promptTemplate.pipe(model).pipe(outputParser);
 
         const response = await chain.invoke({
+          formStateString,
           conversationString,
           userMessage,
           currentCriteriaString,
@@ -446,6 +470,10 @@ export const createFilterConversationGuideTool = () => {
         return JSON.stringify({
           error: "Failed to process conversation",
           details: error instanceof Error ? error.message : String(error),
+          responseMessage:
+            "I'm sorry, I encountered an error processing your request. Could you try again with different wording?",
+          responseOptions: [],
+          actionType: "provide_info",
         });
       }
     },

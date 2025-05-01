@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, ChangeEvent } from "react";
+import React, { useState, useEffect, ChangeEvent, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/atoms/Button";
 import { Input } from "@/components/atoms/Input";
@@ -34,7 +34,7 @@ import { Calendar } from "@/components/atoms/Calendar";
 import { PageHeader } from "@/components/molecules/PageHeader";
 import { addDays } from "date-fns";
 import { AIAssistantPanel } from "@/components/features/ai";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setProductFilterContext } from "@/lib/redux/slices/ai-assistantSlice";
 import { Badge } from "@/components/atoms/Badge";
 import {
@@ -47,22 +47,37 @@ import {
 import { Tooltip } from "@/components/atoms/Tooltip";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-
-// Interface for filter criteria
-interface FilterCriteria {
-  id: string;
-  type: string;
-  value: string;
-  rule: string;
-  and_or: string;
-  isRequired: boolean;
-}
+import { RootState } from "@/lib/redux/store";
+import {
+  setFilterName,
+  setQueryViewName,
+  setDescription,
+  setExpiryDate,
+  addCriteria as addCriteriaAction,
+  removeCriteria as removeCriteriaAction,
+  setCriteria,
+  setIsGenerating,
+  setLastGeneratedFilter,
+  applyFilterUpdate,
+  FilterCriteria,
+} from "@/lib/redux/slices/productFilterSlice";
+import {
+  selectFilterName,
+  selectQueryViewName,
+  selectDescription,
+  selectExpiryDate,
+  selectCriteria,
+  selectIsGenerating,
+  selectLastGeneratedFilter,
+  selectHasAllRequiredCriteria,
+  selectIsFormValid,
+} from "@/lib/redux/selectors/productFilterSelectors";
 
 // Custom DatePicker component
 interface DatePickerProps {
   id: string;
-  selected: Date | undefined;
-  onSelect: (date: Date | undefined) => void;
+  selected: Date | null;
+  onSelect: (date: Date | null) => void;
   placeholder: string;
   className?: string;
 }
@@ -97,9 +112,9 @@ const DatePicker = ({
         <div className="absolute mt-2 bg-white border rounded-md shadow-lg z-10">
           <Calendar
             mode="single"
-            selected={selected}
+            selected={selected || undefined}
             onSelect={(date: Date | undefined) => {
-              onSelect(date);
+              onSelect(date || null);
               setIsOpen(false);
             }}
             disabled={disablePastDates}
@@ -123,14 +138,22 @@ export default function ProductFilterCreationView() {
   const dispatch = useDispatch();
   const [activeTab, setActiveTab] = useState("details");
 
-  // Form state
-  const [filterName, setFilterName] = useState("");
-  const [queryViewName, setQueryViewName] = useState("");
-  const [description, setDescription] = useState("");
-  const [expiryDate, setExpiryDate] = useState<Date>();
+  // Use Redux selectors for form state
+  const filterName = useSelector(selectFilterName);
+  const queryViewName = useSelector(selectQueryViewName);
+  const description = useSelector(selectDescription);
+  const expiryDateString = useSelector(selectExpiryDate);
+  // Convert ISO string to Date object for UI
+  const expiryDate = expiryDateString ? new Date(expiryDateString) : null;
 
-  // Criteria state
-  const [filterCriteria, setFilterCriteria] = useState<FilterCriteria[]>([]);
+  // Get criteria from Redux
+  const filterCriteria = useSelector(selectCriteria);
+  const isGeneratingFilters = useSelector(selectIsGenerating);
+  const lastGeneratedFilter = useSelector(selectLastGeneratedFilter);
+  const hasRequiredCriteria = useSelector(selectHasAllRequiredCriteria);
+  const isReduxFormValid = useSelector(selectIsFormValid);
+
+  // Local state for criteria creation form
   const [criteriaType, setCriteriaType] = useState("");
   const [criteriaValue, setCriteriaValue] = useState("");
   const [criteriaRule, setCriteriaRule] = useState("equals");
@@ -155,36 +178,29 @@ export default function ProductFilterCreationView() {
     "OfferType",
   ];
 
-  // Helper function to check if all required fields are filled
-  const isFormValid = () => {
-    return (
-      filterName.trim() !== "" &&
-      queryViewName.trim() !== "" &&
-      expiryDate !== undefined
-    );
-  };
+  // Helper function to check if all required fields are filled - using Redux selector
+  const isFormValid = () => isReduxFormValid;
 
-  // Helper function to check if all required criteria are present
-  const hasAllRequiredCriteria = () => {
-    return requiredCriteriaTypes.every((type) =>
-      filterCriteria.some((criteria: FilterCriteria) => criteria.type === type)
-    );
-  };
+  // Helper function to check if all required criteria are present - using Redux selector
+  const hasAllRequiredCriteria = () => hasRequiredCriteria;
 
-  // Add new criteria (manual)
+  // Add new criteria (manual) - using Redux action
   const addCriteria = () => {
     if (criteriaType && criteriaValue) {
       const isRequired = requiredCriteriaTypes.includes(criteriaType);
-      const newCriteria: FilterCriteria = {
-        id: Date.now().toString(),
-        type: criteriaType,
-        value: criteriaValue,
-        rule: criteriaRule,
-        and_or: criteriaAndOr,
-        isRequired,
-      };
 
-      setFilterCriteria((prevCriteria) => [...prevCriteria, newCriteria]); // Use functional update
+      // Dispatch action to add criteria to Redux store
+      dispatch(
+        addCriteriaAction({
+          type: criteriaType,
+          value: criteriaValue,
+          rule: criteriaRule,
+          and_or: criteriaAndOr,
+          isRequired,
+        })
+      );
+
+      // Reset the form
       setCriteriaType("");
       setCriteriaValue("");
       setCriteriaRule("equals");
@@ -192,11 +208,9 @@ export default function ProductFilterCreationView() {
     }
   };
 
-  // Remove criteria
+  // Remove criteria - using Redux action
   const removeCriteria = (id: string) => {
-    setFilterCriteria((prevCriteria) =>
-      prevCriteria.filter((c) => c.id !== id)
-    ); // Use functional update
+    dispatch(removeCriteriaAction(id));
   };
 
   // Create filter
@@ -258,19 +272,13 @@ export default function ProductFilterCreationView() {
     );
   }, [dispatch, filterName, description, filterCriteria]);
 
-  // Add state variables to manage animation and filter generation
-  const [isGeneratingFilters, setIsGeneratingFilters] = useState(false);
-  const [lastGeneratedFilter, setLastGeneratedFilter] = useState<string | null>(
-    null
-  );
-
   // Handle option selected from AI Assistant
   const handleOptionSelected = (optionId: string) => {
     // Handle different AI suggestions/commands
     console.log("Option selected:", optionId); // Debug logging
 
     if (optionId.startsWith("apply_updates:")) {
-      setIsGeneratingFilters(true);
+      dispatch(setIsGenerating(true));
 
       try {
         // Extract the JSON payload from the option ID
@@ -279,65 +287,39 @@ export default function ProductFilterCreationView() {
 
         console.log("Parsed updates:", updates); // Debug logging
 
-        // Apply criteria
-        if (updates.criteriaToAdd && Array.isArray(updates.criteriaToAdd)) {
-          // Convert criteria format if needed
-          const newCriteria = updates.criteriaToAdd.map((criteria: any) => ({
-            id: generateUniqueId(),
-            type: criteria.type,
-            value: criteria.value,
-            rule: criteria.rule || "equals",
-            and_or: criteria.and_or || "AND",
-            isRequired: !!criteria.isRequired,
-          }));
+        // Dispatch action to update the filter in Redux store
+        dispatch(
+          applyFilterUpdate({
+            filterName: updates.filterName,
+            queryViewName: updates.queryViewName,
+            criteriaToAdd: updates.criteriaToAdd,
+            expiryDate: updates.expiryDate
+              ? new Date(updates.expiryDate)
+              : undefined,
+          })
+        );
 
-          // Set the criteria
-          setFilterCriteria(newCriteria);
-        }
-
-        // Apply filter name if provided
-        if (updates.filterName) {
-          setFilterName(updates.filterName);
-        }
-
-        // Apply query view name if provided
-        if (updates.queryViewName) {
-          setQueryViewName(updates.queryViewName);
-        }
-
-        // Apply expiry date if provided
-        if (updates.expiryDate) {
-          try {
-            const date = new Date(updates.expiryDate);
-            if (!isNaN(date.getTime())) {
-              setExpiryDate(date);
-            }
-          } catch (error) {
-            console.error("Invalid date format:", error);
-          }
-        }
-
-        // Show success message
-        setLastGeneratedFilter("complete");
+        // Set last generated filter for UI feedback
+        dispatch(setLastGeneratedFilter("complete"));
 
         setTimeout(() => {
-          setIsGeneratingFilters(false);
+          dispatch(setIsGenerating(false));
         }, 800);
       } catch (error) {
         console.error("Error applying updates:", error);
-        setIsGeneratingFilters(false);
+        dispatch(setIsGenerating(false));
       }
     } else if (optionId.startsWith("suggest_name:")) {
-      setIsGeneratingFilters(true);
+      dispatch(setIsGenerating(true));
       const suggestedName = optionId.replace("suggest_name:", "");
       setTimeout(() => {
-        setFilterName(suggestedName);
-        setLastGeneratedFilter("name");
-        setIsGeneratingFilters(false);
+        dispatch(setFilterName(suggestedName));
+        dispatch(setLastGeneratedFilter("name"));
+        dispatch(setIsGenerating(false));
       }, 800);
     } else if (optionId.startsWith("suggest_criteria:")) {
       try {
-        setIsGeneratingFilters(true);
+        dispatch(setIsGenerating(true));
         const criteriaData = JSON.parse(
           optionId.replace("suggest_criteria:", "")
         );
@@ -353,31 +335,34 @@ export default function ProductFilterCreationView() {
             const isRequired = requiredCriteriaTypes.includes(
               criteriaData.type
             );
-            const newCriteria: FilterCriteria = {
-              id:
-                Date.now().toString() + Math.random().toString(36).substr(2, 5),
-              type: criteriaData.type,
-              value: criteriaData.value,
-              rule,
-              and_or: andOr,
-              isRequired,
-            };
-            setFilterCriteria((prev) => [...prev, newCriteria]); // Functional update
+
+            // Dispatch action to add criteria to Redux store
+            dispatch(
+              addCriteriaAction({
+                type: criteriaData.type,
+                value: criteriaData.value,
+                rule,
+                and_or: andOr,
+                isRequired,
+              })
+            );
+
+            // Reset form
             setCriteriaType("");
             setCriteriaValue("");
             setCriteriaRule("equals");
             setCriteriaAndOr("OR");
-            setLastGeneratedFilter("criteria");
-            setIsGeneratingFilters(false);
+            dispatch(setLastGeneratedFilter("criteria"));
+            dispatch(setIsGenerating(false));
           }, 1000);
         }
       } catch (e) {
         console.error("Failed to parse criteria suggestion", e);
-        setIsGeneratingFilters(false);
+        dispatch(setIsGenerating(false));
       }
     } else if (optionId.startsWith("suggest_multiple_criteria:")) {
       try {
-        setIsGeneratingFilters(true);
+        dispatch(setIsGenerating(true));
         const criteriaList = JSON.parse(
           optionId.replace("suggest_multiple_criteria:", "")
         );
@@ -388,9 +373,6 @@ export default function ProductFilterCreationView() {
                 criteriaItem.type || ""
               );
               return {
-                id:
-                  Date.now().toString() +
-                  Math.random().toString(36).substr(2, 5),
                 type: criteriaItem.type || "UnknownType",
                 value: criteriaItem.value || "",
                 rule: criteriaItem.rule || "equals",
@@ -398,22 +380,28 @@ export default function ProductFilterCreationView() {
                 isRequired,
               };
             });
-            setFilterCriteria((prev) => [...prev, ...newCriteriaItems]); // Functional update
+
+            // Add each criteria to Redux store
+            newCriteriaItems.forEach((criteria) => {
+              dispatch(addCriteriaAction(criteria));
+            });
+
+            // Reset form
             setCriteriaType("");
             setCriteriaValue("");
             setCriteriaRule("equals");
             setCriteriaAndOr("OR");
-            setLastGeneratedFilter("multiple");
-            setIsGeneratingFilters(false);
+            dispatch(setLastGeneratedFilter("multiple"));
+            dispatch(setIsGenerating(false));
           }, 1200);
         }
       } catch (e) {
         console.error("Failed to parse multiple criteria suggestions", e);
-        setIsGeneratingFilters(false);
+        dispatch(setIsGenerating(false));
       }
     } else if (optionId.startsWith("suggest_complete_filter:")) {
       try {
-        setIsGeneratingFilters(true);
+        dispatch(setIsGenerating(true));
         interface CompleteFilterData {
           name?: string;
           queryViewName?: string;
@@ -425,43 +413,48 @@ export default function ProductFilterCreationView() {
           optionId.replace("suggest_complete_filter:", "")
         );
         setTimeout(() => {
-          if (filterData.name) setFilterName(filterData.name);
+          // Create update object for Redux
+          const update: any = {};
+
+          if (filterData.name) update.filterName = filterData.name;
           if (filterData.queryViewName)
-            setQueryViewName(filterData.queryViewName);
-          if (filterData.description) setDescription(filterData.description);
+            update.queryViewName = filterData.queryViewName;
+          if (filterData.description)
+            update.description = filterData.description;
           if (filterData.expiryDate) {
             const date = new Date(filterData.expiryDate);
-            if (!isNaN(date.getTime())) setExpiryDate(date);
+            if (!isNaN(date.getTime())) update.expiryDate = date;
           }
+
+          // Format criteria for Redux
           if (
             Array.isArray(filterData.criteria) &&
             filterData.criteria.length > 0
           ) {
-            const newCriteriaItems: FilterCriteria[] = filterData.criteria.map(
-              (criteriaItem): FilterCriteria => {
-                const isRequired = requiredCriteriaTypes.includes(
-                  criteriaItem.type || ""
-                );
-                return {
-                  id:
-                    Date.now().toString() +
-                    Math.random().toString(36).substr(2, 5),
-                  type: criteriaItem.type || "UnknownType",
-                  value: criteriaItem.value || "",
-                  rule: criteriaItem.rule || "equals",
-                  and_or: criteriaItem.and_or || "OR",
-                  isRequired,
-                };
-              }
-            );
-            setFilterCriteria(newCriteriaItems); // Replace criteria
-            setLastGeneratedFilter("complete");
+            const criteriaToAdd = filterData.criteria.map((criteriaItem) => {
+              const isRequired = requiredCriteriaTypes.includes(
+                criteriaItem.type || ""
+              );
+              return {
+                type: criteriaItem.type || "UnknownType",
+                value: criteriaItem.value || "",
+                rule: criteriaItem.rule || "equals",
+                and_or: criteriaItem.and_or || "OR",
+                isRequired,
+              };
+            });
+
+            update.criteriaToAdd = criteriaToAdd;
           }
-          setIsGeneratingFilters(false);
+
+          // Dispatch single update action with all changes
+          dispatch(applyFilterUpdate(update));
+          dispatch(setLastGeneratedFilter("complete"));
+          dispatch(setIsGenerating(false));
         }, 1500);
       } catch (e) {
         console.error("Failed to parse complete filter suggestion", e);
-        setIsGeneratingFilters(false);
+        dispatch(setIsGenerating(false));
       }
     }
   };
@@ -491,6 +484,15 @@ export default function ProductFilterCreationView() {
     greaterThan: "is greater than",
     lessThan: "is less than",
   };
+
+  // Create a serializable-safe date selector function
+  const handleDateSelect = useCallback(
+    (date: Date | null) => {
+      // This dispatch will now use our serialization-safe action
+      dispatch(setExpiryDate(date));
+    },
+    [dispatch]
+  );
 
   return (
     <div className="space-y-2 h-full flex flex-col">
@@ -555,7 +557,10 @@ export default function ProductFilterCreationView() {
                 className="mb-3 p-2 bg-primary/10 border border-primary/30 rounded-md flex items-center"
                 onAnimationComplete={() => {
                   // Clear the notification after 5 seconds
-                  setTimeout(() => setLastGeneratedFilter(null), 5000);
+                  setTimeout(
+                    () => dispatch(setLastGeneratedFilter(null)),
+                    5000
+                  );
                 }}
               >
                 <SparklesIcon className="h-5 w-5 text-primary mr-2" />
@@ -570,7 +575,7 @@ export default function ProductFilterCreationView() {
                     "Complete filter configuration applied from AI"}
                 </span>
                 <button
-                  onClick={() => setLastGeneratedFilter(null)}
+                  onClick={() => dispatch(setLastGeneratedFilter(null))}
                   className="ml-auto text-gray-500 hover:text-gray-700"
                 >
                   <svg
@@ -634,7 +639,9 @@ export default function ProductFilterCreationView() {
                                 id="filter-name"
                                 placeholder="Enter filter name"
                                 value={filterName}
-                                onChange={(e) => setFilterName(e.target.value)}
+                                onChange={(e) =>
+                                  dispatch(setFilterName(e.target.value))
+                                }
                                 className="mt-1"
                               />
                             </div>
@@ -648,7 +655,7 @@ export default function ProductFilterCreationView() {
                                 placeholder="Enter query view name"
                                 value={queryViewName}
                                 onChange={(e) =>
-                                  setQueryViewName(e.target.value)
+                                  dispatch(setQueryViewName(e.target.value))
                                 }
                                 className="mt-1"
                               />
@@ -662,7 +669,9 @@ export default function ProductFilterCreationView() {
                                 id="description"
                                 placeholder="Describe what this filter does"
                                 value={description}
-                                onChange={(e) => setDescription(e.target.value)}
+                                onChange={(e) =>
+                                  dispatch(setDescription(e.target.value))
+                                }
                                 className="mt-1"
                                 rows={2}
                               />
@@ -675,7 +684,7 @@ export default function ProductFilterCreationView() {
                               <DatePicker
                                 id="expiry-date"
                                 selected={expiryDate}
-                                onSelect={setExpiryDate}
+                                onSelect={handleDateSelect}
                                 placeholder="Select expiry date"
                                 className="mt-1 w-full"
                               />

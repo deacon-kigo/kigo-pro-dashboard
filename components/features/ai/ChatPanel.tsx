@@ -181,7 +181,7 @@ const ChatMessage = ({
                     key={option.value}
                     onClick={(e) => handleOptionClick(e, option.value)}
                     className={`
-                      relative overflow-hidden z-50 shadow-md
+                      relative overflow-hidden z-50 shadow-sm
                       ${
                         option.value.includes("suggest_complete_filter")
                           ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600"
@@ -189,11 +189,10 @@ const ChatMessage = ({
                             ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600"
                             : option.value.includes("apply_updates:")
                               ? "bg-gradient-to-r from-green-500 to-teal-500 text-white hover:from-green-600 hover:to-teal-600"
-                              : "bg-white hover:bg-gray-100 text-blue-700 border-2 border-blue-300"
+                              : "bg-white hover:bg-gray-100 text-blue-700 border border-blue-300"
                       }
                       font-medium py-2 px-4 rounded-full text-xs sm:text-sm
-                      cursor-pointer hover:shadow-lg active:shadow-inner
-                      hover:scale-110 transition-all duration-150
+                      cursor-pointer hover:shadow-md transition-all duration-150
                       focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
                     `}
                   >
