@@ -4,6 +4,8 @@ import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { JsonOutputParser } from "@langchain/core/output_parsers";
 import { CallbackManagerForToolRun } from "@langchain/core/callbacks/manager";
 import { type RunnableConfig } from "@langchain/core/runnables";
+import { z } from "zod";
+import { StructuredOutputParser } from "@langchain/core/output_parsers";
 
 // Define input types for better type safety
 interface ProductFilterCriteriaInput {
@@ -31,6 +33,74 @@ interface FilterCriterion {
   isRequired?: boolean;
 }
 
+// Zod schema definitions for filter conditions based on the database structure
+const FilterRuleEnum = z.enum(["Include", "Exclude"]);
+const FilterLogicEnum = z.enum(["AND", "OR"]);
+const FilterFieldEnum = z.enum([
+  "MerchantKeyword",
+  "MerchantName",
+  "OfferCommodity",
+  "OfferKeyword",
+  "OfferRedemptionType",
+  "OfferExpiry",
+  // Add other field names as needed
+]);
+
+// Schema for a single filter criterion
+const FilterCriterionSchema = z.object({
+  type: FilterFieldEnum,
+  value: z.string(),
+  rule: FilterRuleEnum,
+  and_or: FilterLogicEnum,
+  isRequired: z.boolean().default(false),
+});
+
+// Schema for auto-generated filter
+const AutoFilterOutputSchema = z.object({
+  criteriaToAdd: z.array(FilterCriterionSchema),
+  suggestedName: z.string(),
+  explanation: z.string(),
+});
+
+// Schema for conversation guide response
+const ConversationGuideOutputSchema = z.object({
+  responseMessage: z.string(),
+  responseOptions: z.array(
+    z.object({
+      text: z.string(),
+      value: z.string(),
+    })
+  ),
+  actionType: z.enum([
+    "ask_question",
+    "suggest_criteria",
+    "complete_filter",
+    "provide_info",
+  ]),
+  criteriaToAdd: z.array(FilterCriterionSchema).optional(),
+  nextQuestion: z.string().optional(),
+});
+
+// Schema for filter analysis
+const FilterAnalysisOutputSchema = z.object({
+  isComplete: z.boolean(),
+  isMissingRequired: z.array(FilterFieldEnum),
+  suggestedImprovements: z.array(z.string()),
+  effectiveness: z.enum(["high", "medium", "low"]),
+  analysis: z.string(),
+});
+
+// Create structured output parsers from Zod schemas
+const autoFilterParser = StructuredOutputParser.fromZodSchema(
+  AutoFilterOutputSchema
+);
+const conversationGuideParser = StructuredOutputParser.fromZodSchema(
+  ConversationGuideOutputSchema
+);
+const filterAnalysisParser = StructuredOutputParser.fromZodSchema(
+  FilterAnalysisOutputSchema
+);
+
 // Tool for generating product filter criteria
 export const createProductFilterCriteriaTool = () => {
   return new DynamicTool({
@@ -52,6 +122,22 @@ export const createProductFilterCriteriaTool = () => {
 
         const model = getDefaultModel({ temperature: 0.2 });
 
+        // Define a simple schema for filter generator output
+        const filterCriteriaSchema = z.object({
+          value: z.string(),
+          operator: z.enum(["equals", "contains", "startsWith", "endsWith"]),
+        });
+
+        const criteriaParser =
+          StructuredOutputParser.fromZodSchema(filterCriteriaSchema);
+        const formatInstructions = criteriaParser.getFormatInstructions();
+
+        // Properly escape curly braces in the format instructions
+        const escapedFormatInstructions = formatInstructions
+          .replace(/\{/g, "{{")
+          .replace(/\}/g, "}}");
+
+        // Use template with properly escaped curly braces
         const promptTemplate = ChatPromptTemplate.fromTemplate(`
           Generate appropriate filter criteria for a product filter.
           
@@ -59,18 +145,12 @@ export const createProductFilterCriteriaTool = () => {
           Filter Type: {filterType}
           Description: {description}
           
-          Return a JSON object with the following structure:
-          {
-            "value": "The appropriate value for this filter type",
-            "operator": "The appropriate operator (equals, contains, startsWith, endsWith)"
-          }
+          ${escapedFormatInstructions}
           
           Make the suggestions realistic and relevant to the filter type.
         `);
 
-        const outputParser = new JsonOutputParser();
-
-        const chain = promptTemplate.pipe(model).pipe(outputParser);
+        const chain = promptTemplate.pipe(model).pipe(criteriaParser);
 
         const response = await chain.invoke({
           filterName,
@@ -113,6 +193,17 @@ export const createFilterNameSuggestionTool = () => {
             ? criteria.map((c) => `${c.type}: ${c.value}`).join("\n")
             : "No criteria provided";
 
+        // Define schema for name suggestions
+        const nameSchema = z.array(z.string());
+        const nameParser = StructuredOutputParser.fromZodSchema(nameSchema);
+        const formatInstructions = nameParser.getFormatInstructions();
+
+        // Properly escape curly braces in the format instructions
+        const escapedFormatInstructions = formatInstructions
+          .replace(/\{/g, "{{")
+          .replace(/\}/g, "}}");
+
+        // Use template with properly escaped curly braces
         const promptTemplate = ChatPromptTemplate.fromTemplate(`
           Suggest 5 appropriate names for a product filter with the following details:
           
@@ -121,13 +212,12 @@ export const createFilterNameSuggestionTool = () => {
           Criteria:
           {criteriaString}
           
-          Return a JSON array of strings, each being a suggested name.
+          ${escapedFormatInstructions}
+          
           The names should be clear, concise, and descriptive of the filter's purpose.
         `);
 
-        const outputParser = new JsonOutputParser();
-
-        const chain = promptTemplate.pipe(model).pipe(outputParser);
+        const chain = promptTemplate.pipe(model).pipe(nameParser);
 
         const response = await chain.invoke({
           description,
@@ -168,6 +258,15 @@ export const createFilterAnalysisTool = () => {
           .map((c) => `Type: ${c.type}, Value: ${c.value}, Rule: ${c.rule}`)
           .join("\n");
 
+        // Get format instructions from Zod schema parser
+        const formatInstructions = filterAnalysisParser.getFormatInstructions();
+
+        // Properly escape curly braces in the format instructions
+        const escapedFormatInstructions = formatInstructions
+          .replace(/\{/g, "{{")
+          .replace(/\}/g, "}}");
+
+        // Use template with properly escaped curly braces
         const promptTemplate = ChatPromptTemplate.fromTemplate(`
           Analyze the following product filter criteria for completeness and effectiveness:
           
@@ -178,19 +277,10 @@ export const createFilterAnalysisTool = () => {
           2. Are the values appropriate and specific enough for their types?
           3. Are the operators (equals, contains, etc.) appropriate for their values?
           
-          Return a JSON object with the following structure:
-          {
-            "isComplete": true/false,
-            "isMissingRequired": [array of missing required criteria types],
-            "suggestedImprovements": [array of improvement suggestions],
-            "effectiveness": "high"/"medium"/"low",
-            "analysis": "brief analysis"
-          }
+          ${escapedFormatInstructions}
         `);
 
-        const outputParser = new JsonOutputParser();
-
-        const chain = promptTemplate.pipe(model).pipe(outputParser);
+        const chain = promptTemplate.pipe(model).pipe(filterAnalysisParser);
 
         const response = await chain.invoke({
           criteriaString,
@@ -266,6 +356,15 @@ export const createAutoFilterGeneratorTool = () => {
             ? missingRequiredTypes.join(", ")
             : "None";
 
+        // Get format instructions from Zod schema parser
+        const formatInstructions = autoFilterParser.getFormatInstructions();
+
+        // Properly escape curly braces in the format instructions by replacing { with {{ and } with }}
+        const escapedFormatInstructions = formatInstructions
+          .replace(/\{/g, "{{")
+          .replace(/\}/g, "}}");
+
+        // Use template with properly escaped curly braces
         const promptTemplate = ChatPromptTemplate.fromTemplate(`
           You are a product filter generation specialist who can create appropriate filter criteria.
           
@@ -290,25 +389,10 @@ export const createAutoFilterGeneratorTool = () => {
           2. If criteria already exist, use them as context to generate coherent additional criteria
           3. Generate values that are specific but not too narrow
           
-          Return a JSON object with this structure:
-          {
-            "criteriaToAdd": [
-              {
-                "type": "string - criteria type",
-                "value": "string - appropriate value",
-                "rule": "string - operator (equals, contains, startsWith, endsWith)",
-                "and_or": "string - AND or OR",
-                "isRequired": boolean
-              }
-            ],
-            "suggestedName": "string - suggested filter name if none exists",
-            "explanation": "string - brief explanation of the generated filter"
-          }
+          ${escapedFormatInstructions}
         `);
 
-        const outputParser = new JsonOutputParser();
-
-        const chain = promptTemplate.pipe(model).pipe(outputParser);
+        const chain = promptTemplate.pipe(model).pipe(autoFilterParser);
 
         const response = await chain.invoke({
           filterName: filterName || "Not set",
@@ -351,7 +435,7 @@ export const createFilterConversationGuideTool = () => {
           filterContext = null,
         } = JSON.parse(input);
 
-        const model = getDefaultModel({ temperature: 0.4 });
+        const model = getDefaultModel({ temperature: 0.7 });
 
         // Format the conversation history for the prompt
         const conversationString = conversationHistory
@@ -403,269 +487,67 @@ export const createFilterConversationGuideTool = () => {
           (type) => !criteriaToUse.some((c: any) => c.type === type)
         );
 
-        // Identify the current step in the filter creation process
-        const currentStep = determineCurrentStep(
-          criteriaToUse,
-          userMessage.toLowerCase()
-        );
+        // Get format instructions from Zod schema parser
+        const formatInstructions =
+          conversationGuideParser.getFormatInstructions();
 
-        // Define standard responses based on identified step
-        const stepResponse = generateStepResponse(
-          currentStep,
-          missingRequiredTypes
-        );
+        // Properly escape curly braces in the format instructions by replacing { with {{ and } with }}
+        const escapedFormatInstructions = formatInstructions
+          .replace(/\{/g, "{{")
+          .replace(/\}/g, "}}");
 
-        // Skip the LLM call for natural language understanding
-        // Return a structured response directly
-        return JSON.stringify({
-          responseMessage: stepResponse.message,
-          responseOptions: stepResponse.options,
-          actionType: stepResponse.actionType,
-          criteriaToAdd: stepResponse.criteriaToAdd || [],
+        // Use template with properly escaped curly braces
+        const promptTemplate = ChatPromptTemplate.fromTemplate(`
+          You are an AI assistant helping users create product filters in a conversational way.
+          
+          Current Form State:
+          {formStateString}
+          
+          Current Conversation:
+          {conversationString}
+          
+          User's Latest Message:
+          {userMessage}
+          
+          Current Filter Criteria:
+          {currentCriteriaString}
+          
+          Required Criteria Types Still Needed:
+          {missingRequiredTypes}
+          
+          Your task is to guide the user through creating a product filter by:
+          1. Identifying what the user wants to filter (e.g., restaurants, retail offers)
+          2. Asking clarifying questions to gather missing required information
+          3. Suggesting specific values based on the conversation
+          4. Moving the conversation forward toward completion
+          
+          When you have enough information, you should generate filter criteria.
+          
+          ${escapedFormatInstructions}
+        `);
+
+        const chain = promptTemplate.pipe(model).pipe(conversationGuideParser);
+
+        const response = await chain.invoke({
+          formStateString,
+          conversationString,
+          userMessage,
+          currentCriteriaString,
+          missingRequiredTypes: missingRequiredTypes.join(", "),
         });
+
+        return JSON.stringify(response);
       } catch (error) {
         console.error("Error in filter conversation guide tool:", error);
         return JSON.stringify({
           error: "Failed to process conversation",
           details: error instanceof Error ? error.message : String(error),
           responseMessage:
-            "I'm sorry, I encountered an error processing your request. Let's try a different approach.",
-          responseOptions: [
-            {
-              text: "Start building a filter",
-              value: "start_filter_creation",
-            },
-            {
-              text: "Use auto-generate instead",
-              value: "trigger_magic_generate",
-            },
-          ],
+            "I'm sorry, I encountered an error processing your request. Could you try again with different wording?",
+          responseOptions: [],
           actionType: "provide_info",
         });
       }
     },
   });
 };
-
-// Helper function to determine which step in the filter creation process we're at
-function determineCurrentStep(currentCriteria: any[], userMessage: string) {
-  // Count how many required criteria types we already have
-  const criteriaTypes = currentCriteria.map((c) => c.type);
-  const hasKeyword = criteriaTypes.includes("MerchantKeyword");
-  const hasName = criteriaTypes.includes("MerchantName");
-  const hasCommodity = criteriaTypes.includes("OfferCommodity");
-  const hasOfferKeyword = criteriaTypes.includes("OfferKeyword");
-
-  const completedCount = [
-    hasKeyword,
-    hasName,
-    hasCommodity,
-    hasOfferKeyword,
-  ].filter(Boolean).length;
-
-  // Check if user message indicates a specific filter category
-  if (
-    userMessage.includes("restaurant") ||
-    userMessage.includes("food") ||
-    userMessage.includes("dining")
-  ) {
-    return "FOOD_FILTER";
-  } else if (
-    userMessage.includes("shopping") ||
-    userMessage.includes("retail")
-  ) {
-    return "RETAIL_FILTER";
-  } else if (userMessage.includes("entertainment")) {
-    return "ENTERTAINMENT_FILTER";
-  }
-
-  // Otherwise use progress-based steps
-  if (completedCount === 0) {
-    return "START";
-  } else if (completedCount === 4) {
-    return "COMPLETE";
-  } else {
-    // Return which criteria type is missing next
-    if (!hasKeyword) return "NEED_MERCHANT_KEYWORD";
-    if (!hasName) return "NEED_MERCHANT_NAME";
-    if (!hasCommodity) return "NEED_OFFER_COMMODITY";
-    if (!hasOfferKeyword) return "NEED_OFFER_KEYWORD";
-    return "PARTIAL";
-  }
-}
-
-// Helper function to generate structured responses for each step
-function generateStepResponse(
-  step: string,
-  missingTypes: string[]
-): {
-  message: string;
-  options: Array<{ text: string; value: string }>;
-  actionType: string;
-  criteriaToAdd?: Array<any>;
-} {
-  switch (step) {
-    case "START":
-      return {
-        message:
-          "Let's build your filter. What type of filter are you interested in creating?",
-        options: [
-          { text: "Restaurant/Food filter", value: "start_restaurant_filter" },
-          { text: "Shopping/Retail filter", value: "start_retail_filter" },
-          { text: "Entertainment filter", value: "start_entertainment_filter" },
-        ],
-        actionType: "ask_question",
-      };
-
-    case "FOOD_FILTER":
-      return {
-        message:
-          "Let's create a restaurant filter. Please select the options you want to include:",
-        options: [
-          {
-            text: "Add 'Restaurant' as merchant keyword",
-            value:
-              'suggest_criteria:{"type":"MerchantKeyword","value":"Restaurant","rule":"contains","and_or":"OR","isRequired":true}',
-          },
-          {
-            text: "Add 'Dining' as offer commodity",
-            value:
-              'suggest_criteria:{"type":"OfferCommodity","value":"Dining","rule":"equals","and_or":"AND","isRequired":true}',
-          },
-        ],
-        actionType: "suggest_criteria",
-      };
-
-    case "RETAIL_FILTER":
-      return {
-        message:
-          "Let's create a shopping filter. Please select the options you want to include:",
-        options: [
-          {
-            text: "Add 'Retail' as merchant keyword",
-            value:
-              'suggest_criteria:{"type":"MerchantKeyword","value":"Retail","rule":"contains","and_or":"OR","isRequired":true}',
-          },
-          {
-            text: "Add 'Shopping' as offer commodity",
-            value:
-              'suggest_criteria:{"type":"OfferCommodity","value":"Shopping","rule":"equals","and_or":"AND","isRequired":true}',
-          },
-        ],
-        actionType: "suggest_criteria",
-      };
-
-    case "NEED_MERCHANT_KEYWORD":
-      return {
-        message: "Select a merchant keyword for your filter:",
-        options: [
-          {
-            text: "Add 'Restaurant' as merchant keyword",
-            value:
-              'suggest_criteria:{"type":"MerchantKeyword","value":"Restaurant","rule":"contains","and_or":"OR","isRequired":true}',
-          },
-          {
-            text: "Add 'Retail' as merchant keyword",
-            value:
-              'suggest_criteria:{"type":"MerchantKeyword","value":"Retail","rule":"contains","and_or":"OR","isRequired":true}',
-          },
-          {
-            text: "Add 'Entertainment' as merchant keyword",
-            value:
-              'suggest_criteria:{"type":"MerchantKeyword","value":"Entertainment","rule":"contains","and_or":"OR","isRequired":true}',
-          },
-        ],
-        actionType: "suggest_criteria",
-      };
-
-    case "NEED_MERCHANT_NAME":
-      return {
-        message: "Select a merchant name for your filter:",
-        options: [
-          {
-            text: "Add 'Local Business' as merchant name",
-            value:
-              'suggest_criteria:{"type":"MerchantName","value":"Local Business","rule":"contains","and_or":"OR","isRequired":true}',
-          },
-          {
-            text: "Add 'Chain Stores' as merchant name",
-            value:
-              'suggest_criteria:{"type":"MerchantName","value":"Chain Stores","rule":"contains","and_or":"OR","isRequired":true}',
-          },
-        ],
-        actionType: "suggest_criteria",
-      };
-
-    case "NEED_OFFER_COMMODITY":
-      return {
-        message: "Select an offer commodity for your filter:",
-        options: [
-          {
-            text: "Add 'Food' as offer commodity",
-            value:
-              'suggest_criteria:{"type":"OfferCommodity","value":"Food","rule":"equals","and_or":"AND","isRequired":true}',
-          },
-          {
-            text: "Add 'Merchandise' as offer commodity",
-            value:
-              'suggest_criteria:{"type":"OfferCommodity","value":"Merchandise","rule":"equals","and_or":"AND","isRequired":true}',
-          },
-        ],
-        actionType: "suggest_criteria",
-      };
-
-    case "NEED_OFFER_KEYWORD":
-      return {
-        message: "Select an offer keyword for your filter:",
-        options: [
-          {
-            text: "Add 'Discount' as offer keyword",
-            value:
-              'suggest_criteria:{"type":"OfferKeyword","value":"Discount","rule":"contains","and_or":"OR","isRequired":true}',
-          },
-          {
-            text: "Add 'Special' as offer keyword",
-            value:
-              'suggest_criteria:{"type":"OfferKeyword","value":"Special","rule":"contains","and_or":"OR","isRequired":true}',
-          },
-        ],
-        actionType: "suggest_criteria",
-      };
-
-    case "COMPLETE":
-      return {
-        message:
-          "You've selected all required criteria. Would you like to finalize your filter?",
-        options: [
-          { text: "Yes, finalize filter", value: "confirm_complete_filter" },
-          { text: "No, I want to make changes", value: "modify_filter" },
-        ],
-        actionType: "complete_filter",
-      };
-
-    case "PARTIAL":
-      // Create a message that specifically mentions missing criteria
-      return {
-        message: `Your filter still needs the following criteria: ${missingTypes.join(", ")}. Let's add them:`,
-        options: [
-          { text: "Continue adding criteria", value: "next_criteria_step" },
-          {
-            text: "Auto-generate missing criteria",
-            value: "trigger_magic_generate",
-          },
-        ],
-        actionType: "suggest_criteria",
-      };
-
-    default:
-      return {
-        message:
-          "Let's continue building your filter. What would you like to do next?",
-        options: [
-          { text: "Start with a template", value: "start_filter_creation" },
-          { text: "Auto-generate a filter", value: "trigger_magic_generate" },
-        ],
-        actionType: "ask_question",
-      };
-  }
-}
