@@ -63,11 +63,6 @@ const ChatMessage = ({
   onOptionSelected,
   applyInstantFilter,
 }: ChatMessageProps) => {
-  // Check if the message contains HTML (for animations)
-  const containsHTML =
-    message.type === "ai" &&
-    (message.content.includes("<div") || message.content.includes("<span"));
-
   // handleOptionClick to handle button clicks
   const handleOptionClick = (event: React.MouseEvent, value: string) => {
     // Stop propagation to prevent other handlers from capturing the event
@@ -113,93 +108,97 @@ const ChatMessage = ({
               e.stopPropagation();
             }}
           >
-            {containsHTML ? (
-              // Render HTML content directly for animations
-              <div
-                dangerouslySetInnerHTML={{ __html: message.content }}
-                className="prose prose-sm max-w-none"
-              />
-            ) : (
-              // Use ReactMarkdown for standard content
-              <div className="prose prose-sm max-w-none">
-                <ReactMarkdown
-                  components={{
-                    p: ({ node, ...props }) => (
-                      <p className="mb-2 last:mb-0" {...props} />
-                    ),
-                    ul: ({ node, ...props }) => (
-                      <ul
-                        className="list-disc pl-5 mb-2 last:mb-0"
-                        {...props}
+            {/* Main content */}
+            <div className="prose prose-sm max-w-none">
+              <ReactMarkdown
+                components={{
+                  p: ({ node, ...props }) => (
+                    <p className="mb-2 last:mb-0" {...props} />
+                  ),
+                  ul: ({ node, ...props }) => (
+                    <ul className="list-disc pl-5 mb-2 last:mb-0" {...props} />
+                  ),
+                  ol: ({ node, ...props }) => (
+                    <ol
+                      className="list-decimal pl-5 mb-2 last:mb-0"
+                      {...props}
+                    />
+                  ),
+                  li: ({ node, ...props }) => (
+                    <li className="mb-1 last:mb-0" {...props} />
+                  ),
+                  strong: ({ node, ...props }) => (
+                    <strong className="font-semibold" {...props} />
+                  ),
+                  h3: ({ node, ...props }) => (
+                    <h3 className="text-lg font-semibold mb-2" {...props} />
+                  ),
+                  h4: ({ node, ...props }) => (
+                    <h4 className="text-base font-semibold mb-1" {...props} />
+                  ),
+                  a: ({ node, ...props }) => (
+                    <a className="text-blue-500 hover:underline" {...props} />
+                  ),
+                  img: ({ node, ...props }) => (
+                    <div className="my-2">
+                      <Image
+                        src={props.src || ""}
+                        alt={props.alt || ""}
+                        width={400}
+                        height={300}
+                        className="rounded max-w-full"
+                        style={{ height: "auto", objectFit: "contain" }}
                       />
-                    ),
-                    ol: ({ node, ...props }) => (
-                      <ol
-                        className="list-decimal pl-5 mb-2 last:mb-0"
-                        {...props}
-                      />
-                    ),
-                    li: ({ node, ...props }) => (
-                      <li className="mb-1 last:mb-0" {...props} />
-                    ),
-                    strong: ({ node, ...props }) => (
-                      <strong className="font-semibold" {...props} />
-                    ),
-                    h3: ({ node, ...props }) => (
-                      <h3 className="text-lg font-semibold mb-2" {...props} />
-                    ),
-                    h4: ({ node, ...props }) => (
-                      <h4 className="text-base font-semibold mb-1" {...props} />
-                    ),
-                    a: ({ node, ...props }) => (
-                      <a className="text-blue-500 hover:underline" {...props} />
-                    ),
-                    img: ({ node, ...props }) => (
-                      <div className="my-2">
-                        <Image
-                          src={props.src || ""}
-                          alt={props.alt || ""}
-                          width={400}
-                          height={300}
-                          className="rounded max-w-full"
-                          style={{ height: "auto", objectFit: "contain" }}
-                        />
-                      </div>
-                    ),
-                  }}
-                >
-                  {message.content}
-                </ReactMarkdown>
-              </div>
-            )}
+                    </div>
+                  ),
+                }}
+              >
+                {message.content}
+              </ReactMarkdown>
+            </div>
 
-            {/* Response options */}
+            {/* Response options - enhanced and prioritized */}
             {message.responseOptions && message.responseOptions.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-3 max-w-full p-1">
-                {message.responseOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={(e) => handleOptionClick(e, option.value)}
-                    className={`
-                      relative overflow-hidden z-50 shadow-sm
-                      ${
-                        option.value.includes("suggest_complete_filter")
-                          ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600"
-                          : option.value.includes("suggest_multiple_criteria")
-                            ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600"
-                            : option.value.includes("apply_updates:")
-                              ? "bg-gradient-to-r from-green-500 to-teal-500 text-white hover:from-green-600 hover:to-teal-600"
-                              : "bg-white hover:bg-gray-100 text-blue-700 border border-blue-300"
-                      }
-                      font-medium py-2 px-4 rounded-full text-xs sm:text-sm
-                      cursor-pointer hover:shadow-md transition-all duration-150
-                      focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
-                    `}
-                  >
-                    {option.text}
-                  </button>
-                ))}
-              </div>
+              <motion.div
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+                className="mt-4 flex flex-wrap gap-3 max-w-full p-1"
+              >
+                <AnimatePresence>
+                  {message.responseOptions.map((option, index) => (
+                    <motion.button
+                      key={option.value}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.2 + index * 0.1 }}
+                      onClick={(e) => handleOptionClick(e, option.value)}
+                      className={`
+                        relative overflow-hidden z-50 shadow-sm
+                        ${
+                          option.value.includes("suggest_complete_filter")
+                            ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600"
+                            : option.value.includes("suggest_multiple_criteria")
+                              ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600"
+                              : option.value.includes("apply_updates:")
+                                ? "bg-gradient-to-r from-green-500 to-teal-500 text-white hover:from-green-600 hover:to-teal-600"
+                                : "bg-white hover:bg-gray-100 text-blue-700 border border-blue-300"
+                        }
+                        font-medium py-3 px-4 rounded-full text-xs sm:text-sm
+                        cursor-pointer hover:shadow-md transition-all duration-150
+                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
+                        hover:scale-105
+                      `}
+                    >
+                      {option.text}
+                      {/* Add directional icon for options */}
+                      {option.value.includes("apply_updates:") && (
+                        <span className="ml-1">→</span>
+                      )}
+                    </motion.button>
+                  ))}
+                </AnimatePresence>
+              </motion.div>
             )}
           </div>
         ) : (

@@ -351,7 +351,7 @@ export const createFilterConversationGuideTool = () => {
           filterContext = null,
         } = JSON.parse(input);
 
-        const model = getDefaultModel({ temperature: 0.7 });
+        const model = getDefaultModel({ temperature: 0.4 });
 
         // Format the conversation history for the prompt
         const conversationString = conversationHistory
@@ -403,79 +403,269 @@ export const createFilterConversationGuideTool = () => {
           (type) => !criteriaToUse.some((c: any) => c.type === type)
         );
 
-        const promptTemplate = ChatPromptTemplate.fromTemplate(`
-          You are an AI assistant helping users create product filters in a conversational way.
-          
-          Current Form State:
-          {formStateString}
-          
-          Current Conversation:
-          {conversationString}
-          
-          User's Latest Message:
-          {userMessage}
-          
-          Current Filter Criteria:
-          {currentCriteriaString}
-          
-          Required Criteria Types Still Needed:
-          {missingRequiredTypes}
-          
-          Your task is to guide the user through creating a product filter by:
-          1. Identifying what the user wants to filter (e.g., restaurants, retail offers)
-          2. Asking clarifying questions to gather missing required information
-          3. Suggesting specific values based on the conversation
-          4. Moving the conversation forward toward completion
-          
-          When you have enough information, you should generate filter criteria.
-          
-          Return a JSON object with this structure:
-          {{
-            "responseMessage": "Your conversational response to the user",
-            "responseOptions": [
-              {{
-                "text": "Option text to show user",
-                "value": "option_value"
-              }}
-            ],
-            "actionType": "ask_question" | "suggest_criteria" | "complete_filter" | "provide_info",
-            "criteriaToAdd": [
-              {{
-                "type": "string - criteria type",
-                "value": "string - appropriate value",
-                "rule": "string - appropriate operator",
-                "and_or": "string - AND or OR",
-                "isRequired": boolean
-              }}
-            ],
-            "nextQuestion": "What specific question to ask next if actionType is ask_question"
-          }}
-        `);
+        // Identify the current step in the filter creation process
+        const currentStep = determineCurrentStep(
+          criteriaToUse,
+          userMessage.toLowerCase()
+        );
 
-        const outputParser = new JsonOutputParser();
+        // Define standard responses based on identified step
+        const stepResponse = generateStepResponse(
+          currentStep,
+          missingRequiredTypes
+        );
 
-        const chain = promptTemplate.pipe(model).pipe(outputParser);
-
-        const response = await chain.invoke({
-          formStateString,
-          conversationString,
-          userMessage,
-          currentCriteriaString,
-          missingRequiredTypes: missingRequiredTypes.join(", "),
+        // Skip the LLM call for natural language understanding
+        // Return a structured response directly
+        return JSON.stringify({
+          responseMessage: stepResponse.message,
+          responseOptions: stepResponse.options,
+          actionType: stepResponse.actionType,
+          criteriaToAdd: stepResponse.criteriaToAdd || [],
         });
-
-        return JSON.stringify(response);
       } catch (error) {
         console.error("Error in filter conversation guide tool:", error);
         return JSON.stringify({
           error: "Failed to process conversation",
           details: error instanceof Error ? error.message : String(error),
           responseMessage:
-            "I'm sorry, I encountered an error processing your request. Could you try again with different wording?",
-          responseOptions: [],
+            "I'm sorry, I encountered an error processing your request. Let's try a different approach.",
+          responseOptions: [
+            {
+              text: "Start building a filter",
+              value: "start_filter_creation",
+            },
+            {
+              text: "Use auto-generate instead",
+              value: "trigger_magic_generate",
+            },
+          ],
           actionType: "provide_info",
         });
       }
     },
   });
 };
+
+// Helper function to determine which step in the filter creation process we're at
+function determineCurrentStep(currentCriteria: any[], userMessage: string) {
+  // Count how many required criteria types we already have
+  const criteriaTypes = currentCriteria.map((c) => c.type);
+  const hasKeyword = criteriaTypes.includes("MerchantKeyword");
+  const hasName = criteriaTypes.includes("MerchantName");
+  const hasCommodity = criteriaTypes.includes("OfferCommodity");
+  const hasOfferKeyword = criteriaTypes.includes("OfferKeyword");
+
+  const completedCount = [
+    hasKeyword,
+    hasName,
+    hasCommodity,
+    hasOfferKeyword,
+  ].filter(Boolean).length;
+
+  // Check if user message indicates a specific filter category
+  if (
+    userMessage.includes("restaurant") ||
+    userMessage.includes("food") ||
+    userMessage.includes("dining")
+  ) {
+    return "FOOD_FILTER";
+  } else if (
+    userMessage.includes("shopping") ||
+    userMessage.includes("retail")
+  ) {
+    return "RETAIL_FILTER";
+  } else if (userMessage.includes("entertainment")) {
+    return "ENTERTAINMENT_FILTER";
+  }
+
+  // Otherwise use progress-based steps
+  if (completedCount === 0) {
+    return "START";
+  } else if (completedCount === 4) {
+    return "COMPLETE";
+  } else {
+    // Return which criteria type is missing next
+    if (!hasKeyword) return "NEED_MERCHANT_KEYWORD";
+    if (!hasName) return "NEED_MERCHANT_NAME";
+    if (!hasCommodity) return "NEED_OFFER_COMMODITY";
+    if (!hasOfferKeyword) return "NEED_OFFER_KEYWORD";
+    return "PARTIAL";
+  }
+}
+
+// Helper function to generate structured responses for each step
+function generateStepResponse(
+  step: string,
+  missingTypes: string[]
+): {
+  message: string;
+  options: Array<{ text: string; value: string }>;
+  actionType: string;
+  criteriaToAdd?: Array<any>;
+} {
+  switch (step) {
+    case "START":
+      return {
+        message:
+          "Let's build your filter. What type of filter are you interested in creating?",
+        options: [
+          { text: "Restaurant/Food filter", value: "start_restaurant_filter" },
+          { text: "Shopping/Retail filter", value: "start_retail_filter" },
+          { text: "Entertainment filter", value: "start_entertainment_filter" },
+        ],
+        actionType: "ask_question",
+      };
+
+    case "FOOD_FILTER":
+      return {
+        message:
+          "Let's create a restaurant filter. Please select the options you want to include:",
+        options: [
+          {
+            text: "Add 'Restaurant' as merchant keyword",
+            value:
+              'suggest_criteria:{"type":"MerchantKeyword","value":"Restaurant","rule":"contains","and_or":"OR","isRequired":true}',
+          },
+          {
+            text: "Add 'Dining' as offer commodity",
+            value:
+              'suggest_criteria:{"type":"OfferCommodity","value":"Dining","rule":"equals","and_or":"AND","isRequired":true}',
+          },
+        ],
+        actionType: "suggest_criteria",
+      };
+
+    case "RETAIL_FILTER":
+      return {
+        message:
+          "Let's create a shopping filter. Please select the options you want to include:",
+        options: [
+          {
+            text: "Add 'Retail' as merchant keyword",
+            value:
+              'suggest_criteria:{"type":"MerchantKeyword","value":"Retail","rule":"contains","and_or":"OR","isRequired":true}',
+          },
+          {
+            text: "Add 'Shopping' as offer commodity",
+            value:
+              'suggest_criteria:{"type":"OfferCommodity","value":"Shopping","rule":"equals","and_or":"AND","isRequired":true}',
+          },
+        ],
+        actionType: "suggest_criteria",
+      };
+
+    case "NEED_MERCHANT_KEYWORD":
+      return {
+        message: "Select a merchant keyword for your filter:",
+        options: [
+          {
+            text: "Add 'Restaurant' as merchant keyword",
+            value:
+              'suggest_criteria:{"type":"MerchantKeyword","value":"Restaurant","rule":"contains","and_or":"OR","isRequired":true}',
+          },
+          {
+            text: "Add 'Retail' as merchant keyword",
+            value:
+              'suggest_criteria:{"type":"MerchantKeyword","value":"Retail","rule":"contains","and_or":"OR","isRequired":true}',
+          },
+          {
+            text: "Add 'Entertainment' as merchant keyword",
+            value:
+              'suggest_criteria:{"type":"MerchantKeyword","value":"Entertainment","rule":"contains","and_or":"OR","isRequired":true}',
+          },
+        ],
+        actionType: "suggest_criteria",
+      };
+
+    case "NEED_MERCHANT_NAME":
+      return {
+        message: "Select a merchant name for your filter:",
+        options: [
+          {
+            text: "Add 'Local Business' as merchant name",
+            value:
+              'suggest_criteria:{"type":"MerchantName","value":"Local Business","rule":"contains","and_or":"OR","isRequired":true}',
+          },
+          {
+            text: "Add 'Chain Stores' as merchant name",
+            value:
+              'suggest_criteria:{"type":"MerchantName","value":"Chain Stores","rule":"contains","and_or":"OR","isRequired":true}',
+          },
+        ],
+        actionType: "suggest_criteria",
+      };
+
+    case "NEED_OFFER_COMMODITY":
+      return {
+        message: "Select an offer commodity for your filter:",
+        options: [
+          {
+            text: "Add 'Food' as offer commodity",
+            value:
+              'suggest_criteria:{"type":"OfferCommodity","value":"Food","rule":"equals","and_or":"AND","isRequired":true}',
+          },
+          {
+            text: "Add 'Merchandise' as offer commodity",
+            value:
+              'suggest_criteria:{"type":"OfferCommodity","value":"Merchandise","rule":"equals","and_or":"AND","isRequired":true}',
+          },
+        ],
+        actionType: "suggest_criteria",
+      };
+
+    case "NEED_OFFER_KEYWORD":
+      return {
+        message: "Select an offer keyword for your filter:",
+        options: [
+          {
+            text: "Add 'Discount' as offer keyword",
+            value:
+              'suggest_criteria:{"type":"OfferKeyword","value":"Discount","rule":"contains","and_or":"OR","isRequired":true}',
+          },
+          {
+            text: "Add 'Special' as offer keyword",
+            value:
+              'suggest_criteria:{"type":"OfferKeyword","value":"Special","rule":"contains","and_or":"OR","isRequired":true}',
+          },
+        ],
+        actionType: "suggest_criteria",
+      };
+
+    case "COMPLETE":
+      return {
+        message:
+          "You've selected all required criteria. Would you like to finalize your filter?",
+        options: [
+          { text: "Yes, finalize filter", value: "confirm_complete_filter" },
+          { text: "No, I want to make changes", value: "modify_filter" },
+        ],
+        actionType: "complete_filter",
+      };
+
+    case "PARTIAL":
+      // Create a message that specifically mentions missing criteria
+      return {
+        message: `Your filter still needs the following criteria: ${missingTypes.join(", ")}. Let's add them:`,
+        options: [
+          { text: "Continue adding criteria", value: "next_criteria_step" },
+          {
+            text: "Auto-generate missing criteria",
+            value: "trigger_magic_generate",
+          },
+        ],
+        actionType: "suggest_criteria",
+      };
+
+    default:
+      return {
+        message:
+          "Let's continue building your filter. What would you like to do next?",
+        options: [
+          { text: "Start with a template", value: "start_filter_creation" },
+          { text: "Auto-generate a filter", value: "trigger_magic_generate" },
+        ],
+        actionType: "ask_question",
+      };
+  }
+}

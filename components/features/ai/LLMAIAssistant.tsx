@@ -10,6 +10,20 @@ import {
 } from "@/lib/redux/slices/ai-assistantSlice";
 import ChatPanel, { AIMessage } from "./ChatPanel";
 
+// Helper function to create option IDs (copied from middleware)
+const createOptionId = (prefix: string, data: any) => {
+  if (typeof data === "string") {
+    return `${prefix}:${data}`;
+  }
+  return `${prefix}:${JSON.stringify(data)}`;
+};
+
+// Type for response options
+interface ResponseOption {
+  text: string;
+  value: string;
+}
+
 interface LLMAIAssistantProps {
   onOptionSelected: (optionId: string) => void;
   className?: string;
@@ -44,13 +58,24 @@ export const LLMAIAssistant: React.FC<LLMAIAssistantProps> = ({
         addMessage({
           type: "ai",
           content:
-            "Welcome! I can help you create product filters. Describe the filter you need, or click the magic button to auto-generate based on context. I'll guide you through the process.",
+            "I'll help you create a product filter by asking specific questions. Let's build it step by step.",
           responseOptions: [
             {
-              text: "What criteria do I need?",
+              text: "Start building a filter",
+              value: "start_filter_creation",
+            },
+            {
+              text: "What criteria are required?",
               value: "explain_criteria_types",
             },
-            { text: "Show best practices", value: "best_practices" },
+            {
+              text: "Show best practices",
+              value: "best_practices",
+            },
+            {
+              text: "Use auto-generate instead",
+              value: "magic_generate_intro",
+            },
           ],
         })
       );
@@ -65,6 +90,7 @@ export const LLMAIAssistant: React.FC<LLMAIAssistantProps> = ({
       // Clear proposed payload when user sends a new message
       setProposedUpdatePayload(null);
 
+      // Add user message to the chat
       dispatch(
         addMessage({
           type: "user",
@@ -72,135 +98,53 @@ export const LLMAIAssistant: React.FC<LLMAIAssistantProps> = ({
         })
       );
 
+      // Set processing state while "thinking"
       dispatch(setIsProcessing(true));
 
-      // Simulate LLM interaction for now (would be handled by middleware in production)
-      setTimeout(() => {
-        const currentCriteriaTypes = currentCriteria.map((c) => c.type);
-        const lowerMessage = messageText.toLowerCase();
+      // Don't generate our own responses - instead, let the middleware handle it
+      // This ensures all responses come from the structured flow defined in tools.ts
 
-        // --- Simulate Information Gathering ---
-        // (This would be replaced by real NLU/context tracking)
-        // For simulation, let's assume we *always* find some basic info
-        // and potentially one missing required type to demonstrate the flow.
-        const detectedData = {
-          merchantKeyword: lowerMessage.includes("pizza hut")
-            ? "pizza hut"
-            : currentCriteria.find((c) => c.type === "MerchantKeyword")
-                ?.value || null,
-          offerCommodity: lowerMessage.includes("pizza")
-            ? "pizza"
-            : currentCriteria.find((c) => c.type === "OfferCommodity")?.value ||
-              null,
-          offerKeyword: lowerMessage.includes("deal")
-            ? "deal"
-            : currentCriteria.find((c) => c.type === "OfferKeyword")?.value ||
-              null,
-          // Assume MerchantName is missing for demo question
-        };
-
-        let allRequiredPresent = true;
-        let firstMissingRequiredType: string | null = null;
-        let detectedCriteriaForPayload: Partial<any>[] = [];
-        const tempAllTypes = new Set(currentCriteriaTypes);
-
-        // Build payload based on NEWLY detected info from this message
-        if (
-          lowerMessage.includes("pizza hut") &&
-          !currentCriteriaTypes.includes("MerchantKeyword")
-        ) {
-          detectedCriteriaForPayload.push({
-            type: "MerchantKeyword",
-            value: "pizza hut",
-            rule: "contains",
-            and_or: "OR",
-            isRequired: true,
-          });
-          tempAllTypes.add("MerchantKeyword");
-        }
-        if (
-          lowerMessage.includes("pizza") &&
-          !currentCriteriaTypes.includes("OfferCommodity")
-        ) {
-          detectedCriteriaForPayload.push({
-            type: "OfferCommodity",
-            value: "pizza",
-            rule: "contains",
-            and_or: "OR",
-            isRequired: true,
-          });
-          tempAllTypes.add("OfferCommodity");
-        }
-        if (
-          lowerMessage.includes("deal") &&
-          !currentCriteriaTypes.includes("OfferKeyword")
-        ) {
-          detectedCriteriaForPayload.push({
-            type: "OfferKeyword",
-            value: "deal",
-            rule: "contains",
-            and_or: "OR",
-            isRequired: true,
-          });
-          tempAllTypes.add("OfferKeyword");
-        }
-        // Add logic for MerchantName etc.
-
-        // Check required fields based on current + newly detected
-        for (const reqType of requiredCriteriaTypes) {
-          if (!tempAllTypes.has(reqType)) {
-            allRequiredPresent = false;
-            firstMissingRequiredType = reqType;
-            break;
-          }
-        }
-
-        let aiResponseMessage: Omit<AIMessage, "id" | "timestamp">;
-
-        if (!allRequiredPresent && firstMissingRequiredType) {
-          // --- Scenario B: Ask for missing required field ---
-          let baseText = "Okay, I understood some details. ";
-          if (detectedCriteriaForPayload.length > 0) {
-            baseText = `Okay, I see ${detectedCriteriaForPayload.map((c) => `'${c.value}' (${c.type})`).join(" and ")}. `;
-          }
-          let question = `To create the filter, I also need the ${firstMissingRequiredType.replace(/([A-Z])/g, " $1").toLowerCase()}. What should that be?`;
-          // Add specific question phrasing if needed
-          aiResponseMessage = { type: "ai", content: baseText + question };
-          dispatch(addMessage(aiResponseMessage));
-        } else {
-          // --- Scenario C: All required present (or assumed) -> Propose Generation ---
-          const finalCriteriaToAdd = [
-            ...currentCriteria,
-            // Ensure newly detected aren't duplicates (simple type check)
-            ...detectedCriteriaForPayload.filter(
-              (newItem) => !currentCriteriaTypes.includes(newItem.type!)
-            ),
-          ];
-          const filterNameProposal = `${detectedData.merchantKeyword || detectedData.offerCommodity || "Generated"} Filter`;
-
-          // Store the proposed payload
-          const payloadToConfirm = {
-            criteriaToAdd: finalCriteriaToAdd,
-            filterName: filterNameProposal,
-          };
-          setProposedUpdatePayload(payloadToConfirm); // Store for confirmation click
-
-          aiResponseMessage = {
-            type: "ai",
-            content: `Okay, I have enough information (Criteria: ${finalCriteriaToAdd.map((c) => c.type).join(", ")}). Shall I generate the filter with name "${filterNameProposal}" now?`,
-            responseOptions: [
-              { text: "Yes, generate filter", value: "confirm_generate" },
-              { text: "No, wait", value: "cancel_generate" },
-            ],
-          };
-          dispatch(addMessage(aiResponseMessage));
-        }
-
-        dispatch(setIsProcessing(false));
-      }, 1200);
+      // Pass the message to the middleware via Redux
+      // The middleware will use our structured conversation guide
+      dispatch(setIsProcessing(false));
     },
-    [dispatch, currentCriteria, requiredCriteriaTypes]
+    [dispatch]
   );
+
+  // Handle magic generate button click (instant filter)
+  const handleMagicGenerate = React.useCallback(() => {
+    console.log(
+      "Magic Generate: Instantly creating and applying filter in LLM mode"
+    );
+
+    // Pre-defined filter to apply immediately with query name and expiry date
+    const instantFilterPayload =
+      'apply_updates:{"criteriaToAdd":[{"type":"MerchantKeyword","value":"restaurant","rule":"contains","and_or":"OR","isRequired":true},{"type":"MerchantName","value":"local eatery","rule":"contains","and_or":"OR","isRequired":true},{"type":"OfferCommodity","value":"dining","rule":"equals","and_or":"AND","isRequired":true},{"type":"OfferKeyword","value":"discount","rule":"contains","and_or":"OR","isRequired":true}],"filterName":"Restaurant Dining Filter","queryViewName":"RestaurantDiningView","expiryDate":"' +
+      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() +
+      '"}';
+
+    // Add user message
+    dispatch(
+      addMessage({
+        type: "user",
+        content: "Create an instant filter for restaurants please.",
+      })
+    );
+
+    // Add AI response
+    setTimeout(() => {
+      dispatch(
+        addMessage({
+          type: "ai",
+          content:
+            "I've created a complete restaurant filter with all required criteria. The filter has been applied to your form!",
+        })
+      );
+
+      // Apply the filter
+      onOptionSelected(instantFilterPayload);
+    }, 500);
+  }, [dispatch, onOptionSelected]);
 
   // Option selected handler for LLM mode
   const handleOptionSelected = React.useCallback(
@@ -238,48 +182,24 @@ export const LLMAIAssistant: React.FC<LLMAIAssistantProps> = ({
         };
         dispatch(addMessage(aiCancelMsg));
         setProposedUpdatePayload(null); // Clear proposal
+      } else if (optionValue === "trigger_magic_generate") {
+        // Trigger the magic generation
+        dispatch(
+          addMessage({
+            type: "user",
+            content: "Please generate a filter for me automatically",
+          })
+        );
+
+        // Call the magic generate function
+        handleMagicGenerate();
       } else {
         // Pass through to parent component for non-special commands
         onOptionSelected(optionValue);
       }
     },
-    [dispatch, proposedUpdatePayload, onOptionSelected]
+    [dispatch, proposedUpdatePayload, onOptionSelected, handleMagicGenerate]
   );
-
-  // Handle magic generate button click (instant filter)
-  const handleMagicGenerate = React.useCallback(() => {
-    console.log(
-      "Magic Generate: Instantly creating and applying filter in LLM mode"
-    );
-
-    // Pre-defined filter to apply immediately with query name and expiry date
-    const instantFilterPayload =
-      'apply_updates:{"criteriaToAdd":[{"type":"MerchantKeyword","value":"restaurant","rule":"contains","and_or":"OR","isRequired":true},{"type":"MerchantName","value":"local eatery","rule":"contains","and_or":"OR","isRequired":true},{"type":"OfferCommodity","value":"dining","rule":"equals","and_or":"AND","isRequired":true},{"type":"OfferKeyword","value":"discount","rule":"contains","and_or":"OR","isRequired":true}],"filterName":"Restaurant Dining Filter","queryViewName":"RestaurantDiningView","expiryDate":"' +
-      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() +
-      '"}';
-
-    // Add user message
-    dispatch(
-      addMessage({
-        type: "user",
-        content: "Create an instant filter for restaurants please.",
-      })
-    );
-
-    // Add AI response
-    setTimeout(() => {
-      dispatch(
-        addMessage({
-          type: "ai",
-          content:
-            "I've created a complete restaurant filter with all required criteria. The filter has been applied to your form!",
-        })
-      );
-
-      // Apply the filter
-      onOptionSelected(instantFilterPayload);
-    }, 500);
-  }, [dispatch, onOptionSelected]);
 
   return (
     <ChatPanel

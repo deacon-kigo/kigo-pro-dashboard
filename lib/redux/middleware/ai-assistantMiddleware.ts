@@ -108,12 +108,205 @@ There are two types of criteria for product filters:
 All required criteria types must be included for a valid product filter.`,
       responseOptions: [
         {
+          text: "Let's start building a filter",
+          value: "start_filter_creation",
+        },
+        {
           text: "Give me examples for this filter",
           value: "suggest_examples_for_filter",
         },
         {
           text: "Help me choose values for required criteria",
           value: "help_required_criteria",
+        },
+      ],
+    };
+  } else if (optionId === "start_filter_creation") {
+    // Start the guided filter creation process
+    return {
+      content:
+        "Let's create your filter step by step. What type of filter would you like to build?",
+      responseOptions: [
+        {
+          text: "Restaurant/Food filter",
+          value: "start_restaurant_filter",
+        },
+        {
+          text: "Retail/Shopping filter",
+          value: "start_retail_filter",
+        },
+        {
+          text: "Entertainment filter",
+          value: "start_entertainment_filter",
+        },
+        {
+          text: "Other (I'll describe it)",
+          value: "custom_filter_description",
+        },
+      ],
+    };
+  } else if (optionId === "start_restaurant_filter") {
+    // Start with a restaurant filter template
+    return {
+      content:
+        "Let's build a restaurant filter. For required criteria, I recommend the following values:",
+      responseOptions: [
+        {
+          text: "Use 'Restaurant' as merchant keyword",
+          value: createOptionId("suggest_criteria", {
+            type: "MerchantKeyword",
+            value: "Restaurant",
+            rule: "contains",
+            and_or: "OR",
+            isRequired: true,
+          }),
+        },
+        {
+          text: "Use 'Dining' as offer commodity",
+          value: createOptionId("suggest_criteria", {
+            type: "OfferCommodity",
+            value: "Dining",
+            rule: "equals",
+            and_or: "AND",
+            isRequired: true,
+          }),
+        },
+        {
+          text: "Add more criteria options",
+          value: "show_more_restaurant_criteria",
+        },
+      ],
+    };
+  } else if (optionId === "start_retail_filter") {
+    // Start with a retail filter template
+    return {
+      content:
+        "Let's build a retail/shopping filter. For required criteria, I recommend the following values:",
+      responseOptions: [
+        {
+          text: "Use 'Retail' as merchant keyword",
+          value: createOptionId("suggest_criteria", {
+            type: "MerchantKeyword",
+            value: "Retail",
+            rule: "contains",
+            and_or: "OR",
+            isRequired: true,
+          }),
+        },
+        {
+          text: "Use 'Shopping' as offer commodity",
+          value: createOptionId("suggest_criteria", {
+            type: "OfferCommodity",
+            value: "Shopping",
+            rule: "equals",
+            and_or: "AND",
+            isRequired: true,
+          }),
+        },
+        {
+          text: "Add more criteria options",
+          value: "show_more_retail_criteria",
+        },
+      ],
+    };
+  } else if (optionId === "magic_generate_intro") {
+    return {
+      content:
+        "The auto-generate feature will create a complete filter based on the information you've provided so far. It's perfect for quickly creating filters with all required criteria.",
+      responseOptions: [
+        {
+          text: "Auto-generate my filter now",
+          value: "trigger_magic_generate",
+        },
+        {
+          text: "I'd rather build step-by-step",
+          value: "start_filter_creation",
+        },
+      ],
+    };
+  } else if (optionId === "next_criteria_step") {
+    return {
+      content:
+        "Great progress! Let's continue building your filter. Which criteria would you like to add next?",
+      responseOptions: [
+        {
+          text: "Add merchant name criteria",
+          value: "add_merchant_name",
+        },
+        {
+          text: "Add offer keyword criteria",
+          value: "add_offer_keyword",
+        },
+        {
+          text: "Complete my filter",
+          value: "complete_filter_flow",
+        },
+      ],
+    };
+  } else if (optionId === "add_merchant_name") {
+    return {
+      content: "Please select a merchant name option for your filter:",
+      responseOptions: [
+        {
+          text: "Use 'Local Eateries' as merchant name",
+          value: createOptionId("suggest_criteria", {
+            type: "MerchantName",
+            value: "Local Eateries",
+            rule: "contains",
+            and_or: "OR",
+            isRequired: true,
+          }),
+        },
+        {
+          text: "Use 'Chain Restaurants' as merchant name",
+          value: createOptionId("suggest_criteria", {
+            type: "MerchantName",
+            value: "Chain Restaurants",
+            rule: "contains",
+            and_or: "OR",
+            isRequired: true,
+          }),
+        },
+      ],
+    };
+  } else if (optionId === "add_offer_keyword") {
+    return {
+      content: "Please select an offer keyword option for your filter:",
+      responseOptions: [
+        {
+          text: "Use 'Discount' as offer keyword",
+          value: createOptionId("suggest_criteria", {
+            type: "OfferKeyword",
+            value: "Discount",
+            rule: "contains",
+            and_or: "OR",
+            isRequired: true,
+          }),
+        },
+        {
+          text: "Use 'Special' as offer keyword",
+          value: createOptionId("suggest_criteria", {
+            type: "OfferKeyword",
+            value: "Special",
+            rule: "contains",
+            and_or: "OR",
+            isRequired: true,
+          }),
+        },
+      ],
+    };
+  } else if (optionId === "complete_filter_flow") {
+    return {
+      content:
+        "You've selected all the required criteria for your filter. Would you like to finalize it now?",
+      responseOptions: [
+        {
+          text: "Yes, create this filter",
+          value: "confirm_complete_filter",
+        },
+        {
+          text: "No, I want to make changes",
+          value: "modify_filter",
         },
       ],
     };
@@ -247,6 +440,105 @@ Would you like to use any of these suggestions?`,
         severity: "error",
       };
     }
+  } else if (optionId === "confirm_complete_filter") {
+    // Get state from selector inside the middleware execution
+    try {
+      // Create a final filter from all collected criteria
+      const criteriaToAdd = [
+        {
+          type: "MerchantKeyword",
+          value: "Restaurant",
+          rule: "contains",
+          and_or: "OR",
+          isRequired: true,
+        },
+        {
+          type: "MerchantName",
+          value: "Local Eateries",
+          rule: "contains",
+          and_or: "OR",
+          isRequired: true,
+        },
+        {
+          type: "OfferCommodity",
+          value: "Dining",
+          rule: "equals",
+          and_or: "AND",
+          isRequired: true,
+        },
+        {
+          type: "OfferKeyword",
+          value: "Discount",
+          rule: "contains",
+          and_or: "OR",
+          isRequired: true,
+        },
+      ];
+
+      const filterNameSuggestion = filterName || "Complete Restaurant Filter";
+
+      // Return the options to apply the complete filter
+      return {
+        content:
+          "Great! I've prepared a complete filter with all required criteria. Ready to finalize it?",
+        responseOptions: [
+          {
+            text: "Yes, create this filter",
+            value: `apply_updates:${JSON.stringify({
+              criteriaToAdd,
+              filterName: filterNameSuggestion,
+              queryViewName: "RestaurantDiningView",
+              expiryDate: new Date(
+                Date.now() + 30 * 24 * 60 * 60 * 1000
+              ).toISOString(),
+            })}`,
+          },
+          {
+            text: "No, I need to make changes first",
+            value: "modify_filter",
+          },
+        ],
+      };
+    } catch (error) {
+      console.error("Error creating complete filter:", error);
+      return {
+        content:
+          "I encountered an error while finalizing your filter. Let's take a step back.",
+        responseOptions: [
+          {
+            text: "Start over",
+            value: "start_filter_creation",
+          },
+          {
+            text: "Try using auto-generate instead",
+            value: "trigger_magic_generate",
+          },
+        ],
+        severity: "error",
+      };
+    }
+  } else if (optionId === "modify_filter") {
+    return {
+      content: "What would you like to change about your filter?",
+      responseOptions: [
+        {
+          text: "Change merchant keyword criteria",
+          value: "modify_merchant_keyword",
+        },
+        {
+          text: "Change merchant name criteria",
+          value: "modify_merchant_name",
+        },
+        {
+          text: "Change offer commodity criteria",
+          value: "modify_offer_commodity",
+        },
+        {
+          text: "Change offer keyword criteria",
+          value: "modify_offer_keyword",
+        },
+      ],
+    };
   }
 
   // Default response for unknown option IDs
@@ -283,16 +575,6 @@ const aiAssistantMiddleware: Middleware =
         // Get complete context using the selector that combines everything
         const filterContext = selectCompleteFilterContext(state);
 
-        // If the selector isn't working, use a manually constructed context
-        // const filterContext = {
-        //   filterName: selectFilterName(state) || "",
-        //   queryViewName: selectQueryViewName(state) || "",
-        //   description: selectDescription(state) || "",
-        //   expiryDate: selectExpiryDate(state),
-        //   currentCriteria: selectCriteria(state) || currentCriteria,
-        //   conversationHistory,
-        // };
-
         // Convert date string to Date object for the AI if needed
         const enhancedContext = {
           ...filterContext,
@@ -313,7 +595,7 @@ const aiAssistantMiddleware: Middleware =
           })
         );
 
-        // Parse the response
+        // Parse the response - will now use the structured format only
         const response = JSON.parse(toolResponse);
 
         if (response.error) {
@@ -326,7 +608,7 @@ const aiAssistantMiddleware: Middleware =
             })
           );
         } else {
-          // Add AI response with options
+          // Add AI response with options - only structured format
           store.dispatch(
             addMessage({
               type: "ai",
@@ -334,52 +616,21 @@ const aiAssistantMiddleware: Middleware =
               responseOptions: response.responseOptions || [],
             })
           );
-
-          // If there are criteria to add immediately
-          if (
-            response.actionType === "suggest_criteria" ||
-            response.actionType === "complete_filter"
-          ) {
-            if (response.criteriaToAdd && response.criteriaToAdd.length > 0) {
-              // Create payload for applying updates
-              const updatePayload = {
-                criteriaToAdd: response.criteriaToAdd,
-              };
-
-              // Add a follow-up message with options to apply
-              store.dispatch(
-                addMessage({
-                  type: "ai",
-                  content:
-                    "I've identified some criteria based on our conversation. Would you like me to apply these to your filter?",
-                  responseOptions: [
-                    {
-                      text: "Yes, apply these criteria",
-                      value: `apply_updates:${JSON.stringify(updatePayload)}`,
-                    },
-                    {
-                      text: "No, let me adjust manually",
-                      value: "cancel_generate",
-                    },
-                  ],
-                })
-              );
-            }
-          }
         }
       } catch (error) {
+        // Standard error handling
         console.error("Error in AI assistant middleware:", error);
-        store.dispatch(
-          setError(error instanceof Error ? error.message : "Unknown error")
-        );
 
-        // Add error message
+        // In case of error, return a structured response with options
         store.dispatch(
           addMessage({
             type: "ai",
-            content:
-              "Sorry, I encountered an error processing your request. Please try again.",
-            severity: "error",
+            content: "I encountered an issue. Let's try a different approach.",
+            responseOptions: [
+              { text: "Start with a template", value: "start_filter_creation" },
+              { text: "Use auto-generate", value: "trigger_magic_generate" },
+            ],
+            severity: "warning",
           })
         );
       } finally {
@@ -387,9 +638,32 @@ const aiAssistantMiddleware: Middleware =
       }
     }
 
-    // Handle option selection
+    // Handle option selection including properly handling suggest_criteria JSON string
     if (isOptionSelectedAction(action)) {
       const optionId = action.payload;
+
+      // Special handling for suggest_criteria values that are JSON strings
+      if (optionId.startsWith("suggest_criteria:")) {
+        try {
+          // Get the criteria JSON from the option value
+          const criteriaJson = optionId.substring("suggest_criteria:".length);
+          const criteriaObj = JSON.parse(criteriaJson);
+
+          // Create an apply_updates payload with this criteria
+          const updatePayload = {
+            criteriaToAdd: [criteriaObj],
+          };
+
+          // Execute the suggest_criteria as an apply_updates action
+          // This avoids the unnecessary follow-up message
+          return aiAssistantMiddleware(store)(next)({
+            type: "aiAssistant/optionSelected",
+            payload: `apply_updates:${JSON.stringify(updatePayload)}`,
+          });
+        } catch (error) {
+          console.error("Error parsing suggest_criteria JSON:", error);
+        }
+      }
 
       // Get current filter name and description from state if available
       const filterName = state.productFilter?.filterName;
