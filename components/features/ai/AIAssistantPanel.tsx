@@ -50,90 +50,6 @@ interface FilterContext {
   currentFilterDescription?: string;
 }
 
-// Update get filter context to use Redux state properly
-const getFilterContext = (): FilterContext => {
-  // Access filter data from redux state if available
-  const state = useSelector((state: RootState) => state);
-  const filterState = state.productFilter || {};
-
-  return {
-    availableFilterTypes: [
-      "MerchantKeyword",
-      "MerchantName",
-      "OfferCommodity",
-      "OfferKeyword",
-      "Client",
-      "MerchantId",
-      "OfferCategory",
-      "OfferExpiry",
-      "OfferId",
-      "OfferRedemptionControlLimit",
-      "OfferRedemptionType",
-      "OfferType",
-    ],
-    merchantCategories: [
-      "Food & Dining",
-      "Retail",
-      "Entertainment",
-      "Travel",
-      "Health & Beauty",
-      "Services",
-      "Other",
-    ],
-    currentCriteria: filterState.criteria || [],
-    currentFilterName: filterState.name || "",
-    currentFilterDescription: filterState.description || "",
-  };
-};
-
-// Add utility to parse LLM responses into filter data
-const parseLLMFilterResponse = (content: string): any => {
-  try {
-    // Look for JSON in the response
-    const jsonMatch =
-      content.match(/```json\n([\s\S]*?)\n```/) || content.match(/{[\s\S]*}/);
-
-    if (jsonMatch) {
-      const jsonStr = jsonMatch[1] || jsonMatch[0];
-      return JSON.parse(jsonStr);
-    }
-
-    // Fall back to simple parsing for "field: value" format
-    const filterData: any = { criteria: [] };
-    const lines = content.split("\n");
-
-    for (const line of lines) {
-      if (line.includes(":")) {
-        const [key, value] = line.split(":", 2).map((s) => s.trim());
-        if (key && value) {
-          if (key.toLowerCase().includes("name")) {
-            filterData.name = value;
-          } else if (key.toLowerCase().includes("description")) {
-            filterData.description = value;
-          } else if (
-            key.toLowerCase().includes("category") ||
-            key.toLowerCase().includes("keyword") ||
-            key.toLowerCase().includes("commodity")
-          ) {
-            // This might be a criteria item
-            filterData.criteria.push({
-              type: key,
-              value: value,
-              rule: "contains",
-              and_or: "AND",
-            });
-          }
-        }
-      }
-    }
-
-    return filterData;
-  } catch (e) {
-    console.error("Error parsing LLM response:", e);
-    return null;
-  }
-};
-
 const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
   onSend = () => {},
   onOptionSelected = () => {},
@@ -300,87 +216,90 @@ I'll analyze your request and suggest appropriate filter criteria that you can a
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
-  // Add this helper function to generate structured filter data
-  const generateFilterSuggestion = (
-    type: string,
-    criteria: any
-  ): ResponseOption => {
-    // Create a structured suggestion for complete filter
-    if (type === "complete") {
-      return {
-        text: "✨ Create complete filter automatically",
-        value: `suggest_complete_filter:${JSON.stringify({
-          name: criteria.name || "Product Filter",
-          queryViewName:
-            criteria.queryViewName ||
-            criteria.name?.replace(/\s+/g, "") ||
-            "ProductFilter",
-          description: criteria.description || "",
-          expiryDate:
-            criteria.expiryDate ||
-            new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
-          criteria: criteria.items.map((item: any) => ({
-            type: item.type,
-            value: item.value,
-            rule: item.rule || "contains",
-            and_or: item.and_or || "AND",
-          })),
-        })}`,
-      };
-    }
+  // Add a function to get the filter context properly inside the component
+  const getFilterContext = (): FilterContext => {
+    // Safe to use hooks here since we're inside a component
+    const filterState = useSelector(
+      (state: RootState) => state.productFilter || {}
+    );
 
-    // Create a structured suggestion for a single criteria
-    if (type === "criteria") {
-      return {
-        text: `🔍 Add "${criteria.type}: ${criteria.value}" filter`,
-        value: `suggest_criteria:${JSON.stringify({
-          type: criteria.type,
-          value: criteria.value,
-          rule: criteria.rule || "contains",
-          and_or: criteria.and_or || "AND",
-        })}`,
-      };
-    }
-
-    // Create a structured suggestion for multiple criteria
-    if (type === "multiple") {
-      return {
-        text: `📋 Add all suggested filter criteria`,
-        value: `suggest_multiple_criteria:${JSON.stringify(
-          criteria.map((item: any) => ({
-            type: item.type,
-            value: item.value,
-            rule: item.rule || "contains",
-            and_or: item.and_or || "AND",
-          }))
-        )}`,
-      };
-    }
-
-    // Default fallback
     return {
-      text: "Add suggested filter",
-      value: "suggest_criteria:null",
+      availableFilterTypes: [
+        "MerchantKeyword",
+        "MerchantName",
+        "OfferCommodity",
+        "OfferKeyword",
+        "Client",
+        "MerchantId",
+        "OfferCategory",
+        "OfferExpiry",
+        "OfferId",
+        "OfferRedemptionControlLimit",
+        "OfferRedemptionType",
+        "OfferType",
+      ],
+      merchantCategories: [
+        "Food & Dining",
+        "Retail",
+        "Entertainment",
+        "Travel",
+        "Health & Beauty",
+        "Services",
+        "Other",
+      ],
+      // If filterState doesn't exist yet, fallback to empty arrays and strings
+      currentCriteria: [],
+      currentFilterName: "",
+      currentFilterDescription: "",
     };
   };
 
-  // Add a better detector for filter-related queries
-  const isFilterQuery = (message: string): boolean => {
-    const lowerMsg = message.toLowerCase();
-    return (
-      lowerMsg.includes("filter") ||
-      lowerMsg.includes("offer") ||
-      lowerMsg.includes("product") ||
-      lowerMsg.includes("food") ||
-      lowerMsg.includes("restaurant") ||
-      lowerMsg.includes("merchant") ||
-      lowerMsg.includes("price") ||
-      lowerMsg.includes("category") ||
-      lowerMsg.includes("exclude") ||
-      lowerMsg.includes("include") ||
-      lowerMsg.includes("pizza") ||
-      lowerMsg.includes("discount")
-    );
+  // Add utility to parse LLM responses into filter data
+  const parseLLMFilterResponse = (content: string): any => {
+    try {
+      // Look for JSON in the response
+      const jsonMatch =
+        content.match(/```json\n([\s\S]*?)\n```/) || content.match(/{[\s\S]*}/);
+
+      if (jsonMatch) {
+        const jsonStr = jsonMatch[1] || jsonMatch[0];
+        return JSON.parse(jsonStr);
+      }
+
+      // Fall back to simple parsing for "field: value" format
+      const filterData: any = { criteria: [] };
+      const lines = content.split("\n");
+
+      for (const line of lines) {
+        if (line.includes(":")) {
+          const [key, value] = line.split(":", 2).map((s) => s.trim());
+          if (key && value) {
+            if (key.toLowerCase().includes("name")) {
+              filterData.name = value;
+            } else if (key.toLowerCase().includes("description")) {
+              filterData.description = value;
+            } else if (
+              key.toLowerCase().includes("category") ||
+              key.toLowerCase().includes("keyword") ||
+              key.toLowerCase().includes("commodity")
+            ) {
+              // This might be a criteria item
+              filterData.criteria.push({
+                type: key,
+                value: value,
+                rule: "contains",
+                and_or: "AND",
+              });
+            }
+          }
+        }
+      }
+
+      return filterData;
+    } catch (e) {
+      console.error("Error parsing LLM response:", e);
+      return null;
+    }
   };
 
   // Update the message handling to automatically detect filter queries and respond with bubbles
@@ -389,27 +308,55 @@ I'll analyze your request and suggest appropriate filter criteria that you can a
 
     // For product filter context, use Redux for state management
     if (isProductFilterContext) {
-      // Get context information
-      const context = getFilterContext();
+      try {
+        // Create a context object directly within the callback
+        const context = {
+          availableFilterTypes: [
+            "MerchantKeyword",
+            "MerchantName",
+            "OfferCommodity",
+            "OfferKeyword",
+            "Client",
+            "MerchantId",
+            "OfferCategory",
+            "OfferExpiry",
+            "OfferId",
+            "OfferRedemptionControlLimit",
+            "OfferRedemptionType",
+            "OfferType",
+          ],
+          merchantCategories: [
+            "Food & Dining",
+            "Retail",
+            "Entertainment",
+            "Travel",
+            "Health & Beauty",
+            "Services",
+            "Other",
+          ],
+          currentCriteria: [],
+          currentFilterName: "",
+          currentFilterDescription: "",
+        };
 
-      // Create and dispatch message with context as metadata
-      // We need to use a structure compatible with the existing Redux state
-      dispatch(
-        addMessage({
-          type: "user",
-          content: newMessage,
-          // Add context in a way that doesn't conflict with existing types
-          metadata: JSON.stringify(context),
-        })
-      );
+        // Dispatch user message
+        dispatch(
+          addMessage({
+            type: "user",
+            content: newMessage,
+          })
+        );
 
-      // Set processing state
-      dispatch({
-        type: "aiAssistant/setProcessing",
-        payload: true,
-      });
+        // Set processing state
+        dispatch({
+          type: "aiAssistant/setProcessing",
+          payload: true,
+        });
 
-      setNewMessage("");
+        setNewMessage("");
+      } catch (error) {
+        console.error("Error sending message:", error);
+      }
       return;
     }
 
