@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
+import { PaperAirplaneIcon, LightBulbIcon } from "@heroicons/react/24/outline";
 import { useDemoState } from "@/lib/redux/hooks";
 import ReactMarkdown from "react-markdown";
 import Image from "next/image";
@@ -37,12 +37,16 @@ interface AIAssistantPanelProps {
   onSend?: (message: string) => void;
   onOptionSelected?: (optionId: string) => void;
   className?: string;
+  title: string;
+  description?: string;
 }
 
 const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
   onSend = () => {},
   onOptionSelected = () => {},
   className = "",
+  title,
+  description,
 }) => {
   const { clientId } = useDemoState();
   const dispatch = useDispatch();
@@ -85,7 +89,30 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
       setMessages(convertedMessages);
       setIsThinking(isProcessing);
     }
-  }, [isProductFilterContext, aiMessages, isProcessing]);
+
+    // For product filter context, add initial instructional message if no messages
+    if (isProductFilterContext && messages.length === 0) {
+      // Add a slight delay for a more natural feeling
+      const timer = setTimeout(() => {
+        const initialMessage: Message = {
+          id: "filter-instruction",
+          type: "ai",
+          content: `I can help you create product filters effectively. Try asking me things like:
+
+- "Create a filter for food products from small businesses"
+- "Suggest criteria to exclude expired offers"
+- "What's a good filter structure for high-value offers?"
+
+I can suggest individual criteria or complete filter structures that you can apply automatically to your configuration.`,
+          timestamp: new Date().toISOString(),
+        };
+
+        setMessages([initialMessage]);
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isProductFilterContext, aiMessages, isProcessing, messages.length]);
 
   // Helper function to get appropriate greeting based on time of day
   const getGreeting = () => {
@@ -1454,12 +1481,14 @@ Your campaign performance dashboard is now available. You'll receive daily perfo
 
   return (
     <div className={`flex flex-col w-full h-full ${className}`}>
-      {/* Header */}
-      <div className="p-4 border-b border-gray-200 flex-shrink-0">
-        <h3 className="text-lg font-semibold">AI Marketing Assistant</h3>
-        <p className="text-sm text-gray-500">
-          Ask me anything about creating your campaign
-        </p>
+      {/* Header - Fixed at exactly 61px to match product filter header */}
+      <div className="flex items-center justify-between p-3 border-b bg-muted/20 h-[61px]">
+        <div className="flex items-center">
+          <LightBulbIcon className="h-5 w-5 mr-2 text-primary" />
+          <div>
+            <h3 className="font-medium">{title}</h3>
+          </div>
+        </div>
       </div>
 
       {/* Messages - Scrollable container with absolute positioning */}

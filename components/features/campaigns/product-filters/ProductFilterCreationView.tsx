@@ -294,6 +294,94 @@ export default function ProductFilterCreationView() {
       } catch (e) {
         console.error("Failed to parse criteria suggestion", e);
       }
+    } else if (optionId.startsWith("suggest_multiple_criteria:")) {
+      try {
+        const criteriaList = JSON.parse(
+          optionId.replace("suggest_multiple_criteria:", "")
+        );
+
+        if (Array.isArray(criteriaList) && criteriaList.length > 0) {
+          // Create new criteria items from each item in the list
+          const newCriteriaItems = criteriaList.map((criteriaItem) => {
+            const isRequired = requiredCriteriaTypes.includes(
+              criteriaItem.type
+            );
+            return {
+              id:
+                Date.now().toString() + Math.random().toString(36).substr(2, 5),
+              type: criteriaItem.type,
+              value: criteriaItem.value,
+              rule: criteriaItem.rule || criteriaItem.operator || "equals",
+              and_or: criteriaItem.and_or || "OR",
+              isRequired,
+            };
+          });
+
+          // Add all new criteria to the existing criteria
+          setFilterCriteria([...filterCriteria, ...newCriteriaItems]);
+
+          // Reset the form after bulk adding
+          setCriteriaType("");
+          setCriteriaValue("");
+          setCriteriaRule("equals");
+          setCriteriaAndOr("OR");
+
+          // Show a toast or notification that items were added
+          alert(
+            `Added ${newCriteriaItems.length} filter criteria from AI suggestions`
+          );
+        }
+      } catch (e) {
+        console.error("Failed to parse multiple criteria suggestions", e);
+      }
+    } else if (optionId.startsWith("suggest_complete_filter:")) {
+      try {
+        const filterData = JSON.parse(
+          optionId.replace("suggest_complete_filter:", "")
+        );
+
+        // Set basic filter information
+        if (filterData.name) setFilterName(filterData.name);
+        if (filterData.queryViewName)
+          setQueryViewName(filterData.queryViewName);
+        if (filterData.description) setDescription(filterData.description);
+        if (filterData.expiryDate) {
+          // Parse ISO string date to Date object
+          const date = new Date(filterData.expiryDate);
+          if (!isNaN(date.getTime())) {
+            setExpiryDate(date);
+          }
+        }
+
+        // Add criteria if present
+        if (
+          Array.isArray(filterData.criteria) &&
+          filterData.criteria.length > 0
+        ) {
+          const newCriteriaItems = filterData.criteria.map((criteriaItem) => {
+            const isRequired = requiredCriteriaTypes.includes(
+              criteriaItem.type
+            );
+            return {
+              id:
+                Date.now().toString() + Math.random().toString(36).substr(2, 5),
+              type: criteriaItem.type,
+              value: criteriaItem.value,
+              rule: criteriaItem.rule || criteriaItem.operator || "equals",
+              and_or: criteriaItem.and_or || "OR",
+              isRequired,
+            };
+          });
+
+          // Replace all criteria with the new set
+          setFilterCriteria(newCriteriaItems);
+
+          // Show a toast or notification that a complete filter was applied
+          alert(`Applied complete filter configuration from AI suggestion`);
+        }
+      } catch (e) {
+        console.error("Failed to parse complete filter suggestion", e);
+      }
     }
   };
 
