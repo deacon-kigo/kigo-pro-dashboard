@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/atoms/Button";
 import { Input } from "@/components/atoms/Input";
@@ -98,7 +98,7 @@ const DatePicker = ({
           <Calendar
             mode="single"
             selected={selected}
-            onSelect={(date) => {
+            onSelect={(date: Date | undefined) => {
               onSelect(date);
               setIsOpen(false);
             }}
@@ -160,11 +160,11 @@ export default function ProductFilterCreationView() {
   // Helper function to check if all required criteria are present
   const hasAllRequiredCriteria = () => {
     return requiredCriteriaTypes.every((type) =>
-      filterCriteria.some((criteria) => criteria.type === type)
+      filterCriteria.some((criteria: FilterCriteria) => criteria.type === type)
     );
   };
 
-  // Add new criteria
+  // Add new criteria (manual)
   const addCriteria = () => {
     if (criteriaType && criteriaValue) {
       const isRequired = requiredCriteriaTypes.includes(criteriaType);
@@ -177,7 +177,7 @@ export default function ProductFilterCreationView() {
         isRequired,
       };
 
-      setFilterCriteria([...filterCriteria, newCriteria]);
+      setFilterCriteria((prevCriteria) => [...prevCriteria, newCriteria]); // Use functional update
       setCriteriaType("");
       setCriteriaValue("");
       setCriteriaRule("equals");
@@ -187,7 +187,9 @@ export default function ProductFilterCreationView() {
 
   // Remove criteria
   const removeCriteria = (id: string) => {
-    setFilterCriteria(filterCriteria.filter((c) => c.id !== id));
+    setFilterCriteria((prevCriteria) =>
+      prevCriteria.filter((c) => c.id !== id)
+    ); // Use functional update
   };
 
   // Create filter
@@ -241,32 +243,13 @@ export default function ProductFilterCreationView() {
   // Initialize AI assistant with product filter context
   useEffect(() => {
     dispatch(
-      setProductFilterContext({ filterName, filterDescription: description })
+      setProductFilterContext({
+        filterName,
+        filterDescription: description,
+        currentCriteria: filterCriteria,
+      })
     );
-  }, [dispatch, filterName, description]);
-
-  // Update AI context when filter name or description changes
-  useEffect(() => {
-    // Only update if we have meaningful content to avoid unnecessary updates
-    if (filterName.trim() || description.trim()) {
-      dispatch(
-        setProductFilterContext({
-          filterName,
-          filterDescription: description,
-        })
-      );
-    }
-  }, [dispatch, filterName, description]);
-
-  // Share filter criteria changes with AI assistant by sending messages
-  useEffect(() => {
-    if (filterCriteria.length > 0) {
-      // This would ideally update the AI assistant with the current criteria
-      // For now we're just logging it, but in a real implementation,
-      // we would send this to the AI assistant
-      console.log("Filter criteria updated:", filterCriteria);
-    }
-  }, [filterCriteria]);
+  }, [dispatch, filterName, description, filterCriteria]);
 
   // Add state variables to manage animation and filter generation
   const [isGeneratingFilters, setIsGeneratingFilters] = useState(false);
@@ -276,12 +259,11 @@ export default function ProductFilterCreationView() {
 
   // Handle option selected from AI Assistant
   const handleOptionSelected = (optionId: string) => {
-    // Handle different AI suggestions for product filters
+    // Handle different AI suggestions/commands
+
     if (optionId.startsWith("suggest_name:")) {
       setIsGeneratingFilters(true);
       const suggestedName = optionId.replace("suggest_name:", "");
-
-      // Animate the naming process
       setTimeout(() => {
         setFilterName(suggestedName);
         setLastGeneratedFilter("name");
@@ -295,17 +277,13 @@ export default function ProductFilterCreationView() {
         );
         if (criteriaData.type && criteriaData.value) {
           setTimeout(() => {
-            // Handle rule and and_or fields
-            const rule = criteriaData.rule || criteriaData.operator || "equals";
+            const rule = criteriaData.rule || "equals";
             const andOr = criteriaData.and_or || "OR";
-
-            // Set form values
             setCriteriaType(criteriaData.type);
             setCriteriaValue(criteriaData.value);
             setCriteriaRule(rule);
             setCriteriaAndOr(andOr);
 
-            // Automatically add the criteria
             const isRequired = requiredCriteriaTypes.includes(
               criteriaData.type
             );
@@ -318,15 +296,11 @@ export default function ProductFilterCreationView() {
               and_or: andOr,
               isRequired,
             };
-
-            setFilterCriteria([...filterCriteria, newCriteria]);
-
-            // Reset form inputs after automatic addition
+            setFilterCriteria((prev) => [...prev, newCriteria]); // Functional update
             setCriteriaType("");
             setCriteriaValue("");
             setCriteriaRule("equals");
             setCriteriaAndOr("OR");
-
             setLastGeneratedFilter("criteria");
             setIsGeneratingFilters(false);
           }, 1000);
@@ -341,35 +315,28 @@ export default function ProductFilterCreationView() {
         const criteriaList = JSON.parse(
           optionId.replace("suggest_multiple_criteria:", "")
         );
-
         if (Array.isArray(criteriaList) && criteriaList.length > 0) {
-          // Create new criteria items from each item in the list with staggered animation
           setTimeout(() => {
             const newCriteriaItems = criteriaList.map((criteriaItem) => {
               const isRequired = requiredCriteriaTypes.includes(
-                criteriaItem.type
+                criteriaItem.type || ""
               );
               return {
                 id:
                   Date.now().toString() +
                   Math.random().toString(36).substr(2, 5),
-                type: criteriaItem.type,
-                value: criteriaItem.value,
-                rule: criteriaItem.rule || criteriaItem.operator || "equals",
+                type: criteriaItem.type || "UnknownType",
+                value: criteriaItem.value || "",
+                rule: criteriaItem.rule || "equals",
                 and_or: criteriaItem.and_or || "OR",
                 isRequired,
               };
             });
-
-            // Add all new criteria to the existing criteria
-            setFilterCriteria([...filterCriteria, ...newCriteriaItems]);
-
-            // Reset the form after bulk adding
+            setFilterCriteria((prev) => [...prev, ...newCriteriaItems]); // Functional update
             setCriteriaType("");
             setCriteriaValue("");
             setCriteriaRule("equals");
             setCriteriaAndOr("OR");
-
             setLastGeneratedFilter("multiple");
             setIsGeneratingFilters(false);
           }, 1200);
@@ -381,54 +348,102 @@ export default function ProductFilterCreationView() {
     } else if (optionId.startsWith("suggest_complete_filter:")) {
       try {
         setIsGeneratingFilters(true);
-        const filterData = JSON.parse(
+        interface CompleteFilterData {
+          name?: string;
+          queryViewName?: string;
+          description?: string;
+          expiryDate?: string;
+          criteria?: Array<Partial<FilterCriteria>>;
+        }
+        const filterData: CompleteFilterData = JSON.parse(
           optionId.replace("suggest_complete_filter:", "")
         );
-
         setTimeout(() => {
-          // Set basic filter information
           if (filterData.name) setFilterName(filterData.name);
           if (filterData.queryViewName)
             setQueryViewName(filterData.queryViewName);
           if (filterData.description) setDescription(filterData.description);
           if (filterData.expiryDate) {
-            // Parse ISO string date to Date object
             const date = new Date(filterData.expiryDate);
-            if (!isNaN(date.getTime())) {
-              setExpiryDate(date);
-            }
+            if (!isNaN(date.getTime())) setExpiryDate(date);
           }
-
-          // Add criteria if present
           if (
             Array.isArray(filterData.criteria) &&
             filterData.criteria.length > 0
           ) {
-            const newCriteriaItems = filterData.criteria.map((criteriaItem) => {
-              const isRequired = requiredCriteriaTypes.includes(
-                criteriaItem.type
-              );
-              return {
-                id:
-                  Date.now().toString() +
-                  Math.random().toString(36).substr(2, 5),
-                type: criteriaItem.type,
-                value: criteriaItem.value,
-                rule: criteriaItem.rule || criteriaItem.operator || "equals",
-                and_or: criteriaItem.and_or || "OR",
-                isRequired,
-              };
-            });
-
-            // Replace all criteria with the new set
-            setFilterCriteria(newCriteriaItems);
+            const newCriteriaItems: FilterCriteria[] = filterData.criteria.map(
+              (criteriaItem): FilterCriteria => {
+                const isRequired = requiredCriteriaTypes.includes(
+                  criteriaItem.type || ""
+                );
+                return {
+                  id:
+                    Date.now().toString() +
+                    Math.random().toString(36).substr(2, 5),
+                  type: criteriaItem.type || "UnknownType",
+                  value: criteriaItem.value || "",
+                  rule: criteriaItem.rule || "equals",
+                  and_or: criteriaItem.and_or || "OR",
+                  isRequired,
+                };
+              }
+            );
+            setFilterCriteria(newCriteriaItems); // Replace criteria
             setLastGeneratedFilter("complete");
           }
-
           setIsGeneratingFilters(false);
         }, 1500);
       } catch (e) {
         console.error("Failed to parse complete filter suggestion", e);
+        setIsGeneratingFilters(false);
+      }
+    } else if (optionId.startsWith("apply_updates:")) {
+      // *** ADDED NEW HANDLER ***
+      try {
+        setIsGeneratingFilters(true); // Optional: show thinking indicator
+        interface UpdatePayload {
+          criteriaToAdd?: Partial<FilterCriteria>[];
+          filterName?: string;
+          // Add other fields if AI might update them (description, expiryDate etc)
+        }
+        const updateData: UpdatePayload = JSON.parse(
+          optionId.replace("apply_updates:", "")
+        );
+
+        // Apply updates after a short delay
+        setTimeout(() => {
+          if (updateData.filterName) {
+            setFilterName(updateData.filterName);
+          }
+          if (
+            Array.isArray(updateData.criteriaToAdd) &&
+            updateData.criteriaToAdd.length > 0
+          ) {
+            const newValidCriteria: FilterCriteria[] = updateData.criteriaToAdd
+              .filter((item) => item.type && item.value) // Basic validation
+              .map((item) => {
+                const isRequired = requiredCriteriaTypes.includes(item.type!);
+                return {
+                  id:
+                    Date.now().toString() +
+                    Math.random().toString(36).substr(2, 5),
+                  type: item.type!,
+                  value: item.value!,
+                  rule: item.rule || "equals",
+                  and_or: item.and_or || "OR",
+                  isRequired:
+                    item.isRequired !== undefined
+                      ? item.isRequired
+                      : isRequired,
+                };
+              });
+            setFilterCriteria((prev) => [...prev, ...newValidCriteria]); // Append new criteria
+            setLastGeneratedFilter("criteria"); // Use existing notification type
+          }
+          setIsGeneratingFilters(false);
+        }, 500); // Shorter delay for applying updates
+      } catch (e) {
+        console.error("Failed to parse update payload:", e);
         setIsGeneratingFilters(false);
       }
     }
@@ -481,6 +496,7 @@ export default function ProductFilterCreationView() {
             <Card className="p-0 h-full flex flex-col">
               <AIAssistantPanel
                 onOptionSelected={handleOptionSelected}
+                requiredCriteriaTypes={requiredCriteriaTypes}
                 className="flex-grow"
                 title="AI Filter Assistant"
                 description="Tell me what offers you want to filter"
@@ -659,7 +675,9 @@ export default function ProductFilterCreationView() {
                         <Badge variant="outline" className="ml-2 text-xs">
                           {
                             requiredCriteriaTypes.filter((type) =>
-                              filterCriteria.some((c) => c.type === type)
+                              filterCriteria.some(
+                                (c: FilterCriteria) => c.type === type
+                              )
                             ).length
                           }{" "}
                           / {requiredCriteriaTypes.length}
@@ -671,12 +689,16 @@ export default function ProductFilterCreationView() {
                           <div
                             key={type}
                             className={`text-xs p-2 rounded-md flex items-center ${
-                              filterCriteria.some((c) => c.type === type)
+                              filterCriteria.some(
+                                (c: FilterCriteria) => c.type === type
+                              )
                                 ? "bg-green-50 text-green-800"
                                 : "bg-gray-50 text-gray-500"
                             }`}
                           >
-                            {filterCriteria.some((c) => c.type === type) ? (
+                            {filterCriteria.some(
+                              (c: FilterCriteria) => c.type === type
+                            ) ? (
                               <CheckCircleIcon className="h-3.5 w-3.5 mr-1.5" />
                             ) : (
                               <span className="h-3.5 w-3.5 mr-1.5 rounded-full bg-gray-200" />
@@ -726,7 +748,7 @@ export default function ProductFilterCreationView() {
                                     <SelectItem key={type} value={type}>
                                       {friendlyTypeNames[type] || type}{" "}
                                       {filterCriteria.some(
-                                        (c) => c.type === type
+                                        (c: FilterCriteria) => c.type === type
                                       ) && "✓"}
                                     </SelectItem>
                                   ))}
@@ -835,23 +857,25 @@ export default function ProductFilterCreationView() {
                               className="text-[10px] bg-green-100"
                             >
                               {
-                                filterCriteria.filter((c) => c.isRequired)
-                                  .length
+                                filterCriteria.filter(
+                                  (c: FilterCriteria) => c.isRequired
+                                ).length
                               }
                             </Badge>
                           </div>
 
                           <ScrollArea className="flex-grow p-2">
-                            {filterCriteria.filter((c) => c.isRequired)
-                              .length === 0 ? (
+                            {filterCriteria.filter(
+                              (c: FilterCriteria) => c.isRequired
+                            ).length === 0 ? (
                               <div className="text-xs text-muted-foreground p-4 text-center">
                                 No include conditions added yet
                               </div>
                             ) : (
                               <div className="space-y-2">
                                 {filterCriteria
-                                  .filter((c) => c.isRequired)
-                                  .map((criteria) => (
+                                  .filter((c: FilterCriteria) => c.isRequired)
+                                  .map((criteria: FilterCriteria) => (
                                     <div
                                       key={criteria.id}
                                       className="border rounded-md p-2.5 relative hover:shadow-sm transition-all group"
@@ -911,23 +935,25 @@ export default function ProductFilterCreationView() {
                               className="text-[10px] bg-red-100"
                             >
                               {
-                                filterCriteria.filter((c) => !c.isRequired)
-                                  .length
+                                filterCriteria.filter(
+                                  (c: FilterCriteria) => !c.isRequired
+                                ).length
                               }
                             </Badge>
                           </div>
 
                           <ScrollArea className="flex-grow p-2">
-                            {filterCriteria.filter((c) => !c.isRequired)
-                              .length === 0 ? (
+                            {filterCriteria.filter(
+                              (c: FilterCriteria) => !c.isRequired
+                            ).length === 0 ? (
                               <div className="text-xs text-muted-foreground p-4 text-center">
                                 No exclude conditions added yet
                               </div>
                             ) : (
                               <div className="space-y-2">
                                 {filterCriteria
-                                  .filter((c) => !c.isRequired)
-                                  .map((criteria) => (
+                                  .filter((c: FilterCriteria) => !c.isRequired)
+                                  .map((criteria: FilterCriteria) => (
                                     <div
                                       key={criteria.id}
                                       className="border rounded-md p-2.5 relative hover:shadow-sm transition-all group"

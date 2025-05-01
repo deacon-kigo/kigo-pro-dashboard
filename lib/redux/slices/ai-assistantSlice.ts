@@ -1,6 +1,16 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { SYSTEM_PROMPTS } from "@/services/ai";
 
+// Define FilterCriteria type locally if not imported from a shared location
+interface FilterCriteria {
+  id: string;
+  type: string;
+  value: string;
+  rule: string;
+  and_or: string;
+  isRequired: boolean;
+}
+
 export interface AIMessage {
   id: string;
   type: "user" | "ai" | "system";
@@ -11,6 +21,10 @@ export interface AIMessage {
     value: string;
   }>;
   severity?: "info" | "warning" | "success" | "error";
+  contextId?: string | null;
+  systemPrompt?: string;
+  error?: string | null;
+  currentCriteria?: FilterCriteria[];
 }
 
 interface AIAssistantState {
@@ -19,6 +33,7 @@ interface AIAssistantState {
   contextId: string | null;
   systemPrompt: string;
   error: string | null;
+  currentCriteria: FilterCriteria[];
 }
 
 const initialState: AIAssistantState = {
@@ -27,6 +42,7 @@ const initialState: AIAssistantState = {
   contextId: null,
   systemPrompt: SYSTEM_PROMPTS.GENERAL_ASSISTANT,
   error: null,
+  currentCriteria: [],
 };
 
 export const aiAssistantSlice = createSlice({
@@ -39,13 +55,19 @@ export const aiAssistantSlice = createSlice({
 
     addMessage: (
       state,
-      action: PayloadAction<Omit<AIMessage, "id" | "timestamp">>
+      action: PayloadAction<{
+        type: "user" | "ai" | "system";
+        content: string;
+        responseOptions?: Array<{ text: string; value: string }>;
+        severity?: "info" | "warning" | "success" | "error";
+      }>
     ) => {
-      state.messages.push({
+      const newMessage: AIMessage = {
         ...action.payload,
         id: Date.now().toString(),
         timestamp: new Date().toISOString(),
-      });
+      };
+      state.messages.push(newMessage);
     },
 
     setMessages: (state, action: PayloadAction<AIMessage[]>) => {
@@ -74,42 +96,12 @@ export const aiAssistantSlice = createSlice({
       action: PayloadAction<{
         filterName?: string;
         filterDescription?: string;
+        currentCriteria?: FilterCriteria[];
       }>
     ) => {
-      const { filterName, filterDescription } = action.payload;
-
-      // Set the appropriate system prompt for product filters
+      state.contextId = "productFilterContext";
       state.systemPrompt = SYSTEM_PROMPTS.PRODUCT_FILTER_ASSISTANT;
-
-      // Clear previous messages
-      state.messages = [];
-
-      // Add initial greeting with context
-      const greeting = `I'm your AI assistant for creating product filters. ${
-        filterName ? `I see you're working on "${filterName}". ` : ""
-      }I can help you define appropriate criteria, suggest values, and answer questions about product filters.`;
-
-      // Initial message with helpful options
-      state.messages.push({
-        id: Date.now().toString(),
-        type: "ai",
-        content: greeting,
-        timestamp: new Date().toISOString(),
-        responseOptions: [
-          {
-            text: "What criteria should I include for this filter?",
-            value: "explain_criteria_types",
-          },
-          {
-            text: "How do I choose good criteria values?",
-            value: "explain_criteria_values",
-          },
-          {
-            text: "What makes a good product filter?",
-            value: "best_practices",
-          },
-        ],
-      });
+      state.currentCriteria = action.payload.currentCriteria || [];
     },
   },
 });

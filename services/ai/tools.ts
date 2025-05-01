@@ -2,23 +2,45 @@ import { DynamicTool } from "@langchain/core/tools";
 import { getDefaultModel } from "./config";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { JsonOutputParser } from "@langchain/core/output_parsers";
+import { CallbackManagerForToolRun } from "@langchain/core/callbacks/manager";
+import { type RunnableConfig } from "@langchain/core/runnables";
+
+// Define input types for better type safety
+interface ProductFilterCriteriaInput {
+  filterName: string;
+  filterType: string;
+  description?: string;
+}
+
+interface FilterNameSuggestionInput {
+  description: string;
+  criteria?: Array<{ type: string; value: string }>;
+}
+
+interface FilterAnalysisInput {
+  filterName: string;
+  criteria: Array<{ type: string; value: string; operator: string }>;
+}
 
 // Tool for generating product filter criteria
 export const createProductFilterCriteriaTool = () => {
   return new DynamicTool({
     name: "product_filter_generator",
     description:
-      "Generates appropriate criteria for product filters based on filter name and type",
-    func: async ({
-      filterName,
-      filterType,
-      description = "",
-    }: {
-      filterName: string;
-      filterType: string;
-      description?: string;
-    }) => {
+      "Generates appropriate criteria for product filters based on filter name and type. Input must be a JSON string with keys: filterName (string), filterType (string), description (string, optional).",
+    func: async (
+      input: string,
+      runManager?: CallbackManagerForToolRun | undefined,
+      config?: RunnableConfig
+    ): Promise<string> => {
       try {
+        // Parse the JSON input string
+        const {
+          filterName,
+          filterType,
+          description = "",
+        }: ProductFilterCriteriaInput = JSON.parse(input);
+
         const model = getDefaultModel({ temperature: 0.2 });
 
         const promptTemplate = ChatPromptTemplate.fromTemplate(`
@@ -64,15 +86,17 @@ export const createFilterNameSuggestionTool = () => {
   return new DynamicTool({
     name: "filter_name_suggester",
     description:
-      "Suggests appropriate names for product filters based on description or criteria",
-    func: async ({
-      description,
-      criteria = [],
-    }: {
-      description: string;
-      criteria?: Array<{ type: string; value: string }>;
-    }) => {
+      "Suggests appropriate names for product filters based on description or criteria. Input must be a JSON string with keys: description (string), criteria (array of {type: string, value: string}, optional).",
+    func: async (
+      input: string,
+      runManager?: CallbackManagerForToolRun | undefined,
+      config?: RunnableConfig
+    ): Promise<string> => {
       try {
+        // Parse the JSON input string
+        const { description, criteria = [] }: FilterNameSuggestionInput =
+          JSON.parse(input);
+
         const model = getDefaultModel({ temperature: 0.7 });
 
         const criteriaString =
@@ -117,15 +141,17 @@ export const createFilterNameSuggestionTool = () => {
 export const createFilterAnalysisTool = () => {
   return new DynamicTool({
     name: "filter_analyzer",
-    description: "Analyzes existing filter criteria and suggests improvements",
-    func: async ({
-      filterName,
-      criteria,
-    }: {
-      filterName: string;
-      criteria: Array<{ type: string; value: string; operator: string }>;
-    }) => {
+    description:
+      "Analyzes existing filter criteria and suggests improvements. Input must be a JSON string with keys: filterName (string), criteria (array of {type: string, value: string, operator: string}).",
+    func: async (
+      input: string,
+      runManager?: CallbackManagerForToolRun | undefined,
+      config?: RunnableConfig
+    ): Promise<string> => {
       try {
+        // Parse the JSON input string
+        const { filterName, criteria }: FilterAnalysisInput = JSON.parse(input);
+
         const model = getDefaultModel({ temperature: 0.2 });
 
         const criteriaString = criteria
