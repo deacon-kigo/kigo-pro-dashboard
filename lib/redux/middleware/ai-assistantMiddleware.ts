@@ -6,7 +6,11 @@ import {
   AIMessage,
 } from "../slices/ai-assistantSlice";
 import { createChatService } from "@/services/ai/chat";
-import { createProductFilterCriteriaTool } from "@/services/ai/tools";
+import {
+  createProductFilterCriteriaTool,
+  createAutoFilterGeneratorTool,
+  createFilterConversationGuideTool,
+} from "@/services/ai/tools";
 import { RootState } from "../store";
 
 // Define action types for type checking
@@ -23,6 +27,10 @@ interface OptionSelectedAction extends AnyAction {
   payload: string;
 }
 
+interface MagicGenerateAction extends AnyAction {
+  type: "aiAssistant/magicGenerate";
+}
+
 // Type guard for actions
 function isAddMessageAction(action: AnyAction): action is AddMessageAction {
   return action.type === "aiAssistant/addMessage";
@@ -32,6 +40,12 @@ function isOptionSelectedAction(
   action: AnyAction
 ): action is OptionSelectedAction {
   return action.type === "aiAssistant/optionSelected";
+}
+
+function isMagicGenerateAction(
+  action: AnyAction
+): action is MagicGenerateAction {
+  return action.type === "aiAssistant/magicGenerate";
 }
 
 // Type for response options
@@ -259,33 +273,104 @@ const aiAssistantMiddleware: Middleware =
       store.dispatch(setIsProcessing(true));
 
       try {
-        // Create chat service with the current system prompt
-        const chatService = createChatService(systemPrompt);
+        // Check if we're in product filter mode based on context
+        if (state.aiAssistant.contextId === "productFilterContext") {
+          // Use conversational filter guide for product filter mode
+          const conversationGuideTool = createFilterConversationGuideTool();
 
-        // Send message and get response
-        const response = await chatService.sendMessage(userMessage);
+          // Prepare context for the tool
+          const conversationHistory = state.aiAssistant.messages;
+          const currentCriteria = state.aiAssistant.currentCriteria || [];
 
-        // Add AI response to the store
-        store.dispatch(
-          addMessage({
-            type: "ai",
-            content: response,
-            // For product filters, add some helpful response options
-            responseOptions:
-              state.aiAssistant.systemPrompt === "PRODUCT_FILTER_ASSISTANT"
-                ? [
-                    {
-                      text: "What criteria types should I include?",
-                      value: "explain_criteria_types",
-                    },
-                    {
-                      text: "How do I choose good values?",
-                      value: "explain_criteria_values",
-                    },
-                  ]
-                : undefined,
-          })
-        );
+          // Invoke the tool
+          const toolResponse = await conversationGuideTool.invoke(
+            JSON.stringify({
+              userMessage,
+              conversationHistory,
+              currentCriteria,
+            })
+          );
+
+          // Parse the response
+          const response = JSON.parse(toolResponse);
+
+          if (response.error) {
+            // Handle error
+            store.dispatch(
+              addMessage({
+                type: "ai",
+                content: `I encountered an error: ${response.details || "Unknown error"}`,
+                severity: "error",
+              })
+            );
+          } else {
+            // Add AI response with options
+            store.dispatch(
+              addMessage({
+                type: "ai",
+                content: response.responseMessage,
+                responseOptions: response.responseOptions || [],
+              })
+            );
+
+            // If there are criteria to add immediately
+            if (
+              response.actionType === "suggest_criteria" ||
+              response.actionType === "complete_filter"
+            ) {
+              if (response.criteriaToAdd && response.criteriaToAdd.length > 0) {
+                // Create payload for applying updates
+                const updatePayload = {
+                  criteriaToAdd: response.criteriaToAdd,
+                };
+
+                // Add a follow-up message with options to apply
+                store.dispatch(
+                  addMessage({
+                    type: "ai",
+                    content:
+                      "I've identified some criteria based on our conversation. Would you like me to apply these to your filter?",
+                    responseOptions: [
+                      {
+                        text: "Yes, apply these criteria",
+                        value: `apply_updates:${JSON.stringify(updatePayload)}`,
+                      },
+                      {
+                        text: "No, let me adjust manually",
+                        value: "cancel_generate",
+                      },
+                    ],
+                  })
+                );
+              }
+            }
+          }
+        } else {
+          // For non-product filter modes, use the standard chat service
+          const chatService = createChatService(systemPrompt);
+          const response = await chatService.sendMessage(userMessage);
+
+          // Add AI response to the store
+          store.dispatch(
+            addMessage({
+              type: "ai",
+              content: response,
+              responseOptions:
+                systemPrompt === "PRODUCT_FILTER_ASSISTANT"
+                  ? [
+                      {
+                        text: "What criteria types should I include?",
+                        value: "explain_criteria_types",
+                      },
+                      {
+                        text: "How do I choose good values?",
+                        value: "explain_criteria_values",
+                      },
+                    ]
+                  : undefined,
+            })
+          );
+        }
       } catch (error) {
         console.error("Error in AI assistant middleware:", error);
         store.dispatch(
@@ -358,6 +443,111 @@ const aiAssistantMiddleware: Middleware =
             type: "ai",
             content:
               "Sorry, I encountered an error processing that option. Please try something else.",
+            severity: "error",
+          })
+        );
+      } finally {
+        store.dispatch(setIsProcessing(false));
+      }
+    }
+
+    // Handle magic generation
+    if (isMagicGenerateAction(action)) {
+      // Set processing state
+      store.dispatch(setIsProcessing(true));
+
+      try {
+        // Add user message showing the action
+        store.dispatch(
+          addMessage({
+            type: "user",
+            content: "Generate product filters based on my requirements",
+          })
+        );
+
+        // Create auto filter generator tool
+        const autoGeneratorTool = createAutoFilterGeneratorTool();
+
+        // Get current context from state
+        const filterName = state.productFilter?.filterName || "";
+        const filterDescription = state.productFilter?.description || "";
+        const currentCriteria = state.aiAssistant.currentCriteria || [];
+        const conversationHistory = state.aiAssistant.messages;
+
+        // Invoke the tool
+        const toolResponse = await autoGeneratorTool.invoke(
+          JSON.stringify({
+            filterName,
+            filterDescription,
+            currentCriteria,
+            conversationHistory,
+          })
+        );
+
+        // Parse the response
+        const response = JSON.parse(toolResponse);
+
+        if (response.error) {
+          // Handle error
+          store.dispatch(
+            addMessage({
+              type: "ai",
+              content: `I encountered an error while generating filters: ${response.details}`,
+              severity: "error",
+            })
+          );
+        } else {
+          // Create explanation content
+          const explanation =
+            response.explanation ||
+            "I've analyzed your requirements and generated appropriate filter criteria.";
+          const missingTypes = response.criteriaToAdd
+            .map((c: any) => c.type)
+            .join(", ");
+
+          const content = `
+${explanation}
+
+I'm ready to add the following criteria: ${missingTypes}
+
+Would you like me to apply these updates to your filter?`;
+
+          // Add AI response with option to apply
+          store.dispatch(
+            addMessage({
+              type: "ai",
+              content,
+              responseOptions: [
+                {
+                  text: "Yes, apply these updates",
+                  value: `apply_updates:${JSON.stringify({
+                    criteriaToAdd: response.criteriaToAdd,
+                    filterName:
+                      response.suggestedName && !filterName
+                        ? response.suggestedName
+                        : undefined,
+                  })}`,
+                },
+                {
+                  text: "No, let me adjust manually",
+                  value: "cancel_generate",
+                },
+              ],
+            })
+          );
+        }
+      } catch (error) {
+        console.error("Error in magic filter generation:", error);
+        store.dispatch(
+          setError(error instanceof Error ? error.message : "Unknown error")
+        );
+
+        // Add error message
+        store.dispatch(
+          addMessage({
+            type: "ai",
+            content:
+              "Sorry, I encountered an error generating the filter. Please try describing your requirements in more detail.",
             severity: "error",
           })
         );

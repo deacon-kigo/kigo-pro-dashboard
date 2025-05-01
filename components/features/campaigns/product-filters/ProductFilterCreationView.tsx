@@ -111,6 +111,13 @@ const DatePicker = ({
   );
 };
 
+// Add generateUniqueId helper function
+const generateUniqueId = () => {
+  return (
+    Date.now().toString() + "-" + Math.random().toString(36).substring(2, 9)
+  );
+};
+
 export default function ProductFilterCreationView() {
   const router = useRouter();
   const dispatch = useDispatch();
@@ -260,8 +267,67 @@ export default function ProductFilterCreationView() {
   // Handle option selected from AI Assistant
   const handleOptionSelected = (optionId: string) => {
     // Handle different AI suggestions/commands
+    console.log("Option selected:", optionId); // Debug logging
 
-    if (optionId.startsWith("suggest_name:")) {
+    if (optionId.startsWith("apply_updates:")) {
+      setIsGeneratingFilters(true);
+
+      try {
+        // Extract the JSON payload from the option ID
+        const updatesJson = optionId.replace("apply_updates:", "");
+        const updates = JSON.parse(updatesJson);
+
+        console.log("Parsed updates:", updates); // Debug logging
+
+        // Apply criteria
+        if (updates.criteriaToAdd && Array.isArray(updates.criteriaToAdd)) {
+          // Convert criteria format if needed
+          const newCriteria = updates.criteriaToAdd.map((criteria: any) => ({
+            id: generateUniqueId(),
+            type: criteria.type,
+            value: criteria.value,
+            rule: criteria.rule || "equals",
+            and_or: criteria.and_or || "AND",
+            isRequired: !!criteria.isRequired,
+          }));
+
+          // Set the criteria
+          setFilterCriteria(newCriteria);
+        }
+
+        // Apply filter name if provided
+        if (updates.filterName) {
+          setFilterName(updates.filterName);
+        }
+
+        // Apply query view name if provided
+        if (updates.queryViewName) {
+          setQueryViewName(updates.queryViewName);
+        }
+
+        // Apply expiry date if provided
+        if (updates.expiryDate) {
+          try {
+            const date = new Date(updates.expiryDate);
+            if (!isNaN(date.getTime())) {
+              setExpiryDate(date);
+            }
+          } catch (error) {
+            console.error("Invalid date format:", error);
+          }
+        }
+
+        // Show success message
+        setLastGeneratedFilter("complete");
+
+        setTimeout(() => {
+          setIsGeneratingFilters(false);
+        }, 800);
+      } catch (error) {
+        console.error("Error applying updates:", error);
+        setIsGeneratingFilters(false);
+      }
+    } else if (optionId.startsWith("suggest_name:")) {
       setIsGeneratingFilters(true);
       const suggestedName = optionId.replace("suggest_name:", "");
       setTimeout(() => {
@@ -397,55 +463,6 @@ export default function ProductFilterCreationView() {
         console.error("Failed to parse complete filter suggestion", e);
         setIsGeneratingFilters(false);
       }
-    } else if (optionId.startsWith("apply_updates:")) {
-      // *** ADDED NEW HANDLER ***
-      try {
-        setIsGeneratingFilters(true); // Optional: show thinking indicator
-        interface UpdatePayload {
-          criteriaToAdd?: Partial<FilterCriteria>[];
-          filterName?: string;
-          // Add other fields if AI might update them (description, expiryDate etc)
-        }
-        const updateData: UpdatePayload = JSON.parse(
-          optionId.replace("apply_updates:", "")
-        );
-
-        // Apply updates after a short delay
-        setTimeout(() => {
-          if (updateData.filterName) {
-            setFilterName(updateData.filterName);
-          }
-          if (
-            Array.isArray(updateData.criteriaToAdd) &&
-            updateData.criteriaToAdd.length > 0
-          ) {
-            const newValidCriteria: FilterCriteria[] = updateData.criteriaToAdd
-              .filter((item) => item.type && item.value) // Basic validation
-              .map((item) => {
-                const isRequired = requiredCriteriaTypes.includes(item.type!);
-                return {
-                  id:
-                    Date.now().toString() +
-                    Math.random().toString(36).substr(2, 5),
-                  type: item.type!,
-                  value: item.value!,
-                  rule: item.rule || "equals",
-                  and_or: item.and_or || "OR",
-                  isRequired:
-                    item.isRequired !== undefined
-                      ? item.isRequired
-                      : isRequired,
-                };
-              });
-            setFilterCriteria((prev) => [...prev, ...newValidCriteria]); // Append new criteria
-            setLastGeneratedFilter("criteria"); // Use existing notification type
-          }
-          setIsGeneratingFilters(false);
-        }, 500); // Shorter delay for applying updates
-      } catch (e) {
-        console.error("Failed to parse update payload:", e);
-        setIsGeneratingFilters(false);
-      }
     }
   };
 
@@ -502,7 +519,7 @@ export default function ProductFilterCreationView() {
                 description="Tell me what offers you want to filter"
               />
               {isGeneratingFilters && (
-                <div className="absolute inset-0 bg-black/5 backdrop-blur-sm flex items-center justify-center">
+                <div className="fixed inset-0 bg-black/5 backdrop-blur-sm flex items-center justify-center z-50">
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}

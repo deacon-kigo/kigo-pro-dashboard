@@ -103,6 +103,12 @@ export const aiAssistantSlice = createSlice({
       state.systemPrompt = SYSTEM_PROMPTS.PRODUCT_FILTER_ASSISTANT;
       state.currentCriteria = action.payload.currentCriteria || [];
     },
+
+    // Magic generate action
+    magicGenerate: (state) => {
+      // This action doesn't need to modify state directly
+      // It will be handled by the middleware
+    },
   },
 });
 
@@ -115,6 +121,7 @@ export const {
   setContextId,
   setError,
   setProductFilterContext,
+  magicGenerate,
 } = aiAssistantSlice.actions;
 
 export default aiAssistantSlice.reducer;

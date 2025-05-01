@@ -22,6 +22,15 @@ interface FilterAnalysisInput {
   criteria: Array<{ type: string; value: string; operator: string }>;
 }
 
+// New interface for filter criterion
+interface FilterCriterion {
+  type: string;
+  value: string;
+  rule: string;
+  and_or?: string;
+  isRequired?: boolean;
+}
+
 // Tool for generating product filter criteria
 export const createProductFilterCriteriaTool = () => {
   return new DynamicTool({
@@ -137,12 +146,12 @@ export const createFilterNameSuggestionTool = () => {
   });
 };
 
-// Tool for analyzing existing filter criteria
+// Tool for analyzing product filter criteria
 export const createFilterAnalysisTool = () => {
   return new DynamicTool({
-    name: "filter_analyzer",
+    name: "filter_criteria_analyzer",
     description:
-      "Analyzes existing filter criteria and suggests improvements. Input must be a JSON string with keys: filterName (string), criteria (array of {type: string, value: string, operator: string}).",
+      "Analyzes product filter criteria for completeness and effectiveness. Input must be a JSON string with keys: criteria (array of {type: string, value: string, rule: string}).",
     func: async (
       input: string,
       runManager?: CallbackManagerForToolRun | undefined,
@@ -150,30 +159,33 @@ export const createFilterAnalysisTool = () => {
     ): Promise<string> => {
       try {
         // Parse the JSON input string
-        const { filterName, criteria }: FilterAnalysisInput = JSON.parse(input);
+        const { criteria }: { criteria: Array<FilterCriterion> } =
+          JSON.parse(input);
 
         const model = getDefaultModel({ temperature: 0.2 });
 
         const criteriaString = criteria
-          .map(
-            (c) => `Type: ${c.type}, Value: ${c.value}, Operator: ${c.operator}`
-          )
+          .map((c) => `Type: ${c.type}, Value: ${c.value}, Rule: ${c.rule}`)
           .join("\n");
 
         const promptTemplate = ChatPromptTemplate.fromTemplate(`
-          Analyze the following product filter criteria for "${filterName}":
+          Analyze the following product filter criteria for completeness and effectiveness:
           
           {criteriaString}
           
-          Provide analysis in JSON format:
-          {
-            "analysis": "Overall analysis of the criteria set",
-            "missingRequiredTypes": ["List of any missing required criteria types"],
-            "suggestions": ["List of suggestions for improvement"],
-            "potentialIssues": ["List of potential issues with current criteria"]
-          }
+          Consider the following in your analysis:
+          1. Are all required criteria types present? (MerchantKeyword, MerchantName, OfferCommodity, OfferKeyword)
+          2. Are the values appropriate and specific enough for their types?
+          3. Are the operators (equals, contains, etc.) appropriate for their values?
           
-          Required criteria types are: MerchantKeyword, MerchantName, OfferCommodity, OfferKeyword
+          Return a JSON object with the following structure:
+          {
+            "isComplete": true/false,
+            "isMissingRequired": [array of missing required criteria types],
+            "suggestedImprovements": [array of improvement suggestions],
+            "effectiveness": "high"/"medium"/"low",
+            "analysis": "brief analysis"
+          }
         `);
 
         const outputParser = new JsonOutputParser();
@@ -181,15 +193,258 @@ export const createFilterAnalysisTool = () => {
         const chain = promptTemplate.pipe(model).pipe(outputParser);
 
         const response = await chain.invoke({
-          filterName,
           criteriaString,
         });
 
         return JSON.stringify(response);
       } catch (error) {
-        console.error("Error in filter analysis tool:", error);
+        console.error("Error in filter criteria analyzer tool:", error);
         return JSON.stringify({
           error: "Failed to analyze filter criteria",
+          details: error instanceof Error ? error.message : String(error),
+        });
+      }
+    },
+  });
+};
+
+// Tool for auto-generating complete product filters based on context
+export const createAutoFilterGeneratorTool = () => {
+  return new DynamicTool({
+    name: "auto_filter_generator",
+    description:
+      "Automatically generates a complete product filter based on conversation context and existing criteria. Input must be a JSON string with keys: filterName (string, optional), filterDescription (string, optional), currentCriteria (array of existing criteria, optional), conversationHistory (array of message objects).",
+    func: async (
+      input: string,
+      runManager?: CallbackManagerForToolRun | undefined,
+      config?: RunnableConfig
+    ): Promise<string> => {
+      try {
+        // Parse the JSON input string
+        const {
+          filterName = "",
+          filterDescription = "",
+          currentCriteria = [],
+          conversationHistory = [],
+        } = JSON.parse(input);
+
+        const model = getDefaultModel({ temperature: 0.4 });
+
+        // Format the conversation history for the prompt
+        const conversationString = conversationHistory
+          .map(
+            (msg: any) =>
+              `${msg.type === "user" ? "User" : "Assistant"}: ${msg.content}`
+          )
+          .join("\n");
+
+        // Format current criteria
+        const currentCriteriaString =
+          currentCriteria.length > 0
+            ? currentCriteria
+                .map(
+                  (c: any) =>
+                    `Type: ${c.type}, Value: ${c.value}, Rule: ${c.rule || "equals"}`
+                )
+                .join("\n")
+            : "No criteria set yet.";
+
+        const requiredTypes = [
+          "MerchantKeyword",
+          "MerchantName",
+          "OfferCommodity",
+          "OfferKeyword",
+        ];
+
+        // Check which required criteria are missing
+        const missingRequiredTypes = requiredTypes.filter(
+          (type) => !currentCriteria.some((c: any) => c.type === type)
+        );
+
+        const missingTypesString =
+          missingRequiredTypes.length > 0
+            ? missingRequiredTypes.join(", ")
+            : "None";
+
+        const promptTemplate = ChatPromptTemplate.fromTemplate(`
+          You are a product filter generation specialist who can create appropriate filter criteria.
+          
+          Current Context:
+          Filter Name: {filterName}
+          Filter Description: {filterDescription}
+          
+          Current Criteria:
+          {currentCriteriaString}
+          
+          Conversation History:
+          {conversationString}
+          
+          Required Criteria Types:
+          {requiredTypesString}
+          
+          Missing Required Types:
+          {missingTypesString}
+          
+          Your task:
+          1. Generate appropriate criteria for all missing required types
+          2. If criteria already exist, use them as context to generate coherent additional criteria
+          3. Generate values that are specific but not too narrow
+          
+          Return a JSON object with this structure:
+          {
+            "criteriaToAdd": [
+              {
+                "type": "string - criteria type",
+                "value": "string - appropriate value",
+                "rule": "string - operator (equals, contains, startsWith, endsWith)",
+                "and_or": "string - AND or OR",
+                "isRequired": boolean
+              }
+            ],
+            "suggestedName": "string - suggested filter name if none exists",
+            "explanation": "string - brief explanation of the generated filter"
+          }
+        `);
+
+        const outputParser = new JsonOutputParser();
+
+        const chain = promptTemplate.pipe(model).pipe(outputParser);
+
+        const response = await chain.invoke({
+          filterName: filterName || "Not set",
+          filterDescription: filterDescription || "Not set",
+          currentCriteriaString,
+          conversationString,
+          requiredTypesString: requiredTypes.join(", "),
+          missingTypesString,
+        });
+
+        return JSON.stringify(response);
+      } catch (error) {
+        console.error("Error in auto filter generator tool:", error);
+        return JSON.stringify({
+          error: "Failed to generate automatic filter",
+          details: error instanceof Error ? error.message : String(error),
+        });
+      }
+    },
+  });
+};
+
+// Tool for conversational filter creation guidance
+export const createFilterConversationGuideTool = () => {
+  return new DynamicTool({
+    name: "filter_conversation_guide",
+    description:
+      "Guides users through creating product filters with a conversational approach. Input must be a JSON string with keys: userMessage (string), conversationHistory (array of message objects), currentCriteria (array of existing criteria, optional).",
+    func: async (
+      input: string,
+      runManager?: CallbackManagerForToolRun | undefined,
+      config?: RunnableConfig
+    ): Promise<string> => {
+      try {
+        // Parse the JSON input string
+        const {
+          userMessage = "",
+          conversationHistory = [],
+          currentCriteria = [],
+        } = JSON.parse(input);
+
+        const model = getDefaultModel({ temperature: 0.7 });
+
+        // Format the conversation history for the prompt
+        const conversationString = conversationHistory
+          .map(
+            (msg: any) =>
+              `${msg.type === "user" ? "User" : "Assistant"}: ${msg.content}`
+          )
+          .join("\n");
+
+        // Format current criteria
+        const currentCriteriaString =
+          currentCriteria.length > 0
+            ? currentCriteria
+                .map(
+                  (c: any) =>
+                    `Type: ${c.type}, Value: ${c.value}, Rule: ${c.rule || "equals"}`
+                )
+                .join("\n")
+            : "No criteria set yet.";
+
+        const requiredTypes = [
+          "MerchantKeyword",
+          "MerchantName",
+          "OfferCommodity",
+          "OfferKeyword",
+        ];
+
+        // Check which required criteria are missing
+        const missingRequiredTypes = requiredTypes.filter(
+          (type) => !currentCriteria.some((c: any) => c.type === type)
+        );
+
+        const promptTemplate = ChatPromptTemplate.fromTemplate(`
+          You are an AI assistant helping users create product filters in a conversational way.
+          
+          Current Conversation:
+          {conversationString}
+          
+          User's Latest Message:
+          {userMessage}
+          
+          Current Filter Criteria:
+          {currentCriteriaString}
+          
+          Required Criteria Types Still Needed:
+          {missingRequiredTypes}
+          
+          Your task is to guide the user through creating a product filter by:
+          1. Identifying what the user wants to filter (e.g., restaurants, retail offers)
+          2. Asking clarifying questions to gather missing required information
+          3. Suggesting specific values based on the conversation
+          4. Moving the conversation forward toward completion
+          
+          When you have enough information, you should generate filter criteria.
+          
+          Return a JSON object with this structure:
+          {{
+            "responseMessage": "Your conversational response to the user",
+            "responseOptions": [
+              {{
+                "text": "Option text to show user",
+                "value": "option_value"
+              }}
+            ],
+            "actionType": "ask_question" | "suggest_criteria" | "complete_filter",
+            "criteriaToAdd": [
+              {{
+                "type": "string - criteria type",
+                "value": "string - appropriate value",
+                "rule": "string - appropriate operator",
+                "and_or": "string - AND or OR",
+                "isRequired": boolean
+              }}
+            ],
+            "nextQuestion": "What specific question to ask next if actionType is ask_question"
+          }}
+        `);
+
+        const outputParser = new JsonOutputParser();
+
+        const chain = promptTemplate.pipe(model).pipe(outputParser);
+
+        const response = await chain.invoke({
+          conversationString,
+          userMessage,
+          currentCriteriaString,
+          missingRequiredTypes: missingRequiredTypes.join(", "),
+        });
+
+        return JSON.stringify(response);
+      } catch (error) {
+        console.error("Error in filter conversation guide tool:", error);
+        return JSON.stringify({
+          error: "Failed to process conversation",
           details: error instanceof Error ? error.message : String(error),
         });
       }
