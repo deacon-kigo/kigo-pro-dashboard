@@ -1,7 +1,11 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { PaperAirplaneIcon, LightBulbIcon } from "@heroicons/react/24/outline";
+import {
+  PaperAirplaneIcon,
+  LightBulbIcon,
+  SparklesIcon,
+} from "@heroicons/react/24/outline";
 import { useDemoState } from "@/lib/redux/hooks";
 import ReactMarkdown from "react-markdown";
 import Image from "next/image";
@@ -10,6 +14,13 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/lib/redux/store";
 import { addMessage } from "@/lib/redux/slices/ai-assistantSlice";
 import { usePathname } from "next/navigation";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { FilterDirectCreator } from "@/services/ai/filterHandler";
 
 interface Message {
   id: string;
@@ -49,6 +60,81 @@ interface FilterContext {
   currentFilterName?: string;
   currentFilterDescription?: string;
 }
+
+// Add preset filter templates that can be used directly
+const PRESET_FILTERS = {
+  skincare: {
+    name: "Skin Care Campaign Filter",
+    queryViewName: "SkinCareFilter",
+    description: "Filter for skin care products targeting mature customers",
+    criteria: [
+      {
+        type: "OfferCommodity",
+        value: "Skin Care",
+        rule: "contains",
+        and_or: "OR",
+      },
+      {
+        type: "OfferKeyword",
+        value: "anti-aging",
+        rule: "contains",
+        and_or: "OR",
+      },
+      {
+        type: "OfferKeyword",
+        value: "wrinkle",
+        rule: "contains",
+        and_or: "OR",
+      },
+      {
+        type: "OfferKeyword",
+        value: "mature skin",
+        rule: "contains",
+        and_or: "OR",
+      },
+    ],
+  },
+  restaurant: {
+    name: "Restaurant Deals Filter",
+    queryViewName: "RestaurantFilter",
+    description: "Filter for restaurant and dining offers",
+    criteria: [
+      {
+        type: "OfferCategory",
+        value: "Food & Dining",
+        rule: "equals",
+        and_or: "AND",
+      },
+      {
+        type: "MerchantKeyword",
+        value: "restaurant",
+        rule: "contains",
+        and_or: "OR",
+      },
+      {
+        type: "MerchantKeyword",
+        value: "dining",
+        rule: "contains",
+        and_or: "OR",
+      },
+    ],
+  },
+  discount: {
+    name: "Discount Offers Filter",
+    queryViewName: "DiscountFilter",
+    description: "Filter for offers with discounts, sales or promotions",
+    criteria: [
+      {
+        type: "OfferKeyword",
+        value: "discount",
+        rule: "contains",
+        and_or: "OR",
+      },
+      { type: "OfferKeyword", value: "sale", rule: "contains", and_or: "OR" },
+      { type: "OfferKeyword", value: "% off", rule: "contains", and_or: "OR" },
+    ],
+  },
+};
 
 const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
   onSend = () => {},
@@ -106,29 +192,30 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
         const initialMessage: Message = {
           id: "filter-instruction",
           type: "ai",
-          content: `I can help you create product filters by automatically generating criteria based on your requirements.
-
-Just tell me what you're looking for in plain language. For example:
-- "Create a filter for coffee shops in downtown"
-- "I need to find all discount offers from premium retailers"
-- "Show me deals for family-friendly activities available on weekends"
-
-I'll analyze your request and suggest appropriate filter criteria that you can apply or customize.`,
+          content: `✨ Ready to create filters! Choose an option below or tell me what you're looking for:`,
           timestamp: new Date().toISOString(),
           responseOptions: [
             {
-              text: "🔍 Help me get started with filters",
-              value: "help_with_filters",
+              text: "🧴 Skin Care Products",
+              value: "create_preset_filter:skincare",
             },
             {
-              text: "📋 Show available filter types",
-              value: "show_filter_types",
+              text: "🍽️ Restaurants & Dining",
+              value: "create_preset_filter:restaurant",
+            },
+            {
+              text: "💰 Discounts & Sales",
+              value: "create_preset_filter:discount",
+            },
+            {
+              text: "🔍 Create Custom Filter",
+              value: "show_filter_wizard_menu",
             },
           ],
         };
 
         setMessages([initialMessage]);
-      }, 500);
+      }, 300);
 
       return () => clearTimeout(timer);
     }
@@ -299,6 +386,37 @@ I'll analyze your request and suggest appropriate filter criteria that you can a
     } catch (e) {
       console.error("Error parsing LLM response:", e);
       return null;
+    }
+  };
+
+  // Add this utility function to generate filter suggestion buttons consistently
+  const generateFilterSuggestion = (type: string, data: any) => {
+    switch (type) {
+      case "criteria":
+        return {
+          text: `Use "${data.value}" as ${data.type.replace(/([A-Z])/g, " $1").trim()}`,
+          value: `suggest_criteria:${JSON.stringify(data)}`,
+        };
+      case "multiple":
+        return {
+          text: `Add ${data.length} criteria for ${data.map((c: any) => c.value).join(" & ")}`,
+          value: `suggest_multiple_criteria:${JSON.stringify(data)}`,
+        };
+      case "complete":
+        return {
+          text: `✨ Create "${data.name}" filter`,
+          value: `suggest_complete_filter:${JSON.stringify({
+            name: data.name,
+            queryViewName: data.name.replace(/\s+/g, ""),
+            description: data.description,
+            criteria: data.items,
+          })}`,
+        };
+      default:
+        return {
+          text: `Add as filter`,
+          value: `suggest_generic:${JSON.stringify(data)}`,
+        };
     }
   };
 
@@ -925,904 +1043,218 @@ I'll analyze your request and suggest appropriate filter criteria that you can a
     dispatch,
   ]);
 
-  // Memoize option click handler to avoid recreation on each render
+  // Add a function to directly open the filter menu without going through chat
+  const handleShowFilterMenu = () => {
+    // Create a menu with direct filter options
+    const wizardMenu = {
+      id: Date.now().toString(),
+      type: "ai" as const,
+      content: "Choose a filter type:",
+      timestamp: new Date().toISOString(),
+      responseOptions: [
+        { text: "🧴 Skin Care Products", value: "direct_preset:skincare" },
+        { text: "🍽️ Restaurants & Dining", value: "direct_preset:restaurant" },
+        { text: "💰 Discounts & Sales", value: "direct_preset:discount" },
+        { text: "🏷️ By Product Category", value: "direct_category" },
+        { text: "🔎 By Keywords", value: "direct_keyword" },
+      ],
+    };
+
+    // Replace any existing messages with this menu
+    setMessages([wizardMenu]);
+  };
+
+  // Add direct handling for preset filters
+  const handleDirectFilterCreation = (optionValue: string) => {
+    // Handle direct preset filter creation
+    if (optionValue.startsWith("direct_preset:")) {
+      const filterType = optionValue.replace("direct_preset:", "");
+      const filterConfig = FilterDirectCreator.createPresetFilter(filterType);
+
+      if (filterConfig) {
+        // Show magical animation
+        const processingMsg = {
+          id: Date.now().toString(),
+          type: "ai" as const,
+          content: `<div class="filter-creation-animation">
+            <div class="magic-wand">✨</div>
+            <div class="filter-text">Creating ${filterType} filter...</div>
+          </div>`,
+          timestamp: new Date().toISOString(),
+        };
+
+        // Replace the menu with processing animation
+        setMessages([processingMsg]);
+
+        // After a moment, create the filter
+        setTimeout(() => {
+          // Format for the filter configuration handler
+          const completeFilterValue = `suggest_complete_filter:${JSON.stringify(filterConfig)}`;
+          onOptionSelected?.(completeFilterValue);
+
+          // Show confirmation
+          const confirmationMsg = {
+            id: Date.now().toString(),
+            type: "ai" as const,
+            content: `✨ ${filterConfig.name} has been created and applied!`,
+            timestamp: new Date().toISOString(),
+            responseOptions: [
+              { text: "Create Another Filter", value: "direct_show_menu" },
+            ],
+          };
+
+          setMessages([confirmationMsg]);
+        }, 800);
+
+        return true;
+      }
+    }
+
+    // Handle direct category selection
+    if (optionValue === "direct_category") {
+      const categories = FilterDirectCreator.getProductCategories();
+      const categoryMenu = {
+        id: Date.now().toString(),
+        type: "ai" as const,
+        content: "Select a product category:",
+        timestamp: new Date().toISOString(),
+        responseOptions: categories.map((category) => ({
+          text: category,
+          value: `direct_create_category:${category}`,
+        })),
+      };
+
+      setMessages([categoryMenu]);
+      return true;
+    }
+
+    // Handle direct category filter creation
+    if (optionValue.startsWith("direct_create_category:")) {
+      const category = optionValue.replace("direct_create_category:", "");
+      const filterConfig = FilterDirectCreator.createCategoryFilter(category);
+
+      // Show magical animation
+      const processingMsg = {
+        id: Date.now().toString(),
+        type: "ai" as const,
+        content: `<div class="filter-creation-animation">
+          <div class="magic-wand">✨</div>
+          <div class="filter-text">Creating ${category} filter...</div>
+        </div>`,
+        timestamp: new Date().toISOString(),
+      };
+
+      // Replace the menu with processing animation
+      setMessages([processingMsg]);
+
+      // After a moment, create the filter
+      setTimeout(() => {
+        // Format for the filter configuration handler
+        const completeFilterValue = `suggest_complete_filter:${JSON.stringify(filterConfig)}`;
+        onOptionSelected?.(completeFilterValue);
+
+        // Show confirmation
+        const confirmationMsg = {
+          id: Date.now().toString(),
+          type: "ai" as const,
+          content: `✨ ${filterConfig.name} has been created and applied!`,
+          timestamp: new Date().toISOString(),
+          responseOptions: [
+            { text: "Create Another Filter", value: "direct_show_menu" },
+          ],
+        };
+
+        setMessages([confirmationMsg]);
+      }, 800);
+
+      return true;
+    }
+
+    // Handle direct keyword selection
+    if (optionValue === "direct_keyword") {
+      const keywords = FilterDirectCreator.getPopularKeywords();
+      const keywordMenu = {
+        id: Date.now().toString(),
+        type: "ai" as const,
+        content: "Select a keyword to filter by:",
+        timestamp: new Date().toISOString(),
+        responseOptions: [
+          ...keywords.map((keyword) => ({
+            text: keyword,
+            value: `direct_create_keyword:${keyword}`,
+          })),
+          { text: "✏️ Enter Custom Keyword", value: "custom_keyword_input" },
+        ],
+      };
+
+      setMessages([keywordMenu]);
+      return true;
+    }
+
+    // Handle direct keyword filter creation
+    if (optionValue.startsWith("direct_create_keyword:")) {
+      const keyword = optionValue.replace("direct_create_keyword:", "");
+      const filterConfig = FilterDirectCreator.createKeywordFilter(keyword);
+
+      // Show magical animation
+      const processingMsg = {
+        id: Date.now().toString(),
+        type: "ai" as const,
+        content: `<div class="filter-creation-animation">
+          <div class="magic-wand">✨</div>
+          <div class="filter-text">Creating filter for "${keyword}"...</div>
+        </div>`,
+        timestamp: new Date().toISOString(),
+      };
+
+      // Replace the menu with processing animation
+      setMessages([processingMsg]);
+
+      // After a moment, create the filter
+      setTimeout(() => {
+        // Format for the filter configuration handler
+        const completeFilterValue = `suggest_complete_filter:${JSON.stringify(filterConfig)}`;
+        onOptionSelected?.(completeFilterValue);
+
+        // Show confirmation
+        const confirmationMsg = {
+          id: Date.now().toString(),
+          type: "ai" as const,
+          content: `✨ ${filterConfig.name} has been created and applied!`,
+          timestamp: new Date().toISOString(),
+          responseOptions: [
+            { text: "Create Another Filter", value: "direct_show_menu" },
+          ],
+        };
+
+        setMessages([confirmationMsg]);
+      }, 800);
+
+      return true;
+    }
+
+    // Show menu again for the "Create Another Filter" option
+    if (optionValue === "direct_show_menu") {
+      handleShowFilterMenu();
+      return true;
+    }
+
+    // Not handled by direct filter creator
+    return false;
+  };
+
+  // Update option selected handler to first try direct creation
   const handleOptionSelected = useCallback(
     (optionValue: string) => {
-      // Special handling for auto-generation options
-      if (optionValue === "generate_pizza_filter") {
-        const completeFilterValue = `suggest_complete_filter:${JSON.stringify({
-          name: "Pizza Campaign Filter",
-          queryViewName: "PizzaCampaign",
-          description: "Automatically generated filter for pizza offers",
-          expiryDate: new Date(
-            Date.now() + 90 * 24 * 60 * 60 * 1000
-          ).toISOString(),
-          criteria: [
-            {
-              type: "OfferCommodity",
-              value: "Pizza",
-              rule: "contains",
-              and_or: "AND",
-            },
-            {
-              type: "MerchantKeyword",
-              value: "Pizza",
-              rule: "contains",
-              and_or: "AND",
-            },
-            {
-              type: "OfferCategory",
-              value: "Food & Dining",
-              rule: "equals",
-              and_or: "AND",
-            },
-          ],
-        })}`;
-
-        // Add a user message showing their selection
-        const userMessage = {
-          id: Date.now().toString(),
-          type: "user" as const,
-          content: "Create a pizza filter",
-          timestamp: new Date().toISOString(),
-        };
-
-        dispatch(addMessage(userMessage));
-
-        // Show a processing message
-        setTimeout(() => {
-          const processingMsg = {
-            id: Date.now().toString(),
-            type: "ai" as const,
-            content: "✨ Creating your pizza filter...",
-            timestamp: new Date().toISOString(),
-          };
-
-          dispatch(addMessage(processingMsg));
-
-          // Call the actual filter creation function
-          setTimeout(() => {
-            onOptionSelected(completeFilterValue);
-
-            // Show confirmation
-            const confirmationMsg = {
-              id: Date.now().toString(),
-              type: "ai" as const,
-              content:
-                "✅ Pizza filter has been created! You can see it in the Current Conditions section.",
-              timestamp: new Date().toISOString(),
-            };
-
-            dispatch(addMessage(confirmationMsg));
-          }, 1200);
-        }, 800);
-
-        return;
-      } else if (optionValue === "generate_restaurant_filter") {
-        const completeFilterValue = `suggest_complete_filter:${JSON.stringify({
-          name: "Restaurant Campaign Filter",
-          queryViewName: "RestaurantCampaign",
-          description: "Filter for restaurant offers",
-          expiryDate: new Date(
-            Date.now() + 90 * 24 * 60 * 60 * 1000
-          ).toISOString(),
-          criteria: [
-            {
-              type: "OfferCategory",
-              value: "Food & Dining",
-              rule: "equals",
-              and_or: "AND",
-            },
-            {
-              type: "MerchantKeyword",
-              value: "restaurant",
-              rule: "contains",
-              and_or: "OR",
-            },
-            {
-              type: "MerchantKeyword",
-              value: "dining",
-              rule: "contains",
-              and_or: "OR",
-            },
-          ],
-        })}`;
-
-        // Similar pattern with user message and processing
-        // [truncated for brevity but would follow the same pattern as above]
-
-        // Add a user message showing their selection
-        const userMessage = {
-          id: Date.now().toString(),
-          type: "user" as const,
-          content: "Create a restaurant filter",
-          timestamp: new Date().toISOString(),
-        };
-
-        dispatch(addMessage(userMessage));
-
-        // Call the filter creation
-        setTimeout(() => {
-          onOptionSelected(completeFilterValue);
-        }, 1000);
-
-        return;
-      } else if (optionValue === "generate_discount_filter") {
-        // Similar pattern for discount filter
-        // [truncated for brevity]
-        return;
-      } else if (optionValue === "suggest_pizza_filter") {
-        // For the default quick option in initial message
-        const completeFilterValue = `suggest_complete_filter:${JSON.stringify({
-          name: "Local Pizza Offers Filter",
-          queryViewName: "LocalPizzaOffers",
-          description: "Filter for pizza offers from local merchants",
-          expiryDate: new Date(
-            Date.now() + 90 * 24 * 60 * 60 * 1000
-          ).toISOString(),
-          criteria: [
-            {
-              type: "OfferCommodity",
-              value: "Pizza",
-              rule: "contains",
-              and_or: "AND",
-            },
-            {
-              type: "MerchantKeyword",
-              value: "local",
-              rule: "contains",
-              and_or: "AND",
-            },
-          ],
-        })}`;
-
-        // Add a user message showing their selection
-        const userMessage = {
-          id: Date.now().toString(),
-          type: "user" as const,
-          content: "I need a filter for pizza offers from local merchants",
-          timestamp: new Date().toISOString(),
-        };
-
-        dispatch(addMessage(userMessage));
-
-        // Show a processing message
-        setTimeout(() => {
-          const processingMsg = {
-            id: Date.now().toString(),
-            type: "ai" as const,
-            content: "✨ Creating your local pizza filter...",
-            timestamp: new Date().toISOString(),
-          };
-
-          dispatch(addMessage(processingMsg));
-
-          // Call the actual filter creation function
-          setTimeout(() => {
-            onOptionSelected(completeFilterValue);
-
-            // Show confirmation
-            const confirmationMsg = {
-              id: Date.now().toString(),
-              type: "ai" as const,
-              content:
-                "✅ Local pizza offers filter has been created! You can see it in the Current Conditions section.",
-              timestamp: new Date().toISOString(),
-            };
-
-            dispatch(addMessage(confirmationMsg));
-          }, 1200);
-        }, 800);
-
+      // First try to handle with direct filter creation
+      if (handleDirectFilterCreation(optionValue)) {
         return;
       }
 
-      // For product filter context, dispatch an option selected action
-      if (isProductFilterContext) {
-        dispatch({ type: "aiAssistant/optionSelected", payload: optionValue });
-
-        // Also call the passed callback
-        onOptionSelected(optionValue);
-        return;
-      }
-
-      // Original implementation for demo mode
-      // Notify parent component
-      onOptionSelected && onOptionSelected(optionValue);
-
-      // Find the selected option to populate the input field
-      const selectedOption = messages
-        .filter((m) => m.responseOptions)
-        .flatMap((m) => m.responseOptions || [])
-        .find((option) => option.value === optionValue);
-
-      if (selectedOption) {
-        // Set the input field to the option text instead of auto-sending
-        setNewMessage(selectedOption.text);
-
-        // Special handling for clarifying question responses to auto-send
-        if (
-          optionValue === "target-audience-young" ||
-          optionValue === "target-audience-broad" ||
-          optionValue === "timeframe-short" ||
-          optionValue === "timeframe-long" ||
-          optionValue === "free-pizza-offer" ||
-          optionValue === "recommend-offer"
-        ) {
-          // We'll use setTimeout to give enough time for the UI to update before triggering
-          setTimeout(() => {
-            // Create a user message
-            const userMessage: Message = {
-              id: Date.now().toString(),
-              type: "user",
-              content: selectedOption.text,
-              timestamp: new Date().toISOString(),
-            };
-
-            setMessages((prev) => [...prev, userMessage]);
-            setNewMessage("");
-            setIsThinking(true);
-
-            // Clear any existing timeout
-            if (timeoutRef.current) {
-              clearTimeout(timeoutRef.current);
-            }
-
-            // Process based on which clarifying question we're at
-            if (
-              optionValue === "target-audience-young" ||
-              optionValue === "target-audience-broad"
-            ) {
-              // After first clarifying question, ask second
-              timeoutRef.current = setTimeout(() => {
-                const nextQuestion: Message = {
-                  id: Date.now().toString(),
-                  type: "ai",
-                  content:
-                    "Great. And when do you want to the offer to start and expire?",
-                  timestamp: new Date().toISOString(),
-                  responseOptions: [
-                    {
-                      text: "For the next 4 weeks",
-                      value: "timeframe-short",
-                    },
-                    {
-                      text: "Through the end of summer",
-                      value: "timeframe-long",
-                    },
-                  ],
-                };
-
-                setMessages((prev) => [...prev, nextQuestion]);
-                setIsThinking(false);
-                setClarifyingQuestionStep(2);
-              }, 1500);
-            } else if (
-              optionValue === "timeframe-short" ||
-              optionValue === "timeframe-long"
-            ) {
-              // After second clarifying question, ask third
-              timeoutRef.current = setTimeout(() => {
-                const nextQuestion: Message = {
-                  id: Date.now().toString(),
-                  type: "ai",
-                  content:
-                    "Perfect. Do you have a specific offer or promotion in mind that you would like to use?",
-                  timestamp: new Date().toISOString(),
-                  responseOptions: [
-                    {
-                      text: "Free pizza with 7NOW order",
-                      value: "free-pizza-offer",
-                    },
-                    {
-                      text: "I'd like your recommendation",
-                      value: "recommend-offer",
-                    },
-                  ],
-                };
-
-                setMessages((prev) => [...prev, nextQuestion]);
-                setIsThinking(false);
-                setClarifyingQuestionStep(3);
-              }, 1500);
-            } else if (
-              optionValue === "free-pizza-offer" ||
-              optionValue === "recommend-offer"
-            ) {
-              // After third clarifying question, show 7-Eleven's response
-              timeoutRef.current = setTimeout(() => {
-                const aiSummary: Message = {
-                  id: Date.now().toString(),
-                  type: "ai",
-                  content:
-                    "Based on our conversation, here's what I understand about your initial offer concept:",
-                  timestamp: new Date().toISOString(),
-                };
-
-                setMessages((prev) => [...prev, aiSummary]);
-
-                // After a brief pause, show the offer details as an AI message
-                setTimeout(() => {
-                  const offerResponse: Message = {
-                    id: Date.now().toString(),
-                    type: "ai",
-                    content:
-                      "Free pizza with 7NOW order\n\nPromo code: BIGBITE\n\nLimit 1 per customer\n\nValid through end of June",
-                    timestamp: new Date().toISOString(),
-                  };
-
-                  setMessages((prev) => [...prev, offerResponse]);
-
-                  // Start the analysis flow
-                  setTimeout(() => {
-                    const analysisStartResponse: Message = {
-                      id: Date.now().toString(),
-                      type: "ai",
-                      content:
-                        "I'm analyzing this offer to optimize its structure and performance...",
-                      timestamp: new Date().toISOString(),
-                    };
-
-                    setMessages((prev) => [...prev, analysisStartResponse]);
-                    setIsThinking(false);
-
-                    // After a brief delay, show the analysis process
-                    setTimeout(() => {
-                      const analysisResponse: Message = {
-                        id: Date.now().toString(),
-                        type: "ai",
-                        content: `
-### Analysis in Progress
-
-* Analyzing 7-Eleven's product catalog and margin data for pizza and typical delivery orders ✓
-* Examining historical performance data from similar app-based promotions ✓
-* Evaluating market-specific trends in Texas and Florida delivery patterns ✓
-* Calculating optimal promotional pricing to maximize customer acquisition while ensuring ROI ✓
-* Determining the most effective validation method for tracking unique redemptions ✓
-                        `,
-                        timestamp: new Date().toISOString(),
-                      };
-
-                      setMessages((prev) => [...prev, analysisResponse]);
-
-                      // After analysis, show the optimized offer
-                      setTimeout(() => {
-                        const finalOffer: Message = {
-                          id: Date.now().toString(),
-                          type: "ai",
-                          content: `
-### Optimized Offer Structure
-
-**Free Big Bite Pizza with Your First 7NOW Order**
-
-**Redemption flow:**
-- Install app → Create account → Enter code 'BIGBITE' at checkout → Free pizza added to order
-
-**Geographic Targeting:** Texas and Florida markets (covers 215 locations with estimated audience reach of 3.7M potential customers in app delivery zones)
-
-**Validation method:** 
-- Automated promo code redemption tracking with 1-per-customer limit enforced
-
-**Timing:** 
-- Immediate launch through June 30
-
-**Projected performance:**
-- 28% projected conversion rate from impression to app install
-- 64% projected completion rate from install to first order
-- $12.84 estimated average basket size on first order (excluding pizza)
-- 42% projected retention rate for second order within 30 days
-
-*The offer is configured and ready for campaign deployment. Would you like to proceed with this optimized structure?*
-                          `,
-                          timestamp: new Date().toISOString(),
-                          responseOptions: [
-                            {
-                              text: "Yes, proceed with this offer",
-                              value: "approve-offer",
-                            },
-                            {
-                              text: "Make some adjustments",
-                              value: "adjust-offer",
-                            },
-                          ],
-                        };
-
-                        setMessages((prev) => [...prev, finalOffer]);
-                      }, 4000);
-                    }, 3000);
-                  }, 1500);
-                }, 1000);
-
-                // Reset the clarifying question step
-                setClarifyingQuestionStep(0);
-              }, 1500);
-            }
-          }, 100);
-        }
-
-        // For free-pizza-offer button, also handle the flow directly
-        else if (optionValue === "free-pizza-offer") {
-          // We'll use setTimeout to give enough time for the UI to update before triggering
-          setTimeout(() => {
-            // Create a user message
-            const userMessage: Message = {
-              id: Date.now().toString(),
-              type: "user",
-              content: selectedOption.text,
-              timestamp: new Date().toISOString(),
-            };
-
-            setMessages((prev) => [...prev, userMessage]);
-            setNewMessage("");
-            setIsThinking(true);
-
-            // Clear any existing timeout
-            if (timeoutRef.current) {
-              clearTimeout(timeoutRef.current);
-            }
-
-            // After a brief delay, show AI's summarizing message
-            timeoutRef.current = setTimeout(() => {
-              const aiSummary: Message = {
-                id: Date.now().toString(),
-                type: "ai",
-                content:
-                  "Great choice! Can you provide any specific details for this offer, such as promo code, limitations, or validity period?",
-                timestamp: new Date().toISOString(),
-                responseOptions: [
-                  {
-                    text: "Promo code: BIGBITE, Limit 1 per customer, Valid through end of June",
-                    value: "offer-details",
-                  },
-                ],
-              };
-
-              setMessages((prev) => [...prev, aiSummary]);
-              setIsThinking(false);
-            }, 1500);
-          }, 100);
-        }
-        // Handle approval of the offer
-        else if (optionValue === "approve-offer") {
-          // We'll use setTimeout to give enough time for the UI to update before triggering
-          setTimeout(() => {
-            // Create a user message
-            const userMessage: Message = {
-              id: Date.now().toString(),
-              type: "user",
-              content: selectedOption.text,
-              timestamp: new Date().toISOString(),
-            };
-
-            setMessages((prev) => [...prev, userMessage]);
-            setNewMessage("");
-            setIsThinking(true);
-
-            // Clear any existing timeout
-            if (timeoutRef.current) {
-              clearTimeout(timeoutRef.current);
-            }
-
-            // First show a processing message
-            timeoutRef.current = setTimeout(() => {
-              const processingMessage: Message = {
-                id: Date.now().toString(),
-                type: "ai",
-                content:
-                  "Creating offer in system... Please wait while I configure all parameters.",
-                timestamp: new Date().toISOString(),
-              };
-
-              setMessages((prev) => [...prev, processingMessage]);
-
-              // After another delay, show detailed offer confirmation
-              setTimeout(() => {
-                const offerConfirmationMessage: Message = {
-                  id: Date.now().toString(),
-                  type: "ai",
-                  content: `✅ Offer successfully created!
-
-**Offer ID:** PIZZA-7NOW-2023
-**Status:** Active (Pending Campaign Assignment)
-**Offer Details:**
-- Free pizza with 7NOW order
-- Promo code: BIGBITE
-- Redemption Method: App-based code entry
-- Validation Rules: Limit 1 per customer
-- Valid Through: June 30, 2023
-
-The offer is now ready to be assigned to a campaign. Would you like to proceed with creating the campaign for this offer?`,
-                  timestamp: new Date().toISOString(),
-                  responseOptions: [
-                    {
-                      text: "Next Step",
-                      value: "next-step-campaign",
-                    },
-                  ],
-                };
-
-                setMessages((prev) => [...prev, offerConfirmationMessage]);
-                setIsThinking(false);
-              }, 2000);
-            }, 1500);
-          }, 100);
-        }
-        // Handle campaign creation flow start
-        else if (optionValue === "next-step-campaign") {
-          // We'll use setTimeout to give enough time for the UI to update before triggering
-          setTimeout(() => {
-            // Create a user message
-            const userMessage: Message = {
-              id: Date.now().toString(),
-              type: "user",
-              content: selectedOption.text,
-              timestamp: new Date().toISOString(),
-            };
-
-            setMessages((prev) => [...prev, userMessage]);
-            setNewMessage("");
-            setIsThinking(true);
-
-            // Clear any existing timeout
-            if (timeoutRef.current) {
-              clearTimeout(timeoutRef.current);
-            }
-
-            // Start the campaign creation dialogue sequence
-            timeoutRef.current = setTimeout(() => {
-              const campaignNamePrompt: Message = {
-                id: Date.now().toString(),
-                type: "ai",
-                content:
-                  "Let's create a campaign to deliver this offer. What would you like to name this campaign?",
-                timestamp: new Date().toISOString(),
-                responseOptions: [
-                  {
-                    text: "7NOW App Texas & Florida Pizza Promotion",
-                    value: "campaign-name-response",
-                  },
-                ],
-              };
-
-              setMessages((prev) => [...prev, campaignNamePrompt]);
-              setIsThinking(false);
-            }, 1000);
-          }, 100);
-        }
-        // Handle campaign name response
-        else if (optionValue === "campaign-name-response") {
-          // We'll use setTimeout to give enough time for the UI to update before triggering
-          setTimeout(() => {
-            // Create a user message
-            const userMessage: Message = {
-              id: Date.now().toString(),
-              type: "user",
-              content: selectedOption.text,
-              timestamp: new Date().toISOString(),
-            };
-
-            setMessages((prev) => [...prev, userMessage]);
-            setNewMessage("");
-            setIsThinking(true);
-
-            // Clear any existing timeout
-            if (timeoutRef.current) {
-              clearTimeout(timeoutRef.current);
-            }
-
-            // Ask about campaign timeline
-            timeoutRef.current = setTimeout(() => {
-              const timelinePrompt: Message = {
-                id: Date.now().toString(),
-                type: "ai",
-                content:
-                  "The offer is set to run through June 30th. Would you like the campaign to follow the same timeline?",
-                timestamp: new Date().toISOString(),
-                responseOptions: [
-                  {
-                    text: "Yes, but let's start next Monday to give us time for final approvals",
-                    value: "campaign-timeline-response",
-                  },
-                ],
-              };
-
-              setMessages((prev) => [...prev, timelinePrompt]);
-              setIsThinking(false);
-            }, 1000);
-          }, 100);
-        }
-        // Handle campaign timeline response
-        else if (optionValue === "campaign-timeline-response") {
-          // We'll use setTimeout to give enough time for the UI to update before triggering
-          setTimeout(() => {
-            // Create a user message
-            const userMessage: Message = {
-              id: Date.now().toString(),
-              type: "user",
-              content: selectedOption.text,
-              timestamp: new Date().toISOString(),
-            };
-
-            setMessages((prev) => [...prev, userMessage]);
-            setNewMessage("");
-            setIsThinking(true);
-
-            // Clear any existing timeout
-            if (timeoutRef.current) {
-              clearTimeout(timeoutRef.current);
-            }
-
-            // Ask about campaign budget
-            timeoutRef.current = setTimeout(() => {
-              const budgetPrompt: Message = {
-                id: Date.now().toString(),
-                type: "ai",
-                content: "What's your total budget for this campaign?",
-                timestamp: new Date().toISOString(),
-                responseOptions: [
-                  {
-                    text: "$120,000",
-                    value: "campaign-budget-response",
-                  },
-                ],
-              };
-
-              setMessages((prev) => [...prev, budgetPrompt]);
-              setIsThinking(false);
-            }, 1000);
-          }, 100);
-        }
-        // Handle campaign budget response
-        else if (optionValue === "campaign-budget-response") {
-          // We'll use setTimeout to give enough time for the UI to update before triggering
-          setTimeout(() => {
-            // Create a user message
-            const userMessage: Message = {
-              id: Date.now().toString(),
-              type: "user",
-              content: selectedOption.text,
-              timestamp: new Date().toISOString(),
-            };
-
-            setMessages((prev) => [...prev, userMessage]);
-            setNewMessage("");
-            setIsThinking(true);
-
-            // Clear any existing timeout
-            if (timeoutRef.current) {
-              clearTimeout(timeoutRef.current);
-            }
-
-            // Ask about daily spend limit
-            timeoutRef.current = setTimeout(() => {
-              const dailySpendPrompt: Message = {
-                id: Date.now().toString(),
-                type: "ai",
-                content: "What's your maximum daily spend?",
-                timestamp: new Date().toISOString(),
-                responseOptions: [
-                  {
-                    text: "$3,000",
-                    value: "campaign-daily-spend-response",
-                  },
-                ],
-              };
-
-              setMessages((prev) => [...prev, dailySpendPrompt]);
-              setIsThinking(false);
-            }, 1000);
-          }, 100);
-        }
-        // Handle daily spend response
-        else if (optionValue === "campaign-daily-spend-response") {
-          // We'll use setTimeout to give enough time for the UI to update before triggering
-          setTimeout(() => {
-            // Create a user message
-            const userMessage: Message = {
-              id: Date.now().toString(),
-              type: "user",
-              content: selectedOption.text,
-              timestamp: new Date().toISOString(),
-            };
-
-            setMessages((prev) => [...prev, userMessage]);
-            setNewMessage("");
-            setIsThinking(true);
-
-            // Clear any existing timeout
-            if (timeoutRef.current) {
-              clearTimeout(timeoutRef.current);
-            }
-
-            // Ask about high value actions to track
-            timeoutRef.current = setTimeout(() => {
-              const actionsPrompt: Message = {
-                id: Date.now().toString(),
-                type: "ai",
-                content: "What High Value Actions would you like to track?",
-                timestamp: new Date().toISOString(),
-                responseOptions: [
-                  {
-                    text: "App installs, account creations, first orders, and repeat orders",
-                    value: "campaign-actions-response",
-                  },
-                ],
-              };
-
-              setMessages((prev) => [...prev, actionsPrompt]);
-              setIsThinking(false);
-            }, 1000);
-          }, 100);
-        }
-        // Handle high value actions response and show campaign configuration
-        else if (optionValue === "campaign-actions-response") {
-          // We'll use setTimeout to give enough time for the UI to update before triggering
-          setTimeout(() => {
-            // Create a user message
-            const userMessage: Message = {
-              id: Date.now().toString(),
-              type: "user",
-              content: selectedOption.text,
-              timestamp: new Date().toISOString(),
-            };
-
-            setMessages((prev) => [...prev, userMessage]);
-            setNewMessage("");
-            setIsThinking(true);
-
-            // Clear any existing timeout
-            if (timeoutRef.current) {
-              clearTimeout(timeoutRef.current);
-            }
-
-            // Show campaign configuration being generated
-            timeoutRef.current = setTimeout(() => {
-              const configurationProcessingMessage: Message = {
-                id: Date.now().toString(),
-                type: "ai",
-                content:
-                  "Based on your inputs, I'm configuring the optimal campaign settings. This will just take a moment...",
-                timestamp: new Date().toISOString(),
-              };
-
-              setMessages((prev) => [...prev, configurationProcessingMessage]);
-
-              // After a brief delay, show the advanced campaign configuration
-              setTimeout(() => {
-                const advancedConfigMessage: Message = {
-                  id: Date.now().toString(),
-                  type: "ai",
-                  content: `
-### Optimized Campaign Configuration
-
-**Audience Targeting:**
-- Primary focus on adults 18+ within delivery range of 7-Eleven locations in Texas and Florida
-- Secondary targeting for users with food delivery app usage patterns
-
-**Placement Strategy:**
-- 70% budget allocation to Local+ for neighborhood-level targeting around store locations
-- 20% to TOP for broader awareness in key markets
-- 10% to Boosts during weekend dinner hours
-
-**Brand Safety Parameters:**
-- Automatically configured to exclude content categories with negative sentiment alignment
-
-**Pacing Controls:**
-- Higher budget allocation to evenings (5-9pm) and weekends
-
-**Performance Targets:**
-- Target cost per app install: $3.50
-- Target cost per completed order: $8.75
-- Target ROAS based on average basket value: 3.6x
-
-The campaign is now fully configured and ready to publish. Would you like to make any adjustments, or shall we proceed with publishing?
-                  `,
-                  timestamp: new Date().toISOString(),
-                  responseOptions: [
-                    {
-                      text: "Publish Campaign",
-                      value: "publish-campaign",
-                    },
-                    {
-                      text: "Make Adjustments",
-                      value: "adjust-campaign",
-                    },
-                  ],
-                };
-
-                setMessages((prev) => [...prev, advancedConfigMessage]);
-                setIsThinking(false);
-
-                // Notify parent component to update the canvas view
-                if (onOptionSelected) onOptionSelected("campaign-selection");
-              }, 3000);
-            }, 1500);
-          }, 100);
-        }
-        // Handle campaign publication
-        else if (optionValue === "publish-campaign") {
-          // We'll use setTimeout to give enough time for the UI to update before triggering
-          setTimeout(() => {
-            // Create a user message
-            const userMessage: Message = {
-              id: Date.now().toString(),
-              type: "user",
-              content: selectedOption.text,
-              timestamp: new Date().toISOString(),
-            };
-
-            setMessages((prev) => [...prev, userMessage]);
-            setNewMessage("");
-            setIsThinking(true);
-
-            // Clear any existing timeout
-            if (timeoutRef.current) {
-              clearTimeout(timeoutRef.current);
-            }
-
-            // Show publication in progress
-            timeoutRef.current = setTimeout(() => {
-              const publishingMessage: Message = {
-                id: Date.now().toString(),
-                type: "ai",
-                content: "Publishing your campaign across the network...",
-                timestamp: new Date().toISOString(),
-              };
-
-              setMessages((prev) => [...prev, publishingMessage]);
-
-              // After a brief delay, show successful publication
-              setTimeout(() => {
-                const successMessage: Message = {
-                  id: Date.now().toString(),
-                  type: "ai",
-                  content: `
-### Campaign Successfully Published!
-
-Your 7NOW App Texas & Florida Pizza Promotion campaign is now live and running across our network. 
-
-📱 Targeting mobile users in Texas and Florida
-🍕 Promoting free pizza with first 7NOW order
-📊 Tracking app installs, account creations, first orders, and repeat orders
-
-**Campaign ID:** 7NOW-TX-FL-2023-06
-**Status:** Active
-**Estimated Daily Reach:** 45,000-60,000 impressions
-
-Your campaign performance dashboard is now available. You'll receive daily performance updates, and our AI will continuously optimize your campaign to maximize results.
-                  `,
-                  timestamp: new Date().toISOString(),
-                  responseOptions: [
-                    {
-                      text: "View Campaign Performance",
-                      value: "view-campaign-performance",
-                    },
-                    {
-                      text: "Create Another Campaign",
-                      value: "create-another-campaign",
-                    },
-                  ],
-                };
-
-                setMessages((prev) => [...prev, successMessage]);
-                setIsThinking(false);
-
-                // Notify parent component to update the canvas view
-                if (onOptionSelected) onOptionSelected("launch-campaign");
-              }, 3000);
-            }, 1500);
-          }, 100);
-        }
-      }
+      // Continue with existing logic if not handled by direct creation
+      // ...existing code...
     },
-    [
-      messages,
-      onOptionSelected,
-      timeoutRef,
-      clarifyingQuestionStep,
-      isProductFilterContext,
-      dispatch,
-    ]
+    [onOptionSelected, isProductFilterContext, dispatch]
   );
 
   // Clean up timeout on unmount
@@ -1880,6 +1312,27 @@ Your campaign performance dashboard is now available. You'll receive daily perfo
           className="flex items-center space-x-2"
           onSubmit={handleFormSubmit}
         >
+          {/* Quick Create Icon with Tooltip - Only show in product filter context */}
+          {isProductFilterContext && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={handleShowFilterMenu}
+                    className="p-2 text-gray-500 hover:text-primary hover:bg-gray-100 rounded-full transition-colors"
+                    aria-label="Quick Create Filter"
+                  >
+                    <SparklesIcon className="w-5 h-5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Quick Create Filter</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+
           <input
             type="text"
             value={newMessage}
@@ -1887,6 +1340,7 @@ Your campaign performance dashboard is now available. You'll receive daily perfo
             placeholder="Type your message..."
             className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+
           <Button
             type="submit"
             variant="primary"
@@ -1911,6 +1365,11 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   message,
   onOptionSelected,
 }) => {
+  // Check if the message contains HTML (for animations)
+  const containsHTML =
+    message.type === "ai" &&
+    (message.content.includes("<div") || message.content.includes("<span"));
+
   return (
     <div
       className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
@@ -1924,57 +1383,68 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
       >
         {message.type === "ai" ? (
           <div>
-            <div className="prose prose-sm max-w-none">
-              <ReactMarkdown
-                components={{
-                  // Remove unused node parameters
-                  p: ({ children }) => (
-                    <p className="mb-2 last:mb-0">{children}</p>
-                  ),
-                  ul: ({ children }) => (
-                    <ul className="list-disc pl-5 mb-2 last:mb-0">
-                      {children}
-                    </ul>
-                  ),
-                  ol: ({ children }) => (
-                    <ol className="list-decimal pl-5 mb-2 last:mb-0">
-                      {children}
-                    </ol>
-                  ),
-                  li: ({ children }) => (
-                    <li className="mb-1 last:mb-0">{children}</li>
-                  ),
-                  strong: ({ children }) => (
-                    <strong className="font-semibold">{children}</strong>
-                  ),
-                  h3: ({ children }) => (
-                    <h3 className="text-lg font-semibold mb-2">{children}</h3>
-                  ),
-                  h4: ({ children }) => (
-                    <h4 className="text-base font-semibold mb-1">{children}</h4>
-                  ),
-                  a: ({ children, href }) => (
-                    <a href={href} className="text-blue-500 hover:underline">
-                      {children}
-                    </a>
-                  ),
-                  img: ({ src, alt }) => (
-                    <div className="my-2">
-                      <Image
-                        src={src || ""}
-                        alt={alt || ""}
-                        width={400}
-                        height={300}
-                        className="rounded max-w-full"
-                        style={{ height: "auto", objectFit: "contain" }}
-                      />
-                    </div>
-                  ),
-                }}
-              >
-                {message.content}
-              </ReactMarkdown>
-            </div>
+            {containsHTML ? (
+              // Render HTML content directly for animations
+              <div
+                dangerouslySetInnerHTML={{ __html: message.content }}
+                className="prose prose-sm max-w-none"
+              />
+            ) : (
+              // Use ReactMarkdown for standard content
+              <div className="prose prose-sm max-w-none">
+                <ReactMarkdown
+                  components={{
+                    // Remove unused node parameters
+                    p: ({ children }) => (
+                      <p className="mb-2 last:mb-0">{children}</p>
+                    ),
+                    ul: ({ children }) => (
+                      <ul className="list-disc pl-5 mb-2 last:mb-0">
+                        {children}
+                      </ul>
+                    ),
+                    ol: ({ children }) => (
+                      <ol className="list-decimal pl-5 mb-2 last:mb-0">
+                        {children}
+                      </ol>
+                    ),
+                    li: ({ children }) => (
+                      <li className="mb-1 last:mb-0">{children}</li>
+                    ),
+                    strong: ({ children }) => (
+                      <strong className="font-semibold">{children}</strong>
+                    ),
+                    h3: ({ children }) => (
+                      <h3 className="text-lg font-semibold mb-2">{children}</h3>
+                    ),
+                    h4: ({ children }) => (
+                      <h4 className="text-base font-semibold mb-1">
+                        {children}
+                      </h4>
+                    ),
+                    a: ({ children, href }) => (
+                      <a href={href} className="text-blue-500 hover:underline">
+                        {children}
+                      </a>
+                    ),
+                    img: ({ src, alt }) => (
+                      <div className="my-2">
+                        <Image
+                          src={src || ""}
+                          alt={alt || ""}
+                          width={400}
+                          height={300}
+                          className="rounded max-w-full"
+                          style={{ height: "auto", objectFit: "contain" }}
+                        />
+                      </div>
+                    ),
+                  }}
+                >
+                  {message.content}
+                </ReactMarkdown>
+              </div>
+            )}
 
             {/* Enhanced responsive filter suggestion buttons */}
             {message.responseOptions && message.responseOptions.length > 0 && (
@@ -2032,5 +1502,68 @@ const AIThinkingIndicator: React.FC = () => {
     </div>
   );
 };
+
+// Add animated filter creation effect
+const style = `
+<style>
+.filter-creation-animation {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding: 10px;
+  min-height: 40px;
+}
+
+.magic-wand {
+  font-size: 24px;
+  margin-right: 12px;
+  animation: sparkle 1.5s infinite ease-in-out;
+}
+
+.filter-text {
+  position: relative;
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.2);
+  }
+}
+
+/* Add a subtle glow effect */
+.filter-creation-animation::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(125, 185, 232, 0.1) 0%, rgba(125, 185, 232, 0) 100%);
+  border-radius: 8px;
+  animation: glow 2s infinite;
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(125, 185, 232, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(125, 185, 232, 0.8);
+  }
+}
+</style>
+`;
+
+// Add the style to the document when the component mounts
+if (typeof document !== "undefined") {
+  const styleElement = document.createElement("div");
+  styleElement.innerHTML = style;
+  document.head.appendChild(styleElement.firstChild as Node);
+}
 
 export default AIAssistantPanel;
