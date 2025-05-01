@@ -20,6 +20,7 @@ import {
   CheckCircleIcon,
   ChevronDownIcon,
   ChevronUpIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import {
@@ -45,6 +46,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { Tooltip } from "@/components/atoms/Tooltip";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 // Interface for filter criteria
 interface FilterCriteria {
@@ -266,121 +268,168 @@ export default function ProductFilterCreationView() {
     }
   }, [filterCriteria]);
 
+  // Add state variables to manage animation and filter generation
+  const [isGeneratingFilters, setIsGeneratingFilters] = useState(false);
+  const [lastGeneratedFilter, setLastGeneratedFilter] = useState<string | null>(
+    null
+  );
+
   // Handle option selected from AI Assistant
   const handleOptionSelected = (optionId: string) => {
     // Handle different AI suggestions for product filters
     if (optionId.startsWith("suggest_name:")) {
+      setIsGeneratingFilters(true);
       const suggestedName = optionId.replace("suggest_name:", "");
-      setFilterName(suggestedName);
+
+      // Animate the naming process
+      setTimeout(() => {
+        setFilterName(suggestedName);
+        setLastGeneratedFilter("name");
+        setIsGeneratingFilters(false);
+      }, 800);
     } else if (optionId.startsWith("suggest_criteria:")) {
       try {
+        setIsGeneratingFilters(true);
         const criteriaData = JSON.parse(
           optionId.replace("suggest_criteria:", "")
         );
         if (criteriaData.type && criteriaData.value) {
-          setCriteriaType(criteriaData.type);
-          setCriteriaValue(criteriaData.value);
+          setTimeout(() => {
+            // Handle rule and and_or fields
+            const rule = criteriaData.rule || criteriaData.operator || "equals";
+            const andOr = criteriaData.and_or || "OR";
 
-          // Handle new rule and and_or fields
-          if (criteriaData.rule) {
-            setCriteriaRule(criteriaData.rule);
-          } else if (criteriaData.operator) {
-            // For backward compatibility with old operator field
-            setCriteriaRule(criteriaData.operator);
-          }
+            // Set form values
+            setCriteriaType(criteriaData.type);
+            setCriteriaValue(criteriaData.value);
+            setCriteriaRule(rule);
+            setCriteriaAndOr(andOr);
 
-          setCriteriaAndOr(criteriaData.and_or || "OR");
+            // Automatically add the criteria
+            const isRequired = requiredCriteriaTypes.includes(
+              criteriaData.type
+            );
+            const newCriteria: FilterCriteria = {
+              id:
+                Date.now().toString() + Math.random().toString(36).substr(2, 5),
+              type: criteriaData.type,
+              value: criteriaData.value,
+              rule,
+              and_or: andOr,
+              isRequired,
+            };
+
+            setFilterCriteria([...filterCriteria, newCriteria]);
+
+            // Reset form inputs after automatic addition
+            setCriteriaType("");
+            setCriteriaValue("");
+            setCriteriaRule("equals");
+            setCriteriaAndOr("OR");
+
+            setLastGeneratedFilter("criteria");
+            setIsGeneratingFilters(false);
+          }, 1000);
         }
       } catch (e) {
         console.error("Failed to parse criteria suggestion", e);
+        setIsGeneratingFilters(false);
       }
     } else if (optionId.startsWith("suggest_multiple_criteria:")) {
       try {
+        setIsGeneratingFilters(true);
         const criteriaList = JSON.parse(
           optionId.replace("suggest_multiple_criteria:", "")
         );
 
         if (Array.isArray(criteriaList) && criteriaList.length > 0) {
-          // Create new criteria items from each item in the list
-          const newCriteriaItems = criteriaList.map((criteriaItem) => {
-            const isRequired = requiredCriteriaTypes.includes(
-              criteriaItem.type
-            );
-            return {
-              id:
-                Date.now().toString() + Math.random().toString(36).substr(2, 5),
-              type: criteriaItem.type,
-              value: criteriaItem.value,
-              rule: criteriaItem.rule || criteriaItem.operator || "equals",
-              and_or: criteriaItem.and_or || "OR",
-              isRequired,
-            };
-          });
+          // Create new criteria items from each item in the list with staggered animation
+          setTimeout(() => {
+            const newCriteriaItems = criteriaList.map((criteriaItem) => {
+              const isRequired = requiredCriteriaTypes.includes(
+                criteriaItem.type
+              );
+              return {
+                id:
+                  Date.now().toString() +
+                  Math.random().toString(36).substr(2, 5),
+                type: criteriaItem.type,
+                value: criteriaItem.value,
+                rule: criteriaItem.rule || criteriaItem.operator || "equals",
+                and_or: criteriaItem.and_or || "OR",
+                isRequired,
+              };
+            });
 
-          // Add all new criteria to the existing criteria
-          setFilterCriteria([...filterCriteria, ...newCriteriaItems]);
+            // Add all new criteria to the existing criteria
+            setFilterCriteria([...filterCriteria, ...newCriteriaItems]);
 
-          // Reset the form after bulk adding
-          setCriteriaType("");
-          setCriteriaValue("");
-          setCriteriaRule("equals");
-          setCriteriaAndOr("OR");
+            // Reset the form after bulk adding
+            setCriteriaType("");
+            setCriteriaValue("");
+            setCriteriaRule("equals");
+            setCriteriaAndOr("OR");
 
-          // Show a toast or notification that items were added
-          alert(
-            `Added ${newCriteriaItems.length} filter criteria from AI suggestions`
-          );
+            setLastGeneratedFilter("multiple");
+            setIsGeneratingFilters(false);
+          }, 1200);
         }
       } catch (e) {
         console.error("Failed to parse multiple criteria suggestions", e);
+        setIsGeneratingFilters(false);
       }
     } else if (optionId.startsWith("suggest_complete_filter:")) {
       try {
+        setIsGeneratingFilters(true);
         const filterData = JSON.parse(
           optionId.replace("suggest_complete_filter:", "")
         );
 
-        // Set basic filter information
-        if (filterData.name) setFilterName(filterData.name);
-        if (filterData.queryViewName)
-          setQueryViewName(filterData.queryViewName);
-        if (filterData.description) setDescription(filterData.description);
-        if (filterData.expiryDate) {
-          // Parse ISO string date to Date object
-          const date = new Date(filterData.expiryDate);
-          if (!isNaN(date.getTime())) {
-            setExpiryDate(date);
+        setTimeout(() => {
+          // Set basic filter information
+          if (filterData.name) setFilterName(filterData.name);
+          if (filterData.queryViewName)
+            setQueryViewName(filterData.queryViewName);
+          if (filterData.description) setDescription(filterData.description);
+          if (filterData.expiryDate) {
+            // Parse ISO string date to Date object
+            const date = new Date(filterData.expiryDate);
+            if (!isNaN(date.getTime())) {
+              setExpiryDate(date);
+            }
           }
-        }
 
-        // Add criteria if present
-        if (
-          Array.isArray(filterData.criteria) &&
-          filterData.criteria.length > 0
-        ) {
-          const newCriteriaItems = filterData.criteria.map((criteriaItem) => {
-            const isRequired = requiredCriteriaTypes.includes(
-              criteriaItem.type
-            );
-            return {
-              id:
-                Date.now().toString() + Math.random().toString(36).substr(2, 5),
-              type: criteriaItem.type,
-              value: criteriaItem.value,
-              rule: criteriaItem.rule || criteriaItem.operator || "equals",
-              and_or: criteriaItem.and_or || "OR",
-              isRequired,
-            };
-          });
+          // Add criteria if present
+          if (
+            Array.isArray(filterData.criteria) &&
+            filterData.criteria.length > 0
+          ) {
+            const newCriteriaItems = filterData.criteria.map((criteriaItem) => {
+              const isRequired = requiredCriteriaTypes.includes(
+                criteriaItem.type
+              );
+              return {
+                id:
+                  Date.now().toString() +
+                  Math.random().toString(36).substr(2, 5),
+                type: criteriaItem.type,
+                value: criteriaItem.value,
+                rule: criteriaItem.rule || criteriaItem.operator || "equals",
+                and_or: criteriaItem.and_or || "OR",
+                isRequired,
+              };
+            });
 
-          // Replace all criteria with the new set
-          setFilterCriteria(newCriteriaItems);
+            // Replace all criteria with the new set
+            setFilterCriteria(newCriteriaItems);
+            setLastGeneratedFilter("complete");
+          }
 
-          // Show a toast or notification that a complete filter was applied
-          alert(`Applied complete filter configuration from AI suggestion`);
-        }
+          setIsGeneratingFilters(false);
+        }, 1500);
       } catch (e) {
         console.error("Failed to parse complete filter suggestion", e);
+        setIsGeneratingFilters(false);
       }
     }
   };
@@ -436,11 +485,77 @@ export default function ProductFilterCreationView() {
                 title="AI Filter Assistant"
                 description="Tell me what offers you want to filter"
               />
+              {isGeneratingFilters && (
+                <div className="absolute inset-0 bg-black/5 backdrop-blur-sm flex items-center justify-center">
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="bg-white p-4 rounded-lg shadow-lg flex flex-col items-center"
+                  >
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{
+                        duration: 1.5,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
+                    >
+                      <SparklesIcon className="h-10 w-10 text-primary" />
+                    </motion.div>
+                    <p className="mt-3 text-sm font-medium">
+                      Generating filters...
+                    </p>
+                  </motion.div>
+                </div>
+              )}
             </Card>
           </div>
 
           {/* Right Column - Filter Configuration */}
           <div className="flex-1 h-full">
+            {lastGeneratedFilter && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="mb-3 p-2 bg-primary/10 border border-primary/30 rounded-md flex items-center"
+                onAnimationComplete={() => {
+                  // Clear the notification after 5 seconds
+                  setTimeout(() => setLastGeneratedFilter(null), 5000);
+                }}
+              >
+                <SparklesIcon className="h-5 w-5 text-primary mr-2" />
+                <span className="text-sm">
+                  {lastGeneratedFilter === "name" &&
+                    "Filter name updated from AI suggestion"}
+                  {lastGeneratedFilter === "criteria" &&
+                    "New filter criteria added from AI suggestion"}
+                  {lastGeneratedFilter === "multiple" &&
+                    "Multiple filter criteria added from AI suggestions"}
+                  {lastGeneratedFilter === "complete" &&
+                    "Complete filter configuration applied from AI"}
+                </span>
+                <button
+                  onClick={() => setLastGeneratedFilter(null)}
+                  className="ml-auto text-gray-500 hover:text-gray-700"
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </motion.div>
+            )}
             <Card className="p-0 h-full flex flex-col">
               <div className="flex items-center justify-between p-3 border-b bg-muted/20">
                 <div className="flex items-center">
