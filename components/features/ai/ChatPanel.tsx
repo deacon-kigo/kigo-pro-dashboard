@@ -69,21 +69,10 @@ const ChatMessage = ({
     // Stop propagation to prevent other handlers from capturing the event
     event.preventDefault();
     event.stopPropagation();
-    console.log(
-      "Option clicked:",
-      value,
-      "Prevented default and stopped propagation"
-    );
+    console.log("Option clicked:", value);
 
-    // Always auto-apply filter for dining options as a fallback
-    if (
-      (value.includes("dining") || value.includes("restaurant")) &&
-      applyInstantFilter
-    ) {
-      applyInstantFilter();
-    } else {
-      onOptionSelected(value);
-    }
+    // Call the option selected handler directly
+    onOptionSelected(value);
   };
 
   return (

@@ -115,10 +115,36 @@ export const LLMAIAssistant: React.FC<LLMAIAssistantProps> = ({
         return;
       }
 
+      // Extract option text from the value if it's in format "text:value"
+      let optionText = optionValue;
+      // Try to find the matching option text in the latest AI message
+      const latestAiMessage = [...reduxMessages]
+        .reverse()
+        .find((msg) => msg.type === "ai" && msg.responseOptions?.length);
+      if (latestAiMessage && latestAiMessage.responseOptions) {
+        const matchedOption = latestAiMessage.responseOptions.find(
+          (opt) => opt.value === optionValue
+        );
+        if (matchedOption) {
+          optionText = matchedOption.text;
+        }
+      }
+
+      // Add user message with the option text
+      dispatch(
+        addMessage({
+          type: "user",
+          content: optionText,
+        })
+      );
+
+      // Set processing state
+      dispatch(setIsProcessing(true));
+
       // Pass through to parent component
       onOptionSelected(optionValue);
     },
-    [onOptionSelected, handleMagicGenerate, contextId]
+    [onOptionSelected, handleMagicGenerate, contextId, dispatch, reduxMessages]
   );
 
   return (

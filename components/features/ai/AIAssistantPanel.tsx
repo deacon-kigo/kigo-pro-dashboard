@@ -57,7 +57,7 @@ interface AIAssistantPanelProps {
   className?: string;
   title: string;
   description?: string;
-  requiredCriteriaTypes: string[];
+  requiredCriteriaTypes?: string[];
 }
 
 interface ChatMessageProps {
@@ -73,12 +73,20 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
   className = "",
   title,
   description,
-  requiredCriteriaTypes,
+  requiredCriteriaTypes = [],
 }) => {
   const pathname = usePathname();
 
   // Determine mode
   const isProductFilterMode = pathname.includes("/product-filters");
+
+  // Get initial message based on mode
+  const getInitialMessage = () => {
+    if (isProductFilterMode) {
+      return "Hi! I'm your AI filter assistant. I can help you create product filters by suggesting criteria based on what you're looking for. What kind of offers would you like to filter?";
+    }
+    return "Hello! I'm your AI assistant. How can I help you today?";
+  };
 
   // Simple wrapper component that renders the appropriate assistant based on pathname
   return isProductFilterMode ? (
@@ -87,7 +95,10 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
       className={className}
       title={title}
       description={description}
-      requiredCriteriaTypes={requiredCriteriaTypes}
+      initialMessage={getInitialMessage()}
+      showMagicButton={true}
+      magicButtonText="Generate Filter"
+      contextId="productFilter"
     />
   ) : (
     <DemoAIAssistant
