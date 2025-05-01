@@ -41,6 +41,99 @@ interface AIAssistantPanelProps {
   description?: string;
 }
 
+// Add type definitions for filter context
+interface FilterContext {
+  availableFilterTypes: string[];
+  currentCriteria: any[];
+  merchantCategories: string[];
+  currentFilterName?: string;
+  currentFilterDescription?: string;
+}
+
+// Update get filter context to use Redux state properly
+const getFilterContext = (): FilterContext => {
+  // Access filter data from redux state if available
+  const state = useSelector((state: RootState) => state);
+  const filterState = state.productFilter || {};
+
+  return {
+    availableFilterTypes: [
+      "MerchantKeyword",
+      "MerchantName",
+      "OfferCommodity",
+      "OfferKeyword",
+      "Client",
+      "MerchantId",
+      "OfferCategory",
+      "OfferExpiry",
+      "OfferId",
+      "OfferRedemptionControlLimit",
+      "OfferRedemptionType",
+      "OfferType",
+    ],
+    merchantCategories: [
+      "Food & Dining",
+      "Retail",
+      "Entertainment",
+      "Travel",
+      "Health & Beauty",
+      "Services",
+      "Other",
+    ],
+    currentCriteria: filterState.criteria || [],
+    currentFilterName: filterState.name || "",
+    currentFilterDescription: filterState.description || "",
+  };
+};
+
+// Add utility to parse LLM responses into filter data
+const parseLLMFilterResponse = (content: string): any => {
+  try {
+    // Look for JSON in the response
+    const jsonMatch =
+      content.match(/```json\n([\s\S]*?)\n```/) || content.match(/{[\s\S]*}/);
+
+    if (jsonMatch) {
+      const jsonStr = jsonMatch[1] || jsonMatch[0];
+      return JSON.parse(jsonStr);
+    }
+
+    // Fall back to simple parsing for "field: value" format
+    const filterData: any = { criteria: [] };
+    const lines = content.split("\n");
+
+    for (const line of lines) {
+      if (line.includes(":")) {
+        const [key, value] = line.split(":", 2).map((s) => s.trim());
+        if (key && value) {
+          if (key.toLowerCase().includes("name")) {
+            filterData.name = value;
+          } else if (key.toLowerCase().includes("description")) {
+            filterData.description = value;
+          } else if (
+            key.toLowerCase().includes("category") ||
+            key.toLowerCase().includes("keyword") ||
+            key.toLowerCase().includes("commodity")
+          ) {
+            // This might be a criteria item
+            filterData.criteria.push({
+              type: key,
+              value: value,
+              rule: "contains",
+              and_or: "AND",
+            });
+          }
+        }
+      }
+    }
+
+    return filterData;
+  } catch (e) {
+    console.error("Error parsing LLM response:", e);
+    return null;
+  }
+};
+
 const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
   onSend = () => {},
   onOptionSelected = () => {},
@@ -97,21 +190,23 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
         const initialMessage: Message = {
           id: "filter-instruction",
           type: "ai",
-          content: `I can help you create product filters for your offers. Just tell me what you're looking for, and I'll suggest easy-to-apply filter options.
+          content: `I can help you create product filters by automatically generating criteria based on your requirements.
 
-Try saying:
-- "I need a filter for pizza offers"
-- "Show me filters for local restaurants"
-- "Help me create a filter for discounted products"`,
+Just tell me what you're looking for in plain language. For example:
+- "Create a filter for coffee shops in downtown"
+- "I need to find all discount offers from premium retailers"
+- "Show me deals for family-friendly activities available on weekends"
+
+I'll analyze your request and suggest appropriate filter criteria that you can apply or customize.`,
           timestamp: new Date().toISOString(),
           responseOptions: [
             {
-              text: "🍕 Pizza offers from local merchants",
-              value: "suggest_pizza_filter",
+              text: "🔍 Help me get started with filters",
+              value: "help_with_filters",
             },
             {
-              text: "🛍️ Discount offers under $20",
-              value: "suggest_discount_filter",
+              text: "📋 Show available filter types",
+              value: "show_filter_types",
             },
           ],
         };
@@ -294,181 +389,25 @@ Try saying:
 
     // For product filter context, use Redux for state management
     if (isProductFilterContext) {
-      // Dispatch the message to Redux
+      // Get context information
+      const context = getFilterContext();
+
+      // Create and dispatch message with context as metadata
+      // We need to use a structure compatible with the existing Redux state
       dispatch(
         addMessage({
           type: "user",
           content: newMessage,
+          // Add context in a way that doesn't conflict with existing types
+          metadata: JSON.stringify(context),
         })
       );
 
-      // Check if this is a filter-related query
-      if (isFilterQuery(newMessage)) {
-        // For demo purposes, immediately add a response with filter suggestions
-        setTimeout(() => {
-          let suggestedFilterOptions: ResponseOption[] = [];
-          const lowerMsg = newMessage.toLowerCase();
-
-          // Build response options based on the query
-          if (lowerMsg.includes("pizza")) {
-            const response = {
-              id: Date.now().toString(),
-              type: "ai" as const,
-              content:
-                "I can create a filter for pizza offers! Would you like to:",
-              timestamp: new Date().toISOString(),
-              responseOptions: [
-                {
-                  text: "✨ Create complete Pizza Hut filter now",
-                  value: `suggest_complete_filter:${JSON.stringify({
-                    name: "Pizza Hut Campaign Filter",
-                    queryViewName: "PizzaHutCampaign",
-                    description: "Filter for Pizza Hut promotional offers",
-                    expiryDate: new Date(
-                      Date.now() + 90 * 24 * 60 * 60 * 1000
-                    ).toISOString(),
-                    criteria: [
-                      {
-                        type: "MerchantName",
-                        value: "Pizza Hut",
-                        rule: "contains",
-                        and_or: "AND",
-                      },
-                      {
-                        type: "OfferKeyword",
-                        value: "pizza",
-                        rule: "contains",
-                        and_or: "AND",
-                      },
-                      {
-                        type: "OfferCategory",
-                        value: "Food & Dining",
-                        rule: "equals",
-                        and_or: "AND",
-                      },
-                    ],
-                  })}`,
-                },
-                {
-                  text: "🔄 Customize pizza filter components",
-                  value: `suggest_multiple_criteria:${JSON.stringify([
-                    {
-                      type: "MerchantName",
-                      value: "Pizza Hut",
-                      rule: "contains",
-                      and_or: "AND",
-                    },
-                    {
-                      type: "OfferKeyword",
-                      value: "pizza",
-                      rule: "contains",
-                      and_or: "AND",
-                    },
-                  ])}`,
-                },
-              ],
-            };
-
-            dispatch(addMessage(response));
-          } else if (
-            lowerMsg.includes("generate") ||
-            lowerMsg.includes("create")
-          ) {
-            // Detect if the user is asking to generate filters
-            const response = {
-              id: Date.now().toString(),
-              type: "ai" as const,
-              content:
-                "I can automatically create filters for you based on your requirements. What type of offers would you like to filter for?",
-              timestamp: new Date().toISOString(),
-              responseOptions: [
-                {
-                  text: "🍕 Pizza offers",
-                  value: "generate_pizza_filter",
-                },
-                {
-                  text: "🍔 Restaurant offers",
-                  value: "generate_restaurant_filter",
-                },
-                {
-                  text: "💰 Discount offers",
-                  value: "generate_discount_filter",
-                },
-              ],
-            };
-
-            dispatch(addMessage(response));
-          } else {
-            // Generic filter suggestions
-            const response = {
-              id: Date.now().toString(),
-              type: "ai" as const,
-              content: "Here are some filter options I can create for you:",
-              timestamp: new Date().toISOString(),
-              responseOptions: [
-                {
-                  text: "🍕 Pizza restaurant filter",
-                  value: `suggest_complete_filter:${JSON.stringify({
-                    name: "Pizza Restaurant Filter",
-                    queryViewName: "PizzaRestaurants",
-                    description: "Shows offers from pizza restaurants",
-                    expiryDate: new Date(
-                      Date.now() + 90 * 24 * 60 * 60 * 1000
-                    ).toISOString(),
-                    criteria: [
-                      {
-                        type: "OfferCommodity",
-                        value: "Pizza",
-                        rule: "contains",
-                        and_or: "AND",
-                      },
-                      {
-                        type: "OfferCategory",
-                        value: "Food & Dining",
-                        rule: "equals",
-                        and_or: "AND",
-                      },
-                    ],
-                  })}`,
-                },
-                {
-                  text: "💰 Discount offers filter",
-                  value: `suggest_complete_filter:${JSON.stringify({
-                    name: "Discount Offers Filter",
-                    queryViewName: "DiscountOffers",
-                    description: "Shows offers with discounts",
-                    expiryDate: new Date(
-                      Date.now() + 90 * 24 * 60 * 60 * 1000
-                    ).toISOString(),
-                    criteria: [
-                      {
-                        type: "OfferKeyword",
-                        value: "discount",
-                        rule: "contains",
-                        and_or: "OR",
-                      },
-                      {
-                        type: "OfferKeyword",
-                        value: "sale",
-                        rule: "contains",
-                        and_or: "OR",
-                      },
-                      {
-                        type: "OfferKeyword",
-                        value: "% off",
-                        rule: "contains",
-                        and_or: "OR",
-                      },
-                    ],
-                  })}`,
-                },
-              ],
-            };
-
-            dispatch(addMessage(response));
-          }
-        }, 800);
-      }
+      // Set processing state
+      dispatch({
+        type: "aiAssistant/setProcessing",
+        payload: true,
+      });
 
       setNewMessage("");
       return;
