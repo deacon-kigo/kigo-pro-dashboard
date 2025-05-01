@@ -46,14 +46,71 @@ const FilterFieldEnum = z.enum([
   // Add other field names as needed
 ]);
 
+// Define field-specific value validation based on field type
+const getValueSchema = (fieldType: string) => {
+  switch (fieldType) {
+    case "OfferExpiry":
+      // Date format validation for expiry
+      return z.string().regex(/^\d{4}-\d{2}-\d{2}/, {
+        message: "Date should be in YYYY-MM-DD format",
+      });
+    case "OfferRedemptionType":
+      // Specific redemption types
+      return z.enum(["P", "Points", "Cash", "Both"]);
+    case "OfferKeyword":
+    case "MerchantName":
+    case "MerchantKeyword":
+      // Text with potential array indicators (e.g., "coffee [+4]", "coffee [+9]")
+      return z.string().min(1);
+    case "OfferCommodity":
+      // Commodity categories
+      return z.string().min(1);
+    default:
+      return z.string();
+  }
+};
+
+// Helper type to infer the field type for better type safety
+type FilterFieldType = z.infer<typeof FilterFieldEnum>;
+
+// Dynamic schema for filter criterion that validates based on the field type
+const createFilterCriterionSchema = () =>
+  z
+    .object({
+      type: FilterFieldEnum,
+      value: z.string(), // Initial string type
+      rule: FilterRuleEnum,
+      and_or: FilterLogicEnum,
+      isRequired: z.boolean().default(false),
+    })
+    .superRefine((criterion, ctx) => {
+      // Additional validation based on field type
+      const valueSchema = getValueSchema(criterion.type);
+
+      // Parse with the field-specific schema
+      const valueResult = valueSchema.safeParse(criterion.value);
+
+      // If validation fails, add an issue
+      if (!valueResult.success) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Invalid value for ${criterion.type}: ${valueResult.error.message}`,
+          path: ["value"],
+        });
+      }
+
+      // Add field-specific format examples to help with validation
+      if (criterion.type === "OfferExpiry" && !valueResult.success) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `OfferExpiry should be in format: YYYY-MM-DD`,
+          path: ["value"],
+        });
+      }
+    });
+
 // Schema for a single filter criterion
-const FilterCriterionSchema = z.object({
-  type: FilterFieldEnum,
-  value: z.string(),
-  rule: FilterRuleEnum,
-  and_or: FilterLogicEnum,
-  isRequired: z.boolean().default(false),
-});
+const FilterCriterionSchema = createFilterCriterionSchema();
 
 // Schema for auto-generated filter
 const AutoFilterOutputSchema = z.object({
@@ -356,10 +413,20 @@ export const createAutoFilterGeneratorTool = () => {
             ? missingRequiredTypes.join(", ")
             : "None";
 
+        // Generate field type guidance based on database schema
+        const fieldTypeGuidance = `
+Field Type Format Guidelines:
+- MerchantKeyword: Text string (e.g., "restaurant", "coffee shop")
+- MerchantName: Text string, can include specific merchant names (e.g., "Starbucks", "Local Cafe")
+- OfferCommodity: Category of product/service (e.g., "Food", "Travel", "Apparel")
+- OfferKeyword: Keywords relevant to offers (e.g., "discount", "sale", "special")
+- OfferRedemptionType: Use one of: "P" (Points), "Cash", or "Both"
+- OfferExpiry: Date in YYYY-MM-DD format (e.g., "2023-12-31")`;
+
         // Get format instructions from Zod schema parser
         const formatInstructions = autoFilterParser.getFormatInstructions();
 
-        // Properly escape curly braces in the format instructions by replacing { with {{ and } with }}
+        // Properly escape curly braces in the format instructions
         const escapedFormatInstructions = formatInstructions
           .replace(/\{/g, "{{")
           .replace(/\}/g, "}}");
@@ -384,10 +451,13 @@ export const createAutoFilterGeneratorTool = () => {
           Missing Required Types:
           {missingTypesString}
           
+          {fieldTypeGuidance}
+          
           Your task:
           1. Generate appropriate criteria for all missing required types
           2. If criteria already exist, use them as context to generate coherent additional criteria
           3. Generate values that are specific but not too narrow
+          4. Ensure values match the correct format for each field type
           
           ${escapedFormatInstructions}
         `);
@@ -401,6 +471,7 @@ export const createAutoFilterGeneratorTool = () => {
           conversationString,
           requiredTypesString: requiredTypes.join(", "),
           missingTypesString,
+          fieldTypeGuidance,
         });
 
         return JSON.stringify(response);
@@ -487,11 +558,21 @@ export const createFilterConversationGuideTool = () => {
           (type) => !criteriaToUse.some((c: any) => c.type === type)
         );
 
+        // Generate field type guidance based on database schema
+        const fieldTypeGuidance = `
+Field Type Format Guidelines:
+- MerchantKeyword: Text string (e.g., "restaurant", "coffee shop")
+- MerchantName: Text string, can include specific merchant names (e.g., "Starbucks", "Local Cafe")
+- OfferCommodity: Category of product/service (e.g., "Food", "Travel", "Apparel")
+- OfferKeyword: Keywords relevant to offers (e.g., "discount", "sale", "special")
+- OfferRedemptionType: Use one of: "P" (Points), "Cash", or "Both"
+- OfferExpiry: Date in YYYY-MM-DD format (e.g., "2023-12-31")`;
+
         // Get format instructions from Zod schema parser
         const formatInstructions =
           conversationGuideParser.getFormatInstructions();
 
-        // Properly escape curly braces in the format instructions by replacing { with {{ and } with }}
+        // Properly escape curly braces in the format instructions
         const escapedFormatInstructions = formatInstructions
           .replace(/\{/g, "{{")
           .replace(/\}/g, "}}");
@@ -515,11 +596,14 @@ export const createFilterConversationGuideTool = () => {
           Required Criteria Types Still Needed:
           {missingRequiredTypes}
           
+          {fieldTypeGuidance}
+          
           Your task is to guide the user through creating a product filter by:
           1. Identifying what the user wants to filter (e.g., restaurants, retail offers)
           2. Asking clarifying questions to gather missing required information
           3. Suggesting specific values based on the conversation
           4. Moving the conversation forward toward completion
+          5. Ensuring any suggested criteria values use the correct format for each field type
           
           When you have enough information, you should generate filter criteria.
           
@@ -534,6 +618,7 @@ export const createFilterConversationGuideTool = () => {
           userMessage,
           currentCriteriaString,
           missingRequiredTypes: missingRequiredTypes.join(", "),
+          fieldTypeGuidance,
         });
 
         return JSON.stringify(response);
