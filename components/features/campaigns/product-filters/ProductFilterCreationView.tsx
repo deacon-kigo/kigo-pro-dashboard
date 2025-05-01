@@ -512,11 +512,11 @@ export default function ProductFilterCreationView() {
           >
             <Card className="p-0 h-full flex flex-col">
               <AIAssistantPanel
-                onOptionSelected={handleOptionSelected}
-                requiredCriteriaTypes={requiredCriteriaTypes}
-                className="flex-grow"
                 title="AI Filter Assistant"
                 description="Tell me what offers you want to filter"
+                requiredCriteriaTypes={requiredCriteriaTypes}
+                onOptionSelected={handleOptionSelected}
+                className="flex-grow"
               />
               {isGeneratingFilters && (
                 <div className="fixed inset-0 bg-black/5 backdrop-blur-sm flex items-center justify-center z-50">
