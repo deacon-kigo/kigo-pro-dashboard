@@ -72,6 +72,7 @@ import {
   selectHasAllRequiredCriteria,
   selectIsFormValid,
 } from "@/lib/redux/selectors/productFilterSelectors";
+import { getFieldPlaceholder } from "@/services/ai/tools";
 
 // Custom DatePicker component
 interface DatePickerProps {
@@ -637,7 +638,7 @@ export default function ProductFilterCreationView() {
                               </Label>
                               <Input
                                 id="filter-name"
-                                placeholder="Enter filter name"
+                                placeholder={getFieldPlaceholder("filter-name")}
                                 value={filterName}
                                 onChange={(e) =>
                                   dispatch(setFilterName(e.target.value))
@@ -652,7 +653,7 @@ export default function ProductFilterCreationView() {
                               </Label>
                               <Input
                                 id="query-view"
-                                placeholder="Enter query view name"
+                                placeholder={getFieldPlaceholder("query-view")}
                                 value={queryViewName}
                                 onChange={(e) =>
                                   dispatch(setQueryViewName(e.target.value))
@@ -667,7 +668,7 @@ export default function ProductFilterCreationView() {
                               </Label>
                               <Textarea
                                 id="description"
-                                placeholder="Describe what this filter does"
+                                placeholder={getFieldPlaceholder("description")}
                                 value={description}
                                 onChange={(e) =>
                                   dispatch(setDescription(e.target.value))
@@ -685,7 +686,7 @@ export default function ProductFilterCreationView() {
                                 id="expiry-date"
                                 selected={expiryDate}
                                 onSelect={handleDateSelect}
-                                placeholder="Select expiry date"
+                                placeholder={getFieldPlaceholder("expiry-date")}
                                 className="mt-1 w-full"
                               />
                             </div>
