@@ -297,14 +297,6 @@ export default function ProductFilterCreationView() {
     }
   };
 
-  // AI Panel examples for the assistant
-  const aiExamples = [
-    "Show me all offers with 'discount' in the title",
-    "Create a filter for Amazon merchants only",
-    "I need a filter for holiday promotions",
-    "Help me set up a filter for electronics offers",
-  ];
-
   // Friendly names mapping for technical terms
   const friendlyTypeNames: Record<string, string> = {
     MerchantKeyword: "Merchant Contains Keyword",
@@ -347,38 +339,11 @@ export default function ProductFilterCreationView() {
           {/* Left Column - AI Assistant Panel */}
           <div className="col-span-3 h-full overflow-hidden flex flex-col">
             <Card className="p-0 h-full flex flex-col">
-              <div className="p-2 border-b bg-muted/50 flex items-center">
-                <LightBulbIcon className="h-4 w-4 text-primary mr-2" />
-                <div>
-                  <h3 className="text-sm font-medium">AI Filter Assistant</h3>
-                  <p className="text-xs text-muted-foreground">
-                    Tell me what offers you want to filter
-                  </p>
-                </div>
-              </div>
-
-              {filterCriteria.length === 0 && (
-                <div className="p-2 border-b">
-                  <h4 className="text-xs font-medium mb-1">Try asking me:</h4>
-                  <div className="space-y-1">
-                    {aiExamples.map((example, index) => (
-                      <div
-                        key={index}
-                        className="text-xs p-1 bg-primary/10 rounded-md cursor-pointer hover:bg-primary/20"
-                        onClick={() => {
-                          console.log("Example clicked:", example);
-                        }}
-                      >
-                        "{example}"
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               <AIAssistantPanel
                 onOptionSelected={handleOptionSelected}
                 className="flex-grow"
+                title="AI Filter Assistant"
+                description="Tell me what offers you want to filter"
               />
             </Card>
           </div>

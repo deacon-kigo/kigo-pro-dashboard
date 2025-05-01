@@ -1462,20 +1462,22 @@ Your campaign performance dashboard is now available. You'll receive daily perfo
         </p>
       </div>
 
-      {/* Messages - Scrollable area with min-height:0 for proper flex scrolling */}
-      <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 scrollbar-thin">
-        <div className="space-y-4">
-          {messages.map((message) => (
-            <ChatMessage
-              key={message.id}
-              message={message}
-              onOptionSelected={handleOptionSelected}
-            />
-          ))}
+      {/* Messages - Scrollable container with absolute positioning */}
+      <div className="flex-1 relative">
+        <div className="absolute inset-0 overflow-y-auto">
+          <div className="p-4 space-y-4">
+            {messages.map((message) => (
+              <ChatMessage
+                key={message.id}
+                message={message}
+                onOptionSelected={handleOptionSelected}
+              />
+            ))}
 
-          {isThinking && <AIThinkingIndicator />}
+            {isThinking && <AIThinkingIndicator />}
 
-          <div ref={messagesEndRef} />
+            <div ref={messagesEndRef} />
+          </div>
         </div>
       </div>
 
