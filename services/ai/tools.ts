@@ -70,6 +70,38 @@ const getValueSchema = (fieldType: string) => {
   }
 };
 
+// Utility function to get appropriate field placeholder based on field type
+export const getFieldPlaceholder = (fieldType: string): string => {
+  switch (fieldType) {
+    case "OfferExpiry":
+      return "YYYY-MM-DD";
+    case "OfferRedemptionType":
+      return "P, Points, Cash, or Both";
+    case "MerchantKeyword":
+      return "restaurant, coffee, etc.";
+    case "MerchantName":
+      return "Starbucks, Local Cafe, etc.";
+    case "OfferKeyword":
+      return "discount, sale, special, etc.";
+    case "OfferCommodity":
+      return "Food, Travel, Apparel, etc.";
+    case "MerchantId":
+      return "merchant UUID";
+    case "OfferId":
+      return "offer UUID";
+    case "Client":
+      return "client name";
+    case "OfferCategory":
+      return "category name";
+    case "OfferType":
+      return "offer type";
+    case "OfferRedemptionControlLimit":
+      return "numeric limit";
+    default:
+      return "Enter value";
+  }
+};
+
 // Helper type to infer the field type for better type safety
 type FilterFieldType = z.infer<typeof FilterFieldEnum>;
 

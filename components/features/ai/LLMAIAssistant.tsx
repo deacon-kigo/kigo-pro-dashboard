@@ -21,8 +21,11 @@ interface LLMAIAssistantProps {
   className?: string;
   title?: string;
   description?: string;
-  requiredCriteriaTypes?: string[];
   initialMessage?: string;
+  showMagicButton?: boolean;
+  magicButtonText?: string;
+  magicButtonHandler?: () => void;
+  contextId?: string;
 }
 
 export const LLMAIAssistant: React.FC<LLMAIAssistantProps> = ({
@@ -30,17 +33,17 @@ export const LLMAIAssistant: React.FC<LLMAIAssistantProps> = ({
   className = "",
   title = "AI Assistant",
   description,
-  requiredCriteriaTypes = [],
-  initialMessage,
+  initialMessage = "How can I help you today?",
+  showMagicButton = true,
+  magicButtonText = "Generate Automatically",
+  magicButtonHandler,
+  contextId,
 }) => {
   const dispatch = useDispatch();
 
   // Redux state
-  const {
-    messages: reduxMessages,
-    isProcessing: reduxIsProcessing,
-    currentCriteria,
-  } = useSelector((state: RootState) => state.aiAssistant);
+  const { messages: reduxMessages, isProcessing: reduxIsProcessing } =
+    useSelector((state: RootState) => state.aiAssistant);
 
   // Add initial welcome message if none exists
   React.useEffect(() => {
@@ -78,27 +81,35 @@ export const LLMAIAssistant: React.FC<LLMAIAssistantProps> = ({
 
   // Handle magic generate button click
   const handleMagicGenerate = React.useCallback(() => {
-    // Add user message
+    // Use custom handler if provided, otherwise use default
+    if (magicButtonHandler) {
+      magicButtonHandler();
+      return;
+    }
+
+    // Default magic generate behavior
     dispatch(
       addMessage({
         type: "user",
-        content: "Please generate a filter for me automatically",
+        content: "Please generate automatically",
       })
     );
 
     // Let the middleware handle the rest
     dispatch(magicGenerate());
-  }, [dispatch]);
+  }, [dispatch, magicButtonHandler]);
 
   // Option selected handler
   const handleOptionSelected = React.useCallback(
     (optionValue: string) => {
-      console.log("Option selected:", optionValue);
+      console.log(
+        `Option selected: ${optionValue} [Context: ${contextId || "default"}]`
+      );
 
-      // Check for special option values related to filter generation
+      // Check for special option values related to generation
       if (
         optionValue === "magic_generate" ||
-        optionValue === "generate_filter"
+        optionValue === "generate_automatic"
       ) {
         handleMagicGenerate();
         return;
@@ -107,7 +118,7 @@ export const LLMAIAssistant: React.FC<LLMAIAssistantProps> = ({
       // Pass through to parent component
       onOptionSelected(optionValue);
     },
-    [onOptionSelected, handleMagicGenerate]
+    [onOptionSelected, handleMagicGenerate, contextId]
   );
 
   return (
@@ -120,7 +131,8 @@ export const LLMAIAssistant: React.FC<LLMAIAssistantProps> = ({
       onOptionSelected={handleOptionSelected}
       onMagicGenerate={handleMagicGenerate}
       className={className}
-      showMagicButton={true}
+      showMagicButton={showMagicButton}
+      magicButtonText={magicButtonText}
     />
   );
 };

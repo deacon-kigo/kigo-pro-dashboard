@@ -49,6 +49,7 @@ export interface ChatPanelProps {
   onMagicGenerate?: () => void;
   className?: string;
   showMagicButton?: boolean;
+  magicButtonText?: string;
 }
 
 // Helper component for chat message
@@ -232,6 +233,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   onMagicGenerate,
   className = "",
   showMagicButton = true,
+  magicButtonText = "Instant Magic Filter",
 }) => {
   const [newMessage, setNewMessage] = React.useState("");
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
@@ -323,7 +325,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
                 onClick={onMagicGenerate}
               />
               <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 bg-black text-white text-xs rounded py-1 px-2 whitespace-nowrap">
-                Instant Magic Filter
+                {magicButtonText}
                 <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-solid border-transparent border-t-black"></div>
               </div>
             </div>
