@@ -171,7 +171,7 @@ const ChatMessage = ({
                             : option.value.includes("suggest_multiple_criteria")
                               ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600"
                               : option.value.includes("apply_updates:")
-                                ? "bg-gradient-to-r from-green-500 to-teal-500 text-white hover:from-green-600 hover:to-teal-600"
+                                ? "bg-primary text-white hover:bg-primary/90 font-semibold"
                                 : "bg-white hover:bg-gray-100 text-blue-700 border border-blue-300"
                         }
                         font-medium py-3 px-4 rounded-full text-xs sm:text-sm
@@ -183,7 +183,22 @@ const ChatMessage = ({
                       {option.text}
                       {/* Add directional icon for options */}
                       {option.value.includes("apply_updates:") && (
-                        <span className="ml-1">→</span>
+                        <span className="ml-1 inline-flex items-center">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M13 7l5 5m0 0l-5 5m5-5H6"
+                            />
+                          </svg>
+                        </span>
                       )}
                     </motion.button>
                   ))}
