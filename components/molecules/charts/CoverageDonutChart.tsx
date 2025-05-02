@@ -59,44 +59,49 @@ export function CoverageDonutChart({
 
   return (
     <div
-      className={cn("w-full overflow-hidden rounded-lg", className)}
+      className={cn(
+        "w-full overflow-visible flex justify-center items-center",
+        className
+      )}
       style={{ height }}
       {...props}
     >
       <Chart config={chartConfig}>
-        <PieChart>
-          <Pie
-            data={data}
-            innerRadius="70%"
-            outerRadius="90%"
-            paddingAngle={2}
-            dataKey="value"
-            startAngle={90}
-            endAngle={-270}
-            stroke="none"
-          >
-            <Cell key="cell-0" className="fill-[--color-covered]" />
-            <Cell key="cell-1" className="fill-[--color-uncovered]" />
-          </Pie>
-          {showTooltip && (
-            <ChartTooltip
-              content={
-                <ChartTooltipContent
-                  formatter={(value, name) => [`${value}%`, name]}
-                />
-              }
-            />
-          )}
-          <text
-            x="50%"
-            y="50%"
-            textAnchor="middle"
-            dominantBaseline="middle"
-            className="fill-foreground font-medium text-xl"
-          >
-            {percentage}%
-          </text>
-        </PieChart>
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
+            <Pie
+              data={data}
+              innerRadius="65%"
+              outerRadius="85%"
+              paddingAngle={2}
+              dataKey="value"
+              startAngle={90}
+              endAngle={-270}
+              stroke="none"
+            >
+              <Cell key="cell-0" className="fill-[--color-covered]" />
+              <Cell key="cell-1" className="fill-[--color-uncovered]" />
+            </Pie>
+            {showTooltip && (
+              <ChartTooltip
+                content={
+                  <ChartTooltipContent
+                    formatter={(value, name) => [`${value}%`, name]}
+                  />
+                }
+              />
+            )}
+            <text
+              x="50%"
+              y="50%"
+              textAnchor="middle"
+              dominantBaseline="middle"
+              className="fill-foreground font-medium text-xl"
+            >
+              {percentage}%
+            </text>
+          </PieChart>
+        </ResponsiveContainer>
       </Chart>
     </div>
   );

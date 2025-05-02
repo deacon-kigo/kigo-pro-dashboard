@@ -1,7 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { PieChart, Pie, Cell, Legend, ResponsiveContainer } from "recharts";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
+} from "recharts";
 import { cn } from "@/lib/utils";
 import {
   ChartContainer as Chart,
@@ -29,13 +36,16 @@ export function CategoryPieChart({
   height = 180,
   ...props
 }: CategoryPieChartProps) {
-  // Fixed color palette for categories
+  // Enhanced color palette for categories
   const COLORS = [
-    "hsl(215, 100%, 65%)", // Blue
-    "hsl(280, 100%, 65%)", // Purple
-    "hsl(335, 100%, 65%)", // Pink
-    "hsl(10, 100%, 65%)", // Red
-    "hsl(40, 100%, 65%)", // Orange
+    "#3b82f6", // Blue
+    "#8b5cf6", // Purple
+    "#ec4899", // Pink
+    "#f43f5e", // Red
+    "#f97316", // Orange
+    "#10b981", // Green
+    "#06b6d4", // Cyan
+    "#84cc16", // Lime
   ];
 
   // Create a config object for the chart
@@ -52,49 +62,52 @@ export function CategoryPieChart({
 
   return (
     <div
-      className={cn("w-full overflow-hidden rounded-lg", className)}
+      className={cn("w-full overflow-visible", className)}
       style={{ height }}
       {...props}
     >
       <Chart config={chartConfig}>
-        <PieChart>
-          <Pie
-            data={data}
-            cx="50%"
-            cy="50%"
-            labelLine={false}
-            outerRadius={80}
-            dataKey="percentage"
-            nameKey="name"
-          >
-            {data.map((entry, index) => (
-              <Cell
-                key={`cell-${index}`}
-                className={`fill-[--color-category-${index}]`}
-              />
-            ))}
-          </Pie>
-          {showTooltip && (
-            <ChartTooltip
-              content={
-                <ChartTooltipContent
-                  formatter={(value, name) => [
-                    `${value}% (${data.find((d) => d.name === name)?.count.toLocaleString() || 0} offers)`,
-                    name,
-                  ]}
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
+            <Pie
+              data={data}
+              cx="50%"
+              cy="50%"
+              labelLine={false}
+              outerRadius={showLegend ? 60 : 75}
+              dataKey="percentage"
+              nameKey="name"
+            >
+              {data.map((entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={COLORS[index % COLORS.length]}
+                  className={`fill-[--color-category-${index}]`}
                 />
-              }
-            />
-          )}
-          {showLegend && (
-            <Legend
-              layout="vertical"
-              verticalAlign="middle"
-              align="right"
-              wrapperStyle={{ fontSize: 12 }}
-            />
-          )}
-        </PieChart>
+              ))}
+            </Pie>
+            {showTooltip && (
+              <Tooltip
+                content={
+                  <ChartTooltipContent
+                    formatter={(value, name) => [
+                      `${value}% (${data.find((d) => d.name === name)?.count.toLocaleString() || 0} offers)`,
+                      name,
+                    ]}
+                  />
+                }
+              />
+            )}
+            {showLegend && (
+              <Legend
+                layout="vertical"
+                verticalAlign="middle"
+                align="right"
+                wrapperStyle={{ fontSize: 12, paddingLeft: 20 }}
+              />
+            )}
+          </PieChart>
+        </ResponsiveContainer>
       </Chart>
     </div>
   );
