@@ -7,6 +7,7 @@ This document outlines the integration of LangChain with the Kigo Pro Dashboard'
 - [Architecture Overview](#architecture-overview)
 - [LangChain Services](#langchain-services)
 - [Redux Integration](#redux-integration)
+- [Redux Serialization](#redux-serialization)
 - [AI Assistant Panel Component](#ai-assistant-panel-component)
 - [Product Filter Integration](#product-filter-integration)
 - [Extending to Other Features](#extending-to-other-features)
@@ -52,6 +53,7 @@ Defines specialized LangChain tools for product filter tasks:
 1. `createProductFilterCriteriaTool` - Generates appropriate criteria values
 2. `createFilterNameSuggestionTool` - Suggests product filter names
 3. `createFilterAnalysisTool` - Analyzes existing filter criteria
+4. `createFilterConversationGuideTool` - Guides the conversation about product filters
 
 ### Chat Service (`chat.ts`)
 
@@ -100,6 +102,92 @@ Processes AI assistant actions:
 - Processes option selections
 - Generates responses based on context
 
+## Redux Serialization
+
+Redux requires that all state and action data be serializable. This presents challenges when working with objects like Date instances. We've implemented a serialization strategy to handle this requirement:
+
+### Product Filter State Serialization
+
+The `ProductFilterState` interface ensures all data is serializable:
+
+```tsx
+export interface ProductFilterState {
+  filterName: string;
+  queryViewName: string;
+  description: string;
+  expiryDate: string | null; // Stored as ISO string, not Date object
+  criteria: FilterCriteria[];
+  isGenerating: boolean;
+  lastGeneratedFilter: string | null;
+}
+```
+
+### Serialization Helper Function
+
+A helper function ensures all properties are serializable:
+
+```tsx
+const ensureSerializable = <T>(obj: T): T => {
+  // If it's null or undefined, return as is
+  if (obj === null || obj === undefined) return obj;
+
+  // If it's a Date, convert to ISO string
+  if (obj instanceof Date) return obj.toISOString() as unknown as T;
+
+  // If it's an array, process each element
+  if (Array.isArray(obj)) return obj.map(ensureSerializable) as unknown as T;
+
+  // If it's an object, process each property
+  if (typeof obj === "object") {
+    const result = {} as T;
+    Object.entries(obj).forEach(([key, value]) => {
+      result[key as keyof T] = ensureSerializable(value);
+    });
+    return result;
+  }
+
+  // Otherwise return as is (for primitives)
+  return obj;
+};
+```
+
+### Action Creators for Date Handling
+
+Custom action creators ensure proper date serialization:
+
+```tsx
+// Create a properly typed action creator for expiryDate
+export const setExpiryDate = createAction<Date | null>(
+  "productFilter/setExpiryDate"
+);
+
+// Handle the action in extraReducers to apply serialization
+extraReducers: (builder) => {
+  builder.addCase(setExpiryDate, (state, action) => {
+    state.expiryDate = action.payload ? action.payload.toISOString() : null;
+  });
+};
+```
+
+### UI/Redux Boundary Handling
+
+Components like DatePicker handle the conversion between Redux string format and Date objects:
+
+```tsx
+// UI component receives date as string from Redux
+const expiryDateStr = useSelector(
+  (state: RootState) => state.productFilter.expiryDate
+);
+
+// Convert to Date for UI
+const expiryDate = expiryDateStr ? new Date(expiryDateStr) : null;
+
+// When date changes, dispatch action with Date object
+const handleDateSelect = (date: Date | null) => {
+  dispatch(setExpiryDate(date));
+};
+```
+
 ## AI Assistant Panel Component
 
 The `AIAssistantPanel` component (`components/features/ai/AIAssistantPanel.tsx`) provides the chat interface:
@@ -133,6 +221,20 @@ The `ProductFilterCreationView` component integrates the AI assistant:
 - Initializes the product filter context by dispatching `setProductFilterContext` with `filterName`, `filterDescription`, and the current `filterCriteria`.
 - Handles commands from the AI Assistant Panel via the `handleOptionSelected` function to update the form state.
 
+### Data Flow
+
+The bidirectional data flow between the Product Filter UI and AI Assistant:
+
+1. **UI to AI Assistant**: Filter state from the right side UI is shared with the AI assistant through Redux
+
+   - Filter form values (name, queryView, description, etc.) flow to the global Redux state
+   - Updates trigger the `setProductFilterContext` action which makes the data available to the AI assistant
+
+2. **AI Assistant to UI**: The assistant can suggest and apply changes to the filter
+   - The AI assistant sends commands through option selection (e.g., "apply_updates:")
+   - These commands are processed in `handleOptionSelected` to update the Redux state
+   - Redux state changes then flow back to the UI components
+
 ### Initialization
 
 The context is updated whenever the relevant state changes in the view:
@@ -144,7 +246,7 @@ useEffect(() => {
     setProductFilterContext({
       filterName,
       filterDescription: description,
-      currentCriteria: filterCriteria, // Now includes criteria
+      currentCriteria: filterCriteria, // Includes criteria
     })
   );
 }, [dispatch, filterName, description, filterCriteria]); // Dependencies updated
@@ -152,40 +254,53 @@ useEffect(() => {
 
 ### Option/Command Handling
 
-The `handleOptionSelected` function now handles more structured commands from the AI assistant, including direct updates:
+The `handleOptionSelected` function now handles more structured commands from the AI assistant, including direct updates with proper serialization:
 
 ```tsx
 // Handle option selected/commands from AI Assistant
-const handleOptionSelected = (optionId: string) => {
-  // Handle different AI suggestions/commands
-  if (optionId.startsWith("suggest_name:")) {
-    // ... (handles name suggestions)
-  } else if (optionId.startsWith("suggest_criteria:")) {
-    // ... (handles single criteria suggestions)
-  } else if (optionId.startsWith("suggest_multiple_criteria:")) {
-    // ... (handles multiple criteria suggestions)
-  } else if (optionId.startsWith("suggest_complete_filter:")) {
-    // ... (handles applying a full filter configuration)
-  } else if (optionId.startsWith("apply_updates:")) {
-    // *** NEW: Handles structured updates generated by AI ***
-    try {
-      interface UpdatePayload {
-        /* ... payload structure ... */
-      }
-      const updateData: UpdatePayload = JSON.parse(
-        optionId.replace("apply_updates:", "")
-      );
-      // Apply updates to form state (setFilterName, setFilterCriteria, etc.)
-      if (updateData.filterName) setFilterName(updateData.filterName);
-      if (updateData.criteriaToAdd) {
-        // Logic to validate and append criteria to state
-        setFilterCriteria((prev) => [...prev, ...newValidCriteria]);
-      }
-    } catch (e) {
-      /* handle error */
-    }
-  } // ... potentially handle other commands like confirmation responses ...
-};
+if (optionId.startsWith("apply_updates:")) {
+  dispatch(setIsGenerating(true));
+
+  try {
+    // Extract the JSON payload from the option ID
+    const updatesJson = optionId.replace("apply_updates:", "");
+    const updates = JSON.parse(updatesJson);
+
+    // Dispatch action to update the filter in Redux store
+    dispatch(
+      applyFilterUpdate({
+        filterName: updates.filterName,
+        queryViewName: updates.queryViewName,
+        criteriaToAdd: updates.criteriaToAdd,
+        expiryDate: updates.expiryDate
+          ? new Date(updates.expiryDate) // Convert string to Date at the boundary
+          : undefined,
+      })
+    );
+
+    // Set last generated filter for UI feedback
+    dispatch(setLastGeneratedFilter("complete"));
+  } catch (error) {
+    console.error("Error applying updates:", error);
+  } finally {
+    dispatch(setIsGenerating(false));
+  }
+}
+```
+
+### AI Middleware Data Access
+
+The middleware accesses the product filter data through selectors:
+
+```tsx
+// Get current context from state
+const filterName = state.productFilter?.filterName || "";
+const filterDescription = state.productFilter?.description || "";
+const currentCriteria = state.aiAssistant.currentCriteria || [];
+const conversationHistory = state.aiAssistant.messages;
+
+// Access all filter context with a selector
+const completeContext = selectCompleteFilterContext(state);
 ```
 
 ## Extending to Other Features
@@ -204,7 +319,7 @@ To add AI assistance to a new feature:
        id: Date.now().toString(),
        type: "ai",
        content: `I'm your assistant for [New Feature]...`,
-       timestamp: new Date(),
+       timestamp: new Date().toISOString(),
        responseOptions: [
          // Add appropriate response options
        ],
@@ -246,25 +361,13 @@ To add AI assistance to a new feature:
    useEffect(() => {
      dispatch(
        setNewFeatureContext({
-         // Context information
+         // Context information with serializable values
        })
      );
-   }, [dispatch]);
-
-   return (
-     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-       {/* Feature UI */}
-       <div className="lg:col-span-8">{/* Feature content */}</div>
-
-       {/* AI Assistant Panel */}
-       <div className="lg:col-span-4">
-         <Card className="h-full p-0 overflow-hidden flex flex-col">
-           <AIAssistantPanel
-             onOptionSelected={handleOptionSelected}
-             className="h-full"
-           />
-         </Card>
-       </div>
-     </div>
-   );
+   }, [dispatch /* dependencies */]);
    ```
+
+5. **Ensure Serialization**: Make sure all state passed to Redux is serializable
+   - Convert Date objects to ISO strings
+   - Use action creators with proper serialization
+   - Handle conversion at UI/Redux boundaries

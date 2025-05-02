@@ -575,6 +575,16 @@ const aiAssistantMiddleware: Middleware =
         // Get complete context using the selector that combines everything
         const filterContext = selectCompleteFilterContext(state);
 
+        // If the selector isn't working, use a manually constructed context
+        // const filterContext = {
+        //   filterName: selectFilterName(state) || "",
+        //   queryViewName: selectQueryViewName(state) || "",
+        //   description: selectDescription(state) || "",
+        //   expiryDate: selectExpiryDate(state),
+        //   currentCriteria: selectCriteria(state) || currentCriteria,
+        //   conversationHistory,
+        // };
+
         // Convert date string to Date object for the AI if needed
         const enhancedContext = {
           ...filterContext,
@@ -595,7 +605,7 @@ const aiAssistantMiddleware: Middleware =
           })
         );
 
-        // Parse the response - will now use the structured format only
+        // Parse the response
         const response = JSON.parse(toolResponse);
 
         if (response.error) {
@@ -608,7 +618,7 @@ const aiAssistantMiddleware: Middleware =
             })
           );
         } else {
-          // Add AI response with options - only structured format
+          // Add AI response with options
           store.dispatch(
             addMessage({
               type: "ai",
@@ -616,21 +626,52 @@ const aiAssistantMiddleware: Middleware =
               responseOptions: response.responseOptions || [],
             })
           );
+
+          // If there are criteria to add immediately
+          if (
+            response.actionType === "suggest_criteria" ||
+            response.actionType === "complete_filter"
+          ) {
+            if (response.criteriaToAdd && response.criteriaToAdd.length > 0) {
+              // Create payload for applying updates
+              const updatePayload = {
+                criteriaToAdd: response.criteriaToAdd,
+              };
+
+              // Add a follow-up message with options to apply
+              store.dispatch(
+                addMessage({
+                  type: "ai",
+                  content:
+                    "I've identified some criteria based on our conversation. Would you like me to apply these to your filter?",
+                  responseOptions: [
+                    {
+                      text: "Yes, apply these criteria",
+                      value: `apply_updates:${JSON.stringify(updatePayload)}`,
+                    },
+                    {
+                      text: "No, let me adjust manually",
+                      value: "cancel_generate",
+                    },
+                  ],
+                })
+              );
+            }
+          }
         }
       } catch (error) {
-        // Standard error handling
         console.error("Error in AI assistant middleware:", error);
+        store.dispatch(
+          setError(error instanceof Error ? error.message : "Unknown error")
+        );
 
-        // In case of error, return a structured response with options
+        // Add error message
         store.dispatch(
           addMessage({
             type: "ai",
-            content: "I encountered an issue. Let's try a different approach.",
-            responseOptions: [
-              { text: "Start with a template", value: "start_filter_creation" },
-              { text: "Use auto-generate", value: "trigger_magic_generate" },
-            ],
-            severity: "warning",
+            content:
+              "Sorry, I encountered an error processing your request. Please try again.",
+            severity: "error",
           })
         );
       } finally {
@@ -638,32 +679,9 @@ const aiAssistantMiddleware: Middleware =
       }
     }
 
-    // Handle option selection including properly handling suggest_criteria JSON string
+    // Handle option selection
     if (isOptionSelectedAction(action)) {
       const optionId = action.payload;
-
-      // Special handling for suggest_criteria values that are JSON strings
-      if (optionId.startsWith("suggest_criteria:")) {
-        try {
-          // Get the criteria JSON from the option value
-          const criteriaJson = optionId.substring("suggest_criteria:".length);
-          const criteriaObj = JSON.parse(criteriaJson);
-
-          // Create an apply_updates payload with this criteria
-          const updatePayload = {
-            criteriaToAdd: [criteriaObj],
-          };
-
-          // Execute the suggest_criteria as an apply_updates action
-          // This avoids the unnecessary follow-up message
-          return aiAssistantMiddleware(store)(next)({
-            type: "aiAssistant/optionSelected",
-            payload: `apply_updates:${JSON.stringify(updatePayload)}`,
-          });
-        } catch (error) {
-          console.error("Error parsing suggest_criteria JSON:", error);
-        }
-      }
 
       // Get current filter name and description from state if available
       const filterName = state.productFilter?.filterName;
