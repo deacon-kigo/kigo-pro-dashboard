@@ -162,8 +162,8 @@ export default function ProductFilterCreationView() {
   // Local state for criteria creation form
   const [criteriaType, setCriteriaType] = useState("");
   const [criteriaValue, setCriteriaValue] = useState("");
-  const [criteriaRule, setCriteriaRule] = useState("equals");
   const [criteriaAndOr, setCriteriaAndOr] = useState("OR");
+  const [criteriaInclusion, setCriteriaInclusion] = useState("Include");
 
   // Required criteria types based on ticket
   const requiredCriteriaTypes = [
@@ -193,14 +193,21 @@ export default function ProductFilterCreationView() {
   // Add new criteria (manual) - using Redux action
   const addCriteria = () => {
     if (criteriaType && criteriaValue) {
-      const isRequired = requiredCriteriaTypes.includes(criteriaType);
+      // For required criteria types, always set isRequired to true regardless of inclusion
+      // For optional criteria types, set isRequired based on inclusion (Include = true, Exclude = false)
+      const isRequired = requiredCriteriaTypes.includes(criteriaType)
+        ? true
+        : criteriaInclusion === "Include";
+
+      // Always use "contains" as the default rule
+      const defaultRule = "contains";
 
       // Dispatch action to add criteria to Redux store
       dispatch(
         addCriteriaAction({
           type: criteriaType,
           value: criteriaValue,
-          rule: criteriaRule,
+          rule: defaultRule,
           and_or: criteriaAndOr,
           isRequired,
         })
@@ -209,8 +216,8 @@ export default function ProductFilterCreationView() {
       // Reset the form
       setCriteriaType("");
       setCriteriaValue("");
-      setCriteriaRule("equals");
       setCriteriaAndOr("OR");
+      setCriteriaInclusion("Include");
     }
   };
 
@@ -335,7 +342,6 @@ export default function ProductFilterCreationView() {
             const andOr = criteriaData.and_or || "OR";
             setCriteriaType(criteriaData.type);
             setCriteriaValue(criteriaData.value);
-            setCriteriaRule(rule);
             setCriteriaAndOr(andOr);
 
             const isRequired = requiredCriteriaTypes.includes(
@@ -356,7 +362,6 @@ export default function ProductFilterCreationView() {
             // Reset form
             setCriteriaType("");
             setCriteriaValue("");
-            setCriteriaRule("equals");
             setCriteriaAndOr("OR");
             dispatch(setLastGeneratedFilter("criteria"));
             dispatch(setIsGenerating(false));
@@ -395,7 +400,6 @@ export default function ProductFilterCreationView() {
             // Reset form
             setCriteriaType("");
             setCriteriaValue("");
-            setCriteriaRule("equals");
             setCriteriaAndOr("OR");
             dispatch(setLastGeneratedFilter("multiple"));
             dispatch(setIsGenerating(false));
@@ -912,20 +916,19 @@ export default function ProductFilterCreationView() {
                               </Select>
 
                               <Select
-                                value={criteriaRule}
-                                onValueChange={setCriteriaRule}
+                                value={criteriaInclusion}
+                                onValueChange={setCriteriaInclusion}
                               >
-                                <SelectTrigger className="min-w-[130px] h-8">
-                                  <SelectValue placeholder="comparison" />
+                                <SelectTrigger className="min-w-[110px] h-8">
+                                  <SelectValue placeholder="inclusion" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {Object.entries(friendlyRuleNames).map(
-                                    ([value, label]) => (
-                                      <SelectItem key={value} value={value}>
-                                        {label}
-                                      </SelectItem>
-                                    )
-                                  )}
+                                  <SelectItem value="Include">
+                                    Include
+                                  </SelectItem>
+                                  <SelectItem value="Exclude">
+                                    Exclude
+                                  </SelectItem>
                                 </SelectContent>
                               </Select>
 
@@ -935,7 +938,7 @@ export default function ProductFilterCreationView() {
                                 onChange={(e) =>
                                   setCriteriaValue(e.target.value)
                                 }
-                                className="h-8 w-[130px]"
+                                className="h-8 w-[160px]"
                               />
 
                               <span>connect with</span>
@@ -969,12 +972,9 @@ export default function ProductFilterCreationView() {
                             </div>
 
                             <div className="text-xs text-muted-foreground">
-                              {criteriaType &&
-                              requiredCriteriaTypes.includes(criteriaType)
-                                ? "This is a required field. Offers matching this condition will be included."
-                                : criteriaType
-                                  ? "This is an optional field. Offers matching this condition will be excluded."
-                                  : "Select a field to get started."}
+                              {criteriaType
+                                ? `${criteriaInclusion === "Include" ? "Include" : "Exclude"} offers where ${friendlyTypeNames[criteriaType] || criteriaType} contains "${criteriaValue}".`
+                                : "Select a field to get started."}
                             </div>
                           </div>
                         </AccordionContent>
