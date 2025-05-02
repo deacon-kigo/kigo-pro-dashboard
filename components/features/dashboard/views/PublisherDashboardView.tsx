@@ -295,7 +295,7 @@ export default function PublisherDashboardView() {
       {/* Custom PageHeader with Bread Financial logo and background image */}
       <PageHeader
         title={`Welcome, ${userProfile?.name?.split(" ")[0] || "User"}!`}
-        description={`${currentDate} • Global Rewards Inc. • Publisher`}
+        description={`${currentDate} • Bread Financial • Publisher`}
         logo={
           <div className="w-12 h-12 relative">
             <Image
