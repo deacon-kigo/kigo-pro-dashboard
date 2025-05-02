@@ -148,26 +148,14 @@ export const productFilterSlice = createSlice({
       if (expiryDate !== undefined) state.expiryDate = expiryDate;
 
       if (criteriaToAdd && criteriaToAdd.length > 0) {
+        // Always add new criteria with new IDs, no longer replacing existing ones
         const newCriteria = criteriaToAdd.map((criteria) => ({
           ...ensureSerializable(criteria),
           id: generateUniqueId(),
         }));
 
-        // Replace existing criteria of the same type or add new ones
-        const updatedCriteria = [...state.criteria];
-
-        newCriteria.forEach((newC) => {
-          const existingIndex = updatedCriteria.findIndex(
-            (c) => c.type === newC.type
-          );
-          if (existingIndex >= 0) {
-            updatedCriteria[existingIndex] = newC;
-          } else {
-            updatedCriteria.push(newC);
-          }
-        });
-
-        state.criteria = updatedCriteria;
+        // Simply add all new criteria to the existing array
+        state.criteria = [...state.criteria, ...newCriteria];
       }
     },
     setCoverageStats: (state, action: PayloadAction<FilterCoverageStats>) => {

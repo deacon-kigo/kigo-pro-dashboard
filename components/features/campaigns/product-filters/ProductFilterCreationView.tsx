@@ -165,15 +165,12 @@ export default function ProductFilterCreationView() {
   const [criteriaAndOr, setCriteriaAndOr] = useState("OR");
   const [criteriaInclusion, setCriteriaInclusion] = useState("Include");
 
-  // Required criteria types based on ticket
-  const requiredCriteriaTypes = [
+  // Combine all field types into a single array - no longer separate required vs optional
+  const allFieldTypes = [
     "MerchantKeyword",
     "MerchantName",
     "OfferCommodity",
     "OfferKeyword",
-  ];
-
-  const optionalCriteriaTypes = [
     "Client",
     "MerchantId",
     "OfferCategory",
@@ -193,11 +190,8 @@ export default function ProductFilterCreationView() {
   // Add new criteria (manual) - using Redux action
   const addCriteria = () => {
     if (criteriaType && criteriaValue) {
-      // For required criteria types, always set isRequired to true regardless of inclusion
-      // For optional criteria types, set isRequired based on inclusion (Include = true, Exclude = false)
-      const isRequired = requiredCriteriaTypes.includes(criteriaType)
-        ? true
-        : criteriaInclusion === "Include";
+      // isRequired is now determined solely by the Include/Exclude selection
+      const isRequired = criteriaInclusion === "Include";
 
       // Always use "contains" as the default rule
       const defaultRule = "contains";
@@ -228,13 +222,20 @@ export default function ProductFilterCreationView() {
 
   // Create filter
   const handleCreateFilter = () => {
-    if (!isFormValid()) {
-      alert("Please fill in all required fields");
+    // Check if basic form fields are filled based on new requirements
+    const isBasicInfoValid =
+      filterName.trim() !== "" && description.trim() !== "";
+
+    // Check if we have at least one filter condition
+    const hasFilterConditions = filterCriteria.length > 0;
+
+    if (!isBasicInfoValid) {
+      alert("Please fill in the required filter name and description fields");
       return;
     }
 
-    if (!hasAllRequiredCriteria()) {
-      alert("Please add all required criteria types");
+    if (!hasFilterConditions) {
+      alert("Please add at least one filter condition");
       return;
     }
 
@@ -338,15 +339,15 @@ export default function ProductFilterCreationView() {
         );
         if (criteriaData.type && criteriaData.value) {
           setTimeout(() => {
-            const rule = criteriaData.rule || "equals";
+            const rule = criteriaData.rule || "contains";
             const andOr = criteriaData.and_or || "OR";
             setCriteriaType(criteriaData.type);
             setCriteriaValue(criteriaData.value);
             setCriteriaAndOr(andOr);
 
-            const isRequired = requiredCriteriaTypes.includes(
-              criteriaData.type
-            );
+            // isRequired is determined by the inclusion type (defaulting to Include if not specified)
+            const inclusion = criteriaData.inclusion || "Include";
+            const isRequired = inclusion === "Include";
 
             // Dispatch action to add criteria to Redux store
             dispatch(
@@ -363,6 +364,7 @@ export default function ProductFilterCreationView() {
             setCriteriaType("");
             setCriteriaValue("");
             setCriteriaAndOr("OR");
+            setCriteriaInclusion("Include");
             dispatch(setLastGeneratedFilter("criteria"));
             dispatch(setIsGenerating(false));
           }, 1000);
@@ -380,13 +382,14 @@ export default function ProductFilterCreationView() {
         if (Array.isArray(criteriaList) && criteriaList.length > 0) {
           setTimeout(() => {
             const newCriteriaItems = criteriaList.map((criteriaItem) => {
-              const isRequired = requiredCriteriaTypes.includes(
-                criteriaItem.type || ""
-              );
+              // isRequired is determined by the inclusion type (defaulting to Include if not specified)
+              const inclusion = criteriaItem.inclusion || "Include";
+              const isRequired = inclusion === "Include";
+
               return {
                 type: criteriaItem.type || "UnknownType",
                 value: criteriaItem.value || "",
-                rule: criteriaItem.rule || "equals",
+                rule: criteriaItem.rule || "contains",
                 and_or: criteriaItem.and_or || "OR",
                 isRequired,
               };
@@ -401,6 +404,7 @@ export default function ProductFilterCreationView() {
             setCriteriaType("");
             setCriteriaValue("");
             setCriteriaAndOr("OR");
+            setCriteriaInclusion("Include");
             dispatch(setLastGeneratedFilter("multiple"));
             dispatch(setIsGenerating(false));
           }, 1200);
@@ -417,7 +421,7 @@ export default function ProductFilterCreationView() {
           queryViewName?: string;
           description?: string;
           expiryDate?: string;
-          criteria?: Array<Partial<FilterCriteria>>;
+          criteria?: Array<Partial<FilterCriteria> & { inclusion?: string }>;
         }
         const filterData: CompleteFilterData = JSON.parse(
           optionId.replace("suggest_complete_filter:", "")
@@ -436,19 +440,20 @@ export default function ProductFilterCreationView() {
             if (!isNaN(date.getTime())) update.expiryDate = date;
           }
 
-          // Format criteria for Redux
+          // Format criteria for Redux using new isRequired logic
           if (
             Array.isArray(filterData.criteria) &&
             filterData.criteria.length > 0
           ) {
             const criteriaToAdd = filterData.criteria.map((criteriaItem) => {
-              const isRequired = requiredCriteriaTypes.includes(
-                criteriaItem.type || ""
-              );
+              // isRequired is determined by the inclusion type (defaulting to Include if not specified)
+              const inclusion = criteriaItem.inclusion || "Include";
+              const isRequired = inclusion === "Include";
+
               return {
                 type: criteriaItem.type || "UnknownType",
                 value: criteriaItem.value || "",
-                rule: criteriaItem.rule || "equals",
+                rule: criteriaItem.rule || "contains",
                 and_or: criteriaItem.and_or || "OR",
                 isRequired,
               };
@@ -594,7 +599,7 @@ export default function ProductFilterCreationView() {
               <AIAssistantPanel
                 title="AI Filter Assistant"
                 description="Tell me what offers you want to filter"
-                requiredCriteriaTypes={requiredCriteriaTypes}
+                requiredCriteriaTypes={[]}
                 onOptionSelected={handleOptionSelected}
                 className="flex-grow"
               />
@@ -684,7 +689,11 @@ export default function ProductFilterCreationView() {
                   </Button>
                   <Button
                     onClick={handleCreateFilter}
-                    disabled={!isFormValid() || !hasAllRequiredCriteria()}
+                    disabled={
+                      !filterName.trim() ||
+                      !description.trim() ||
+                      filterCriteria.length === 0
+                    }
                     size="sm"
                   >
                     Create Filter
@@ -696,69 +705,102 @@ export default function ProductFilterCreationView() {
                 <div className="grid grid-cols-12 gap-6 h-full">
                   {/* Left side - Basic Information and Status */}
                   <div className="col-span-4 space-y-6">
-                    {/* Required Fields Status */}
+                    {/* Filter Conditions Summary Accordion */}
                     <Accordion
                       type="single"
                       collapsible
-                      defaultValue="required-fields"
+                      defaultValue="filter-conditions"
                       className="border rounded-md"
                     >
                       <AccordionItem
-                        value="required-fields"
+                        value="filter-conditions"
                         className="border-none"
                       >
                         <AccordionTrigger className="px-4 py-3 text-sm font-medium">
-                          Required Fields
+                          Filter Conditions
                           <Badge
                             variant={
-                              requiredCriteriaTypes.filter((type) =>
-                                filterCriteria.some(
-                                  (c: FilterCriteria) => c.type === type
-                                )
-                              ).length === requiredCriteriaTypes.length
-                                ? "success"
-                                : "warning"
+                              filterCriteria.length > 0 ? "success" : "warning"
                             }
                             size="sm"
                             className="ml-2"
                           >
-                            {
-                              requiredCriteriaTypes.filter((type) =>
-                                filterCriteria.some(
-                                  (c: FilterCriteria) => c.type === type
-                                )
-                              ).length
-                            }{" "}
-                            / {requiredCriteriaTypes.length}
+                            {filterCriteria.length}
                           </Badge>
                         </AccordionTrigger>
                         <AccordionContent className="px-4 pb-4">
-                          <div className="grid grid-cols-2 gap-2">
-                            {requiredCriteriaTypes.map((type) => {
-                              const isComplete = filterCriteria.some(
-                                (c: FilterCriteria) => c.type === type
-                              );
-                              return (
+                          {filterCriteria.length === 0 ? (
+                            <div className="text-center p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-md">
+                              <ExclamationCircleIcon className="h-5 w-5 mx-auto mb-2" />
+                              <p className="text-sm font-medium">
+                                No filter conditions yet
+                              </p>
+                              <p className="text-xs mt-1">
+                                At least one condition is required
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              <div className="text-xs text-muted-foreground mb-2">
+                                Summary of filter conditions:
+                              </div>
+
+                              {/* Group conditions by type for a nicer display */}
+                              {Object.entries(
+                                filterCriteria.reduce(
+                                  (acc, criteria) => {
+                                    if (!acc[criteria.type]) {
+                                      acc[criteria.type] = [];
+                                    }
+                                    acc[criteria.type].push(criteria);
+                                    return acc;
+                                  },
+                                  {} as Record<string, FilterCriteria[]>
+                                )
+                              ).map(([type, criteriaList]) => (
                                 <div
                                   key={type}
-                                  className={`text-xs p-2 rounded-md flex items-center ${
-                                    isComplete
-                                      ? "bg-green-100 border border-green-200 text-green-800"
-                                      : "bg-amber-50 border border-amber-200 text-amber-800"
-                                  }`}
+                                  className="bg-gray-50 p-2 rounded-md border"
                                 >
-                                  {isComplete ? (
-                                    <CheckCircleIcon className="h-3.5 w-3.5 mr-1.5 text-green-600" />
-                                  ) : (
-                                    <ExclamationCircleIcon className="h-3.5 w-3.5 mr-1.5 text-amber-600" />
-                                  )}
-                                  <span className="truncate">
+                                  <h4 className="text-xs font-medium mb-1">
                                     {friendlyTypeNames[type] || type}
-                                  </span>
+                                    <Badge
+                                      variant="outline"
+                                      className="ml-2 text-[10px]"
+                                    >
+                                      {criteriaList.length}
+                                    </Badge>
+                                  </h4>
+                                  <div className="space-y-1">
+                                    {criteriaList.map((c) => (
+                                      <div
+                                        key={c.id}
+                                        className="text-xs flex justify-between items-center"
+                                      >
+                                        <span
+                                          className={
+                                            c.isRequired
+                                              ? "text-green-600"
+                                              : "text-red-600"
+                                          }
+                                        >
+                                          {c.isRequired ? "Include" : "Exclude"}
+                                          : {c.value}
+                                        </span>
+                                        <button
+                                          onClick={() => removeCriteria(c.id)}
+                                          className="text-gray-400 hover:text-gray-600"
+                                          aria-label="Remove condition"
+                                        >
+                                          <XCircleIcon className="h-3.5 w-3.5" />
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
                                 </div>
-                              );
-                            })}
-                          </div>
+                              ))}
+                            </div>
+                          )}
                         </AccordionContent>
                       </AccordionItem>
                     </Accordion>
@@ -792,23 +834,8 @@ export default function ProductFilterCreationView() {
                             </div>
 
                             <div>
-                              <Label htmlFor="query-view" className="text-sm">
-                                Query View Name*
-                              </Label>
-                              <Input
-                                id="query-view"
-                                placeholder={getFieldPlaceholder("query-view")}
-                                value={queryViewName}
-                                onChange={(e) =>
-                                  dispatch(setQueryViewName(e.target.value))
-                                }
-                                className="mt-1"
-                              />
-                            </div>
-
-                            <div>
                               <Label htmlFor="description" className="text-sm">
-                                Description
+                                Description*
                               </Label>
                               <Textarea
                                 id="description"
@@ -818,13 +845,13 @@ export default function ProductFilterCreationView() {
                                   dispatch(setDescription(e.target.value))
                                 }
                                 className="mt-1"
-                                rows={2}
+                                rows={3}
                               />
                             </div>
 
                             <div>
                               <Label htmlFor="expiry-date" className="text-sm">
-                                Expiry Date*
+                                Expiry Date
                               </Label>
                               <DatePicker
                                 id="expiry-date"
@@ -893,21 +920,7 @@ export default function ProductFilterCreationView() {
                                   <SelectValue placeholder="select a field" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="required_header" disabled>
-                                    -- Required Fields --
-                                  </SelectItem>
-                                  {requiredCriteriaTypes.map((type) => (
-                                    <SelectItem key={type} value={type}>
-                                      {friendlyTypeNames[type] || type}{" "}
-                                      {filterCriteria.some(
-                                        (c: FilterCriteria) => c.type === type
-                                      ) && "✓"}
-                                    </SelectItem>
-                                  ))}
-                                  <SelectItem value="optional_header" disabled>
-                                    -- Optional Fields --
-                                  </SelectItem>
-                                  {optionalCriteriaTypes.map((type) => (
+                                  {allFieldTypes.map((type) => (
                                     <SelectItem key={type} value={type}>
                                       {friendlyTypeNames[type] || type}
                                     </SelectItem>

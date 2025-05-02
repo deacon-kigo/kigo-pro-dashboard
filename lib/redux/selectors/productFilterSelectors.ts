@@ -23,47 +23,32 @@ export const selectCoverageStats = (state: RootState) =>
 export const selectHasAllRequiredCriteria = createSelector(
   [selectCriteria],
   (criteria) => {
-    const requiredTypes = [
-      "MerchantKeyword",
-      "MerchantName",
-      "OfferCommodity",
-      "OfferKeyword",
-    ];
-
-    return requiredTypes.every((type) =>
-      criteria.some((criteria) => criteria.type === type)
-    );
+    return criteria.length > 0;
   }
 );
 
 export const selectMissingRequiredCriteria = createSelector(
   [selectCriteria],
   (criteria) => {
-    const requiredTypes = [
+    if (criteria.length > 0) {
+      return [];
+    }
+
+    return [
       "MerchantKeyword",
       "MerchantName",
       "OfferCommodity",
       "OfferKeyword",
     ];
-
-    return requiredTypes.filter(
-      (type) => !criteria.some((criteria) => criteria.type === type)
-    );
   }
 );
 
 export const selectIsFormValid = createSelector(
-  [
-    selectFilterName,
-    selectQueryViewName,
-    selectExpiryDate,
-    selectHasAllRequiredCriteria,
-  ],
-  (filterName, queryViewName, expiryDate, hasAllRequiredCriteria) => {
+  [selectFilterName, selectDescription, selectHasAllRequiredCriteria],
+  (filterName, description, hasAllRequiredCriteria) => {
     return (
       filterName.trim() !== "" &&
-      queryViewName.trim() !== "" &&
-      expiryDate !== null &&
+      description.trim() !== "" &&
       hasAllRequiredCriteria
     );
   }
