@@ -658,14 +658,17 @@ export default function ProductFilterCreationView() {
       <div className="flex-1 min-h-0" style={{ height: "calc(100vh - 160px)" }}>
         <div className="flex gap-3 h-full">
           {/* Left Column - AI Assistant Panel with fixed height */}
-          <div className="h-full flex flex-col" style={{ width: "448px" }}>
-            <Card className="p-0 h-full flex flex-col">
+          <div
+            className="h-full flex flex-col overflow-hidden"
+            style={{ width: "448px", flexShrink: 0 }}
+          >
+            <Card className="p-0 h-full flex flex-col overflow-hidden">
               <AIAssistantPanel
                 title="AI Filter Assistant"
                 description="Tell me what offers you want to filter"
                 requiredCriteriaTypes={[]}
                 onOptionSelected={handleOptionSelected}
-                className="flex-grow"
+                className="flex-grow overflow-auto"
               />
               {isGeneratingFilters && (
                 <div className="fixed inset-0 bg-black/5 backdrop-blur-sm flex items-center justify-center z-50">
@@ -694,7 +697,7 @@ export default function ProductFilterCreationView() {
           </div>
 
           {/* Right Column - Filter Configuration with scrollable content */}
-          <div className="flex-1 h-full flex flex-col">
+          <div className="flex-1 h-full flex flex-col overflow-hidden">
             {lastGeneratedFilter && (
               <motion.div
                 initial={{ opacity: 0, y: -20 }}
@@ -962,15 +965,15 @@ export default function ProductFilterCreationView() {
                       <AccordionItem value="basic-info" className="border-none">
                         <AccordionTrigger className="px-4 py-3 text-sm font-medium">
                           Basic Information
-                          <span className="text-xs font-medium text-gray-600 ml-2">
-                            (Filter Name required for draft)
-                          </span>
                         </AccordionTrigger>
-                        <AccordionContent className="px-4">
-                          <div className="space-y-5 pb-2">
-                            <div>
+                        <AccordionContent className="px-4 text-left">
+                          <div className="space-y-5 pb-2 text-left">
+                            <div className="text-left">
                               <Label htmlFor="filter-name" className="text-sm">
                                 Filter Name*
+                                <span className="text-xs font-medium text-gray-600 ml-1">
+                                  (required for draft)
+                                </span>
                               </Label>
                               <Input
                                 id="filter-name"
@@ -988,7 +991,7 @@ export default function ProductFilterCreationView() {
                               </p>
                             </div>
 
-                            <div>
+                            <div className="text-left">
                               <Label htmlFor="description" className="text-sm">
                                 Description*
                                 <span className="text-xs font-medium text-gray-600 ml-1">
@@ -1012,7 +1015,7 @@ export default function ProductFilterCreationView() {
                               </p>
                             </div>
 
-                            <div>
+                            <div className="text-left">
                               <Label htmlFor="expiry-date" className="text-sm">
                                 Expiry Date
                               </Label>
