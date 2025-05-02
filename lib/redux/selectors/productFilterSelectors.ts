@@ -16,6 +16,8 @@ export const selectIsGenerating = (state: RootState) =>
   state.productFilter.isGenerating;
 export const selectLastGeneratedFilter = (state: RootState) =>
   state.productFilter.lastGeneratedFilter;
+export const selectCoverageStats = (state: RootState) =>
+  state.productFilter.coverageStats;
 
 // Computed selectors
 export const selectHasAllRequiredCriteria = createSelector(

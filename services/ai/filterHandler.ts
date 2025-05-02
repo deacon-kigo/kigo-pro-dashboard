@@ -13,6 +13,26 @@ interface FilterDefinition {
   criteria: FilterCriterion[];
 }
 
+// Mock data for filter coverage statistics
+export interface FilterCoverageStats {
+  totalOffers: number;
+  totalMerchants: number;
+  coveragePercentage: number;
+  geographicCoverage: {
+    type: "DMA" | "State" | "City";
+    regions: Array<{
+      name: string;
+      count: number;
+      percentage: number;
+    }>;
+  };
+  topCategories: Array<{
+    name: string;
+    count: number;
+    percentage: number;
+  }>;
+}
+
 /**
  * A service to handle direct filter creation without requiring AI assistance
  */
@@ -356,3 +376,101 @@ export class FilterDirectCreator {
     ];
   }
 }
+
+/**
+ * Generate mock coverage statistics for a filter based on provided criteria
+ * @param criteria The filter criteria to analyze
+ * @returns FilterCoverageStats object with mock coverage data
+ */
+export const generateFilterCoverageStats = (
+  criteria: any[]
+): FilterCoverageStats => {
+  // Base number of offers in the system
+  const totalSystemOffers = 12500;
+
+  // The more criteria, the more restrictive the filter
+  const restrictiveness = Math.min(0.9, criteria.length * 0.15);
+
+  // Calculate coverage
+  const coveragePercentage = Math.max(
+    5,
+    Math.round((1 - restrictiveness) * 100)
+  );
+  const totalOffers = Math.round(
+    (coveragePercentage / 100) * totalSystemOffers
+  );
+  const totalMerchants = Math.round(totalOffers / 3.5); // Average 3.5 offers per merchant
+
+  // Generate mock DMA (Designated Market Area) coverage
+  const dmas = [
+    { name: "New York", base: 1500 },
+    { name: "Los Angeles", base: 1200 },
+    { name: "Chicago", base: 800 },
+    { name: "Philadelphia", base: 600 },
+    { name: "Dallas-Ft. Worth", base: 700 },
+    { name: "San Francisco", base: 900 },
+    { name: "Boston", base: 500 },
+    { name: "Atlanta", base: 600 },
+    { name: "Washington, DC", base: 750 },
+    { name: "Houston", base: 650 },
+  ];
+
+  // Get random 5 DMAs
+  const randomDMAs = [...dmas]
+    .sort(() => 0.5 - Math.random())
+    .slice(0, 5)
+    .map((dma) => {
+      const count = Math.round(dma.base * (coveragePercentage / 100));
+      return {
+        name: dma.name,
+        count,
+        percentage: Math.round((count / totalOffers) * 100),
+      };
+    })
+    .sort((a, b) => b.count - a.count);
+
+  // Generate mock categories
+  const categories = [
+    { name: "Dining", base: 3500 },
+    { name: "Retail", base: 2800 },
+    { name: "Entertainment", base: 1800 },
+    { name: "Travel", base: 2100 },
+    { name: "Services", base: 1500 },
+  ];
+
+  // Check if any criteria specify categories
+  let selectedCategories = [...categories];
+  criteria.forEach((criterion) => {
+    if (criterion.type === "OfferCommodity" && criterion.value) {
+      const matchingCategory = categories.find(
+        (cat) => cat.name.toLowerCase() === criterion.value.toLowerCase()
+      );
+      if (matchingCategory) {
+        selectedCategories = [matchingCategory];
+      }
+    }
+  });
+
+  const topCategories = selectedCategories
+    .slice(0, 3)
+    .map((category) => {
+      const count = Math.round(category.base * (coveragePercentage / 100));
+      return {
+        name: category.name,
+        count,
+        percentage: Math.round((count / totalOffers) * 100),
+      };
+    })
+    .sort((a, b) => b.count - a.count);
+
+  return {
+    totalOffers,
+    totalMerchants,
+    coveragePercentage,
+    geographicCoverage: {
+      type: "DMA",
+      regions: randomDMAs,
+    },
+    topCategories,
+  };
+};

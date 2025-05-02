@@ -1,4 +1,12 @@
 import { createSlice, PayloadAction, createAction } from "@reduxjs/toolkit";
+import { FilterCoverageStats } from "@/services/ai/filterHandler";
+
+// Utility function to generate unique IDs
+const generateUniqueId = () => {
+  return (
+    Date.now().toString() + "-" + Math.random().toString(36).substring(2, 9)
+  );
+};
 
 // Define FilterCriteria type
 export interface FilterCriteria {
@@ -19,6 +27,7 @@ export interface ProductFilterState {
   criteria: FilterCriteria[];
   isGenerating: boolean;
   lastGeneratedFilter: string | null;
+  coverageStats: FilterCoverageStats | null;
 }
 
 // Initial state
@@ -30,6 +39,7 @@ const initialState: ProductFilterState = {
   criteria: [],
   isGenerating: false,
   lastGeneratedFilter: null,
+  coverageStats: null,
 };
 
 // Create a helper function to ensure all properties are serializable
@@ -95,10 +105,7 @@ export const productFilterSlice = createSlice({
       state.expiryDate = action.payload;
     },
     addCriteria: (state, action: PayloadAction<Omit<FilterCriteria, "id">>) => {
-      const id =
-        Date.now().toString() +
-        "-" +
-        Math.random().toString(36).substring(2, 9);
+      const id = generateUniqueId();
       state.criteria.push({ ...action.payload, id });
     },
     removeCriteria: (state, action: PayloadAction<string>) => {
@@ -143,10 +150,7 @@ export const productFilterSlice = createSlice({
       if (criteriaToAdd && criteriaToAdd.length > 0) {
         const newCriteria = criteriaToAdd.map((criteria) => ({
           ...ensureSerializable(criteria),
-          id:
-            Date.now().toString() +
-            "-" +
-            Math.random().toString(36).substring(2, 9),
+          id: generateUniqueId(),
         }));
 
         // Replace existing criteria of the same type or add new ones
@@ -165,6 +169,9 @@ export const productFilterSlice = createSlice({
 
         state.criteria = updatedCriteria;
       }
+    },
+    setCoverageStats: (state, action: PayloadAction<FilterCoverageStats>) => {
+      state.coverageStats = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -208,6 +215,7 @@ export const {
   setIsGenerating,
   setLastGeneratedFilter,
   resetFilter,
+  setCoverageStats,
 } = productFilterSlice.actions;
 
 export default productFilterSlice.reducer;

@@ -60,6 +60,7 @@ import {
   setLastGeneratedFilter,
   applyFilterUpdate,
   FilterCriteria,
+  setCoverageStats,
 } from "@/lib/redux/slices/productFilterSlice";
 import {
   selectFilterName,
@@ -71,8 +72,11 @@ import {
   selectLastGeneratedFilter,
   selectHasAllRequiredCriteria,
   selectIsFormValid,
+  selectCoverageStats,
 } from "@/lib/redux/selectors/productFilterSelectors";
 import { getFieldPlaceholder } from "@/services/ai/tools";
+import { generateFilterCoverageStats } from "@/services/ai/filterHandler";
+import FilterCoveragePanel from "./FilterCoveragePanel";
 
 // Custom DatePicker component
 interface DatePickerProps {
@@ -495,6 +499,74 @@ export default function ProductFilterCreationView() {
     [dispatch]
   );
 
+  // Get coverage stats from Redux
+  const coverageStats = useSelector(selectCoverageStats);
+
+  // Update coverage stats whenever criteria change
+  useEffect(() => {
+    if (filterCriteria.length > 0) {
+      const stats = generateFilterCoverageStats(filterCriteria);
+      dispatch(setCoverageStats(stats));
+    }
+  }, [filterCriteria, dispatch]);
+
+  // Function to handle applying coverage suggestions
+  const handleSuggestionApply = (suggestionValue: string) => {
+    // Parse the suggestion value
+    const [type, action, target] = suggestionValue.split(":");
+
+    if (type !== "coverage") return;
+
+    // Handle different types of coverage suggestions
+    switch (action) {
+      case "reduce":
+        // Remove one of the criteria of the specified type
+        const criteriaToRemove = filterCriteria
+          .filter((c) => c.type === target)
+          .slice(0, 1); // Take just one to remove
+
+        if (criteriaToRemove.length > 0) {
+          dispatch(removeCriteriaAction(criteriaToRemove[0].id));
+
+          // Show notification
+          dispatch(setLastGeneratedFilter("criteria"));
+        }
+        break;
+
+      case "relax":
+        // Find the criteria by ID and change its rule from "equals" to "contains"
+        const criteriaIndex = filterCriteria.findIndex((c) => c.id === target);
+
+        if (criteriaIndex >= 0) {
+          const criteria = { ...filterCriteria[criteriaIndex] };
+          criteria.rule = "contains";
+
+          // Update the criteria
+          const updatedCriteria = [...filterCriteria];
+          updatedCriteria[criteriaIndex] = criteria;
+
+          // Dispatch the action with the full updated array
+          dispatch({
+            type: "productFilter/setCriteria",
+            payload: updatedCriteria,
+          });
+
+          // Show notification
+          dispatch(setLastGeneratedFilter("criteria"));
+        }
+        break;
+
+      // Add other cases as needed
+
+      default:
+        // For generic suggestions, show an educational message
+        alert(
+          "To improve coverage, try using broader keywords or selecting 'contains' instead of 'equals' for keyword matches."
+        );
+        break;
+    }
+  };
+
   return (
     <div className="space-y-2 h-full flex flex-col">
       <PageHeader
@@ -618,7 +690,67 @@ export default function ProductFilterCreationView() {
               <div className="flex-grow p-4 overflow-auto">
                 <div className="grid grid-cols-12 gap-6 h-full">
                   {/* Left side - Basic Information and Status */}
-                  <div className="col-span-5 space-y-6">
+                  <div className="col-span-4 space-y-6">
+                    {/* Required Fields Status */}
+                    <Accordion
+                      type="single"
+                      collapsible
+                      defaultValue="required-fields"
+                      className="border rounded-md"
+                    >
+                      <AccordionItem
+                        value="required-fields"
+                        className="border-none"
+                      >
+                        <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                          Required Fields
+                        </AccordionTrigger>
+                        <AccordionContent className="px-4 pb-4">
+                          <div className="flex items-center mb-3">
+                            <h4 className="text-sm font-medium flex items-center">
+                              <span>Required Fields</span>
+                              <Badge variant="outline" className="ml-2 text-xs">
+                                {
+                                  requiredCriteriaTypes.filter((type) =>
+                                    filterCriteria.some(
+                                      (c: FilterCriteria) => c.type === type
+                                    )
+                                  ).length
+                                }{" "}
+                                / {requiredCriteriaTypes.length}
+                              </Badge>
+                            </h4>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2">
+                            {requiredCriteriaTypes.map((type) => (
+                              <div
+                                key={type}
+                                className={`text-xs p-2 rounded-md flex items-center ${
+                                  filterCriteria.some(
+                                    (c: FilterCriteria) => c.type === type
+                                  )
+                                    ? "bg-green-50 text-green-800"
+                                    : "bg-gray-50 text-gray-500"
+                                }`}
+                              >
+                                {filterCriteria.some(
+                                  (c: FilterCriteria) => c.type === type
+                                ) ? (
+                                  <CheckCircleIcon className="h-3.5 w-3.5 mr-1.5" />
+                                ) : (
+                                  <span className="h-3.5 w-3.5 mr-1.5 rounded-full bg-gray-200" />
+                                )}
+                                <span className="truncate">
+                                  {friendlyTypeNames[type] || type}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+
                     {/* Basic Information Section */}
                     <Accordion
                       type="single"
@@ -695,52 +827,33 @@ export default function ProductFilterCreationView() {
                       </AccordionItem>
                     </Accordion>
 
-                    {/* Required Fields Status */}
-                    <div className="border rounded-md p-4">
-                      <h4 className="text-sm font-medium mb-3 flex items-center">
-                        <span>Required Fields</span>
-                        <Badge variant="outline" className="ml-2 text-xs">
-                          {
-                            requiredCriteriaTypes.filter((type) =>
-                              filterCriteria.some(
-                                (c: FilterCriteria) => c.type === type
-                              )
-                            ).length
-                          }{" "}
-                          / {requiredCriteriaTypes.length}
-                        </Badge>
-                      </h4>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        {requiredCriteriaTypes.map((type) => (
-                          <div
-                            key={type}
-                            className={`text-xs p-2 rounded-md flex items-center ${
-                              filterCriteria.some(
-                                (c: FilterCriteria) => c.type === type
-                              )
-                                ? "bg-green-50 text-green-800"
-                                : "bg-gray-50 text-gray-500"
-                            }`}
-                          >
-                            {filterCriteria.some(
-                              (c: FilterCriteria) => c.type === type
-                            ) ? (
-                              <CheckCircleIcon className="h-3.5 w-3.5 mr-1.5" />
-                            ) : (
-                              <span className="h-3.5 w-3.5 mr-1.5 rounded-full bg-gray-200" />
-                            )}
-                            <span className="truncate">
-                              {friendlyTypeNames[type] || type}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                    {/* Coverage statistics as accordion */}
+                    <Accordion
+                      type="single"
+                      collapsible
+                      defaultValue="coverage-stats"
+                      className="border rounded-md"
+                    >
+                      <AccordionItem
+                        value="coverage-stats"
+                        className="border-none"
+                      >
+                        <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                          Filter Coverage Statistics
+                        </AccordionTrigger>
+                        <AccordionContent className="px-4 pb-4">
+                          <FilterCoveragePanel
+                            coverageStats={coverageStats}
+                            isLoading={isGeneratingFilters}
+                            onApplySuggestion={handleSuggestionApply}
+                          />
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
                   </div>
 
                   {/* Right side - Filter Builder and Conditions */}
-                  <div className="col-span-7 flex flex-col space-y-4">
+                  <div className="col-span-8 flex flex-col space-y-4">
                     {/* Condition Builder */}
                     <Accordion
                       type="single"

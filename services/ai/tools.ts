@@ -668,3 +668,73 @@ Field Type Format Guidelines:
     },
   });
 };
+
+/**
+ * Generate AI suggestions to improve filter coverage based on coverage statistics
+ * @param coverageStats The current coverage statistics
+ * @param criteria The current filter criteria
+ * @returns An array of suggestion options for improving coverage
+ */
+export const generateCoverageImprovement = (
+  coverageStats: any,
+  criteria: any[]
+): { text: string; value: string }[] => {
+  const suggestions: { text: string; value: string }[] = [];
+
+  // If coverage is already good, no need for suggestions
+  if (coverageStats.coveragePercentage >= 40) {
+    suggestions.push({
+      text: "Your filter has good coverage. No changes needed.",
+      value: "coverage:good",
+    });
+    return suggestions;
+  }
+
+  // Identify most restrictive criteria by type
+  const restrictiveTypes = {
+    OfferKeyword: "specific keywords",
+    MerchantKeyword: "merchant keywords",
+    MerchantName: "merchant names",
+    OfferCommodity: "offer categories",
+  };
+
+  // Check for very specific filtering criteria
+  for (const [criteriaType, description] of Object.entries(restrictiveTypes)) {
+    const matchingCriteria = criteria.filter((c) => c.type === criteriaType);
+
+    if (matchingCriteria.length > 1) {
+      suggestions.push({
+        text: `Reduce the number of ${description} criteria to improve coverage`,
+        value: `coverage:reduce:${criteriaType}`,
+      });
+    }
+
+    // Check for overly specific values with exact matching
+    const exactMatches = matchingCriteria.filter((c) => c.rule === "equals");
+    if (exactMatches.length > 0) {
+      suggestions.push({
+        text: `Change "${exactMatches[0].value}" to use "contains" instead of exact match`,
+        value: `coverage:relax:${exactMatches[0].id}`,
+      });
+    }
+  }
+
+  // Check if geographic coverage is low
+  const topRegion = coverageStats.geographicCoverage.regions[0];
+  if (topRegion && topRegion.percentage > 60) {
+    suggestions.push({
+      text: `Filter heavily favors ${topRegion.name}. Consider broadening geographic reach.`,
+      value: `coverage:geographic`,
+    });
+  }
+
+  // Default suggestion if no specific improvements found
+  if (suggestions.length === 0) {
+    suggestions.push({
+      text: "Try using broader keywords or removing some specific criteria",
+      value: "coverage:general",
+    });
+  }
+
+  return suggestions;
+};
