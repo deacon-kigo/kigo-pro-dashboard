@@ -21,7 +21,7 @@ export default function PublisherDashboardPage() {
     window.history.replaceState({}, "", url);
 
     // Update document title
-    document.title = "Program Campaign/Publisher Dashboard - Kigo";
+    document.title = "Publisher Program Analytics - Bread Financial";
   }, []);
 
   // Custom breadcrumb showing publisher dashboard path
