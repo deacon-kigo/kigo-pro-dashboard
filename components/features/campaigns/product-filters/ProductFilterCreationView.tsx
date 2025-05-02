@@ -21,6 +21,7 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   SparklesIcon,
+  ExclamationCircleIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import {
@@ -704,48 +705,55 @@ export default function ProductFilterCreationView() {
                       >
                         <AccordionTrigger className="px-4 py-3 text-sm font-medium">
                           Required Fields
+                          <Badge
+                            variant={
+                              requiredCriteriaTypes.filter((type) =>
+                                filterCriteria.some(
+                                  (c: FilterCriteria) => c.type === type
+                                )
+                              ).length === requiredCriteriaTypes.length
+                                ? "success"
+                                : "warning"
+                            }
+                            size="sm"
+                            className="ml-2"
+                          >
+                            {
+                              requiredCriteriaTypes.filter((type) =>
+                                filterCriteria.some(
+                                  (c: FilterCriteria) => c.type === type
+                                )
+                              ).length
+                            }{" "}
+                            / {requiredCriteriaTypes.length}
+                          </Badge>
                         </AccordionTrigger>
                         <AccordionContent className="px-4 pb-4">
-                          <div className="flex items-center mb-3">
-                            <h4 className="text-sm font-medium flex items-center">
-                              <span>Required Fields</span>
-                              <Badge variant="outline" className="ml-2 text-xs">
-                                {
-                                  requiredCriteriaTypes.filter((type) =>
-                                    filterCriteria.some(
-                                      (c: FilterCriteria) => c.type === type
-                                    )
-                                  ).length
-                                }{" "}
-                                / {requiredCriteriaTypes.length}
-                              </Badge>
-                            </h4>
-                          </div>
-
                           <div className="grid grid-cols-2 gap-2">
-                            {requiredCriteriaTypes.map((type) => (
-                              <div
-                                key={type}
-                                className={`text-xs p-2 rounded-md flex items-center ${
-                                  filterCriteria.some(
-                                    (c: FilterCriteria) => c.type === type
-                                  )
-                                    ? "bg-green-50 text-green-800"
-                                    : "bg-gray-50 text-gray-500"
-                                }`}
-                              >
-                                {filterCriteria.some(
-                                  (c: FilterCriteria) => c.type === type
-                                ) ? (
-                                  <CheckCircleIcon className="h-3.5 w-3.5 mr-1.5" />
-                                ) : (
-                                  <span className="h-3.5 w-3.5 mr-1.5 rounded-full bg-gray-200" />
-                                )}
-                                <span className="truncate">
-                                  {friendlyTypeNames[type] || type}
-                                </span>
-                              </div>
-                            ))}
+                            {requiredCriteriaTypes.map((type) => {
+                              const isComplete = filterCriteria.some(
+                                (c: FilterCriteria) => c.type === type
+                              );
+                              return (
+                                <div
+                                  key={type}
+                                  className={`text-xs p-2 rounded-md flex items-center ${
+                                    isComplete
+                                      ? "bg-green-100 border border-green-200 text-green-800"
+                                      : "bg-amber-50 border border-amber-200 text-amber-800"
+                                  }`}
+                                >
+                                  {isComplete ? (
+                                    <CheckCircleIcon className="h-3.5 w-3.5 mr-1.5 text-green-600" />
+                                  ) : (
+                                    <ExclamationCircleIcon className="h-3.5 w-3.5 mr-1.5 text-amber-600" />
+                                  )}
+                                  <span className="truncate">
+                                    {friendlyTypeNames[type] || type}
+                                  </span>
+                                </div>
+                              );
+                            })}
                           </div>
                         </AccordionContent>
                       </AccordionItem>

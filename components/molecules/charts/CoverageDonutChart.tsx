@@ -66,7 +66,7 @@ export function CoverageDonutChart({
       style={{ height }}
       {...props}
     >
-      <Chart config={chartConfig}>
+      <Chart config={chartConfig} className="!aspect-square">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
             <Pie

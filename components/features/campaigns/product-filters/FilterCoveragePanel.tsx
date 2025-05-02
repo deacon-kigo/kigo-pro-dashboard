@@ -174,11 +174,13 @@ const FilterCoveragePanel: React.FC<FilterCoveragePanelProps> = ({
         </div>
 
         <div className="flex items-center justify-center w-full h-36">
-          <CoverageDonutChart
-            percentage={coverageStats.coveragePercentage}
-            height={140}
-            className="w-36 h-36"
-          />
+          <div className="w-36 h-36">
+            <CoverageDonutChart
+              percentage={coverageStats.coveragePercentage}
+              height={140}
+              className="!aspect-square"
+            />
+          </div>
         </div>
 
         <div className="flex justify-between mt-1 text-xs text-gray-500">
