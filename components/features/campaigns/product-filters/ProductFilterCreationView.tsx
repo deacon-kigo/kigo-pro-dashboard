@@ -139,10 +139,40 @@ const generateUniqueId = () => {
   );
 };
 
+// Add helper function to get instruction text for fields
+const getFieldInstruction = (fieldType: string): string => {
+  switch (fieldType) {
+    case "filter-name":
+      return "Enter a unique, descriptive name for your filter. Max 50 characters.";
+    case "query-view-name":
+      return "Enter a name for database query view. This will be used by the system.";
+    case "description":
+      return "Provide a detailed description of what this filter does. Max 250 characters.";
+    case "expiry-date":
+      return "Select a date when this filter should expire. Must be a future date.";
+    case "criteria-type":
+      return "Select what type of field you want to filter on.";
+    case "criteria-inclusion":
+      return "Choose whether to include or exclude offers that match this criterion.";
+    case "criteria-value":
+      return "Enter the value to match against the selected field type.";
+    case "criteria-and-or":
+      return "Choose how this condition connects with others. 'AND' requires both conditions to be true. 'OR' requires either condition to be true.";
+    default:
+      return "";
+  }
+};
+
 export default function ProductFilterCreationView() {
   const router = useRouter();
   const dispatch = useDispatch();
   const [activeTab, setActiveTab] = useState("details");
+  // Add validation message state
+  const [validationMessage, setValidationMessage] = useState<string | null>(
+    null
+  );
+  // Add success message state
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Use Redux selectors for form state
   const filterName = useSelector(selectFilterName);
@@ -187,7 +217,7 @@ export default function ProductFilterCreationView() {
   // Helper function to check if all required criteria are present - using Redux selector
   const hasAllRequiredCriteria = () => hasRequiredCriteria;
 
-  // Add new criteria (manual) - using Redux action
+  // Add criteria (manual) - using Redux action
   const addCriteria = () => {
     if (criteriaType && criteriaValue) {
       // isRequired is now determined solely by the Include/Exclude selection
@@ -212,6 +242,12 @@ export default function ProductFilterCreationView() {
       setCriteriaValue("");
       setCriteriaAndOr("OR");
       setCriteriaInclusion("Include");
+    } else {
+      setValidationMessage(
+        "Please select a field and enter a value for your filter condition"
+      );
+      // Clear the validation message after 5 seconds
+      setTimeout(() => setValidationMessage(null), 5000);
     }
   };
 
@@ -230,18 +266,29 @@ export default function ProductFilterCreationView() {
     const hasFilterConditions = filterCriteria.length > 0;
 
     if (!isBasicInfoValid) {
-      alert("Please fill in the required filter name and description fields");
+      setValidationMessage(
+        "Please fill in the required filter name and description fields"
+      );
+      // Clear the validation message after 5 seconds
+      setTimeout(() => setValidationMessage(null), 5000);
       return;
     }
 
     if (!hasFilterConditions) {
-      alert("Please add at least one filter condition");
+      setValidationMessage("Please add at least one filter condition");
+      // Clear the validation message after 5 seconds
+      setTimeout(() => setValidationMessage(null), 5000);
       return;
     }
 
-    // In a real implementation, we would make an API call here
-    alert("Product filter created successfully!");
-    router.push("/campaigns/product-filters");
+    // Show success message
+    setSuccessMessage("Product filter created successfully!");
+
+    // Clear the success message after 3 seconds and redirect
+    setTimeout(() => {
+      setSuccessMessage(null);
+      router.push("/campaigns/product-filters");
+    }, 3000);
   };
 
   // Cancel and go back
@@ -581,14 +628,20 @@ export default function ProductFilterCreationView() {
   const handleSaveAsDraft = () => {
     // For drafts, we only validate that there's a filter name
     if (!filterName.trim()) {
-      alert("Please provide a filter name to save as draft");
+      setValidationMessage("Please provide a filter name to save as draft");
+      // Clear the validation message after 5 seconds
+      setTimeout(() => setValidationMessage(null), 5000);
       return;
     }
 
-    // In a real implementation, we would make an API call here
-    // and set the filter status to "Draft"
-    alert("Filter saved as draft successfully!");
-    router.push("/campaigns/product-filters");
+    // Show success message
+    setSuccessMessage("Filter saved as draft successfully!");
+
+    // Clear the success message after 3 seconds and redirect
+    setTimeout(() => {
+      setSuccessMessage(null);
+      router.push("/campaigns/product-filters");
+    }, 3000);
   };
 
   return (
@@ -604,11 +657,8 @@ export default function ProductFilterCreationView() {
       {/* Main content container with strict viewport-based height */}
       <div className="flex-1 min-h-0" style={{ height: "calc(100vh - 160px)" }}>
         <div className="flex gap-3 h-full">
-          {/* Left Column - AI Assistant Panel */}
-          <div
-            className="h-full overflow-hidden flex flex-col"
-            style={{ width: "448px" }}
-          >
+          {/* Left Column - AI Assistant Panel with fixed height */}
+          <div className="h-full flex flex-col" style={{ width: "448px" }}>
             <Card className="p-0 h-full flex flex-col">
               <AIAssistantPanel
                 title="AI Filter Assistant"
@@ -643,8 +693,8 @@ export default function ProductFilterCreationView() {
             </Card>
           </div>
 
-          {/* Right Column - Filter Configuration */}
-          <div className="flex-1 h-full">
+          {/* Right Column - Filter Configuration with scrollable content */}
+          <div className="flex-1 h-full flex flex-col">
             {lastGeneratedFilter && (
               <motion.div
                 initial={{ opacity: 0, y: -20 }}
@@ -691,8 +741,75 @@ export default function ProductFilterCreationView() {
                 </button>
               </motion.div>
             )}
+
+            {/* Validation Message Banner */}
+            {validationMessage && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="mb-3 p-2 bg-yellow-100 border border-yellow-300 rounded-md flex items-center"
+              >
+                <ExclamationCircleIcon className="h-5 w-5 text-yellow-600 mr-2" />
+                <span className="text-sm text-yellow-700">
+                  {validationMessage}
+                </span>
+                <button
+                  onClick={() => setValidationMessage(null)}
+                  className="ml-auto text-yellow-500 hover:text-yellow-700"
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </motion.div>
+            )}
+
+            {/* Success Message Banner */}
+            {successMessage && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="mb-3 p-2 bg-green-100 border border-green-300 rounded-md flex items-center"
+              >
+                <CheckCircleIcon className="h-5 w-5 text-green-600 mr-2" />
+                <span className="text-sm text-green-700">{successMessage}</span>
+                <button
+                  onClick={() => setSuccessMessage(null)}
+                  className="ml-auto text-green-500 hover:text-green-700"
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </motion.div>
+            )}
+
             <Card className="p-0 h-full flex flex-col">
-              <div className="flex items-center justify-between p-3 border-b bg-muted/20">
+              <div className="flex items-center justify-between p-3 border-b bg-muted/20 flex-shrink-0">
                 <div className="flex items-center">
                   <FunnelIcon className="h-5 w-5 mr-2 text-primary" />
                   <h3 className="font-medium">Product Filter Configuration</h3>
@@ -724,7 +841,7 @@ export default function ProductFilterCreationView() {
               </div>
 
               <div className="flex-grow p-4 overflow-auto">
-                <div className="grid grid-cols-12 gap-6 h-full">
+                <div className="grid grid-cols-12 gap-6">
                   {/* Left side - Basic Information and Status */}
                   <div className="col-span-4 space-y-6">
                     {/* Filter Conditions Summary Accordion */}
@@ -845,15 +962,12 @@ export default function ProductFilterCreationView() {
                       <AccordionItem value="basic-info" className="border-none">
                         <AccordionTrigger className="px-4 py-3 text-sm font-medium">
                           Basic Information
+                          <span className="text-xs font-medium text-gray-600 ml-2">
+                            (Filter Name required for draft)
+                          </span>
                         </AccordionTrigger>
                         <AccordionContent className="px-4">
-                          <div className="text-xs text-muted-foreground mb-3">
-                            <span className="inline-flex items-center">
-                              <InformationCircleIcon className="h-3.5 w-3.5 mr-1" />
-                              Only Filter Name is required to save as draft
-                            </span>
-                          </div>
-                          <div className="space-y-4 pb-2">
+                          <div className="space-y-5 pb-2">
                             <div>
                               <Label htmlFor="filter-name" className="text-sm">
                                 Filter Name*
@@ -866,13 +980,18 @@ export default function ProductFilterCreationView() {
                                   dispatch(setFilterName(e.target.value))
                                 }
                                 className="mt-1"
+                                maxLength={50}
                               />
+                              <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                Enter a unique, descriptive name for your
+                                filter. Max 50 characters.
+                              </p>
                             </div>
 
                             <div>
                               <Label htmlFor="description" className="text-sm">
                                 Description*
-                                <span className="text-xs text-muted-foreground ml-1">
+                                <span className="text-xs font-medium text-gray-600 ml-1">
                                   (required for publishing)
                                 </span>
                               </Label>
@@ -885,7 +1004,12 @@ export default function ProductFilterCreationView() {
                                 }
                                 className="mt-1"
                                 rows={3}
+                                maxLength={250}
                               />
+                              <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                Provide a detailed description of what this
+                                filter does. Max 250 characters.
+                              </p>
                             </div>
 
                             <div>
@@ -899,6 +1023,10 @@ export default function ProductFilterCreationView() {
                                 placeholder={getFieldPlaceholder("expiry-date")}
                                 className="mt-1 w-full"
                               />
+                              <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                Select a date when this filter should expire.
+                                Must be a future date.
+                              </p>
                             </div>
                           </div>
                         </AccordionContent>
@@ -947,86 +1075,143 @@ export default function ProductFilterCreationView() {
                           Add Filter Condition
                         </AccordionTrigger>
                         <AccordionContent className="px-4">
-                          <div className="space-y-3 pb-2">
-                            <div className="flex flex-wrap items-center gap-2 text-xs">
-                              <span>Find offers where</span>
+                          <div className="space-y-4 pb-2">
+                            {/* Filter condition sentence as a more cohesive flow */}
+                            <div className="bg-gray-50 p-3 rounded-md border border-gray-200">
+                              <div className="mb-2 font-medium text-sm text-gray-700">
+                                Build your filter condition:
+                              </div>
 
-                              <Select
-                                value={criteriaType}
-                                onValueChange={setCriteriaType}
-                              >
-                                <SelectTrigger className="min-w-[160px] h-8">
-                                  <SelectValue placeholder="select a field" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {allFieldTypes.map((type) => (
-                                    <SelectItem key={type} value={type}>
-                                      {friendlyTypeNames[type] || type}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                              <div className="flex flex-wrap items-center gap-2 text-xs">
+                                <div className="flex items-center bg-white px-2 py-1 rounded border border-gray-200">
+                                  <span className="font-medium text-gray-600">
+                                    Find offers where
+                                  </span>
+                                </div>
 
-                              <Select
-                                value={criteriaInclusion}
-                                onValueChange={setCriteriaInclusion}
-                              >
-                                <SelectTrigger className="min-w-[110px] h-8">
-                                  <SelectValue placeholder="inclusion" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="Include">
-                                    Include
-                                  </SelectItem>
-                                  <SelectItem value="Exclude">
-                                    Exclude
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
+                                <div className="inline-flex flex-col">
+                                  <Select
+                                    value={criteriaType}
+                                    onValueChange={setCriteriaType}
+                                  >
+                                    <SelectTrigger className="min-w-[160px] h-8">
+                                      <SelectValue placeholder="select a field" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {allFieldTypes.map((type) => (
+                                        <SelectItem key={type} value={type}>
+                                          {friendlyTypeNames[type] || type}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <span className="mt-1 text-xs font-medium text-gray-600 px-1">
+                                    Select what field to filter on
+                                  </span>
+                                </div>
 
-                              <Input
-                                placeholder="value"
-                                value={criteriaValue}
-                                onChange={(e) =>
-                                  setCriteriaValue(e.target.value)
-                                }
-                                className="h-8 w-[160px]"
-                              />
+                                <div className="inline-flex flex-col">
+                                  <Select
+                                    value={criteriaInclusion}
+                                    onValueChange={setCriteriaInclusion}
+                                  >
+                                    <SelectTrigger className="min-w-[110px] h-8">
+                                      <SelectValue placeholder="inclusion" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="Include">
+                                        Include
+                                      </SelectItem>
+                                      <SelectItem value="Exclude">
+                                        Exclude
+                                      </SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <span className="mt-1 text-xs font-medium text-gray-600 px-1">
+                                    Include or exclude matches
+                                  </span>
+                                </div>
 
-                              <span>connect with</span>
+                                <div className="inline-flex flex-col">
+                                  <Input
+                                    placeholder="value"
+                                    value={criteriaValue}
+                                    onChange={(e) =>
+                                      setCriteriaValue(e.target.value)
+                                    }
+                                    className="h-8 w-[160px]"
+                                  />
+                                  <span className="mt-1 text-xs font-medium text-gray-600 px-1">
+                                    Enter the value to match
+                                  </span>
+                                </div>
 
-                              <Select
-                                value={criteriaAndOr}
-                                onValueChange={setCriteriaAndOr}
-                              >
-                                <SelectTrigger className="w-[90px] h-8">
-                                  <SelectValue placeholder="operator" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="OR">
-                                    <span className="font-medium">OR</span>
-                                  </SelectItem>
-                                  <SelectItem value="AND">
-                                    <span className="font-medium">AND</span>
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
+                                <div className="flex items-center bg-white px-2 py-1 rounded border border-gray-200">
+                                  <span className="font-medium text-gray-600">
+                                    connect with
+                                  </span>
+                                </div>
 
-                              <Button
-                                onClick={addCriteria}
-                                disabled={!criteriaType || !criteriaValue}
-                                size="sm"
-                                className="h-8"
-                              >
-                                <PlusIcon className="h-3.5 w-3.5 mr-1" />
-                                Add
-                              </Button>
-                            </div>
+                                <div className="inline-flex flex-col">
+                                  <Select
+                                    value={criteriaAndOr}
+                                    onValueChange={setCriteriaAndOr}
+                                  >
+                                    <SelectTrigger className="w-[90px] h-8">
+                                      <SelectValue placeholder="operator" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="OR">
+                                        <span className="font-medium">OR</span>
+                                      </SelectItem>
+                                      <SelectItem value="AND">
+                                        <span className="font-medium">AND</span>
+                                      </SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <span className="mt-1 text-xs font-medium text-gray-600 px-1">
+                                    How to combine conditions
+                                  </span>
+                                </div>
 
-                            <div className="text-xs text-muted-foreground">
-                              {criteriaType
-                                ? `${criteriaInclusion === "Include" ? "Include" : "Exclude"} offers where ${friendlyTypeNames[criteriaType] || criteriaType} contains "${criteriaValue}".`
-                                : "Select a field to get started."}
+                                <Button
+                                  onClick={() => {
+                                    if (!criteriaType) {
+                                      setValidationMessage(
+                                        "Please select a field type for your filter condition"
+                                      );
+                                      setTimeout(
+                                        () => setValidationMessage(null),
+                                        5000
+                                      );
+                                      return;
+                                    }
+                                    if (!criteriaValue) {
+                                      setValidationMessage(
+                                        "Please enter a value for your filter condition"
+                                      );
+                                      setTimeout(
+                                        () => setValidationMessage(null),
+                                        5000
+                                      );
+                                      return;
+                                    }
+                                    addCriteria();
+                                  }}
+                                  disabled={!criteriaType || !criteriaValue}
+                                  size="sm"
+                                  className="h-8 self-start"
+                                >
+                                  <PlusIcon className="h-3.5 w-3.5 mr-1" />
+                                  Add
+                                </Button>
+                              </div>
+
+                              <div className="mt-3 text-xs font-medium text-gray-600 bg-white p-2 rounded border border-gray-200">
+                                {criteriaType
+                                  ? `${criteriaInclusion === "Include" ? "Include" : "Exclude"} offers where ${friendlyTypeNames[criteriaType] || criteriaType} contains "${criteriaValue}".`
+                                  : "Select a field to get started with building your filter condition."}
+                              </div>
                             </div>
                           </div>
                         </AccordionContent>
@@ -1034,17 +1219,18 @@ export default function ProductFilterCreationView() {
                     </Accordion>
 
                     {/* Current Conditions */}
-                    <div className="flex-grow flex flex-col border rounded-md overflow-hidden">
+                    <div className="flex flex-col border rounded-md overflow-hidden">
                       <div className="border-b p-3">
                         <h4 className="text-sm font-medium flex items-center">
                           Current Conditions
-                          <Tooltip content="All required conditions must be added before saving">
-                            <InformationCircleIcon className="h-4 w-4 ml-1 text-muted-foreground" />
-                          </Tooltip>
+                          <span className="text-xs font-medium text-gray-600 ml-2">
+                            (All required conditions must be added before
+                            saving)
+                          </span>
                         </h4>
                       </div>
 
-                      <div className="grid grid-cols-2 flex-grow overflow-hidden">
+                      <div className="grid grid-cols-2 overflow-hidden">
                         {/* Include Rules */}
                         <div className="border-r flex flex-col">
                           <div className="bg-green-50 text-green-800 px-3 py-1.5 text-xs font-medium flex items-center justify-between border-b">
@@ -1064,7 +1250,7 @@ export default function ProductFilterCreationView() {
                             </Badge>
                           </div>
 
-                          <ScrollArea className="flex-grow p-2">
+                          <ScrollArea className="p-2 h-[250px]">
                             {filterCriteria.filter(
                               (c: FilterCriteria) => c.isRequired
                             ).length === 0 ? (
@@ -1072,45 +1258,43 @@ export default function ProductFilterCreationView() {
                                 No include conditions added yet
                               </div>
                             ) : (
-                              <div className="space-y-2">
+                              <div className="space-y-1.5">
                                 {filterCriteria
                                   .filter((c: FilterCriteria) => c.isRequired)
                                   .map((criteria: FilterCriteria) => (
                                     <div
                                       key={criteria.id}
-                                      className="border rounded-md p-2.5 relative hover:shadow-sm transition-all group"
+                                      className="border rounded-md p-1.5 relative hover:shadow-sm transition-all group"
                                     >
                                       <button
                                         onClick={() =>
                                           removeCriteria(criteria.id)
                                         }
-                                        className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                         aria-label="Remove condition"
                                       >
-                                        <XCircleIcon className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                                        <XCircleIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
                                       </button>
 
                                       <div className="text-xs">
-                                        <div className="font-medium mb-1.5">
+                                        <div className="font-medium">
                                           {friendlyTypeNames[criteria.type] ||
                                             criteria.type}
                                         </div>
-                                        <div className="flex items-center flex-wrap gap-1">
-                                          <span className="text-muted-foreground">
+                                        <div className="flex items-center flex-wrap gap-1 mt-0.5">
+                                          <span className="text-muted-foreground text-[10px]">
                                             {friendlyRuleNames[criteria.rule] ||
                                               criteria.rule}
                                           </span>
                                           <Badge
                                             variant="outline"
-                                            className="font-mono text-[10px]"
+                                            className="font-mono text-[10px] py-0 h-4"
                                           >
                                             {criteria.value}
                                           </Badge>
-                                        </div>
-                                        <div className="mt-2 flex justify-between items-center">
                                           <Badge
                                             variant="secondary"
-                                            className="text-[10px]"
+                                            className="text-[10px] py-0 h-4 ml-auto"
                                           >
                                             {criteria.and_or}
                                           </Badge>
@@ -1142,7 +1326,7 @@ export default function ProductFilterCreationView() {
                             </Badge>
                           </div>
 
-                          <ScrollArea className="flex-grow p-2">
+                          <ScrollArea className="p-2 h-[250px]">
                             {filterCriteria.filter(
                               (c: FilterCriteria) => !c.isRequired
                             ).length === 0 ? (
@@ -1150,45 +1334,43 @@ export default function ProductFilterCreationView() {
                                 No exclude conditions added yet
                               </div>
                             ) : (
-                              <div className="space-y-2">
+                              <div className="space-y-1.5">
                                 {filterCriteria
                                   .filter((c: FilterCriteria) => !c.isRequired)
                                   .map((criteria: FilterCriteria) => (
                                     <div
                                       key={criteria.id}
-                                      className="border rounded-md p-2.5 relative hover:shadow-sm transition-all group"
+                                      className="border rounded-md p-1.5 relative hover:shadow-sm transition-all group"
                                     >
                                       <button
                                         onClick={() =>
                                           removeCriteria(criteria.id)
                                         }
-                                        className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                         aria-label="Remove condition"
                                       >
-                                        <XCircleIcon className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                                        <XCircleIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
                                       </button>
 
                                       <div className="text-xs">
-                                        <div className="font-medium mb-1.5">
+                                        <div className="font-medium">
                                           {friendlyTypeNames[criteria.type] ||
                                             criteria.type}
                                         </div>
-                                        <div className="flex items-center flex-wrap gap-1">
-                                          <span className="text-muted-foreground">
+                                        <div className="flex items-center flex-wrap gap-1 mt-0.5">
+                                          <span className="text-muted-foreground text-[10px]">
                                             {friendlyRuleNames[criteria.rule] ||
                                               criteria.rule}
                                           </span>
                                           <Badge
                                             variant="outline"
-                                            className="font-mono text-[10px]"
+                                            className="font-mono text-[10px] py-0 h-4"
                                           >
                                             {criteria.value}
                                           </Badge>
-                                        </div>
-                                        <div className="mt-2 flex justify-between items-center">
                                           <Badge
                                             variant="secondary"
-                                            className="text-[10px]"
+                                            className="text-[10px] py-0 h-4 ml-auto"
                                           >
                                             {criteria.and_or}
                                           </Badge>
