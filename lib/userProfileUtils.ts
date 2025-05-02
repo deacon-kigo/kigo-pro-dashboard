@@ -1,11 +1,11 @@
 /**
  * User Profile Utilities
- * 
+ *
  * This file contains utilities for managing mock user profiles and generating
  * personalized content based on the current demo context.
  */
 
-import { UserProfile } from '@/types/demo';
+import { UserProfile } from "@/types/demo";
 
 // Function to convert MockUser to UserProfile
 export function convertMockUserToUserProfile(mockUser: MockUser): UserProfile {
@@ -14,11 +14,46 @@ export function convertMockUserToUserProfile(mockUser: MockUser): UserProfile {
     role: mockUser.role,
     businessName: mockUser.company,
     avatar: mockUser.avatar,
-    technicalProficiency: mockUser.techProficiency.toLowerCase() as 'low' | 'moderate' | 'high' | 'very high' | 'expert',
+    technicalProficiency: mockUser.techProficiency.toLowerCase() as
+      | "low"
+      | "moderate"
+      | "high"
+      | "very high"
+      | "expert",
     goals: mockUser.goals,
-    painPoints: mockUser.painPoints
+    painPoints: mockUser.painPoints,
   };
 }
+
+// Helper function to determine if a user is a publisher
+export const isPublisherUser = (userProfile: any): boolean => {
+  // Check if the URL has publisher parameter
+  if (typeof window !== "undefined") {
+    const url = new URL(window.location.href);
+    const userType = url.searchParams.get("userType");
+
+    // If explicitly set as publisher in URL or in publisher dashboard path
+    if (
+      userType === "publisher" ||
+      window.location.pathname.includes("publisher-dashboard")
+    ) {
+      return true;
+    }
+  }
+
+  // Default to false - assume merchant user
+  return false;
+};
+
+// Helper function to get a publisher display name
+export const getPublisherDisplayName = (): string => {
+  return "Global Rewards Inc.";
+};
+
+// Helper to convert campaign naming based on user type
+export const getCampaignLabel = (userProfile: any): string => {
+  return isPublisherUser(userProfile) ? "Advertiser Campaign" : "Campaign";
+};
 
 // Mock user profiles based on docs/demo/mock-users.md
 export interface MockUser {
@@ -29,7 +64,7 @@ export interface MockUser {
   title: string;
   company: string;
   avatar: string;
-  techProficiency: 'Low' | 'Moderate' | 'High' | 'Very High' | 'Expert';
+  techProficiency: "Low" | "Moderate" | "High" | "Very High" | "Expert";
   painPoints: string[];
   goals: string[];
 }
@@ -37,150 +72,150 @@ export interface MockUser {
 // Define mock users for each role and client combination
 const mockUsers: Record<string, MockUser> = {
   // Merchant users
-  'merchant-deacons': {
-    id: 'marco-deacon',
-    firstName: 'Marco',
-    lastName: 'Deacon',
-    role: 'Owner',
-    title: 'Owner',
-    company: 'Deacon\'s Pizza',
-    avatar: '/avatars/marco-deacon.jpg',
-    techProficiency: 'Moderate',
+  "merchant-deacons": {
+    id: "marco-deacon",
+    firstName: "Marco",
+    lastName: "Deacon",
+    role: "Owner",
+    title: "Owner",
+    company: "Deacon's Pizza",
+    avatar: "/avatars/marco-deacon.jpg",
+    techProficiency: "Moderate",
     painPoints: [
-      'Limited time for marketing',
-      'Competing with bigger chains',
-      'Slow weekday dinner business'
+      "Limited time for marketing",
+      "Competing with bigger chains",
+      "Slow weekday dinner business",
     ],
     goals: [
-      'Increase weekday sales',
-      'Build customer loyalty',
-      'Target local families'
-    ]
+      "Increase weekday sales",
+      "Build customer loyalty",
+      "Target local families",
+    ],
   },
-  'merchant-cvs': {
-    id: 'jennifer-williams',
-    firstName: 'Jennifer',
-    lastName: 'Williams',
-    role: 'Regional Marketing Director',
-    title: 'Regional Marketing Director',
-    company: 'CVS',
-    avatar: '/avatars/jennifer-williams.jpg',
-    techProficiency: 'High',
+  "merchant-cvs": {
+    id: "jennifer-williams",
+    firstName: "Jennifer",
+    lastName: "Williams",
+    role: "Regional Marketing Director",
+    title: "Regional Marketing Director",
+    company: "CVS",
+    avatar: "/avatars/jennifer-williams.jpg",
+    techProficiency: "High",
     painPoints: [
-      'Coordinating campaigns across locations',
-      'Maintaining brand consistency',
-      'Tracking cross-channel ROI'
+      "Coordinating campaigns across locations",
+      "Maintaining brand consistency",
+      "Tracking cross-channel ROI",
     ],
     goals: [
-      'Increase prescription refills',
-      'Drive health service traffic',
-      'Improve customer retention'
-    ]
+      "Increase prescription refills",
+      "Drive health service traffic",
+      "Improve customer retention",
+    ],
   },
-  'merchant-generic': {
-    id: 'taylor-wong',
-    firstName: 'Taylor',
-    lastName: 'Wong',
-    role: 'Marketing Manager',
-    title: 'Marketing Manager',
-    company: 'Generic Business',
-    avatar: '/avatars/taylor-wong.jpg',
-    techProficiency: 'Moderate',
+  "merchant-generic": {
+    id: "taylor-wong",
+    firstName: "Taylor",
+    lastName: "Wong",
+    role: "Marketing Manager",
+    title: "Marketing Manager",
+    company: "Generic Business",
+    avatar: "/avatars/taylor-wong.jpg",
+    techProficiency: "Moderate",
     painPoints: [
-      'Limited marketing budget',
-      'Inconsistent customer data',
-      'Competition in local market'
+      "Limited marketing budget",
+      "Inconsistent customer data",
+      "Competition in local market",
     ],
     goals: [
-      'Generate new leads',
-      'Increase customer value',
-      'Optimize marketing spend'
-    ]
+      "Generate new leads",
+      "Increase customer value",
+      "Optimize marketing spend",
+    ],
   },
-  
+
   // Support users
-  'support-generic': {
-    id: 'alex-chen',
-    firstName: 'Alex',
-    lastName: 'Chen',
-    role: 'Customer Support Agent',
-    title: 'Support Agent',
-    company: 'Kigo',
-    avatar: '/avatars/alex-chen.jpg',
-    techProficiency: 'High',
+  "support-generic": {
+    id: "alex-chen",
+    firstName: "Alex",
+    lastName: "Chen",
+    role: "Customer Support Agent",
+    title: "Support Agent",
+    company: "Kigo",
+    avatar: "/avatars/alex-chen.jpg",
+    techProficiency: "High",
     painPoints: [
-      'Switching between systems',
-      'Limited visibility into customer journey',
-      'Manual token management'
+      "Switching between systems",
+      "Limited visibility into customer journey",
+      "Manual token management",
     ],
     goals: [
-      'Resolve issues quickly',
-      'Improve customer satisfaction',
-      'Reduce manual work'
-    ]
+      "Resolve issues quickly",
+      "Improve customer satisfaction",
+      "Reduce manual work",
+    ],
   },
-  'support-tier2': {
-    id: 'sarah-johnson',
-    firstName: 'Sarah',
-    lastName: 'Johnson',
-    role: 'Senior Support Specialist',
-    title: 'Senior Support Specialist',
-    company: 'Kigo',
-    avatar: '/avatars/sarah-johnson.jpg',
-    techProficiency: 'Very High',
+  "support-tier2": {
+    id: "sarah-johnson",
+    firstName: "Sarah",
+    lastName: "Johnson",
+    role: "Senior Support Specialist",
+    title: "Senior Support Specialist",
+    company: "Kigo",
+    avatar: "/avatars/sarah-johnson.jpg",
+    techProficiency: "Very High",
     painPoints: [
-      'Limited technical logs',
-      'Complex multi-party issues',
-      'Limited admin capabilities'
+      "Limited technical logs",
+      "Complex multi-party issues",
+      "Limited admin capabilities",
     ],
     goals: [
-      'Resolve complex issues',
-      'Create support documentation',
-      'Improve technical systems'
-    ]
+      "Resolve complex issues",
+      "Create support documentation",
+      "Improve technical systems",
+    ],
   },
-  
+
   // Admin users
-  'admin-generic': {
-    id: 'david-garcia',
-    firstName: 'David',
-    lastName: 'Garcia',
-    role: 'Platform Operations Manager',
-    title: 'Platform Operations Manager',
-    company: 'Kigo',
-    avatar: '/avatars/david-garcia.jpg',
-    techProficiency: 'Expert',
+  "admin-generic": {
+    id: "david-garcia",
+    firstName: "David",
+    lastName: "Garcia",
+    role: "Platform Operations Manager",
+    title: "Platform Operations Manager",
+    company: "Kigo",
+    avatar: "/avatars/david-garcia.jpg",
+    techProficiency: "Expert",
     painPoints: [
-      'Lack of proactive monitoring',
-      'Manual verification processes',
-      'Limited bulk operations'
+      "Lack of proactive monitoring",
+      "Manual verification processes",
+      "Limited bulk operations",
     ],
     goals: [
-      'Ensure platform health',
-      'Streamline merchant management',
-      'Automate routine tasks'
-    ]
+      "Ensure platform health",
+      "Streamline merchant management",
+      "Automate routine tasks",
+    ],
   },
-  'admin-analytics': {
-    id: 'jane-foster',
-    firstName: 'Jane',
-    lastName: 'Foster',
-    role: 'Marketing Analytics Director',
-    title: 'Analytics Director',
-    company: 'Kigo',
-    avatar: '/avatars/jane-foster.jpg',
-    techProficiency: 'Expert',
+  "admin-analytics": {
+    id: "jane-foster",
+    firstName: "Jane",
+    lastName: "Foster",
+    role: "Marketing Analytics Director",
+    title: "Analytics Director",
+    company: "Kigo",
+    avatar: "/avatars/jane-foster.jpg",
+    techProficiency: "Expert",
     painPoints: [
-      'Data inconsistency across sources',
-      'Limited reporting customization',
-      'Tracking customer journeys'
+      "Data inconsistency across sources",
+      "Limited reporting customization",
+      "Tracking customer journeys",
     ],
     goals: [
-      'Analyze platform metrics',
-      'Identify growth opportunities',
-      'Create executive reports'
-    ]
-  }
+      "Analyze platform metrics",
+      "Identify growth opportunities",
+      "Create executive reports",
+    ],
+  },
 };
 
 /**
@@ -189,17 +224,31 @@ const mockUsers: Record<string, MockUser> = {
 export function getUserForContext(role: string, clientId: string): MockUser {
   // Combine role and clientId to look up in mockUsers
   const key = `${role}-${clientId}`;
-  
+
   // Log the lookup key and available keys to help debug
-  console.log('Looking up user profile with key:', key, 'Available keys:', Object.keys(mockUsers));
-  
+  console.log(
+    "Looking up user profile with key:",
+    key,
+    "Available keys:",
+    Object.keys(mockUsers)
+  );
+
   // Try to get the specific user, fall back to default for that role
-  const user = mockUsers[key] || 
-               mockUsers[`${role}-generic`] || 
-               mockUsers['merchant-generic'];
-  
-  console.log('Resolved user profile:', user.firstName, user.lastName, 'for role:', role, 'client:', clientId);
-  
+  const user =
+    mockUsers[key] ||
+    mockUsers[`${role}-generic`] ||
+    mockUsers["merchant-generic"];
+
+  console.log(
+    "Resolved user profile:",
+    user.firstName,
+    user.lastName,
+    "for role:",
+    role,
+    "client:",
+    clientId
+  );
+
   return user;
 }
 
@@ -208,7 +257,7 @@ export function getUserForContext(role: string, clientId: string): MockUser {
  */
 export function getTimeBasedGreeting(): string {
   const hour = new Date().getHours();
-  
+
   if (hour < 12) {
     return "Good morning";
   } else if (hour < 18) {
@@ -221,66 +270,72 @@ export function getTimeBasedGreeting(): string {
 /**
  * Get personalized content suggestions based on user profile
  */
-export function getPersonalizedSuggestions(userProfile?: UserProfile): string[] {
+export function getPersonalizedSuggestions(
+  userProfile?: UserProfile
+): string[] {
   if (!userProfile) {
     return [
       "Create your first campaign",
       "Set up your account preferences",
-      "Explore the analytics dashboard"
+      "Explore the analytics dashboard",
     ];
   }
 
   // Base suggestions on role
   const roleSuggestions: Record<string, string[]> = {
-    'Owner': [
+    Owner: [
       "Create a new loyalty campaign",
       "Review your weekly performance report",
-      "Set up automatic customer targeting"
+      "Set up automatic customer targeting",
     ],
-    'Regional Marketing Director': [
+    "Regional Marketing Director": [
       "Compare performance across locations",
       "Create a regional marketing campaign",
-      "Review compliance settings for all stores"
+      "Review compliance settings for all stores",
     ],
-    'Customer Support Agent': [
+    "Customer Support Agent": [
       "View open support tickets",
       "Check knowledge base updates",
-      "Review merchant onboarding status"
+      "Review merchant onboarding status",
     ],
-    'Senior Support Specialist': [
+    "Senior Support Specialist": [
       "Check system health dashboard",
       "Review escalated technical issues",
-      "Audit recent merchant configurations"
+      "Audit recent merchant configurations",
     ],
-    'Platform Operations Manager': [
+    "Platform Operations Manager": [
       "Review system performance metrics",
       "Check new merchant applications",
-      "View security alert dashboard"
+      "View security alert dashboard",
     ],
-    'Marketing Analytics Director': [
+    "Marketing Analytics Director": [
       "Review campaign performance metrics",
       "Analyze customer engagement trends",
-      "Generate executive summary report"
-    ]
+      "Generate executive summary report",
+    ],
   };
 
   // Get role-specific suggestions or defaults
   const suggestions = roleSuggestions[userProfile.role] || [
     "Review your dashboard",
     "Update your account settings",
-    "Explore new features"
+    "Explore new features",
   ];
 
   // Add goal-related suggestions
   if (userProfile.goals && userProfile.goals.length > 0) {
-    const randomGoal = userProfile.goals[Math.floor(Math.random() * userProfile.goals.length)];
+    const randomGoal =
+      userProfile.goals[Math.floor(Math.random() * userProfile.goals.length)];
     suggestions.push(`Goal: ${randomGoal}`);
   }
 
   // Add tech-level appropriate suggestions
-  if (userProfile.technicalProficiency === 'high' || userProfile.technicalProficiency === 'expert') {
+  if (
+    userProfile.technicalProficiency === "high" ||
+    userProfile.technicalProficiency === "expert"
+  ) {
     suggestions.push("Configure API integration settings");
-  } else if (userProfile.technicalProficiency === 'moderate') {
+  } else if (userProfile.technicalProficiency === "moderate") {
     suggestions.push("Try our guided campaign creator");
   } else {
     suggestions.push("View beginner-friendly tutorials");
@@ -296,7 +351,7 @@ export function getWelcomeBackMessage(user: MockUser): string {
   const hour = new Date().getHours();
   const dayOfWeek = new Date().getDay();
   const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-  
+
   if (isWeekend) {
     return `Working on the weekend, ${user.firstName}? Your dedication is impressive!`;
   } else if (hour < 9) {
@@ -313,7 +368,7 @@ export function getPersonalizedGreeting(userProfile?: UserProfile): string {
   if (!userProfile) {
     return "Welcome";
   }
-  
+
   const timeGreeting = getTimeBasedGreeting();
-  return `${timeGreeting}, ${userProfile.name.split(' ')[0]}`;
-} 
+  return `${timeGreeting}, ${userProfile.name.split(" ")[0]}`;
+}

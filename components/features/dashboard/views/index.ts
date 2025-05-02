@@ -6,3 +6,4 @@ export { default as DeaconsPizzaView } from "./DeaconsPizzaView";
 export { default as SevenElevenView } from "./SevenElevenView";
 export { default as LowesView } from "./LowesView";
 export { default as JohnDeereView } from "./JohnDeereView";
+export { default as PublisherDashboardView } from "./PublisherDashboardView";

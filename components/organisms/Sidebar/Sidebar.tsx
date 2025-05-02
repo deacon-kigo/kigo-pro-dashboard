@@ -98,6 +98,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
   // Add state for open submenus
   const [openSubmenus, setOpenSubmenus] = useState<{ [key: string]: boolean }>({
     campaigns: false,
+    dashboard: false,
   });
 
   // Add a function to toggle submenu state - memoize the handler
@@ -174,24 +175,51 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
 
   // Memoize campaign submenu items to prevent recreation on each render
   const campaignSubmenuItems = useMemo((): SubmenuItem[] => {
+    // Check if we're in the publisher dashboard view
+    const isPublisherDashboard = pathname.includes("/publisher-dashboard");
+
     return [
       {
         href: "/campaigns",
-        title: "All Campaigns",
+        title: isPublisherDashboard ? "All Program Campaigns" : "All Campaigns",
         isActive: pathname === "/campaigns",
       },
       {
         href: "/campaigns/active",
-        title: "Active Campaigns",
+        title: isPublisherDashboard
+          ? "Active Program Campaigns"
+          : "Active Campaigns",
         isActive: pathname === "/campaigns/active",
       },
     ];
   }, [pathname]);
 
+  // Memoize dashboard submenu items (when in campaign manager view)
+  const dashboardSubmenuItems = useMemo((): SubmenuItem[] => {
+    // Only show the submenu when in campaign manager view
+    if (!isCampaignManagerView) return [];
+
+    return [
+      {
+        href: "/campaign-manager",
+        title: "Main Dashboard",
+        isActive: pathname === "/campaign-manager",
+      },
+      {
+        href: "/campaign-manager/publisher-dashboard",
+        title: "Publisher / Advertiser Campaigns",
+        isActive: pathname === "/campaign-manager/publisher-dashboard",
+      },
+    ];
+  }, [pathname, isCampaignManagerView]);
+
   // Memoize navigation items based on context and role
   const navigationItems = useMemo(() => {
     // Determine dashboard URL based on context
     const dashboardUrl = isCampaignManagerView ? "/campaign-manager" : "/";
+
+    // Check if we're in the publisher dashboard view
+    const isPublisherDashboard = pathname.includes("/publisher-dashboard");
 
     // If in CVS context, show CVS-specific navigation
     if (isCVSContextBool) {
@@ -269,13 +297,19 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 title="Dashboard"
                 isActive={isLinkActive("/")}
                 isCollapsed={sidebarCollapsed}
+                hasSubmenu={
+                  isCampaignManagerView && dashboardSubmenuItems.length > 0
+                }
+                submenuItems={dashboardSubmenuItems}
+                isSubmenuOpen={openSubmenus.dashboard}
+                onToggleSubmenu={() => toggleSubmenu("dashboard")}
               />
             </li>
             <li className="nav-item px-3 py-1">
               <SidebarLabel
                 href="/campaigns"
                 icon={RocketLaunchIcon}
-                title="Campaigns"
+                title={isPublisherDashboard ? "Program Campaigns" : "Campaigns"}
                 isActive={isLinkActive("/campaigns")}
                 isCollapsed={sidebarCollapsed}
                 hasSubmenu={true}
@@ -352,7 +386,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
               <SidebarLabel
                 href="/campaigns"
                 icon={RocketLaunchIcon}
-                title="Campaigns"
+                title={isPublisherDashboard ? "Program Campaigns" : "Campaigns"}
                 isActive={isLinkActive("/campaigns")}
                 isCollapsed={sidebarCollapsed}
                 hasSubmenu={true}
@@ -401,11 +435,20 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     isLinkActive,
     campaignSubmenuItems,
     openSubmenus.campaigns,
+    openSubmenus.dashboard,
     toggleSubmenu,
+    dashboardSubmenuItems,
   ]);
 
   // Memoize the role title
   const roleTitle = useMemo(() => {
+    // Check if we're in the publisher dashboard view
+    const isPublisherDashboard = pathname.includes("/publisher-dashboard");
+
+    if (isPublisherDashboard) {
+      return "Publisher";
+    }
+
     switch (role) {
       case "merchant":
         return "Business Owner";
@@ -416,7 +459,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
       default:
         return "User";
     }
-  }, [role]);
+  }, [role, pathname]);
 
   // Handle sign out - memoize the handler
   const handleSignOut = useCallback(() => {
@@ -616,15 +659,20 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
 
   // User profile info - memoized
   const userProfileInfo = useMemo(() => {
+    // Check if we're in the publisher dashboard view
+    const isPublisherDashboard = pathname.includes("/publisher-dashboard");
+
     const avatar = (
       <div className="w-9 h-9 bg-pastel-purple rounded-full flex items-center justify-center text-indigo-500 font-semibold text-sm shadow-sm">
         {isCVSContextBool
           ? "SJ"
-          : role === "merchant"
-            ? "MU"
-            : role === "support"
-              ? "SA"
-              : "AD"}
+          : isPublisherDashboard
+            ? "PU"
+            : role === "merchant"
+              ? "MU"
+              : role === "support"
+                ? "SA"
+                : "AD"}
       </div>
     );
 
@@ -639,11 +687,13 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
           <p className="font-semibold text-sm whitespace-nowrap overflow-hidden text-ellipsis">
             {isCVSContextBool
               ? "Sarah Johnson"
-              : role === "merchant"
-                ? "Merchant User"
-                : role === "support"
-                  ? "Support Agent"
-                  : "Admin User"}
+              : isPublisherDashboard
+                ? "Publisher User"
+                : role === "merchant"
+                  ? "Merchant User"
+                  : role === "support"
+                    ? "Support Agent"
+                    : "Admin User"}
           </p>
           <p className="text-xs text-text-muted">
             {isCVSContextBool ? "CVS Agent ID: 2358" : roleTitle}
@@ -651,7 +701,14 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         </div>
       </>
     );
-  }, [isCVSContextBool, role, sidebarCollapsed, isHydrated, roleTitle]);
+  }, [
+    isCVSContextBool,
+    role,
+    sidebarCollapsed,
+    isHydrated,
+    roleTitle,
+    pathname,
+  ]);
 
   return (
     <aside

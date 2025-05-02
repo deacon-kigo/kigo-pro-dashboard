@@ -577,6 +577,20 @@ export default function ProductFilterCreationView() {
     }
   };
 
+  // Add a handler function for saving as draft
+  const handleSaveAsDraft = () => {
+    // For drafts, we only validate that there's a filter name
+    if (!filterName.trim()) {
+      alert("Please provide a filter name to save as draft");
+      return;
+    }
+
+    // In a real implementation, we would make an API call here
+    // and set the filter status to "Draft"
+    alert("Filter saved as draft successfully!");
+    router.push("/campaigns/product-filters");
+  };
+
   return (
     <div className="space-y-2 h-full flex flex-col">
       <PageHeader
@@ -688,6 +702,14 @@ export default function ProductFilterCreationView() {
                     Cancel
                   </Button>
                   <Button
+                    variant="secondary"
+                    onClick={handleSaveAsDraft}
+                    disabled={!filterName.trim()}
+                    size="sm"
+                  >
+                    Save as Draft
+                  </Button>
+                  <Button
                     onClick={handleCreateFilter}
                     disabled={
                       !filterName.trim() ||
@@ -729,6 +751,13 @@ export default function ProductFilterCreationView() {
                           </Badge>
                         </AccordionTrigger>
                         <AccordionContent className="px-4 pb-4">
+                          <div className="text-xs text-muted-foreground mb-3">
+                            <span className="inline-flex items-center">
+                              <InformationCircleIcon className="h-3.5 w-3.5 mr-1" />
+                              At least one condition required for publishing
+                              (not for drafts)
+                            </span>
+                          </div>
                           {filterCriteria.length === 0 ? (
                             <div className="text-center p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-md">
                               <ExclamationCircleIcon className="h-5 w-5 mx-auto mb-2" />
@@ -736,7 +765,8 @@ export default function ProductFilterCreationView() {
                                 No filter conditions yet
                               </p>
                               <p className="text-xs mt-1">
-                                At least one condition is required
+                                At least one condition is required for
+                                publishing
                               </p>
                             </div>
                           ) : (
@@ -817,6 +847,12 @@ export default function ProductFilterCreationView() {
                           Basic Information
                         </AccordionTrigger>
                         <AccordionContent className="px-4">
+                          <div className="text-xs text-muted-foreground mb-3">
+                            <span className="inline-flex items-center">
+                              <InformationCircleIcon className="h-3.5 w-3.5 mr-1" />
+                              Only Filter Name is required to save as draft
+                            </span>
+                          </div>
                           <div className="space-y-4 pb-2">
                             <div>
                               <Label htmlFor="filter-name" className="text-sm">
@@ -836,6 +872,9 @@ export default function ProductFilterCreationView() {
                             <div>
                               <Label htmlFor="description" className="text-sm">
                                 Description*
+                                <span className="text-xs text-muted-foreground ml-1">
+                                  (required for publishing)
+                                </span>
                               </Label>
                               <Textarea
                                 id="description"
