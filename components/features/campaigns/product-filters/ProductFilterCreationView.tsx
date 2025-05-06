@@ -183,6 +183,8 @@ export default function ProductFilterCreationView() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   // Add dialog open state for the back confirmation
   const [backDialogOpen, setBackDialogOpen] = useState(false);
+  // Add dialog open state for the create confirmation
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   // Use Redux selectors for form state
   const filterName = useSelector(selectFilterName);
@@ -265,8 +267,8 @@ export default function ProductFilterCreationView() {
     dispatch(removeCriteriaAction(id));
   };
 
-  // Create filter
-  const handleCreateFilter = () => {
+  // Create filter with confirmation
+  const handleCreateFilterClick = () => {
     // Check if basic form fields are filled based on new requirements
     const isBasicInfoValid =
       filterName.trim() !== "" && description.trim() !== "";
@@ -289,6 +291,15 @@ export default function ProductFilterCreationView() {
       setTimeout(() => setValidationMessage(null), 5000);
       return;
     }
+
+    // Open the confirmation dialog
+    setCreateDialogOpen(true);
+  };
+
+  // Handle confirmed filter creation
+  const handleConfirmedCreateFilter = () => {
+    // Close the dialog
+    setCreateDialogOpen(false);
 
     // Show success message
     setSuccessMessage("Product filter created successfully!");
@@ -317,35 +328,16 @@ export default function ProductFilterCreationView() {
     router.push("/campaigns/product-filters");
   };
 
-  // Create the back button for the header with confirmation dialog
+  // Create the back button for the header with trigger for confirmation dialog
   const backButton = (
-    <AlertDialog open={backDialogOpen} onOpenChange={setBackDialogOpen}>
-      <AlertDialogTrigger asChild>
-        <Button
-          variant="outline"
-          onClick={handleBackClick}
-          className="flex items-center gap-1"
-        >
-          <ArrowLeftIcon className="h-4 w-4" />
-          Back to Filters
-        </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Return to Filters</AlertDialogTitle>
-          <AlertDialogDescription>
-            All unsaved changes will be lost. Are you sure you want to go back
-            to the filters list?
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleConfirmedNavigateBack}>
-            Yes, go back
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <Button
+      variant="outline"
+      onClick={handleBackClick}
+      className="flex items-center gap-1"
+    >
+      <ArrowLeftIcon className="h-4 w-4" />
+      Back to Filters
+    </Button>
   );
 
   // Navigate to next tab
@@ -691,6 +683,47 @@ export default function ProductFilterCreationView() {
         variant="aurora"
       />
 
+      {/* Back to Filters confirmation dialog */}
+      <AlertDialog open={backDialogOpen} onOpenChange={setBackDialogOpen}>
+        <AlertDialogTrigger asChild className="hidden">
+          {/* This is a hidden trigger that's programmatically activated */}
+          <button />
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Return to Filters</AlertDialogTitle>
+            <AlertDialogDescription>
+              All unsaved changes will be lost. Are you sure you want to go back
+              to the filters list?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmedNavigateBack}>
+              Yes, go back
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Create Filter confirmation dialog */}
+      <AlertDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Create Product Filter</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to create the filter "{filterName}"?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmedCreateFilter}>
+              Yes, create filter
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Main content container with strict viewport-based height */}
       <div
         className="flex-1 flex flex-col"
@@ -883,7 +916,7 @@ export default function ProductFilterCreationView() {
                       Save as Draft
                     </Button>
                     <Button
-                      onClick={handleCreateFilter}
+                      onClick={handleCreateFilterClick}
                       disabled={
                         !filterName.trim() ||
                         !description.trim() ||
@@ -1211,171 +1244,195 @@ export default function ProductFilterCreationView() {
                       </Accordion>
 
                       {/* Current Conditions */}
-                      <div className="flex flex-col border rounded-md overflow-hidden">
-                        <div className="border-b p-3">
-                          <h4 className="text-sm font-medium flex items-center">
+                      <Accordion
+                        type="single"
+                        collapsible
+                        defaultValue="current-conditions"
+                        className="border rounded-md"
+                      >
+                        <AccordionItem
+                          value="current-conditions"
+                          className="border-none"
+                        >
+                          <AccordionTrigger className="px-4 py-3 text-sm font-medium">
                             Current Conditions
-                          </h4>
-                        </div>
+                            <Badge
+                              variant={
+                                filterCriteria.length > 0
+                                  ? "success"
+                                  : "warning"
+                              }
+                              size="sm"
+                              className="ml-2"
+                            >
+                              {filterCriteria.length}
+                            </Badge>
+                          </AccordionTrigger>
+                          <AccordionContent className="p-0">
+                            <div className="grid grid-cols-2 overflow-hidden">
+                              {/* Include Rules */}
+                              <div className="border-r flex flex-col">
+                                <div className="bg-green-50 text-green-800 px-3 py-1.5 text-xs font-medium flex items-center justify-between border-b">
+                                  <div className="flex items-center">
+                                    <CheckCircleIcon className="h-3.5 w-3.5 mr-1.5" />
+                                    <span>INCLUDE CONDITIONS</span>
+                                  </div>
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-[10px] bg-green-100"
+                                  >
+                                    {
+                                      filterCriteria.filter(
+                                        (c: FilterCriteria) => c.isRequired
+                                      ).length
+                                    }
+                                  </Badge>
+                                </div>
 
-                        <div className="grid grid-cols-2 overflow-hidden">
-                          {/* Include Rules */}
-                          <div className="border-r flex flex-col">
-                            <div className="bg-green-50 text-green-800 px-3 py-1.5 text-xs font-medium flex items-center justify-between border-b">
-                              <div className="flex items-center">
-                                <CheckCircleIcon className="h-3.5 w-3.5 mr-1.5" />
-                                <span>INCLUDE CONDITIONS</span>
-                              </div>
-                              <Badge
-                                variant="secondary"
-                                className="text-[10px] bg-green-100"
-                              >
-                                {
-                                  filterCriteria.filter(
+                                <ScrollArea className="p-2 h-[250px]">
+                                  {filterCriteria.filter(
                                     (c: FilterCriteria) => c.isRequired
-                                  ).length
-                                }
-                              </Badge>
-                            </div>
-
-                            <ScrollArea className="p-2 h-[250px]">
-                              {filterCriteria.filter(
-                                (c: FilterCriteria) => c.isRequired
-                              ).length === 0 ? (
-                                <div className="text-xs text-muted-foreground p-4 text-center">
-                                  No include conditions added yet
-                                </div>
-                              ) : (
-                                <div className="space-y-1.5">
-                                  {filterCriteria
-                                    .filter((c: FilterCriteria) => c.isRequired)
-                                    .map((criteria: FilterCriteria) => (
-                                      <div
-                                        key={criteria.id}
-                                        className="border rounded-md p-1.5 relative hover:shadow-sm transition-all group"
-                                      >
-                                        <button
-                                          onClick={() =>
-                                            removeCriteria(criteria.id)
-                                          }
-                                          className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                          aria-label="Remove condition"
-                                        >
-                                          <XCircleIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
-                                        </button>
-
-                                        <div className="text-xs">
-                                          <div className="font-medium">
-                                            {friendlyTypeNames[criteria.type] ||
-                                              criteria.type}
-                                          </div>
-                                          <div className="flex items-center flex-wrap gap-1 mt-0.5">
-                                            <span className="text-muted-foreground text-[10px]">
-                                              {friendlyRuleNames[
-                                                criteria.rule
-                                              ] || criteria.rule}
-                                            </span>
-                                            <Badge
-                                              variant="outline"
-                                              className="font-mono text-[10px] py-0 h-4"
+                                  ).length === 0 ? (
+                                    <div className="text-xs text-muted-foreground p-4 text-center">
+                                      No include conditions added yet
+                                    </div>
+                                  ) : (
+                                    <div className="space-y-1.5">
+                                      {filterCriteria
+                                        .filter(
+                                          (c: FilterCriteria) => c.isRequired
+                                        )
+                                        .map((criteria: FilterCriteria) => (
+                                          <div
+                                            key={criteria.id}
+                                            className="border rounded-md p-1.5 relative hover:shadow-sm transition-all group"
+                                          >
+                                            <button
+                                              onClick={() =>
+                                                removeCriteria(criteria.id)
+                                              }
+                                              className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                              aria-label="Remove condition"
                                             >
-                                              {criteria.value}
-                                            </Badge>
-                                            <Badge
-                                              variant="secondary"
-                                              className="text-[10px] py-0 h-4 ml-auto"
-                                            >
-                                              {criteria.and_or}
-                                            </Badge>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    ))}
-                                </div>
-                              )}
-                            </ScrollArea>
-                          </div>
+                                              <XCircleIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
+                                            </button>
 
-                          {/* Exclude Rules */}
-                          <div className="flex flex-col">
-                            <div className="bg-red-50 text-red-800 px-3 py-1.5 text-xs font-medium flex items-center justify-between border-b">
-                              <div className="flex items-center">
-                                <XCircleIcon className="h-3.5 w-3.5 mr-1.5" />
-                                <span>EXCLUDE CONDITIONS</span>
+                                            <div className="text-xs">
+                                              <div className="font-medium">
+                                                {friendlyTypeNames[
+                                                  criteria.type
+                                                ] || criteria.type}
+                                              </div>
+                                              <div className="flex items-center flex-wrap gap-1 mt-0.5">
+                                                <span className="text-muted-foreground text-[10px]">
+                                                  {friendlyRuleNames[
+                                                    criteria.rule
+                                                  ] || criteria.rule}
+                                                </span>
+                                                <Badge
+                                                  variant="outline"
+                                                  className="font-mono text-[10px] py-0 h-4"
+                                                >
+                                                  {criteria.value}
+                                                </Badge>
+                                                <Badge
+                                                  variant="secondary"
+                                                  className="text-[10px] py-0 h-4 ml-auto"
+                                                >
+                                                  {criteria.and_or}
+                                                </Badge>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        ))}
+                                    </div>
+                                  )}
+                                </ScrollArea>
                               </div>
-                              <Badge
-                                variant="secondary"
-                                className="text-[10px] bg-red-100"
-                              >
-                                {
-                                  filterCriteria.filter(
+
+                              {/* Exclude Rules */}
+                              <div className="flex flex-col">
+                                <div className="bg-red-50 text-red-800 px-3 py-1.5 text-xs font-medium flex items-center justify-between border-b">
+                                  <div className="flex items-center">
+                                    <XCircleIcon className="h-3.5 w-3.5 mr-1.5" />
+                                    <span>EXCLUDE CONDITIONS</span>
+                                  </div>
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-[10px] bg-red-100"
+                                  >
+                                    {
+                                      filterCriteria.filter(
+                                        (c: FilterCriteria) => !c.isRequired
+                                      ).length
+                                    }
+                                  </Badge>
+                                </div>
+
+                                <ScrollArea className="p-2 h-[250px]">
+                                  {filterCriteria.filter(
                                     (c: FilterCriteria) => !c.isRequired
-                                  ).length
-                                }
-                              </Badge>
+                                  ).length === 0 ? (
+                                    <div className="text-xs text-muted-foreground p-4 text-center">
+                                      No exclude conditions added yet
+                                    </div>
+                                  ) : (
+                                    <div className="space-y-1.5">
+                                      {filterCriteria
+                                        .filter(
+                                          (c: FilterCriteria) => !c.isRequired
+                                        )
+                                        .map((criteria: FilterCriteria) => (
+                                          <div
+                                            key={criteria.id}
+                                            className="border rounded-md p-1.5 relative hover:shadow-sm transition-all group"
+                                          >
+                                            <button
+                                              onClick={() =>
+                                                removeCriteria(criteria.id)
+                                              }
+                                              className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                              aria-label="Remove condition"
+                                            >
+                                              <XCircleIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
+                                            </button>
+
+                                            <div className="text-xs">
+                                              <div className="font-medium">
+                                                {friendlyTypeNames[
+                                                  criteria.type
+                                                ] || criteria.type}
+                                              </div>
+                                              <div className="flex items-center flex-wrap gap-1 mt-0.5">
+                                                <span className="text-muted-foreground text-[10px]">
+                                                  {friendlyRuleNames[
+                                                    criteria.rule
+                                                  ] || criteria.rule}
+                                                </span>
+                                                <Badge
+                                                  variant="outline"
+                                                  className="font-mono text-[10px] py-0 h-4"
+                                                >
+                                                  {criteria.value}
+                                                </Badge>
+                                                <Badge
+                                                  variant="secondary"
+                                                  className="text-[10px] py-0 h-4 ml-auto"
+                                                >
+                                                  {criteria.and_or}
+                                                </Badge>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        ))}
+                                    </div>
+                                  )}
+                                </ScrollArea>
+                              </div>
                             </div>
-
-                            <ScrollArea className="p-2 h-[250px]">
-                              {filterCriteria.filter(
-                                (c: FilterCriteria) => !c.isRequired
-                              ).length === 0 ? (
-                                <div className="text-xs text-muted-foreground p-4 text-center">
-                                  No exclude conditions added yet
-                                </div>
-                              ) : (
-                                <div className="space-y-1.5">
-                                  {filterCriteria
-                                    .filter(
-                                      (c: FilterCriteria) => !c.isRequired
-                                    )
-                                    .map((criteria: FilterCriteria) => (
-                                      <div
-                                        key={criteria.id}
-                                        className="border rounded-md p-1.5 relative hover:shadow-sm transition-all group"
-                                      >
-                                        <button
-                                          onClick={() =>
-                                            removeCriteria(criteria.id)
-                                          }
-                                          className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                          aria-label="Remove condition"
-                                        >
-                                          <XCircleIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
-                                        </button>
-
-                                        <div className="text-xs">
-                                          <div className="font-medium">
-                                            {friendlyTypeNames[criteria.type] ||
-                                              criteria.type}
-                                          </div>
-                                          <div className="flex items-center flex-wrap gap-1 mt-0.5">
-                                            <span className="text-muted-foreground text-[10px]">
-                                              {friendlyRuleNames[
-                                                criteria.rule
-                                              ] || criteria.rule}
-                                            </span>
-                                            <Badge
-                                              variant="outline"
-                                              className="font-mono text-[10px] py-0 h-4"
-                                            >
-                                              {criteria.value}
-                                            </Badge>
-                                            <Badge
-                                              variant="secondary"
-                                              className="text-[10px] py-0 h-4 ml-auto"
-                                            >
-                                              {criteria.and_or}
-                                            </Badge>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    ))}
-                                </div>
-                              )}
-                            </ScrollArea>
-                          </div>
-                        </div>
-                      </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
                     </div>
                   </div>
                 </div>
