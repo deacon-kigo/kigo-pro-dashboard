@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, ChangeEvent, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  ChangeEvent,
+  useCallback,
+  useRef,
+} from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/atoms/Button";
 import { Input } from "@/components/atoms/Input";
@@ -588,13 +594,24 @@ export default function ProductFilterCreationView() {
   // Get coverage stats from Redux
   const coverageStats = useSelector(selectCoverageStats);
 
+  // Ref to track previous criteria length to prevent unnecessary updates
+  const prevCriteriaLengthRef = useRef(filterCriteria.length);
+
   // Update coverage stats whenever criteria change
   useEffect(() => {
-    if (filterCriteria.length > 0) {
+    // Only update if the criteria length has changed or if we haven't generated stats yet
+    if (
+      filterCriteria.length > 0 &&
+      (prevCriteriaLengthRef.current !== filterCriteria.length ||
+        !coverageStats?.totalOffers)
+    ) {
+      // Update ref with current length
+      prevCriteriaLengthRef.current = filterCriteria.length;
+
       const stats = generateFilterCoverageStats(filterCriteria);
       dispatch(setCoverageStats(stats));
     }
-  }, [filterCriteria, dispatch]);
+  }, [filterCriteria, dispatch, coverageStats?.totalOffers]);
 
   // Function to handle applying coverage suggestions
   const handleSuggestionApply = (suggestionValue: string) => {
@@ -677,7 +694,7 @@ export default function ProductFilterCreationView() {
     <div className="space-y-2 h-full flex flex-col">
       <PageHeader
         title="Create New Product Filter"
-        description="Add a new product filter to control offer display in the TOP platform."
+        description="Define filters to control which offers are displayed to users."
         emoji="✨"
         actions={backButton}
         variant="aurora"
@@ -691,17 +708,28 @@ export default function ProductFilterCreationView() {
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Return to Filters</AlertDialogTitle>
+            <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
             <AlertDialogDescription>
-              All unsaved changes will be lost. Are you sure you want to go back
-              to the filters list?
+              You have unsaved changes. What would you like to do?
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmedNavigateBack}>
-              Yes, go back
-            </AlertDialogAction>
+          <AlertDialogFooter className="flex justify-end gap-2">
+            <Button variant="ghost" onClick={() => setBackDialogOpen(false)}>
+              Continue Editing
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setBackDialogOpen(false);
+                handleSaveAsDraft();
+              }}
+              disabled={!filterName.trim()}
+            >
+              Save as Draft
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmedNavigateBack}>
+              Discard Changes
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -901,13 +929,6 @@ export default function ProductFilterCreationView() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Button
-                      variant="outline"
-                      onClick={handleBackClick}
-                      size="sm"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
                       variant="secondary"
                       onClick={handleSaveAsDraft}
                       disabled={!filterName.trim()}
@@ -1074,26 +1095,27 @@ export default function ProductFilterCreationView() {
                         >
                           <AccordionTrigger className="px-4 py-3 text-sm font-medium">
                             Add Filter Condition
-                            <Badge
-                              variant={
-                                filterCriteria.length > 0
-                                  ? "success"
-                                  : "warning"
-                              }
-                              size="sm"
-                              className="ml-2"
-                            >
+                            <Badge variant="success" size="sm" className="ml-2">
                               {filterCriteria.length}
                             </Badge>
                           </AccordionTrigger>
                           <AccordionContent className="px-4">
                             <div className="space-y-4 pb-2">
-                              {/* Added condition requirements note */}
-                              <div className="text-xs text-muted-foreground mb-3">
+                              {/* Accessibility-enhanced help text with aria attributes */}
+                              <div
+                                className="text-xs text-muted-foreground mb-3"
+                                role="note"
+                                aria-live="polite"
+                              >
                                 <span className="inline-flex items-center">
-                                  <InformationCircleIcon className="h-3.5 w-3.5 mr-1" />
-                                  At least one condition is required to create a
-                                  filter
+                                  <InformationCircleIcon
+                                    className="h-3.5 w-3.5 mr-1"
+                                    aria-hidden="true"
+                                  />
+                                  <span id="filter-requirement-help">
+                                    At least one condition is required to create
+                                    a filter
+                                  </span>
                                 </span>
                               </div>
 
@@ -1256,17 +1278,6 @@ export default function ProductFilterCreationView() {
                         >
                           <AccordionTrigger className="px-4 py-3 text-sm font-medium">
                             Current Conditions
-                            <Badge
-                              variant={
-                                filterCriteria.length > 0
-                                  ? "success"
-                                  : "warning"
-                              }
-                              size="sm"
-                              className="ml-2"
-                            >
-                              {filterCriteria.length}
-                            </Badge>
                           </AccordionTrigger>
                           <AccordionContent className="p-0">
                             <div className="grid grid-cols-2 overflow-hidden">

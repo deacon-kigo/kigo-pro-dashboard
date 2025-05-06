@@ -1,5 +1,6 @@
 "use client";
 
+import React, { memo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/atoms/Button";
 import {
@@ -10,13 +11,25 @@ import {
   ChevronUpIcon,
   ChevronDownIcon,
 } from "@heroicons/react/24/outline";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useDispatch, useSelector } from "react-redux";
+import { setDropdownOpen } from "@/lib/redux/slices/uiSlice";
+import { selectDropdownOpen } from "@/lib/redux/selectors/uiSelectors";
 
 // Define the shape of our data
 export type ProductFilter = {
@@ -65,7 +78,132 @@ const SortIcon = ({ sorted }: { sorted?: "asc" | "desc" | false }) => {
   );
 };
 
+// Memoized ActionMenu component using Redux state instead of local state
+const ActionMenu = memo(function ActionMenu({
+  isDraft,
+  filterId,
+}: {
+  isDraft: boolean;
+  filterId: string;
+}) {
+  // Use Redux for state management
+  const dispatch = useDispatch();
+  const isOpen = useSelector((state) => selectDropdownOpen(state, filterId));
+
+  // Create stable, memoized handlers using useCallback
+  const handleOpenChange = React.useCallback(
+    (newOpen: boolean) => {
+      dispatch(setDropdownOpen({ id: filterId, isOpen: newOpen }));
+    },
+    [dispatch, filterId]
+  );
+
+  const handleViewOrEdit = React.useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      console.log(isDraft ? "Edit filter" : "View details", filterId);
+      dispatch(setDropdownOpen({ id: filterId, isOpen: false }));
+    },
+    [isDraft, filterId, dispatch]
+  );
+
+  const handleDuplicate = React.useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      console.log("Duplicate filter", filterId);
+      dispatch(setDropdownOpen({ id: filterId, isOpen: false }));
+    },
+    [filterId, dispatch]
+  );
+
+  const handleExtendExpiry = React.useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      console.log("Extend expiry for filter", filterId);
+      dispatch(setDropdownOpen({ id: filterId, isOpen: false }));
+    },
+    [filterId, dispatch]
+  );
+
+  const handleDelete = React.useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      console.log("Delete filter", filterId);
+      dispatch(setDropdownOpen({ id: filterId, isOpen: false }));
+    },
+    [filterId, dispatch]
+  );
+
+  // Enhanced event handling to prevent propagation
+  const handleContainerClick = React.useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+  }, []);
+
+  return (
+    <div
+      onClick={handleContainerClick}
+      onMouseDown={(e) => e.stopPropagation()}
+      data-state={isOpen ? "open" : "closed"}
+    >
+      <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" forceMount>
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuItem onClick={handleViewOrEdit}>
+            {isDraft ? "Edit filter" : "View details"}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleDuplicate}>
+            Duplicate
+          </DropdownMenuItem>
+          {!isDraft && (
+            <DropdownMenuItem onClick={handleExtendExpiry}>
+              Extend expiry
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem onClick={handleDelete} className="text-red-600">
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+});
+
 export const productFilterColumns: ColumnDef<ProductFilter>[] = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
   {
     accessorKey: "name",
     header: ({ column }) => {
@@ -308,26 +446,17 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
     cell: ({ row }) => {
       const status = row.getValue("status") as string;
       const isDraft = status === "Draft";
+      const filterId = row.original.id;
 
+      // No need for useMemo here anymore since the state is managed in Redux
       return (
-        <div className="flex space-x-2 justify-start">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0"
-            onClick={() => {}}
-          >
-            {isDraft ? (
-              <PencilIcon className="h-4 w-4" />
-            ) : (
-              <EyeIcon className="h-4 w-4" />
-            )}
-            <span className="sr-only">
-              {isDraft ? "Edit filter" : "View details"}
-            </span>
-          </Button>
-        </div>
+        <ActionMenu
+          key={`action-${filterId}`}
+          isDraft={isDraft}
+          filterId={filterId}
+        />
       );
     },
+    enableSorting: false,
   },
 ];

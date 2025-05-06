@@ -87,12 +87,6 @@ export const selectCriteriaForDisplay = createSelector(
     return criteria.map((c) => ({
       ...c,
       displayValue: `${c.type}: ${c.value} (${c.rule})`,
-      isRequired: [
-        "MerchantKeyword",
-        "MerchantName",
-        "OfferCommodity",
-        "OfferKeyword",
-      ].includes(c.type),
     }));
   }
 );

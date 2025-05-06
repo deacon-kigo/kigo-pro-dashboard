@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useState, memo, ReactNode } from "react";
+import { useState, memo, ReactNode, useMemo, useCallback } from "react";
 import Card from "@/components/atoms/Card/Card";
 import { Button } from "@/components/atoms/Button";
 import { cn } from "@/lib/utils";
@@ -29,6 +29,8 @@ export interface DataTableProps<TData, TValue> {
   className?: string;
   disablePagination?: boolean;
   customPagination?: ReactNode;
+  rowSelection?: Record<string, boolean>;
+  onRowSelectionChange?: (selection: Record<string, boolean>) => void;
 }
 
 /**
@@ -37,6 +39,7 @@ export interface DataTableProps<TData, TValue> {
  * A minimal reusable table component with support for:
  * - Pagination
  * - Sorting
+ * - Row selection
  */
 export const DataTable = memo(function DataTable<TData, TValue>({
   columns,
@@ -44,77 +47,159 @@ export const DataTable = memo(function DataTable<TData, TValue>({
   className,
   disablePagination = false,
   customPagination,
+  rowSelection = {},
+  onRowSelectionChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
 
-  // Create table instance
+  // Memoize handlers to prevent recreation on each render
+  const handleRowSelectionChange = useCallback(
+    (updatedRowSelection: unknown) => {
+      if (onRowSelectionChange) {
+        onRowSelectionChange(updatedRowSelection as Record<string, boolean>);
+      }
+    },
+    [onRowSelectionChange]
+  );
+
+  const handlePreviousPage = useCallback(() => {
+    setPageIndex((current) => Math.max(0, current - 1));
+  }, []);
+
+  const handleNextPage = useCallback(() => {
+    setPageIndex((current) => current + 1);
+  }, []);
+
+  const handleSortingChange = useCallback(
+    (updaterOrValue: SortingState | ((old: SortingState) => SortingState)) => {
+      setSorting(updaterOrValue);
+    },
+    []
+  );
+
+  // Memoize the table state to prevent recreating the object on each render
+  const tableState = useMemo(
+    () => ({
+      sorting,
+      pagination: {
+        pageIndex,
+        pageSize,
+      },
+      rowSelection,
+    }),
+    [sorting, pageIndex, pageSize, rowSelection]
+  );
+
+  // Create table instance with memoized dependencies
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    onSortingChange: setSorting,
-    state: {
-      sorting,
-      pagination: {
-        pageIndex,
-        pageSize,
-      },
-    },
+    onSortingChange: handleSortingChange,
+    onRowSelectionChange: handleRowSelectionChange,
+    state: tableState,
+    enableRowSelection: true,
   });
+
+  // Memoize table components to prevent unnecessary re-renders
+  const tableHeader = useMemo(
+    () => (
+      <TableHeader>
+        {table.getHeaderGroups().map((headerGroup) => (
+          <TableRow key={headerGroup.id}>
+            {headerGroup.headers.map((header) => (
+              <TableHead key={header.id}>
+                {header.isPlaceholder
+                  ? null
+                  : flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
+              </TableHead>
+            ))}
+          </TableRow>
+        ))}
+      </TableHeader>
+    ),
+    [table.getHeaderGroups()]
+  );
+
+  const tableBody = useMemo(
+    () => (
+      <TableBody>
+        {table.getRowModel().rows?.length ? (
+          table.getRowModel().rows.map((row) => (
+            <TableRow
+              key={row.id}
+              data-state={row.getIsSelected() && "selected"}
+              className="hover:bg-gray-50"
+            >
+              {row.getVisibleCells().map((cell) => (
+                <TableCell key={cell.id}>
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </TableCell>
+              ))}
+            </TableRow>
+          ))
+        ) : (
+          <TableRow>
+            <TableCell colSpan={columns.length} className="h-24 text-center">
+              No results.
+            </TableCell>
+          </TableRow>
+        )}
+      </TableBody>
+    ),
+    [table.getRowModel(), columns.length]
+  );
+
+  // Memoize the default pagination UI
+  const defaultPagination = useMemo(
+    () => (
+      <>
+        <div className="flex-1 text-sm text-muted-foreground">
+          {table.getRowModel().rows.length} item(s) found.
+        </div>
+        <div className="space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePreviousPage}
+            disabled={!table.getCanPreviousPage()}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleNextPage}
+            disabled={!table.getCanNextPage()}
+          >
+            Next
+          </Button>
+        </div>
+      </>
+    ),
+    [
+      table.getRowModel().rows.length,
+      table.getCanPreviousPage(),
+      table.getCanNextPage(),
+      handlePreviousPage,
+      handleNextPage,
+    ]
+  );
 
   return (
     <div className={cn("space-y-4", className)}>
       <Card className="overflow-hidden rounded-none">
         <div className="p-0">
           <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    No results.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
+            {tableHeader}
+            {tableBody}
           </Table>
         </div>
         {(!disablePagination || customPagination) && (
@@ -122,29 +207,7 @@ export const DataTable = memo(function DataTable<TData, TValue>({
             {customPagination ? (
               <div className="w-full">{customPagination}</div>
             ) : (
-              <>
-                <div className="flex-1 text-sm text-muted-foreground">
-                  {table.getRowModel().rows.length} item(s) found.
-                </div>
-                <div className="space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.previousPage()}
-                    disabled={!table.getCanPreviousPage()}
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.nextPage()}
-                    disabled={!table.getCanNextPage()}
-                  >
-                    Next
-                  </Button>
-                </div>
-              </>
+              defaultPagination
             )}
           </div>
         )}

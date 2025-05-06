@@ -1,8 +1,13 @@
 "use client";
 
-import React, { useMemo, memo, useState } from "react";
+import React, { useMemo, memo, useState, useCallback } from "react";
 import { Button } from "@/components/atoms/Button";
-import { PlusIcon } from "@heroicons/react/24/outline";
+import {
+  PlusIcon,
+  TrashIcon,
+  DocumentDuplicateIcon,
+  CalendarIcon,
+} from "@heroicons/react/24/outline";
 import {
   Tabs,
   TabsContent,
@@ -11,7 +16,7 @@ import {
 } from "@/components/atoms/Tabs";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/molecules/PageHeader";
-import { ProductFilterTable } from "./ProductFilterTable";
+import { ProductFilterTable, SelectedRows } from "./ProductFilterTable";
 import { ProductFilter, formatDate } from "./productFilterColumns";
 import { ProductFilterSearchBar, SearchField } from "./ProductFilterSearchBar";
 
@@ -20,6 +25,66 @@ interface PaginationState {
   currentPage: number;
   pageSize: number;
 }
+
+/**
+ * Bulk Actions Component
+ *
+ * Displays actions that can be performed on multiple selected filters
+ */
+const BulkActions = memo(function BulkActions({
+  selectedCount,
+  onDuplicate,
+  onDelete,
+  onExtendExpiry,
+  hasActiveFilters,
+}: {
+  selectedCount: number;
+  onDuplicate: () => void;
+  onDelete: () => void;
+  onExtendExpiry: () => void;
+  hasActiveFilters: boolean;
+}) {
+  if (selectedCount === 0) return null;
+
+  return (
+    <div className="bg-gray-50 border rounded-md p-2 flex items-center gap-3 mb-4">
+      <span className="text-sm font-medium ml-2">
+        {selectedCount} {selectedCount === 1 ? "filter" : "filters"} selected
+      </span>
+      <div className="flex gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-1"
+          onClick={onDuplicate}
+        >
+          <DocumentDuplicateIcon className="h-4 w-4" />
+          Duplicate
+        </Button>
+        {hasActiveFilters && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-1"
+            onClick={onExtendExpiry}
+          >
+            <CalendarIcon className="h-4 w-4" />
+            Extend Expiry
+          </Button>
+        )}
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+          onClick={onDelete}
+        >
+          <TrashIcon className="h-4 w-4" />
+          Delete
+        </Button>
+      </div>
+    </div>
+  );
+});
 
 /**
  * ProductFiltersListView Component
@@ -32,6 +97,7 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("active");
+  const [selectedFilters, setSelectedFilters] = useState<SelectedRows>({});
 
   // Tab-specific pagination state
   const [paginationState, setPaginationState] = useState<
@@ -43,48 +109,59 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
     all: { currentPage: 1, pageSize: 5 },
   });
 
-  // Handle tab change
-  const handleTabChange = (value: string) => {
-    console.log(`Switching to tab: ${value}, state:`, paginationState[value]);
+  // Handle tab change with useCallback
+  const handleTabChange = useCallback((value: string) => {
     setActiveTab(value);
-  };
+    // Clear selections when changing tabs
+    setSelectedFilters({});
+  }, []);
 
-  // Handle page change
-  const handlePageChange = (page: number) => {
-    setPaginationState((prev) => ({
-      ...prev,
-      [activeTab]: {
-        ...prev[activeTab],
-        currentPage: page,
-      },
-    }));
-  };
+  // Handle row selection change with useCallback
+  const handleRowSelectionChange = useCallback((selection: SelectedRows) => {
+    // Use a functional update to ensure we get the latest state
+    setSelectedFilters(selection);
+  }, []);
 
-  // Handle page size change
-  const handlePageSizeChange = (value: string) => {
-    const newPageSize = parseInt(value, 10);
-    console.log(`Changing page size to: ${newPageSize} on tab: ${activeTab}`);
-    setPaginationState((prev) => {
-      const newState = {
+  // Handle page change with useCallback
+  const handlePageChange = useCallback(
+    (page: number) => {
+      setPaginationState((prev) => ({
         ...prev,
         [activeTab]: {
           ...prev[activeTab],
-          pageSize: newPageSize,
-          currentPage: 1, // Reset to page 1 when changing page size
+          currentPage: page,
         },
-      };
-      console.log("New pagination state:", newState);
-      return newState;
-    });
-  };
+      }));
+    },
+    [activeTab]
+  );
 
-  // Navigate to the new product filter page
-  const handleCreateFilter = () => {
+  // Handle page size change with useCallback
+  const handlePageSizeChange = useCallback(
+    (value: string) => {
+      const newPageSize = parseInt(value, 10);
+      setPaginationState((prev) => {
+        const newState = {
+          ...prev,
+          [activeTab]: {
+            ...prev[activeTab],
+            pageSize: newPageSize,
+            currentPage: 1, // Reset to page 1 when changing page size
+          },
+        };
+        return newState;
+      });
+    },
+    [activeTab]
+  );
+
+  // Navigate to the new product filter page with useCallback
+  const handleCreateFilter = useCallback(() => {
     router.push("/campaigns/product-filters/new");
-  };
+  }, [router]);
 
-  // Handle search
-  const handleSearch = (query: string, field: SearchField) => {
+  // Handle search with useCallback
+  const handleSearch = useCallback((query: string, field: SearchField) => {
     setSearchQuery(query);
     // Reset to page 1 on all tabs when search query changes
     setPaginationState((prev) => ({
@@ -93,9 +170,42 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
       draft: { ...prev.draft, currentPage: 1 },
       all: { ...prev.all, currentPage: 1 },
     }));
-  };
+    // Clear selections when searching
+    setSelectedFilters({});
+  }, []);
 
-  // Sample data for the tables - in a real app, this would be fetched from an API
+  // Bulk action handlers with useCallback
+  const handleBulkDuplicate = useCallback(() => {
+    const selectedIds = Object.keys(selectedFilters).filter(
+      (id) => selectedFilters[id]
+    );
+    console.log("Duplicating filters:", selectedIds);
+    // Implement actual duplication logic here
+    // After action, clear selections
+    setSelectedFilters({});
+  }, [selectedFilters]);
+
+  const handleBulkDelete = useCallback(() => {
+    const selectedIds = Object.keys(selectedFilters).filter(
+      (id) => selectedFilters[id]
+    );
+    console.log("Deleting filters:", selectedIds);
+    // Implement actual deletion logic here
+    // After action, clear selections
+    setSelectedFilters({});
+  }, [selectedFilters]);
+
+  const handleBulkExtendExpiry = useCallback(() => {
+    const selectedIds = Object.keys(selectedFilters).filter(
+      (id) => selectedFilters[id]
+    );
+    console.log("Extending expiry for filters:", selectedIds);
+    // Implement actual expiry extension logic here
+    // After action, clear selections
+    setSelectedFilters({});
+  }, [selectedFilters]);
+
+  // Sample data for the tables - use useMemo for static data
   const filters = useMemo<ProductFilter[]>(
     () => [
       {
@@ -514,58 +624,63 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
     [filters]
   );
 
-  // Filter data based on search query
-  const filterDataBySearch = (data: ProductFilter[]) => {
-    if (!searchQuery.trim()) {
-      return data;
-    }
+  // Filter data based on search query - moved to a memoized function
+  const filterDataBySearch = useCallback(
+    (data: ProductFilter[], query: string) => {
+      if (!query.trim()) {
+        return data;
+      }
 
-    const query = searchQuery.toLowerCase();
-    return data.filter((filter) => {
-      // Publisher logic
-      const publisherLabel = filter.publisherSpecific
-        ? filter.publisherName?.toLowerCase() || ""
-        : "general";
-      // Date logic
-      const createdDateFormatted = formatDate(filter.createdDate).toLowerCase();
-      const expiryDateFormatted = formatDate(filter.expiryDate).toLowerCase();
-      // All searchable fields
-      const fields = [
-        filter.name,
-        filter.description,
-        filter.queryView,
-        filter.createdBy,
-        filter.createdDate,
-        filter.expiryDate,
-        createdDateFormatted,
-        expiryDateFormatted,
-        publisherLabel,
-      ];
-      return fields.some(
-        (field) => field && field.toLowerCase().includes(query)
-      );
-    });
-  };
+      const lowerQuery = query.toLowerCase();
+      return data.filter((filter) => {
+        // Publisher logic
+        const publisherLabel = filter.publisherSpecific
+          ? filter.publisherName?.toLowerCase() || ""
+          : "general";
+        // Date logic
+        const createdDateFormatted = formatDate(
+          filter.createdDate
+        ).toLowerCase();
+        const expiryDateFormatted = formatDate(filter.expiryDate).toLowerCase();
+        // All searchable fields
+        const fields = [
+          filter.name,
+          filter.description,
+          filter.queryView,
+          filter.createdBy,
+          filter.createdDate,
+          filter.expiryDate,
+          createdDateFormatted,
+          expiryDateFormatted,
+          publisherLabel,
+        ];
+        return fields.some(
+          (field) => field && field.toLowerCase().includes(lowerQuery)
+        );
+      });
+    },
+    []
+  );
 
   // Apply search filter to all data sets
   const filteredActiveFilters = useMemo(
-    () => filterDataBySearch(activeFilters),
-    [activeFilters, searchQuery]
+    () => filterDataBySearch(activeFilters, searchQuery),
+    [activeFilters, searchQuery, filterDataBySearch]
   );
 
   const filteredExpiredFilters = useMemo(
-    () => filterDataBySearch(expiredFilters),
-    [expiredFilters, searchQuery]
+    () => filterDataBySearch(expiredFilters, searchQuery),
+    [expiredFilters, searchQuery, filterDataBySearch]
   );
 
   const filteredDraftFilters = useMemo(
-    () => filterDataBySearch(draftFilters),
-    [draftFilters, searchQuery]
+    () => filterDataBySearch(draftFilters, searchQuery),
+    [draftFilters, searchQuery, filterDataBySearch]
   );
 
   const filteredAllFilters = useMemo(
-    () => filterDataBySearch(filters),
-    [filters, searchQuery]
+    () => filterDataBySearch(filters, searchQuery),
+    [filters, searchQuery, filterDataBySearch]
   );
 
   // Memoize UI elements that don't need to be recreated on every render
@@ -589,6 +704,63 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
     ),
     []
   );
+
+  const emptyDraftStateContent = useMemo(
+    () => (
+      <div className="bg-white rounded-md border border-gray-200 p-6 flex justify-center items-center text-center overflow-hidden shadow-sm">
+        <div>
+          <p className="text-muted-foreground">No draft product filters</p>
+        </div>
+      </div>
+    ),
+    []
+  );
+
+  // Check if any active filters are selected
+  const hasSelectedActiveFilters = useMemo(() => {
+    const selectedIds = Object.keys(selectedFilters).filter(
+      (id) => selectedFilters[id]
+    );
+
+    // For the 'all' tab, check if any active filters are selected
+    if (activeTab === "all") {
+      return selectedIds.some((id) => {
+        const filter = filters.find((f) => f.id === id);
+        return filter && filter.status === "Active";
+      });
+    }
+
+    // For other tabs, just check if it's the active tab
+    return activeTab === "active";
+  }, [selectedFilters, activeTab, filters]);
+
+  // Get the selected count
+  const selectedCount = useMemo(
+    () =>
+      Object.keys(selectedFilters).filter((id) => selectedFilters[id]).length,
+    [selectedFilters]
+  );
+
+  // Memoize the bulk actions component
+  const bulkActionsComponent = useMemo(() => {
+    if (selectedCount === 0) return null;
+
+    return (
+      <BulkActions
+        selectedCount={selectedCount}
+        onDuplicate={handleBulkDuplicate}
+        onDelete={handleBulkDelete}
+        onExtendExpiry={handleBulkExtendExpiry}
+        hasActiveFilters={hasSelectedActiveFilters}
+      />
+    );
+  }, [
+    selectedCount,
+    handleBulkDuplicate,
+    handleBulkDelete,
+    handleBulkExtendExpiry,
+    hasSelectedActiveFilters,
+  ]);
 
   return (
     <div className="space-y-6">
@@ -615,6 +787,8 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
           </TabsList>
         </div>
 
+        {bulkActionsComponent}
+
         <TabsContent value="active" className="mt-4">
           <ProductFilterTable
             data={filteredActiveFilters}
@@ -624,6 +798,8 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
             pageSize={paginationState.active.pageSize}
             onPageChange={handlePageChange}
             onPageSizeChange={handlePageSizeChange}
+            onRowSelectionChange={handleRowSelectionChange}
+            rowSelection={selectedFilters}
           />
         </TabsContent>
 
@@ -636,6 +812,8 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
               pageSize={paginationState.expired.pageSize}
               onPageChange={handlePageChange}
               onPageSizeChange={handlePageSizeChange}
+              onRowSelectionChange={handleRowSelectionChange}
+              rowSelection={selectedFilters}
             />
           ) : (
             emptyStateContent
@@ -651,15 +829,11 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
               pageSize={paginationState.draft.pageSize}
               onPageChange={handlePageChange}
               onPageSizeChange={handlePageSizeChange}
+              onRowSelectionChange={handleRowSelectionChange}
+              rowSelection={selectedFilters}
             />
           ) : (
-            <div className="bg-white rounded-md border border-gray-200 p-6 flex justify-center items-center text-center overflow-hidden shadow-sm">
-              <div>
-                <p className="text-muted-foreground">
-                  No draft product filters
-                </p>
-              </div>
-            </div>
+            emptyDraftStateContent
           )}
         </TabsContent>
 
@@ -671,6 +845,8 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
             pageSize={paginationState.all.pageSize}
             onPageChange={handlePageChange}
             onPageSizeChange={handlePageSizeChange}
+            onRowSelectionChange={handleRowSelectionChange}
+            rowSelection={selectedFilters}
           />
         </TabsContent>
       </Tabs>

@@ -28,6 +28,9 @@ export interface UIState {
 
   // Track whether client-side hydration has occurred
   isHydrated: boolean;
+
+  // Product filter dropdown states
+  openDropdowns: Record<string, boolean>;
 }
 
 const initialState: UIState = {
@@ -40,6 +43,7 @@ const initialState: UIState = {
   demoSelectorPinned: false,
   demoSelectorCollapsed: false,
   isHydrated: false,
+  openDropdowns: {},
 };
 
 // Theme definitions - composable and extensible
@@ -168,6 +172,19 @@ export const uiSlice = createSlice({
     setDemoSelectorCollapsed: (state, action: PayloadAction<boolean>) => {
       state.demoSelectorCollapsed = action.payload;
     },
+
+    // Product filter dropdown actions
+    setDropdownOpen: (
+      state,
+      action: PayloadAction<{ id: string; isOpen: boolean }>
+    ) => {
+      const { id, isOpen } = action.payload;
+      state.openDropdowns[id] = isOpen;
+    },
+
+    clearAllDropdowns: (state) => {
+      state.openDropdowns = {};
+    },
   },
 });
 
@@ -200,6 +217,8 @@ export const {
   toggleDemoSelector,
   setDemoSelectorPinned,
   setDemoSelectorCollapsed,
+  setDropdownOpen,
+  clearAllDropdowns,
 } = uiSlice.actions;
 
 export default uiSlice.reducer;
