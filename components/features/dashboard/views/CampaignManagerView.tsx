@@ -3,6 +3,15 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useDemoState } from "@/lib/redux/hooks";
 import { convertMockUserToUserProfile } from "@/lib/userProfileUtils";
+import Link from "next/link";
+import { Button } from "@/components/atoms/Button";
+import {
+  PlusIcon,
+  SparklesIcon,
+  ChartBarIcon,
+  MegaphoneIcon,
+} from "@heroicons/react/24/outline";
+import Card from "@/components/atoms/Card/Card";
 
 // Simplified greeting header component with proper gradient background
 const GreetingHeader = () => {
@@ -109,12 +118,105 @@ const GreetingHeader = () => {
   );
 };
 
+// Action Cards Component
+const ActionCards = () => {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <Link href="/campaign-manager/ads-create" className="block">
+        <Card className="h-full p-4 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+          <div className="flex items-center justify-between mb-3">
+            <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
+              <MegaphoneIcon className="h-6 w-6" />
+            </div>
+            <span className="text-xs font-medium text-blue-500 bg-blue-50 px-2 py-1 rounded-full">
+              New
+            </span>
+          </div>
+          <h3 className="font-medium text-gray-900 mb-1">Ads Campaign</h3>
+          <p className="text-sm text-gray-600 mb-3">
+            Create a new advertisement campaign with budget and targeting
+            options
+          </p>
+          <Button variant="outline" size="sm" className="w-full">
+            <PlusIcon className="h-4 w-4 mr-1" /> Create
+          </Button>
+        </Card>
+      </Link>
+
+      <Link href="/campaign-manager/ai-create" className="block">
+        <Card className="h-full p-4 hover:bg-purple-50 hover:border-purple-200 transition-colors">
+          <div className="flex items-center justify-between mb-3">
+            <div className="p-2 bg-purple-100 text-purple-600 rounded-lg">
+              <SparklesIcon className="h-6 w-6" />
+            </div>
+          </div>
+          <h3 className="font-medium text-gray-900 mb-1">AI Campaign</h3>
+          <p className="text-sm text-gray-600 mb-3">
+            Generate optimized campaigns with AI recommendations
+          </p>
+          <Button variant="outline" size="sm" className="w-full">
+            <PlusIcon className="h-4 w-4 mr-1" /> Create with AI
+          </Button>
+        </Card>
+      </Link>
+
+      <Link href="/campaigns/product-filters" className="block">
+        <Card className="h-full p-4 hover:bg-green-50 hover:border-green-200 transition-colors">
+          <div className="flex items-center justify-between mb-3">
+            <div className="p-2 bg-green-100 text-green-600 rounded-lg">
+              <ChartBarIcon className="h-6 w-6" />
+            </div>
+          </div>
+          <h3 className="font-medium text-gray-900 mb-1">Product Filters</h3>
+          <p className="text-sm text-gray-600 mb-3">
+            Configure filters to determine which products appear in campaigns
+          </p>
+          <Button variant="outline" size="sm" className="w-full">
+            <PlusIcon className="h-4 w-4 mr-1" /> Manage Filters
+          </Button>
+        </Card>
+      </Link>
+
+      <Card className="h-full p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="p-2 bg-gray-100 text-gray-500 rounded-lg">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="h-6 w-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5m.75-9l3-3 2.148 2.148A12.061 12.061 0 0116.5 7.605"
+              />
+            </svg>
+          </div>
+        </div>
+        <h3 className="font-medium text-gray-900 mb-1">Analytics</h3>
+        <p className="text-sm text-gray-600 mb-3">
+          View detailed performance metrics for all your campaigns
+        </p>
+        <Button variant="outline" size="sm" className="w-full">
+          View Reports
+        </Button>
+      </Card>
+    </div>
+  );
+};
+
 // The main Campaign Manager dashboard component
 export default function CampaignManagerView() {
   return (
     <div className="space-y-4">
       {/* Personalized greeting header */}
       <GreetingHeader />
+
+      {/* Action Cards */}
+      <ActionCards />
 
       {/* PowerBI dashboard embed - direct without Card container */}
       <PowerBIEmbed />

@@ -2,6 +2,7 @@
 
 // Export individual components
 export { default as CampaignForm } from "./CampaignForm";
+export { default as AdvertisementCampaignCreationContent } from "./AdvertisementCampaignCreationContent";
 
 // Export all campaign creation components
 export * from "./creation";
