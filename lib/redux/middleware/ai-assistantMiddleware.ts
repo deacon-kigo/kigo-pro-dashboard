@@ -756,19 +756,17 @@ const aiAssistantMiddleware: Middleware =
         // Create auto filter generator tool
         const autoGeneratorTool = createAutoFilterGeneratorTool();
 
-        // Get current context from state
-        const filterName = state.productFilter?.filterName || "";
-        const filterDescription = state.productFilter?.description || "";
-        const currentCriteria = state.aiAssistant.currentCriteria || [];
-        const conversationHistory = state.aiAssistant.messages;
+        // Get complete context from state using the selector
+        const completeContext = selectCompleteFilterContext(state);
 
         // Invoke the tool
         const toolResponse = await autoGeneratorTool.invoke(
           JSON.stringify({
-            filterName,
-            filterDescription,
-            currentCriteria,
-            conversationHistory,
+            filterName: completeContext.filterName,
+            filterDescription: completeContext.description,
+            currentCriteria: completeContext.criteria,
+            conversationHistory: completeContext.conversationHistory,
+            expiryDate: completeContext.expiryDate,
           })
         );
 
@@ -811,7 +809,7 @@ Would you like me to apply these updates to your filter?`;
                   value: `apply_updates:${JSON.stringify({
                     criteriaToAdd: response.criteriaToAdd,
                     filterName:
-                      response.suggestedName && !filterName
+                      response.suggestedName && !completeContext.filterName
                         ? response.suggestedName
                         : undefined,
                   })}`,

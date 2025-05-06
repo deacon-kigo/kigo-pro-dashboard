@@ -329,9 +329,10 @@ export default function ProductFilterCreationView() {
         filterName,
         filterDescription: description,
         currentCriteria: filterCriteria,
+        expiryDate: expiryDate ? expiryDate.toISOString() : null,
       })
     );
-  }, [dispatch, filterName, description, filterCriteria]);
+  }, [dispatch, filterName, description, filterCriteria, expiryDate]);
 
   // Handle option selected from AI Assistant
   const handleOptionSelected = (optionId: string) => {
@@ -352,7 +353,6 @@ export default function ProductFilterCreationView() {
         dispatch(
           applyFilterUpdate({
             filterName: updates.filterName,
-            queryViewName: updates.queryViewName,
             criteriaToAdd: updates.criteriaToAdd,
             expiryDate: updates.expiryDate
               ? new Date(updates.expiryDate)
@@ -465,7 +465,6 @@ export default function ProductFilterCreationView() {
         dispatch(setIsGenerating(true));
         interface CompleteFilterData {
           name?: string;
-          queryViewName?: string;
           description?: string;
           expiryDate?: string;
           criteria?: Array<Partial<FilterCriteria> & { inclusion?: string }>;
@@ -478,8 +477,6 @@ export default function ProductFilterCreationView() {
           const update: any = {};
 
           if (filterData.name) update.filterName = filterData.name;
-          if (filterData.queryViewName)
-            update.queryViewName = filterData.queryViewName;
           if (filterData.description)
             update.description = filterData.description;
           if (filterData.expiryDate) {

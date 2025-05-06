@@ -58,16 +58,14 @@ export const selectIsFormValid = createSelector(
 export const selectCompleteFilterContext = createSelector(
   [
     selectFilterName,
-    selectQueryViewName,
     selectDescription,
     selectExpiryDate,
     selectCriteria,
     (state: RootState) => state.aiAssistant.messages,
   ],
-  (filterName, queryViewName, description, expiryDate, criteria, messages) => {
+  (filterName, description, expiryDate, criteria, messages) => {
     return {
       filterName,
-      queryViewName,
       description,
       expiryDate,
       criteria,

@@ -97,6 +97,7 @@ export const aiAssistantSlice = createSlice({
         filterName?: string;
         filterDescription?: string;
         currentCriteria?: FilterCriteria[];
+        expiryDate?: string | null;
       }>
     ) => {
       state.contextId = "productFilterContext";

@@ -392,7 +392,7 @@ export const createAutoFilterGeneratorTool = () => {
   return new DynamicTool({
     name: "auto_filter_generator",
     description:
-      "Automatically generates a complete product filter based on conversation context and existing criteria. Input must be a JSON string with keys: filterName (string, optional), filterDescription (string, optional), currentCriteria (array of existing criteria, optional), conversationHistory (array of message objects).",
+      "Automatically generates a complete product filter based on conversation context and existing criteria. Input must be a JSON string with keys: filterName (string, optional), filterDescription (string, optional), currentCriteria (array of existing criteria, optional), conversationHistory (array of message objects), expiryDate (string, optional).",
     func: async (
       input: string,
       runManager?: CallbackManagerForToolRun | undefined,
@@ -405,6 +405,7 @@ export const createAutoFilterGeneratorTool = () => {
           filterDescription = "",
           currentCriteria = [],
           conversationHistory = [],
+          expiryDate = null,
         } = JSON.parse(input);
 
         const model = getDefaultModel({ temperature: 0.4 });
@@ -470,6 +471,7 @@ Field Type Format Guidelines:
           Current Context:
           Filter Name: {filterName}
           Filter Description: {filterDescription}
+          Expiry Date: {expiryDate}
           
           Current Criteria:
           {currentCriteriaString}
@@ -499,6 +501,7 @@ Field Type Format Guidelines:
         const response = await chain.invoke({
           filterName: filterName || "Not set",
           filterDescription: filterDescription || "Not set",
+          expiryDate: expiryDate || "Not set",
           currentCriteriaString,
           conversationString,
           requiredTypesString: requiredTypes.join(", "),
