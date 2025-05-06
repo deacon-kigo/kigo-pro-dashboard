@@ -48,6 +48,7 @@ import { AIAssistantPanel } from "@/components/features/ai";
 import { Badge } from "@/components/atoms/Badge";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { CampaignAnalyticsPanel } from "./CampaignAnalyticsPanel";
 
 // Custom DatePicker component
 interface DatePickerProps {
@@ -347,7 +348,7 @@ export default function AdvertisementCampaignCreationContent() {
         <div className="flex gap-3 h-full">
           {/* Left Column - AI Assistant Panel with fixed height and position */}
           <div
-            className="w-[448px] flex-shrink-0"
+            className="w-[320px] flex-shrink-0"
             style={{
               position: "sticky",
               top: "1rem",
@@ -387,7 +388,7 @@ export default function AdvertisementCampaignCreationContent() {
             </Card>
           </div>
 
-          {/* Right Column - Campaign Configuration with scrollable content */}
+          {/* Middle Column - Campaign Configuration with scrollable content */}
           <div className="flex-1 overflow-auto pb-6">
             <div className="flex flex-col">
               {/* Validation Message Banner */}
@@ -466,7 +467,7 @@ export default function AdvertisementCampaignCreationContent() {
                 <div className="p-4">
                   <div className="grid grid-cols-12 gap-6">
                     {/* Left side - Merchant & Basic Information */}
-                    <div className="col-span-6 space-y-6">
+                    <div className="col-span-12 space-y-6">
                       {/* Merchant Information Section */}
                       <Accordion
                         type="single"
@@ -682,437 +683,472 @@ export default function AdvertisementCampaignCreationContent() {
                         </AccordionItem>
                       </Accordion>
 
-                      {/* Budget Information */}
-                      <Accordion
-                        type="single"
-                        collapsible
-                        defaultValue="budget-info"
-                        className="border rounded-md"
-                      >
-                        <AccordionItem
-                          value="budget-info"
-                          className="border-none"
-                        >
-                          <AccordionTrigger className="px-4 py-3 text-sm font-medium">
-                            Budget Information
-                          </AccordionTrigger>
-                          <AccordionContent className="px-4 text-left">
-                            <div className="space-y-5 pb-2 text-left">
-                              <div className="text-left">
-                                <Label htmlFor="budget" className="text-sm">
-                                  Budget (USD)*
-                                </Label>
-                                <Input
-                                  id="budget"
-                                  type="number"
-                                  min="0"
-                                  step="0.01"
-                                  placeholder="Enter budget amount"
-                                  value={budget}
-                                  onChange={(e) => setBudget(e.target.value)}
-                                  className="mt-1"
-                                />
-                                <p className="mt-1.5 text-xs font-medium text-gray-600">
-                                  The total budget allocated for this campaign
-                                </p>
-                              </div>
-
-                              <div className="text-left">
-                                <Label
-                                  htmlFor="cost-per-activation"
-                                  className="text-sm"
-                                >
-                                  Cost Per Activation (USD)
-                                </Label>
-                                <Input
-                                  id="cost-per-activation"
-                                  type="number"
-                                  min="0"
-                                  step="0.01"
-                                  placeholder="Enter cost per activation"
-                                  value={costPerActivation}
-                                  onChange={(e) =>
-                                    setCostPerActivation(e.target.value)
-                                  }
-                                  className="mt-1"
-                                />
-                              </div>
-
-                              <div className="text-left">
-                                <Label
-                                  htmlFor="cost-per-redemption"
-                                  className="text-sm"
-                                >
-                                  Cost Per Redemption (USD)
-                                </Label>
-                                <Input
-                                  id="cost-per-redemption"
-                                  type="number"
-                                  min="0"
-                                  step="0.01"
-                                  placeholder="Enter cost per redemption"
-                                  value={costPerRedemption}
-                                  onChange={(e) =>
-                                    setCostPerRedemption(e.target.value)
-                                  }
-                                  className="mt-1"
-                                />
-                              </div>
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      </Accordion>
-                    </div>
-
-                    {/* Right side - Media & Location & Additional Info */}
-                    <div className="col-span-6 space-y-6">
-                      {/* Media Type Selection */}
-                      <Accordion
-                        type="single"
-                        collapsible
-                        defaultValue="media-type"
-                        className="border rounded-md"
-                      >
-                        <AccordionItem
-                          value="media-type"
-                          className="border-none"
-                        >
-                          <AccordionTrigger className="px-4 py-3 text-sm font-medium">
-                            Media Type & Assets
-                          </AccordionTrigger>
-                          <AccordionContent className="px-4 text-left">
-                            <div className="space-y-5 pb-2 text-left">
-                              <div className="text-left">
-                                <Label className="text-sm">Media Types*</Label>
-                                <div className="mt-2 flex flex-wrap gap-2">
-                                  {mediaTypeOptions.map((type) => (
-                                    <Badge
-                                      key={type}
-                                      variant={
-                                        mediaTypes.includes(type)
-                                          ? "default"
-                                          : "outline"
-                                      }
-                                      className={cn(
-                                        "cursor-pointer",
-                                        mediaTypes.includes(type)
-                                          ? "bg-primary text-primary-foreground"
-                                          : ""
-                                      )}
-                                      onClick={() => toggleMediaType(type)}
-                                    >
-                                      {type}
-                                    </Badge>
-                                  ))}
-                                </div>
-                                <p className="mt-1.5 text-xs font-medium text-gray-600">
-                                  Select the types of media for this campaign
-                                </p>
-                              </div>
-
-                              <div className="text-left">
-                                <Label
-                                  htmlFor="media-upload"
-                                  className="text-sm"
-                                >
-                                  Upload Media Assets*
-                                </Label>
-                                <div className="mt-2 border-2 border-dashed rounded-md border-gray-300 p-6 text-center">
-                                  <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
-                                  <div className="mt-2">
-                                    <label
-                                      htmlFor="file-upload"
-                                      className="relative cursor-pointer rounded-md bg-white font-medium text-primary hover:text-primary-dark focus-within:outline-none"
-                                    >
-                                      <span className="text-sm">
-                                        Upload an image
-                                      </span>
-                                      <input
-                                        id="file-upload"
-                                        name="file-upload"
-                                        type="file"
-                                        className="sr-only"
-                                        accept="image/*"
-                                        onChange={handleImageUpload}
-                                      />
-                                    </label>
-                                  </div>
-                                  <p className="text-xs text-gray-500 mt-1">
-                                    PNG, JPG, GIF up to 5MB
-                                  </p>
-                                </div>
-
-                                {/* Show uploaded images */}
-                                {uploadedImages.length > 0 && (
-                                  <div className="mt-3">
-                                    <h4 className="text-sm font-medium mb-2">
-                                      Uploaded Media:
-                                    </h4>
-                                    <div className="flex flex-wrap gap-2">
-                                      {uploadedImages.map((fileData) => (
-                                        <div
-                                          key={fileData.id}
-                                          className="relative bg-gray-100 rounded-md p-2"
-                                        >
-                                          <div className="text-xs truncate max-w-[150px]">
-                                            {fileData.file.name}
-                                          </div>
-                                          <button
-                                            className="absolute -top-1 -right-1 bg-red-100 text-red-600 rounded-full p-0.5"
-                                            onClick={() => {
-                                              const newImages =
-                                                uploadedImages.filter(
-                                                  (img) =>
-                                                    img.id !== fileData.id
-                                                );
-                                              setUploadedImages(newImages);
-                                            }}
-                                          >
-                                            <XCircleIcon className="h-4 w-4" />
-                                          </button>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      </Accordion>
-
-                      {/* Location Targeting */}
-                      <Accordion
-                        type="single"
-                        collapsible
-                        defaultValue="location-targeting"
-                        className="border rounded-md"
-                      >
-                        <AccordionItem
-                          value="location-targeting"
-                          className="border-none"
-                        >
-                          <AccordionTrigger className="px-4 py-3 text-sm font-medium">
-                            Location Targeting
-                          </AccordionTrigger>
-                          <AccordionContent className="px-4 text-left">
-                            <div className="space-y-5 pb-2 text-left">
-                              <div className="text-left">
-                                <Label className="text-sm">
-                                  Target Locations*
-                                </Label>
-
-                                <div className="mt-2 flex items-end gap-2">
-                                  <div className="flex-1">
-                                    <Select
-                                      value={locationType}
-                                      onValueChange={(value: any) =>
-                                        setLocationType(value)
-                                      }
-                                    >
-                                      <SelectTrigger>
-                                        <SelectValue placeholder="Location type" />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="state">
-                                          State
-                                        </SelectItem>
-                                        <SelectItem value="msa">MSA</SelectItem>
-                                        <SelectItem value="zipcode">
-                                          ZIP Code
-                                        </SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                  </div>
-
-                                  <div className="flex-1">
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div className="space-y-6">
+                          {/* Budget Information */}
+                          <Accordion
+                            type="single"
+                            collapsible
+                            defaultValue="budget-info"
+                            className="border rounded-md"
+                          >
+                            <AccordionItem
+                              value="budget-info"
+                              className="border-none"
+                            >
+                              <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                                Budget Information
+                              </AccordionTrigger>
+                              <AccordionContent className="px-4 text-left">
+                                <div className="space-y-5 pb-2 text-left">
+                                  <div className="text-left">
+                                    <Label htmlFor="budget" className="text-sm">
+                                      Budget (USD)*
+                                    </Label>
                                     <Input
-                                      placeholder={`Enter ${locationType}`}
-                                      value={locationValue}
+                                      id="budget"
+                                      type="number"
+                                      min="0"
+                                      step="0.01"
+                                      placeholder="Enter budget amount"
+                                      value={budget}
                                       onChange={(e) =>
-                                        setLocationValue(e.target.value)
+                                        setBudget(e.target.value)
                                       }
+                                      className="mt-1"
+                                    />
+                                    <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                      The total budget allocated for this
+                                      campaign
+                                    </p>
+                                  </div>
+
+                                  <div className="text-left">
+                                    <Label
+                                      htmlFor="cost-per-activation"
+                                      className="text-sm"
+                                    >
+                                      Cost Per Activation (USD)
+                                    </Label>
+                                    <Input
+                                      id="cost-per-activation"
+                                      type="number"
+                                      min="0"
+                                      step="0.01"
+                                      placeholder="Enter cost per activation"
+                                      value={costPerActivation}
+                                      onChange={(e) =>
+                                        setCostPerActivation(e.target.value)
+                                      }
+                                      className="mt-1"
                                     />
                                   </div>
 
-                                  <Button
-                                    onClick={handleAddLocation}
-                                    disabled={!locationValue}
-                                    size="sm"
-                                  >
-                                    Add
-                                  </Button>
+                                  <div className="text-left">
+                                    <Label
+                                      htmlFor="cost-per-redemption"
+                                      className="text-sm"
+                                    >
+                                      Cost Per Redemption (USD)
+                                    </Label>
+                                    <Input
+                                      id="cost-per-redemption"
+                                      type="number"
+                                      min="0"
+                                      step="0.01"
+                                      placeholder="Enter cost per redemption"
+                                      value={costPerRedemption}
+                                      onChange={(e) =>
+                                        setCostPerRedemption(e.target.value)
+                                      }
+                                      className="mt-1"
+                                    />
+                                  </div>
                                 </div>
+                              </AccordionContent>
+                            </AccordionItem>
+                          </Accordion>
 
-                                <p className="mt-1.5 text-xs font-medium text-gray-600">
-                                  Note: You cannot mix states and MSAs in the
-                                  same campaign
-                                </p>
+                          {/* Location Targeting */}
+                          <Accordion
+                            type="single"
+                            collapsible
+                            defaultValue="location-targeting"
+                            className="border rounded-md"
+                          >
+                            <AccordionItem
+                              value="location-targeting"
+                              className="border-none"
+                            >
+                              <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                                Location Targeting
+                              </AccordionTrigger>
+                              <AccordionContent className="px-4 text-left">
+                                <div className="space-y-5 pb-2 text-left">
+                                  <div className="text-left">
+                                    <Label className="text-sm">
+                                      Target Locations*
+                                    </Label>
 
-                                {/* Show selected locations */}
-                                {locations.length > 0 && (
-                                  <div className="mt-3">
-                                    <h4 className="text-sm font-medium mb-2">
-                                      Selected Locations:
-                                    </h4>
-                                    <div className="flex flex-wrap gap-2 bg-gray-50 p-2 rounded-md">
-                                      {locations.map((loc) => (
-                                        <Badge
-                                          key={loc.id}
-                                          variant="secondary"
-                                          className="flex items-center gap-1"
+                                    <div className="mt-2 flex items-end gap-2">
+                                      <div className="flex-1">
+                                        <Select
+                                          value={locationType}
+                                          onValueChange={(value: any) =>
+                                            setLocationType(value)
+                                          }
                                         >
-                                          <MapPinIcon className="h-3 w-3" />
-                                          <span className="capitalize">
-                                            {loc.type}:
-                                          </span>{" "}
-                                          {loc.value}
-                                          <button
-                                            className="ml-1 text-gray-500 hover:text-red-500"
-                                            onClick={() =>
-                                              handleRemoveLocation(loc.id)
-                                            }
-                                          >
-                                            <XCircleIcon className="h-3 w-3" />
-                                          </button>
+                                          <SelectTrigger>
+                                            <SelectValue placeholder="Location type" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="state">
+                                              State
+                                            </SelectItem>
+                                            <SelectItem value="msa">
+                                              MSA
+                                            </SelectItem>
+                                            <SelectItem value="zipcode">
+                                              ZIP Code
+                                            </SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+
+                                      <div className="flex-1">
+                                        <Input
+                                          placeholder={`Enter ${locationType}`}
+                                          value={locationValue}
+                                          onChange={(e) =>
+                                            setLocationValue(e.target.value)
+                                          }
+                                        />
+                                      </div>
+
+                                      <Button
+                                        onClick={handleAddLocation}
+                                        disabled={!locationValue}
+                                        size="sm"
+                                      >
+                                        Add
+                                      </Button>
+                                    </div>
+
+                                    <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                      Note: You cannot mix states and MSAs in
+                                      the same campaign
+                                    </p>
+
+                                    {/* Show selected locations */}
+                                    {locations.length > 0 && (
+                                      <div className="mt-3">
+                                        <h4 className="text-sm font-medium mb-2">
+                                          Selected Locations:
+                                        </h4>
+                                        <div className="flex flex-wrap gap-2 bg-gray-50 p-2 rounded-md">
+                                          {locations.map((loc) => (
+                                            <Badge
+                                              key={loc.id}
+                                              variant="secondary"
+                                              className="flex items-center gap-1"
+                                            >
+                                              <MapPinIcon className="h-3 w-3" />
+                                              <span className="capitalize">
+                                                {loc.type}:
+                                              </span>{" "}
+                                              {loc.value}
+                                              <button
+                                                className="ml-1 text-gray-500 hover:text-red-500"
+                                                onClick={() =>
+                                                  handleRemoveLocation(loc.id)
+                                                }
+                                              >
+                                                <XCircleIcon className="h-3 w-3" />
+                                              </button>
+                                            </Badge>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </AccordionContent>
+                            </AccordionItem>
+                          </Accordion>
+                        </div>
+
+                        <div className="space-y-6">
+                          {/* Media Type Selection */}
+                          <Accordion
+                            type="single"
+                            collapsible
+                            defaultValue="media-type"
+                            className="border rounded-md"
+                          >
+                            <AccordionItem
+                              value="media-type"
+                              className="border-none"
+                            >
+                              <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                                Media Type & Assets
+                              </AccordionTrigger>
+                              <AccordionContent className="px-4 text-left">
+                                <div className="space-y-5 pb-2 text-left">
+                                  <div className="text-left">
+                                    <Label className="text-sm">
+                                      Media Types*
+                                    </Label>
+                                    <div className="mt-2 flex flex-wrap gap-2">
+                                      {mediaTypeOptions.map((type) => (
+                                        <Badge
+                                          key={type}
+                                          variant={
+                                            mediaTypes.includes(type)
+                                              ? "default"
+                                              : "outline"
+                                          }
+                                          className={cn(
+                                            "cursor-pointer",
+                                            mediaTypes.includes(type)
+                                              ? "bg-primary text-primary-foreground"
+                                              : ""
+                                          )}
+                                          onClick={() => toggleMediaType(type)}
+                                        >
+                                          {type}
                                         </Badge>
                                       ))}
                                     </div>
+                                    <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                      Select the types of media for this
+                                      campaign
+                                    </p>
                                   </div>
-                                )}
-                              </div>
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      </Accordion>
 
-                      {/* Campaign Summary */}
-                      <Accordion
-                        type="single"
-                        collapsible
-                        defaultValue="campaign-summary"
-                        className="border rounded-md"
-                      >
-                        <AccordionItem
-                          value="campaign-summary"
-                          className="border-none"
-                        >
-                          <AccordionTrigger className="px-4 py-3 text-sm font-medium">
-                            Campaign Summary
-                          </AccordionTrigger>
-                          <AccordionContent className="px-4 text-left">
-                            <div className="space-y-3 pb-2 text-left">
-                              {!campaignName && !merchantId && (
-                                <p className="text-sm text-gray-500 italic">
-                                  Fill out the campaign details to see a summary
-                                  here.
-                                </p>
-                              )}
+                                  <div className="text-left">
+                                    <Label
+                                      htmlFor="media-upload"
+                                      className="text-sm"
+                                    >
+                                      Upload Media Assets*
+                                    </Label>
+                                    <div className="mt-2 border-2 border-dashed rounded-md border-gray-300 p-6 text-center">
+                                      <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
+                                      <div className="mt-2">
+                                        <label
+                                          htmlFor="file-upload"
+                                          className="relative cursor-pointer rounded-md bg-white font-medium text-primary hover:text-primary-dark focus-within:outline-none"
+                                        >
+                                          <span className="text-sm">
+                                            Upload an image
+                                          </span>
+                                          <input
+                                            id="file-upload"
+                                            name="file-upload"
+                                            type="file"
+                                            className="sr-only"
+                                            accept="image/*"
+                                            onChange={handleImageUpload}
+                                          />
+                                        </label>
+                                      </div>
+                                      <p className="text-xs text-gray-500 mt-1">
+                                        PNG, JPG, GIF up to 5MB
+                                      </p>
+                                    </div>
 
-                              {(campaignName || merchantId) && (
-                                <>
-                                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                                    {merchantId && (
-                                      <>
-                                        <div className="font-medium">
-                                          Merchant:
+                                    {/* Show uploaded images */}
+                                    {uploadedImages.length > 0 && (
+                                      <div className="mt-3">
+                                        <h4 className="text-sm font-medium mb-2">
+                                          Uploaded Media:
+                                        </h4>
+                                        <div className="flex flex-wrap gap-2">
+                                          {uploadedImages.map((fileData) => (
+                                            <div
+                                              key={fileData.id}
+                                              className="relative bg-gray-100 rounded-md p-2"
+                                            >
+                                              <div className="text-xs truncate max-w-[150px]">
+                                                {fileData.file.name}
+                                              </div>
+                                              <button
+                                                className="absolute -top-1 -right-1 bg-red-100 text-red-600 rounded-full p-0.5"
+                                                onClick={() => {
+                                                  const newImages =
+                                                    uploadedImages.filter(
+                                                      (img) =>
+                                                        img.id !== fileData.id
+                                                    );
+                                                  setUploadedImages(newImages);
+                                                }}
+                                              >
+                                                <XCircleIcon className="h-4 w-4" />
+                                              </button>
+                                            </div>
+                                          ))}
                                         </div>
-                                        <div>
-                                          {merchantName || `ID: ${merchantId}`}
-                                        </div>
-                                      </>
+                                      </div>
                                     )}
+                                  </div>
+                                </div>
+                              </AccordionContent>
+                            </AccordionItem>
+                          </Accordion>
 
-                                    {campaignName && (
-                                      <>
-                                        <div className="font-medium">
-                                          Campaign:
-                                        </div>
-                                        <div>{campaignName}</div>
+                          {/* Campaign Summary */}
+                          <Accordion
+                            type="single"
+                            collapsible
+                            defaultValue="campaign-summary"
+                            className="border rounded-md"
+                          >
+                            <AccordionItem
+                              value="campaign-summary"
+                              className="border-none"
+                            >
+                              <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                                Campaign Summary
+                              </AccordionTrigger>
+                              <AccordionContent className="px-4 text-left">
+                                <div className="space-y-3 pb-2 text-left">
+                                  {!campaignName && !merchantId && (
+                                    <p className="text-sm text-gray-500 italic">
+                                      Fill out the campaign details to see a
+                                      summary here.
+                                    </p>
+                                  )}
 
-                                        {campaignDescription && (
+                                  {(campaignName || merchantId) && (
+                                    <>
+                                      <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                                        {merchantId && (
                                           <>
                                             <div className="font-medium">
-                                              Description:
+                                              Merchant:
                                             </div>
-                                            <div>{campaignDescription}</div>
+                                            <div>
+                                              {merchantName ||
+                                                `ID: ${merchantId}`}
+                                            </div>
                                           </>
                                         )}
-                                      </>
-                                    )}
 
-                                    {startDate && endDate && (
-                                      <>
-                                        <div className="font-medium">
-                                          Duration:
-                                        </div>
-                                        <div>
-                                          {format(startDate, "MMM d, yyyy")} -{" "}
-                                          {format(endDate, "MMM d, yyyy")}
-                                        </div>
-                                      </>
-                                    )}
+                                        {campaignName && (
+                                          <>
+                                            <div className="font-medium">
+                                              Campaign:
+                                            </div>
+                                            <div>{campaignName}</div>
 
-                                    {campaignWeight && (
-                                      <>
-                                        <div className="font-medium">
-                                          Weight:
-                                        </div>
-                                        <div className="capitalize">
-                                          {campaignWeight}
-                                        </div>
-                                      </>
-                                    )}
+                                            {campaignDescription && (
+                                              <>
+                                                <div className="font-medium">
+                                                  Description:
+                                                </div>
+                                                <div>{campaignDescription}</div>
+                                              </>
+                                            )}
+                                          </>
+                                        )}
 
-                                    {budget && (
-                                      <>
-                                        <div className="font-medium">
-                                          Budget:
-                                        </div>
-                                        <div>${budget} USD</div>
-                                      </>
-                                    )}
+                                        {startDate && endDate && (
+                                          <>
+                                            <div className="font-medium">
+                                              Duration:
+                                            </div>
+                                            <div>
+                                              {format(startDate, "MMM d, yyyy")}{" "}
+                                              - {format(endDate, "MMM d, yyyy")}
+                                            </div>
+                                          </>
+                                        )}
 
-                                    {mediaTypes.length > 0 && (
-                                      <>
-                                        <div className="font-medium">
-                                          Media Types:
-                                        </div>
-                                        <div>{mediaTypes.join(", ")}</div>
-                                      </>
-                                    )}
+                                        {campaignWeight && (
+                                          <>
+                                            <div className="font-medium">
+                                              Weight:
+                                            </div>
+                                            <div className="capitalize">
+                                              {campaignWeight}
+                                            </div>
+                                          </>
+                                        )}
 
-                                    {locations.length > 0 && (
-                                      <>
-                                        <div className="font-medium">
-                                          Target Locations:
-                                        </div>
-                                        <div>
-                                          {locations.length} location(s)
-                                        </div>
-                                      </>
-                                    )}
-                                  </div>
+                                        {budget && (
+                                          <>
+                                            <div className="font-medium">
+                                              Budget:
+                                            </div>
+                                            <div>${budget} USD</div>
+                                          </>
+                                        )}
 
-                                  <div className="mt-4 pt-3 border-t border-gray-200">
-                                    <Button
-                                      onClick={handleCreateCampaign}
-                                      className="w-full"
-                                    >
-                                      Create Campaign
-                                    </Button>
-                                  </div>
-                                </>
-                              )}
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      </Accordion>
+                                        {mediaTypes.length > 0 && (
+                                          <>
+                                            <div className="font-medium">
+                                              Media Types:
+                                            </div>
+                                            <div>{mediaTypes.join(", ")}</div>
+                                          </>
+                                        )}
+
+                                        {locations.length > 0 && (
+                                          <>
+                                            <div className="font-medium">
+                                              Target Locations:
+                                            </div>
+                                            <div>
+                                              {locations.length} location(s)
+                                            </div>
+                                          </>
+                                        )}
+                                      </div>
+
+                                      <div className="mt-4 pt-3 border-t border-gray-200">
+                                        <Button
+                                          onClick={handleCreateCampaign}
+                                          className="w-full"
+                                        >
+                                          Create Campaign
+                                        </Button>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              </AccordionContent>
+                            </AccordionItem>
+                          </Accordion>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </Card>
             </div>
+          </div>
+
+          {/* Right Column - Campaign Analytics Panel */}
+          <div
+            className="w-[380px] flex-shrink-0"
+            style={{
+              position: "sticky",
+              top: "1rem",
+              height: "calc(100vh - 180px)",
+              overflowY: "auto",
+            }}
+          >
+            <CampaignAnalyticsPanel
+              className="h-full"
+              campaignBudget={parseFloat(budget) || 5000}
+              estimatedReach={
+                campaignWeight === "small"
+                  ? 50000
+                  : campaignWeight === "medium"
+                    ? 100000
+                    : 200000
+              }
+            />
           </div>
         </div>
       </div>
