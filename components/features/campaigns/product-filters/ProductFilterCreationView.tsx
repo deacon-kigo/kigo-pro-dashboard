@@ -59,6 +59,7 @@ import {
   applyFilterUpdate,
   FilterCriteria,
   setCoverageStats,
+  resetFilter,
 } from "@/lib/redux/slices/productFilterSlice";
 import {
   selectFilterName,
@@ -74,6 +75,17 @@ import {
 import { getFieldPlaceholder } from "@/services/ai/tools";
 import { generateFilterCoverageStats } from "@/services/ai/filterHandler";
 import FilterCoveragePanel from "./FilterCoveragePanel";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/molecules/alert-dialog/AlertDialog";
 
 // Custom DatePicker component
 interface DatePickerProps {
@@ -169,6 +181,8 @@ export default function ProductFilterCreationView() {
   );
   // Add success message state
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  // Add dialog open state for the back confirmation
+  const [backDialogOpen, setBackDialogOpen] = useState(false);
 
   // Use Redux selectors for form state
   const filterName = useSelector(selectFilterName);
@@ -286,10 +300,53 @@ export default function ProductFilterCreationView() {
     }, 3000);
   };
 
-  // Cancel and go back
-  const handleCancel = () => {
+  // Cancel and go back with confirmation
+  const handleBackClick = () => {
+    // Check if form has changes before showing dialog
+    if (filterName.trim() || description.trim() || filterCriteria.length > 0) {
+      setBackDialogOpen(true);
+    } else {
+      // If no changes, go back directly
+      router.push("/campaigns/product-filters");
+    }
+  };
+
+  // Handle confirmed navigation
+  const handleConfirmedNavigateBack = () => {
+    dispatch(resetFilter());
     router.push("/campaigns/product-filters");
   };
+
+  // Create the back button for the header with confirmation dialog
+  const backButton = (
+    <AlertDialog open={backDialogOpen} onOpenChange={setBackDialogOpen}>
+      <AlertDialogTrigger asChild>
+        <Button
+          variant="outline"
+          onClick={handleBackClick}
+          className="flex items-center gap-1"
+        >
+          <ArrowLeftIcon className="h-4 w-4" />
+          Back to Filters
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Return to Filters</AlertDialogTitle>
+          <AlertDialogDescription>
+            All unsaved changes will be lost. Are you sure you want to go back
+            to the filters list?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={handleConfirmedNavigateBack}>
+            Yes, go back
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
 
   // Navigate to next tab
   const nextTab = () => {
@@ -304,18 +361,6 @@ export default function ProductFilterCreationView() {
       setActiveTab("details");
     }
   };
-
-  // Create the back button for the header
-  const backButton = (
-    <Button
-      variant="outline"
-      onClick={handleCancel}
-      className="flex items-center gap-1"
-    >
-      <ArrowLeftIcon className="h-4 w-4" />
-      Back to Filters
-    </Button>
-  );
 
   // Initialize AI assistant with product filter context
   useEffect(() => {
@@ -822,7 +867,11 @@ export default function ProductFilterCreationView() {
                     </h3>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" onClick={handleCancel} size="sm">
+                    <Button
+                      variant="outline"
+                      onClick={handleBackClick}
+                      size="sm"
+                    >
                       Cancel
                     </Button>
                     <Button
