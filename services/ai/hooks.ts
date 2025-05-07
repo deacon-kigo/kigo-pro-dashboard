@@ -180,3 +180,68 @@ export const useFilterAnalysis = () => {
     error,
   };
 };
+
+// Hook for generating campaign details
+export const useCampaignGenerator = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const generateCampaign = useCallback(
+    async (campaignType: string, description: string, currentContext?: any) => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const { createCampaignGeneratorTool } = await import("./tools");
+        const tool = createCampaignGeneratorTool();
+
+        const result = await tool.invoke(
+          JSON.stringify({
+            campaignType,
+            description,
+            currentContext: currentContext || {},
+          })
+        );
+
+        return JSON.parse(result);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to generate campaign";
+        setError(errorMessage);
+        console.error("Campaign generation error:", err);
+        return { error: errorMessage };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
+
+  const analyzeCampaign = useCallback(async (campaignDetails: any) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const { createCampaignAnalysisTool } = await import("./tools");
+      const tool = createCampaignAnalysisTool();
+
+      const result = await tool.invoke(JSON.stringify(campaignDetails));
+      return JSON.parse(result);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to analyze campaign";
+      setError(errorMessage);
+      console.error("Campaign analysis error:", err);
+      return { error: errorMessage };
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  return {
+    generateCampaign,
+    analyzeCampaign,
+    isLoading,
+    error,
+  };
+};

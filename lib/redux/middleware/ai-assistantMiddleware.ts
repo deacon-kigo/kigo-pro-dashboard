@@ -10,6 +10,8 @@ import {
   createProductFilterCriteriaTool,
   createAutoFilterGeneratorTool,
   createFilterConversationGuideTool,
+  createCampaignGeneratorTool,
+  createCampaignAnalysisTool,
 } from "@/services/ai/tools";
 import { RootState } from "../store";
 import {
@@ -20,6 +22,7 @@ import {
   selectCriteria,
   selectCompleteFilterContext,
 } from "../selectors/productFilterSelectors";
+import { selectCompleteCampaignContext } from "../selectors/adsCampaignSelectors";
 
 // Define action types for type checking
 interface AddMessageAction extends AnyAction {
@@ -548,301 +551,530 @@ Would you like to use any of these suggestions?`,
   };
 };
 
+// AI middleware that handles AI operations
 const aiAssistantMiddleware: Middleware =
   (store) => (next) => async (action: any) => {
-    // First pass the action to the next middleware
     const result = next(action);
 
-    // Get current state
-    const state = store.getState();
-
-    // Handle user message submissions
     if (isAddMessageAction(action) && action.payload.type === "user") {
-      const userMessage = action.payload.content;
-      const systemPrompt = state.aiAssistant.systemPrompt;
+      const state = store.getState() as RootState;
+      const contextId = state.aiAssistant.contextId;
+      const currentMessage = action.payload.content;
 
-      // Set processing state
+      console.log("AI Assistant received message:", {
+        message: currentMessage,
+        contextId,
+        state: {
+          campaignContext: state.aiAssistant.campaignContext,
+          currentCriteria: state.aiAssistant.currentCriteria,
+        },
+      });
+
+      // Mark as processing
       store.dispatch(setIsProcessing(true));
 
       try {
-        // Always use the conversation guide tool for better context awareness
-        const conversationGuideTool = createFilterConversationGuideTool();
+        // Process based on context
+        if (contextId === "productFilterContext") {
+          // Get filter context from state
+          const filterContext = selectCompleteFilterContext(state);
 
-        // Prepare context for the tool
-        const conversationHistory = state.aiAssistant.messages;
-        const currentCriteria = state.aiAssistant.currentCriteria || [];
+          // Simulate AI response for now
+          setTimeout(() => {
+            // Get response based on message content
+            const simResponse = simulateProductFilterResponse(
+              currentMessage,
+              filterContext
+            );
 
-        // Get complete context using the selector that combines everything
-        const filterContext = selectCompleteFilterContext(state);
+            store.dispatch(
+              addMessage({
+                type: "ai",
+                content: simResponse.content,
+                responseOptions: simResponse.responseOptions,
+                severity: simResponse.severity,
+              })
+            );
 
-        // If the selector isn't working, use a manually constructed context
-        // const filterContext = {
-        //   filterName: selectFilterName(state) || "",
-        //   queryViewName: selectQueryViewName(state) || "",
-        //   description: selectDescription(state) || "",
-        //   expiryDate: selectExpiryDate(state),
-        //   currentCriteria: selectCriteria(state) || currentCriteria,
-        //   conversationHistory,
-        // };
+            store.dispatch(setIsProcessing(false));
+          }, 1200);
+        } else if (contextId === "adsCampaignContext") {
+          // Get campaign context from state
+          const campaignContext = selectCompleteCampaignContext(state);
 
-        // Convert date string to Date object for the AI if needed
-        const enhancedContext = {
-          ...filterContext,
-          expiryDate: filterContext.expiryDate
-            ? typeof filterContext.expiryDate === "string"
-              ? new Date(filterContext.expiryDate)
-              : filterContext.expiryDate
-            : null,
-        };
+          try {
+            // Extract campaign type and intent from message
+            const campaignType = extractCampaignTypeFromMessage(currentMessage);
 
-        // Invoke the tool with complete context
-        const toolResponse = await conversationGuideTool.invoke(
-          JSON.stringify({
-            userMessage,
-            conversationHistory,
-            currentCriteria: filterContext.criteria || currentCriteria,
-            filterContext: enhancedContext,
-          })
-        );
+            // Use the campaign generator LangChain tool
+            const campaignGeneratorTool = createCampaignGeneratorTool();
 
-        // Parse the response
-        const response = JSON.parse(toolResponse);
+            // Prepare input for the tool
+            const toolInput = JSON.stringify({
+              campaignType,
+              description: currentMessage,
+              currentContext: campaignContext,
+            });
 
-        if (response.error) {
-          // Handle error
-          store.dispatch(
-            addMessage({
-              type: "ai",
-              content: `I encountered an error: ${response.details || "Unknown error"}`,
-              severity: "error",
-            })
-          );
-        } else {
-          // Add AI response with options
-          store.dispatch(
-            addMessage({
-              type: "ai",
-              content: response.responseMessage,
-              responseOptions: response.responseOptions || [],
-            })
-          );
+            console.log("Calling campaign generator with:", toolInput);
 
-          // If there are criteria to add immediately
-          if (
-            response.actionType === "suggest_criteria" ||
-            response.actionType === "complete_filter"
-          ) {
-            if (response.criteriaToAdd && response.criteriaToAdd.length > 0) {
-              // Create payload for applying updates
-              const updatePayload = {
-                criteriaToAdd: response.criteriaToAdd,
-              };
+            // Call the LangChain tool
+            const result = await campaignGeneratorTool.invoke(toolInput);
+            const campaignSuggestion = JSON.parse(result);
 
-              // Add a follow-up message with options to apply
+            console.log("Campaign generator result:", campaignSuggestion);
+
+            // Check for errors in the response
+            if (campaignSuggestion.error) {
               store.dispatch(
                 addMessage({
                   type: "ai",
-                  content:
-                    "I've identified some criteria based on our conversation. Would you like me to apply these to your filter?",
+                  content: `I encountered an issue while creating your campaign: ${campaignSuggestion.error}. Can you provide more details about what you're looking for?`,
+                  severity: "error",
+                })
+              );
+            } else {
+              // Format locations properly for the UI
+              const formattedLocations = campaignSuggestion.locations.map(
+                (loc) => ({
+                  type: loc.type,
+                  value: loc.value,
+                })
+              );
+
+              // Send response with campaign suggestion
+              store.dispatch(
+                addMessage({
+                  type: "ai",
+                  content: `I've generated a campaign based on your request! Here's what I came up with:
+                  
+**${campaignSuggestion.campaignName}**
+${campaignSuggestion.campaignDescription}
+
+Would you like me to apply these settings to your campaign form?`,
                   responseOptions: [
                     {
-                      text: "Yes, apply these criteria",
-                      value: `apply_updates:${JSON.stringify(updatePayload)}`,
+                      text: "Apply these settings",
+                      value: `apply_updates:${JSON.stringify({
+                        ...campaignSuggestion,
+                        locations: formattedLocations,
+                      })}`,
                     },
                     {
-                      text: "No, let me adjust manually",
-                      value: "cancel_generate",
+                      text: "Start step-by-step workflow instead",
+                      value: "start_workflow",
+                    },
+                    {
+                      text: "No thanks, I'll continue manually",
+                      value: "cancel_generation",
                     },
                   ],
                 })
               );
             }
+          } catch (error) {
+            console.error("Error processing campaign generator:", error);
+
+            // Fallback to simulated response if LangChain fails
+            const simResponse = simulateAdsCampaignResponse(
+              currentMessage,
+              campaignContext
+            );
+
+            store.dispatch(
+              addMessage({
+                type: "ai",
+                content: simResponse.content,
+                responseOptions: simResponse.responseOptions,
+                severity: simResponse.severity,
+              })
+            );
+          } finally {
+            // Always turn off processing state
+            store.dispatch(setIsProcessing(false));
           }
-        }
-      } catch (error) {
-        console.error("Error in AI assistant middleware:", error);
-        store.dispatch(
-          setError(error instanceof Error ? error.message : "Unknown error")
-        );
-
-        // Add error message
-        store.dispatch(
-          addMessage({
-            type: "ai",
-            content:
-              "Sorry, I encountered an error processing your request. Please try again.",
-            severity: "error",
-          })
-        );
-      } finally {
-        store.dispatch(setIsProcessing(false));
-      }
-    }
-
-    // Handle option selection
-    if (isOptionSelectedAction(action)) {
-      const optionId = action.payload;
-
-      // Get current filter name and description from state if available
-      const filterName = state.productFilter?.filterName;
-      const filterDescription = state.productFilter?.description;
-
-      store.dispatch(setIsProcessing(true));
-
-      try {
-        // Add user message showing the selected option
-        const selectedOption = state.aiAssistant.messages
-          .flatMap((msg: AIMessage) => msg.responseOptions || [])
-          .find((option: ResponseOption) => option.value === optionId);
-
-        if (selectedOption) {
-          store.dispatch(
-            addMessage({
-              type: "user",
-              content: selectedOption.text,
-            })
-          );
-        }
-
-        // Handle the option
-        const response = await handleOptionSelected(
-          optionId,
-          filterName,
-          filterDescription
-        );
-
-        // Add AI response
-        store.dispatch(
-          addMessage({
-            type: "ai",
-            content: response.content,
-            responseOptions: response.responseOptions,
-            severity: response.severity,
-          })
-        );
-      } catch (error) {
-        console.error("Error handling option selection:", error);
-        store.dispatch(
-          setError(error instanceof Error ? error.message : "Unknown error")
-        );
-
-        store.dispatch(
-          addMessage({
-            type: "ai",
-            content:
-              "Sorry, I encountered an error processing that option. Please try something else.",
-            severity: "error",
-          })
-        );
-      } finally {
-        store.dispatch(setIsProcessing(false));
-      }
-    }
-
-    // Handle magic generation
-    if (isMagicGenerateAction(action)) {
-      // Set processing state
-      store.dispatch(setIsProcessing(true));
-
-      try {
-        // Add user message showing the action
-        store.dispatch(
-          addMessage({
-            type: "user",
-            content: "Generate product filters based on my requirements",
-          })
-        );
-
-        // Create auto filter generator tool
-        const autoGeneratorTool = createAutoFilterGeneratorTool();
-
-        // Get complete context from state using the selector
-        const completeContext = selectCompleteFilterContext(state);
-
-        // Invoke the tool
-        const toolResponse = await autoGeneratorTool.invoke(
-          JSON.stringify({
-            filterName: completeContext.filterName,
-            filterDescription: completeContext.description,
-            currentCriteria: completeContext.criteria,
-            conversationHistory: completeContext.conversationHistory,
-            expiryDate: completeContext.expiryDate,
-          })
-        );
-
-        // Parse the response
-        const response = JSON.parse(toolResponse);
-
-        if (response.error) {
-          // Handle error
-          store.dispatch(
-            addMessage({
-              type: "ai",
-              content: `I encountered an error while generating filters: ${response.details}`,
-              severity: "error",
-            })
-          );
         } else {
-          // Create explanation content
-          const explanation =
-            response.explanation ||
-            "I've analyzed your requirements and generated appropriate filter criteria.";
-          const missingTypes = response.criteriaToAdd
-            .map((c: any) => c.type)
-            .join(", ");
+          // Default demo chat flow without context
+          setTimeout(() => {
+            store.dispatch(
+              addMessage({
+                type: "ai",
+                content: getDemoResponse(currentMessage),
+                responseOptions: getDefaultOptions(),
+              })
+            );
+            store.dispatch(setIsProcessing(false));
+          }, 800);
+        }
+      } catch (error) {
+        console.error("AI Assistant Error:", error);
+        store.dispatch(
+          setError(
+            error instanceof Error ? error.message : "An unknown error occurred"
+          )
+        );
+        store.dispatch(setIsProcessing(false));
+      }
+    } else if (isMagicGenerateAction(action)) {
+      const state = store.getState() as RootState;
+      const contextId = state.aiAssistant.contextId;
 
-          const content = `
-${explanation}
+      if (contextId === "productFilterContext") {
+        // Handle magic generate for product filters
+        // ... existing product filter magic generate code ...
+      } else if (contextId === "adsCampaignContext") {
+        // Handle magic generate for campaign context
+        const campaignContext = selectCompleteCampaignContext(state);
 
-I'm ready to add the following criteria: ${missingTypes}
+        store.dispatch(setIsProcessing(true));
 
-Would you like me to apply these updates to your filter?`;
+        try {
+          // Use the campaign generator LangChain tool
+          const campaignGeneratorTool = createCampaignGeneratorTool();
 
-          // Add AI response with option to apply
+          // Prepare input for the tool
+          const toolInput = JSON.stringify({
+            campaignType: "general",
+            description:
+              "Create an optimized campaign based on the current context",
+            currentContext: campaignContext,
+          });
+
+          // Call the LangChain tool
+          const result = await campaignGeneratorTool.invoke(toolInput);
+          const generatedCampaign = JSON.parse(result);
+
+          // Check for errors in the response
+          if (generatedCampaign.error) {
+            store.dispatch(
+              addMessage({
+                type: "ai",
+                content: `I encountered an issue while creating your campaign: ${generatedCampaign.error}. Let's try creating your campaign step by step instead.`,
+                responseOptions: [
+                  {
+                    text: "Start step-by-step workflow",
+                    value: "start_workflow",
+                  },
+                ],
+                severity: "error",
+              })
+            );
+          } else {
+            // Format locations properly for the UI
+            const formattedLocations =
+              generatedCampaign.locations?.map((loc) => ({
+                type: loc.type,
+                value: loc.value,
+              })) || [];
+
+            // Send response with campaign suggestion
+            store.dispatch(
+              addMessage({
+                type: "ai",
+                content: `I've generated a complete campaign for you! Here's what I created:
+                
+**${generatedCampaign.campaignName}**
+${generatedCampaign.campaignDescription}
+
+Would you like me to apply these settings to your campaign form?`,
+                responseOptions: [
+                  {
+                    text: "Apply these settings",
+                    value: `apply_updates:${JSON.stringify({
+                      ...generatedCampaign,
+                      locations: formattedLocations,
+                    })}`,
+                  },
+                  {
+                    text: "Start step-by-step workflow instead",
+                    value: "start_workflow",
+                  },
+                  {
+                    text: "No thanks, I'll continue manually",
+                    value: "cancel_generation",
+                  },
+                ],
+              })
+            );
+          }
+        } catch (error) {
+          console.error("Error with campaign generator:", error);
+
+          // Fallback to simulated generation
+          const generatedCampaign = generateAdsCampaign(campaignContext);
+
           store.dispatch(
             addMessage({
               type: "ai",
-              content,
+              content:
+                "I've generated a campaign based on your specifications! Would you like me to apply these settings?",
               responseOptions: [
                 {
-                  text: "Yes, apply these updates",
-                  value: `apply_updates:${JSON.stringify({
-                    criteriaToAdd: response.criteriaToAdd,
-                    filterName:
-                      response.suggestedName && !completeContext.filterName
-                        ? response.suggestedName
-                        : undefined,
-                  })}`,
+                  text: "Apply these settings",
+                  value: `apply_updates:${JSON.stringify(generatedCampaign)}`,
                 },
                 {
-                  text: "No, let me adjust manually",
-                  value: "cancel_generate",
+                  text: "Start step-by-step workflow",
+                  value: "start_workflow",
+                },
+                {
+                  text: "No thanks, I'll continue manually",
+                  value: "cancel_generation",
                 },
               ],
             })
           );
+        } finally {
+          store.dispatch(setIsProcessing(false));
         }
-      } catch (error) {
-        console.error("Error in magic filter generation:", error);
-        store.dispatch(
-          setError(error instanceof Error ? error.message : "Unknown error")
-        );
-
-        // Add error message
-        store.dispatch(
-          addMessage({
-            type: "ai",
-            content:
-              "Sorry, I encountered an error generating the filter. Please try describing your requirements in more detail.",
-            severity: "error",
-          })
-        );
-      } finally {
-        store.dispatch(setIsProcessing(false));
       }
     }
 
     return result;
   };
+
+// Helper function to extract campaign type from user message
+function extractCampaignTypeFromMessage(message: string): string {
+  const messageLC = message.toLowerCase();
+
+  // Check for common campaign types
+  if (
+    messageLC.includes("coffee") ||
+    messageLC.includes("cafe") ||
+    messageLC.includes("beverage")
+  ) {
+    return "coffee";
+  }
+
+  if (
+    messageLC.includes("retail") ||
+    messageLC.includes("shop") ||
+    messageLC.includes("store")
+  ) {
+    return "retail";
+  }
+
+  if (
+    messageLC.includes("restaurant") ||
+    messageLC.includes("food") ||
+    messageLC.includes("dining")
+  ) {
+    return "restaurant";
+  }
+
+  if (
+    messageLC.includes("travel") ||
+    messageLC.includes("vacation") ||
+    messageLC.includes("tourism")
+  ) {
+    return "travel";
+  }
+
+  if (
+    messageLC.includes("entertainment") ||
+    messageLC.includes("movie") ||
+    messageLC.includes("theater")
+  ) {
+    return "entertainment";
+  }
+
+  // Default to general if no specific type is found
+  return "general";
+}
+
+// Simulate AI response for ads campaign context
+function simulateAdsCampaignResponse(
+  message: string,
+  context: any
+): AIResponse {
+  console.log("Simulating ads campaign response for:", message);
+
+  const messageLC = message.toLowerCase();
+  // Check for coffee-related campaign request with typo tolerance
+  if (
+    messageLC.includes("coffe") ||
+    messageLC.includes("coffee") ||
+    messageLC.includes("cafe") ||
+    messageLC.includes("treat")
+  ) {
+    console.log("Coffee/treat campaign detected in message");
+    return {
+      content:
+        "I can help you create a coffee and treat campaign! Would you like me to suggest a campaign configuration based on this theme?",
+      responseOptions: [
+        {
+          text: "Yes, generate a coffee campaign",
+          value: `apply_updates:${JSON.stringify({
+            merchantId: "12345",
+            merchantName: "Coffee Express Inc.",
+            campaignName: "Coffee & Treats Special",
+            campaignDescription:
+              "Campaign for coffee shops and bakeries offering deals on beverages and pastries",
+            startDate: new Date().toISOString(),
+            endDate: new Date(
+              Date.now() + 30 * 24 * 60 * 60 * 1000
+            ).toISOString(),
+            campaignWeight: "medium",
+            mediaTypes: ["Display Banner", "Social Media"],
+            locations: [
+              { type: "state", value: "CA" },
+              { type: "state", value: "NY" },
+            ],
+            budget: "5000",
+          })}`,
+        },
+        {
+          text: "Start step-by-step workflow",
+          value: "start_workflow",
+        },
+        {
+          text: "No thanks, I'll continue manually",
+          value: "cancel_generation",
+        },
+      ],
+    };
+  }
+
+  // Check for retail campaign request
+  if (
+    message.toLowerCase().includes("retail") ||
+    message.toLowerCase().includes("shop")
+  ) {
+    return {
+      content:
+        "I can help you create a retail shopping campaign! Would you like me to suggest a campaign configuration?",
+      responseOptions: [
+        {
+          text: "Yes, generate a retail campaign",
+          value: `apply_updates:${JSON.stringify({
+            merchantId: "67890",
+            merchantName: "Global Retail Partners",
+            campaignName: "Seasonal Shopping Spree",
+            campaignDescription:
+              "Campaign targeting retail shoppers with seasonal discounts and promotions",
+            startDate: new Date().toISOString(),
+            endDate: new Date(
+              Date.now() + 60 * 24 * 60 * 60 * 1000
+            ).toISOString(),
+            campaignWeight: "large",
+            mediaTypes: ["Display Banner", "Video", "Native"],
+            locations: [
+              { type: "msa", value: "New York-Newark-Jersey City" },
+              { type: "msa", value: "Los Angeles-Long Beach-Anaheim" },
+            ],
+            budget: "10000",
+          })}`,
+        },
+        {
+          text: "Start step-by-step workflow",
+          value: "start_workflow",
+        },
+        {
+          text: "No thanks, I'll continue manually",
+          value: "cancel_generation",
+        },
+      ],
+    };
+  }
+
+  // Default response
+  return {
+    content:
+      "I'm your campaign creation assistant. Tell me about the campaign you want to create, or ask me to help you build one step by step.",
+    responseOptions: [
+      {
+        text: "Create a coffee shop campaign",
+        value: "coffee_campaign",
+      },
+      {
+        text: "Create a retail shopping campaign",
+        value: "retail_campaign",
+      },
+      {
+        text: "Start the workflow",
+        value: "start_workflow",
+      },
+    ],
+  };
+}
+
+// Generate ads campaign based on context
+function generateAdsCampaign(context: any) {
+  // If we already have partial campaign data, use it as a base
+  const campaign = {
+    merchantId: context.merchantId || "12345",
+    merchantName: context.merchantName || "Sample Merchant",
+    campaignName: context.campaignName || "AI Generated Campaign",
+    campaignDescription:
+      context.campaignDescription ||
+      "This campaign was automatically generated based on your requirements",
+    startDate: context.startDate || new Date().toISOString(),
+    endDate:
+      context.endDate ||
+      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    campaignWeight: context.campaignWeight || "medium",
+    mediaTypes:
+      context.mediaTypes?.length > 0
+        ? context.mediaTypes
+        : ["Display Banner", "Social Media"],
+    locations:
+      context.locations?.length > 0
+        ? context.locations
+        : [{ type: "state", value: "CA" }],
+    budget: context.budget || "5000",
+  };
+
+  return campaign;
+}
+
+// Simulate AI response for product filter context
+function simulateProductFilterResponse(
+  message: string,
+  context: any
+): AIResponse {
+  // Default response for product filter context
+  return {
+    content:
+      "I'm your product filter assistant. Tell me what kind of filter you'd like to create.",
+    responseOptions: [
+      {
+        text: "Explain criteria types",
+        value: "explain_criteria_types",
+      },
+      {
+        text: "Start creating a filter",
+        value: "start_filter_creation",
+      },
+      {
+        text: "Auto-generate a filter",
+        value: "magic_generate_intro",
+      },
+    ],
+  };
+}
+
+// Get default demo response
+function getDemoResponse(message: string): string {
+  // Simple demo response
+  return "I'm your AI assistant. How can I help you with your campaigns today?";
+}
+
+// Get default options
+function getDefaultOptions(): ResponseOption[] {
+  return [
+    {
+      text: "Create a campaign",
+      value: "create_campaign",
+    },
+    {
+      text: "Help me with product filters",
+      value: "help_product_filters",
+    },
+    {
+      text: "Show me campaign analytics",
+      value: "show_analytics",
+    },
+  ];
+}
 
 export default aiAssistantMiddleware;

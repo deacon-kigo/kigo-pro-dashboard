@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { SYSTEM_PROMPTS } from "@/services/ai";
+import { CampaignLocation } from "./adsCampaignSlice";
 
 // Define FilterCriteria type locally if not imported from a shared location
 interface FilterCriteria {
@@ -9,6 +10,21 @@ interface FilterCriteria {
   rule: string;
   and_or: string;
   isRequired: boolean;
+}
+
+// Define Campaign context interfaces
+interface CampaignContext {
+  merchantId?: string;
+  merchantName?: string;
+  offerId?: string;
+  campaignName?: string;
+  campaignDescription?: string;
+  startDate?: string | null;
+  endDate?: string | null;
+  campaignWeight?: string;
+  mediaTypes?: string[];
+  locations?: CampaignLocation[];
+  budget?: string;
 }
 
 export interface AIMessage {
@@ -34,6 +50,7 @@ interface AIAssistantState {
   systemPrompt: string;
   error: string | null;
   currentCriteria: FilterCriteria[];
+  campaignContext: CampaignContext | null;
 }
 
 const initialState: AIAssistantState = {
@@ -43,6 +60,7 @@ const initialState: AIAssistantState = {
   systemPrompt: SYSTEM_PROMPTS.GENERAL_ASSISTANT,
   error: null,
   currentCriteria: [],
+  campaignContext: null,
 };
 
 export const aiAssistantSlice = createSlice({
@@ -105,6 +123,14 @@ export const aiAssistantSlice = createSlice({
       state.currentCriteria = action.payload.currentCriteria || [];
     },
 
+    // Specialized action for the ads campaign context
+    setAdsCampaignContext: (state, action: PayloadAction<CampaignContext>) => {
+      state.contextId = "adsCampaignContext";
+      state.systemPrompt =
+        SYSTEM_PROMPTS.CAMPAIGN_ASSISTANT || SYSTEM_PROMPTS.GENERAL_ASSISTANT;
+      state.campaignContext = action.payload;
+    },
+
     // Magic generate action
     magicGenerate: (state) => {
       // This action doesn't need to modify state directly
@@ -122,6 +148,7 @@ export const {
   setContextId,
   setError,
   setProductFilterContext,
+  setAdsCampaignContext,
   magicGenerate,
 } = aiAssistantSlice.actions;
 

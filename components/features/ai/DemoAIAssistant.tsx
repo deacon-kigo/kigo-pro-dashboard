@@ -9,6 +9,7 @@ interface DemoAIAssistantProps {
   className?: string;
   title?: string;
   description?: string;
+  noHeader?: boolean;
 }
 
 export const DemoAIAssistant: React.FC<DemoAIAssistantProps> = ({
@@ -16,6 +17,7 @@ export const DemoAIAssistant: React.FC<DemoAIAssistantProps> = ({
   className = "",
   title = "AI Assistant",
   description,
+  noHeader = false,
 }) => {
   const { clientId } = useDemoState();
 
@@ -279,6 +281,7 @@ export const DemoAIAssistant: React.FC<DemoAIAssistantProps> = ({
       onMagicGenerate={handleMagicGenerate}
       className={className}
       showMagicButton={true}
+      noHeader={noHeader}
     />
   );
 };

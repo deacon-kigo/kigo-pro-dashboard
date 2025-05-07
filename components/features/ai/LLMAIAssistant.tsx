@@ -26,6 +26,7 @@ interface LLMAIAssistantProps {
   magicButtonText?: string;
   magicButtonHandler?: () => void;
   contextId?: string;
+  noHeader?: boolean;
 }
 
 export const LLMAIAssistant: React.FC<LLMAIAssistantProps> = ({
@@ -38,6 +39,7 @@ export const LLMAIAssistant: React.FC<LLMAIAssistantProps> = ({
   magicButtonText = "Generate Automatically",
   magicButtonHandler,
   contextId,
+  noHeader = false,
 }) => {
   const dispatch = useDispatch();
 
@@ -159,6 +161,7 @@ export const LLMAIAssistant: React.FC<LLMAIAssistantProps> = ({
       className={className}
       showMagicButton={showMagicButton}
       magicButtonText={magicButtonText}
+      noHeader={noHeader}
     />
   );
 };

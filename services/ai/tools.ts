@@ -741,3 +741,185 @@ export const generateCoverageImprovement = (
 
   return suggestions;
 };
+
+// Tool for campaign generation based on user input
+export const createCampaignGeneratorTool = () => {
+  return new DynamicTool({
+    name: "campaign_generator",
+    description:
+      "Generates advertising campaign details based on user input. Input must be a JSON string with keys: campaignType (string), description (string), currentContext (object, optional).",
+    func: async (
+      input: string,
+      runManager?: CallbackManagerForToolRun | undefined,
+      config?: RunnableConfig
+    ): Promise<string> => {
+      try {
+        // Parse the JSON input string
+        const {
+          campaignType = "",
+          description = "",
+          currentContext = {},
+        } = JSON.parse(input);
+
+        const model = getDefaultModel({ temperature: 0.4 });
+
+        // Define a schema for campaign generator output
+        const campaignSchema = z.object({
+          merchantId: z.string().optional(),
+          merchantName: z.string(),
+          campaignName: z.string(),
+          campaignDescription: z.string(),
+          mediaTypes: z.array(z.string()),
+          locations: z.array(
+            z.object({
+              type: z.enum(["state", "msa", "zipcode"]),
+              value: z.string(),
+            })
+          ),
+          campaignWeight: z.enum(["small", "medium", "large"]),
+          budget: z.string(),
+        });
+
+        const campaignParser =
+          StructuredOutputParser.fromZodSchema(campaignSchema);
+        const formatInstructions = campaignParser.getFormatInstructions();
+
+        // Properly escape curly braces in the format instructions
+        const escapedFormatInstructions = formatInstructions
+          .replace(/\{/g, "{{")
+          .replace(/\}/g, "}}");
+
+        // Format existing context if available
+        const contextString =
+          Object.keys(currentContext).length > 0
+            ? `Current Campaign Context:
+${Object.entries(currentContext)
+  .filter(
+    ([key, value]) => value !== undefined && value !== null && value !== ""
+  )
+  .map(([key, value]) => `- ${key}: ${JSON.stringify(value)}`)
+  .join("\n")}`
+            : "No existing campaign context.";
+
+        // Use template with properly escaped curly braces
+        const promptTemplate = ChatPromptTemplate.fromTemplate(`
+          Generate a comprehensive advertising campaign based on the following information:
+          
+          Campaign Type: {campaignType}
+          User Description: {description}
+          
+          ${contextString}
+          
+          ${escapedFormatInstructions}
+          
+          Consider the following guidelines:
+          1. Make the campaign name concise but descriptive
+          2. Generate a detailed campaign description
+          3. Select appropriate media types (Display Banner, Social Media, Video, Native, etc.)
+          4. Choose realistic geographic locations based on the campaign type
+          5. Assign an appropriate campaign weight (small, medium, large)
+          6. Set a realistic budget in USD
+          
+          Make the campaign details realistic, specific, and aligned with marketing best practices.
+        `);
+
+        const chain = promptTemplate.pipe(model).pipe(campaignParser);
+
+        const response = await chain.invoke({
+          campaignType,
+          description,
+        });
+
+        return JSON.stringify(response);
+      } catch (error) {
+        console.error("Error in campaign generator tool:", error);
+        return JSON.stringify({
+          error: "Failed to generate campaign",
+          details: error instanceof Error ? error.message : String(error),
+        });
+      }
+    },
+  });
+};
+
+// Tool for analyzing campaign effectiveness
+export const createCampaignAnalysisTool = () => {
+  return new DynamicTool({
+    name: "campaign_analyzer",
+    description:
+      "Analyzes advertising campaign details for effectiveness and optimization. Input must be a JSON string with campaign details.",
+    func: async (
+      input: string,
+      runManager?: CallbackManagerForToolRun | undefined,
+      config?: RunnableConfig
+    ): Promise<string> => {
+      try {
+        // Parse the JSON input string
+        const campaignDetails = JSON.parse(input);
+
+        const model = getDefaultModel({ temperature: 0.2 });
+
+        const analysisSchema = z.object({
+          strengths: z.array(z.string()),
+          weaknesses: z.array(z.string()),
+          recommendations: z.array(z.string()),
+          audienceReach: z.number().min(1).max(10),
+          costEfficiency: z.number().min(1).max(10),
+          conversionPotential: z.number().min(1).max(10),
+        });
+
+        const analysisParser =
+          StructuredOutputParser.fromZodSchema(analysisSchema);
+        const formatInstructions = analysisParser.getFormatInstructions();
+
+        // Properly escape curly braces in the format instructions
+        const escapedFormatInstructions = formatInstructions
+          .replace(/\{/g, "{{")
+          .replace(/\}/g, "}}");
+
+        // Convert campaign details to string representation
+        const campaignString = Object.entries(campaignDetails)
+          .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+          .join("\n");
+
+        // Use template with properly escaped curly braces
+        const promptTemplate = ChatPromptTemplate.fromTemplate(`
+          Analyze the following advertising campaign for effectiveness and provide recommendations:
+          
+          Campaign Details:
+          {campaignString}
+          
+          ${escapedFormatInstructions}
+          
+          Consider the following in your analysis:
+          1. Is the campaign targeting appropriate to the description?
+          2. Is the budget allocation efficient for the selected media types?
+          3. Are there any missed opportunities or potential improvements?
+          4. How well does the geographic targeting align with the campaign goals?
+          
+          Provide ratings on a scale of 1-10 where 10 is the highest.
+        `);
+
+        const chain = promptTemplate.pipe(model).pipe(analysisParser);
+
+        const response = await chain.invoke({
+          campaignString,
+        });
+
+        return JSON.stringify(response);
+      } catch (error) {
+        console.error("Error in campaign analysis tool:", error);
+        return JSON.stringify({
+          error: "Failed to analyze campaign",
+          details: error instanceof Error ? error.message : String(error),
+        });
+      }
+    },
+  });
+};
+
+// Export all tools collectively for easier imports
+export const campaignTools = {
+  campaignGenerator: createCampaignGeneratorTool,
+  campaignAnalyzer: createCampaignAnalysisTool,
+};

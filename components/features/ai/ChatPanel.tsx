@@ -50,6 +50,7 @@ export interface ChatPanelProps {
   className?: string;
   showMagicButton?: boolean;
   magicButtonText?: string;
+  noHeader?: boolean;
 }
 
 // Helper component for chat message
@@ -238,6 +239,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   className = "",
   showMagicButton = true,
   magicButtonText = "Instant Magic Filter",
+  noHeader = false,
 }) => {
   const [newMessage, setNewMessage] = React.useState("");
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
@@ -266,17 +268,19 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   return (
     <div className={`flex flex-col w-full h-full ${className}`}>
       {/* Header - Fixed at exactly 61px to match product filter header */}
-      <div className="flex items-center justify-between p-3 border-b bg-muted/20 h-[61px]">
-        <div className="flex items-center">
-          <LightBulbIcon className="h-5 w-5 mr-2 text-primary" />
-          <div>
-            <h3 className="font-medium">{title}</h3>
-            {description && (
-              <p className="text-xs text-muted-foreground">{description}</p>
-            )}
+      {!noHeader && (
+        <div className="flex items-center justify-between p-3 border-b bg-muted/20 h-[61px]">
+          <div className="flex items-center">
+            <LightBulbIcon className="h-5 w-5 mr-2 text-primary" />
+            <div>
+              <h3 className="font-medium">{title}</h3>
+              {description && (
+                <p className="text-xs text-muted-foreground">{description}</p>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Messages - Scrollable container with absolute positioning */}
       <div className="flex-1 relative">

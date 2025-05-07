@@ -32,6 +32,8 @@ import {
   BanknotesIcon,
   PhotoIcon,
   MapPinIcon,
+  XMarkIcon,
+  DocumentIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import {
@@ -49,6 +51,46 @@ import { Badge } from "@/components/atoms/Badge";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { CampaignAnalyticsPanel } from "./CampaignAnalyticsPanel";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  setMerchantId,
+  setMerchantName,
+  setOfferId,
+  setCampaignName,
+  setCampaignDescription,
+  setStartDate,
+  setEndDate,
+  setCampaignWeight,
+  setMediaTypes,
+  addMediaType,
+  removeMediaType,
+  addLocation,
+  removeLocation,
+  setBudget,
+  setCostPerActivation,
+  setCostPerRedemption,
+  addImage,
+  removeImage,
+  applyAICampaignUpdate,
+} from "@/lib/redux/slices/adsCampaignSlice";
+import {
+  selectMerchantId,
+  selectMerchantName,
+  selectOfferId,
+  selectCampaignName,
+  selectCampaignDescription,
+  selectStartDate,
+  selectEndDate,
+  selectCampaignWeight,
+  selectMediaTypes,
+  selectLocations,
+  selectBudget,
+  selectCostPerActivation,
+  selectCostPerRedemption,
+  selectImages,
+  selectIsFormValid,
+} from "@/lib/redux/selectors/adsCampaignSelectors";
+import { setAdsCampaignContext } from "@/lib/redux/slices/ai-assistantSlice";
 
 // Custom DatePicker component
 interface DatePickerProps {
@@ -110,28 +152,30 @@ const generateUniqueId = () => {
 
 export default function AdvertisementCampaignCreationContent() {
   const router = useRouter();
+  const dispatch = useDispatch();
 
-  // Form state
-  const [merchantId, setMerchantId] = useState("");
-  const [merchantName, setMerchantName] = useState("");
-  const [offerId, setOfferId] = useState("");
-  const [campaignName, setCampaignName] = useState("");
-  const [campaignDescription, setCampaignDescription] = useState("");
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
-  const [campaignWeight, setCampaignWeight] = useState("");
-  const [mediaTypes, setMediaTypes] = useState<string[]>([]);
-  const [uploadedImages, setUploadedImages] = useState<
-    Array<{ id: string; file: File }>
-  >([]);
-  const [locations, setLocations] = useState<
-    Array<{ id: string; type: string; value: string }>
-  >([]);
-  const [budget, setBudget] = useState("");
-  const [costPerActivation, setCostPerActivation] = useState("");
-  const [costPerRedemption, setCostPerRedemption] = useState("");
+  // Form state from Redux
+  const merchantId = useSelector(selectMerchantId);
+  const merchantName = useSelector(selectMerchantName);
+  const offerId = useSelector(selectOfferId);
+  const campaignName = useSelector(selectCampaignName);
+  const campaignDescription = useSelector(selectCampaignDescription);
+  const startDate = useSelector(selectStartDate)
+    ? new Date(useSelector(selectStartDate)!)
+    : null;
+  const endDate = useSelector(selectEndDate)
+    ? new Date(useSelector(selectEndDate)!)
+    : null;
+  const campaignWeight = useSelector(selectCampaignWeight);
+  const mediaTypes = useSelector(selectMediaTypes);
+  const locations = useSelector(selectLocations);
+  const budget = useSelector(selectBudget);
+  const costPerActivation = useSelector(selectCostPerActivation);
+  const costPerRedemption = useSelector(selectCostPerRedemption);
+  const uploadedImages = useSelector(selectImages);
+  const isFormValid = useSelector(selectIsFormValid);
 
-  // UI state
+  // UI state (keep as local state)
   const [validationMessage, setValidationMessage] = useState<string | null>(
     null
   );
@@ -140,7 +184,7 @@ export default function AdvertisementCampaignCreationContent() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Location form state
+  // Location form state (keep as local state for the form)
   const [locationType, setLocationType] = useState<"state" | "msa" | "zipcode">(
     "state"
   );
@@ -175,8 +219,13 @@ export default function AdvertisementCampaignCreationContent() {
         return;
       }
 
-      // Add unique ID to each uploaded file
-      setUploadedImages([...uploadedImages, { id: generateUniqueId(), file }]);
+      // Add to Redux state
+      dispatch(
+        addImage({
+          fileName: file.name,
+          file: file,
+        })
+      );
     }
   };
 
@@ -206,45 +255,36 @@ export default function AdvertisementCampaignCreationContent() {
         return;
       }
 
-      // Add location with unique ID
-      setLocations([
-        ...locations,
-        { id: generateUniqueId(), type: locationType, value: locationValue },
-      ]);
+      // Add location to Redux state
+      dispatch(
+        addLocation({
+          type: locationType,
+          value: locationValue,
+        })
+      );
+
       setLocationValue("");
     }
   };
 
   // Remove location
   const handleRemoveLocation = (idToRemove: string) => {
-    const updatedLocations = locations.filter((loc) => loc.id !== idToRemove);
-    setLocations(updatedLocations);
+    dispatch(removeLocation(idToRemove));
   };
 
   // Toggle media type selection
   const toggleMediaType = (type: string) => {
     if (mediaTypes.includes(type)) {
-      setMediaTypes(mediaTypes.filter((t) => t !== type));
+      dispatch(removeMediaType(type));
     } else {
-      setMediaTypes([...mediaTypes, type]);
+      dispatch(addMediaType(type));
     }
   };
 
   // Handle creation of campaign
   const handleCreateCampaign = () => {
     // Basic validation
-    if (
-      !merchantId ||
-      !campaignName ||
-      !campaignDescription ||
-      !startDate ||
-      !endDate ||
-      !campaignWeight ||
-      mediaTypes.length === 0 ||
-      uploadedImages.length === 0 ||
-      locations.length === 0 ||
-      !budget
-    ) {
+    if (!isFormValid) {
       setValidationMessage("Please fill all required fields");
       setTimeout(() => setValidationMessage(null), 5000);
       return;
@@ -293,15 +333,15 @@ export default function AdvertisementCampaignCreationContent() {
         setIsLoading(false);
         // Mock merchant data
         if (id === "12345") {
-          setMerchantName("Coffee Express Inc.");
+          dispatch(setMerchantName("Coffee Express Inc."));
         } else if (id === "67890") {
-          setMerchantName("Global Retail Partners");
+          dispatch(setMerchantName("Global Retail Partners"));
         } else {
-          setMerchantName(`Merchant ${id}`);
+          dispatch(setMerchantName(`Merchant ${id}`));
         }
       }, 800);
     } else {
-      setMerchantName("");
+      dispatch(setMerchantName(""));
     }
   };
 
@@ -314,9 +354,96 @@ export default function AdvertisementCampaignCreationContent() {
 
   // Handler for AI Assistant option selection
   const handleOptionSelected = (optionId: string) => {
-    // Handle different AI options here
     console.log("Selected option:", optionId);
+
+    // Handle apply_updates command for campaign updates
+    if (optionId.startsWith("apply_updates:")) {
+      try {
+        // Extract the JSON payload from the option ID
+        const updatesJson = optionId.replace("apply_updates:", "");
+        const updates = JSON.parse(updatesJson);
+
+        console.log("Parsed campaign updates:", updates);
+
+        // Dispatch action to update the campaign in Redux store
+        dispatch(
+          applyAICampaignUpdate({
+            merchantId: updates.merchantId,
+            merchantName: updates.merchantName,
+            offerId: updates.offerId,
+            campaignName: updates.campaignName,
+            campaignDescription: updates.campaignDescription,
+            startDate: updates.startDate
+              ? new Date(updates.startDate)
+              : undefined,
+            endDate: updates.endDate ? new Date(updates.endDate) : undefined,
+            campaignWeight: updates.campaignWeight,
+            mediaTypes: updates.mediaTypes,
+            locations: updates.locations,
+            budget: updates.budget,
+            costPerActivation: updates.costPerActivation,
+            costPerRedemption: updates.costPerRedemption,
+          })
+        );
+
+        // Show success message
+        setSuccessMessage("Campaign updated with AI suggestions!");
+        setTimeout(() => setSuccessMessage(null), 3000);
+      } catch (error) {
+        console.error("Error applying campaign updates:", error);
+        setValidationMessage(
+          "Failed to apply AI suggestions. Please try again."
+        );
+        setTimeout(() => setValidationMessage(null), 3000);
+      }
+    }
   };
+
+  // Update AI assistant context when campaign data changes
+  useEffect(() => {
+    console.log("Setting ads campaign context with data:", {
+      merchantId,
+      merchantName,
+      offerId,
+      campaignName,
+      campaignDescription,
+      startDate,
+      endDate,
+      campaignWeight,
+      mediaTypes,
+      locations,
+      budget,
+    });
+
+    dispatch(
+      setAdsCampaignContext({
+        merchantId,
+        merchantName,
+        offerId,
+        campaignName,
+        campaignDescription,
+        startDate: startDate ? startDate.toISOString() : null,
+        endDate: endDate ? endDate.toISOString() : null,
+        campaignWeight,
+        mediaTypes,
+        locations,
+        budget,
+      })
+    );
+  }, [
+    dispatch,
+    merchantId,
+    merchantName,
+    offerId,
+    campaignName,
+    campaignDescription,
+    startDate,
+    endDate,
+    campaignWeight,
+    mediaTypes,
+    locations,
+    budget,
+  ]);
 
   // Create the back button for header
   const backButton = (
@@ -329,6 +456,11 @@ export default function AdvertisementCampaignCreationContent() {
       Back to Campaigns
     </Button>
   );
+
+  // Handle remove image function
+  const handleRemoveImage = (id: string) => {
+    dispatch(removeImage(id));
+  };
 
   return (
     <div className="space-y-2 h-full flex flex-col">
@@ -355,37 +487,18 @@ export default function AdvertisementCampaignCreationContent() {
               height: "calc(100vh - 180px)",
             }}
           >
-            <Card className="p-0 h-full flex flex-col overflow-hidden">
-              <AIAssistantPanel
-                title="AI Campaign Assistant"
-                description="Tell me about the campaign you want to create"
-                onOptionSelected={handleOptionSelected}
-                className="h-full overflow-auto"
-              />
-              {isLoading && (
-                <div className="fixed inset-0 bg-black/5 backdrop-blur-sm flex items-center justify-center z-50">
-                  <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="bg-white p-4 rounded-lg shadow-lg flex flex-col items-center"
-                  >
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{
-                        duration: 1.5,
-                        repeat: Infinity,
-                        ease: "linear",
-                      }}
-                    >
-                      <SparklesIcon className="h-10 w-10 text-primary" />
-                    </motion.div>
-                    <p className="mt-3 text-sm font-medium">
-                      Processing your request...
-                    </p>
-                  </motion.div>
-                </div>
-              )}
-            </Card>
+            <AIAssistantPanel
+              className="h-full"
+              title="AI Campaign Assistant"
+              description="I can help create effective ad campaigns"
+              onOptionSelected={handleOptionSelected}
+              showWorkflowUI={true}
+              onWorkflowComplete={(results) => {
+                console.log("Workflow completed:", results);
+                // Handle workflow results if needed
+              }}
+              noHeader={false}
+            />
           </div>
 
           {/* Middle Column - Campaign Configuration with scrollable content */}
@@ -496,7 +609,7 @@ export default function AdvertisementCampaignCreationContent() {
                                   placeholder="Enter merchant ID"
                                   value={merchantId}
                                   onChange={(e) =>
-                                    setMerchantId(e.target.value)
+                                    dispatch(setMerchantId(e.target.value))
                                   }
                                   className="mt-1"
                                 />
@@ -531,7 +644,9 @@ export default function AdvertisementCampaignCreationContent() {
                                 </Label>
                                 <Select
                                   value={offerId}
-                                  onValueChange={setOfferId}
+                                  onValueChange={(value) =>
+                                    dispatch(setOfferId(value))
+                                  }
                                 >
                                   <SelectTrigger className="mt-1">
                                     <SelectValue placeholder="Select an offer" />
@@ -585,7 +700,7 @@ export default function AdvertisementCampaignCreationContent() {
                                   placeholder="Enter campaign name"
                                   value={campaignName}
                                   onChange={(e) =>
-                                    setCampaignName(e.target.value)
+                                    dispatch(setCampaignName(e.target.value))
                                   }
                                   className="mt-1"
                                   maxLength={50}
@@ -608,7 +723,9 @@ export default function AdvertisementCampaignCreationContent() {
                                   placeholder="Enter campaign description"
                                   value={campaignDescription}
                                   onChange={(e) =>
-                                    setCampaignDescription(e.target.value)
+                                    dispatch(
+                                      setCampaignDescription(e.target.value)
+                                    )
                                   }
                                   className="mt-1"
                                   rows={3}
@@ -631,7 +748,9 @@ export default function AdvertisementCampaignCreationContent() {
                                   <DatePicker
                                     id="start-date"
                                     selected={startDate}
-                                    onSelect={setStartDate}
+                                    onSelect={(date) =>
+                                      dispatch(setStartDate(date))
+                                    }
                                     placeholder="Select start date"
                                     className="mt-1 w-full"
                                   />
@@ -644,7 +763,9 @@ export default function AdvertisementCampaignCreationContent() {
                                   <DatePicker
                                     id="end-date"
                                     selected={endDate}
-                                    onSelect={setEndDate}
+                                    onSelect={(date) =>
+                                      dispatch(setEndDate(date))
+                                    }
                                     placeholder="Select end date"
                                     className="mt-1 w-full"
                                   />
@@ -660,7 +781,9 @@ export default function AdvertisementCampaignCreationContent() {
                                 </Label>
                                 <Select
                                   value={campaignWeight}
-                                  onValueChange={setCampaignWeight}
+                                  onValueChange={(value) =>
+                                    dispatch(setCampaignWeight(value))
+                                  }
                                 >
                                   <SelectTrigger className="mt-1">
                                     <SelectValue placeholder="Select campaign weight" />
@@ -713,7 +836,7 @@ export default function AdvertisementCampaignCreationContent() {
                                       placeholder="Enter budget amount"
                                       value={budget}
                                       onChange={(e) =>
-                                        setBudget(e.target.value)
+                                        dispatch(setBudget(e.target.value))
                                       }
                                       className="mt-1"
                                     />
@@ -738,7 +861,9 @@ export default function AdvertisementCampaignCreationContent() {
                                       placeholder="Enter cost per activation"
                                       value={costPerActivation}
                                       onChange={(e) =>
-                                        setCostPerActivation(e.target.value)
+                                        dispatch(
+                                          setCostPerActivation(e.target.value)
+                                        )
                                       }
                                       className="mt-1"
                                     />
@@ -759,7 +884,9 @@ export default function AdvertisementCampaignCreationContent() {
                                       placeholder="Enter cost per redemption"
                                       value={costPerRedemption}
                                       onChange={(e) =>
-                                        setCostPerRedemption(e.target.value)
+                                        dispatch(
+                                          setCostPerRedemption(e.target.value)
+                                        )
                                       }
                                       className="mt-1"
                                     />
@@ -798,8 +925,8 @@ export default function AdvertisementCampaignCreationContent() {
                                             setLocationType(value)
                                           }
                                         >
-                                          <SelectTrigger>
-                                            <SelectValue placeholder="Location type" />
+                                          <SelectTrigger className="w-28 shrink-0">
+                                            <SelectValue />
                                           </SelectTrigger>
                                           <SelectContent>
                                             <SelectItem value="state">
@@ -809,7 +936,7 @@ export default function AdvertisementCampaignCreationContent() {
                                               MSA
                                             </SelectItem>
                                             <SelectItem value="zipcode">
-                                              ZIP Code
+                                              Zipcode
                                             </SelectItem>
                                           </SelectContent>
                                         </Select>
@@ -863,7 +990,7 @@ export default function AdvertisementCampaignCreationContent() {
                                                   handleRemoveLocation(loc.id)
                                                 }
                                               >
-                                                <XCircleIcon className="h-3 w-3" />
+                                                <XMarkIcon className="h-3.5 w-3.5" />
                                               </button>
                                             </Badge>
                                           ))}
@@ -957,37 +1084,51 @@ export default function AdvertisementCampaignCreationContent() {
                                       </p>
                                     </div>
 
-                                    {/* Show uploaded images */}
+                                    {/* Display uploaded images */}
                                     {uploadedImages.length > 0 && (
-                                      <div className="mt-3">
-                                        <h4 className="text-sm font-medium mb-2">
-                                          Uploaded Media:
-                                        </h4>
-                                        <div className="flex flex-wrap gap-2">
-                                          {uploadedImages.map((fileData) => (
-                                            <div
-                                              key={fileData.id}
-                                              className="relative bg-gray-100 rounded-md p-2"
-                                            >
-                                              <div className="text-xs truncate max-w-[150px]">
-                                                {fileData.file.name}
-                                              </div>
-                                              <button
-                                                className="absolute -top-1 -right-1 bg-red-100 text-red-600 rounded-full p-0.5"
-                                                onClick={() => {
-                                                  const newImages =
-                                                    uploadedImages.filter(
-                                                      (img) =>
-                                                        img.id !== fileData.id
-                                                    );
-                                                  setUploadedImages(newImages);
-                                                }}
-                                              >
-                                                <XCircleIcon className="h-4 w-4" />
-                                              </button>
+                                      <div className="mt-3 grid grid-cols-2 gap-2">
+                                        {uploadedImages.map((fileData) => (
+                                          <div
+                                            key={fileData.id}
+                                            className="relative bg-gray-50 border rounded-md p-2 flex items-center"
+                                          >
+                                            <div className="h-12 w-12 bg-gray-100 rounded-md flex items-center justify-center mr-2">
+                                              {fileData.file ? (
+                                                <img
+                                                  src={URL.createObjectURL(
+                                                    fileData.file
+                                                  )}
+                                                  alt="Uploaded"
+                                                  className="h-10 w-10 object-cover rounded"
+                                                />
+                                              ) : (
+                                                <DocumentIcon className="h-6 w-6 text-gray-400" />
+                                              )}
                                             </div>
-                                          ))}
-                                        </div>
+                                            <div className="flex-1 min-w-0">
+                                              <p className="text-xs font-medium truncate">
+                                                {fileData.fileName ||
+                                                  fileData.file?.name ||
+                                                  "Image file"}
+                                              </p>
+                                              <p className="text-xs text-gray-500">
+                                                {fileData.file?.size
+                                                  ? (
+                                                      fileData.file.size / 1024
+                                                    ).toFixed(0) + " KB"
+                                                  : "Unknown size"}
+                                              </p>
+                                            </div>
+                                            <button
+                                              className="absolute -top-1 -right-1 bg-red-100 text-red-600 rounded-full p-0.5"
+                                              onClick={() =>
+                                                handleRemoveImage(fileData.id)
+                                              }
+                                            >
+                                              <XCircleIcon className="h-4 w-4" />
+                                            </button>
+                                          </div>
+                                        ))}
                                       </div>
                                     )}
                                   </div>
