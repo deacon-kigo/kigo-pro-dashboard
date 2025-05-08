@@ -52,7 +52,8 @@ const AdvertisementWizard = dynamic(
 
 export default function AdvertisementCampaignCreatePage() {
   const searchParams = useSearchParams();
-  const useWizard = searchParams.get("wizard") === "true";
+  // Make wizard the default mode, only use accordion mode if explicitly set to false
+  const useWizard = searchParams.get("wizard") !== "false";
 
   // Fix sidebar active state
   useEffect(() => {
@@ -60,9 +61,9 @@ export default function AdvertisementCampaignCreatePage() {
     const url = new URL(window.location.href);
     url.searchParams.set("view", "campaign-manager");
 
-    // Preserve wizard parameter if present
-    if (useWizard) {
-      url.searchParams.set("wizard", "true");
+    // Preserve wizard parameter if explicitly set to false
+    if (!useWizard) {
+      url.searchParams.set("wizard", "false");
     }
 
     window.history.replaceState({}, "", url);
@@ -77,10 +78,7 @@ export default function AdvertisementCampaignCreatePage() {
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbPage>
-            Advertisement Campaign Creation
-            {useWizard && " (Wizard)"}
-          </BreadcrumbPage>
+          <BreadcrumbPage>Advertisement Campaign Creation</BreadcrumbPage>
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>

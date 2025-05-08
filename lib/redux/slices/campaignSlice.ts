@@ -104,11 +104,11 @@ const initialState: CampaignState = {
     },
   },
   stepValidation: {
-    "basic-info": false,
-    targeting: false,
-    distribution: true, // Optional in v1
-    budget: false,
-    review: true, // Always valid as it's just review
+    "basic-info": true,
+    targeting: true,
+    distribution: true,
+    budget: true,
+    review: true,
   },
   isGenerating: false,
   lastGeneratedUpdate: null,

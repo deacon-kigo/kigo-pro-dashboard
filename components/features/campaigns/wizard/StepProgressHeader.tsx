@@ -21,19 +21,7 @@ const StepProgressHeader: React.FC<StepProgressHeaderProps> = ({
 }) => {
   // Function to determine if a step is accessible
   const canAccessStep = (stepIndex: number) => {
-    // Always allow access to current or previous steps
-    if (stepIndex <= currentStep) return true;
-
-    // Can only access next step if current step is valid
-    if (stepIndex === currentStep + 1) {
-      return stepValidation[CAMPAIGN_STEPS[currentStep].id];
-    }
-
-    // For steps beyond next, all previous steps must be valid
-    for (let i = 0; i < stepIndex; i++) {
-      if (!stepValidation[CAMPAIGN_STEPS[i].id]) return false;
-    }
-
+    // Allow navigation to any step for purely presentational UI
     return true;
   };
 

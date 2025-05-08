@@ -12,22 +12,28 @@ import {
   setCurrentStep,
   setStepValidation,
   resetCampaign,
+  updateBasicInfo,
+  updateTargeting,
+  updateBudget,
+  updateDistribution,
+  addLocation,
+  removeLocation,
+  setStartDate,
+  setEndDate,
 } from "@/lib/redux/slices/campaignSlice";
 import StepProgressHeader from "./StepProgressHeader";
 import StepNavigationFooter from "./StepNavigationFooter";
 import { setCampaignContext } from "@/lib/redux/slices/ai-assistantSlice";
 import { CampaignAnalyticsPanel } from "../CampaignAnalyticsPanel";
+import PageHeader from "@/components/molecules/PageHeader/PageHeader";
+import { v4 as uuidv4 } from "uuid";
 
-// Step content placeholder - in this case, we'll use the original ad creation components later
-const StepContent = ({ step }: { step: string }) => (
-  <div className="p-6 bg-white rounded-md border">
-    <h3 className="text-lg font-semibold">{step} Step Content</h3>
-    <p className="mt-2 text-gray-500">
-      This is a placeholder for the {step} step content. Implement the actual
-      advertisement step component.
-    </p>
-  </div>
-);
+// Import step components
+import BasicInfoStep from "./steps/BasicInfoStep";
+import TargetingStep from "./steps/TargetingStep";
+import DistributionStep from "./steps/DistributionStep";
+import BudgetStep from "./steps/BudgetStep";
+import ReviewStep from "./steps/ReviewStep";
 
 const AdvertisementWizard: React.FC = () => {
   const router = useRouter();
@@ -37,6 +43,11 @@ const AdvertisementWizard: React.FC = () => {
   const { currentStep, formData, stepValidation, isGenerating } = useSelector(
     (state: RootState) => state.campaign
   );
+
+  // Reset campaign form on initial load
+  useEffect(() => {
+    dispatch(resetCampaign());
+  }, [dispatch]);
 
   // Update AI context when form data changes
   useEffect(() => {
@@ -84,8 +95,8 @@ const AdvertisementWizard: React.FC = () => {
     // TODO: Implement AI option handling
   }, []);
 
-  // Check if next button should be disabled
-  const isNextDisabled = !stepValidation[CAMPAIGN_STEPS[currentStep].id];
+  // Always enable navigation in presentational mode
+  const isNextDisabled = false; // Allow navigation without validation
 
   // Animation variants
   const contentVariants = {
@@ -94,35 +105,110 @@ const AdvertisementWizard: React.FC = () => {
     exit: { opacity: 0, x: -20 },
   };
 
-  // Render the current step content
+  // Render the appropriate step content
   const renderStepContent = () => {
     switch (CAMPAIGN_STEPS[currentStep].id) {
       case "basic-info":
-        return <StepContent step="Basic Info" />;
+        return (
+          <BasicInfoStep
+            formData={formData.basicInfo}
+            updateBasicInfo={(basicInfo) =>
+              dispatch(updateBasicInfo(basicInfo))
+            }
+            setStartDate={(date) => dispatch(setStartDate(date))}
+            setEndDate={(date) => dispatch(setEndDate(date))}
+            setStepValidation={(isValid) =>
+              dispatch(setStepValidation({ step: "basic-info", isValid }))
+            }
+          />
+        );
       case "targeting":
-        return <StepContent step="Targeting" />;
+        return (
+          <TargetingStep
+            formData={formData.targeting}
+            updateTargeting={(targeting) =>
+              dispatch(updateTargeting(targeting))
+            }
+            addLocation={(location) => dispatch(addLocation(location))}
+            removeLocation={(id) => dispatch(removeLocation(id))}
+            setStepValidation={(isValid) =>
+              dispatch(setStepValidation({ step: "targeting", isValid }))
+            }
+          />
+        );
       case "distribution":
-        return <StepContent step="Distribution" />;
+        return (
+          <DistributionStep
+            formData={formData.distribution}
+            updateDistribution={(distribution) =>
+              dispatch(updateDistribution(distribution))
+            }
+            setStepValidation={(isValid) =>
+              dispatch(setStepValidation({ step: "distribution", isValid }))
+            }
+          />
+        );
       case "budget":
-        return <StepContent step="Budget" />;
+        return (
+          <BudgetStep
+            formData={formData.budget}
+            updateBudget={(budget) => dispatch(updateBudget(budget))}
+            campaignWeight={formData.targeting.campaignWeight}
+            setStepValidation={(isValid) =>
+              dispatch(setStepValidation({ step: "budget", isValid }))
+            }
+          />
+        );
       case "review":
-        return <StepContent step="Review" />;
+        return <ReviewStep formData={formData} />;
       default:
         return null;
     }
   };
 
+  // Create back button
+  const backButton = (
+    <button
+      onClick={() => router.push("/campaign-manager")}
+      className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M10 12L6 8L10 4"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      Back to Campaign Manager
+    </button>
+  );
+
   return (
-    <div className="h-full flex flex-col">
-      {/* Main content container */}
+    <div className="space-y-6 h-full flex flex-col">
+      <PageHeader
+        title="Create Advertisement Campaign"
+        description="Design and launch your advertisement campaign in a few steps."
+        emoji="📊"
+        actions={backButton}
+        variant="aurora"
+      />
+
       <div className="flex-1 flex flex-col">
         <div className="flex gap-4 h-full">
           {/* Left Column - AI Assistant Panel */}
-          <div className="w-[360px] flex-shrink-0 h-full">
+          <div className="w-[320px] flex-shrink-0 h-full">
             <Card className="p-0 h-full flex flex-col overflow-hidden">
               <AIAssistantPanel
-                title="AI Advertisement Assistant"
-                description="I'll help you create an effective ad campaign"
+                title="AI Campaign Assistant"
+                description="I'll help you create an effective campaign"
                 onOptionSelected={handleOptionSelected}
                 className="h-full overflow-auto"
               />
@@ -141,7 +227,7 @@ const AdvertisementWizard: React.FC = () => {
               />
 
               {/* Step content with animation */}
-              <div className="flex-1 overflow-auto p-4">
+              <div className="flex-1 overflow-auto">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={CAMPAIGN_STEPS[currentStep].id}
@@ -150,6 +236,7 @@ const AdvertisementWizard: React.FC = () => {
                     exit="exit"
                     variants={contentVariants}
                     transition={{ duration: 0.3 }}
+                    className="p-6"
                   >
                     {renderStepContent()}
                   </motion.div>
@@ -169,12 +256,18 @@ const AdvertisementWizard: React.FC = () => {
           </div>
 
           {/* Right Column - Campaign Visualization */}
-          <div className="w-[360px] flex-shrink-0 h-full">
+          <div className="w-[320px] flex-shrink-0 h-full">
             <Card className="h-full p-0">
               <CampaignAnalyticsPanel
                 className="h-full"
                 campaignBudget={formData.budget.maxBudget || 5000}
-                estimatedReach={100000}
+                estimatedReach={
+                  formData.targeting.campaignWeight === "small"
+                    ? 50000
+                    : formData.targeting.campaignWeight === "medium"
+                      ? 100000
+                      : 200000
+                }
               />
             </Card>
           </div>
