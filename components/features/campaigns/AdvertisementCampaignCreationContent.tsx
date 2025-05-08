@@ -345,10 +345,10 @@ export default function AdvertisementCampaignCreationContent() {
         className="flex-1 flex flex-col"
         style={{ height: "calc(100vh - 160px)" }}
       >
-        <div className="flex gap-3 h-full">
+        <div className="flex gap-4 h-full">
           {/* Left Column - AI Assistant Panel with fixed height and position */}
           <div
-            className="w-[320px] flex-shrink-0"
+            className="w-[360px] flex-shrink-0"
             style={{
               position: "sticky",
               top: "1rem",
@@ -1130,7 +1130,7 @@ export default function AdvertisementCampaignCreationContent() {
 
           {/* Right Column - Campaign Analytics Panel */}
           <div
-            className="w-[380px] flex-shrink-0"
+            className="w-[360px] flex-shrink-0"
             style={{
               position: "sticky",
               top: "1rem",
