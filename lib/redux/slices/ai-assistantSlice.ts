@@ -1,5 +1,11 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { SYSTEM_PROMPTS } from "@/services/ai";
+import {
+  CampaignBasicInfo,
+  CampaignTargeting,
+  CampaignDistribution,
+  CampaignBudget,
+} from "./campaignSlice";
 
 // Define FilterCriteria type locally if not imported from a shared location
 interface FilterCriteria {
@@ -25,6 +31,12 @@ export interface AIMessage {
   systemPrompt?: string;
   error?: string | null;
   currentCriteria?: FilterCriteria[];
+  campaignContext?: {
+    basicInfo?: CampaignBasicInfo;
+    targeting?: CampaignTargeting;
+    distribution?: CampaignDistribution;
+    budget?: CampaignBudget;
+  };
 }
 
 interface AIAssistantState {
@@ -34,6 +46,12 @@ interface AIAssistantState {
   systemPrompt: string;
   error: string | null;
   currentCriteria: FilterCriteria[];
+  campaignContext?: {
+    basicInfo?: CampaignBasicInfo;
+    targeting?: CampaignTargeting;
+    distribution?: CampaignDistribution;
+    budget?: CampaignBudget;
+  };
 }
 
 const initialState: AIAssistantState = {
@@ -105,6 +123,23 @@ export const aiAssistantSlice = createSlice({
       state.currentCriteria = action.payload.currentCriteria || [];
     },
 
+    // Specialized action for the campaign context
+    setCampaignContext: (
+      state,
+      action: PayloadAction<{
+        basicInfo?: CampaignBasicInfo;
+        targeting?: CampaignTargeting;
+        distribution?: CampaignDistribution;
+        budget?: CampaignBudget;
+      }>
+    ) => {
+      state.contextId = "campaignContext";
+      state.systemPrompt =
+        SYSTEM_PROMPTS.CAMPAIGN_ASSISTANT ||
+        "You are a helpful assistant for creating marketing campaigns.";
+      state.campaignContext = action.payload;
+    },
+
     // Magic generate action
     magicGenerate: (state) => {
       // This action doesn't need to modify state directly
@@ -122,6 +157,7 @@ export const {
   setContextId,
   setError,
   setProductFilterContext,
+  setCampaignContext,
   magicGenerate,
 } = aiAssistantSlice.actions;
 

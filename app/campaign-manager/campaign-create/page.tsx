@@ -2,9 +2,6 @@
 
 import React, { useEffect, Suspense } from "react";
 import dynamic from "next/dynamic";
-import Link from "next/link";
-import { ChevronLeftIcon } from "@heroicons/react/24/outline";
-import Card from "@/components/atoms/Card/Card";
 import AppLayout from "@/components/templates/AppLayout/AppLayout";
 import {
   Breadcrumb,
@@ -14,7 +11,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/atoms/Breadcrumb";
-import { useSearchParams } from "next/navigation";
 
 // Loading component
 function LoadingFallback() {
@@ -22,51 +18,29 @@ function LoadingFallback() {
     <div className="flex justify-center items-center h-screen">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
-        <p className="text-gray-700 text-lg">
-          Loading Advertisement Campaign Creation...
-        </p>
+        <p className="text-gray-700 text-lg">Loading Campaign Creation...</p>
       </div>
     </div>
   );
 }
 
-// Dynamically load the client components with no SSR
-const AdvertisementCampaignContent = dynamic(
-  () =>
-    import(
-      "../../../components/features/campaigns/AdvertisementCampaignCreationContent"
-    ),
+// Dynamically load the campaign wizard with no SSR
+const CampaignWizard = dynamic(
+  () => import("@/components/features/campaigns/wizard/CampaignWizard"),
   {
     ssr: false,
     loading: () => <LoadingFallback />,
   }
 );
 
-const AdvertisementWizard = dynamic(
-  () => import("@/components/features/campaigns/wizard/AdvertisementWizard"),
-  {
-    ssr: false,
-    loading: () => <LoadingFallback />,
-  }
-);
-
-export default function AdvertisementCampaignCreatePage() {
-  const searchParams = useSearchParams();
-  const useWizard = searchParams.get("wizard") === "true";
-
+export default function CampaignCreatePage() {
   // Fix sidebar active state
   useEffect(() => {
     // Add view=campaign-manager parameter to mark Dashboard as active in sidebar
     const url = new URL(window.location.href);
     url.searchParams.set("view", "campaign-manager");
-
-    // Preserve wizard parameter if present
-    if (useWizard) {
-      url.searchParams.set("wizard", "true");
-    }
-
     window.history.replaceState({}, "", url);
-  }, [useWizard]);
+  }, []);
 
   // Custom breadcrumb showing navigation path
   const breadcrumb = (
@@ -77,10 +51,7 @@ export default function AdvertisementCampaignCreatePage() {
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbPage>
-            Advertisement Campaign Creation
-            {useWizard && " (Wizard)"}
-          </BreadcrumbPage>
+          <BreadcrumbPage>Campaign Creation</BreadcrumbPage>
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>
@@ -90,11 +61,7 @@ export default function AdvertisementCampaignCreatePage() {
     <Suspense fallback={<LoadingFallback />}>
       <AppLayout customBreadcrumb={breadcrumb}>
         <div className="pt-0 mt-0">
-          {useWizard ? (
-            <AdvertisementWizard />
-          ) : (
-            <AdvertisementCampaignContent />
-          )}
+          <CampaignWizard />
         </div>
       </AppLayout>
     </Suspense>

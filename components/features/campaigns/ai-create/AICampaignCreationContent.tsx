@@ -128,7 +128,10 @@ export default function AICampaignCreationContent() {
           {/* AI Assistant Panel - Left Side */}
           <div className="lg:col-span-4 h-full overflow-hidden flex flex-col">
             <Card className="h-full flex-1 p-0 overflow-hidden flex flex-col">
-              <AIAssistantPanel onOptionSelected={handleOptionSelected} />
+              <AIAssistantPanel
+                onOptionSelected={handleOptionSelected}
+                title={""}
+              />
             </Card>
           </div>
 

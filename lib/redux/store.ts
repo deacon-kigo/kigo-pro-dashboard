@@ -9,6 +9,7 @@ import externalTicketingReducer from "./slices/externalTicketingSlice";
 import sessionReducer from "./slices/sessionSlice";
 import aiAssistantReducer from "./slices/ai-assistantSlice";
 import productFilterReducer from "./slices/productFilterSlice";
+import campaignReducer from "./slices/campaignSlice";
 import { useDispatch } from "react-redux";
 import { ActionWithType } from "../../types/redux";
 import aiAssistantMiddleware from "./middleware/ai-assistantMiddleware";
@@ -58,6 +59,7 @@ export function makeStore() {
       session: sessionReducer,
       aiAssistant: aiAssistantReducer,
       productFilter: productFilterReducer,
+      campaign: campaignReducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
@@ -67,9 +69,16 @@ export function makeStore() {
           ignoredActions: [
             "productFilter/setExpiryDate",
             "productFilter/applyFilterUpdate",
+            "campaign/setStartDate",
+            "campaign/setEndDate",
+            "campaign/applyCampaignUpdate",
           ],
           // Ignore these field paths in the state
-          ignoredPaths: ["productFilter.expiryDate"],
+          ignoredPaths: [
+            "productFilter.expiryDate",
+            "campaign.formData.basicInfo.startDate",
+            "campaign.formData.basicInfo.endDate",
+          ],
         },
       }).concat([demoActionLoggerMiddleware, aiAssistantMiddleware]),
     // Enable Redux DevTools in development
