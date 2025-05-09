@@ -42,7 +42,7 @@ export function CampaignAnalyticsPanel({
         </div>
       </div>
 
-      {/* Content - Scrollable area */}
+      {/* Content - Scrollable area with better overflow handling */}
       <div className="flex-1 overflow-y-auto p-4">
         <div className="space-y-4">
           {/* Completion Checklist */}

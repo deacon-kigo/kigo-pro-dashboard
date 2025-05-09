@@ -306,13 +306,11 @@ const AdvertisementWizard: React.FC = () => {
         className="flex-1 flex flex-col"
         style={{ height: "calc(100vh - 160px)" }}
       >
-        <div className="flex gap-3 h-full">
+        <div className="flex gap-3 ">
           {/* Left Column - AI Assistant Panel */}
           <div
             className="w-[448px] flex-shrink-0"
             style={{
-              position: "sticky",
-              top: "1rem",
               height: "calc(100vh - 180px)",
             }}
           >
@@ -330,7 +328,7 @@ const AdvertisementWizard: React.FC = () => {
           </div>
 
           {/* Middle Column - Campaign Form with Steps */}
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 min-w-0 h-full flex flex-col">
             <Card className="p-0 flex flex-col h-full overflow-hidden shadow-md">
               {/* Step indicator header */}
               <StepProgressHeader
@@ -340,7 +338,7 @@ const AdvertisementWizard: React.FC = () => {
                 className="flex-shrink-0"
               />
 
-              {/* Step content with animation */}
+              {/* Step content with animation - Make sure it's scrollable */}
               <div className="flex-1 overflow-auto">
                 <AnimatePresence mode="wait">
                   <motion.div
@@ -370,7 +368,7 @@ const AdvertisementWizard: React.FC = () => {
           </div>
 
           {/* Right Column - Campaign Visualization */}
-          <div className="w-[448px] h-full">
+          <div className="w-[448px] flex-shrink-0 h-full">
             <Card className="h-full p-0 flex flex-col overflow-hidden shadow-md">
               <div className="flex-1 overflow-hidden">
                 <CampaignAnalyticsPanel

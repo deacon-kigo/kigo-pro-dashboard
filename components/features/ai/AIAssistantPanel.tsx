@@ -103,7 +103,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
   };
 
   // Fix height and make sure the flex layout is properly set
-  const combinedClassName = `flex flex-col flex-1 h-full ${className}`;
+  const combinedClassName = `flex flex-col w-full h-full ${className}`;
 
   // Simple wrapper component that renders the appropriate assistant based on pathname
   return isProductFilterMode ? (

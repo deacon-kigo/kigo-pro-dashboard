@@ -280,7 +280,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
 
       {/* Messages - Scrollable container that grows to fill available space */}
       <div className="flex-1 overflow-y-auto">
-        <div className="p-5 space-y-6">
+        <div className="p-5 space-y-6 min-h-full">
           {messages.map((message: AIMessage) => (
             <ChatMessage
               key={message.id}
