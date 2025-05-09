@@ -22,8 +22,32 @@ module.exports = {
    * Any rules defined here will override rules from @commitlint/config-conventional
    */
   rules: {
-    "body-max-line-length": [2, "always", 72],
+    "body-max-line-length": [1, "always", 100],
     "references-empty": [0, "never"],
-    "subject-max-length": [2, "always", 50],
+    "subject-max-length": [1, "always", 100],
+    "subject-case": [0, "always"],
+    "type-empty": [1, "never"],
+    "subject-empty": [1, "never"],
+    "type-case": [1, "always", "lower-case"],
+    "type-enum": [
+      1,
+      "always",
+      [
+        "build",
+        "chore",
+        "ci",
+        "docs",
+        "feat",
+        "fix",
+        "perf",
+        "refactor",
+        "revert",
+        "style",
+        "test",
+        "update",
+        "improve",
+        "change",
+      ],
+    ],
   },
 };
