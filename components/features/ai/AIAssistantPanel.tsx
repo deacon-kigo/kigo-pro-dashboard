@@ -58,6 +58,7 @@ interface AIAssistantPanelProps {
   title: string;
   description?: string;
   requiredCriteriaTypes?: string[];
+  initialMessage?: string;
 }
 
 interface ChatMessageProps {
@@ -74,6 +75,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
   title,
   description,
   requiredCriteriaTypes = [],
+  initialMessage,
 }) => {
   const pathname = usePathname();
 
@@ -82,6 +84,10 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
 
   // Get initial message based on mode
   const getInitialMessage = () => {
+    if (initialMessage) {
+      return initialMessage;
+    }
+
     if (isProductFilterMode) {
       return "Hi! I'm your AI filter assistant. I can help you create product filters by suggesting criteria based on what you're looking for. What kind of offers would you like to filter?";
     }
@@ -109,6 +115,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
       className={className}
       title={title}
       description={description}
+      initialMessage={getInitialMessage()}
     />
   );
 };

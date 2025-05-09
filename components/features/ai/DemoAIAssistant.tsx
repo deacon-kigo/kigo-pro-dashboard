@@ -9,6 +9,7 @@ interface DemoAIAssistantProps {
   className?: string;
   title?: string;
   description?: string;
+  initialMessage?: string;
 }
 
 export const DemoAIAssistant: React.FC<DemoAIAssistantProps> = ({
@@ -16,6 +17,7 @@ export const DemoAIAssistant: React.FC<DemoAIAssistantProps> = ({
   className = "",
   title = "AI Assistant",
   description,
+  initialMessage,
 }) => {
   const { clientId } = useDemoState();
 
@@ -41,26 +43,32 @@ export const DemoAIAssistant: React.FC<DemoAIAssistantProps> = ({
   React.useEffect(() => {
     if (clientId && messages.length === 0) {
       const timer = setTimeout(() => {
-        const greeting = getGreeting();
-        let merchantName = "there";
-        if (clientId === "deacons") {
-          merchantName = "Deacon";
-        } else if (clientId === "seven-eleven") {
-          merchantName = "7-Eleven team";
+        let initialMsg = initialMessage;
+
+        if (!initialMsg) {
+          const greeting = getGreeting();
+          let merchantName = "there";
+          if (clientId === "deacons") {
+            merchantName = "Deacon";
+          } else if (clientId === "seven-eleven") {
+            merchantName = "7-Eleven team";
+          }
+
+          initialMsg = `${greeting}, ${merchantName}! I'm your AI marketing assistant. How can I help?`;
         }
 
-        let initialMessage: AIMessage = {
+        let initialAIMessage: AIMessage = {
           id: "1",
           type: "ai",
-          content: `${greeting}, ${merchantName}! I'm your AI marketing assistant. How can I help?`,
+          content: initialMsg,
           timestamp: new Date().toISOString(),
         };
 
-        if (clientId === "seven-eleven") {
-          initialMessage = {
+        if (clientId === "seven-eleven" && !initialMessage) {
+          initialAIMessage = {
             id: "1",
             type: "ai",
-            content: `${greeting}, ${merchantName}! I'm your AI marketing assistant. Sounds like you'd like to create a new offer. Let's get started. To help you create an effective offer, tell me about your primary business objective.`,
+            content: `${getGreeting()}, 7-Eleven team! I'm your AI marketing assistant. Sounds like you'd like to create a new offer. Let's get started. To help you create an effective offer, tell me about your primary business objective.`,
             timestamp: new Date().toISOString(),
             responseOptions: [
               {
@@ -74,11 +82,11 @@ export const DemoAIAssistant: React.FC<DemoAIAssistantProps> = ({
             ],
           };
         }
-        setMessages([initialMessage]);
+        setMessages([initialAIMessage]);
       }, 800);
       return () => clearTimeout(timer);
     }
-  }, [clientId, messages.length]);
+  }, [clientId, messages.length, initialMessage]);
 
   // Handle message sending for demo mode
   const handleSendMessage = React.useCallback(

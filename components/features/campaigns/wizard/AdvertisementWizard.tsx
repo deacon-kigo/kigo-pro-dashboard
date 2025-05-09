@@ -20,6 +20,11 @@ import {
   removeLocation,
   setStartDate,
   setEndDate,
+  addAd,
+  updateAd,
+  removeAd,
+  addMediaToAd,
+  removeMediaFromAd,
 } from "@/lib/redux/slices/campaignSlice";
 import StepProgressHeader from "./StepProgressHeader";
 import StepNavigationFooter from "./StepNavigationFooter";
@@ -32,6 +37,7 @@ import { v4 as uuidv4 } from "uuid";
 import BasicInfoStep from "./steps/BasicInfoStep";
 import TargetingStep from "./steps/TargetingStep";
 import DistributionStep from "./steps/DistributionStep";
+import AdCreationStep from "./steps/AdCreationStep";
 import BudgetStep from "./steps/BudgetStep";
 import ReviewStep from "./steps/ReviewStep";
 
@@ -105,6 +111,42 @@ const AdvertisementWizard: React.FC = () => {
     exit: { opacity: 0, x: -20 },
   };
 
+  // Handle ad-related actions
+  const handleAddAd = useCallback(
+    (ad) => {
+      dispatch(addAd(ad));
+    },
+    [dispatch]
+  );
+
+  const handleUpdateAd = useCallback(
+    (id, data) => {
+      dispatch(updateAd({ id, data }));
+    },
+    [dispatch]
+  );
+
+  const handleRemoveAd = useCallback(
+    (id) => {
+      dispatch(removeAd(id));
+    },
+    [dispatch]
+  );
+
+  const handleAddMediaToAd = useCallback(
+    (adId, media) => {
+      dispatch(addMediaToAd({ adId, media }));
+    },
+    [dispatch]
+  );
+
+  const handleRemoveMediaFromAd = useCallback(
+    (adId, mediaId) => {
+      dispatch(removeMediaFromAd({ adId, mediaId }));
+    },
+    [dispatch]
+  );
+
   // Render the appropriate step content
   const renderStepContent = () => {
     switch (CAMPAIGN_STEPS[currentStep].id) {
@@ -148,6 +190,20 @@ const AdvertisementWizard: React.FC = () => {
             }
           />
         );
+      case "ad-creation":
+        return (
+          <AdCreationStep
+            ads={formData.ads}
+            addAd={handleAddAd}
+            updateAd={handleUpdateAd}
+            removeAd={handleRemoveAd}
+            addMediaToAd={handleAddMediaToAd}
+            removeMediaFromAd={handleRemoveMediaFromAd}
+            setStepValidation={(isValid) =>
+              dispatch(setStepValidation({ step: "ad-creation", isValid }))
+            }
+          />
+        );
       case "budget":
         return (
           <BudgetStep
@@ -164,6 +220,46 @@ const AdvertisementWizard: React.FC = () => {
       default:
         return null;
     }
+  };
+
+  // Get campaign analytics values for right panel
+  const getCampaignAnalyticsValues = () => {
+    const campaignBudget = formData.budget.maxBudget || 5000;
+    let estimatedReach = 0;
+
+    // Calculate estimated reach based on targeting weight
+    switch (formData.targeting.campaignWeight) {
+      case "small":
+        estimatedReach = 50000;
+        break;
+      case "medium":
+        estimatedReach = 100000;
+        break;
+      case "large":
+        estimatedReach = 200000;
+        break;
+      default:
+        estimatedReach = 100000;
+    }
+
+    // Adjust based on selected loyalty programs (more programs = more reach)
+    if (formData.distribution.programs.length > 0) {
+      estimatedReach = Math.round(
+        estimatedReach * (1 + formData.distribution.programs.length * 0.1)
+      );
+    }
+
+    // Adjust based on number of ads (more ads = more engagement)
+    const adCount = formData.ads.length;
+    if (adCount > 0) {
+      const adMultiplier = 1 + adCount * 0.05;
+      estimatedReach = Math.round(estimatedReach * adMultiplier);
+    }
+
+    return {
+      campaignBudget,
+      estimatedReach,
+    };
   };
 
   // Create back button
@@ -191,6 +287,9 @@ const AdvertisementWizard: React.FC = () => {
     </button>
   );
 
+  // Get analytics values
+  const analyticsValues = getCampaignAnalyticsValues();
+
   return (
     <div className="space-y-6 h-full flex flex-col">
       <PageHeader
@@ -204,19 +303,20 @@ const AdvertisementWizard: React.FC = () => {
       <div className="flex-1 flex flex-col">
         <div className="flex gap-4 h-full">
           {/* Left Column - AI Assistant Panel */}
-          <div className="w-[320px] flex-shrink-0 h-full">
+          <div className="w-[280px] flex-shrink-0 h-full">
             <Card className="p-0 h-full flex flex-col overflow-hidden">
               <AIAssistantPanel
                 title="AI Campaign Assistant"
                 description="I'll help you create an effective campaign"
                 onOptionSelected={handleOptionSelected}
                 className="h-full overflow-auto"
+                initialMessage="Hello! I'm your AI Campaign Assistant. I can help you optimize your campaign for better performance. What would you like help with today?"
               />
             </Card>
           </div>
 
           {/* Middle Column - Campaign Form with Steps */}
-          <div className="flex-1 flex flex-col h-full overflow-hidden">
+          <div className="w-0 md:w-[calc(50%-280px)] flex-grow flex flex-col h-full overflow-hidden">
             <Card className="p-0 flex flex-col h-full overflow-hidden">
               {/* Step indicator header */}
               <StepProgressHeader
@@ -256,18 +356,12 @@ const AdvertisementWizard: React.FC = () => {
           </div>
 
           {/* Right Column - Campaign Visualization */}
-          <div className="w-[320px] flex-shrink-0 h-full">
+          <div className="w-0 md:w-[calc(50%-280px)] flex-grow flex-shrink-0 h-full">
             <Card className="h-full p-0">
               <CampaignAnalyticsPanel
                 className="h-full"
-                campaignBudget={formData.budget.maxBudget || 5000}
-                estimatedReach={
-                  formData.targeting.campaignWeight === "small"
-                    ? 50000
-                    : formData.targeting.campaignWeight === "medium"
-                      ? 100000
-                      : 200000
-                }
+                campaignBudget={analyticsValues.campaignBudget}
+                estimatedReach={analyticsValues.estimatedReach}
               />
             </Card>
           </div>

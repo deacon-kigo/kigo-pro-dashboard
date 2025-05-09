@@ -18,6 +18,11 @@ export const CAMPAIGN_STEPS = [
     description: "Channels and programs",
   },
   {
+    id: "ad-creation",
+    title: "Ad Creation",
+    description: "Create ads for your campaign",
+  },
+  {
     id: "budget",
     title: "Budget",
     description: "Set budget and metrics",
@@ -50,9 +55,29 @@ export interface CampaignTargeting {
 
 export interface CampaignDistribution {
   channels: string[];
-  partners: string[];
   programs: string[];
   programCampaigns: string[];
+}
+
+export interface MediaAsset {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  url: string;
+  previewUrl: string;
+  dimensions?: { width: number; height: number };
+}
+
+export interface CampaignAd {
+  id: string;
+  merchantId: string;
+  merchantName: string;
+  offerId: string;
+  mediaType: string[];
+  mediaAssets: MediaAsset[];
+  costPerActivation: number;
+  costPerRedemption: number;
 }
 
 export interface CampaignBudget {
@@ -66,6 +91,7 @@ export interface CampaignState {
     basicInfo: CampaignBasicInfo;
     targeting: CampaignTargeting;
     distribution: CampaignDistribution;
+    ads: CampaignAd[];
     budget: CampaignBudget;
   };
   stepValidation: {
@@ -93,11 +119,11 @@ const initialState: CampaignState = {
       campaignWeight: "medium",
     },
     distribution: {
-      channels: [],
-      partners: [],
+      channels: ["email", "social", "display", "search", "inapp"], // All selected by default
       programs: [],
       programCampaigns: [],
     },
+    ads: [],
     budget: {
       maxBudget: 0,
       estimatedReach: null,
@@ -107,6 +133,7 @@ const initialState: CampaignState = {
     "basic-info": true,
     targeting: true,
     distribution: true,
+    "ad-creation": true,
     budget: true,
     review: true,
   },
@@ -123,8 +150,23 @@ export const applyCampaignUpdate = createAction<{
   basicInfo?: Partial<CampaignBasicInfo>;
   targeting?: Partial<CampaignTargeting>;
   distribution?: Partial<CampaignDistribution>;
+  ads?: CampaignAd[];
   budget?: Partial<CampaignBudget>;
 }>("campaign/applyCampaignUpdate");
+
+// Create actions for ad management
+export const addAd = createAction<CampaignAd>("campaign/addAd");
+export const updateAd = createAction<{ id: string; data: Partial<CampaignAd> }>(
+  "campaign/updateAd"
+);
+export const removeAd = createAction<string>("campaign/removeAd");
+export const addMediaToAd = createAction<{ adId: string; media: MediaAsset }>(
+  "campaign/addMediaToAd"
+);
+export const removeMediaFromAd = createAction<{
+  adId: string;
+  mediaId: string;
+}>("campaign/removeMediaFromAd");
 
 // Create the slice
 export const campaignSlice = createSlice({
@@ -211,7 +253,8 @@ export const campaignSlice = createSlice({
           : null;
       })
       .addCase(applyCampaignUpdate, (state, action) => {
-        const { basicInfo, targeting, distribution, budget } = action.payload;
+        const { basicInfo, targeting, distribution, ads, budget } =
+          action.payload;
 
         if (basicInfo) {
           state.formData.basicInfo = {
@@ -234,6 +277,10 @@ export const campaignSlice = createSlice({
           };
         }
 
+        if (ads) {
+          state.formData.ads = ads;
+        }
+
         if (budget) {
           state.formData.budget = {
             ...state.formData.budget,
@@ -242,6 +289,43 @@ export const campaignSlice = createSlice({
         }
 
         state.lastGeneratedUpdate = "ai-update";
+      })
+      .addCase(addAd, (state, action) => {
+        state.formData.ads.push(action.payload);
+      })
+      .addCase(updateAd, (state, action) => {
+        const { id, data } = action.payload;
+        const adIndex = state.formData.ads.findIndex((ad) => ad.id === id);
+
+        if (adIndex !== -1) {
+          state.formData.ads[adIndex] = {
+            ...state.formData.ads[adIndex],
+            ...data,
+          };
+        }
+      })
+      .addCase(removeAd, (state, action) => {
+        state.formData.ads = state.formData.ads.filter(
+          (ad) => ad.id !== action.payload
+        );
+      })
+      .addCase(addMediaToAd, (state, action) => {
+        const { adId, media } = action.payload;
+        const adIndex = state.formData.ads.findIndex((ad) => ad.id === adId);
+
+        if (adIndex !== -1) {
+          state.formData.ads[adIndex].mediaAssets.push(media);
+        }
+      })
+      .addCase(removeMediaFromAd, (state, action) => {
+        const { adId, mediaId } = action.payload;
+        const adIndex = state.formData.ads.findIndex((ad) => ad.id === adId);
+
+        if (adIndex !== -1) {
+          state.formData.ads[adIndex].mediaAssets = state.formData.ads[
+            adIndex
+          ].mediaAssets.filter((media) => media.id !== mediaId);
+        }
       });
   },
 });
