@@ -4,7 +4,6 @@ import React, { useCallback, useRef } from "react";
 import { Input } from "@/components/atoms/Input";
 import { Label } from "@/components/atoms/Label";
 import { Textarea } from "@/components/atoms/Textarea";
-import { Calendar } from "@/components/atoms/Calendar/Calendar";
 import { CampaignBasicInfo } from "@/lib/redux/slices/campaignSlice";
 import {
   Select,
@@ -13,15 +12,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/atoms/Select";
-import { Button } from "@/components/atoms/Button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/atoms/Popover/Popover";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import DatePickerField from "@/components/atoms/DatePickerField/DatePickerField";
 
 interface BasicInfoStepProps {
   formData: CampaignBasicInfo;
@@ -38,9 +29,6 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
   setEndDate,
   setStepValidation,
 }) => {
-  // Store a flag to prevent recursive updates
-  const isUpdatingRef = useRef(false);
-
   // Convert string dates to Date objects for form - do this once during mount
   const startDate = React.useMemo(() => {
     return formData.startDate ? new Date(formData.startDate) : undefined;
@@ -58,80 +46,6 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
 
   // Campaign type options
   const campaignTypes = [{ value: "Advertising", label: "Advertising" }];
-
-  // Memoize the date selection handlers to prevent recreating these functions on each render
-  const handleStartDateSelect = useCallback(
-    (date: Date | undefined) => {
-      // Prevent recursive updates by checking the flag
-      if (isUpdatingRef.current) return;
-
-      isUpdatingRef.current = true;
-      setStartDate(date || null);
-      // Reset the flag after a short delay to allow the state to update
-      setTimeout(() => {
-        isUpdatingRef.current = false;
-      }, 0);
-    },
-    [setStartDate]
-  );
-
-  const handleEndDateSelect = useCallback(
-    (date: Date | undefined) => {
-      // Prevent recursive updates by checking the flag
-      if (isUpdatingRef.current) return;
-
-      isUpdatingRef.current = true;
-      setEndDate(date || null);
-      // Reset the flag after a short delay to allow the state to update
-      setTimeout(() => {
-        isUpdatingRef.current = false;
-      }, 0);
-    },
-    [setEndDate]
-  );
-
-  // Simple DatePicker component
-  const DatePickerField = ({
-    label,
-    date,
-    onSelect,
-    description,
-  }: {
-    label: string;
-    date: Date | undefined;
-    onSelect: (date: Date | undefined) => void;
-    description: string;
-  }) => {
-    return (
-      <div>
-        <Label htmlFor={label}>{label}</Label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className={cn(
-                "w-full justify-start text-left font-normal mt-1",
-                !date && "text-muted-foreground"
-              )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {date ? format(date, "PPP") : <span>Pick a date</span>}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={onSelect}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
-        <p className="text-xs text-muted-foreground mt-1">{description}</p>
-      </div>
-    );
-  };
 
   return (
     <div className="space-y-6">
@@ -190,14 +104,14 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
           <DatePickerField
             label="Start Date (UTC)*"
             date={startDate}
-            onSelect={handleStartDateSelect}
+            onDateChange={setStartDate}
             description="When will this campaign start"
           />
 
           <DatePickerField
             label="End Date (UTC)*"
             date={endDate}
-            onSelect={handleEndDateSelect}
+            onDateChange={setEndDate}
             description="When will this campaign end"
           />
         </div>
