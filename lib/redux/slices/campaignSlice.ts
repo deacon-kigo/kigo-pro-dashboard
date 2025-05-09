@@ -5,32 +5,33 @@ export const CAMPAIGN_STEPS = [
   {
     id: "basic-info",
     title: "Basic Information",
-    description: "Core campaign parameters",
+    description: "Enter campaign name, type, description and schedule dates",
   },
   {
     id: "targeting",
     title: "Targeting",
-    description: "Define your audience",
+    description: "Define audience by location, demographics and campaign scope",
   },
   {
     id: "distribution",
     title: "Distribution",
-    description: "Channels and programs",
+    description: "Select channels, loyalty programs and program campaigns",
   },
   {
     id: "ad-creation",
     title: "Ad Creation",
-    description: "Create ads for your campaign",
+    description:
+      "Create and manage ads with merchants, offers and media assets",
   },
   {
     id: "budget",
     title: "Budget",
-    description: "Set budget and metrics",
+    description: "Set campaign budget and review projected performance metrics",
   },
   {
     id: "review",
     title: "Review & Publish",
-    description: "Review campaign details",
+    description: "Review all campaign details before final submission",
   },
 ];
 

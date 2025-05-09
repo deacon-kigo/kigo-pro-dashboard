@@ -99,11 +99,6 @@ const ReviewStep: React.FC<ReviewStepProps> = ({ formData }) => {
 
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-medium">Review Your Campaign</h3>
-      <p className="text-sm text-muted-foreground mb-6">
-        Please review your campaign details before creating.
-      </p>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Basic Information */}
         <div className="border rounded-md p-4 space-y-3">

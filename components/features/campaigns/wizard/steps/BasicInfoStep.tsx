@@ -116,11 +116,6 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
 
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-medium">Campaign Information</h3>
-      <p className="text-sm text-muted-foreground mb-6">
-        Enter the basic details about your advertisement campaign.
-      </p>
-
       <div className="space-y-4">
         <div>
           <Label htmlFor="campaign-name">Campaign Name*</Label>

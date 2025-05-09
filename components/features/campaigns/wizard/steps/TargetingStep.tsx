@@ -209,12 +209,6 @@ const TargetingStep: React.FC<TargetingStepProps> = ({
 
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-medium">Audience Targeting</h3>
-      <p className="text-sm text-muted-foreground mb-6">
-        Define the target audience for your campaign based on location,
-        demographics, and campaign scope.
-      </p>
-
       <div className="space-y-6">
         {/* Location targeting */}
         <div className="border rounded-md p-4 space-y-4">

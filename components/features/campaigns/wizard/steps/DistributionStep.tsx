@@ -231,12 +231,6 @@ const DistributionStep: React.FC<DistributionStepProps> = ({
 
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-medium">Distribution Channels</h3>
-      <p className="text-sm text-muted-foreground mb-6">
-        Configure how your campaign will be distributed across Kigo's Loyalty
-        Media Network.
-      </p>
-
       <div className="space-y-6">
         {/* Distribution Channels */}
         <div className="border rounded-md p-4 space-y-4">

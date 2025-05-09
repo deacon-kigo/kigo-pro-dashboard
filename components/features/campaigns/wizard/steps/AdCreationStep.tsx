@@ -324,12 +324,6 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
 
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-medium">Ad Creation</h3>
-      <p className="text-sm text-muted-foreground mb-6">
-        Create ads for your campaign that will be distributed through Kigo's
-        Loyalty Media Network.
-      </p>
-
       <div className="flex flex-col md:flex-row gap-6">
         <div className="w-full md:w-7/12">
           {/* Simple tab navigation */}

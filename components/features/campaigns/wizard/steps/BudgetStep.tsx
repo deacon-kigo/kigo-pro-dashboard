@@ -89,11 +89,6 @@ const BudgetStep: React.FC<BudgetStepProps> = ({
 
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-medium">Campaign Budget</h3>
-      <p className="text-sm text-muted-foreground mb-6">
-        Set your budget and review estimated performance metrics.
-      </p>
-
       <div className="space-y-6">
         {/* Budget Slider */}
         <div className="border rounded-md p-4 space-y-4">
