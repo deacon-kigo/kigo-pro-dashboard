@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useCallback } from "react";
 import { Input } from "@/components/atoms/Input";
 import { Label } from "@/components/atoms/Label";
 import { Textarea } from "@/components/atoms/Textarea";
@@ -19,7 +19,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/atoms/Popover/Popover";
-import { format, addDays } from "date-fns";
+import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -38,11 +38,14 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
   setEndDate,
   setStepValidation,
 }) => {
-  // Convert string dates to Date objects for form
-  const startDate = formData.startDate
-    ? new Date(formData.startDate)
-    : undefined;
-  const endDate = formData.endDate ? new Date(formData.endDate) : undefined;
+  // Convert string dates to Date objects for form - do this once during mount
+  const startDate = React.useMemo(() => {
+    return formData.startDate ? new Date(formData.startDate) : undefined;
+  }, [formData.startDate]);
+
+  const endDate = React.useMemo(() => {
+    return formData.endDate ? new Date(formData.endDate) : undefined;
+  }, [formData.endDate]);
 
   // Just call setStepValidation(true) once when component is mounted
   React.useEffect(() => {
@@ -52,6 +55,21 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
 
   // Campaign type options
   const campaignTypes = [{ value: "Advertising", label: "Advertising" }];
+
+  // Memoize the date selection handlers to prevent recreating these functions on each render
+  const handleStartDateSelect = useCallback(
+    (date: Date | undefined) => {
+      setStartDate(date || null);
+    },
+    [setStartDate]
+  );
+
+  const handleEndDateSelect = useCallback(
+    (date: Date | undefined) => {
+      setEndDate(date || null);
+    },
+    [setEndDate]
+  );
 
   // Simple DatePicker component
   const DatePickerField = ({
@@ -158,14 +176,14 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
           <DatePickerField
             label="Start Date (UTC)*"
             date={startDate}
-            onSelect={(date) => setStartDate(date || null)}
+            onSelect={handleStartDateSelect}
             description="When will this campaign start"
           />
 
           <DatePickerField
             label="End Date (UTC)*"
             date={endDate}
-            onSelect={(date) => setEndDate(date || null)}
+            onSelect={handleEndDateSelect}
             description="When will this campaign end"
           />
         </div>
