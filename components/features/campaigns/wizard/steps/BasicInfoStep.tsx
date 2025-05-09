@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback } from "react";
+import React, { useCallback, useRef } from "react";
 import { Input } from "@/components/atoms/Input";
 import { Label } from "@/components/atoms/Label";
 import { Textarea } from "@/components/atoms/Textarea";
@@ -38,6 +38,9 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
   setEndDate,
   setStepValidation,
 }) => {
+  // Store a flag to prevent recursive updates
+  const isUpdatingRef = useRef(false);
+
   // Convert string dates to Date objects for form - do this once during mount
   const startDate = React.useMemo(() => {
     return formData.startDate ? new Date(formData.startDate) : undefined;
@@ -59,14 +62,30 @@ const BasicInfoStep: React.FC<BasicInfoStepProps> = ({
   // Memoize the date selection handlers to prevent recreating these functions on each render
   const handleStartDateSelect = useCallback(
     (date: Date | undefined) => {
+      // Prevent recursive updates by checking the flag
+      if (isUpdatingRef.current) return;
+
+      isUpdatingRef.current = true;
       setStartDate(date || null);
+      // Reset the flag after a short delay to allow the state to update
+      setTimeout(() => {
+        isUpdatingRef.current = false;
+      }, 0);
     },
     [setStartDate]
   );
 
   const handleEndDateSelect = useCallback(
     (date: Date | undefined) => {
+      // Prevent recursive updates by checking the flag
+      if (isUpdatingRef.current) return;
+
+      isUpdatingRef.current = true;
       setEndDate(date || null);
+      // Reset the flag after a short delay to allow the state to update
+      setTimeout(() => {
+        isUpdatingRef.current = false;
+      }, 0);
     },
     [setEndDate]
   );
