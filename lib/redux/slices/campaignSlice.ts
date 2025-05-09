@@ -5,12 +5,13 @@ export const CAMPAIGN_STEPS = [
   {
     id: "basic-info",
     title: "Basic Information",
-    description: "Enter campaign name, type, description and schedule dates",
+    description: "Enter campaign name and description",
   },
   {
     id: "targeting",
     title: "Targeting",
-    description: "Define audience by location, demographics and campaign scope",
+    description:
+      "Set campaign dates, locations, demographics and campaign weight",
   },
   {
     id: "distribution",
@@ -18,15 +19,9 @@ export const CAMPAIGN_STEPS = [
     description: "Select channels, loyalty programs and program campaigns",
   },
   {
-    id: "ad-creation",
-    title: "Ad Creation",
-    description:
-      "Create and manage ads with merchants, offers and media assets",
-  },
-  {
     id: "budget",
     title: "Budget",
-    description: "Set campaign budget and review projected performance metrics",
+    description: "Set budget and review projected performance metrics",
   },
   {
     id: "review",
@@ -38,12 +33,12 @@ export const CAMPAIGN_STEPS = [
 export interface CampaignBasicInfo {
   name: string;
   description: string;
-  campaignType: string;
-  startDate: string | null;
-  endDate: string | null;
+  campaignType?: string; // Optional for backward compatibility
 }
 
 export interface CampaignTargeting {
+  startDate: string | null;
+  endDate: string | null;
   locations: Array<{
     id: string;
     type: "state" | "msa" | "zipcode";
@@ -110,10 +105,10 @@ const initialState: CampaignState = {
       name: "",
       description: "",
       campaignType: "Advertising",
-      startDate: null,
-      endDate: null,
     },
     targeting: {
+      startDate: null,
+      endDate: null,
       locations: [],
       gender: [],
       ageRange: null,
@@ -134,7 +129,6 @@ const initialState: CampaignState = {
     "basic-info": true,
     targeting: true,
     distribution: true,
-    "ad-creation": true,
     budget: true,
     review: true,
   },
@@ -244,12 +238,12 @@ export const campaignSlice = createSlice({
     // Handle date serialization
     builder
       .addCase(setStartDate, (state, action) => {
-        state.formData.basicInfo.startDate = action.payload
+        state.formData.targeting.startDate = action.payload
           ? action.payload.toISOString()
           : null;
       })
       .addCase(setEndDate, (state, action) => {
-        state.formData.basicInfo.endDate = action.payload
+        state.formData.targeting.endDate = action.payload
           ? action.payload.toISOString()
           : null;
       })
