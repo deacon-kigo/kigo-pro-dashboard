@@ -345,23 +345,25 @@ export default function AdvertisementCampaignCreationContent() {
         className="flex-1 flex flex-col"
         style={{ height: "calc(100vh - 160px)" }}
       >
-        <div className="flex gap-4 h-full">
-          {/* Left Column - AI Assistant Panel with fixed height and position */}
+        <div className="flex gap-3 h-full">
+          {/* Left Column - AI Assistant Panel */}
           <div
-            className="w-[360px] flex-shrink-0"
+            className="w-[448px] flex-shrink-0"
             style={{
               position: "sticky",
               top: "1rem",
               height: "calc(100vh - 180px)",
             }}
           >
-            <Card className="p-0 h-full flex flex-col overflow-hidden">
-              <AIAssistantPanel
-                title="AI Campaign Assistant"
-                description="Tell me about the campaign you want to create"
-                onOptionSelected={handleOptionSelected}
-                className="h-full overflow-auto"
-              />
+            <Card className="p-0 h-full flex flex-col overflow-hidden shadow-md">
+              <div className="flex-1 flex flex-col overflow-hidden">
+                <AIAssistantPanel
+                  title="AI Campaign Assistant"
+                  description="Tell me about the campaign you want to create"
+                  onOptionSelected={handleOptionSelected}
+                  className="h-full flex-1"
+                />
+              </div>
               {isLoading && (
                 <div className="fixed inset-0 bg-black/5 backdrop-blur-sm flex items-center justify-center z-50">
                   <motion.div
@@ -390,7 +392,7 @@ export default function AdvertisementCampaignCreationContent() {
 
           {/* Middle Column - Campaign Configuration with scrollable content */}
           <div className="flex-1 overflow-auto pb-6">
-            <div className="flex flex-col">
+            <div className="flex flex-col h-full">
               {/* Validation Message Banner */}
               {validationMessage && (
                 <motion.div
@@ -441,7 +443,7 @@ export default function AdvertisementCampaignCreationContent() {
                 </motion.div>
               )}
 
-              <Card className="p-0">
+              <Card className="p-0 flex-1 flex flex-col overflow-hidden shadow-md">
                 <div className="flex items-center justify-between p-3 border-b bg-muted/20 flex-shrink-0 sticky top-0 z-10">
                   <div className="flex items-center">
                     <BanknotesIcon className="h-5 w-5 mr-2 text-primary" />
@@ -464,661 +466,683 @@ export default function AdvertisementCampaignCreationContent() {
                   </div>
                 </div>
 
-                <div className="p-4">
-                  <div className="grid grid-cols-12 gap-6">
-                    {/* Left side - Merchant & Basic Information */}
-                    <div className="col-span-12 space-y-6">
-                      {/* Merchant Information Section */}
-                      <Accordion
-                        type="single"
-                        collapsible
-                        defaultValue="merchant-info"
-                        className="border rounded-md"
-                      >
-                        <AccordionItem
-                          value="merchant-info"
-                          className="border-none"
+                <div className="flex-1 overflow-auto">
+                  <div className="p-4">
+                    <div className="grid grid-cols-12 gap-6">
+                      {/* Left side - Merchant & Basic Information */}
+                      <div className="col-span-12 space-y-6">
+                        {/* Merchant Information Section */}
+                        <Accordion
+                          type="single"
+                          collapsible
+                          defaultValue="merchant-info"
+                          className="border rounded-md"
                         >
-                          <AccordionTrigger className="px-4 py-3 text-sm font-medium">
-                            Merchant Information
-                          </AccordionTrigger>
-                          <AccordionContent className="px-4 text-left">
-                            <div className="space-y-5 pb-2 text-left">
-                              <div className="text-left">
-                                <Label
-                                  htmlFor="merchant-id"
-                                  className="text-sm"
-                                >
-                                  Merchant ID*
-                                </Label>
-                                <Input
-                                  id="merchant-id"
-                                  placeholder="Enter merchant ID"
-                                  value={merchantId}
-                                  onChange={(e) =>
-                                    setMerchantId(e.target.value)
-                                  }
-                                  className="mt-1"
-                                />
-                                <p className="mt-1.5 text-xs font-medium text-gray-600">
-                                  Enter the unique identifier for the merchant
-                                </p>
-                              </div>
-
-                              <div className="text-left">
-                                <Label
-                                  htmlFor="merchant-name"
-                                  className="text-sm"
-                                >
-                                  Merchant Name (Auto-filled)
-                                </Label>
-                                <Input
-                                  id="merchant-name"
-                                  value={merchantName}
-                                  readOnly
-                                  className="mt-1 bg-gray-50"
-                                />
-                                {!merchantName && merchantId && (
-                                  <p className="mt-1.5 text-xs font-medium text-red-500">
-                                    Merchant not found
-                                  </p>
-                                )}
-                              </div>
-
-                              <div className="text-left">
-                                <Label htmlFor="offer-id" className="text-sm">
-                                  Offer ID*
-                                </Label>
-                                <Select
-                                  value={offerId}
-                                  onValueChange={setOfferId}
-                                >
-                                  <SelectTrigger className="mt-1">
-                                    <SelectValue placeholder="Select an offer" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="off-123">
-                                      Off-123: Summer Promo
-                                    </SelectItem>
-                                    <SelectItem value="off-456">
-                                      Off-456: Holiday Special
-                                    </SelectItem>
-                                    <SelectItem value="off-789">
-                                      Off-789: Clearance Sale
-                                    </SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <p className="mt-1.5 text-xs font-medium text-gray-600">
-                                  Select from available offers
-                                </p>
-                              </div>
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      </Accordion>
-
-                      {/* Campaign Basic Information */}
-                      <Accordion
-                        type="single"
-                        collapsible
-                        defaultValue="basic-info"
-                        className="border rounded-md"
-                      >
-                        <AccordionItem
-                          value="basic-info"
-                          className="border-none"
-                        >
-                          <AccordionTrigger className="px-4 py-3 text-sm font-medium">
-                            Campaign Information
-                          </AccordionTrigger>
-                          <AccordionContent className="px-4 text-left">
-                            <div className="space-y-5 pb-2 text-left">
-                              <div className="text-left">
-                                <Label
-                                  htmlFor="campaign-name"
-                                  className="text-sm"
-                                >
-                                  Campaign Name*
-                                </Label>
-                                <Input
-                                  id="campaign-name"
-                                  placeholder="Enter campaign name"
-                                  value={campaignName}
-                                  onChange={(e) =>
-                                    setCampaignName(e.target.value)
-                                  }
-                                  className="mt-1"
-                                  maxLength={50}
-                                />
-                                <p className="mt-1.5 text-xs font-medium text-gray-600">
-                                  Enter a unique name for your campaign (max 50
-                                  characters)
-                                </p>
-                              </div>
-
-                              <div className="text-left">
-                                <Label
-                                  htmlFor="description"
-                                  className="text-sm"
-                                >
-                                  Campaign Description*
-                                </Label>
-                                <Textarea
-                                  id="description"
-                                  placeholder="Enter campaign description"
-                                  value={campaignDescription}
-                                  onChange={(e) =>
-                                    setCampaignDescription(e.target.value)
-                                  }
-                                  className="mt-1"
-                                  rows={3}
-                                  maxLength={100}
-                                />
-                                <p className="mt-1.5 text-xs font-medium text-gray-600">
-                                  Describe your campaign in detail (max 100
-                                  characters)
-                                </p>
-                              </div>
-
-                              <div className="grid grid-cols-2 gap-4">
+                          <AccordionItem
+                            value="merchant-info"
+                            className="border-none"
+                          >
+                            <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                              Merchant Information
+                            </AccordionTrigger>
+                            <AccordionContent className="px-4 text-left">
+                              <div className="space-y-5 pb-2 text-left">
                                 <div className="text-left">
                                   <Label
-                                    htmlFor="start-date"
+                                    htmlFor="merchant-id"
                                     className="text-sm"
                                   >
-                                    Start Date*
+                                    Merchant ID*
                                   </Label>
-                                  <DatePicker
-                                    id="start-date"
-                                    selected={startDate}
-                                    onSelect={setStartDate}
-                                    placeholder="Select start date"
-                                    className="mt-1 w-full"
+                                  <Input
+                                    id="merchant-id"
+                                    placeholder="Enter merchant ID"
+                                    value={merchantId}
+                                    onChange={(e) =>
+                                      setMerchantId(e.target.value)
+                                    }
+                                    className="mt-1"
                                   />
+                                  <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                    Enter the unique identifier for the merchant
+                                  </p>
                                 </div>
 
                                 <div className="text-left">
-                                  <Label htmlFor="end-date" className="text-sm">
-                                    End Date*
+                                  <Label
+                                    htmlFor="merchant-name"
+                                    className="text-sm"
+                                  >
+                                    Merchant Name (Auto-filled)
                                   </Label>
-                                  <DatePicker
-                                    id="end-date"
-                                    selected={endDate}
-                                    onSelect={setEndDate}
-                                    placeholder="Select end date"
-                                    className="mt-1 w-full"
+                                  <Input
+                                    id="merchant-name"
+                                    value={merchantName}
+                                    readOnly
+                                    className="mt-1 bg-gray-50"
                                   />
-                                </div>
-                              </div>
-
-                              <div className="text-left">
-                                <Label
-                                  htmlFor="campaign-weight"
-                                  className="text-sm"
-                                >
-                                  Campaign Weight*
-                                </Label>
-                                <Select
-                                  value={campaignWeight}
-                                  onValueChange={setCampaignWeight}
-                                >
-                                  <SelectTrigger className="mt-1">
-                                    <SelectValue placeholder="Select campaign weight" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="small">Small</SelectItem>
-                                    <SelectItem value="medium">
-                                      Medium
-                                    </SelectItem>
-                                    <SelectItem value="large">Large</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <p className="mt-1.5 text-xs font-medium text-gray-600">
-                                  Determines the priority and resources for this
-                                  campaign
-                                </p>
-                              </div>
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      </Accordion>
-
-                      <div className="grid md:grid-cols-2 gap-6">
-                        <div className="space-y-6">
-                          {/* Budget Information */}
-                          <Accordion
-                            type="single"
-                            collapsible
-                            defaultValue="budget-info"
-                            className="border rounded-md"
-                          >
-                            <AccordionItem
-                              value="budget-info"
-                              className="border-none"
-                            >
-                              <AccordionTrigger className="px-4 py-3 text-sm font-medium">
-                                Budget Information
-                              </AccordionTrigger>
-                              <AccordionContent className="px-4 text-left">
-                                <div className="space-y-5 pb-2 text-left">
-                                  <div className="text-left">
-                                    <Label htmlFor="budget" className="text-sm">
-                                      Budget (USD)*
-                                    </Label>
-                                    <Input
-                                      id="budget"
-                                      type="number"
-                                      min="0"
-                                      step="0.01"
-                                      placeholder="Enter budget amount"
-                                      value={budget}
-                                      onChange={(e) =>
-                                        setBudget(e.target.value)
-                                      }
-                                      className="mt-1"
-                                    />
-                                    <p className="mt-1.5 text-xs font-medium text-gray-600">
-                                      The total budget allocated for this
-                                      campaign
+                                  {!merchantName && merchantId && (
+                                    <p className="mt-1.5 text-xs font-medium text-red-500">
+                                      Merchant not found
                                     </p>
-                                  </div>
+                                  )}
+                                </div>
 
+                                <div className="text-left">
+                                  <Label htmlFor="offer-id" className="text-sm">
+                                    Offer ID*
+                                  </Label>
+                                  <Select
+                                    value={offerId}
+                                    onValueChange={setOfferId}
+                                  >
+                                    <SelectTrigger className="mt-1">
+                                      <SelectValue placeholder="Select an offer" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="off-123">
+                                        Off-123: Summer Promo
+                                      </SelectItem>
+                                      <SelectItem value="off-456">
+                                        Off-456: Holiday Special
+                                      </SelectItem>
+                                      <SelectItem value="off-789">
+                                        Off-789: Clearance Sale
+                                      </SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                    Select from available offers
+                                  </p>
+                                </div>
+                              </div>
+                            </AccordionContent>
+                          </AccordionItem>
+                        </Accordion>
+
+                        {/* Campaign Basic Information */}
+                        <Accordion
+                          type="single"
+                          collapsible
+                          defaultValue="basic-info"
+                          className="border rounded-md"
+                        >
+                          <AccordionItem
+                            value="basic-info"
+                            className="border-none"
+                          >
+                            <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                              Campaign Information
+                            </AccordionTrigger>
+                            <AccordionContent className="px-4 text-left">
+                              <div className="space-y-5 pb-2 text-left">
+                                <div className="text-left">
+                                  <Label
+                                    htmlFor="campaign-name"
+                                    className="text-sm"
+                                  >
+                                    Campaign Name*
+                                  </Label>
+                                  <Input
+                                    id="campaign-name"
+                                    placeholder="Enter campaign name"
+                                    value={campaignName}
+                                    onChange={(e) =>
+                                      setCampaignName(e.target.value)
+                                    }
+                                    className="mt-1"
+                                    maxLength={50}
+                                  />
+                                  <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                    Enter a unique name for your campaign (max
+                                    50 characters)
+                                  </p>
+                                </div>
+
+                                <div className="text-left">
+                                  <Label
+                                    htmlFor="description"
+                                    className="text-sm"
+                                  >
+                                    Campaign Description*
+                                  </Label>
+                                  <Textarea
+                                    id="description"
+                                    placeholder="Enter campaign description"
+                                    value={campaignDescription}
+                                    onChange={(e) =>
+                                      setCampaignDescription(e.target.value)
+                                    }
+                                    className="mt-1"
+                                    rows={3}
+                                    maxLength={100}
+                                  />
+                                  <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                    Describe your campaign in detail (max 100
+                                    characters)
+                                  </p>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
                                   <div className="text-left">
                                     <Label
-                                      htmlFor="cost-per-activation"
+                                      htmlFor="start-date"
                                       className="text-sm"
                                     >
-                                      Cost Per Activation (USD)
+                                      Start Date*
                                     </Label>
-                                    <Input
-                                      id="cost-per-activation"
-                                      type="number"
-                                      min="0"
-                                      step="0.01"
-                                      placeholder="Enter cost per activation"
-                                      value={costPerActivation}
-                                      onChange={(e) =>
-                                        setCostPerActivation(e.target.value)
-                                      }
-                                      className="mt-1"
+                                    <DatePicker
+                                      id="start-date"
+                                      selected={startDate}
+                                      onSelect={setStartDate}
+                                      placeholder="Select start date"
+                                      className="mt-1 w-full"
                                     />
                                   </div>
 
                                   <div className="text-left">
                                     <Label
-                                      htmlFor="cost-per-redemption"
+                                      htmlFor="end-date"
                                       className="text-sm"
                                     >
-                                      Cost Per Redemption (USD)
+                                      End Date*
                                     </Label>
-                                    <Input
-                                      id="cost-per-redemption"
-                                      type="number"
-                                      min="0"
-                                      step="0.01"
-                                      placeholder="Enter cost per redemption"
-                                      value={costPerRedemption}
-                                      onChange={(e) =>
-                                        setCostPerRedemption(e.target.value)
-                                      }
-                                      className="mt-1"
+                                    <DatePicker
+                                      id="end-date"
+                                      selected={endDate}
+                                      onSelect={setEndDate}
+                                      placeholder="Select end date"
+                                      className="mt-1 w-full"
                                     />
                                   </div>
                                 </div>
-                              </AccordionContent>
-                            </AccordionItem>
-                          </Accordion>
 
-                          {/* Location Targeting */}
-                          <Accordion
-                            type="single"
-                            collapsible
-                            defaultValue="location-targeting"
-                            className="border rounded-md"
-                          >
-                            <AccordionItem
-                              value="location-targeting"
-                              className="border-none"
+                                <div className="text-left">
+                                  <Label
+                                    htmlFor="campaign-weight"
+                                    className="text-sm"
+                                  >
+                                    Campaign Weight*
+                                  </Label>
+                                  <Select
+                                    value={campaignWeight}
+                                    onValueChange={setCampaignWeight}
+                                  >
+                                    <SelectTrigger className="mt-1">
+                                      <SelectValue placeholder="Select campaign weight" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="small">
+                                        Small
+                                      </SelectItem>
+                                      <SelectItem value="medium">
+                                        Medium
+                                      </SelectItem>
+                                      <SelectItem value="large">
+                                        Large
+                                      </SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                    Determines the priority and resources for
+                                    this campaign
+                                  </p>
+                                </div>
+                              </div>
+                            </AccordionContent>
+                          </AccordionItem>
+                        </Accordion>
+
+                        <div className="grid md:grid-cols-2 gap-6">
+                          <div className="space-y-6">
+                            {/* Budget Information */}
+                            <Accordion
+                              type="single"
+                              collapsible
+                              defaultValue="budget-info"
+                              className="border rounded-md"
                             >
-                              <AccordionTrigger className="px-4 py-3 text-sm font-medium">
-                                Location Targeting
-                              </AccordionTrigger>
-                              <AccordionContent className="px-4 text-left">
-                                <div className="space-y-5 pb-2 text-left">
-                                  <div className="text-left">
-                                    <Label className="text-sm">
-                                      Target Locations*
-                                    </Label>
-
-                                    <div className="mt-2 flex items-end gap-2">
-                                      <div className="flex-1">
-                                        <Select
-                                          value={locationType}
-                                          onValueChange={(value: any) =>
-                                            setLocationType(value)
-                                          }
-                                        >
-                                          <SelectTrigger>
-                                            <SelectValue placeholder="Location type" />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            <SelectItem value="state">
-                                              State
-                                            </SelectItem>
-                                            <SelectItem value="msa">
-                                              MSA
-                                            </SelectItem>
-                                            <SelectItem value="zipcode">
-                                              ZIP Code
-                                            </SelectItem>
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-
-                                      <div className="flex-1">
-                                        <Input
-                                          placeholder={`Enter ${locationType}`}
-                                          value={locationValue}
-                                          onChange={(e) =>
-                                            setLocationValue(e.target.value)
-                                          }
-                                        />
-                                      </div>
-
-                                      <Button
-                                        onClick={handleAddLocation}
-                                        disabled={!locationValue}
-                                        size="sm"
+                              <AccordionItem
+                                value="budget-info"
+                                className="border-none"
+                              >
+                                <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                                  Budget Information
+                                </AccordionTrigger>
+                                <AccordionContent className="px-4 text-left">
+                                  <div className="space-y-5 pb-2 text-left">
+                                    <div className="text-left">
+                                      <Label
+                                        htmlFor="budget"
+                                        className="text-sm"
                                       >
-                                        Add
-                                      </Button>
-                                    </div>
-
-                                    <p className="mt-1.5 text-xs font-medium text-gray-600">
-                                      Note: You cannot mix states and MSAs in
-                                      the same campaign
-                                    </p>
-
-                                    {/* Show selected locations */}
-                                    {locations.length > 0 && (
-                                      <div className="mt-3">
-                                        <h4 className="text-sm font-medium mb-2">
-                                          Selected Locations:
-                                        </h4>
-                                        <div className="flex flex-wrap gap-2 bg-gray-50 p-2 rounded-md">
-                                          {locations.map((loc) => (
-                                            <Badge
-                                              key={loc.id}
-                                              variant="secondary"
-                                              className="flex items-center gap-1"
-                                            >
-                                              <MapPinIcon className="h-3 w-3" />
-                                              <span className="capitalize">
-                                                {loc.type}:
-                                              </span>{" "}
-                                              {loc.value}
-                                              <button
-                                                className="ml-1 text-gray-500 hover:text-red-500"
-                                                onClick={() =>
-                                                  handleRemoveLocation(loc.id)
-                                                }
-                                              >
-                                                <XCircleIcon className="h-3 w-3" />
-                                              </button>
-                                            </Badge>
-                                          ))}
-                                        </div>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              </AccordionContent>
-                            </AccordionItem>
-                          </Accordion>
-                        </div>
-
-                        <div className="space-y-6">
-                          {/* Media Type Selection */}
-                          <Accordion
-                            type="single"
-                            collapsible
-                            defaultValue="media-type"
-                            className="border rounded-md"
-                          >
-                            <AccordionItem
-                              value="media-type"
-                              className="border-none"
-                            >
-                              <AccordionTrigger className="px-4 py-3 text-sm font-medium">
-                                Media Type & Assets
-                              </AccordionTrigger>
-                              <AccordionContent className="px-4 text-left">
-                                <div className="space-y-5 pb-2 text-left">
-                                  <div className="text-left">
-                                    <Label className="text-sm">
-                                      Media Types*
-                                    </Label>
-                                    <div className="mt-2 flex flex-wrap gap-2">
-                                      {mediaTypeOptions.map((type) => (
-                                        <Badge
-                                          key={type}
-                                          variant={
-                                            mediaTypes.includes(type)
-                                              ? "default"
-                                              : "outline"
-                                          }
-                                          className={cn(
-                                            "cursor-pointer",
-                                            mediaTypes.includes(type)
-                                              ? "bg-primary text-primary-foreground"
-                                              : ""
-                                          )}
-                                          onClick={() => toggleMediaType(type)}
-                                        >
-                                          {type}
-                                        </Badge>
-                                      ))}
-                                    </div>
-                                    <p className="mt-1.5 text-xs font-medium text-gray-600">
-                                      Select the types of media for this
-                                      campaign
-                                    </p>
-                                  </div>
-
-                                  <div className="text-left">
-                                    <Label
-                                      htmlFor="media-upload"
-                                      className="text-sm"
-                                    >
-                                      Upload Media Assets*
-                                    </Label>
-                                    <div className="mt-2 border-2 border-dashed rounded-md border-gray-300 p-6 text-center">
-                                      <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
-                                      <div className="mt-2">
-                                        <label
-                                          htmlFor="file-upload"
-                                          className="relative cursor-pointer rounded-md bg-white font-medium text-primary hover:text-primary-dark focus-within:outline-none"
-                                        >
-                                          <span className="text-sm">
-                                            Upload an image
-                                          </span>
-                                          <input
-                                            id="file-upload"
-                                            name="file-upload"
-                                            type="file"
-                                            className="sr-only"
-                                            accept="image/*"
-                                            onChange={handleImageUpload}
-                                          />
-                                        </label>
-                                      </div>
-                                      <p className="text-xs text-gray-500 mt-1">
-                                        PNG, JPG, GIF up to 5MB
+                                        Budget (USD)*
+                                      </Label>
+                                      <Input
+                                        id="budget"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        placeholder="Enter budget amount"
+                                        value={budget}
+                                        onChange={(e) =>
+                                          setBudget(e.target.value)
+                                        }
+                                        className="mt-1"
+                                      />
+                                      <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                        The total budget allocated for this
+                                        campaign
                                       </p>
                                     </div>
 
-                                    {/* Show uploaded images */}
-                                    {uploadedImages.length > 0 && (
-                                      <div className="mt-3">
-                                        <h4 className="text-sm font-medium mb-2">
-                                          Uploaded Media:
-                                        </h4>
-                                        <div className="flex flex-wrap gap-2">
-                                          {uploadedImages.map((fileData) => (
-                                            <div
-                                              key={fileData.id}
-                                              className="relative bg-gray-100 rounded-md p-2"
-                                            >
-                                              <div className="text-xs truncate max-w-[150px]">
-                                                {fileData.file.name}
-                                              </div>
-                                              <button
-                                                className="absolute -top-1 -right-1 bg-red-100 text-red-600 rounded-full p-0.5"
-                                                onClick={() => {
-                                                  const newImages =
-                                                    uploadedImages.filter(
-                                                      (img) =>
-                                                        img.id !== fileData.id
-                                                    );
-                                                  setUploadedImages(newImages);
-                                                }}
-                                              >
-                                                <XCircleIcon className="h-4 w-4" />
-                                              </button>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      </div>
-                                    )}
+                                    <div className="text-left">
+                                      <Label
+                                        htmlFor="cost-per-activation"
+                                        className="text-sm"
+                                      >
+                                        Cost Per Activation (USD)
+                                      </Label>
+                                      <Input
+                                        id="cost-per-activation"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        placeholder="Enter cost per activation"
+                                        value={costPerActivation}
+                                        onChange={(e) =>
+                                          setCostPerActivation(e.target.value)
+                                        }
+                                        className="mt-1"
+                                      />
+                                    </div>
+
+                                    <div className="text-left">
+                                      <Label
+                                        htmlFor="cost-per-redemption"
+                                        className="text-sm"
+                                      >
+                                        Cost Per Redemption (USD)
+                                      </Label>
+                                      <Input
+                                        id="cost-per-redemption"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        placeholder="Enter cost per redemption"
+                                        value={costPerRedemption}
+                                        onChange={(e) =>
+                                          setCostPerRedemption(e.target.value)
+                                        }
+                                        className="mt-1"
+                                      />
+                                    </div>
                                   </div>
-                                </div>
-                              </AccordionContent>
-                            </AccordionItem>
-                          </Accordion>
+                                </AccordionContent>
+                              </AccordionItem>
+                            </Accordion>
 
-                          {/* Campaign Summary */}
-                          <Accordion
-                            type="single"
-                            collapsible
-                            defaultValue="campaign-summary"
-                            className="border rounded-md"
-                          >
-                            <AccordionItem
-                              value="campaign-summary"
-                              className="border-none"
+                            {/* Location Targeting */}
+                            <Accordion
+                              type="single"
+                              collapsible
+                              defaultValue="location-targeting"
+                              className="border rounded-md"
                             >
-                              <AccordionTrigger className="px-4 py-3 text-sm font-medium">
-                                Campaign Summary
-                              </AccordionTrigger>
-                              <AccordionContent className="px-4 text-left">
-                                <div className="space-y-3 pb-2 text-left">
-                                  {!campaignName && !merchantId && (
-                                    <p className="text-sm text-gray-500 italic">
-                                      Fill out the campaign details to see a
-                                      summary here.
-                                    </p>
-                                  )}
+                              <AccordionItem
+                                value="location-targeting"
+                                className="border-none"
+                              >
+                                <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                                  Location Targeting
+                                </AccordionTrigger>
+                                <AccordionContent className="px-4 text-left">
+                                  <div className="space-y-5 pb-2 text-left">
+                                    <div className="text-left">
+                                      <Label className="text-sm">
+                                        Target Locations*
+                                      </Label>
 
-                                  {(campaignName || merchantId) && (
-                                    <>
-                                      <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                                        {merchantId && (
-                                          <>
-                                            <div className="font-medium">
-                                              Merchant:
-                                            </div>
-                                            <div>
-                                              {merchantName ||
-                                                `ID: ${merchantId}`}
-                                            </div>
-                                          </>
-                                        )}
+                                      <div className="mt-2 flex items-end gap-2">
+                                        <div className="flex-1">
+                                          <Select
+                                            value={locationType}
+                                            onValueChange={(value: any) =>
+                                              setLocationType(value)
+                                            }
+                                          >
+                                            <SelectTrigger>
+                                              <SelectValue placeholder="Location type" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="state">
+                                                State
+                                              </SelectItem>
+                                              <SelectItem value="msa">
+                                                MSA
+                                              </SelectItem>
+                                              <SelectItem value="zipcode">
+                                                ZIP Code
+                                              </SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
 
-                                        {campaignName && (
-                                          <>
-                                            <div className="font-medium">
-                                              Campaign:
-                                            </div>
-                                            <div>{campaignName}</div>
+                                        <div className="flex-1">
+                                          <Input
+                                            placeholder={`Enter ${locationType}`}
+                                            value={locationValue}
+                                            onChange={(e) =>
+                                              setLocationValue(e.target.value)
+                                            }
+                                          />
+                                        </div>
 
-                                            {campaignDescription && (
-                                              <>
-                                                <div className="font-medium">
-                                                  Description:
-                                                </div>
-                                                <div>{campaignDescription}</div>
-                                              </>
-                                            )}
-                                          </>
-                                        )}
-
-                                        {startDate && endDate && (
-                                          <>
-                                            <div className="font-medium">
-                                              Duration:
-                                            </div>
-                                            <div>
-                                              {format(startDate, "MMM d, yyyy")}{" "}
-                                              - {format(endDate, "MMM d, yyyy")}
-                                            </div>
-                                          </>
-                                        )}
-
-                                        {campaignWeight && (
-                                          <>
-                                            <div className="font-medium">
-                                              Weight:
-                                            </div>
-                                            <div className="capitalize">
-                                              {campaignWeight}
-                                            </div>
-                                          </>
-                                        )}
-
-                                        {budget && (
-                                          <>
-                                            <div className="font-medium">
-                                              Budget:
-                                            </div>
-                                            <div>${budget} USD</div>
-                                          </>
-                                        )}
-
-                                        {mediaTypes.length > 0 && (
-                                          <>
-                                            <div className="font-medium">
-                                              Media Types:
-                                            </div>
-                                            <div>{mediaTypes.join(", ")}</div>
-                                          </>
-                                        )}
-
-                                        {locations.length > 0 && (
-                                          <>
-                                            <div className="font-medium">
-                                              Target Locations:
-                                            </div>
-                                            <div>
-                                              {locations.length} location(s)
-                                            </div>
-                                          </>
-                                        )}
-                                      </div>
-
-                                      <div className="mt-4 pt-3 border-t border-gray-200">
                                         <Button
-                                          onClick={handleCreateCampaign}
-                                          className="w-full"
+                                          onClick={handleAddLocation}
+                                          disabled={!locationValue}
+                                          size="sm"
                                         >
-                                          Create Campaign
+                                          Add
                                         </Button>
                                       </div>
-                                    </>
-                                  )}
-                                </div>
-                              </AccordionContent>
-                            </AccordionItem>
-                          </Accordion>
+
+                                      <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                        Note: You cannot mix states and MSAs in
+                                        the same campaign
+                                      </p>
+
+                                      {/* Show selected locations */}
+                                      {locations.length > 0 && (
+                                        <div className="mt-3">
+                                          <h4 className="text-sm font-medium mb-2">
+                                            Selected Locations:
+                                          </h4>
+                                          <div className="flex flex-wrap gap-2 bg-gray-50 p-2 rounded-md">
+                                            {locations.map((loc) => (
+                                              <Badge
+                                                key={loc.id}
+                                                variant="secondary"
+                                                className="flex items-center gap-1"
+                                              >
+                                                <MapPinIcon className="h-3 w-3" />
+                                                <span className="capitalize">
+                                                  {loc.type}:
+                                                </span>{" "}
+                                                {loc.value}
+                                                <button
+                                                  className="ml-1 text-gray-500 hover:text-red-500"
+                                                  onClick={() =>
+                                                    handleRemoveLocation(loc.id)
+                                                  }
+                                                >
+                                                  <XCircleIcon className="h-3 w-3" />
+                                                </button>
+                                              </Badge>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </AccordionContent>
+                              </AccordionItem>
+                            </Accordion>
+                          </div>
+
+                          <div className="space-y-6">
+                            {/* Media Type Selection */}
+                            <Accordion
+                              type="single"
+                              collapsible
+                              defaultValue="media-type"
+                              className="border rounded-md"
+                            >
+                              <AccordionItem
+                                value="media-type"
+                                className="border-none"
+                              >
+                                <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                                  Media Type & Assets
+                                </AccordionTrigger>
+                                <AccordionContent className="px-4 text-left">
+                                  <div className="space-y-5 pb-2 text-left">
+                                    <div className="text-left">
+                                      <Label className="text-sm">
+                                        Media Types*
+                                      </Label>
+                                      <div className="mt-2 flex flex-wrap gap-2">
+                                        {mediaTypeOptions.map((type) => (
+                                          <Badge
+                                            key={type}
+                                            variant={
+                                              mediaTypes.includes(type)
+                                                ? "default"
+                                                : "outline"
+                                            }
+                                            className={cn(
+                                              "cursor-pointer",
+                                              mediaTypes.includes(type)
+                                                ? "bg-primary text-primary-foreground"
+                                                : ""
+                                            )}
+                                            onClick={() =>
+                                              toggleMediaType(type)
+                                            }
+                                          >
+                                            {type}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                      <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                        Select the types of media for this
+                                        campaign
+                                      </p>
+                                    </div>
+
+                                    <div className="text-left">
+                                      <Label
+                                        htmlFor="media-upload"
+                                        className="text-sm"
+                                      >
+                                        Upload Media Assets*
+                                      </Label>
+                                      <div className="mt-2 border-2 border-dashed rounded-md border-gray-300 p-6 text-center">
+                                        <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
+                                        <div className="mt-2">
+                                          <label
+                                            htmlFor="file-upload"
+                                            className="relative cursor-pointer rounded-md bg-white font-medium text-primary hover:text-primary-dark focus-within:outline-none"
+                                          >
+                                            <span className="text-sm">
+                                              Upload an image
+                                            </span>
+                                            <input
+                                              id="file-upload"
+                                              name="file-upload"
+                                              type="file"
+                                              className="sr-only"
+                                              accept="image/*"
+                                              onChange={handleImageUpload}
+                                            />
+                                          </label>
+                                        </div>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                          PNG, JPG, GIF up to 5MB
+                                        </p>
+                                      </div>
+
+                                      {/* Show uploaded images */}
+                                      {uploadedImages.length > 0 && (
+                                        <div className="mt-3">
+                                          <h4 className="text-sm font-medium mb-2">
+                                            Uploaded Media:
+                                          </h4>
+                                          <div className="flex flex-wrap gap-2">
+                                            {uploadedImages.map((fileData) => (
+                                              <div
+                                                key={fileData.id}
+                                                className="relative bg-gray-100 rounded-md p-2"
+                                              >
+                                                <div className="text-xs truncate max-w-[150px]">
+                                                  {fileData.file.name}
+                                                </div>
+                                                <button
+                                                  className="absolute -top-1 -right-1 bg-red-100 text-red-600 rounded-full p-0.5"
+                                                  onClick={() => {
+                                                    const newImages =
+                                                      uploadedImages.filter(
+                                                        (img) =>
+                                                          img.id !== fileData.id
+                                                      );
+                                                    setUploadedImages(
+                                                      newImages
+                                                    );
+                                                  }}
+                                                >
+                                                  <XCircleIcon className="h-4 w-4" />
+                                                </button>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </AccordionContent>
+                              </AccordionItem>
+                            </Accordion>
+
+                            {/* Campaign Summary */}
+                            <Accordion
+                              type="single"
+                              collapsible
+                              defaultValue="campaign-summary"
+                              className="border rounded-md"
+                            >
+                              <AccordionItem
+                                value="campaign-summary"
+                                className="border-none"
+                              >
+                                <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                                  Campaign Summary
+                                </AccordionTrigger>
+                                <AccordionContent className="px-4 text-left">
+                                  <div className="space-y-3 pb-2 text-left">
+                                    {!campaignName && !merchantId && (
+                                      <p className="text-sm text-gray-500 italic">
+                                        Fill out the campaign details to see a
+                                        summary here.
+                                      </p>
+                                    )}
+
+                                    {(campaignName || merchantId) && (
+                                      <>
+                                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                                          {merchantId && (
+                                            <>
+                                              <div className="font-medium">
+                                                Merchant:
+                                              </div>
+                                              <div>
+                                                {merchantName ||
+                                                  `ID: ${merchantId}`}
+                                              </div>
+                                            </>
+                                          )}
+
+                                          {campaignName && (
+                                            <>
+                                              <div className="font-medium">
+                                                Campaign:
+                                              </div>
+                                              <div>{campaignName}</div>
+
+                                              {campaignDescription && (
+                                                <>
+                                                  <div className="font-medium">
+                                                    Description:
+                                                  </div>
+                                                  <div>
+                                                    {campaignDescription}
+                                                  </div>
+                                                </>
+                                              )}
+                                            </>
+                                          )}
+
+                                          {startDate && endDate && (
+                                            <>
+                                              <div className="font-medium">
+                                                Duration:
+                                              </div>
+                                              <div>
+                                                {format(
+                                                  startDate,
+                                                  "MMM d, yyyy"
+                                                )}{" "}
+                                                -{" "}
+                                                {format(endDate, "MMM d, yyyy")}
+                                              </div>
+                                            </>
+                                          )}
+
+                                          {campaignWeight && (
+                                            <>
+                                              <div className="font-medium">
+                                                Weight:
+                                              </div>
+                                              <div className="capitalize">
+                                                {campaignWeight}
+                                              </div>
+                                            </>
+                                          )}
+
+                                          {budget && (
+                                            <>
+                                              <div className="font-medium">
+                                                Budget:
+                                              </div>
+                                              <div>${budget} USD</div>
+                                            </>
+                                          )}
+
+                                          {mediaTypes.length > 0 && (
+                                            <>
+                                              <div className="font-medium">
+                                                Media Types:
+                                              </div>
+                                              <div>{mediaTypes.join(", ")}</div>
+                                            </>
+                                          )}
+
+                                          {locations.length > 0 && (
+                                            <>
+                                              <div className="font-medium">
+                                                Target Locations:
+                                              </div>
+                                              <div>
+                                                {locations.length} location(s)
+                                              </div>
+                                            </>
+                                          )}
+                                        </div>
+
+                                        <div className="mt-4 pt-3 border-t border-gray-200">
+                                          <Button
+                                            onClick={handleCreateCampaign}
+                                            className="w-full"
+                                          >
+                                            Create Campaign
+                                          </Button>
+                                        </div>
+                                      </>
+                                    )}
+                                  </div>
+                                </AccordionContent>
+                              </AccordionItem>
+                            </Accordion>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1129,26 +1153,22 @@ export default function AdvertisementCampaignCreationContent() {
           </div>
 
           {/* Right Column - Campaign Analytics Panel */}
-          <div
-            className="w-[360px] flex-shrink-0"
-            style={{
-              position: "sticky",
-              top: "1rem",
-              height: "calc(100vh - 180px)",
-              overflowY: "auto",
-            }}
-          >
-            <CampaignAnalyticsPanel
-              className="h-full"
-              campaignBudget={parseFloat(budget) || 5000}
-              estimatedReach={
-                campaignWeight === "small"
-                  ? 50000
-                  : campaignWeight === "medium"
-                    ? 100000
-                    : 200000
-              }
-            />
+          <div className="w-[448px] flex-shrink-0 h-full">
+            <Card className="h-full p-0 flex flex-col overflow-hidden shadow-md">
+              <div className="flex-1 overflow-hidden">
+                <CampaignAnalyticsPanel
+                  className="h-full flex-1"
+                  campaignBudget={parseFloat(budget) || 5000}
+                  estimatedReach={
+                    campaignWeight === "small"
+                      ? 50000
+                      : campaignWeight === "medium"
+                        ? 100000
+                        : 200000
+                  }
+                />
+              </div>
+            </Card>
           </div>
         </div>
       </div>

@@ -292,32 +292,46 @@ const AdvertisementWizard: React.FC = () => {
 
   return (
     <div className="space-y-6 h-full flex flex-col">
-      <PageHeader
-        title="Create Advertisement Campaign"
-        description="Design and launch your advertisement campaign in a few steps."
-        emoji="📊"
-        actions={backButton}
-        variant="aurora"
-      />
+      <div className="flex-shrink-0">
+        <PageHeader
+          title="Create Advertisement Campaign"
+          description="Design and launch your advertisement campaign in a few steps."
+          emoji="📊"
+          actions={backButton}
+          variant="aurora"
+        />
+      </div>
 
-      <div className="flex-1 flex flex-col">
-        <div className="flex gap-4 h-full">
+      <div
+        className="flex-1 flex flex-col"
+        style={{ height: "calc(100vh - 160px)" }}
+      >
+        <div className="flex gap-3 h-full">
           {/* Left Column - AI Assistant Panel */}
-          <div className="w-[280px] flex-shrink-0 h-full">
-            <Card className="p-0 h-full flex flex-col overflow-hidden">
-              <AIAssistantPanel
-                title="AI Campaign Assistant"
-                description="I'll help you create an effective campaign"
-                onOptionSelected={handleOptionSelected}
-                className="h-full overflow-auto"
-                initialMessage="Hello! I'm your AI Campaign Assistant. I can help you optimize your campaign for better performance. What would you like help with today?"
-              />
+          <div
+            className="w-[448px] flex-shrink-0"
+            style={{
+              position: "sticky",
+              top: "1rem",
+              height: "calc(100vh - 180px)",
+            }}
+          >
+            <Card className="p-0 h-full flex flex-col overflow-hidden shadow-md">
+              <div className="flex-1 flex flex-col overflow-hidden">
+                <AIAssistantPanel
+                  title="AI Campaign Assistant"
+                  description="I'll help you create an effective campaign"
+                  onOptionSelected={handleOptionSelected}
+                  className="h-full flex-1"
+                  initialMessage="Hello! I'm your AI Campaign Assistant. I can help you optimize your campaign for better performance. What would you like help with today?"
+                />
+              </div>
             </Card>
           </div>
 
           {/* Middle Column - Campaign Form with Steps */}
-          <div className="w-0 md:w-[calc(50%-280px)] flex-grow flex flex-col h-full overflow-hidden">
-            <Card className="p-0 flex flex-col h-full overflow-hidden">
+          <div className="flex-1 overflow-auto">
+            <Card className="p-0 flex flex-col h-full overflow-hidden shadow-md">
               {/* Step indicator header */}
               <StepProgressHeader
                 currentStep={currentStep}
@@ -336,7 +350,7 @@ const AdvertisementWizard: React.FC = () => {
                     exit="exit"
                     variants={contentVariants}
                     transition={{ duration: 0.3 }}
-                    className="p-6"
+                    className="px-4 py-5"
                   >
                     {renderStepContent()}
                   </motion.div>
@@ -356,13 +370,15 @@ const AdvertisementWizard: React.FC = () => {
           </div>
 
           {/* Right Column - Campaign Visualization */}
-          <div className="w-0 md:w-[calc(50%-280px)] flex-grow flex-shrink-0 h-full">
-            <Card className="h-full p-0">
-              <CampaignAnalyticsPanel
-                className="h-full"
-                campaignBudget={analyticsValues.campaignBudget}
-                estimatedReach={analyticsValues.estimatedReach}
-              />
+          <div className="w-[448px] h-full">
+            <Card className="h-full p-0 flex flex-col overflow-hidden shadow-md">
+              <div className="flex-1 overflow-hidden">
+                <CampaignAnalyticsPanel
+                  className="h-full flex-1"
+                  campaignBudget={analyticsValues.campaignBudget}
+                  estimatedReach={analyticsValues.estimatedReach}
+                />
+              </div>
             </Card>
           </div>
         </div>

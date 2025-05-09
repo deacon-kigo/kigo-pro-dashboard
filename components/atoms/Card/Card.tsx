@@ -94,7 +94,7 @@ export default function Card({
       <div
         className={
           className.includes("p-0")
-            ? "h-full"
+            ? "h-full flex flex-col"
             : title || headerContent || cardIcon
               ? "px-5 py-4"
               : "p-5 "

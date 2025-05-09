@@ -83,7 +83,7 @@ const ChatMessage = ({
       }}
     >
       <div
-        className={`rounded-lg p-3 max-w-[80%] break-words ${
+        className={`rounded-lg p-3 ${message.type === "user" ? "max-w-[90%]" : "max-w-[90%]"} break-words ${
           message.type === "user"
             ? "bg-primary text-white rounded-tr-none"
             : "bg-blue-50 text-blue-800 shadow-sm rounded-tl-none border border-blue-100"
@@ -174,7 +174,7 @@ const ChatMessage = ({
                                 ? "bg-primary text-white hover:bg-primary/90 font-semibold"
                                 : "bg-white hover:bg-gray-100 text-blue-700 border border-blue-300"
                         }
-                        font-medium py-3 px-4 rounded-full text-xs sm:text-sm
+                        font-medium py-3 px-4 rounded-full text-sm
                         cursor-pointer hover:shadow-md transition-all duration-150
                         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
                         hover:scale-105
@@ -266,7 +266,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
   return (
     <div className={`flex flex-col w-full h-full ${className}`}>
       {/* Header - Fixed at exactly 61px to match product filter header */}
-      <div className="flex items-center justify-between p-3 border-b bg-muted/20 h-[61px]">
+      <div className="flex items-center justify-between p-3 border-b bg-muted/20 h-[61px] flex-shrink-0">
         <div className="flex items-center">
           <LightBulbIcon className="h-5 w-5 mr-2 text-primary" />
           <div>
@@ -278,33 +278,28 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         </div>
       </div>
 
-      {/* Messages - Scrollable container with absolute positioning */}
-      <div className="flex-1 relative">
-        <div
-          className="absolute inset-0 overflow-y-auto"
-          style={{ pointerEvents: "auto" }}
-        >
-          <div className="p-4 space-y-4">
-            {messages.map((message: AIMessage) => (
-              <ChatMessage
-                key={message.id}
-                message={message}
-                onOptionSelected={onOptionSelected}
-                applyInstantFilter={applyInstantFilter}
-              />
-            ))}
+      {/* Messages - Scrollable container that grows to fill available space */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-5 space-y-6">
+          {messages.map((message: AIMessage) => (
+            <ChatMessage
+              key={message.id}
+              message={message}
+              onOptionSelected={onOptionSelected}
+              applyInstantFilter={applyInstantFilter}
+            />
+          ))}
 
-            {isProcessing && <AIThinkingIndicator />}
+          {isProcessing && <AIThinkingIndicator />}
 
-            <div ref={messagesEndRef} />
-          </div>
+          <div ref={messagesEndRef} />
         </div>
       </div>
 
       {/* Input - Fixed at bottom */}
-      <div className="p-4 border-t border-gray-200 bg-white flex-shrink-0">
+      <div className="p-4 border-t border-gray-200 bg-white flex-shrink-0 h-[70px]">
         <form
-          className="flex items-center space-x-2"
+          className="flex items-center space-x-2 h-full"
           onSubmit={handleFormSubmit}
         >
           <input

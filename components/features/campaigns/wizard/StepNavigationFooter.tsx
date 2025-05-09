@@ -26,7 +26,7 @@ const StepNavigationFooter: React.FC<StepNavigationFooterProps> = ({
 
   return (
     <div
-      className={`flex items-center justify-between p-4 border-t bg-white ${className}`}
+      className={`flex items-center justify-between px-4 py-3 border-t bg-muted/10 h-[60px] flex-shrink-0 ${className}`}
     >
       <div>
         {currentStep > 0 && (

@@ -276,6 +276,29 @@ export const DemoAIAssistant: React.FC<DemoAIAssistantProps> = ({
     };
   }, []);
 
+  // Add an effect to ensure we have at least one default message if there are none after a delay
+  React.useEffect(() => {
+    // If after 2 seconds we still have no messages, add a default one
+    const timer = setTimeout(() => {
+      if (messages.length === 0) {
+        const defaultMessage: AIMessage = {
+          id: "default",
+          type: "ai",
+          content:
+            initialMessage ||
+            "Hello! I'm your AI assistant. How can I help you today?",
+          timestamp: new Date().toISOString(),
+        };
+        setMessages([defaultMessage]);
+      }
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [messages.length, initialMessage]);
+
+  // Ensure the className maintains flex properties for proper layout
+  const combinedClassName = `flex flex-col flex-1 ${className}`;
+
   return (
     <ChatPanel
       title={title}
@@ -285,7 +308,7 @@ export const DemoAIAssistant: React.FC<DemoAIAssistantProps> = ({
       onSendMessage={handleSendMessage}
       onOptionSelected={handleOptionSelected}
       onMagicGenerate={handleMagicGenerate}
-      className={className}
+      className={combinedClassName}
       showMagicButton={true}
     />
   );

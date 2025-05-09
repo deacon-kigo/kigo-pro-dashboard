@@ -82,6 +82,9 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
   // Determine mode
   const isProductFilterMode = pathname.includes("/product-filters");
 
+  // Check if this is the ad campaign creation path
+  const isAdCampaignPath = pathname.includes("/campaign-manager/ads-create");
+
   // Get initial message based on mode
   const getInitialMessage = () => {
     if (initialMessage) {
@@ -91,14 +94,22 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
     if (isProductFilterMode) {
       return "Hi! I'm your AI filter assistant. I can help you create product filters by suggesting criteria based on what you're looking for. What kind of offers would you like to filter?";
     }
+
+    if (isAdCampaignPath) {
+      return "Hello! I'm your AI Campaign Assistant. I can help you optimize your campaign for better performance. What would you like help with today?";
+    }
+
     return "Hello! I'm your AI assistant. How can I help you today?";
   };
+
+  // Fix height and make sure the flex layout is properly set
+  const combinedClassName = `flex flex-col flex-1 h-full ${className}`;
 
   // Simple wrapper component that renders the appropriate assistant based on pathname
   return isProductFilterMode ? (
     <LLMAIAssistant
       onOptionSelected={onOptionSelected}
-      className={className}
+      className={combinedClassName}
       title={title}
       description={description}
       initialMessage={getInitialMessage()}
@@ -112,9 +123,9 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
         onOptionSelected(optionId);
         if (onSend) onSend();
       }}
-      className={className}
-      title={title}
-      description={description}
+      className={combinedClassName}
+      title={title || "AI Campaign Assistant"}
+      description={description || "I'll help you create an effective campaign"}
       initialMessage={getInitialMessage()}
     />
   );
