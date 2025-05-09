@@ -8,20 +8,14 @@ export const CAMPAIGN_STEPS = [
     description: "Enter campaign name and description",
   },
   {
-    id: "targeting",
-    title: "Targeting",
-    description:
-      "Set campaign dates, locations, demographics and campaign weight",
+    id: "campaign-settings",
+    title: "Campaign Settings",
+    description: "Configure targeting, distribution, and budget settings",
   },
   {
-    id: "distribution",
-    title: "Distribution",
-    description: "Select channels, loyalty programs and program campaigns",
-  },
-  {
-    id: "budget",
-    title: "Budget",
-    description: "Set budget and review projected performance metrics",
+    id: "ad-creation",
+    title: "Ad Creation",
+    description: "Create and manage advertisements for your campaign",
   },
   {
     id: "review",
@@ -127,9 +121,8 @@ const initialState: CampaignState = {
   },
   stepValidation: {
     "basic-info": true,
-    targeting: true,
-    distribution: true,
-    budget: true,
+    "campaign-settings": true,
+    "ad-creation": true,
     review: true,
   },
   isGenerating: false,

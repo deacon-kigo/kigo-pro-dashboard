@@ -141,19 +141,19 @@ export function CampaignCompletionChecklist({
           )}
         </div>
 
-        {/* Targeting Step */}
+        {/* Campaign Settings Step (combines targeting, distribution, budget) */}
         <div className="flex flex-col">
           <div className="flex items-center">
             <div
               className={`h-5 w-5 rounded-full ${
-                stepValidation["targeting"]
+                stepValidation["campaign-settings"]
                   ? "bg-green-100"
                   : currentStep === 1
                     ? "bg-blue-100"
                     : "bg-gray-100"
               } flex items-center justify-center mr-2`}
             >
-              {stepValidation["targeting"] ? (
+              {stepValidation["campaign-settings"] ? (
                 <svg
                   className="h-3 w-3 text-green-600"
                   viewBox="0 0 24 24"
@@ -191,39 +191,51 @@ export function CampaignCompletionChecklist({
               className={`text-xs ${
                 currentStep === 1
                   ? "text-blue-700 font-medium"
-                  : stepValidation["targeting"]
+                  : stepValidation["campaign-settings"]
                     ? ""
                     : "text-gray-500"
               }`}
             >
-              Target audience
+              Campaign settings
             </span>
           </div>
-          {/* Data tags for targeting */}
-          {stepValidation["targeting"] && (
+          {/* Data tags for campaign settings */}
+          {stepValidation["campaign-settings"] && (
             <div className="ml-7 mt-1 flex flex-wrap gap-1">
+              {/* Targeting data */}
               {renderDataTag(formData.targeting.startDate, "Start")}
               {renderDataTag(formData.targeting.endDate, "End")}
               {renderDataTag(formData.targeting.locations, "Locations")}
-              {renderDataTag(formData.targeting.gender, "Gender")}
               {renderDataTag(formData.targeting.campaignWeight, "Weight")}
+
+              {/* Distribution data */}
+              {renderDataTag(formData.distribution.channels, "Channels")}
+              {renderDataTag(formData.distribution.programs, "Programs")}
+
+              {/* Budget data */}
+              {renderDataTag(`$${formData.budget.maxBudget}`, "Budget")}
+              {formData.budget.estimatedReach && (
+                <Badge variant="outline" className="text-xs">
+                  Reach: {formData.budget.estimatedReach.toLocaleString()}
+                </Badge>
+              )}
             </div>
           )}
         </div>
 
-        {/* Distribution Step */}
+        {/* Ad Creation Step */}
         <div className="flex flex-col">
           <div className="flex items-center">
             <div
               className={`h-5 w-5 rounded-full ${
-                stepValidation["distribution"]
+                stepValidation["ad-creation"] && formData.ads.length > 0
                   ? "bg-green-100"
                   : currentStep === 2
                     ? "bg-blue-100"
                     : "bg-gray-100"
               } flex items-center justify-center mr-2`}
             >
-              {stepValidation["distribution"] ? (
+              {stepValidation["ad-creation"] && formData.ads.length > 0 ? (
                 <svg
                   className="h-3 w-3 text-green-600"
                   viewBox="0 0 24 24"
@@ -261,36 +273,39 @@ export function CampaignCompletionChecklist({
               className={`text-xs ${
                 currentStep === 2
                   ? "text-blue-700 font-medium"
-                  : stepValidation["distribution"]
+                  : stepValidation["ad-creation"] && formData.ads.length > 0
                     ? ""
                     : "text-gray-500"
               }`}
             >
-              Distribution channels
+              Ad creation
             </span>
           </div>
-          {/* Data tags for distribution */}
-          {stepValidation["distribution"] && (
+          {/* Data tags for ads */}
+          {formData.ads.length > 0 && (
             <div className="ml-7 mt-1 flex flex-wrap gap-1">
-              {renderDataTag(formData.distribution.channels, "Channels")}
-              {renderDataTag(formData.distribution.programs, "Programs")}
+              {formData.ads.map((ad, index) => (
+                <Badge key={ad.id} variant="outline" className="text-xs">
+                  Ad #{index + 1}: {truncateText(ad.merchantName, 10)}
+                </Badge>
+              ))}
             </div>
           )}
         </div>
 
-        {/* Ad Creation Step */}
+        {/* Review Step */}
         <div className="flex flex-col">
           <div className="flex items-center">
             <div
               className={`h-5 w-5 rounded-full ${
-                formData.ads.length > 0
+                stepValidation["review"]
                   ? "bg-green-100"
                   : currentStep === 3
                     ? "bg-blue-100"
                     : "bg-gray-100"
               } flex items-center justify-center mr-2`}
             >
-              {formData.ads.length > 0 ? (
+              {stepValidation["review"] ? (
                 <svg
                   className="h-3 w-3 text-green-600"
                   viewBox="0 0 24 24"
@@ -327,147 +342,6 @@ export function CampaignCompletionChecklist({
             <span
               className={`text-xs ${
                 currentStep === 3
-                  ? "text-blue-700 font-medium"
-                  : formData.ads.length > 0
-                    ? ""
-                    : "text-gray-500"
-              }`}
-            >
-              Ad creation
-            </span>
-          </div>
-          {/* Data tags for ads */}
-          {formData.ads.length > 0 && (
-            <div className="ml-7 mt-1 flex flex-wrap gap-1">
-              {formData.ads.map((ad, index) => (
-                <Badge key={ad.id} variant="outline" className="text-xs">
-                  Ad #{index + 1}: {truncateText(ad.merchantName, 10)}
-                </Badge>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Budget Step */}
-        <div className="flex flex-col">
-          <div className="flex items-center">
-            <div
-              className={`h-5 w-5 rounded-full ${
-                stepValidation["budget"]
-                  ? "bg-green-100"
-                  : currentStep === 4
-                    ? "bg-blue-100"
-                    : "bg-gray-100"
-              } flex items-center justify-center mr-2`}
-            >
-              {stepValidation["budget"] ? (
-                <svg
-                  className="h-3 w-3 text-green-600"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M5 12L10 17L19 8"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              ) : (
-                <svg
-                  className={`h-3 w-3 ${
-                    currentStep === 4 ? "text-blue-600" : "text-gray-400"
-                  }`}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <circle
-                    cx="12"
-                    cy="12"
-                    r="3"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  />
-                </svg>
-              )}
-            </div>
-            <span
-              className={`text-xs ${
-                currentStep === 4
-                  ? "text-blue-700 font-medium"
-                  : stepValidation["budget"]
-                    ? ""
-                    : "text-gray-500"
-              }`}
-            >
-              Budget allocation
-            </span>
-          </div>
-          {/* Data tags for budget */}
-          {stepValidation["budget"] && (
-            <div className="ml-7 mt-1 flex flex-wrap gap-1">
-              {renderDataTag(`$${formData.budget.maxBudget}`, "Budget")}
-              {formData.budget.estimatedReach && (
-                <Badge variant="outline" className="text-xs">
-                  Reach: {formData.budget.estimatedReach.toLocaleString()}
-                </Badge>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Review Step */}
-        <div className="flex flex-col">
-          <div className="flex items-center">
-            <div
-              className={`h-5 w-5 rounded-full ${
-                stepValidation["review"]
-                  ? "bg-green-100"
-                  : currentStep === 5
-                    ? "bg-blue-100"
-                    : "bg-gray-100"
-              } flex items-center justify-center mr-2`}
-            >
-              {stepValidation["review"] ? (
-                <svg
-                  className="h-3 w-3 text-green-600"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M5 12L10 17L19 8"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              ) : (
-                <svg
-                  className={`h-3 w-3 ${
-                    currentStep === 5 ? "text-blue-600" : "text-gray-400"
-                  }`}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <circle
-                    cx="12"
-                    cy="12"
-                    r="3"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  />
-                </svg>
-              )}
-            </div>
-            <span
-              className={`text-xs ${
-                currentStep === 5
                   ? "text-blue-700 font-medium"
                   : stepValidation["review"]
                     ? ""
