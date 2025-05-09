@@ -157,8 +157,6 @@ const AdvertisementWizard: React.FC = () => {
             updateBasicInfo={(basicInfo) =>
               dispatch(updateBasicInfo(basicInfo))
             }
-            setStartDate={(date) => dispatch(setStartDate(date))}
-            setEndDate={(date) => dispatch(setEndDate(date))}
             setStepValidation={(isValid) =>
               dispatch(setStepValidation({ step: "basic-info", isValid }))
             }
@@ -291,93 +289,80 @@ const AdvertisementWizard: React.FC = () => {
   const analyticsValues = getCampaignAnalyticsValues();
 
   return (
-    <div className="space-y-6 h-full flex flex-col">
-      <div className="flex-shrink-0">
-        <PageHeader
-          title="Create Advertisement Campaign"
-          description="Design and launch your advertisement campaign in a few steps."
-          emoji="📊"
-          actions={backButton}
-          variant="aurora"
-        />
-      </div>
+    <div className="h-full flex flex-col">
+      {/* Page Header */}
+      <PageHeader
+        title="Create Advertising Campaign"
+        description="Follow the steps to create your campaign"
+        emoji="📊"
+        actions={backButton}
+        variant="aurora"
+      />
 
-      <div
-        className="flex-1 flex flex-col"
-        style={{ height: "calc(100vh - 160px)" }}
-      >
-        <div className="flex gap-3 ">
-          {/* Left Column - AI Assistant Panel */}
-          <div
-            className="w-[448px] flex-shrink-0"
-            style={{
-              height: "calc(100vh - 180px)",
-            }}
-          >
-            <Card className="p-0 h-full flex flex-col overflow-hidden shadow-md">
-              <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Main content container */}
+      <div className="flex-1 flex flex-col">
+        <div className="container mx-auto px-4 py-4 h-full">
+          <div className="flex gap-4 h-full">
+            {/* Left Column - AI Assistant Panel */}
+            <div className="w-[360px] flex-shrink-0 h-full">
+              <Card className="p-0 h-full flex flex-col overflow-hidden shadow-md">
                 <AIAssistantPanel
                   title="AI Campaign Assistant"
                   description="I'll help you create an effective campaign"
                   onOptionSelected={handleOptionSelected}
-                  className="h-full flex-1"
-                  initialMessage="Hello! I'm your AI Campaign Assistant. I can help you optimize your campaign for better performance. What would you like help with today?"
+                  className="h-full overflow-auto"
                 />
-              </div>
-            </Card>
-          </div>
+              </Card>
+            </div>
 
-          {/* Middle Column - Campaign Form with Steps */}
-          <div className="flex-1 min-w-0 h-full flex flex-col">
-            <Card className="p-0 flex flex-col h-full overflow-hidden shadow-md">
-              {/* Step indicator header */}
-              <StepProgressHeader
-                currentStep={currentStep}
-                stepValidation={stepValidation}
-                onStepClick={handleStepChange}
-                className="flex-shrink-0"
-              />
-
-              {/* Step content with animation - Make sure it's scrollable */}
-              <div className="flex-1 overflow-auto">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={CAMPAIGN_STEPS[currentStep].id}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    variants={contentVariants}
-                    transition={{ duration: 0.3 }}
-                    className="px-4 py-5"
-                  >
-                    {renderStepContent()}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-
-              {/* Navigation footer */}
-              <StepNavigationFooter
-                currentStep={currentStep}
-                isNextDisabled={isNextDisabled}
-                onNext={handleNext}
-                onPrevious={handlePrevious}
-                onSaveDraft={handleSaveDraft}
-                className="flex-shrink-0"
-              />
-            </Card>
-          </div>
-
-          {/* Right Column - Campaign Visualization */}
-          <div className="w-[448px] flex-shrink-0 h-full">
-            <Card className="h-full p-0 flex flex-col overflow-hidden shadow-md">
-              <div className="flex-1 overflow-hidden">
-                <CampaignAnalyticsPanel
-                  className="h-full flex-1"
-                  campaignBudget={analyticsValues.campaignBudget}
-                  estimatedReach={analyticsValues.estimatedReach}
+            {/* Middle Column - Campaign Form with Steps */}
+            <div className="flex-1 min-w-0 h-full flex flex-col">
+              <Card className="p-0 flex flex-col h-full overflow-hidden shadow-md">
+                {/* Step indicator header */}
+                <StepProgressHeader
+                  currentStep={currentStep}
+                  stepValidation={stepValidation}
+                  onStepClick={handleStepChange}
+                  className="flex-shrink-0"
                 />
-              </div>
-            </Card>
+
+                {/* Step content with animation - Make sure it's scrollable */}
+                <div className="flex-1 overflow-auto">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={CAMPAIGN_STEPS[currentStep].id}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                      variants={contentVariants}
+                      transition={{ duration: 0.3 }}
+                      className="px-4 py-5"
+                    >
+                      {renderStepContent()}
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+
+                {/* Navigation footer */}
+                <StepNavigationFooter
+                  currentStep={currentStep}
+                  isNextDisabled={isNextDisabled}
+                  onNext={handleNext}
+                  onPrevious={handlePrevious}
+                  onSaveDraft={handleSaveDraft}
+                  className="flex-shrink-0"
+                />
+              </Card>
+            </div>
+
+            {/* Right Column - Campaign Visualization */}
+            <div className="w-[320px] flex-shrink-0 h-full">
+              <CampaignAnalyticsPanel
+                className="h-full"
+                campaignBudget={formData.budget.maxBudget || 5000}
+                estimatedReach={formData.budget.estimatedReach || 100000}
+              />
+            </div>
           </div>
         </div>
       </div>
