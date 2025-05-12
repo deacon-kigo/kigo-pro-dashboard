@@ -17,11 +17,11 @@ import {
   SelectItem,
 } from "@/components/atoms/Select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { 
-  Accordion, 
-  AccordionContent, 
-  AccordionItem, 
-  AccordionTrigger 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
 import {
   Card as ShadcnCard,
@@ -50,7 +50,7 @@ import {
   LayoutGrid,
   MoreHorizontal,
   Edit,
-  ChevronRight
+  ChevronRight,
 } from "lucide-react";
 
 interface AdCreationStepProps {
@@ -88,134 +88,108 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
       merchantId: "m1",
       name: "30% off select vitamins",
       shortText: "Vitamins Sale",
-      logoUrl: "https://placehold.co/400x200/ccf/fff?text=CVS+Logo"
+      logoUrl: "https://placehold.co/400x200/ccf/fff?text=CVS+Logo",
     },
     {
       id: "mcm_o2_2023",
       merchantId: "m1",
       name: "Buy 1 Get 1 on cough & cold",
       shortText: "Cold Medicine",
-      logoUrl: "https://placehold.co/400x200/ccf/fff?text=CVS+Logo"
+      logoUrl: "https://placehold.co/400x200/ccf/fff?text=CVS+Logo",
     },
     {
       id: "mcm_o3_2023",
       merchantId: "m2",
       name: "$5 off $25 grocery purchase",
       shortText: "Grocery Deal",
-      logoUrl: "https://placehold.co/400x200/afa/333?text=Albertsons+Logo"
+      logoUrl: "https://placehold.co/400x200/afa/333?text=Albertsons+Logo",
     },
     {
       id: "mcm_o4_2023",
       merchantId: "m3",
       name: "15% off laptops",
       shortText: "Laptop Discount",
-      logoUrl: "https://placehold.co/400x200/00f/fff?text=Best+Buy+Logo"
+      logoUrl: "https://placehold.co/400x200/00f/fff?text=Best+Buy+Logo",
     },
     {
       id: "mcm_o5_2023",
       merchantId: "m4",
       name: "$10 off monthly bill",
       shortText: "Bill Credit",
-      logoUrl: "https://placehold.co/400x200/f5f/fff?text=T-Mobile+Logo"
+      logoUrl: "https://placehold.co/400x200/f5f/fff?text=T-Mobile+Logo",
     },
     {
       id: "mcm_o6_2023",
       merchantId: "m5",
       name: "Free guacamole with entrée",
       shortText: "Free Guac",
-      logoUrl: "https://placehold.co/400x200/3b3/fff?text=Chipotle+Logo"
+      logoUrl: "https://placehold.co/400x200/3b3/fff?text=Chipotle+Logo",
     },
   ];
 
-  // Media types
+  // Media types - Simplified to match spec
   const mediaTypes = [
     {
-      id: "banner",
+      id: "display_banner",
       label: "Display Banner",
       description: "Standard display ad banners",
     },
     {
-      id: "native",
-      label: "Native Ad",
-      description: "Ads that match the look & feel of the platform",
-    },
-    {
-      id: "carousel",
-      label: "Carousel",
-      description: "Multiple images in rotating gallery",
-    },
-    { id: "video", label: "Video", description: "Video advertisements" },
-    {
-      id: "doubleExposure",
+      id: "double_decker",
       label: "Double Decker",
       description: "Large format ads with two visual sections",
     },
+    {
+      id: "native",
+      label: "Native (No Image)",
+      description: "No image required, uses merchant logo",
+      noImageUpload: true,
+    },
   ];
 
-  // Replace the banner size info with more detailed requirements
+  // Replace the banner type info with more accurate descriptions
   const bannerTypeInfo = [
-    { 
-      name: "Wide Display Banner", 
-      size: "970x250", 
-      maxCount: 5,
+    {
+      name: "Display Banner",
+      size: "970x250",
+      mediaTypeId: "display_banner",
       fileType: "JPG or PNG (max file size: 10MB)",
-      description: "The most prominent advertising option. Appears in the top half of the offer platform Home screen.",
-      icon: "🖥️"
+      description:
+        "Standard display ad banners that appear on desktop and mobile",
+      icon: "🖥️",
     },
-    { 
-      name: "Double-Decker Banner", 
-      size: "320x480", 
-      maxCount: 5,
+    {
+      name: "Double-Decker Banner",
+      size: "320x480",
+      mediaTypeId: "double_decker",
       fileType: "JPG or PNG (max file size: 10MB)",
-      description: "Named for being the height of two default offer cards. Appears within the list of nearby offers and search results.",
-      icon: "📱"
+      description:
+        "Named for being the height of two default offer cards. Appears within the list of nearby offers.",
+      icon: "📱",
     },
-    { 
-      name: "Leaderboard", 
-      size: "728x90", 
-      fileType: "JPG or PNG (max file size: 10MB)",
-      description: "Desktop horizontal banner that appears throughout the platform.",
-      icon: "💻"
-    },
-    { 
-      name: "MREC", 
-      size: "300x250", 
-      fileType: "JPG or PNG (max file size: 10MB)",
-      description: "Medium rectangle format for both mobile and desktop views.",
-      icon: "📲"
-    },
-    { 
-      name: "Mobile Banner", 
-      size: "320x50", 
-      fileType: "JPG or PNG (max file size: 10MB)",
-      description: "Compact horizontal format designed specifically for mobile views.",
-      icon: "📱"
-    },
-    { 
-      name: "In-line Featured Card", 
+    {
+      name: "Native (No Image)",
       size: "Auto-generated",
+      mediaTypeId: "native",
       fileType: "No upload needed",
-      description: "Uses the merchant logo with a circular border in the logo's primary color. Appears within the list of nearby offers and search results.",
+      description:
+        "Uses the merchant logo with a circular border. Appears within the list of nearby offers.",
       icon: "✨",
-      autoGenerated: true
-    }
+      autoGenerated: true,
+    },
   ];
 
-  // Form state for ad creation
+  // Form state for ad creation - Remove cost fields
   const [currentAd, setCurrentAd] = useState<{
     merchantId: string;
     merchantName: string;
     offerId: string;
     mediaType: string[];
-    costPerActivation: string;
-    costPerRedemption: string;
   }>({
     merchantId: "",
     merchantName: "",
     offerId: "",
     mediaType: [],
-    costPerActivation: "0.15",
-    costPerRedemption: "1.50",
   });
 
   // Local state for drag and drop file upload
@@ -223,7 +197,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
   const [uploadProgress, setUploadProgress] = useState<{
     [key: string]: number;
   }>({});
-  
+
   // State for creation and editing modes
   const [editingAdId, setEditingAdId] = useState<string | null>(null);
   const [creationStep, setCreationStep] = useState<number>(1);
@@ -271,7 +245,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
     });
   };
 
-  // Create a new ad
+  // Create a new ad - Remove cost fields
   const handleAddAd = () => {
     if (
       !currentAd.merchantId ||
@@ -289,8 +263,8 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
       offerId: currentAd.offerId,
       mediaType: currentAd.mediaType,
       mediaAssets: [],
-      costPerActivation: parseFloat(currentAd.costPerActivation) || 0.15,
-      costPerRedemption: parseFloat(currentAd.costPerRedemption) || 1.5,
+      costPerActivation: 0.15, // Default value, will be editable in the Budget step
+      costPerRedemption: 1.5, // Default value, will be editable in the Budget step
     };
 
     addAd(newAd);
@@ -304,8 +278,6 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
         merchantName: "",
         offerId: "",
         mediaType: [],
-        costPerActivation: "0.15",
-        costPerRedemption: "1.50",
       });
     } else {
       setEditingAdId(null);
@@ -399,8 +371,6 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
       merchantName: "",
       offerId: "",
       mediaType: [],
-      costPerActivation: "0.15",
-      costPerRedemption: "1.50",
     });
   };
 
@@ -426,19 +396,19 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
 
   // Get number of assets for an ad
   const getAssetCount = (adId: string): number => {
-    const ad = ads.find(ad => ad.id === adId);
+    const ad = ads.find((ad) => ad.id === adId);
     return ad ? ad.mediaAssets.length : 0;
   };
 
   // Get logo URL for an ad
   const getLogoUrl = (offerId: string): string => {
-    const offer = offers.find(o => o.id === offerId);
+    const offer = offers.find((o) => o.id === offerId);
     return offer?.logoUrl || "";
   };
 
   // Get media type label
   const getMediaTypeLabel = (typeId: string): string => {
-    const type = mediaTypes.find(t => t.id === typeId);
+    const type = mediaTypes.find((t) => t.id === typeId);
     return type?.label || typeId;
   };
 
@@ -447,15 +417,12 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
       {/* Campaign Ads Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h3 className="text-lg font-medium">Campaign Advertisements</h3>
-          <p className="text-sm text-muted-foreground">
-            Create one or more advertisements for this campaign
-          </p>
+          <h3 className="text-lg font-medium">Campaign Assets</h3>
         </div>
         {!creatingNew && (
           <Button onClick={startNewAd} className="flex items-center gap-1">
             <Plus className="h-4 w-4" />
-            Add New Ad
+            Add New Asset
           </Button>
         )}
       </div>
@@ -473,8 +440,8 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                 {creationStep === 1 ? "Ad Details" : "Upload Media"}
               </h4>
             </div>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="sm"
               onClick={cancelCreation}
               className="text-muted-foreground hover:text-foreground h-8 w-8 p-0"
@@ -532,15 +499,18 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                       </SelectContent>
                     </Select>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Each ad is associated with exactly one offer ID
+                      Each asset is associated with exactly one offer ID
                     </p>
                   </div>
 
                   {currentAd.offerId && (
                     <div className="border rounded-md p-3 bg-muted/10 flex flex-col items-center">
-                      <img 
-                        src={offers.find(o => o.id === currentAd.offerId)?.logoUrl} 
-                        alt="Merchant Logo" 
+                      <img
+                        src={
+                          offers.find((o) => o.id === currentAd.offerId)
+                            ?.logoUrl
+                        }
+                        alt="Merchant Logo"
                         className="h-16 object-contain"
                       />
                       <p className="text-xs text-muted-foreground mt-2">
@@ -548,50 +518,6 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                       </p>
                     </div>
                   )}
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="costPerActivation">Cost Per Activation ($)</Label>
-                      <div className="relative mt-1">
-                        <DollarSign className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="costPerActivation"
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          value={currentAd.costPerActivation}
-                          onChange={(e) =>
-                            setCurrentAd({
-                              ...currentAd,
-                              costPerActivation: e.target.value,
-                            })
-                          }
-                          className="pl-8"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="costPerRedemption">Cost Per Redemption ($)</Label>
-                      <div className="relative mt-1">
-                        <DollarSign className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="costPerRedemption"
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          value={currentAd.costPerRedemption}
-                          onChange={(e) =>
-                            setCurrentAd({
-                              ...currentAd,
-                              costPerRedemption: e.target.value,
-                            })
-                          }
-                          className="pl-8"
-                        />
-                      </div>
-                    </div>
-                  </div>
                 </div>
 
                 <div className="space-y-4">
@@ -632,16 +558,20 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
               </div>
 
               <div className="mt-6 flex justify-end">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="mr-2"
                   onClick={cancelCreation}
                 >
                   Cancel
                 </Button>
-                <Button 
-                  onClick={handleAddAd} 
-                  disabled={!currentAd.merchantId || !currentAd.offerId || currentAd.mediaType.length === 0}
+                <Button
+                  onClick={handleAddAd}
+                  disabled={
+                    !currentAd.merchantId ||
+                    !currentAd.offerId ||
+                    currentAd.mediaType.length === 0
+                  }
                 >
                   Continue to Upload Media
                 </Button>
@@ -654,202 +584,208 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
             <div className="p-3">
               <div className="flex flex-col space-y-4">
                 <div className="bg-muted/20 p-3 rounded-md flex items-center">
-                  <img 
-                    src={getLogoUrl(ads.find(ad => ad.id === expandedAdId)?.offerId || "")}
-                    alt="Logo" 
+                  <img
+                    src={getLogoUrl(
+                      ads.find((ad) => ad.id === expandedAdId)?.offerId || ""
+                    )}
+                    alt="Logo"
                     className="h-10 w-10 object-contain mr-3"
                   />
                   <div className="flex-1">
-                    <h4 className="font-medium">{ads.find(ad => ad.id === expandedAdId)?.merchantName}</h4>
+                    <h4 className="font-medium">
+                      {ads.find((ad) => ad.id === expandedAdId)?.merchantName}
+                    </h4>
                     <p className="text-sm text-muted-foreground">
-                      {ads.find(ad => ad.id === expandedAdId)?.offerId}
+                      {ads.find((ad) => ad.id === expandedAdId)?.offerId}
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-1 justify-end">
-                    {ads.find(ad => ad.id === expandedAdId)?.mediaType.map(type => (
-                      <Badge key={type} variant="secondary" className="text-xs">
-                        {getMediaTypeLabel(type)}
-                      </Badge>
-                    ))}
+                    {ads
+                      .find((ad) => ad.id === expandedAdId)
+                      ?.mediaType.map((type) => (
+                        <Badge
+                          key={type}
+                          variant="secondary"
+                          className="text-xs"
+                        >
+                          {getMediaTypeLabel(type)}
+                        </Badge>
+                      ))}
                   </div>
                 </div>
 
-                {/* Upload Zone */}
-                <div
-                  className={`border-2 border-dashed rounded-md p-5 text-center transition-colors ${
-                    isDragging ? "border-primary bg-primary/5" : "border-muted"
-                  }`}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    setIsDragging(true);
-                  }}
-                  onDragLeave={() => setIsDragging(false)}
-                  onDrop={(e) => handleFileDrop(expandedAdId, e)}
-                >
-                  <div className="flex flex-col items-center">
-                    <ImagePlus className="h-10 w-10 text-muted-foreground mb-3" />
-                    <p className="text-base mb-2">Upload Ad Media Assets</p>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Drag and drop files here or click to upload
-                    </p>
-                    <input
-                      type="file"
-                      id="fileUpload"
-                      className="hidden"
-                      accept="image/*"
-                      multiple
-                      onChange={(e) => handleFileSelect(expandedAdId, e)}
-                    />
-                    <Button
-                      onClick={() => document.getElementById("fileUpload")?.click()}
-                    >
-                      <Upload className="mr-2 h-4 w-4" />
-                      Select Files
-                    </Button>
+                {/* Only show upload zone if ad has media types that require uploads */}
+                {ads
+                  .find((ad) => ad.id === expandedAdId)
+                  ?.mediaType.some(
+                    (type) =>
+                      !mediaTypes.find((mt) => mt.id === type)?.noImageUpload
+                  ) && (
+                  <div
+                    className={`border-2 border-dashed rounded-md p-5 text-center transition-colors ${
+                      isDragging
+                        ? "border-primary bg-primary/5"
+                        : "border-muted"
+                    }`}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setIsDragging(true);
+                    }}
+                    onDragLeave={() => setIsDragging(false)}
+                    onDrop={(e) => handleFileDrop(expandedAdId, e)}
+                  >
+                    <div className="flex flex-col items-center">
+                      <ImagePlus className="h-10 w-10 text-muted-foreground mb-3" />
+                      <p className="text-base mb-2">Upload Ad Media Assets</p>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Drag and drop files here or click to upload
+                      </p>
+                      <input
+                        type="file"
+                        id="fileUpload"
+                        className="hidden"
+                        accept="image/*"
+                        multiple
+                        onChange={(e) => handleFileSelect(expandedAdId, e)}
+                      />
+                      <Button
+                        onClick={() =>
+                          document.getElementById("fileUpload")?.click()
+                        }
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        Select Files
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Banner Type Requirements */}
-                <div className="mt-5 border rounded-md overflow-hidden">
+                <div className="border rounded-md overflow-hidden">
                   <div className="p-3 bg-muted/20 border-b">
                     <h4 className="text-sm font-medium flex items-center">
                       <AlertCircle className="h-4 w-4 mr-2 text-primary" />
-                      Banner Requirements
+                      Media Requirements
                     </h4>
                   </div>
                   <div className="p-3">
                     <div className="space-y-4">
-                      {bannerTypeInfo.map((banner, idx) => (
-                        <div key={idx} className="rounded-md border p-3">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h5 className="text-sm font-medium flex items-center">
-                                <span className="mr-2">{banner.icon}</span>
-                                {banner.name} 
-                                <span className="ml-2 text-xs font-normal text-muted-foreground">
-                                  {banner.size}
-                                </span>
-                                {banner.maxCount && (
-                                  <Badge variant="outline" className="ml-2 text-[10px]">
-                                    Max {banner.maxCount}
-                                  </Badge>
-                                )}
-                              </h5>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {banner.description}
-                              </p>
-                            </div>
-                            <Badge 
-                              variant={banner.autoGenerated ? "secondary" : "outline"} 
-                              className="text-xs"
-                            >
-                              {banner.autoGenerated ? "Auto-generated" : banner.fileType}
-                            </Badge>
-                          </div>
-                          
-                          {/* If we want to add visuals for each banner type */}
-                          {!banner.autoGenerated && (
-                            <div className="mt-2 flex items-center justify-center">
-                              <div 
-                                className={`border border-dashed rounded p-1 flex items-center justify-center text-xs text-muted-foreground ${
-                                  banner.name === "Wide Display Banner" ? "w-32 h-8" :
-                                  banner.name === "Double-Decker Banner" ? "w-8 h-24" :
-                                  banner.name === "Leaderboard" ? "w-32 h-4" :
-                                  banner.name === "MREC" ? "w-16 h-16" :
-                                  "w-24 h-3"
-                                }`}
-                              >
-                                {banner.size}
+                      {/* Only show requirements for the selected media types */}
+                      {bannerTypeInfo
+                        .filter((banner) =>
+                          ads
+                            .find((ad) => ad.id === expandedAdId)
+                            ?.mediaType.includes(banner.mediaTypeId)
+                        )
+                        .map((banner, idx) => (
+                          <div key={idx} className="rounded-md border p-3">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h5 className="text-sm font-medium flex items-center">
+                                  <span className="mr-2">{banner.icon}</span>
+                                  {banner.name}
+                                  <span className="ml-2 text-xs font-normal text-muted-foreground">
+                                    {banner.size}
+                                  </span>
+                                </h5>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {banner.description}
+                                </p>
                               </div>
+                              <Badge
+                                variant={
+                                  banner.autoGenerated ? "secondary" : "outline"
+                                }
+                                className="text-xs"
+                              >
+                                {banner.autoGenerated
+                                  ? "Auto-generated"
+                                  : banner.fileType}
+                              </Badge>
                             </div>
-                          )}
-                        </div>
-                      ))}
+
+                            {!banner.autoGenerated && (
+                              <div className="mt-2 flex items-center justify-center">
+                                <div
+                                  className={`border border-dashed rounded p-1 flex items-center justify-center text-xs text-muted-foreground ${
+                                    banner.name === "Display Banner"
+                                      ? "w-32 h-8"
+                                      : banner.name === "Double-Decker Banner"
+                                        ? "w-8 h-24"
+                                        : "w-16 h-16"
+                                  }`}
+                                >
+                                  {banner.size}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
                     </div>
                   </div>
                 </div>
 
-                {/* Upload Progress */}
-                {Object.entries(uploadProgress).map(([mediaId, progress]) => {
-                  if (progress < 100) {
-                    return (
-                      <div key={mediaId} className="border rounded-md p-2">
-                        <div className="flex justify-between items-center mb-1">
-                          <div className="text-sm font-medium">Uploading...</div>
-                          <div className="text-xs">{progress}%</div>
-                        </div>
-                        <div className="w-full bg-muted h-1 rounded-full overflow-hidden">
-                          <div
-                            className="bg-primary h-1"
-                            style={{ width: `${progress}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    );
-                  }
-                  return null;
-                })}
-
-                {/* Uploaded Media Preview */}
+                {/* Media upload status per media type */}
                 <div className="space-y-3">
-                  <h3 className="text-sm font-medium">Uploaded Media ({getAssetCount(expandedAdId)})</h3>
-                  
-                  {getAssetCount(expandedAdId) === 0 ? (
-                    <div className="text-center py-6 text-muted-foreground border rounded-md">
-                      No media assets uploaded yet
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                      {ads.find(ad => ad.id === expandedAdId)?.mediaAssets.map((media) => (
-                        <div
-                          key={media.id}
-                          className="border rounded-md overflow-hidden group relative"
-                        >
-                          {media.type.startsWith("image/") ? (
-                            <div className="aspect-video w-full bg-muted relative">
-                              <img
-                                src={media.previewUrl}
-                                alt={media.name}
-                                className="w-full h-full object-cover"
-                              />
-                              <button
-                                onClick={() => removeMediaFromAd(expandedAdId, media.id)}
-                                className="absolute top-1 right-1 bg-white/80 hover:bg-white text-red-500 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                              >
-                                <X className="h-3 w-3" />
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="aspect-video w-full bg-muted flex items-center justify-center">
-                              <FileImage className="h-8 w-8 text-muted-foreground" />
-                              <button
-                                onClick={() => removeMediaFromAd(expandedAdId, media.id)}
-                                className="absolute top-1 right-1 bg-white/80 hover:bg-white text-red-500 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                              >
-                                <X className="h-3 w-3" />
-                              </button>
-                            </div>
-                          )}
-                          <div className="p-1.5 text-xs">
-                            <div className="truncate">{media.name}</div>
-                            <div className="text-muted-foreground mt-0.5 text-[10px] flex justify-between">
-                              <span>{formatFileSize(media.size)}</span>
-                              {media.dimensions && (
-                                <span>
-                                  {media.dimensions.width}×{media.dimensions.height}
+                  <h3 className="text-sm font-medium">Media Assets Status</h3>
+
+                  <div className="grid gap-3">
+                    {ads
+                      .find((ad) => ad.id === expandedAdId)
+                      ?.mediaType.map((typeId) => {
+                        const mediaType = mediaTypes.find(
+                          (mt) => mt.id === typeId
+                        );
+                        const bannerInfo = bannerTypeInfo.find(
+                          (bt) => bt.mediaTypeId === typeId
+                        );
+                        const hasUploads = getAssetCount(expandedAdId) > 0;
+                        const isRequired = !mediaType?.noImageUpload;
+
+                        return (
+                          <div key={typeId} className="rounded-md border p-3">
+                            <div className="flex justify-between items-center">
+                              <div className="flex items-center">
+                                <span className="mr-2">
+                                  {bannerInfo?.icon || "📄"}
                                 </span>
-                              )}
+                                <div>
+                                  <h6 className="text-sm font-medium">
+                                    {mediaType?.label}
+                                  </h6>
+                                  <p className="text-xs text-muted-foreground">
+                                    {isRequired
+                                      ? "Upload required"
+                                      : "No upload needed"}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <Badge
+                                variant={
+                                  !isRequired
+                                    ? "secondary"
+                                    : hasUploads
+                                      ? "success"
+                                      : "destructive"
+                                }
+                              >
+                                {!isRequired
+                                  ? "Auto-generated"
+                                  : hasUploads
+                                    ? "Uploaded"
+                                    : "Missing"}
+                              </Badge>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                        );
+                      })}
+                  </div>
                 </div>
 
                 <div className="mt-2 flex justify-end">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="mr-2"
                     onClick={() => {
                       setCreatingNew(false);
@@ -858,11 +794,9 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                   >
                     Done
                   </Button>
-                  <Button 
-                    onClick={startNewAd}
-                  >
+                  <Button onClick={startNewAd}>
                     <Plus className="mr-2 h-4 w-4" />
-                    Add Another Ad
+                    Add Another Asset
                   </Button>
                 </div>
               </div>
@@ -877,18 +811,25 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
           <div className="flex items-center text-sm text-muted-foreground">
             <LayoutGrid className="h-4 w-4 mr-2" />
             <span>
-              {ads.length} {ads.length === 1 ? 'Advertisement' : 'Advertisements'} in this Campaign
+              {ads.length}{" "}
+              {ads.length === 1 ? "Advertisement" : "Advertisements"} in this
+              Campaign
             </span>
           </div>
-          
+
           <div className="grid gap-4">
             {ads.map((ad, index) => (
-              <div key={ad.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                <div 
+              <div
+                key={ad.id}
+                className="bg-white rounded-lg border border-gray-200 overflow-hidden"
+              >
+                <div
                   className={`flex justify-between items-center p-4 border-b cursor-pointer ${
                     expandedAdId === ad.id ? "bg-muted/10" : ""
                   }`}
-                  onClick={() => setExpandedAdId(expandedAdId === ad.id ? null : ad.id)}
+                  onClick={() =>
+                    setExpandedAdId(expandedAdId === ad.id ? null : ad.id)
+                  }
                 >
                   <div className="flex items-center">
                     <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-medium mr-3">
@@ -915,45 +856,51 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                     </div>
                   </div>
                   <div className="flex items-center">
-                    <Badge 
-                      variant={ad.mediaAssets.length > 0 ? "success" : "destructive"} 
+                    <Badge
+                      variant={
+                        ad.mediaAssets.length > 0 ? "success" : "destructive"
+                      }
                       className="mr-3"
                     >
                       {ad.mediaAssets.length} Assets
                     </Badge>
                     <div className="flex">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         className="text-muted-foreground"
                         onClick={(e) => {
                           e.stopPropagation();
-                          if(confirm("Are you sure you want to delete this ad?")) {
+                          if (
+                            confirm("Are you sure you want to delete this ad?")
+                          ) {
                             removeAd(ad.id);
-                            if(expandedAdId === ad.id) setExpandedAdId(null);
+                            if (expandedAdId === ad.id) setExpandedAdId(null);
                           }
                         }}
                       >
                         <Trash className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setExpandedAdId(expandedAdId === ad.id ? null : ad.id);
+                          setExpandedAdId(
+                            expandedAdId === ad.id ? null : ad.id
+                          );
                         }}
                       >
-                        <ChevronRight 
+                        <ChevronRight
                           className={`h-5 w-5 transition-transform ${
                             expandedAdId === ad.id ? "rotate-90" : ""
-                          }`} 
+                          }`}
                         />
                       </Button>
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Expanded View: Media Assets */}
                 {expandedAdId === ad.id && (
                   <div className="p-4 bg-muted/5">
@@ -967,10 +914,14 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                         multiple
                         onChange={(e) => handleFileSelect(ad.id, e)}
                       />
-                      <Button 
+                      <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => document.getElementById(`fileUpload-${ad.id}`)?.click()}
+                        onClick={() =>
+                          document
+                            .getElementById(`fileUpload-${ad.id}`)
+                            ?.click()
+                        }
                       >
                         <Upload className="mr-1.5 h-3.5 w-3.5" />
                         Upload Assets
@@ -978,7 +929,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                     </div>
 
                     {ad.mediaAssets.length === 0 ? (
-                      <div 
+                      <div
                         className="border-2 border-dashed rounded-md p-8 text-center"
                         onDragOver={(e) => {
                           e.preventDefault();
@@ -989,7 +940,9 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                       >
                         <div className="flex flex-col items-center">
                           <ImagePlus className="h-8 w-8 text-muted-foreground mb-2" />
-                          <p className="text-sm mb-1">No media assets uploaded</p>
+                          <p className="text-sm mb-1">
+                            No media assets uploaded
+                          </p>
                           <p className="text-xs text-muted-foreground mb-2">
                             Drag files here or click the upload button
                           </p>
@@ -1010,7 +963,9 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                                   className="w-full h-full object-cover"
                                 />
                                 <button
-                                  onClick={() => removeMediaFromAd(ad.id, media.id)}
+                                  onClick={() =>
+                                    removeMediaFromAd(ad.id, media.id)
+                                  }
                                   className="absolute top-1 right-1 bg-white/80 hover:bg-white text-red-500 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                                 >
                                   <X className="h-3 w-3" />
@@ -1020,7 +975,9 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                               <div className="aspect-video w-full bg-muted flex items-center justify-center">
                                 <FileImage className="h-8 w-8 text-muted-foreground" />
                                 <button
-                                  onClick={() => removeMediaFromAd(ad.id, media.id)}
+                                  onClick={() =>
+                                    removeMediaFromAd(ad.id, media.id)
+                                  }
                                   className="absolute top-1 right-1 bg-white/80 hover:bg-white text-red-500 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                                 >
                                   <X className="h-3 w-3" />
@@ -1033,7 +990,8 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                                 <span>{formatFileSize(media.size)}</span>
                                 {media.dimensions && (
                                   <span>
-                                    {media.dimensions.width}×{media.dimensions.height}
+                                    {media.dimensions.width}×
+                                    {media.dimensions.height}
                                   </span>
                                 )}
                               </div>
@@ -1056,13 +1014,14 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
           <div className="bg-primary/10 rounded-full p-3 mb-3">
             <ImagePlus className="h-6 w-6 text-primary" />
           </div>
-          <h3 className="font-medium mb-1">No Advertisements Created Yet</h3>
+          <h3 className="font-medium mb-1">No Campaign Assets Yet</h3>
           <p className="text-muted-foreground text-sm mb-4 max-w-md">
-            Create one or more advertisements for this campaign. Each advertisement can target a specific offer and have its own media assets.
+            Add assets to your campaign by selecting an offer ID and media
+            types.
           </p>
           <Button onClick={startNewAd}>
             <Plus className="mr-2 h-4 w-4" />
-            Create Your First Ad
+            Add Asset
           </Button>
         </div>
       )}
