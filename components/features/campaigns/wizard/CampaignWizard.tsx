@@ -129,7 +129,7 @@ const CampaignWizard: React.FC = () => {
       <div className="flex-1 flex flex-col">
         <div className="flex gap-4 h-full">
           {/* Left Column - AI Assistant Panel */}
-          <div className="w-[360px] flex-shrink-0 h-full">
+          <div className="w-1/3 max-w-[400px] flex-shrink-0 h-full">
             <Card className="p-0 h-full flex flex-col overflow-hidden">
               <AIAssistantPanel
                 title="AI Campaign Assistant"
@@ -141,7 +141,7 @@ const CampaignWizard: React.FC = () => {
           </div>
 
           {/* Middle Column - Campaign Form with Steps */}
-          <div className="flex-1 flex flex-col h-full overflow-hidden">
+          <div className="w-1/3 min-w-0 flex-1 flex flex-col h-full overflow-hidden">
             <Card className="p-0 flex flex-col h-full overflow-hidden">
               {/* Step indicator header */}
               <StepProgressHeader
@@ -180,7 +180,7 @@ const CampaignWizard: React.FC = () => {
           </div>
 
           {/* Right Column - Campaign Visualization */}
-          <div className="w-[360px] flex-shrink-0 h-full">
+          <div className="w-1/3 max-w-[400px] flex-shrink-0 h-full">
             <Card className="h-full p-4">
               <h3 className="text-lg font-semibold mb-4">Campaign Preview</h3>
               <div className="space-y-4">
@@ -203,8 +203,8 @@ const CampaignWizard: React.FC = () => {
                 <div>
                   <p className="text-sm font-medium text-gray-500">Duration</p>
                   <p className="text-sm">
-                    {formData.basicInfo.startDate && formData.basicInfo.endDate
-                      ? `${new Date(formData.basicInfo.startDate).toLocaleDateString()} - ${new Date(formData.basicInfo.endDate).toLocaleDateString()}`
+                    {formData.targeting.startDate && formData.targeting.endDate
+                      ? `${new Date(formData.targeting.startDate).toLocaleDateString()} - ${new Date(formData.targeting.endDate).toLocaleDateString()}`
                       : "Not set"}
                   </p>
                 </div>
