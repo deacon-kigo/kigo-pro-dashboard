@@ -80,40 +80,46 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
   // Mock offer data (would come from API in production)
   const offers = [
     {
-      id: "o1",
+      id: "mcm_o1_2023",
       merchantId: "m1",
       name: "30% off select vitamins",
       shortText: "Vitamins Sale",
+      logoUrl: "https://placehold.co/400x200/ccf/fff?text=CVS+Logo"
     },
     {
-      id: "o2",
+      id: "mcm_o2_2023",
       merchantId: "m1",
       name: "Buy 1 Get 1 on cough & cold",
       shortText: "Cold Medicine",
+      logoUrl: "https://placehold.co/400x200/ccf/fff?text=CVS+Logo"
     },
     {
-      id: "o3",
+      id: "mcm_o3_2023",
       merchantId: "m2",
       name: "$5 off $25 grocery purchase",
       shortText: "Grocery Deal",
+      logoUrl: "https://placehold.co/400x200/afa/333?text=Albertsons+Logo"
     },
     {
-      id: "o4",
+      id: "mcm_o4_2023",
       merchantId: "m3",
       name: "15% off laptops",
       shortText: "Laptop Discount",
+      logoUrl: "https://placehold.co/400x200/00f/fff?text=Best+Buy+Logo"
     },
     {
-      id: "o5",
+      id: "mcm_o5_2023",
       merchantId: "m4",
       name: "$10 off monthly bill",
       shortText: "Bill Credit",
+      logoUrl: "https://placehold.co/400x200/f5f/fff?text=T-Mobile+Logo"
     },
     {
-      id: "o6",
+      id: "mcm_o6_2023",
       merchantId: "m5",
       name: "Free guacamole with entrée",
       shortText: "Free Guac",
+      logoUrl: "https://placehold.co/400x200/3b3/fff?text=Chipotle+Logo"
     },
   ];
 
@@ -334,6 +340,15 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
     return offer ? `${offer.name} (${offer.shortText})` : offerId;
   };
 
+  // Add banner size validation information
+  const bannerSizeInfo = [
+    { name: "Desktop Banner", size: "970x250", description: "Desktop large format" },
+    { name: "Leaderboard", size: "728x90", description: "Desktop horizontal" },
+    { name: "MREC", size: "300x250", description: "Mobile & desktop medium rectangle" },
+    { name: "Mobile Banner", size: "320x50", description: "Mobile horizontal format" },
+    { name: "Double Decker", size: "320x480", description: "Mobile vertical format" }
+  ];
+
   return (
     <div className="space-y-4">
       <Tabs defaultValue={ads.length > 0 ? "existing" : "create"} className="w-full">
@@ -404,7 +419,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                       </div>
 
                       <div>
-                        <Label htmlFor="offer">Offer*</Label>
+                        <Label htmlFor="offer">Offer ID*</Label>
                         <Select
                           value={currentAd.offerId}
                           onValueChange={handleOfferChange}
@@ -422,15 +437,35 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                           <SelectContent>
                             {filteredOffers.map((offer) => (
                               <SelectItem key={offer.id} value={offer.id}>
-                                {offer.name} - {offer.shortText}
+                                {offer.id} - {offer.shortText}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                         <p className="text-xs text-muted-foreground mt-1">
-                          The offer to promote in this ad
+                          The offer ID to promote in this ad (only one selection allowed)
                         </p>
                       </div>
+                      
+                      {currentAd.offerId && (
+                        <div>
+                          <Label>Merchant Logo</Label>
+                          <div className="mt-1 border rounded-md p-4 bg-muted/10">
+                            {currentAd.offerId && (
+                              <div className="flex flex-col items-center">
+                                <img 
+                                  src={offers.find(o => o.id === currentAd.offerId)?.logoUrl || "https://placehold.co/400x200/eee/999?text=No+Logo"} 
+                                  alt="Merchant Logo" 
+                                  className="max-h-24 object-contain"
+                                />
+                                <p className="text-xs text-muted-foreground mt-2">
+                                  Logo imported from mom database (not editable)
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -704,6 +739,21 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                             <Upload className="mr-1 h-4 w-4" />
                             Select Files
                           </Button>
+                          <div className="mt-3 text-xs text-muted-foreground max-w-sm">
+                            <p className="font-medium flex items-center">
+                              <AlertCircle className="h-3 w-3 mr-1" />
+                              Images must comply with Kigo Banner Guide
+                            </p>
+                            <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-left">
+                              {bannerSizeInfo.map((item, i) => (
+                                <div key={i} className="flex items-center text-xs">
+                                  <div className="w-3 h-3 bg-primary/20 rounded-full flex-shrink-0 mr-1"></div>
+                                  <span className="font-medium">{item.size}</span>
+                                  <span className="ml-1 text-muted-foreground">({item.name})</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         </div>
                       </div>
 
