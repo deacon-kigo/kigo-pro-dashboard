@@ -23,7 +23,7 @@ const BudgetForm: React.FC<BudgetFormProps> = ({
   useEffect(() => {
     // Calculate estimated reach based on budget and weight
     let baseReachPerDollar = 20; // Base reach per dollar
-
+    
     // Adjust based on campaign weight
     switch (campaignWeight) {
       case "small":
@@ -36,7 +36,7 @@ const BudgetForm: React.FC<BudgetFormProps> = ({
         baseReachPerDollar = 25;
         break;
     }
-
+    
     // Calculate estimated reach
     const estimatedReach = Math.round(budget * baseReachPerDollar);
     updateBudget({ maxBudget: budget, estimatedReach });
@@ -130,17 +130,14 @@ const BudgetForm: React.FC<BudgetFormProps> = ({
 
       {/* Budget Recommendations */}
       <div className="p-4 bg-blue-50 border border-blue-100 rounded-md">
-        <h4 className="font-medium text-blue-800 mb-2">
-          Budget Recommendations
-        </h4>
+        <h4 className="font-medium text-blue-800 mb-2">Budget Recommendations</h4>
         <ul className="space-y-2 text-sm text-blue-700">
           <li className="flex items-start gap-2">
             <div className="h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
               <span className="text-blue-600 text-xs">✓</span>
             </div>
             <span>
-              Based on your campaign settings, a budget of $
-              {(formData.estimatedReach || 0) > 50000 ? "5,000" : "2,500"} is
+              Based on your campaign settings, a budget of ${(formData.estimatedReach || 0) > 50000 ? "5,000" : "2,500"} is
               recommended for optimal performance.
             </span>
           </li>
@@ -149,8 +146,8 @@ const BudgetForm: React.FC<BudgetFormProps> = ({
               <span className="text-blue-600 text-xs">i</span>
             </div>
             <span>
-              Consider setting a higher budget for "{campaignWeight}" weight
-              campaigns to maximize reach and effectiveness.
+              Consider setting a higher budget for "{campaignWeight}" weight campaigns to
+              maximize reach and effectiveness.
             </span>
           </li>
         </ul>
@@ -159,4 +156,4 @@ const BudgetForm: React.FC<BudgetFormProps> = ({
   );
 };
 
-export default BudgetForm;
+export default BudgetForm; 

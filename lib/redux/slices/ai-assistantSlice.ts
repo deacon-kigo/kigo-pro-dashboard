@@ -5,6 +5,7 @@ import {
   CampaignTargeting,
   CampaignDistribution,
   CampaignBudget,
+  CampaignAd,
 } from "./campaignSlice";
 
 // Define FilterCriteria type locally if not imported from a shared location
@@ -36,6 +37,15 @@ export interface AIMessage {
     targeting?: CampaignTargeting;
     distribution?: CampaignDistribution;
     budget?: CampaignBudget;
+    ads?: CampaignAd[];
+    currentStep?: string;
+    analysisData?: {
+      impressionRate?: number;
+      conversionRate?: number;
+      recommendedBudget?: number;
+      audienceInsight?: string;
+      performancePrediction?: string;
+    };
   };
 }
 
@@ -51,6 +61,15 @@ interface AIAssistantState {
     targeting?: CampaignTargeting;
     distribution?: CampaignDistribution;
     budget?: CampaignBudget;
+    ads?: CampaignAd[];
+    currentStep?: string;
+    analysisData?: {
+      impressionRate?: number;
+      conversionRate?: number;
+      recommendedBudget?: number;
+      audienceInsight?: string;
+      performancePrediction?: string;
+    };
   };
 }
 
@@ -123,7 +142,7 @@ export const aiAssistantSlice = createSlice({
       state.currentCriteria = action.payload.currentCriteria || [];
     },
 
-    // Specialized action for the campaign context
+    // Enhanced action for the campaign context
     setCampaignContext: (
       state,
       action: PayloadAction<{
@@ -131,13 +150,61 @@ export const aiAssistantSlice = createSlice({
         targeting?: CampaignTargeting;
         distribution?: CampaignDistribution;
         budget?: CampaignBudget;
+        ads?: CampaignAd[];
+        currentStep?: string;
       }>
     ) => {
       state.contextId = "campaignContext";
       state.systemPrompt =
         SYSTEM_PROMPTS.CAMPAIGN_ASSISTANT ||
         "You are a helpful assistant for creating marketing campaigns.";
-      state.campaignContext = action.payload;
+      state.campaignContext = {
+        ...state.campaignContext,
+        ...action.payload
+      };
+    },
+
+    // Analyze campaign data and provide recommendations
+    analyzeCampaignData: (state) => {
+      // This is a trigger action for middleware - no state changes here
+    },
+
+    // Set campaign analysis results
+    setCampaignAnalysis: (
+      state,
+      action: PayloadAction<{
+        impressionRate?: number;
+        conversionRate?: number;
+        recommendedBudget?: number;
+        audienceInsight?: string;
+        performancePrediction?: string;
+      }>
+    ) => {
+      if (state.campaignContext) {
+        state.campaignContext.analysisData = action.payload;
+      }
+    },
+
+    // Generate ad content suggestion
+    generateAdSuggestion: (
+      state,
+      action: PayloadAction<{
+        targetAudience?: string;
+        campaignGoal?: string;
+        productType?: string;
+      }>
+    ) => {
+      // Trigger for middleware - no state changes here
+    },
+
+    // Generate campaign targeting suggestion
+    generateTargetingSuggestion: (state) => {
+      // Trigger for middleware - no state changes here
+    },
+
+    // Generate budget recommendation
+    generateBudgetRecommendation: (state) => {
+      // Trigger for middleware - no state changes here
     },
 
     // Magic generate action
@@ -158,6 +225,11 @@ export const {
   setError,
   setProductFilterContext,
   setCampaignContext,
+  analyzeCampaignData,
+  setCampaignAnalysis,
+  generateAdSuggestion,
+  generateTargetingSuggestion,
+  generateBudgetRecommendation,
   magicGenerate,
 } = aiAssistantSlice.actions;
 

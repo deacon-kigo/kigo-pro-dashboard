@@ -741,3 +741,421 @@ export const generateCoverageImprovement = (
 
   return suggestions;
 };
+
+// Add new schema for campaign generators
+const CampaignAdHeadlineSchema = z.array(z.string());
+const CampaignTargetingSchema = z.object({
+  ageRange: z.tuple([z.number(), z.number()]),
+  gender: z.array(z.string()),
+  locations: z.array(z.string()),
+  interestCategories: z.array(z.string()),
+});
+const CampaignBudgetSchema = z.object({
+  recommendedBudget: z.number(),
+  cpmRate: z.number(),
+  estimatedCPC: z.number(),
+  estimatedImpressions: z.number(),
+  estimatedClicks: z.number(),
+  budgetRationale: z.string(),
+});
+
+// Schema for campaign analysis
+const CampaignAnalysisSchema = z.object({
+  impressionRate: z.number(),
+  conversionRate: z.number(),
+  recommendedBudget: z.number(),
+  audienceInsight: z.string(),
+  performancePrediction: z.string(),
+  suggestedImprovements: z.array(z.string()),
+});
+
+// Schema for conversation guide response for campaigns
+const CampaignConversationGuideSchema = z.object({
+  responseMessage: z.string(),
+  responseOptions: z.array(
+    z.object({
+      text: z.string(),
+      value: z.string(),
+    })
+  ),
+  actionType: z.enum([
+    "ask_question",
+    "suggest_targeting",
+    "suggest_budget",
+    "suggest_ad_content",
+    "provide_info",
+  ]),
+  targetingToAdd: z.object({
+    ageRange: z.tuple([z.number(), z.number()]).optional(),
+    gender: z.array(z.string()).optional(),
+    locations: z.array(z.string()).optional(),
+    campaignWeight: z.enum(["small", "medium", "large"]).optional(),
+  }).optional(),
+  adContentToAdd: z.object({
+    headlines: z.array(z.string()).optional(),
+    descriptions: z.array(z.string()).optional(),
+    mediaTypes: z.array(z.string()).optional(),
+  }).optional(),
+  budgetToAdd: z.object({
+    maxBudget: z.number().optional(),
+    estimatedReach: z.number().optional(),
+  }).optional(),
+  nextQuestion: z.string().optional(),
+});
+
+// Create parsers for campaign specific tools
+const adHeadlineParser = StructuredOutputParser.fromZodSchema(CampaignAdHeadlineSchema);
+const targetingParser = StructuredOutputParser.fromZodSchema(CampaignTargetingSchema);
+const budgetParser = StructuredOutputParser.fromZodSchema(CampaignBudgetSchema);
+const campaignAnalysisParser = StructuredOutputParser.fromZodSchema(CampaignAnalysisSchema);
+const campaignConversationGuideParser = StructuredOutputParser.fromZodSchema(CampaignConversationGuideSchema);
+
+// Tool for generating ad content suggestions
+export const createAdContentGeneratorTool = () => {
+  return new DynamicTool({
+    name: "ad_content_generator",
+    description:
+      "Generates creative ad headlines and descriptions based on campaign goals and audience. Input must be a JSON string with keys: campaignGoal (string), targetAudience (string), productType (string).",
+    func: async (
+      input: string,
+      runManager?: CallbackManagerForToolRun | undefined,
+      config?: RunnableConfig
+    ): Promise<string> => {
+      try {
+        // Parse the JSON input string
+        const {
+          campaignGoal,
+          targetAudience,
+          productType,
+        } = JSON.parse(input);
+
+        const model = getDefaultModel({ temperature: 0.7 });
+
+        // Get format instructions from Zod schema parser
+        const formatInstructions = adHeadlineParser.getFormatInstructions();
+
+        // Properly escape curly braces in the format instructions
+        const escapedFormatInstructions = formatInstructions
+          .replace(/\{/g, "{{")
+          .replace(/\}/g, "}}");
+
+        // Use template with properly escaped curly braces
+        const promptTemplate = ChatPromptTemplate.fromTemplate(`
+          Generate 5 compelling, creative ad headlines for the following campaign:
+          
+          Campaign Goal: {campaignGoal}
+          Target Audience: {targetAudience}
+          Product/Service: {productType}
+          
+          ${escapedFormatInstructions}
+          
+          Make the headlines attention-grabbing, specific to the audience, and aligned with the campaign goal.
+          Each headline should be 5-8 words long and include a clear value proposition or call-to-action.
+        `);
+
+        const chain = promptTemplate.pipe(model).pipe(adHeadlineParser);
+
+        const response = await chain.invoke({
+          campaignGoal,
+          targetAudience,
+          productType,
+        });
+
+        return JSON.stringify(response);
+      } catch (error) {
+        console.error("Error in ad content generator tool:", error);
+        return JSON.stringify({
+          error: "Failed to generate ad content",
+          details: error instanceof Error ? error.message : String(error),
+        });
+      }
+    },
+  });
+};
+
+// Tool for generating campaign targeting suggestions
+export const createTargetingRecommendationTool = () => {
+  return new DynamicTool({
+    name: "targeting_recommendation_generator",
+    description:
+      "Generates targeting recommendations based on product type and campaign goals. Input must be a JSON string with keys: productType (string), campaignGoal (string).",
+    func: async (
+      input: string,
+      runManager?: CallbackManagerForToolRun | undefined,
+      config?: RunnableConfig
+    ): Promise<string> => {
+      try {
+        // Parse the JSON input string
+        const {
+          productType,
+          campaignGoal,
+        } = JSON.parse(input);
+
+        const model = getDefaultModel({ temperature: 0.4 });
+
+        // Get format instructions from Zod schema parser
+        const formatInstructions = targetingParser.getFormatInstructions();
+
+        // Properly escape curly braces in the format instructions
+        const escapedFormatInstructions = formatInstructions
+          .replace(/\{/g, "{{")
+          .replace(/\}/g, "}}");
+
+        // Use template with properly escaped curly braces
+        const promptTemplate = ChatPromptTemplate.fromTemplate(`
+          Generate optimal targeting parameters for the following campaign:
+          
+          Product/Service Type: {productType}
+          Campaign Goal: {campaignGoal}
+          
+          ${escapedFormatInstructions}
+          
+          Consider:
+          1. Age range most likely to convert for this product/service
+          2. Gender targeting if the product has strong gender preferences
+          3. Locations that would be optimal (urban, suburban, rural)
+          4. Interest categories that align with the product
+          
+          Make your recommendations specific and data-driven.
+        `);
+
+        const chain = promptTemplate.pipe(model).pipe(targetingParser);
+
+        const response = await chain.invoke({
+          productType,
+          campaignGoal,
+        });
+
+        return JSON.stringify(response);
+      } catch (error) {
+        console.error("Error in targeting recommendation tool:", error);
+        return JSON.stringify({
+          error: "Failed to generate targeting recommendations",
+          details: error instanceof Error ? error.message : String(error),
+        });
+      }
+    },
+  });
+};
+
+// Tool for generating budget recommendations
+export const createBudgetRecommendationTool = () => {
+  return new DynamicTool({
+    name: "budget_recommendation_generator",
+    description:
+      "Generates budget recommendations based on audience size, duration, and campaign goals. Input must be a JSON string with keys: audienceSize (number), campaignDuration (number in days), campaignGoal (string).",
+    func: async (
+      input: string,
+      runManager?: CallbackManagerForToolRun | undefined,
+      config?: RunnableConfig
+    ): Promise<string> => {
+      try {
+        // Parse the JSON input string
+        const {
+          audienceSize,
+          campaignDuration,
+          campaignGoal,
+        } = JSON.parse(input);
+
+        const model = getDefaultModel({ temperature: 0.3 });
+
+        // Get format instructions from Zod schema parser
+        const formatInstructions = budgetParser.getFormatInstructions();
+
+        // Properly escape curly braces in the format instructions
+        const escapedFormatInstructions = formatInstructions
+          .replace(/\{/g, "{{")
+          .replace(/\}/g, "}}");
+
+        // Use template with properly escaped curly braces
+        const promptTemplate = ChatPromptTemplate.fromTemplate(`
+          Generate budget recommendations for the following campaign:
+          
+          Audience Size: {audienceSize}
+          Campaign Duration: {campaignDuration} days
+          Campaign Goal: {campaignGoal}
+          
+          ${escapedFormatInstructions}
+          
+          Base your calculations on:
+          - For awareness campaigns: $10 CPM (cost per 1000 impressions)
+          - For conversion campaigns: $15 CPM (cost per 1000 impressions)
+          - For retention campaigns: $12 CPM (cost per 1000 impressions)
+          
+          An average campaign should reach approximately 25% of the audience per week.
+          Assume a 1% click-through rate (CTR) to calculate estimated clicks.
+          Provide a clear, data-driven rationale for your budget recommendation.
+        `);
+
+        const chain = promptTemplate.pipe(model).pipe(budgetParser);
+
+        const response = await chain.invoke({
+          audienceSize,
+          campaignDuration,
+          campaignGoal,
+        });
+
+        return JSON.stringify(response);
+      } catch (error) {
+        console.error("Error in budget recommendation tool:", error);
+        return JSON.stringify({
+          error: "Failed to generate budget recommendations",
+          details: error instanceof Error ? error.message : String(error),
+        });
+      }
+    },
+  });
+};
+
+// Tool for analyzing campaigns and providing recommendations
+export const createCampaignAnalysisTool = () => {
+  return new DynamicTool({
+    name: "campaign_analyzer",
+    description:
+      "Analyzes campaign settings and provides performance predictions and improvement suggestions. Input must be a JSON string with keys describing the campaign settings (targeting, budget, etc.).",
+    func: async (
+      input: string,
+      runManager?: CallbackManagerForToolRun | undefined,
+      config?: RunnableConfig
+    ): Promise<string> => {
+      try {
+        // Parse the JSON input string
+        const campaignData = JSON.parse(input);
+
+        const model = getDefaultModel({ temperature: 0.4 });
+
+        // Format campaign data for the prompt
+        const campaignDataString = Object.entries(campaignData)
+          .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+          .join("\n");
+
+        // Get format instructions from Zod schema parser
+        const formatInstructions = campaignAnalysisParser.getFormatInstructions();
+
+        // Properly escape curly braces in the format instructions
+        const escapedFormatInstructions = formatInstructions
+          .replace(/\{/g, "{{")
+          .replace(/\}/g, "}}");
+
+        // Use template with properly escaped curly braces
+        const promptTemplate = ChatPromptTemplate.fromTemplate(`
+          Analyze the following campaign and provide performance predictions and improvement suggestions:
+          
+          {campaignDataString}
+          
+          ${escapedFormatInstructions}
+          
+          Consider:
+          1. Is the targeting appropriate for the product/service?
+          2. Is the budget allocation efficient?
+          3. Are there missed opportunities for optimization?
+          4. What would be the expected impression and conversion rates?
+          
+          Be specific with your analysis and recommendations.
+        `);
+
+        const chain = promptTemplate.pipe(model).pipe(campaignAnalysisParser);
+
+        const response = await chain.invoke({
+          campaignDataString,
+        });
+
+        return JSON.stringify(response);
+      } catch (error) {
+        console.error("Error in campaign analyzer tool:", error);
+        return JSON.stringify({
+          error: "Failed to analyze campaign",
+          details: error instanceof Error ? error.message : String(error),
+        });
+      }
+    },
+  });
+};
+
+// Tool for guiding campaign creation conversation
+export const createCampaignConversationGuideTool = () => {
+  return new DynamicTool({
+    name: "campaign_conversation_guide",
+    description:
+      "Guides the conversation for campaign creation by analyzing user queries and current campaign context. Input must be a JSON string with conversation history and current campaign data.",
+    func: async (
+      input: string,
+      runManager?: CallbackManagerForToolRun | undefined,
+      config?: RunnableConfig
+    ): Promise<string> => {
+      try {
+        // Parse the JSON input string
+        const {
+          userMessage,
+          conversationHistory,
+          campaignContext,
+        } = JSON.parse(input);
+
+        const model = getDefaultModel({ temperature: 0.5 });
+
+        // Format conversation history for the prompt
+        const historyString = Array.isArray(conversationHistory)
+          ? conversationHistory
+              .map((msg: any) => `${msg.type === "user" ? "User" : "Assistant"}: ${msg.content}`)
+              .join("\n")
+          : "No conversation history available.";
+
+        // Format campaign context
+        const contextString = campaignContext
+          ? Object.entries(campaignContext)
+              .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+              .join("\n")
+          : "No campaign context available.";
+
+        // Get format instructions from Zod schema parser
+        const formatInstructions = campaignConversationGuideParser.getFormatInstructions();
+
+        // Properly escape curly braces in the format instructions
+        const escapedFormatInstructions = formatInstructions
+          .replace(/\{/g, "{{")
+          .replace(/\}/g, "}}");
+
+        // Use template with properly escaped curly braces
+        const promptTemplate = ChatPromptTemplate.fromTemplate(`
+          You are an AI assistant helping a user create an advertising campaign. 
+          Guide the conversation based on the user's message and current campaign context.
+          
+          User's message: "{userMessage}"
+          
+          Conversation History:
+          {historyString}
+          
+          Current Campaign Context:
+          {contextString}
+          
+          ${escapedFormatInstructions}
+          
+          Based on the user's message:
+          1. If they're asking for targeting suggestions, return "suggest_targeting" as actionType
+          2. If they're asking for budget recommendations, return "suggest_budget" as actionType
+          3. If they're asking for ad content ideas, return "suggest_ad_content" as actionType
+          4. If they're asking a general question, return "provide_info" as actionType
+          5. If you need more information, return "ask_question" as actionType
+          
+          Provide helpful, specific guidance for campaign creation.
+        `);
+
+        const chain = promptTemplate.pipe(model).pipe(campaignConversationGuideParser);
+
+        const response = await chain.invoke({
+          userMessage,
+          historyString,
+          contextString,
+        });
+
+        return JSON.stringify(response);
+      } catch (error) {
+        console.error("Error in campaign conversation guide tool:", error);
+        return JSON.stringify({
+          error: "Failed to guide conversation",
+          details: error instanceof Error ? error.message : String(error),
+        });
+      }
+    },
+  });
+};

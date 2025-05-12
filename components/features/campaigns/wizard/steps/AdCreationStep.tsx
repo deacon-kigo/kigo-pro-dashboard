@@ -17,21 +17,36 @@ import {
   SelectItem,
 } from "@/components/atoms/Select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { 
+  Accordion, 
+  AccordionContent, 
+  AccordionItem, 
+  AccordionTrigger 
+} from "@/components/ui/accordion";
+import {
+  Card as ShadcnCard,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { v4 as uuidv4 } from "uuid";
 import {
   Plus,
   X,
   Upload,
   FileImage,
-  Monitor,
-  Smartphone,
-  AlertCircle,
   DollarSign,
-  FileCheck,
-  Edit,
   Trash,
   CheckCircle2,
-  Upload as UploadIcon,
+  Store,
+  Tag,
+  BarChart3,
+  Image,
+  ImagePlus,
+  AlertCircle
 } from "lucide-react";
 
 interface AdCreationStepProps {
@@ -150,9 +165,6 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
     [key: string]: number;
   }>({});
   const [selectedAdId, setSelectedAdId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"new" | "existing">(
-    ads.length > 0 ? "existing" : "new"
-  );
 
   // Set step as valid when mounted (purely presentational mode)
   useEffect(() => {
@@ -323,451 +335,466 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row gap-6">
-        <div className="w-full md:w-7/12">
-          {/* Simple tab navigation */}
-          <div className="border-b flex mb-4">
-            <button
-              className={`px-4 py-2 font-medium text-sm ${
-                activeTab === "new"
-                  ? "border-b-2 border-primary text-primary"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-              onClick={() => setActiveTab("new")}
-            >
-              Create New Ad
-            </button>
-            <button
-              className={`px-4 py-2 font-medium text-sm ${
-                activeTab === "existing"
-                  ? "border-b-2 border-primary text-primary"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-              onClick={() => setActiveTab("existing")}
-              disabled={ads.length === 0}
-            >
-              Existing Ads ({ads.length})
-            </button>
-          </div>
-
-          {/* Tab content for 'new' */}
-          {activeTab === "new" && (
-            <Card className="p-4">
-              <h4 className="font-medium mb-4">New Advertisement</h4>
-
-              {/* Merchant & Offer Selection */}
-              <div className="space-y-4 mb-6">
-                <div>
-                  <Label htmlFor="merchant">Merchant ID*</Label>
-                  <Select
-                    value={currentAd.merchantId}
-                    onValueChange={handleMerchantChange}
-                  >
-                    <SelectTrigger id="merchant" className="mt-1">
-                      <SelectValue placeholder="Select a merchant" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {merchants.map((merchant) => (
-                        <SelectItem key={merchant.id} value={merchant.id}>
-                          {merchant.name} - {merchant.dba}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Select the merchant this ad will represent
-                  </p>
-                </div>
-
-                <div>
-                  <Label htmlFor="offer">Offer*</Label>
-                  <Select
-                    value={currentAd.offerId}
-                    onValueChange={handleOfferChange}
-                    disabled={!currentAd.merchantId}
-                  >
-                    <SelectTrigger id="offer" className="mt-1">
-                      <SelectValue
-                        placeholder={
-                          currentAd.merchantId
-                            ? "Select an offer"
-                            : "Select a merchant first"
-                        }
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filteredOffers.map((offer) => (
-                        <SelectItem key={offer.id} value={offer.id}>
-                          {offer.name} - {offer.shortText}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Select the offer to promote in this ad
-                  </p>
-                </div>
+    <div className="space-y-4">
+      <Tabs defaultValue={ads.length > 0 ? "existing" : "create"} className="w-full">
+        <TabsList className="mb-4 border-b rounded-none bg-transparent p-0 h-auto">
+          <TabsTrigger 
+            value="create" 
+            className="flex items-center py-2 px-4 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Create New Ad
+          </TabsTrigger>
+          <TabsTrigger 
+            value="existing" 
+            className="flex items-center py-2 px-4 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none" 
+            disabled={ads.length === 0}
+          >
+            <CheckCircle2 className="mr-2 h-4 w-4" />
+            My Ads ({ads.length})
+          </TabsTrigger>
+        </TabsList>
+        
+        {/* Create New Ad Tab */}
+        <TabsContent value="create" className="mt-0">
+          <Card className="p-0 shadow-none border-0">
+            <div className="flex items-center justify-between px-0 py-3 flex-shrink-0">
+              <div className="flex items-center">
+                <Plus className="h-5 w-5 mr-2 text-primary" />
+                <h3 className="font-medium">Create a New Advertisement</h3>
               </div>
-
-              {/* Media Type Selection */}
-              <div className="mb-6">
-                <Label className="mb-2 block">Media Type*</Label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {mediaTypes.map((type) => (
-                    <div
-                      key={type.id}
-                      className={`p-3 border rounded-md cursor-pointer transition-all ${
-                        currentAd.mediaType.includes(type.id)
-                          ? "border-primary bg-primary/5"
-                          : "hover:border-muted-foreground"
-                      }`}
-                      onClick={() => toggleMediaType(type.id)}
-                    >
-                      <div className="flex items-start">
-                        <Checkbox
-                          id={`mediaType-${type.id}`}
-                          checked={currentAd.mediaType.includes(type.id)}
-                          className="mt-1 mr-2"
-                        />
-                        <div>
-                          <Label
-                            htmlFor={`mediaType-${type.id}`}
-                            className="font-medium cursor-pointer"
-                          >
-                            {type.label}
-                          </Label>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {type.description}
-                          </p>
-                        </div>
-                      </div>
+            </div>
+            
+            <div className="px-0">
+              <Accordion 
+                type="multiple" 
+                defaultValue={["basic-info"]}
+                className="w-full"
+              >
+                {/* Basic Info Section */}
+                <AccordionItem value="basic-info" className="border rounded-md mb-4">
+                  <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                    <div className="flex items-center">
+                      <Store className="h-4 w-4 mr-2 text-primary" />
+                      <span>Merchant & Offer Details</span>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Performance Parameters */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                <div>
-                  <Label htmlFor="costPerActivation">
-                    Cost Per Activation ($)
-                  </Label>
-                  <div className="relative mt-1">
-                    <DollarSign className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="costPerActivation"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={currentAd.costPerActivation}
-                      onChange={(e) =>
-                        setCurrentAd({
-                          ...currentAd,
-                          costPerActivation: e.target.value,
-                        })
-                      }
-                      className="pl-8"
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Fee when users add offers to wallets
-                  </p>
-                </div>
-
-                <div>
-                  <Label htmlFor="costPerRedemption">
-                    Cost Per Redemption ($)
-                  </Label>
-                  <div className="relative mt-1">
-                    <DollarSign className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="costPerRedemption"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={currentAd.costPerRedemption}
-                      onChange={(e) =>
-                        setCurrentAd({
-                          ...currentAd,
-                          costPerRedemption: e.target.value,
-                        })
-                      }
-                      className="pl-8"
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Fee when offers are redeemed by users
-                  </p>
-                </div>
-              </div>
-
-              <Button onClick={handleAddAd} className="w-full">
-                <Plus className="mr-1 h-4 w-4" />
-                Add Advertisement
-              </Button>
-            </Card>
-          )}
-
-          {/* Tab content for 'existing' */}
-          {activeTab === "existing" && (
-            <Card className="p-4">
-              <h4 className="font-medium mb-4">
-                Created Advertisements ({ads.length})
-              </h4>
-
-              {ads.length === 0 ? (
-                <div className="text-center py-6 border rounded-md bg-muted/20">
-                  <AlertCircle className="mx-auto h-10 w-10 text-muted-foreground mb-2" />
-                  <p>
-                    No ads created yet. Create your first ad to see it here.
-                  </p>
-                </div>
-              ) : (
-                <ScrollArea className="h-[400px] pr-4">
-                  <div className="space-y-3">
-                    {ads.map((ad) => (
-                      <div
-                        key={ad.id}
-                        className={`border rounded-md p-3 cursor-pointer transition-all ${
-                          selectedAdId === ad.id
-                            ? "border-primary bg-primary/5"
-                            : "hover:border-muted-foreground"
-                        }`}
-                        onClick={() => setSelectedAdId(ad.id)}
-                      >
-                        <div className="flex justify-between mb-1">
-                          <div className="font-medium">{ad.merchantName}</div>
-                          <div className="flex space-x-2">
-                            <button
-                              className="text-muted-foreground hover:text-destructive"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (
-                                  confirm(
-                                    "Are you sure you want to delete this ad?"
-                                  )
-                                ) {
-                                  removeAd(ad.id);
-                                  if (selectedAdId === ad.id)
-                                    setSelectedAdId(null);
-                                }
-                              }}
-                            >
-                              <Trash className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </div>
-
-                        <p className="text-sm mb-2">
-                          {getOfferName(ad.offerId)}
-                        </p>
-
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {ad.mediaType.map((type) => (
-                            <Badge
-                              key={type}
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              {mediaTypes.find((t) => t.id === type)?.label ||
-                                type}
-                            </Badge>
-                          ))}
-                        </div>
-
-                        <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                          <div>
-                            Activation: ${ad.costPerActivation.toFixed(2)}
-                          </div>
-                          <div>
-                            Redemption: ${ad.costPerRedemption.toFixed(2)}
-                          </div>
-                        </div>
-
-                        <div className="mt-3 flex justify-between items-center text-xs">
-                          <div>
-                            {ad.mediaAssets.length} media asset
-                            {ad.mediaAssets.length !== 1 ? "s" : ""}
-                          </div>
-                          {ad.mediaAssets.length === 0 && (
-                            <Badge
-                              variant="destructive"
-                              className="text-[10px] py-0"
-                            >
-                              Media Required
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              )}
-            </Card>
-          )}
-        </div>
-
-        {/* Media Upload Section */}
-        <div className="w-full md:w-5/12">
-          <Card className="p-4">
-            <h4 className="font-medium mb-4">Media Assets</h4>
-
-            {!selectedAdId ? (
-              <div className="text-center py-10 border rounded-md bg-muted/20">
-                <FileImage className="mx-auto h-10 w-10 text-muted-foreground mb-2" />
-                <p>Select an ad to upload media assets</p>
-              </div>
-            ) : (
-              <>
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h5 className="font-medium">
-                      {ads.find((ad) => ad.id === selectedAdId)?.merchantName ||
-                        "Ad"}
-                    </h5>
-                    <p className="text-sm text-muted-foreground">
-                      {getOfferName(
-                        ads.find((ad) => ad.id === selectedAdId)?.offerId || ""
-                      )}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Upload Zone */}
-                <div
-                  className={`border-2 border-dashed rounded-md p-6 text-center transition-colors ${
-                    isDragging ? "border-primary bg-primary/5" : "border-muted"
-                  }`}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    setIsDragging(true);
-                  }}
-                  onDragLeave={() => setIsDragging(false)}
-                  onDrop={(e) => handleFileDrop(selectedAdId, e)}
-                >
-                  <div className="flex flex-col items-center">
-                    <UploadIcon className="h-10 w-10 text-muted-foreground mb-2" />
-                    <h3 className="font-medium mb-1">
-                      Drop files here or click to upload
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      PNG, JPG, GIF, SVG or MP4 (max. 10MB)
-                    </p>
-                    <input
-                      type="file"
-                      id="fileUpload"
-                      className="hidden"
-                      accept="image/*,video/*"
-                      multiple
-                      onChange={(e) => handleFileSelect(selectedAdId, e)}
-                    />
-                    <Button
-                      variant="outline"
-                      onClick={() =>
-                        document.getElementById("fileUpload")?.click()
-                      }
-                    >
-                      <Upload className="mr-1 h-4 w-4" />
-                      Select Files
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Media Assets List */}
-                <div className="mt-4">
-                  <h5 className="font-medium mb-2">Uploaded Assets</h5>
-
-                  {/* Show uploads in progress */}
-                  {Object.entries(uploadProgress).map(([mediaId, progress]) => {
-                    if (progress < 100) {
-                      return (
-                        <div
-                          key={mediaId}
-                          className="border rounded-md p-2 mb-2"
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pb-4">
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="merchant">Merchant*</Label>
+                        <Select
+                          value={currentAd.merchantId}
+                          onValueChange={handleMerchantChange}
                         >
-                          <div className="flex justify-between items-center mb-1">
-                            <div className="text-sm font-medium">
-                              Uploading...
-                            </div>
-                            <div className="text-xs">{progress}%</div>
-                          </div>
-                          <div className="w-full bg-muted h-1 rounded-full overflow-hidden">
-                            <div
-                              className="bg-primary h-1"
-                              style={{ width: `${progress}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      );
-                    }
-                    return null;
-                  })}
+                          <SelectTrigger id="merchant" className="mt-1">
+                            <SelectValue placeholder="Select a merchant" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {merchants.map((merchant) => (
+                              <SelectItem key={merchant.id} value={merchant.id}>
+                                {merchant.name} - {merchant.dba}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          The merchant this ad will represent
+                        </p>
+                      </div>
 
-                  {/* Show uploaded assets */}
-                  {selectedAdId && (
-                    <div className="space-y-2 mt-3">
-                      {ads.find((ad) => ad.id === selectedAdId)?.mediaAssets
-                        .length === 0 ? (
-                        <div className="text-center py-4 border rounded-md bg-muted/10">
-                          <p className="text-sm text-muted-foreground">
-                            No assets uploaded yet
-                          </p>
-                        </div>
-                      ) : (
-                        ads
-                          .find((ad) => ad.id === selectedAdId)
-                          ?.mediaAssets.map((media) => (
-                            <div
-                              key={media.id}
-                              className="border rounded-md p-2 flex items-center"
-                            >
-                              <div className="w-12 h-12 bg-muted rounded mr-3 overflow-hidden flex-shrink-0">
-                                {media.type.startsWith("image/") ? (
-                                  <img
-                                    src={media.previewUrl}
-                                    alt={media.name}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center">
-                                    <FileImage className="h-6 w-6 text-muted-foreground" />
-                                  </div>
-                                )}
-                              </div>
-                              <div className="flex-grow">
-                                <div className="font-medium text-sm truncate">
-                                  {media.name}
-                                </div>
-                                <div className="flex items-center text-xs text-muted-foreground">
-                                  <span>{formatFileSize(media.size)}</span>
-                                  {media.dimensions && (
-                                    <span className="ml-2">
-                                      {media.dimensions.width} ×{" "}
-                                      {media.dimensions.height} px
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                              <button
-                                className="ml-2 text-muted-foreground hover:text-destructive"
-                                onClick={() =>
-                                  removeMediaFromAd(selectedAdId, media.id)
-                                }
-                              >
-                                <X className="h-4 w-4" />
-                              </button>
-                            </div>
-                          ))
-                      )}
+                      <div>
+                        <Label htmlFor="offer">Offer*</Label>
+                        <Select
+                          value={currentAd.offerId}
+                          onValueChange={handleOfferChange}
+                          disabled={!currentAd.merchantId}
+                        >
+                          <SelectTrigger id="offer" className="mt-1">
+                            <SelectValue
+                              placeholder={
+                                currentAd.merchantId
+                                  ? "Select an offer"
+                                  : "Select a merchant first"
+                              }
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {filteredOffers.map((offer) => (
+                              <SelectItem key={offer.id} value={offer.id}>
+                                {offer.name} - {offer.shortText}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          The offer to promote in this ad
+                        </p>
+                      </div>
                     </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                {/* Media Types Section */}
+                <AccordionItem value="media-types" className="border rounded-md mb-4">
+                  <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                    <div className="flex items-center">
+                      <Image className="h-4 w-4 mr-2 text-primary" />
+                      <span>Media Types</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pb-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {mediaTypes.map((type) => (
+                        <div
+                          key={type.id}
+                          className={`p-2 border rounded-md cursor-pointer transition-all ${
+                            currentAd.mediaType.includes(type.id)
+                              ? "border-primary bg-primary/5"
+                              : "hover:border-muted-foreground"
+                          }`}
+                          onClick={() => toggleMediaType(type.id)}
+                        >
+                          <div className="flex items-start">
+                            <Checkbox
+                              id={`mediaType-${type.id}`}
+                              checked={currentAd.mediaType.includes(type.id)}
+                              className="mt-1 mr-2"
+                            />
+                            <div>
+                              <Label
+                                htmlFor={`mediaType-${type.id}`}
+                                className="font-medium cursor-pointer text-sm"
+                              >
+                                {type.label}
+                              </Label>
+                              <p className="text-xs text-muted-foreground">
+                                {type.description}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                {/* Performance Metrics Section */}
+                <AccordionItem value="performance" className="border rounded-md">
+                  <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                    <div className="flex items-center">
+                      <BarChart3 className="h-4 w-4 mr-2 text-primary" />
+                      <span>Performance Metrics</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pb-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="costPerActivation">
+                          Cost Per Activation ($)
+                        </Label>
+                        <div className="relative mt-1">
+                          <DollarSign className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="costPerActivation"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={currentAd.costPerActivation}
+                            onChange={(e) =>
+                              setCurrentAd({
+                                ...currentAd,
+                                costPerActivation: e.target.value,
+                              })
+                            }
+                            className="pl-8"
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Fee when users add offers to wallets
+                        </p>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="costPerRedemption">
+                          Cost Per Redemption ($)
+                        </Label>
+                        <div className="relative mt-1">
+                          <DollarSign className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="costPerRedemption"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={currentAd.costPerRedemption}
+                            onChange={(e) =>
+                              setCurrentAd({
+                                ...currentAd,
+                                costPerRedemption: e.target.value,
+                              })
+                            }
+                            className="pl-8"
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Fee when offers are redeemed by users
+                        </p>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+              
+              <div className="mt-4 flex justify-end">
+                <Button 
+                  onClick={handleAddAd} 
+                  disabled={!currentAd.merchantId || !currentAd.offerId || currentAd.mediaType.length === 0}
+                >
+                  <Plus className="mr-1 h-4 w-4" />
+                  Create Advertisement
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </TabsContent>
+        
+        {/* Existing Ads Tab */}
+        <TabsContent value="existing" className="mt-0">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Ad List */}
+            <div className="md:col-span-1">
+              <Card className="p-0 shadow-none border-0">
+                <div className="flex items-center justify-between px-0 py-3 flex-shrink-0">
+                  <div className="flex items-center">
+                    <CheckCircle2 className="h-5 w-5 mr-2 text-primary" />
+                    <h3 className="font-medium">My Advertisements</h3>
+                  </div>
+                </div>
+                
+                <div className="px-0">
+                  <ScrollArea className="h-[420px] pr-3">
+                    {ads.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-[150px] text-center">
+                        <p className="text-muted-foreground mb-2">No advertisements created yet</p>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => {
+                            const createTabButton = document.querySelector('button[data-state="inactive"][value="create"]');
+                            if (createTabButton) {
+                              (createTabButton as HTMLButtonElement).click();
+                            }
+                          }}
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Create Your First Ad
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {ads.map((ad) => (
+                          <div
+                            key={ad.id}
+                            onClick={() => setSelectedAdId(ad.id)}
+                            className={`p-3 border rounded-md cursor-pointer hover:border-primary/50 transition-all ${
+                              selectedAdId === ad.id ? "border-primary bg-primary/5" : ""
+                            }`}
+                          >
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <div className="font-medium">{ad.merchantName}</div>
+                                <div className="text-sm text-muted-foreground truncate max-w-[150px]">
+                                  {getOfferName(ad.offerId)}
+                                </div>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {ad.mediaType.map((type) => (
+                                    <Badge
+                                      key={type}
+                                      variant="outline"
+                                      className="text-xs"
+                                    >
+                                      {type}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                              <div>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if(confirm("Are you sure you want to delete this ad?")) {
+                                      removeAd(ad.id);
+                                      if(selectedAdId === ad.id) setSelectedAdId(null);
+                                    }
+                                  }}
+                                  className="text-muted-foreground hover:text-destructive transition-colors p-1 rounded-sm"
+                                >
+                                  <Trash className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </div>
+                            <div className="flex justify-between text-xs text-muted-foreground mt-2">
+                              <div>
+                                ${ad.costPerActivation.toFixed(2)} per activation
+                              </div>
+                              <div className="flex items-center">
+                                <Image className="h-3 w-3 mr-1" />
+                                {ad.mediaAssets.length}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </ScrollArea>
+                </div>
+              </Card>
+            </div>
+            
+            {/* Media Assets Panel */}
+            <div className="md:col-span-2">
+              <Card className="p-0 shadow-none border-0">
+                <div className="flex items-center justify-between px-0 py-3 flex-shrink-0">
+                  <div className="flex items-center">
+                    <ImagePlus className="h-5 w-5 mr-2 text-primary" />
+                    <h3 className="font-medium">
+                      {selectedAdId 
+                        ? `Media Assets: ${ads.find(ad => ad.id === selectedAdId)?.merchantName}`
+                        : "Media Assets"}
+                    </h3>
+                  </div>
+                </div>
+                
+                <div className="px-0">
+                  {!selectedAdId ? (
+                    <div className="flex flex-col items-center justify-center h-[200px] text-center border border-dashed rounded-md bg-muted/5">
+                      <FileImage className="h-10 w-10 text-muted-foreground mb-2" />
+                      <p className="text-muted-foreground">Select an ad to upload media assets</p>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Upload Zone */}
+                      <div
+                        className={`border-2 border-dashed rounded-md mb-4 p-4 text-center transition-colors ${
+                          isDragging ? "border-primary bg-primary/5" : "border-muted"
+                        }`}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          setIsDragging(true);
+                        }}
+                        onDragLeave={() => setIsDragging(false)}
+                        onDrop={(e) => handleFileDrop(selectedAdId, e)}
+                      >
+                        <div className="flex flex-col items-center">
+                          <ImagePlus className="h-8 w-8 text-muted-foreground mb-2" />
+                          <p className="text-sm mb-2">Drop files here or click to upload</p>
+                          <input
+                            type="file"
+                            id="fileUpload"
+                            className="hidden"
+                            accept="image/*,video/*"
+                            multiple
+                            onChange={(e) => handleFileSelect(selectedAdId, e)}
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => document.getElementById("fileUpload")?.click()}
+                          >
+                            <Upload className="mr-1 h-4 w-4" />
+                            Select Files
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Media Gallery */}
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-medium">Uploaded Media</h3>
+                        
+                        {/* Upload Progress */}
+                        {Object.entries(uploadProgress).map(([mediaId, progress]) => {
+                          if (progress < 100) {
+                            return (
+                              <div key={mediaId} className="border rounded-md p-2 mb-2">
+                                <div className="flex justify-between items-center mb-1">
+                                  <div className="text-sm font-medium">Uploading...</div>
+                                  <div className="text-xs">{progress}%</div>
+                                </div>
+                                <div className="w-full bg-muted h-1 rounded-full overflow-hidden">
+                                  <div
+                                    className="bg-primary h-1"
+                                    style={{ width: `${progress}%` }}
+                                  ></div>
+                                </div>
+                              </div>
+                            );
+                          }
+                          return null;
+                        })}
+                        
+                        {/* Uploaded Media */}
+                        <ScrollArea className="h-[250px]">
+                          {ads.find(ad => ad.id === selectedAdId)?.mediaAssets.length === 0 ? (
+                            <div className="text-center py-6 text-muted-foreground">
+                              No media assets uploaded yet
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-2 gap-3">
+                              {ads.find(ad => ad.id === selectedAdId)?.mediaAssets.map((media) => (
+                                <div
+                                  key={media.id}
+                                  className="border rounded-md overflow-hidden group relative"
+                                >
+                                  {media.type.startsWith("image/") ? (
+                                    <div className="aspect-video w-full bg-muted relative">
+                                      <img
+                                        src={media.previewUrl}
+                                        alt={media.name}
+                                        className="w-full h-full object-cover"
+                                      />
+                                      <button
+                                        onClick={() => removeMediaFromAd(selectedAdId, media.id)}
+                                        className="absolute top-1 right-1 bg-white/80 hover:bg-white text-red-500 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                      >
+                                        <X className="h-3 w-3" />
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <div className="aspect-video w-full bg-muted flex items-center justify-center">
+                                      <FileImage className="h-8 w-8 text-muted-foreground" />
+                                      <button
+                                        onClick={() => removeMediaFromAd(selectedAdId, media.id)}
+                                        className="absolute top-1 right-1 bg-white/80 hover:bg-white text-red-500 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                      >
+                                        <X className="h-3 w-3" />
+                                      </button>
+                                    </div>
+                                  )}
+                                  <div className="p-2 text-xs">
+                                    <div className="truncate font-medium">{media.name}</div>
+                                    <div className="text-muted-foreground mt-1 flex justify-between">
+                                      <span>{formatFileSize(media.size)}</span>
+                                      {media.dimensions && (
+                                        <span>
+                                          {media.dimensions.width} × {media.dimensions.height}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </ScrollArea>
+                      </div>
+                    </>
                   )}
                 </div>
-              </>
-            )}
-          </Card>
-        </div>
-      </div>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

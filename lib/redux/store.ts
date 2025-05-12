@@ -13,6 +13,7 @@ import campaignReducer from "./slices/campaignSlice";
 import { useDispatch } from "react-redux";
 import { ActionWithType } from "../../types/redux";
 import aiAssistantMiddleware from "./middleware/ai-assistantMiddleware";
+import campaignAssistantMiddleware from "./middleware/campaign-assistantMiddleware";
 import { ProductFilterState } from "./slices/productFilterSlice";
 
 // Simple flag to disable all middleware logging if needed
@@ -80,7 +81,11 @@ export function makeStore() {
             "campaign.formData.basicInfo.endDate",
           ],
         },
-      }).concat([demoActionLoggerMiddleware, aiAssistantMiddleware]),
+      }).concat([
+        demoActionLoggerMiddleware, 
+        aiAssistantMiddleware,
+        campaignAssistantMiddleware
+      ]),
     // Enable Redux DevTools in development
     devTools: process.env.NODE_ENV !== "production",
   });

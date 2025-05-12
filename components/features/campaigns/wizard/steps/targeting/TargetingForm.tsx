@@ -7,22 +7,12 @@ import { DatePicker } from "@/components/molecules/DatePicker/DatePicker";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { formatDate } from "@/lib/helpers/formatDate";
 import { LocationPicker } from "@/components/molecules/LocationPicker/LocationPicker";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/atoms/Select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/atoms/Select";
 
 interface TargetingFormProps {
   formData: CampaignTargeting;
   updateTargeting: (data: Partial<CampaignTargeting>) => void;
-  addLocation: (location: {
-    id: string;
-    type: "state" | "msa" | "zipcode";
-    value: string;
-  }) => void;
+  addLocation: (location: { id: string; type: "state" | "msa" | "zipcode"; value: string; }) => void;
   removeLocation: (id: string) => void;
 }
 
@@ -108,8 +98,7 @@ const TargetingForm: React.FC<TargetingFormProps> = ({
               type="button"
               onClick={() => updateTargeting({ gender: ["male", "female"] })}
               className={`px-3 py-1.5 text-sm rounded-md border ${
-                formData.gender.includes("male") &&
-                formData.gender.includes("female")
+                formData.gender.includes("male") && formData.gender.includes("female")
                   ? "bg-primary text-white border-primary"
                   : "bg-background border-input"
               }`}
@@ -120,8 +109,7 @@ const TargetingForm: React.FC<TargetingFormProps> = ({
               type="button"
               onClick={() => updateTargeting({ gender: ["male"] })}
               className={`px-3 py-1.5 text-sm rounded-md border ${
-                formData.gender.includes("male") &&
-                !formData.gender.includes("female")
+                formData.gender.includes("male") && !formData.gender.includes("female")
                   ? "bg-primary text-white border-primary"
                   : "bg-background border-input"
               }`}
@@ -132,8 +120,7 @@ const TargetingForm: React.FC<TargetingFormProps> = ({
               type="button"
               onClick={() => updateTargeting({ gender: ["female"] })}
               className={`px-3 py-1.5 text-sm rounded-md border ${
-                formData.gender.includes("female") &&
-                !formData.gender.includes("male")
+                formData.gender.includes("female") && !formData.gender.includes("male")
                   ? "bg-primary text-white border-primary"
                   : "bg-background border-input"
               }`}
@@ -150,11 +137,7 @@ const TargetingForm: React.FC<TargetingFormProps> = ({
           <Label>Campaign Weight*</Label>
           <Select
             value={formData.campaignWeight}
-            onValueChange={(value) =>
-              updateTargeting({
-                campaignWeight: value as "small" | "medium" | "large",
-              })
-            }
+            onValueChange={(value) => updateTargeting({ campaignWeight: value as "small" | "medium" | "large" })}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select campaign weight" />
@@ -174,4 +157,4 @@ const TargetingForm: React.FC<TargetingFormProps> = ({
   );
 };
 
-export default TargetingForm;
+export default TargetingForm; 

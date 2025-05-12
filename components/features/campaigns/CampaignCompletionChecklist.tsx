@@ -74,7 +74,7 @@ export function CampaignCompletionChecklist({
       </div>
 
       <div className="space-y-2">
-        {/* Basic Info Step */}
+        {/* Campaign Information Step */}
         <div className="flex flex-col">
           <div className="flex items-center">
             <div
@@ -141,19 +141,19 @@ export function CampaignCompletionChecklist({
           )}
         </div>
 
-        {/* Campaign Settings Step (combines targeting, distribution, budget) */}
+        {/* Ad Creation Step */}
         <div className="flex flex-col">
           <div className="flex items-center">
             <div
               className={`h-5 w-5 rounded-full ${
-                stepValidation["campaign-settings"]
+                formData.ads.length > 0
                   ? "bg-green-100"
                   : currentStep === 1
                     ? "bg-blue-100"
                     : "bg-gray-100"
               } flex items-center justify-center mr-2`}
             >
-              {stepValidation["campaign-settings"] ? (
+              {formData.ads.length > 0 ? (
                 <svg
                   className="h-3 w-3 text-green-600"
                   viewBox="0 0 24 24"
@@ -191,51 +191,39 @@ export function CampaignCompletionChecklist({
               className={`text-xs ${
                 currentStep === 1
                   ? "text-blue-700 font-medium"
-                  : stepValidation["campaign-settings"]
+                  : formData.ads.length > 0
                     ? ""
                     : "text-gray-500"
               }`}
             >
-              Campaign settings
+              Ad creation
             </span>
           </div>
-          {/* Data tags for campaign settings */}
-          {stepValidation["campaign-settings"] && (
+          {/* Data tags for ads */}
+          {formData.ads.length > 0 && (
             <div className="ml-7 mt-1 flex flex-wrap gap-1">
-              {/* Targeting data */}
-              {renderDataTag(formData.targeting.startDate, "Start")}
-              {renderDataTag(formData.targeting.endDate, "End")}
-              {renderDataTag(formData.targeting.locations, "Locations")}
-              {renderDataTag(formData.targeting.campaignWeight, "Weight")}
-
-              {/* Distribution data */}
-              {renderDataTag(formData.distribution.channels, "Channels")}
-              {renderDataTag(formData.distribution.programs, "Programs")}
-
-              {/* Budget data */}
-              {renderDataTag(`$${formData.budget.maxBudget}`, "Budget")}
-              {formData.budget.estimatedReach && (
-                <Badge variant="outline" className="text-xs">
-                  Reach: {formData.budget.estimatedReach.toLocaleString()}
+              {formData.ads.map((ad, index) => (
+                <Badge key={ad.id} variant="outline" className="text-xs">
+                  Ad #{index + 1}: {truncateText(ad.merchantName, 10)}
                 </Badge>
-              )}
+              ))}
             </div>
           )}
         </div>
 
-        {/* Ad Creation Step */}
+        {/* Target, Distribution & Budget Step */}
         <div className="flex flex-col">
           <div className="flex items-center">
             <div
               className={`h-5 w-5 rounded-full ${
-                stepValidation["ad-creation"] && formData.ads.length > 0
+                stepValidation["targeting-distribution-budget"]
                   ? "bg-green-100"
                   : currentStep === 2
                     ? "bg-blue-100"
                     : "bg-gray-100"
               } flex items-center justify-center mr-2`}
             >
-              {stepValidation["ad-creation"] && formData.ads.length > 0 ? (
+              {stepValidation["targeting-distribution-budget"] ? (
                 <svg
                   className="h-3 w-3 text-green-600"
                   viewBox="0 0 24 24"
@@ -273,22 +261,27 @@ export function CampaignCompletionChecklist({
               className={`text-xs ${
                 currentStep === 2
                   ? "text-blue-700 font-medium"
-                  : stepValidation["ad-creation"] && formData.ads.length > 0
+                  : stepValidation["targeting-distribution-budget"]
                     ? ""
                     : "text-gray-500"
               }`}
             >
-              Ad creation
+              Target & Budget
             </span>
           </div>
-          {/* Data tags for ads */}
-          {formData.ads.length > 0 && (
+          {/* Data tags for targeting, distribution, budget */}
+          {stepValidation["targeting-distribution-budget"] && (
             <div className="ml-7 mt-1 flex flex-wrap gap-1">
-              {formData.ads.map((ad, index) => (
-                <Badge key={ad.id} variant="outline" className="text-xs">
-                  Ad #{index + 1}: {truncateText(ad.merchantName, 10)}
-                </Badge>
-              ))}
+              {/* Targeting */}
+              {renderDataTag(formData.targeting.locations, "Locations")}
+              {renderDataTag(formData.targeting.campaignWeight, "Weight")}
+              
+              {/* Distribution */}
+              {renderDataTag(formData.distribution.channels, "Channels")}
+              {renderDataTag(formData.distribution.programs, "Programs")}
+              
+              {/* Budget */}
+              {renderDataTag(`$${formData.budget.maxBudget}`, "Budget")}
             </div>
           )}
         </div>

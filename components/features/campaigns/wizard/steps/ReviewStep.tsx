@@ -3,6 +3,8 @@
 import React from "react";
 import { format } from "date-fns";
 import { Badge } from "@/components/atoms/Badge";
+import Card from "@/components/atoms/Card/Card";
+import { Button } from "@/components/atoms/Button";
 import {
   XIcon,
   CheckIcon,
@@ -12,9 +14,12 @@ import {
   ShareIcon,
   ImageIcon,
   ShoppingBagIcon,
+  AlertCircle,
+  Plus,
+  CheckCircle2,
+  Rocket,
 } from "lucide-react";
 import { CampaignState } from "@/lib/redux/slices/campaignSlice";
-import Card from "@/components/atoms/Card/Card";
 
 interface ReviewStepProps {
   formData: CampaignState["formData"];
@@ -36,6 +41,82 @@ const safeAccess = <T,>(obj: any, path: string, defaultValue: T): T => {
     console.warn(`Error accessing path: ${path}`, e);
     return defaultValue;
   }
+};
+
+// Create the SectionCard component for use in the review section
+interface SectionCardProps {
+  title: string;
+  description: string;
+  editLink: number;
+  children: React.ReactNode;
+}
+
+const SectionCard: React.FC<SectionCardProps> = ({ 
+  title, 
+  description, 
+  editLink, 
+  children 
+}) => {
+  return (
+    <Card className="p-4 space-y-3">
+      <div className="flex justify-between items-center">
+        <div>
+          <h4 className="font-medium">{title}</h4>
+          <p className="text-sm text-muted-foreground">{description}</p>
+        </div>
+        <Button variant="ghost" size="sm" className="text-xs">
+          Edit
+        </Button>
+      </div>
+      {children}
+    </Card>
+  );
+};
+
+// Mock offers data for getOfferName
+const offers = [
+  {
+    id: "o1",
+    merchantId: "m1",
+    name: "30% off select vitamins",
+    shortText: "Vitamins Sale",
+  },
+  {
+    id: "o2",
+    merchantId: "m1",
+    name: "Buy 1 Get 1 on cough & cold",
+    shortText: "Cold Medicine",
+  },
+  {
+    id: "o3",
+    merchantId: "m2",
+    name: "$5 off $25 grocery purchase",
+    shortText: "Grocery Deal",
+  },
+  {
+    id: "o4",
+    merchantId: "m3",
+    name: "15% off laptops",
+    shortText: "Laptop Discount",
+  },
+  {
+    id: "o5",
+    merchantId: "m4",
+    name: "$10 off monthly bill",
+    shortText: "Bill Credit",
+  },
+  {
+    id: "o6",
+    merchantId: "m5",
+    name: "Free guacamole with entrée",
+    shortText: "Free Guac",
+  },
+];
+
+// Helper function to get offer name by ID
+const getOfferName = (offerId: string, offersList: any[] = offers): string => {
+  const offer = offersList.find((o) => o.id === offerId);
+  return offer ? `${offer.name} (${offer.shortText})` : offerId;
 };
 
 const ReviewStep: React.FC<ReviewStepProps> = ({ formData }) => {
@@ -99,288 +180,219 @@ const ReviewStep: React.FC<ReviewStepProps> = ({ formData }) => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Basic Information */}
-        <div className="border rounded-md p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <CalendarIcon className="w-5 h-5 text-primary" />
-            <h4 className="font-medium">Basic Information</h4>
+      {/* Campaign Information */}
+      <SectionCard
+        title="Campaign Information"
+        description="Basic details about your campaign"
+        editLink={0} // Step index for campaign information
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <h5 className="text-sm font-medium">Campaign Name</h5>
+            <p className="text-sm text-muted-foreground mt-1">
+              {formData.basicInfo.name || "Not specified"}
+            </p>
           </div>
-
-          <div className="grid grid-cols-3 gap-2 text-sm">
-            <span className="text-muted-foreground">Name:</span>
-            <span className="col-span-2 font-medium">
-              {safeAccess<string>(data, "basicInfo.name", "Untitled Campaign")}
-            </span>
-
-            <span className="text-muted-foreground">Type:</span>
-            <span className="col-span-2">
-              {safeAccess<string>(
-                data,
-                "basicInfo.campaignType",
-                "Advertising"
-              )}
-            </span>
-
-            <span className="text-muted-foreground">Description:</span>
-            <span className="col-span-2">
-              {safeAccess<string>(
-                data,
-                "basicInfo.description",
-                "No description"
-              )}
-            </span>
-
-            <span className="text-muted-foreground">Start Date:</span>
-            <span className="col-span-2">{startDate}</span>
-
-            <span className="text-muted-foreground">End Date:</span>
-            <span className="col-span-2">{endDate}</span>
+          <div>
+            <h5 className="text-sm font-medium">Campaign Type</h5>
+            <p className="text-sm text-muted-foreground mt-1">
+              {formData.basicInfo.campaignType || "Advertising"}
+            </p>
+          </div>
+          <div className="md:col-span-2">
+            <h5 className="text-sm font-medium">Description</h5>
+            <p className="text-sm text-muted-foreground mt-1">
+              {formData.basicInfo.description || "No description provided"}
+            </p>
           </div>
         </div>
+      </SectionCard>
 
-        {/* Targeting Information */}
-        <div className="border rounded-md p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <UsersIcon className="w-5 h-5 text-primary" />
-            <h4 className="font-medium">Targeting</h4>
+      {/* Advertisements */}
+      <SectionCard
+        title="Advertisements"
+        description="Ads created for this campaign"
+        editLink={1} // Step index for ad creation
+      >
+        {formData.ads.length > 0 ? (
+          <div className="space-y-4">
+            {formData.ads.map((ad, index) => (
+              <div key={ad.id} className="border rounded-md p-3">
+                <div className="flex justify-between">
+                  <h5 className="font-medium">
+                    Ad #{index + 1}: {ad.merchantName}
+                  </h5>
+                  <Badge variant="outline">
+                    {ad.mediaAssets.length} media assets
+                  </Badge>
+                </div>
+                <p className="text-sm mt-1">
+                  {getOfferName(ad.offerId, offers)}
+                </p>
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {ad.mediaType.map((type) => (
+                    <Badge key={type} variant="outline" className="text-xs">
+                      {type}
+                    </Badge>
+                  ))}
+                </div>
+                <div className="mt-3 text-xs text-muted-foreground flex justify-between">
+                  <span>Cost per activation: ${ad.costPerActivation}</span>
+                  <span>Cost per redemption: ${ad.costPerRedemption}</span>
+                </div>
+              </div>
+            ))}
           </div>
+        ) : (
+          <div className="flex items-center justify-center py-8 border rounded-md">
+            <div className="text-center">
+              <AlertCircle className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+              <p className="text-muted-foreground">No advertisements created</p>
+              <Button variant="outline" size="sm" className="mt-2">
+                <Plus className="mr-1 h-4 w-4" />
+                Add Advertisement
+              </Button>
+            </div>
+          </div>
+        )}
+      </SectionCard>
 
-          <div className="space-y-3 text-sm">
-            <div>
-              <span className="text-muted-foreground">Locations:</span>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {safeAccess<any[]>(data, "targeting.locations", []).length >
-                0 ? (
-                  safeAccess<any[]>(data, "targeting.locations", []).map(
-                    (loc) => (
+      {/* Target & Budget */}
+      <SectionCard 
+        title="Target & Budget" 
+        description="Target audience, distribution, and budget settings"
+        editLink={2} // Step index for targeting, distribution, budget
+      >
+        <div className="space-y-4">
+          {/* Targeting */}
+          <div>
+            <h5 className="font-medium">Target Audience</h5>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+              <div>
+                <h6 className="text-sm font-medium">Campaign Weight</h6>
+                <p className="text-sm text-muted-foreground">
+                  {formData.targeting.campaignWeight === "small"
+                    ? "Small - Lower budget, focused reach"
+                    : formData.targeting.campaignWeight === "medium"
+                    ? "Medium - Balanced budget and reach"
+                    : "Large - Higher budget, expanded reach"}
+                </p>
+              </div>
+              <div>
+                <h6 className="text-sm font-medium">Demographics</h6>
+                <p className="text-sm text-muted-foreground">
+                  {formData.targeting.gender.length > 0
+                    ? `Gender: ${formData.targeting.gender.join(", ")}`
+                    : "No gender targeting"}
+                  {formData.targeting.ageRange
+                    ? `, Age: ${formData.targeting.ageRange[0]}-${
+                        formData.targeting.ageRange[1]
+                      }`
+                    : ", No age targeting"}
+                </p>
+              </div>
+              <div className="md:col-span-2">
+                <h6 className="text-sm font-medium">Locations</h6>
+                {formData.targeting.locations.length > 0 ? (
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {formData.targeting.locations.map((loc) => (
                       <Badge
                         key={loc.id}
-                        variant="secondary"
+                        variant="outline"
                         className="text-xs"
                       >
                         {loc.type === "state"
                           ? "State"
                           : loc.type === "msa"
-                            ? "MSA"
-                            : "ZIP"}
+                          ? "MSA"
+                          : "ZIP"}
                         : {loc.value}
                       </Badge>
-                    )
-                  )
+                    ))}
+                  </div>
                 ) : (
-                  <span className="text-gray-500">None specified</span>
+                  <p className="text-sm text-muted-foreground">
+                    No locations specified
+                  </p>
                 )}
               </div>
             </div>
+          </div>
 
-            <div>
-              <span className="text-muted-foreground">Gender:</span>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {safeAccess<any[]>(data, "targeting.gender", []).length > 0 ? (
-                  safeAccess<any[]>(data, "targeting.gender", []).map((g) => (
-                    <Badge key={g} variant="secondary" className="text-xs">
-                      {g.charAt(0).toUpperCase() + g.slice(1)}
+          {/* Distribution */}
+          <div className="border-t pt-4 mt-4">
+            <h5 className="font-medium">Distribution</h5>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+              <div>
+                <h6 className="text-sm font-medium">Channels</h6>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {formData.distribution.channels.map((channel) => (
+                    <Badge key={channel} variant="outline" className="text-xs">
+                      {channel}
                     </Badge>
-                  ))
-                ) : (
-                  <span className="text-gray-500">All genders</span>
-                )}
+                  ))}
+                </div>
               </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              <span className="text-muted-foreground">Campaign Weight:</span>
-              <span className="col-span-2 capitalize">
-                {safeAccess<string>(data, "targeting.campaignWeight", "medium")}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Distribution Information */}
-        <div className="border rounded-md p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <ShareIcon className="w-5 h-5 text-primary" />
-            <h4 className="font-medium">Distribution</h4>
-          </div>
-
-          <div className="space-y-3 text-sm">
-            <div>
-              <span className="text-muted-foreground">Channels:</span>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {safeAccess<any[]>(data, "distribution.channels", []).length >
-                0 ? (
-                  safeAccess<any[]>(data, "distribution.channels", []).map(
-                    (channel) => (
-                      <Badge
-                        key={channel}
-                        variant="secondary"
-                        className="text-xs"
-                      >
-                        {channel.charAt(0).toUpperCase() + channel.slice(1)}
-                      </Badge>
-                    )
-                  )
-                ) : (
-                  <span className="text-gray-500">None specified</span>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <span className="text-muted-foreground">Programs:</span>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {safeAccess<any[]>(data, "distribution.programs", []).length >
-                0 ? (
-                  safeAccess<any[]>(data, "distribution.programs", []).map(
-                    (program) => (
+              <div>
+                <h6 className="text-sm font-medium">Programs</h6>
+                {formData.distribution.programs.length > 0 ? (
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {formData.distribution.programs.map((program) => (
                       <Badge
                         key={program}
-                        variant="secondary"
+                        variant="outline"
                         className="text-xs"
                       >
-                        {program.charAt(0).toUpperCase() + program.slice(1)}
+                        {program}
                       </Badge>
-                    )
-                  )
+                    ))}
+                  </div>
                 ) : (
-                  <span className="text-gray-500">None specified</span>
+                  <p className="text-sm text-muted-foreground">
+                    No programs selected
+                  </p>
                 )}
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Ads Information */}
-        <div className="border rounded-md p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <ImageIcon className="w-5 h-5 text-primary" />
-            <h4 className="font-medium">Advertisements</h4>
-          </div>
-
-          <div className="space-y-3 text-sm">
-            {safeAccess<any[]>(data, "ads", []).length > 0 ? (
-              safeAccess<any[]>(data, "ads", []).map((ad, index) => (
-                <Card key={ad.id} className="p-3 border">
-                  <div className="flex justify-between">
-                    <div className="font-medium">
-                      Ad #{index + 1}: {ad.merchantName}
-                    </div>
-                    <Badge variant="outline">
-                      {safeAccess<any[]>(ad, "mediaAssets", []).length} asset
-                      {safeAccess<any[]>(ad, "mediaAssets", []).length !== 1
-                        ? "s"
-                        : ""}
-                    </Badge>
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    <div>
-                      Media Types:{" "}
-                      {safeAccess<any[]>(ad, "mediaType", []).join(", ") ||
-                        "None"}
-                    </div>
-                    <div className="mt-1">
-                      Activation: $
-                      {safeAccess<number>(ad, "costPerActivation", 0).toFixed(
-                        2
-                      )}{" "}
-                      | Redemption: $
-                      {safeAccess<number>(ad, "costPerRedemption", 0).toFixed(
-                        2
-                      )}
-                    </div>
-                  </div>
-                </Card>
-              ))
-            ) : (
-              <div className="py-2 text-center text-gray-500">
-                <div className="flex justify-center mb-2">
-                  <ImageIcon className="w-5 h-5 text-muted-foreground" />
-                </div>
-                No advertisements created
+          {/* Budget */}
+          <div className="border-t pt-4 mt-4">
+            <h5 className="font-medium">Budget</h5>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+              <div>
+                <h6 className="text-sm font-medium">Maximum Budget</h6>
+                <p className="text-sm font-bold text-primary">
+                  ${formData.budget.maxBudget.toLocaleString()}
+                </p>
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* Budget Information */}
-        <div className="border rounded-md p-4 space-y-3 md:col-span-2">
-          <div className="flex items-center gap-2">
-            <BanknoteIcon className="w-5 h-5 text-primary" />
-            <h4 className="font-medium">Budget</h4>
-          </div>
-
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-4 text-sm">
-            <div className="col-span-3">
-              <div className="grid grid-cols-3 gap-2">
-                <span className="text-muted-foreground">Maximum Budget:</span>
-                <span className="col-span-2 font-medium">
-                  $
-                  {safeAccess<number>(
-                    data,
-                    "budget.maxBudget",
-                    0
-                  ).toLocaleString()}
-                </span>
-
-                <span className="text-muted-foreground">Estimated Reach:</span>
-                <span className="col-span-2">
-                  {getEstimatedReach()} impressions
-                </span>
-
-                <span className="text-muted-foreground">
-                  Cost Per Impression:
-                </span>
-                <span className="col-span-2">
-                  $
-                  {(
-                    safeAccess<number>(data, "budget.maxBudget", 0) /
-                    (parseInt(getEstimatedReach().replace(/,/g, "")) || 1)
-                  ) // Avoid division by zero
-                    .toFixed(4)}
-                </span>
-              </div>
-            </div>
-
-            <div className="col-span-3">
-              <div className="grid grid-cols-3 gap-2">
-                <span className="text-muted-foreground">Loyalty Programs:</span>
-                <span className="col-span-2">
-                  {safeAccess<any[]>(data, "distribution.programs", []).length}{" "}
-                  selected
-                </span>
-
-                <span className="text-muted-foreground">Advertisements:</span>
-                <span className="col-span-2">
-                  {safeAccess<any[]>(data, "ads", []).length} created
-                </span>
-
-                <span className="text-muted-foreground">
-                  Distribution Channels:
-                </span>
-                <span className="col-span-2">
-                  {safeAccess<any[]>(data, "distribution.channels", []).length}{" "}
-                  selected
-                </span>
+              <div>
+                <h6 className="text-sm font-medium">Estimated Reach</h6>
+                <p className="text-sm text-muted-foreground">
+                  {formData.budget.estimatedReach
+                    ? formData.budget.estimatedReach.toLocaleString() +
+                      " impressions"
+                    : "Not calculated"}
+                </p>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </SectionCard>
 
-      <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-md">
-        <div className="flex items-start">
-          <div className="p-1 rounded-full bg-blue-100 mr-3 mt-0.5">
-            <CheckIcon className="w-4 h-4 text-blue-600" />
-          </div>
-          <div>
-            <h5 className="font-medium text-blue-800">Ready to Launch</h5>
-            <p className="text-sm text-blue-700 mt-1">
-              Your campaign details are complete. Click "Create Campaign" below
-              to launch your campaign.
-            </p>
-          </div>
+      {/* Submit Section */}
+      <div className="border rounded-md p-4">
+        <div className="flex flex-col items-center justify-center text-center">
+          <CheckCircle2 className="h-12 w-12 text-green-500 mb-2" />
+          <h3 className="font-medium text-lg">Ready to Launch</h3>
+          <p className="text-muted-foreground mb-4 max-w-md">
+            Your campaign is ready to be submitted. Click the button below to
+            launch your campaign.
+          </p>
+          <Button size="lg">
+            <Rocket className="mr-2 h-4 w-4" />
+            Launch Campaign
+          </Button>
         </div>
       </div>
     </div>

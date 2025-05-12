@@ -4,18 +4,18 @@ import { createSlice, PayloadAction, createAction } from "@reduxjs/toolkit";
 export const CAMPAIGN_STEPS = [
   {
     id: "basic-info",
-    title: "Basic Information",
+    title: "Campaign Information",
     description: "Enter campaign name and description",
-  },
-  {
-    id: "campaign-settings",
-    title: "Campaign Settings",
-    description: "Configure targeting, distribution, and budget settings",
   },
   {
     id: "ad-creation",
     title: "Ad Creation",
-    description: "Create and manage advertisements for your campaign",
+    description: "Create multiple ads for your campaign",
+  },
+  {
+    id: "targeting-distribution-budget",
+    title: "Target & Budget",
+    description: "Set audience targeting, distribution channels, and budget",
   },
   {
     id: "review",
@@ -121,8 +121,8 @@ const initialState: CampaignState = {
   },
   stepValidation: {
     "basic-info": true,
-    "campaign-settings": true,
     "ad-creation": true,
+    "targeting-distribution-budget": true,
     review: true,
   },
   isGenerating: false,

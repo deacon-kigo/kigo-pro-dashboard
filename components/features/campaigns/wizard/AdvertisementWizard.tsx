@@ -35,10 +35,8 @@ import { v4 as uuidv4 } from "uuid";
 
 // Import step components
 import BasicInfoStep from "./steps/BasicInfoStep";
-import TargetingStep from "./steps/TargetingStep";
-import DistributionStep from "./steps/DistributionStep";
 import AdCreationStep from "./steps/AdCreationStep";
-import BudgetStep from "./steps/BudgetStep";
+import TargetDistributionBudgetStep from "./steps/TargetDistributionBudgetStep";
 import ReviewStep from "./steps/ReviewStep";
 
 const AdvertisementWizard: React.FC = () => {
@@ -162,56 +160,6 @@ const AdvertisementWizard: React.FC = () => {
             }
           />
         );
-      case "campaign-settings":
-        return (
-          <div className="space-y-8">
-            <div>
-              <h3 className="text-lg font-medium mb-4">Targeting</h3>
-              <TargetingStep
-                formData={formData.targeting}
-                updateTargeting={(targeting) =>
-                  dispatch(updateTargeting(targeting))
-                }
-                addLocation={(location) => dispatch(addLocation(location))}
-                removeLocation={(id) => dispatch(removeLocation(id))}
-                setStepValidation={(isValid) =>
-                  dispatch(
-                    setStepValidation({ step: "campaign-settings", isValid })
-                  )
-                }
-              />
-            </div>
-
-            <div>
-              <h3 className="text-lg font-medium mb-4">Distribution</h3>
-              <DistributionStep
-                formData={formData.distribution}
-                updateDistribution={(distribution) =>
-                  dispatch(updateDistribution(distribution))
-                }
-                setStepValidation={(isValid) =>
-                  dispatch(
-                    setStepValidation({ step: "campaign-settings", isValid })
-                  )
-                }
-              />
-            </div>
-
-            <div>
-              <h3 className="text-lg font-medium mb-4">Budget</h3>
-              <BudgetStep
-                formData={formData.budget}
-                updateBudget={(budget) => dispatch(updateBudget(budget))}
-                campaignWeight={formData.targeting.campaignWeight}
-                setStepValidation={(isValid) =>
-                  dispatch(
-                    setStepValidation({ step: "campaign-settings", isValid })
-                  )
-                }
-              />
-            </div>
-          </div>
-        );
       case "ad-creation":
         return (
           <AdCreationStep
@@ -223,6 +171,22 @@ const AdvertisementWizard: React.FC = () => {
             removeMediaFromAd={handleRemoveMediaFromAd}
             setStepValidation={(isValid) =>
               dispatch(setStepValidation({ step: "ad-creation", isValid }))
+            }
+          />
+        );
+      case "targeting-distribution-budget":
+        return (
+          <TargetDistributionBudgetStep
+            targetingData={formData.targeting}
+            distributionData={formData.distribution}
+            budgetData={formData.budget}
+            updateTargeting={(targeting) => dispatch(updateTargeting(targeting))}
+            updateDistribution={(distribution) => dispatch(updateDistribution(distribution))}
+            updateBudget={(budget) => dispatch(updateBudget(budget))}
+            addLocation={(location) => dispatch(addLocation(location))}
+            removeLocation={(id) => dispatch(removeLocation(id))}
+            setStepValidation={(isValid) =>
+              dispatch(setStepValidation({ step: "targeting-distribution-budget", isValid }))
             }
           />
         );
