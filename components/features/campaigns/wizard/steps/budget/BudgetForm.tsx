@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Label } from "@/components/atoms/Label";
 import { Input } from "@/components/atoms/Input";
 import { CampaignBudget } from "@/lib/redux/slices/campaignSlice";
-import { Slider } from "@/components/atoms/Slider";
+import { Slider } from "@/components/ui/slider";
 
 interface BudgetFormProps {
   formData: CampaignBudget;

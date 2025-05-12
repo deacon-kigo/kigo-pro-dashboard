@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Label } from "@/components/atoms/Label";
-import { Checkbox } from "@/components/atoms/Checkbox";
+import { Checkbox } from "@/components/ui/checkbox";
 import { CampaignDistribution } from "@/lib/redux/slices/campaignSlice";
 import { Badge } from "@/components/atoms/Badge";
 
