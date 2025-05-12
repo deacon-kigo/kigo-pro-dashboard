@@ -422,21 +422,22 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
 
       {/* New Ad Creation Flow */}
       {creatingNew && (
-        <Card className="border p-0 overflow-hidden">
-          <div className="bg-muted px-5 py-3 flex justify-between items-center border-b">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          {/* Step Header */}
+          <div className="flex justify-between items-center p-3 border-b bg-muted/20">
             <div className="flex items-center">
               <span className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs mr-2">
                 {creationStep}
               </span>
-              <h3 className="font-medium">
+              <h4 className="text-sm font-medium">
                 {creationStep === 1 ? "Ad Details" : "Upload Media"}
-              </h3>
+              </h4>
             </div>
             <Button 
               variant="ghost" 
               size="sm"
               onClick={cancelCreation}
-              className="text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground h-8 w-8 p-0"
             >
               <X className="h-4 w-4" />
             </Button>
@@ -444,7 +445,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
 
           {/* Step 1: Ad Details */}
           {creationStep === 1 && (
-            <div className="p-5">
+            <div className="p-3">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
@@ -610,7 +611,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
 
           {/* Step 2: Asset Upload */}
           {creationStep === 2 && expandedAdId && (
-            <div className="p-5">
+            <div className="p-3">
               <div className="flex flex-col space-y-4">
                 <div className="bg-muted/20 p-3 rounded-md flex items-center">
                   <img 
@@ -782,7 +783,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
               </div>
             </div>
           )}
-        </Card>
+        </div>
       )}
 
       {/* List of Created Ads */}
@@ -797,7 +798,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
           
           <div className="grid gap-4">
             {ads.map((ad, index) => (
-              <Card key={ad.id} className="overflow-hidden">
+              <div key={ad.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                 <div 
                   className={`flex justify-between items-center p-4 border-b cursor-pointer ${
                     expandedAdId === ad.id ? "bg-muted/10" : ""
@@ -958,7 +959,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                     )}
                   </div>
                 )}
-              </Card>
+              </div>
             ))}
           </div>
         </div>
@@ -966,7 +967,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
 
       {/* Empty State */}
       {ads.length === 0 && !creatingNew && (
-        <div className="flex flex-col items-center justify-center border rounded-lg p-8 text-center">
+        <div className="flex flex-col items-center justify-center bg-white rounded-lg border border-gray-200 p-8 text-center">
           <div className="bg-primary/10 rounded-full p-3 mb-3">
             <ImagePlus className="h-6 w-6 text-primary" />
           </div>
