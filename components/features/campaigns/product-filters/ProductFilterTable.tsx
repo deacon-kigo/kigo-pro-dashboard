@@ -57,19 +57,13 @@ export const ProductFilterTable = memo(function ProductFilterTable({
   const [internalPageSize, setInternalPageSize] = useState(5); // Default page size
 
   // Determine which state to use (external or internal)
-  const currentPage = useMemo(
-    () =>
-      externalCurrentPage !== undefined
-        ? externalCurrentPage
-        : internalCurrentPage,
-    [externalCurrentPage, internalCurrentPage]
-  );
+  const currentPage =
+    externalCurrentPage !== undefined
+      ? externalCurrentPage
+      : internalCurrentPage;
 
-  const pageSize = useMemo(
-    () =>
-      externalPageSize !== undefined ? externalPageSize : internalPageSize,
-    [externalPageSize, internalPageSize]
-  );
+  const pageSize =
+    externalPageSize !== undefined ? externalPageSize : internalPageSize;
 
   // Handle page change - memoize with useCallback
   const handlePageChange = useCallback(
@@ -333,8 +327,9 @@ export const ProductFilterTable = memo(function ProductFilterTable({
     ]
   );
 
-  return (
-    <div className={cn("space-y-4", className)}>
+  // Memoize the final component to render
+  const tableComponent = useMemo(
+    () => (
       <DataTable
         columns={columns}
         data={currentPageData as unknown[]}
@@ -344,6 +339,16 @@ export const ProductFilterTable = memo(function ProductFilterTable({
         onRowSelectionChange={handleRowSelectionChange}
         customPagination={customPagination}
       />
-    </div>
+    ),
+    [
+      columns,
+      currentPageData,
+      className,
+      rowSelection,
+      handleRowSelectionChange,
+      customPagination,
+    ]
   );
+
+  return <div className={cn("space-y-4", className)}>{tableComponent}</div>;
 });

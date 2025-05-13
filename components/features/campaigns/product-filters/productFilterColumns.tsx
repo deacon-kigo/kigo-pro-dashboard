@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo } from "react";
+import React, { memo, useCallback } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/atoms/Button";
 import {
@@ -91,14 +91,14 @@ const ActionMenu = memo(function ActionMenu({
   const isOpen = useSelector((state) => selectDropdownOpen(state, filterId));
 
   // Create stable, memoized handlers using useCallback
-  const handleOpenChange = React.useCallback(
+  const handleOpenChange = useCallback(
     (newOpen: boolean) => {
       dispatch(setDropdownOpen({ id: filterId, isOpen: newOpen }));
     },
     [dispatch, filterId]
   );
 
-  const handleViewOrEdit = React.useCallback(
+  const handleViewOrEdit = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
       console.log(isDraft ? "Edit filter" : "View details", filterId);
@@ -107,7 +107,7 @@ const ActionMenu = memo(function ActionMenu({
     [isDraft, filterId, dispatch]
   );
 
-  const handleDuplicate = React.useCallback(
+  const handleDuplicate = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
       console.log("Duplicate filter", filterId);
@@ -116,7 +116,7 @@ const ActionMenu = memo(function ActionMenu({
     [filterId, dispatch]
   );
 
-  const handleExtendExpiry = React.useCallback(
+  const handleExtendExpiry = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
       console.log("Extend expiry for filter", filterId);
@@ -125,7 +125,7 @@ const ActionMenu = memo(function ActionMenu({
     [filterId, dispatch]
   );
 
-  const handleDelete = React.useCallback(
+  const handleDelete = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
       console.log("Delete filter", filterId);
@@ -135,7 +135,7 @@ const ActionMenu = memo(function ActionMenu({
   );
 
   // Enhanced event handling to prevent propagation
-  const handleContainerClick = React.useCallback((e: React.MouseEvent) => {
+  const handleContainerClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
   }, []);
@@ -239,133 +239,10 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
     cell: ({ row }) => {
       const description = row.getValue("description") as string;
       return (
-        <div className="max-w-[250px] truncate text-left" title={description}>
+        <div className="max-w-[500px] truncate text-left" title={description}>
           {description || "—"}
         </div>
       );
-    },
-  },
-  {
-    accessorKey: "queryView",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
-        >
-          Query View
-          <SortIcon sorted={column.getIsSorted()} />
-        </Button>
-      );
-    },
-    cell: ({ row }) => (
-      <div className="text-left">{row.getValue("queryView") as string}</div>
-    ),
-  },
-  {
-    accessorKey: "createdBy",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
-        >
-          Created By
-          <SortIcon sorted={column.getIsSorted()} />
-        </Button>
-      );
-    },
-    cell: ({ row }) => (
-      <div className="text-left">{row.getValue("createdBy") as string}</div>
-    ),
-  },
-  {
-    accessorKey: "createdDate",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
-        >
-          Created Date
-          <SortIcon sorted={column.getIsSorted()} />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      const dateString = row.getValue("createdDate") as string;
-      return <div className="text-left">{formatDate(dateString)}</div>;
-    },
-    sortingFn: "datetime",
-  },
-  {
-    accessorKey: "expiryDate",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
-        >
-          Expiry Date
-          <SortIcon sorted={column.getIsSorted()} />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      const dateString = row.getValue("expiryDate") as string;
-      return <div className="text-left">{formatDate(dateString)}</div>;
-    },
-    sortingFn: "datetime",
-  },
-  {
-    accessorKey: "criteria",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
-        >
-          Criteria
-          <SortIcon sorted={column.getIsSorted()} />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      const status = row.getValue("status") as string;
-      const criteriaCount = row.original.criteriaCount;
-      const mandatoryCriteriaCount = row.original.mandatoryCriteriaCount;
-      const isDraft = status === "Draft";
-
-      return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center gap-2 cursor-help">
-                {isDraft ? (
-                  <ExclamationTriangleIcon className="h-5 w-5 text-amber-500" />
-                ) : (
-                  <CheckCircleIcon className="h-5 w-5 text-green-500" />
-                )}
-                <span>{criteriaCount} criteria</span>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{mandatoryCriteriaCount}/4 mandatory criteria</p>
-              <p>{criteriaCount - mandatoryCriteriaCount} optional criteria</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      );
-    },
-    sortingFn: (rowA, rowB, columnId) => {
-      const countA = rowA.original.criteriaCount;
-      const countB = rowB.original.criteriaCount;
-      return countA > countB ? 1 : countA < countB ? -1 : 0;
     },
   },
   {

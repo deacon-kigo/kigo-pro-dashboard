@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, memo, useState, useCallback } from "react";
+import React, { useMemo, memo, useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/atoms/Button";
 import {
   PlusIcon,
@@ -19,6 +19,8 @@ import { PageHeader } from "@/components/molecules/PageHeader";
 import { ProductFilterTable, SelectedRows } from "./ProductFilterTable";
 import { ProductFilter, formatDate } from "./productFilterColumns";
 import { ProductFilterSearchBar, SearchField } from "./ProductFilterSearchBar";
+import { useDispatch } from "react-redux";
+import { clearAllDropdowns } from "@/lib/redux/slices/uiSlice";
 
 // Type for pagination state
 interface PaginationState {
@@ -95,9 +97,17 @@ const BulkActions = memo(function BulkActions({
  */
 const ProductFiltersListView = memo(function ProductFiltersListView() {
   const router = useRouter();
+  const dispatch = useDispatch();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("active");
   const [selectedFilters, setSelectedFilters] = useState<SelectedRows>({});
+
+  // Clear dropdowns when component unmounts to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      dispatch(clearAllDropdowns());
+    };
+  }, [dispatch]);
 
   // Tab-specific pagination state
   const [paginationState, setPaginationState] = useState<
@@ -110,11 +120,16 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
   });
 
   // Handle tab change with useCallback
-  const handleTabChange = useCallback((value: string) => {
-    setActiveTab(value);
-    // Clear selections when changing tabs
-    setSelectedFilters({});
-  }, []);
+  const handleTabChange = useCallback(
+    (value: string) => {
+      setActiveTab(value);
+      // Clear selections when changing tabs
+      setSelectedFilters({});
+      // Also clear any open dropdowns
+      dispatch(clearAllDropdowns());
+    },
+    [dispatch]
+  );
 
   // Handle row selection change with useCallback
   const handleRowSelectionChange = useCallback((selection: SelectedRows) => {
@@ -161,18 +176,23 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
   }, [router]);
 
   // Handle search with useCallback
-  const handleSearch = useCallback((query: string, field: SearchField) => {
-    setSearchQuery(query);
-    // Reset to page 1 on all tabs when search query changes
-    setPaginationState((prev) => ({
-      active: { ...prev.active, currentPage: 1 },
-      expired: { ...prev.expired, currentPage: 1 },
-      draft: { ...prev.draft, currentPage: 1 },
-      all: { ...prev.all, currentPage: 1 },
-    }));
-    // Clear selections when searching
-    setSelectedFilters({});
-  }, []);
+  const handleSearch = useCallback(
+    (query: string, field: SearchField) => {
+      setSearchQuery(query);
+      // Reset to page 1 on all tabs when search query changes
+      setPaginationState((prev) => ({
+        active: { ...prev.active, currentPage: 1 },
+        expired: { ...prev.expired, currentPage: 1 },
+        draft: { ...prev.draft, currentPage: 1 },
+        all: { ...prev.all, currentPage: 1 },
+      }));
+      // Clear selections when searching
+      setSelectedFilters({});
+      // Clear any open dropdowns
+      dispatch(clearAllDropdowns());
+    },
+    [dispatch]
+  );
 
   // Bulk action handlers with useCallback
   const handleBulkDuplicate = useCallback(() => {
