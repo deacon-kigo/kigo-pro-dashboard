@@ -12,10 +12,18 @@ import {
   setCurrentStep,
   setStepValidation,
   resetCampaign,
+  setIsGenerating,
+  applyCampaignUpdate,
 } from "@/lib/redux/slices/campaignSlice";
 import StepProgressHeader from "./StepProgressHeader";
 import StepNavigationFooter from "./StepNavigationFooter";
-import { setCampaignContext } from "@/lib/redux/slices/ai-assistantSlice";
+import {
+  setCampaignContext,
+  analyzeCampaignData,
+  generateAdSuggestion,
+  generateTargetingSuggestion,
+  generateBudgetRecommendation,
+} from "@/lib/redux/slices/ai-assistantSlice";
 
 // Import step components (to be created later)
 // import BasicInfoStep from "./steps/BasicInfoStep";
@@ -46,8 +54,56 @@ const CampaignWizard: React.FC = () => {
 
   // Update AI context when form data changes
   useEffect(() => {
-    dispatch(setCampaignContext(formData));
-  }, [dispatch, formData]);
+    dispatch(
+      setCampaignContext({
+        ...formData,
+        currentStep: CAMPAIGN_STEPS[currentStep].id,
+      })
+    );
+  }, [dispatch, formData, currentStep]);
+
+  // Trigger AI suggestions when step changes
+  useEffect(() => {
+    // First time initialization shouldn't trigger suggestions
+    if (currentStep === 0) return;
+
+    const currentStepId = CAMPAIGN_STEPS[currentStep].id;
+
+    // Trigger appropriate suggestions based on current step
+    switch (currentStepId) {
+      case "targeting":
+        // Only suggest if data is empty
+        if (
+          formData.targeting.locations.length === 0 &&
+          !formData.targeting.ageRange
+        ) {
+          dispatch(generateTargetingSuggestion());
+        }
+        break;
+      case "ad-creation":
+        // Only suggest if no ads yet
+        if (formData.ads.length === 0) {
+          dispatch(
+            generateAdSuggestion({
+              targetAudience: formData.targeting.gender.join(", "),
+              campaignGoal: formData.basicInfo.description,
+              productType: formData.basicInfo.campaignType,
+            })
+          );
+        }
+        break;
+      case "budget":
+        // Only suggest if budget is 0
+        if (formData.budget.maxBudget === 0) {
+          dispatch(generateBudgetRecommendation());
+        }
+        break;
+      case "review":
+        // Analyze campaign when reaching review step
+        dispatch(analyzeCampaignData());
+        break;
+    }
+  }, [currentStep, dispatch, formData]);
 
   // Navigation handlers
   const handleStepChange = useCallback(
@@ -85,10 +141,105 @@ const CampaignWizard: React.FC = () => {
   }, [formData]);
 
   // Handle AI assistant suggestions
-  const handleOptionSelected = useCallback((optionId: string) => {
-    console.log("AI option selected:", optionId);
-    // TODO: Implement AI option handling
-  }, []);
+  const handleOptionSelected = useCallback(
+    (optionId: string) => {
+      console.log("AI option selected:", optionId);
+
+      // Handle commands from AI assistant
+      if (optionId.startsWith("apply_updates:")) {
+        dispatch(setIsGenerating(true));
+
+        try {
+          // Extract the JSON payload from the option ID
+          const updatesJson = optionId.replace("apply_updates:", "");
+          const updates = JSON.parse(updatesJson);
+
+          // Dispatch action to update the campaign in Redux store
+          dispatch(
+            applyCampaignUpdate({
+              basicInfo: updates.basicInfo,
+              targeting: updates.targeting,
+              distribution: updates.distribution,
+              budget: updates.budget,
+              ads: updates.ads,
+            })
+          );
+
+          // Navigate to appropriate step if specified
+          if (updates.currentStep !== undefined) {
+            const stepIndex = CAMPAIGN_STEPS.findIndex(
+              (step) => step.id === updates.currentStep
+            );
+            if (stepIndex !== -1) {
+              dispatch(setCurrentStep(stepIndex));
+            }
+          }
+
+          setTimeout(() => {
+            dispatch(setIsGenerating(false));
+          }, 800);
+        } catch (error) {
+          console.error("Error applying updates from AI assistant:", error);
+          dispatch(setIsGenerating(false));
+        }
+      } else if (optionId.startsWith("suggest_targeting:")) {
+        try {
+          const targetingJson = optionId.replace("suggest_targeting:", "");
+          const targetingData = JSON.parse(targetingJson);
+
+          dispatch(
+            applyCampaignUpdate({
+              targeting: targetingData,
+            })
+          );
+        } catch (error) {
+          console.error("Error applying targeting suggestion:", error);
+        }
+      } else if (optionId.startsWith("suggest_budget:")) {
+        try {
+          const budgetJson = optionId.replace("suggest_budget:", "");
+          const budgetData = JSON.parse(budgetJson);
+
+          dispatch(
+            applyCampaignUpdate({
+              budget: budgetData,
+            })
+          );
+        } catch (error) {
+          console.error("Error applying budget suggestion:", error);
+        }
+      } else if (optionId.startsWith("suggest_ad_content:")) {
+        try {
+          const adContentJson = optionId.replace("suggest_ad_content:", "");
+          const adContentData = JSON.parse(adContentJson);
+
+          dispatch(
+            applyCampaignUpdate({
+              ads: adContentData,
+            })
+          );
+        } catch (error) {
+          console.error("Error applying ad content suggestion:", error);
+        }
+      } else if (optionId === "analyze_campaign") {
+        dispatch(analyzeCampaignData());
+      } else if (optionId === "generate_ad_suggestions") {
+        const { name, description } = formData.basicInfo;
+        dispatch(
+          generateAdSuggestion({
+            targetAudience: formData.targeting.gender.join(", "),
+            campaignGoal: description,
+            productType: name,
+          })
+        );
+      } else if (optionId === "generate_targeting_suggestions") {
+        dispatch(generateTargetingSuggestion());
+      } else if (optionId === "generate_budget_recommendations") {
+        dispatch(generateBudgetRecommendation());
+      }
+    },
+    [dispatch, formData]
+  );
 
   // Check if next button should be disabled
   const isNextDisabled = !stepValidation[CAMPAIGN_STEPS[currentStep].id];
