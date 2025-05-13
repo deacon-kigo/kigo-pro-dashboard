@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo, useCallback } from "react";
+import React, { memo, useCallback, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/atoms/Button";
 import {
@@ -27,9 +27,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useDispatch, useSelector } from "react-redux";
-import { setDropdownOpen } from "@/lib/redux/slices/uiSlice";
-import { selectDropdownOpen } from "@/lib/redux/selectors/uiSelectors";
 
 // Define the shape of our data
 export type ProductFilter = {
@@ -78,7 +75,7 @@ const SortIcon = ({ sorted }: { sorted?: "asc" | "desc" | false }) => {
   );
 };
 
-// Memoized ActionMenu component using Redux state instead of local state
+// Memoized ActionMenu component using local state instead of Redux state
 const ActionMenu = memo(function ActionMenu({
   isDraft,
   filterId,
@@ -86,52 +83,44 @@ const ActionMenu = memo(function ActionMenu({
   isDraft: boolean;
   filterId: string;
 }) {
-  // Use Redux for state management
-  const dispatch = useDispatch();
-  const isOpen = useSelector((state) => selectDropdownOpen(state, filterId));
+  // Use local state instead of Redux to prevent infinite update cycles
+  const [isOpen, setIsOpen] = useState(false);
 
   // Create stable, memoized handlers using useCallback
-  const handleOpenChange = useCallback(
-    (newOpen: boolean) => {
-      dispatch(setDropdownOpen({ id: filterId, isOpen: newOpen }));
-    },
-    [dispatch, filterId]
-  );
-
   const handleViewOrEdit = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
       console.log(isDraft ? "Edit filter" : "View details", filterId);
-      dispatch(setDropdownOpen({ id: filterId, isOpen: false }));
+      setIsOpen(false);
     },
-    [isDraft, filterId, dispatch]
+    [isDraft, filterId]
   );
 
   const handleDuplicate = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
       console.log("Duplicate filter", filterId);
-      dispatch(setDropdownOpen({ id: filterId, isOpen: false }));
+      setIsOpen(false);
     },
-    [filterId, dispatch]
+    [filterId]
   );
 
   const handleExtendExpiry = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
       console.log("Extend expiry for filter", filterId);
-      dispatch(setDropdownOpen({ id: filterId, isOpen: false }));
+      setIsOpen(false);
     },
-    [filterId, dispatch]
+    [filterId]
   );
 
   const handleDelete = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
       console.log("Delete filter", filterId);
-      dispatch(setDropdownOpen({ id: filterId, isOpen: false }));
+      setIsOpen(false);
     },
-    [filterId, dispatch]
+    [filterId]
   );
 
   // Enhanced event handling to prevent propagation
@@ -140,29 +129,25 @@ const ActionMenu = memo(function ActionMenu({
     e.preventDefault();
   }, []);
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+  const handleTriggerClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
   }, []);
 
   return (
-    <div
-      onClick={handleContainerClick}
-      onMouseDown={handleMouseDown}
-      data-state={isOpen ? "open" : "closed"}
-    >
-      <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
+    <div onClick={handleContainerClick} data-state={isOpen ? "open" : "closed"}>
+      <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
             size="sm"
             className="h-8 w-8 p-0"
-            onClick={(e) => e.stopPropagation()}
+            onClick={handleTriggerClick}
           >
             <span className="sr-only">Open menu</span>
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" forceMount>
+        <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuItem onClick={handleViewOrEdit}>
             {isDraft ? "Edit filter" : "View details"}
@@ -329,7 +314,7 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
       const isDraft = status === "Draft";
       const filterId = row.original.id;
 
-      // No need for useMemo here anymore since the state is managed in Redux
+      // No need for useMemo here anymore since the state is managed in local state
       return (
         <ActionMenu
           key={`action-${filterId}`}
