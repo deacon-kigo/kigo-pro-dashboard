@@ -35,16 +35,10 @@ interface PaginationState {
  */
 const BulkActions = memo(function BulkActions({
   selectedCount,
-  onDuplicate,
   onDelete,
-  onExtendExpiry,
-  hasActiveFilters,
 }: {
   selectedCount: number;
-  onDuplicate: () => void;
   onDelete: () => void;
-  onExtendExpiry: () => void;
-  hasActiveFilters: boolean;
 }) {
   if (selectedCount === 0) return null;
 
@@ -54,26 +48,6 @@ const BulkActions = memo(function BulkActions({
         {selectedCount} {selectedCount === 1 ? "filter" : "filters"} selected
       </span>
       <div className="flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex items-center gap-1"
-          onClick={onDuplicate}
-        >
-          <DocumentDuplicateIcon className="h-4 w-4" />
-          Duplicate
-        </Button>
-        {hasActiveFilters && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-1"
-            onClick={onExtendExpiry}
-          >
-            <CalendarIcon className="h-4 w-4" />
-            Extend Expiry
-          </Button>
-        )}
         <Button
           variant="outline"
           size="sm"
@@ -766,21 +740,9 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
     if (selectedCount === 0) return null;
 
     return (
-      <BulkActions
-        selectedCount={selectedCount}
-        onDuplicate={handleBulkDuplicate}
-        onDelete={handleBulkDelete}
-        onExtendExpiry={handleBulkExtendExpiry}
-        hasActiveFilters={hasSelectedActiveFilters}
-      />
+      <BulkActions selectedCount={selectedCount} onDelete={handleBulkDelete} />
     );
-  }, [
-    selectedCount,
-    handleBulkDuplicate,
-    handleBulkDelete,
-    handleBulkExtendExpiry,
-    hasSelectedActiveFilters,
-  ]);
+  }, [selectedCount, handleBulkDelete]);
 
   return (
     <div className="space-y-6">

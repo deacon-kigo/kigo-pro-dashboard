@@ -140,10 +140,14 @@ const ActionMenu = memo(function ActionMenu({
     e.preventDefault();
   }, []);
 
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+  }, []);
+
   return (
     <div
       onClick={handleContainerClick}
-      onMouseDown={(e) => e.stopPropagation()}
+      onMouseDown={handleMouseDown}
       data-state={isOpen ? "open" : "closed"}
     >
       <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
