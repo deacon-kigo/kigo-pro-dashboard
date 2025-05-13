@@ -75,56 +75,49 @@ const SortIcon = ({ sorted }: { sorted?: "asc" | "desc" | false }) => {
   );
 };
 
-// Extremely simplified ActionMenu component following shadcn exactly
-const ActionMenu = memo(function ActionMenu({
+// Pure component with no hooks or context dependencies
+function ActionMenu({
   isDraft,
   filterId,
 }: {
   isDraft: boolean;
   filterId: string;
 }) {
-  const payment = { id: filterId }; // Just for demonstration
-
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0">
-          <span className="sr-only">Open menu</span>
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-        <DropdownMenuItem
-          onClick={() =>
-            console.log(isDraft ? "Edit filter" : "View details", filterId)
+    <div className="flex justify-center">
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          const actions = [
+            { label: isDraft ? "Edit filter" : "View details", action: "view" },
+            { label: "Duplicate", action: "duplicate" },
+            ...(isDraft ? [] : [{ label: "Extend expiry", action: "extend" }]),
+            { label: "Delete", action: "delete" },
+          ];
+
+          // Simple menu using the browser's native select
+          const actionIndex = window.prompt(
+            `Choose an action for filter ${filterId}:\n` +
+              actions.map((a, i) => `${i + 1}. ${a.label}`).join("\n")
+          );
+
+          if (actionIndex) {
+            const index = parseInt(actionIndex, 10) - 1;
+            if (index >= 0 && index < actions.length) {
+              const selectedAction = actions[index].action;
+              console.log(
+                `Performing action: ${selectedAction} on filter ${filterId}`
+              );
+            }
           }
-        >
-          {isDraft ? "Edit filter" : "View details"}
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={() => console.log("Duplicate filter", filterId)}
-        >
-          Duplicate
-        </DropdownMenuItem>
-        {!isDraft && (
-          <DropdownMenuItem
-            onClick={() => console.log("Extend expiry for filter", filterId)}
-          >
-            Extend expiry
-          </DropdownMenuItem>
-        )}
-        <DropdownMenuItem
-          onClick={() => console.log("Delete filter", filterId)}
-          className="text-red-600"
-        >
-          Delete
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        }}
+      >
+        <MoreHorizontal className="h-4 w-4" />
+      </a>
+    </div>
   );
-});
+}
 
 export const productFilterColumns: ColumnDef<ProductFilter>[] = [
   {
