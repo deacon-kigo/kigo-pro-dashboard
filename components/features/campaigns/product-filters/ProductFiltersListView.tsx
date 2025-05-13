@@ -763,7 +763,6 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
           <ProductFilterSearchBar onSearch={handleSearch} />
           <TabsList>
             <TabsTrigger value="active">Active Filters</TabsTrigger>
-            <TabsTrigger value="expired">Expired Filters</TabsTrigger>
             <TabsTrigger value="draft">Draft Filters</TabsTrigger>
             <TabsTrigger value="all">All Filters</TabsTrigger>
           </TabsList>
@@ -775,7 +774,7 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
           <ProductFilterTable
             data={filteredActiveFilters}
             searchQuery={searchQuery}
-            className=""
+            className="border-rounded"
             currentPage={paginationState.active.currentPage}
             pageSize={paginationState.active.pageSize}
             onPageChange={handlePageChange}
@@ -785,28 +784,12 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
           />
         </TabsContent>
 
-        <TabsContent value="expired" className="mt-4">
-          {filteredExpiredFilters.length > 0 ? (
-            <ProductFilterTable
-              data={filteredExpiredFilters}
-              searchQuery={searchQuery}
-              currentPage={paginationState.expired.currentPage}
-              pageSize={paginationState.expired.pageSize}
-              onPageChange={handlePageChange}
-              onPageSizeChange={handlePageSizeChange}
-              onRowSelectionChange={handleRowSelectionChange}
-              rowSelection={selectedFilters}
-            />
-          ) : (
-            emptyStateContent
-          )}
-        </TabsContent>
-
         <TabsContent value="draft" className="mt-4">
           {filteredDraftFilters.length > 0 ? (
             <ProductFilterTable
               data={filteredDraftFilters}
               searchQuery={searchQuery}
+              className="border-rounded"
               currentPage={paginationState.draft.currentPage}
               pageSize={paginationState.draft.pageSize}
               onPageChange={handlePageChange}
@@ -823,6 +806,7 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
           <ProductFilterTable
             data={filteredAllFilters}
             searchQuery={searchQuery}
+            className="border-rounded"
             currentPage={paginationState.all.currentPage}
             pageSize={paginationState.all.pageSize}
             onPageChange={handlePageChange}
