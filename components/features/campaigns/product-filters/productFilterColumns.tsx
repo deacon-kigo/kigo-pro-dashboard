@@ -75,7 +75,7 @@ const SortIcon = ({ sorted }: { sorted?: "asc" | "desc" | false }) => {
   );
 };
 
-// Memoized ActionMenu component using local state instead of Redux state
+// Simplified ActionMenu component matching shadcn pattern
 const ActionMenu = memo(function ActionMenu({
   isDraft,
   filterId,
@@ -83,15 +83,11 @@ const ActionMenu = memo(function ActionMenu({
   isDraft: boolean;
   filterId: string;
 }) {
-  // Use local state instead of Redux to prevent infinite update cycles
-  const [isOpen, setIsOpen] = useState(false);
-
-  // Create stable, memoized handlers using useCallback
+  // Memoize handlers for better performance, but simplified
   const handleViewOrEdit = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
       console.log(isDraft ? "Edit filter" : "View details", filterId);
-      setIsOpen(false);
     },
     [isDraft, filterId]
   );
@@ -100,7 +96,6 @@ const ActionMenu = memo(function ActionMenu({
     (e: React.MouseEvent) => {
       e.stopPropagation();
       console.log("Duplicate filter", filterId);
-      setIsOpen(false);
     },
     [filterId]
   );
@@ -109,7 +104,6 @@ const ActionMenu = memo(function ActionMenu({
     (e: React.MouseEvent) => {
       e.stopPropagation();
       console.log("Extend expiry for filter", filterId);
-      setIsOpen(false);
     },
     [filterId]
   );
@@ -118,55 +112,35 @@ const ActionMenu = memo(function ActionMenu({
     (e: React.MouseEvent) => {
       e.stopPropagation();
       console.log("Delete filter", filterId);
-      setIsOpen(false);
     },
     [filterId]
   );
 
-  // Enhanced event handling to prevent propagation
-  const handleContainerClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-  }, []);
-
-  const handleTriggerClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-  }, []);
-
   return (
-    <div onClick={handleContainerClick} data-state={isOpen ? "open" : "closed"}>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0"
-            onClick={handleTriggerClick}
-          >
-            <span className="sr-only">Open menu</span>
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem onClick={handleViewOrEdit}>
-            {isDraft ? "Edit filter" : "View details"}
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <span className="sr-only">Open menu</span>
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+        <DropdownMenuItem onClick={handleViewOrEdit}>
+          {isDraft ? "Edit filter" : "View details"}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleDuplicate}>Duplicate</DropdownMenuItem>
+        {!isDraft && (
+          <DropdownMenuItem onClick={handleExtendExpiry}>
+            Extend expiry
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleDuplicate}>
-            Duplicate
-          </DropdownMenuItem>
-          {!isDraft && (
-            <DropdownMenuItem onClick={handleExtendExpiry}>
-              Extend expiry
-            </DropdownMenuItem>
-          )}
-          <DropdownMenuItem onClick={handleDelete} className="text-red-600">
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+        )}
+        <DropdownMenuItem onClick={handleDelete} className="text-red-600">
+          Delete
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 });
 
