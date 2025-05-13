@@ -75,7 +75,7 @@ const SortIcon = ({ sorted }: { sorted?: "asc" | "desc" | false }) => {
   );
 };
 
-// Simplified ActionMenu component matching shadcn pattern
+// Extremely simplified ActionMenu component following shadcn exactly
 const ActionMenu = memo(function ActionMenu({
   isDraft,
   filterId,
@@ -83,60 +83,42 @@ const ActionMenu = memo(function ActionMenu({
   isDraft: boolean;
   filterId: string;
 }) {
-  // Memoize handlers for better performance, but simplified
-  const handleViewOrEdit = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      console.log(isDraft ? "Edit filter" : "View details", filterId);
-    },
-    [isDraft, filterId]
-  );
-
-  const handleDuplicate = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      console.log("Duplicate filter", filterId);
-    },
-    [filterId]
-  );
-
-  const handleExtendExpiry = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      console.log("Extend expiry for filter", filterId);
-    },
-    [filterId]
-  );
-
-  const handleDelete = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      console.log("Delete filter", filterId);
-    },
-    [filterId]
-  );
+  const payment = { id: filterId }; // Just for demonstration
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+        <Button variant="ghost" className="h-8 w-8 p-0">
           <span className="sr-only">Open menu</span>
           <MoreHorizontal className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-        <DropdownMenuItem onClick={handleViewOrEdit}>
+        <DropdownMenuItem
+          onClick={() =>
+            console.log(isDraft ? "Edit filter" : "View details", filterId)
+          }
+        >
           {isDraft ? "Edit filter" : "View details"}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleDuplicate}>Duplicate</DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => console.log("Duplicate filter", filterId)}
+        >
+          Duplicate
+        </DropdownMenuItem>
         {!isDraft && (
-          <DropdownMenuItem onClick={handleExtendExpiry}>
+          <DropdownMenuItem
+            onClick={() => console.log("Extend expiry for filter", filterId)}
+          >
             Extend expiry
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem onClick={handleDelete} className="text-red-600">
+        <DropdownMenuItem
+          onClick={() => console.log("Delete filter", filterId)}
+          className="text-red-600"
+        >
           Delete
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -288,14 +270,7 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
       const isDraft = status === "Draft";
       const filterId = row.original.id;
 
-      // No need for useMemo here anymore since the state is managed in local state
-      return (
-        <ActionMenu
-          key={`action-${filterId}`}
-          isDraft={isDraft}
-          filterId={filterId}
-        />
-      );
+      return <ActionMenu isDraft={isDraft} filterId={filterId} />;
     },
     enableSorting: false,
   },
