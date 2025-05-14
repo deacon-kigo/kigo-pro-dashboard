@@ -51,17 +51,28 @@ The campaign creation process has three main components:
   - UTC time
   - Minimum 1-day duration
 
-### Step 2: Budget & Distribution
+### Step 2: Targeting
+
+- No targeting options in V1
+
+### Step 3: Distribution
+
+- Channels/Editions
+
+  - All selected by default
+
+- Programs
+
+  - List from Kigo Core Server
+  - Multiple selection
+
+### Step 4: Budget
 
 - Max budget allocation (required)
 
   - Currency field (USD)
 
-- Distribution Options
-  - Programs (select from available options)
-  - Channels (select from available options)
-
-### Step 3: Review & Publish
+### Step 5: Review & Publish
 
 - Summary of campaign details
 - Options:
