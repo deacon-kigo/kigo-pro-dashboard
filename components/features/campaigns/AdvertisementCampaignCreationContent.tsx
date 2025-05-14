@@ -31,7 +31,6 @@ import {
   LightBulbIcon,
   BanknotesIcon,
   PhotoIcon,
-  MapPinIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import {
@@ -117,19 +116,24 @@ export default function AdvertisementCampaignCreationContent() {
   const [offerId, setOfferId] = useState("");
   const [campaignName, setCampaignName] = useState("");
   const [campaignDescription, setCampaignDescription] = useState("");
+  const [campaignType, setCampaignType] = useState("advertising");
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
-  const [campaignWeight, setCampaignWeight] = useState("");
   const [mediaTypes, setMediaTypes] = useState<string[]>([]);
   const [uploadedImages, setUploadedImages] = useState<
     Array<{ id: string; file: File }>
   >([]);
-  const [locations, setLocations] = useState<
-    Array<{ id: string; type: string; value: string }>
-  >([]);
   const [budget, setBudget] = useState("");
   const [costPerActivation, setCostPerActivation] = useState("");
   const [costPerRedemption, setCostPerRedemption] = useState("");
+  const [channels, setChannels] = useState<string[]>([
+    "email",
+    "social",
+    "display",
+    "search",
+    "in-app",
+  ]);
+  const [programs, setPrograms] = useState<string[]>([]);
 
   // UI state
   const [validationMessage, setValidationMessage] = useState<string | null>(
@@ -140,12 +144,6 @@ export default function AdvertisementCampaignCreationContent() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Location form state
-  const [locationType, setLocationType] = useState<"state" | "msa" | "zipcode">(
-    "state"
-  );
-  const [locationValue, setLocationValue] = useState("");
-
   // Media type options
   const mediaTypeOptions = [
     "Display Banner",
@@ -153,6 +151,15 @@ export default function AdvertisementCampaignCreationContent() {
     "Native",
     "Video",
     "Social Media",
+  ];
+
+  // Program options (would typically be fetched from API)
+  const programOptions = [
+    "Standard Rewards",
+    "Premium Loyalty",
+    "Partner Network",
+    "Merchant Connect",
+    "Referral Program",
   ];
 
   // Helper function to handle image uploads
@@ -180,47 +187,6 @@ export default function AdvertisementCampaignCreationContent() {
     }
   };
 
-  // Handle location add
-  const handleAddLocation = () => {
-    if (locationValue) {
-      // Validate if adding a state or MSA when the other type already exists
-      if (
-        locationType === "state" &&
-        locations.some((loc) => loc.type === "msa")
-      ) {
-        setValidationMessage(
-          "You cannot select state when MSA is already selected"
-        );
-        setTimeout(() => setValidationMessage(null), 5000);
-        return;
-      }
-
-      if (
-        locationType === "msa" &&
-        locations.some((loc) => loc.type === "state")
-      ) {
-        setValidationMessage(
-          "You cannot select MSA when state is already selected"
-        );
-        setTimeout(() => setValidationMessage(null), 5000);
-        return;
-      }
-
-      // Add location with unique ID
-      setLocations([
-        ...locations,
-        { id: generateUniqueId(), type: locationType, value: locationValue },
-      ]);
-      setLocationValue("");
-    }
-  };
-
-  // Remove location
-  const handleRemoveLocation = (idToRemove: string) => {
-    const updatedLocations = locations.filter((loc) => loc.id !== idToRemove);
-    setLocations(updatedLocations);
-  };
-
   // Toggle media type selection
   const toggleMediaType = (type: string) => {
     if (mediaTypes.includes(type)) {
@@ -230,19 +196,25 @@ export default function AdvertisementCampaignCreationContent() {
     }
   };
 
+  // Toggle program selection
+  const toggleProgram = (program: string) => {
+    if (programs.includes(program)) {
+      setPrograms(programs.filter((p) => p !== program));
+    } else {
+      setPrograms([...programs, program]);
+    }
+  };
+
   // Handle creation of campaign
   const handleCreateCampaign = () => {
     // Basic validation
     if (
-      !merchantId ||
       !campaignName ||
       !campaignDescription ||
       !startDate ||
       !endDate ||
-      !campaignWeight ||
       mediaTypes.length === 0 ||
       uploadedImages.length === 0 ||
-      locations.length === 0 ||
       !budget
     ) {
       setValidationMessage("Please fill all required fields");
@@ -471,95 +443,6 @@ export default function AdvertisementCampaignCreationContent() {
                     <div className="grid grid-cols-12 gap-6">
                       {/* Left side - Merchant & Basic Information */}
                       <div className="col-span-12 space-y-6">
-                        {/* Merchant Information Section */}
-                        <Accordion
-                          type="single"
-                          collapsible
-                          defaultValue="merchant-info"
-                          className="border rounded-md"
-                        >
-                          <AccordionItem
-                            value="merchant-info"
-                            className="border-none"
-                          >
-                            <AccordionTrigger className="px-4 py-3 text-sm font-medium">
-                              Merchant Information
-                            </AccordionTrigger>
-                            <AccordionContent className="px-4 text-left">
-                              <div className="space-y-5 pb-2 text-left">
-                                <div className="text-left">
-                                  <Label
-                                    htmlFor="merchant-id"
-                                    className="text-sm"
-                                  >
-                                    Merchant ID*
-                                  </Label>
-                                  <Input
-                                    id="merchant-id"
-                                    placeholder="Enter merchant ID"
-                                    value={merchantId}
-                                    onChange={(e) =>
-                                      setMerchantId(e.target.value)
-                                    }
-                                    className="mt-1"
-                                  />
-                                  <p className="mt-1.5 text-xs font-medium text-gray-600">
-                                    Enter the unique identifier for the merchant
-                                  </p>
-                                </div>
-
-                                <div className="text-left">
-                                  <Label
-                                    htmlFor="merchant-name"
-                                    className="text-sm"
-                                  >
-                                    Merchant Name (Auto-filled)
-                                  </Label>
-                                  <Input
-                                    id="merchant-name"
-                                    value={merchantName}
-                                    readOnly
-                                    className="mt-1 bg-gray-50"
-                                  />
-                                  {!merchantName && merchantId && (
-                                    <p className="mt-1.5 text-xs font-medium text-red-500">
-                                      Merchant not found
-                                    </p>
-                                  )}
-                                </div>
-
-                                <div className="text-left">
-                                  <Label htmlFor="offer-id" className="text-sm">
-                                    Offer ID*
-                                  </Label>
-                                  <Select
-                                    value={offerId}
-                                    onValueChange={setOfferId}
-                                  >
-                                    <SelectTrigger className="mt-1">
-                                      <SelectValue placeholder="Select an offer" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="off-123">
-                                        Off-123: Summer Promo
-                                      </SelectItem>
-                                      <SelectItem value="off-456">
-                                        Off-456: Holiday Special
-                                      </SelectItem>
-                                      <SelectItem value="off-789">
-                                        Off-789: Clearance Sale
-                                      </SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  <p className="mt-1.5 text-xs font-medium text-gray-600">
-                                    Select from available offers
-                                  </p>
-                                </div>
-                              </div>
-                            </AccordionContent>
-                          </AccordionItem>
-                        </Accordion>
-
                         {/* Campaign Basic Information */}
                         <Accordion
                           type="single"
@@ -623,6 +506,32 @@ export default function AdvertisementCampaignCreationContent() {
                                   </p>
                                 </div>
 
+                                <div className="text-left">
+                                  <Label
+                                    htmlFor="campaign-type"
+                                    className="text-sm"
+                                  >
+                                    Campaign Type*
+                                  </Label>
+                                  <Select
+                                    value={campaignType}
+                                    onValueChange={setCampaignType}
+                                  >
+                                    <SelectTrigger className="mt-1">
+                                      <SelectValue placeholder="Select campaign type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="advertising">
+                                        Advertising
+                                      </SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                    Select the type of campaign you want to
+                                    create
+                                  </p>
+                                </div>
+
                                 <div className="grid grid-cols-2 gap-4">
                                   <div className="text-left">
                                     <Label
@@ -656,38 +565,6 @@ export default function AdvertisementCampaignCreationContent() {
                                     />
                                   </div>
                                 </div>
-
-                                <div className="text-left">
-                                  <Label
-                                    htmlFor="campaign-weight"
-                                    className="text-sm"
-                                  >
-                                    Campaign Weight*
-                                  </Label>
-                                  <Select
-                                    value={campaignWeight}
-                                    onValueChange={setCampaignWeight}
-                                  >
-                                    <SelectTrigger className="mt-1">
-                                      <SelectValue placeholder="Select campaign weight" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="small">
-                                        Small
-                                      </SelectItem>
-                                      <SelectItem value="medium">
-                                        Medium
-                                      </SelectItem>
-                                      <SelectItem value="large">
-                                        Large
-                                      </SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  <p className="mt-1.5 text-xs font-medium text-gray-600">
-                                    Determines the priority and resources for
-                                    this campaign
-                                  </p>
-                                </div>
                               </div>
                             </AccordionContent>
                           </AccordionItem>
@@ -695,6 +572,79 @@ export default function AdvertisementCampaignCreationContent() {
 
                         <div className="grid md:grid-cols-2 gap-6">
                           <div className="space-y-6">
+                            {/* Distribution Information */}
+                            <Accordion
+                              type="single"
+                              collapsible
+                              defaultValue="distribution-info"
+                              className="border rounded-md"
+                            >
+                              <AccordionItem
+                                value="distribution-info"
+                                className="border-none"
+                              >
+                                <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                                  Distribution
+                                </AccordionTrigger>
+                                <AccordionContent className="px-4 text-left">
+                                  <div className="space-y-5 pb-2 text-left">
+                                    <div className="text-left">
+                                      <Label className="text-sm mb-2 block">
+                                        Channels/Editions*
+                                      </Label>
+                                      <div className="flex flex-wrap gap-2">
+                                        {channels.map((channel) => (
+                                          <Badge
+                                            key={channel}
+                                            variant="default"
+                                            className="bg-primary text-primary-foreground"
+                                          >
+                                            {channel.charAt(0).toUpperCase() +
+                                              channel.slice(1)}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                      <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                        All channels are selected by default
+                                      </p>
+                                    </div>
+
+                                    <div className="text-left">
+                                      <Label className="text-sm mb-2 block">
+                                        Programs
+                                      </Label>
+                                      <div className="flex flex-wrap gap-2">
+                                        {programOptions.map((program) => (
+                                          <Badge
+                                            key={program}
+                                            variant={
+                                              programs.includes(program)
+                                                ? "default"
+                                                : "outline"
+                                            }
+                                            className={cn(
+                                              "cursor-pointer",
+                                              programs.includes(program)
+                                                ? "bg-primary text-primary-foreground"
+                                                : ""
+                                            )}
+                                            onClick={() =>
+                                              toggleProgram(program)
+                                            }
+                                          >
+                                            {program}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                      <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                        Select the programs for this campaign
+                                      </p>
+                                    </div>
+                                  </div>
+                                </AccordionContent>
+                              </AccordionItem>
+                            </Accordion>
+
                             {/* Budget Information */}
                             <Accordion
                               type="single"
@@ -716,14 +666,14 @@ export default function AdvertisementCampaignCreationContent() {
                                         htmlFor="budget"
                                         className="text-sm"
                                       >
-                                        Budget (USD)*
+                                        Max Budget (USD)*
                                       </Label>
                                       <Input
                                         id="budget"
                                         type="number"
                                         min="0"
                                         step="0.01"
-                                        placeholder="Enter budget amount"
+                                        placeholder="Enter max budget amount"
                                         value={budget}
                                         onChange={(e) =>
                                           setBudget(e.target.value)
@@ -731,158 +681,9 @@ export default function AdvertisementCampaignCreationContent() {
                                         className="mt-1"
                                       />
                                       <p className="mt-1.5 text-xs font-medium text-gray-600">
-                                        The total budget allocated for this
+                                        The maximum budget allocated for this
                                         campaign
                                       </p>
-                                    </div>
-
-                                    <div className="text-left">
-                                      <Label
-                                        htmlFor="cost-per-activation"
-                                        className="text-sm"
-                                      >
-                                        Cost Per Activation (USD)
-                                      </Label>
-                                      <Input
-                                        id="cost-per-activation"
-                                        type="number"
-                                        min="0"
-                                        step="0.01"
-                                        placeholder="Enter cost per activation"
-                                        value={costPerActivation}
-                                        onChange={(e) =>
-                                          setCostPerActivation(e.target.value)
-                                        }
-                                        className="mt-1"
-                                      />
-                                    </div>
-
-                                    <div className="text-left">
-                                      <Label
-                                        htmlFor="cost-per-redemption"
-                                        className="text-sm"
-                                      >
-                                        Cost Per Redemption (USD)
-                                      </Label>
-                                      <Input
-                                        id="cost-per-redemption"
-                                        type="number"
-                                        min="0"
-                                        step="0.01"
-                                        placeholder="Enter cost per redemption"
-                                        value={costPerRedemption}
-                                        onChange={(e) =>
-                                          setCostPerRedemption(e.target.value)
-                                        }
-                                        className="mt-1"
-                                      />
-                                    </div>
-                                  </div>
-                                </AccordionContent>
-                              </AccordionItem>
-                            </Accordion>
-
-                            {/* Location Targeting */}
-                            <Accordion
-                              type="single"
-                              collapsible
-                              defaultValue="location-targeting"
-                              className="border rounded-md"
-                            >
-                              <AccordionItem
-                                value="location-targeting"
-                                className="border-none"
-                              >
-                                <AccordionTrigger className="px-4 py-3 text-sm font-medium">
-                                  Location Targeting
-                                </AccordionTrigger>
-                                <AccordionContent className="px-4 text-left">
-                                  <div className="space-y-5 pb-2 text-left">
-                                    <div className="text-left">
-                                      <Label className="text-sm">
-                                        Target Locations*
-                                      </Label>
-
-                                      <div className="mt-2 flex items-end gap-2">
-                                        <div className="flex-1">
-                                          <Select
-                                            value={locationType}
-                                            onValueChange={(value: any) =>
-                                              setLocationType(value)
-                                            }
-                                          >
-                                            <SelectTrigger>
-                                              <SelectValue placeholder="Location type" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                              <SelectItem value="state">
-                                                State
-                                              </SelectItem>
-                                              <SelectItem value="msa">
-                                                MSA
-                                              </SelectItem>
-                                              <SelectItem value="zipcode">
-                                                ZIP Code
-                                              </SelectItem>
-                                            </SelectContent>
-                                          </Select>
-                                        </div>
-
-                                        <div className="flex-1">
-                                          <Input
-                                            placeholder={`Enter ${locationType}`}
-                                            value={locationValue}
-                                            onChange={(e) =>
-                                              setLocationValue(e.target.value)
-                                            }
-                                          />
-                                        </div>
-
-                                        <Button
-                                          onClick={handleAddLocation}
-                                          disabled={!locationValue}
-                                          size="sm"
-                                        >
-                                          Add
-                                        </Button>
-                                      </div>
-
-                                      <p className="mt-1.5 text-xs font-medium text-gray-600">
-                                        Note: You cannot mix states and MSAs in
-                                        the same campaign
-                                      </p>
-
-                                      {/* Show selected locations */}
-                                      {locations.length > 0 && (
-                                        <div className="mt-3">
-                                          <h4 className="text-sm font-medium mb-2">
-                                            Selected Locations:
-                                          </h4>
-                                          <div className="flex flex-wrap gap-2 bg-gray-50 p-2 rounded-md">
-                                            {locations.map((loc) => (
-                                              <Badge
-                                                key={loc.id}
-                                                variant="secondary"
-                                                className="flex items-center gap-1"
-                                              >
-                                                <MapPinIcon className="h-3 w-3" />
-                                                <span className="capitalize">
-                                                  {loc.type}:
-                                                </span>{" "}
-                                                {loc.value}
-                                                <button
-                                                  className="ml-1 text-gray-500 hover:text-red-500"
-                                                  onClick={() =>
-                                                    handleRemoveLocation(loc.id)
-                                                  }
-                                                >
-                                                  <XCircleIcon className="h-3 w-3" />
-                                                </button>
-                                              </Badge>
-                                            ))}
-                                          </div>
-                                        </div>
-                                      )}
                                     </div>
                                   </div>
                                 </AccordionContent>
@@ -1029,28 +830,16 @@ export default function AdvertisementCampaignCreationContent() {
                                 </AccordionTrigger>
                                 <AccordionContent className="px-4 text-left">
                                   <div className="space-y-3 pb-2 text-left">
-                                    {!campaignName && !merchantId && (
+                                    {!campaignName && !campaignDescription && (
                                       <p className="text-sm text-gray-500 italic">
                                         Fill out the campaign details to see a
                                         summary here.
                                       </p>
                                     )}
 
-                                    {(campaignName || merchantId) && (
+                                    {(campaignName || campaignDescription) && (
                                       <>
                                         <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                                          {merchantId && (
-                                            <>
-                                              <div className="font-medium">
-                                                Merchant:
-                                              </div>
-                                              <div>
-                                                {merchantName ||
-                                                  `ID: ${merchantId}`}
-                                              </div>
-                                            </>
-                                          )}
-
                                           {campaignName && (
                                             <>
                                               <div className="font-medium">
@@ -1071,6 +860,17 @@ export default function AdvertisementCampaignCreationContent() {
                                             </>
                                           )}
 
+                                          {campaignType && (
+                                            <>
+                                              <div className="font-medium">
+                                                Type:
+                                              </div>
+                                              <div className="capitalize">
+                                                {campaignType}
+                                              </div>
+                                            </>
+                                          )}
+
                                           {startDate && endDate && (
                                             <>
                                               <div className="font-medium">
@@ -1083,17 +883,6 @@ export default function AdvertisementCampaignCreationContent() {
                                                 )}{" "}
                                                 -{" "}
                                                 {format(endDate, "MMM d, yyyy")}
-                                              </div>
-                                            </>
-                                          )}
-
-                                          {campaignWeight && (
-                                            <>
-                                              <div className="font-medium">
-                                                Weight:
-                                              </div>
-                                              <div className="capitalize">
-                                                {campaignWeight}
                                               </div>
                                             </>
                                           )}
@@ -1116,13 +905,14 @@ export default function AdvertisementCampaignCreationContent() {
                                             </>
                                           )}
 
-                                          {locations.length > 0 && (
+                                          {programs.length > 0 && (
                                             <>
                                               <div className="font-medium">
-                                                Target Locations:
+                                                Programs:
                                               </div>
                                               <div>
-                                                {locations.length} location(s)
+                                                {programs.length} program(s)
+                                                selected
                                               </div>
                                             </>
                                           )}
