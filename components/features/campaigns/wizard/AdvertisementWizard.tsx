@@ -250,7 +250,7 @@ const AdvertisementWizard: React.FC = () => {
         <div className="flex gap-3 ">
           {/* Left Column - AI Assistant Panel */}
           <div
-            className="w-1/3 max-w-[400px] flex-shrink-0"
+            className="w-1/4 flex-shrink-0"
             style={{
               height: "calc(100vh - 180px)",
             }}
@@ -269,7 +269,7 @@ const AdvertisementWizard: React.FC = () => {
           </div>
 
           {/* Middle Column - Campaign Form with Steps */}
-          <div className="w-1/2 min-w-0 flex-1 h-full flex flex-col">
+          <div className="w-[37.5%] flex-1 h-full flex flex-col">
             <Card className="p-0 flex flex-col h-full overflow-hidden shadow-md">
               {/* Step indicator header */}
               <StepProgressHeader
@@ -309,7 +309,7 @@ const AdvertisementWizard: React.FC = () => {
           </div>
 
           {/* Right Column - Campaign Progress Checklist */}
-          <div className="w-[320px] flex-shrink-0 h-full">
+          <div className="w-[37.5%] flex-shrink-0 h-full">
             <Card className="h-full p-0 flex flex-col overflow-hidden shadow-md">
               <div className="flex-1 overflow-hidden">
                 <CampaignAnalyticsPanelLite className="h-full flex-1" />

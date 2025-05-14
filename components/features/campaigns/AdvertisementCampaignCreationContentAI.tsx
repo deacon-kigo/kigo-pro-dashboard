@@ -348,7 +348,7 @@ export default function AdvertisementCampaignCreationContentAI() {
         <div className="flex gap-3 h-full">
           {/* Left Column - AI Assistant Panel */}
           <div
-            className="w-[448px] flex-shrink-0"
+            className="w-1/4 flex-shrink-0"
             style={{
               position: "sticky",
               top: "1rem",
@@ -391,7 +391,7 @@ export default function AdvertisementCampaignCreationContentAI() {
           </div>
 
           {/* Middle Column - Campaign Configuration with scrollable content */}
-          <div className="flex-1 overflow-auto pb-6">
+          <div className="w-[37.5%] overflow-auto pb-6">
             <div className="flex flex-col h-full">
               {/* Validation Message Banner */}
               {validationMessage && (
@@ -1153,7 +1153,7 @@ export default function AdvertisementCampaignCreationContentAI() {
           </div>
 
           {/* Right Column - Campaign Analytics Panel */}
-          <div className="w-[448px] flex-shrink-0 h-full">
+          <div className="w-[37.5%] flex-shrink-0 h-full">
             <Card className="h-full p-0 flex flex-col overflow-hidden shadow-md">
               <div className="flex-1 overflow-hidden">
                 <CampaignAnalyticsPanel
