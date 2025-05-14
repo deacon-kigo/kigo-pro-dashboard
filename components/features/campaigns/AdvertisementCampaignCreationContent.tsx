@@ -48,7 +48,7 @@ import { AIAssistantPanel } from "@/components/features/ai";
 import { Badge } from "@/components/atoms/Badge";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { CampaignAnalyticsPanel } from "./CampaignAnalyticsPanel";
+import { CampaignAnalyticsPanelLite } from "./CampaignAnalyticsPanelLite";
 
 // Custom DatePicker component
 interface DatePickerProps {
@@ -1152,21 +1152,11 @@ export default function AdvertisementCampaignCreationContent() {
             </div>
           </div>
 
-          {/* Right Column - Campaign Analytics Panel */}
-          <div className="w-[448px] flex-shrink-0 h-full">
+          {/* Right Column - Campaign Progress Checklist */}
+          <div className="w-[320px] flex-shrink-0 h-full">
             <Card className="h-full p-0 flex flex-col overflow-hidden shadow-md">
               <div className="flex-1 overflow-hidden">
-                <CampaignAnalyticsPanel
-                  className="h-full flex-1"
-                  campaignBudget={parseFloat(budget) || 5000}
-                  estimatedReach={
-                    campaignWeight === "small"
-                      ? 50000
-                      : campaignWeight === "medium"
-                        ? 100000
-                        : 200000
-                  }
-                />
+                <CampaignAnalyticsPanelLite className="h-full flex-1" />
               </div>
             </Card>
           </div>

@@ -29,7 +29,7 @@ import {
 import StepProgressHeader from "./StepProgressHeader";
 import StepNavigationFooter from "./StepNavigationFooter";
 import { setCampaignContext } from "@/lib/redux/slices/ai-assistantSlice";
-import { CampaignAnalyticsPanel } from "../CampaignAnalyticsPanel";
+import { CampaignAnalyticsPanelLite } from "../CampaignAnalyticsPanelLite";
 import PageHeader from "@/components/molecules/PageHeader/PageHeader";
 import { v4 as uuidv4 } from "uuid";
 
@@ -180,13 +180,22 @@ const AdvertisementWizard: React.FC = () => {
             targetingData={formData.targeting}
             distributionData={formData.distribution}
             budgetData={formData.budget}
-            updateTargeting={(targeting) => dispatch(updateTargeting(targeting))}
-            updateDistribution={(distribution) => dispatch(updateDistribution(distribution))}
+            updateTargeting={(targeting) =>
+              dispatch(updateTargeting(targeting))
+            }
+            updateDistribution={(distribution) =>
+              dispatch(updateDistribution(distribution))
+            }
             updateBudget={(budget) => dispatch(updateBudget(budget))}
             addLocation={(location) => dispatch(addLocation(location))}
             removeLocation={(id) => dispatch(removeLocation(id))}
             setStepValidation={(isValid) =>
-              dispatch(setStepValidation({ step: "targeting-distribution-budget", isValid }))
+              dispatch(
+                setStepValidation({
+                  step: "targeting-distribution-budget",
+                  isValid,
+                })
+              )
             }
           />
         );
@@ -195,46 +204,6 @@ const AdvertisementWizard: React.FC = () => {
       default:
         return null;
     }
-  };
-
-  // Get campaign analytics values for right panel
-  const getCampaignAnalyticsValues = () => {
-    const campaignBudget = formData.budget.maxBudget || 5000;
-    let estimatedReach = 0;
-
-    // Calculate estimated reach based on targeting weight
-    switch (formData.targeting.campaignWeight) {
-      case "small":
-        estimatedReach = 50000;
-        break;
-      case "medium":
-        estimatedReach = 100000;
-        break;
-      case "large":
-        estimatedReach = 200000;
-        break;
-      default:
-        estimatedReach = 100000;
-    }
-
-    // Adjust based on selected loyalty programs (more programs = more reach)
-    if (formData.distribution.programs.length > 0) {
-      estimatedReach = Math.round(
-        estimatedReach * (1 + formData.distribution.programs.length * 0.1)
-      );
-    }
-
-    // Adjust based on number of ads (more ads = more engagement)
-    const adCount = formData.ads.length;
-    if (adCount > 0) {
-      const adMultiplier = 1 + adCount * 0.05;
-      estimatedReach = Math.round(estimatedReach * adMultiplier);
-    }
-
-    return {
-      campaignBudget,
-      estimatedReach,
-    };
   };
 
   // Create back button
@@ -262,9 +231,6 @@ const AdvertisementWizard: React.FC = () => {
     </button>
   );
 
-  // Get analytics values
-  const analyticsValues = getCampaignAnalyticsValues();
-
   return (
     <div className="space-y-6 h-full flex flex-col">
       <div className="flex-shrink-0">
@@ -283,7 +249,8 @@ const AdvertisementWizard: React.FC = () => {
       >
         <div className="flex gap-3 ">
           {/* Left Column - AI Assistant Panel */}
-          <div className="w-1/3 max-w-[400px] flex-shrink-0"
+          <div
+            className="w-1/3 max-w-[400px] flex-shrink-0"
             style={{
               height: "calc(100vh - 180px)",
             }}
@@ -302,7 +269,7 @@ const AdvertisementWizard: React.FC = () => {
           </div>
 
           {/* Middle Column - Campaign Form with Steps */}
-          <div className="w-1/3 min-w-0 flex-1 h-full flex flex-col">
+          <div className="w-1/2 min-w-0 flex-1 h-full flex flex-col">
             <Card className="p-0 flex flex-col h-full overflow-hidden shadow-md">
               {/* Step indicator header */}
               <StepProgressHeader
@@ -341,15 +308,11 @@ const AdvertisementWizard: React.FC = () => {
             </Card>
           </div>
 
-          {/* Right Column - Campaign Visualization */}
-          <div className="w-1/3 max-w-[400px] flex-shrink-0 h-full">
+          {/* Right Column - Campaign Progress Checklist */}
+          <div className="w-[320px] flex-shrink-0 h-full">
             <Card className="h-full p-0 flex flex-col overflow-hidden shadow-md">
               <div className="flex-1 overflow-hidden">
-                <CampaignAnalyticsPanel
-                  className="h-full flex-1"
-                  campaignBudget={analyticsValues.campaignBudget}
-                  estimatedReach={analyticsValues.estimatedReach}
-                />
+                <CampaignAnalyticsPanelLite className="h-full flex-1" />
               </div>
             </Card>
           </div>
