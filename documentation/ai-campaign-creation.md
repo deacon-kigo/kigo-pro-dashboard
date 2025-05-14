@@ -10,6 +10,7 @@ This document outlines the requirements for the AI-assisted campaign creation fe
 2. Multiple ads can be associated with a single campaign
 3. Merchant ID and Offer ID selection should be part of the Ad flow, not Campaign Creation
 4. Campaign Type selection will be available (only "Advertising" in V1)
+5. Simplified targeting approach without geographic or demographic targeting in V1
 
 ## User Persona
 
@@ -50,57 +51,17 @@ The campaign creation process has three main components:
   - UTC time
   - Minimum 1-day duration
 
-### Step 2: Targeting
-
-- Location targeting (required)
-
-  - Supports US and Canada addresses
-  - Multiple selection options:
-    - State (mutually exclusive with MSA)
-    - MSA (mutually exclusive with State)
-    - Zip codes
-
-- Gender (nice to have)
-
-  - Range selector
-
-- Age (nice to have)
-
-  - Range selector
-
-- Campaign weight (required)
-  - Dropdown: small, medium, large
-
-### Step 3: Distribution
-
-- Channels/Editions
-
-  - All selected by default
-
-- Partners
-
-  - To be discussed in V2
-
-- Programs
-
-  - List from Kigo Core Server
-  - Multiple selection
-
-- Program Campaigns
-  - List from Kigo Core Server
-  - Multiple selection
-
-### Step 4: Budget
+### Step 2: Budget & Distribution
 
 - Max budget allocation (required)
 
   - Currency field (USD)
 
-- Estimated reach
-  - System calculation
-  - Nice to have, planned for V2
+- Distribution Options
+  - Programs (select from available options)
+  - Channels (select from available options)
 
-### Step 5: Review & Publish
+### Step 3: Review & Publish
 
 - Summary of campaign details
 - Options:
@@ -160,7 +121,6 @@ The campaign creation process has three main components:
 - Campaign name and description must not contain prohibited characters
 - Start date must be today or in the future
 - End date must be after start date (minimum 1-day duration)
-- If state is selected in location targeting, MSA cannot be selected (and vice versa)
 - Media uploads must comply with Kigo Banner Guide specifications
 - Each selected media type requires at least one media upload
 
@@ -181,8 +141,8 @@ The campaign creation process has three main components:
 ### Smart Suggestions
 
 - Recommend next steps during each stage
-- Suggest optimal targeting options based on campaign goals
-- Provide budget recommendations based on targeting scope
+- Provide budget recommendations based on campaign type
+- Suggest media types based on campaign goals
 
 ### Customization Assistance
 
