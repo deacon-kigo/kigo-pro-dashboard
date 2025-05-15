@@ -43,7 +43,7 @@ const PromotionWidget: React.FC<PromotionWidgetProps> = ({
     >
       <div className="relative flex flex-col w-full">
         {/* Featured badge for banner types */}
-        {featured && showBanner && (
+        {featured && showBanner && !isDoubleDecker && (
           <div className="absolute top-2 left-2 z-10">
             <Badge
               variant="default"
@@ -169,10 +169,23 @@ const PromotionWidget: React.FC<PromotionWidgetProps> = ({
 
         {/* Double Decker Type */}
         {isDoubleDecker && showBanner && (
-          <>
-            {/* Brand Logo - Top Left */}
-            <div className="absolute top-4 left-4 z-10">
-              <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center p-2 border shadow-md">
+          <div className="h-full">
+            {/* Featured badge for double decker in top-left */}
+            {featured && (
+              <div className="absolute top-3 left-3 z-20">
+                <Badge
+                  variant="default"
+                  className="flex items-center gap-1 px-2 py-0.5 bg-white/90 text-gray-800 border border-gray-100 w-[90px] justify-center"
+                >
+                  <SparklesIcon className="h-3 w-3 text-violet-500" />
+                  <span className="text-xs font-medium">Featured</span>
+                </Badge>
+              </div>
+            )}
+
+            {/* Brand Logo - Top Left, positioned below the featured badge */}
+            <div className="absolute top-12 left-4 z-10">
+              <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center p-2 border-2 border-white shadow-md">
                 <img
                   src={merchantLogo}
                   alt={merchantName}
@@ -181,43 +194,42 @@ const PromotionWidget: React.FC<PromotionWidgetProps> = ({
               </div>
             </div>
 
-            {/* Banner background */}
+            {/* Banner background - Made taller to match Panera image */}
             <div
               className="w-full bg-cover bg-center relative"
               style={{
-                backgroundImage: `url(${bannerImage})`,
-                height: "300px",
+                backgroundImage: `url(${bannerImage || "https://placehold.co/1200x600/4C7C29/fff?text=Food+Image"})`,
+                height: "270px",
+                backgroundColor: "#4C7C29", // Green background similar to Panera
+                backgroundBlendMode: "soft-light",
               }}
             >
               {/* Dark scrim at bottom for readability */}
-              <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/70 to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[rgba(45,87,44,0.7)]"></div>
 
               {/* Bottom text overlay with merchant name */}
               <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                <h2 className="text-2xl font-bold">{merchantName}</h2>
+                <h2 className="text-2xl font-bold drop-shadow-md">
+                  {merchantName}
+                </h2>
               </div>
             </div>
 
             {/* Text content */}
-            <div className="p-4 bg-white">
-              {/* Promotion text */}
-              <h3 className="text-3xl font-bold text-gray-900 leading-tight">
+            <div className="p-5 bg-white flex flex-col">
+              {/* Promotion text - Larger font size to match Panera */}
+              <h3 className="text-[32px] font-bold text-gray-900 leading-tight mb-2">
                 {promotionText}
               </h3>
 
-              {/* Wallet button with label */}
-              <div className="flex justify-end items-center mt-3">
-                <div className="mr-3">
-                  <span className="text-sm font-medium text-blue-700">
-                    Add to Wallet
-                  </span>
-                </div>
-                <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
-                  <Wallet className="h-5 w-5 text-blue-700" />
+              {/* Wallet button without label to match Panera */}
+              <div className="flex justify-end items-center mt-auto">
+                <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center shadow-sm">
+                  <Wallet className="h-7 w-7 text-blue-700" />
                 </div>
               </div>
             </div>
-          </>
+          </div>
         )}
       </div>
     </Card>
