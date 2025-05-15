@@ -247,21 +247,21 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
     {
       id: "display_banner",
       label: "Display Banner",
-      description: "Standard display ad banners",
+      description: "Large banner with brand content and offer",
       dimensions: "970x250",
     },
     {
       id: "double_decker",
       label: "Double Decker",
-      description: "Large format ads with two visual sections",
-      dimensions: "320x480",
+      description: "Full-width banner with merchant details",
+      dimensions: "600x320",
     },
     {
       id: "native",
       label: "Native (No Image)",
-      description: "No image required, uses merchant logo",
+      description: "Clean card with merchant logo and offer text",
       noImageUpload: true,
-      dimensions: "Auto-generated",
+      dimensions: "Auto-adapting",
     },
   ];
 
@@ -617,8 +617,8 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
               {/* Preview Section */}
               <div className="flex flex-col">
                 <Label className="text-xs mb-2 block">Promotion Preview</Label>
-                <div className="bg-slate-50 p-3 rounded border">
-                  <div className="max-w-sm mx-auto">
+                <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-4 rounded-lg border shadow-sm">
+                  <div className="max-w-md mx-auto">
                     <PromotionWidget
                       merchantLogo={getLogoUrl(currentAd.offerId)}
                       merchantName={currentAd.merchantName}
@@ -626,6 +626,8 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                       featured={true}
                       bannerImage={previewImageUrl || undefined}
                       mediaType={currentAd.mediaType}
+                      distance="5.6 miles"
+                      additionalOffers={1}
                     />
                   </div>
                 </div>
