@@ -42,24 +42,12 @@ const PromotionWidget: React.FC<PromotionWidgetProps> = ({
       className={`overflow-hidden shadow-sm w-full rounded-xl ${className}`}
     >
       <div className="relative flex flex-col w-full">
-        {/* Featured badge */}
-        {featured && isNative && (
-          <div className="absolute top-3 left-3 z-10">
-            <Badge
-              variant="default"
-              className="flex items-center gap-1 px-2 py-0.5 bg-violet-100 text-violet-700 border-0"
-            >
-              <SparklesIcon className="h-3 w-3 text-violet-500" />
-              <span className="text-xs font-medium">Featured</span>
-            </Badge>
-          </div>
-        )}
-
+        {/* Featured badge for banner types */}
         {featured && showBanner && (
           <div className="absolute top-2 left-2 z-10">
             <Badge
               variant="default"
-              className="flex items-center gap-1 px-2 py-0.5 bg-white/90 text-gray-800 border border-gray-100"
+              className="flex items-center gap-1 px-2 py-0.5 bg-white/90 text-gray-800 border border-gray-100 w-[90px] justify-center"
             >
               <SparklesIcon className="h-3 w-3 text-violet-500" />
               <span className="text-xs font-medium">Featured</span>
@@ -69,7 +57,7 @@ const PromotionWidget: React.FC<PromotionWidgetProps> = ({
 
         {/* Display mode: Native */}
         {isNative && (
-          <div className="flex p-4 pt-12">
+          <div className="flex p-4">
             {/* Left side - Logo */}
             <div className="mr-4">
               <div className="w-16 h-16 rounded-md flex items-center justify-center p-1 border overflow-hidden bg-white">
@@ -83,6 +71,19 @@ const PromotionWidget: React.FC<PromotionWidgetProps> = ({
 
             {/* Right side - Content */}
             <div className="flex-1 flex flex-col min-w-0">
+              {/* Featured badge for native type - positioned above offer */}
+              {featured && (
+                <div className="mb-1">
+                  <Badge
+                    variant="default"
+                    className="flex items-center gap-1 px-2 py-0.5 bg-violet-100 text-violet-700 border-0 w-[90px] justify-center"
+                  >
+                    <SparklesIcon className="h-3 w-3 text-violet-500" />
+                    <span className="text-xs font-medium">Featured</span>
+                  </Badge>
+                </div>
+              )}
+
               {/* Offer details */}
               <h3 className="font-bold text-xl leading-tight text-gray-900">
                 {promotionText}
