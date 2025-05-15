@@ -47,39 +47,28 @@ const TargetDistributionBudgetStep: React.FC<
   return (
     <div className="space-y-8">
       {/* Target Section */}
-      <div>
-        <h4 className="font-medium mb-4 pb-1 border-b">Campaign Duration</h4>
-        <TargetingStep
-          formData={targetingData}
-          updateTargeting={updateTargeting}
-          addLocation={addLocation}
-          removeLocation={removeLocation}
-          setStepValidation={() => {}}
-        />
-      </div>
+      <TargetingStep
+        formData={targetingData}
+        updateTargeting={updateTargeting}
+        addLocation={addLocation}
+        removeLocation={removeLocation}
+        setStepValidation={() => {}}
+      />
 
       {/* Distribution Section */}
-      <div>
-        <h4 className="font-medium mb-4 pb-1 border-b">
-          Distribution Channels
-        </h4>
-        <DistributionStep
-          formData={distributionData}
-          updateDistribution={updateDistribution}
-          setStepValidation={() => {}}
-        />
-      </div>
+      <DistributionStep
+        formData={distributionData}
+        updateDistribution={updateDistribution}
+        setStepValidation={() => {}}
+      />
 
       {/* Budget Section */}
-      <div>
-        <h4 className="font-medium mb-4 pb-1 border-b">Budget Configuration</h4>
-        <BudgetStep
-          formData={budgetData}
-          updateBudget={updateBudget}
-          campaignWeight="medium" // Simplified - always use medium
-          setStepValidation={() => {}}
-        />
-      </div>
+      <BudgetStep
+        formData={budgetData}
+        updateBudget={updateBudget}
+        campaignWeight="medium" // Simplified - always use medium
+        setStepValidation={() => {}}
+      />
     </div>
   );
 };

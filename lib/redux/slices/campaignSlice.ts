@@ -33,6 +33,7 @@ export interface CampaignBasicInfo {
 export interface CampaignTargeting {
   startDate: string | null;
   endDate: string | null;
+  noEndDate: boolean;
   locations: Array<{
     id: string;
     type: "state" | "msa" | "zipcode";
@@ -103,6 +104,7 @@ const initialState: CampaignState = {
     targeting: {
       startDate: null,
       endDate: null,
+      noEndDate: false,
       locations: [],
       gender: [],
       ageRange: null,

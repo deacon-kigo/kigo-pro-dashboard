@@ -7,6 +7,7 @@ import { CampaignTargeting } from "@/lib/redux/slices/campaignSlice";
 import { format } from "date-fns";
 import { Calendar } from "@/components/atoms/Calendar";
 import { addDays } from "date-fns";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface TargetingStepProps {
   formData: CampaignTargeting;
@@ -27,6 +28,7 @@ interface DatePickerProps {
   onSelect: (date: string | null) => void;
   placeholder: string;
   className?: string;
+  disabled?: boolean;
 }
 
 const DatePicker = ({
@@ -35,6 +37,7 @@ const DatePicker = ({
   onSelect,
   placeholder,
   className,
+  disabled = false,
 }: DatePickerProps) => {
   const [isOpen, setIsOpen] = React.useState(false);
 
@@ -52,10 +55,12 @@ const DatePicker = ({
         id={id}
         placeholder={placeholder}
         value={selected ? format(new Date(selected), "PPP") : ""}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => !disabled && setIsOpen(!isOpen)}
         readOnly
+        disabled={disabled}
+        className={disabled ? "bg-gray-100 cursor-not-allowed" : ""}
       />
-      {isOpen && (
+      {isOpen && !disabled && (
         <div className="absolute mt-2 bg-white border rounded-md shadow-lg z-10">
           <Calendar
             mode="single"
@@ -85,6 +90,15 @@ const TargetingStep: React.FC<TargetingStepProps> = ({
     setStepValidation(true);
   }, [setStepValidation]);
 
+  // Handler for toggling no end date
+  const handleNoEndDateChange = (checked: boolean) => {
+    updateTargeting({
+      noEndDate: checked,
+      // When turning on noEndDate, clear the endDate
+      endDate: checked ? null : formData.endDate,
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="space-y-6">
@@ -107,17 +121,32 @@ const TargetingStep: React.FC<TargetingStepProps> = ({
               />
             </div>
 
-            <div>
-              <Label htmlFor="end-date">End Date*</Label>
-              <DatePicker
-                id="end-date"
-                selected={formData.endDate}
-                onSelect={(date) => updateTargeting({ endDate: date })}
-                placeholder="Select end date"
-                className="mt-1"
-              />
-            </div>
+            {!formData.noEndDate && (
+              <div>
+                <Label htmlFor="end-date">End Date*</Label>
+                <DatePicker
+                  id="end-date"
+                  selected={formData.endDate}
+                  onSelect={(date) => updateTargeting({ endDate: date })}
+                  placeholder="Select end date"
+                  className="mt-1"
+                  disabled={formData.noEndDate}
+                />
+              </div>
+            )}
           </div>
+
+          <div className="flex items-center space-x-2 mt-3">
+            <Checkbox
+              id="no-end-date"
+              checked={formData.noEndDate}
+              onCheckedChange={handleNoEndDateChange}
+            />
+            <Label htmlFor="no-end-date" className="text-sm cursor-pointer">
+              No end date (campaign runs indefinitely)
+            </Label>
+          </div>
+
           <p className="text-xs text-muted-foreground mt-2">
             Campaigns must be scheduled at least 1 day in advance.
           </p>
