@@ -57,9 +57,9 @@ const PromotionWidget: React.FC<PromotionWidgetProps> = ({
 
         {/* Display mode: Native */}
         {isNative && (
-          <div className="flex p-4">
+          <div className="flex p-3">
             {/* Left side - Logo */}
-            <div className="mr-4">
+            <div className="mr-3">
               <div className="w-16 h-16 rounded-md flex items-center justify-center p-1 border overflow-hidden bg-white">
                 <img
                   src={merchantLogo}
@@ -85,22 +85,22 @@ const PromotionWidget: React.FC<PromotionWidgetProps> = ({
               )}
 
               {/* Offer details */}
-              <h3 className="font-bold text-xl leading-tight text-gray-900">
+              <h3 className="font-bold text-xl leading-tight text-gray-900 mb-1">
                 {promotionText}
               </h3>
-              <p className="text-sm font-medium text-gray-700 mt-1">
+              <p className="text-sm font-medium text-gray-700 mb-1">
                 {merchantName}
               </p>
 
               {distance && (
-                <div className="flex items-center text-gray-500 mt-1">
+                <div className="flex items-center text-gray-500 mb-1">
                   <MapPinIcon className="h-3.5 w-3.5 mr-1" />
                   <span className="text-sm">{distance}</span>
                 </div>
               )}
 
               {additionalOffers && additionalOffers > 0 && (
-                <p className="text-sm font-medium text-blue-600 mt-1">
+                <p className="text-sm font-medium text-blue-600">
                   +{additionalOffers} more{" "}
                   {additionalOffers === 1 ? "offer" : "offers"}
                 </p>
@@ -146,14 +146,14 @@ const PromotionWidget: React.FC<PromotionWidgetProps> = ({
             </div>
 
             {/* Text content */}
-            <div className="p-5 bg-white">
+            <div className="p-4 bg-white">
               {/* Merchant name on top for display banner */}
-              <div className="mb-2">
+              <div className="mb-1">
                 <p className="text-gray-700 font-medium">{merchantName}</p>
               </div>
 
               {/* Promotion text */}
-              <h3 className="text-2xl font-bold text-gray-900">
+              <h3 className="text-2xl font-bold text-gray-900 leading-snug">
                 {promotionText}
               </h3>
 
@@ -193,20 +193,20 @@ const PromotionWidget: React.FC<PromotionWidgetProps> = ({
               <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/70 to-transparent"></div>
 
               {/* Bottom text overlay with merchant name */}
-              <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
+              <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
                 <h2 className="text-2xl font-bold">{merchantName}</h2>
               </div>
             </div>
 
             {/* Text content */}
-            <div className="p-5 bg-white">
+            <div className="p-4 bg-white">
               {/* Promotion text */}
               <h3 className="text-3xl font-bold text-gray-900 leading-tight">
                 {promotionText}
               </h3>
 
               {/* Wallet button with label */}
-              <div className="flex justify-end items-center mt-4">
+              <div className="flex justify-end items-center mt-3">
                 <div className="mr-3">
                   <span className="text-sm font-medium text-blue-700">
                     Add to Wallet
