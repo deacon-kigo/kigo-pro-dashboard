@@ -41,10 +41,19 @@ export function Combobox({
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
+  const [triggerWidth, setTriggerWidth] = React.useState<number>(0);
+
+  // Update trigger width when opened
+  React.useEffect(() => {
+    if (open && triggerRef.current) {
+      setTriggerWidth(triggerRef.current.offsetWidth);
+    }
+  }, [open]);
 
   // Filter options based on search query
   const filteredOptions = React.useMemo(() => {
-    if (!searchQuery) return options;
+    if (!searchQuery.trim()) return options;
 
     const lowerSearchQuery = searchQuery.toLowerCase();
     return options.filter(
@@ -80,13 +89,34 @@ export function Combobox({
     );
   };
 
+  // Handle key down events
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!open && (e.key === "ArrowDown" || e.key === "Enter")) {
+      e.preventDefault();
+      setOpen(true);
+    }
+  };
+
+  // Handle selection directly
+  const handleSelect = (optionValue: string) => {
+    const option = options.find((opt) => opt.value === optionValue);
+    if (option) {
+      onChange(option.value);
+      setOpen(false);
+      setSearchQuery("");
+    }
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          ref={triggerRef}
           variant="outline"
           role="combobox"
           aria-expanded={open}
+          onKeyDown={handleKeyDown}
+          onClick={() => setOpen(true)}
           className={cn(
             "w-full justify-between text-sm font-normal bg-white text-gray-800",
             !value && "text-gray-600",
@@ -98,14 +128,21 @@ export function Combobox({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className={cn(
-          "p-0 min-w-[200px] border-gray-300 shadow-md",
-          popoverClassName
-        )}
+        className={cn("p-0 border-gray-300 shadow-md", popoverClassName)}
         align="start"
-        style={{ width: "var(--radix-popover-trigger-width)" }}
+        style={{
+          width:
+            triggerWidth > 0
+              ? `${triggerWidth}px`
+              : "var(--radix-popover-trigger-width)",
+        }}
+        sideOffset={5}
       >
-        <Command>
+        <Command
+          shouldFilter={false}
+          value={value}
+          onValueChange={handleSelect}
+        >
           <CommandInput
             placeholder={searchPlaceholder}
             value={searchQuery}
@@ -119,24 +156,25 @@ export function Combobox({
             </CommandEmpty>
             <CommandGroup>
               {filteredOptions.map((option) => (
-                <CommandItem
+                <div
                   key={option.value}
-                  value={option.value}
-                  onSelect={() => {
-                    onChange(option.value);
-                    setOpen(false);
-                    setSearchQuery("");
-                  }}
-                  className="hover:bg-gray-100 aria-selected:bg-gray-200 aria-selected:text-gray-900 text-gray-800"
+                  onClick={() => handleSelect(option.value)}
+                  className="cursor-pointer"
                 >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4 text-blue-600",
-                      value === option.value ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {highlightMatch(option.label)}
-                </CommandItem>
+                  <CommandItem
+                    value={option.value}
+                    onSelect={() => handleSelect(option.value)}
+                    className="hover:bg-gray-100 aria-selected:bg-gray-200 aria-selected:text-gray-900 text-gray-800"
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4 text-blue-600",
+                        value === option.value ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {highlightMatch(option.label)}
+                  </CommandItem>
+                </div>
               ))}
             </CommandGroup>
           </CommandList>
