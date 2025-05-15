@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { Badge } from "@/components/atoms/Badge";
 import Card from "@/components/atoms/Card/Card";
 import { Button } from "@/components/atoms/Button";
+import PromotionWidget from "@/components/features/campaigns/PromotionWidget";
 import {
   XIcon,
   CheckIcon,
@@ -51,11 +52,11 @@ interface SectionCardProps {
   children: React.ReactNode;
 }
 
-const SectionCard: React.FC<SectionCardProps> = ({ 
-  title, 
-  description, 
-  editLink, 
-  children 
+const SectionCard: React.FC<SectionCardProps> = ({
+  title,
+  description,
+  editLink,
+  children,
 }) => {
   return (
     <Card className="p-4 space-y-3">
@@ -80,36 +81,42 @@ const offers = [
     merchantId: "m1",
     name: "30% off select vitamins",
     shortText: "Vitamins Sale",
+    logoUrl: "https://placehold.co/400x200/ccf/fff?text=Vitamin+Logo",
   },
   {
     id: "o2",
     merchantId: "m1",
     name: "Buy 1 Get 1 on cough & cold",
     shortText: "Cold Medicine",
+    logoUrl: "https://placehold.co/400x200/ccf/fff?text=Medicine+Logo",
   },
   {
     id: "o3",
     merchantId: "m2",
     name: "$5 off $25 grocery purchase",
     shortText: "Grocery Deal",
+    logoUrl: "https://placehold.co/400x200/afa/333?text=Grocery+Logo",
   },
   {
     id: "o4",
     merchantId: "m3",
     name: "15% off laptops",
     shortText: "Laptop Discount",
+    logoUrl: "https://placehold.co/400x200/00f/fff?text=Laptop+Logo",
   },
   {
     id: "o5",
     merchantId: "m4",
     name: "$10 off monthly bill",
     shortText: "Bill Credit",
+    logoUrl: "https://placehold.co/400x200/f5f/fff?text=Bill+Logo",
   },
   {
     id: "o6",
     merchantId: "m5",
     name: "Free guacamole with entrée",
     shortText: "Free Guac",
+    logoUrl: "https://placehold.co/400x200/3b3/fff?text=Guac+Logo",
   },
 ];
 
@@ -117,6 +124,12 @@ const offers = [
 const getOfferName = (offerId: string, offersList: any[] = offers): string => {
   const offer = offersList.find((o) => o.id === offerId);
   return offer ? `${offer.name} (${offer.shortText})` : offerId;
+};
+
+// Helper function to get offer logo by ID
+const getOfferLogo = (offerId: string, offersList: any[] = offers): string => {
+  const offer = offersList.find((o) => o.id === offerId);
+  return offer?.logoUrl || "";
 };
 
 const ReviewStep: React.FC<ReviewStepProps> = ({ formData }) => {
@@ -218,27 +231,39 @@ const ReviewStep: React.FC<ReviewStepProps> = ({ formData }) => {
           <div className="space-y-4">
             {formData.ads.map((ad, index) => (
               <div key={ad.id} className="border rounded-md p-3">
-                <div className="flex justify-between">
-                  <h5 className="font-medium">
-                    Ad #{index + 1}: {ad.merchantName}
-                  </h5>
-                  <Badge variant="outline">
-                    {ad.mediaAssets.length} media assets
-                  </Badge>
-                </div>
-                <p className="text-sm mt-1">
-                  {getOfferName(ad.offerId, offers)}
-                </p>
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {ad.mediaType.map((type) => (
-                    <Badge key={type} variant="outline" className="text-xs">
-                      {type}
-                    </Badge>
-                  ))}
-                </div>
-                <div className="mt-3 text-xs text-muted-foreground flex justify-between">
-                  <span>Cost per activation: ${ad.costPerActivation}</span>
-                  <span>Cost per redemption: ${ad.costPerRedemption}</span>
+                <div className="flex gap-4">
+                  <div className="w-[180px] flex-shrink-0">
+                    <PromotionWidget
+                      merchantLogo={getOfferLogo(ad.offerId, offers)}
+                      merchantName={ad.merchantName}
+                      promotionText={getOfferName(ad.offerId, offers)}
+                      featured={true}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex justify-between">
+                      <h5 className="font-medium">
+                        Ad #{index + 1}: {ad.merchantName}
+                      </h5>
+                      <Badge variant="outline">
+                        {ad.mediaAssets.length} media assets
+                      </Badge>
+                    </div>
+                    <p className="text-sm mt-1">
+                      {getOfferName(ad.offerId, offers)}
+                    </p>
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {ad.mediaType.map((type) => (
+                        <Badge key={type} variant="outline" className="text-xs">
+                          {type}
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="mt-3 text-xs text-muted-foreground flex justify-between">
+                      <span>Cost per activation: ${ad.costPerActivation}</span>
+                      <span>Cost per redemption: ${ad.costPerRedemption}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -258,8 +283,8 @@ const ReviewStep: React.FC<ReviewStepProps> = ({ formData }) => {
       </SectionCard>
 
       {/* Target & Budget */}
-      <SectionCard 
-        title="Target & Budget" 
+      <SectionCard
+        title="Target & Budget"
         description="Target audience, distribution, and budget settings"
         editLink={2} // Step index for targeting, distribution, budget
       >
@@ -274,8 +299,8 @@ const ReviewStep: React.FC<ReviewStepProps> = ({ formData }) => {
                   {formData.targeting.campaignWeight === "small"
                     ? "Small - Lower budget, focused reach"
                     : formData.targeting.campaignWeight === "medium"
-                    ? "Medium - Balanced budget and reach"
-                    : "Large - Higher budget, expanded reach"}
+                      ? "Medium - Balanced budget and reach"
+                      : "Large - Higher budget, expanded reach"}
                 </p>
               </div>
               <div>
@@ -296,16 +321,12 @@ const ReviewStep: React.FC<ReviewStepProps> = ({ formData }) => {
                 {formData.targeting.locations.length > 0 ? (
                   <div className="flex flex-wrap gap-1 mt-1">
                     {formData.targeting.locations.map((loc) => (
-                      <Badge
-                        key={loc.id}
-                        variant="outline"
-                        className="text-xs"
-                      >
+                      <Badge key={loc.id} variant="outline" className="text-xs">
                         {loc.type === "state"
                           ? "State"
                           : loc.type === "msa"
-                          ? "MSA"
-                          : "ZIP"}
+                            ? "MSA"
+                            : "ZIP"}
                         : {loc.value}
                       </Badge>
                     ))}

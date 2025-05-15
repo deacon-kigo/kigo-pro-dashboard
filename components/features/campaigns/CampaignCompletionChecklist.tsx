@@ -10,6 +10,7 @@ import {
 } from "@/lib/redux/slices/campaignSlice";
 import { Badge } from "@/components/atoms/Badge";
 import { Button } from "@/components/atoms/Button";
+import PromotionWidget from "@/components/features/campaigns/PromotionWidget";
 import {
   ChevronRight,
   Plus,
@@ -114,6 +115,49 @@ export function CampaignCompletionChecklist({
     };
 
     return mediaTypes[typeId as keyof typeof mediaTypes] || typeId;
+  };
+
+  // Get merchant logo for preview
+  const getMerchantLogo = (offerId: string): string => {
+    // This is a mock function - in a real app, you would have a proper lookup
+    // This would typically come from your backend or a lookup function
+    const logoMap: { [key: string]: string } = {
+      o1: "https://placehold.co/400x200/ccf/fff?text=Vitamin+Logo",
+      o2: "https://placehold.co/400x200/ccf/fff?text=Medicine+Logo",
+      o3: "https://placehold.co/400x200/afa/333?text=Grocery+Logo",
+      o4: "https://placehold.co/400x200/00f/fff?text=Laptop+Logo",
+      o5: "https://placehold.co/400x200/f5f/fff?text=Bill+Logo",
+      o6: "https://placehold.co/400x200/3b3/fff?text=Guac+Logo",
+      mcm_o1_2023: "https://placehold.co/400x200/ccf/fff?text=CVS+Logo",
+      mcm_o2_2023: "https://placehold.co/400x200/ccf/fff?text=CVS+Logo",
+      mcm_o3_2023: "https://placehold.co/400x200/afa/333?text=Albertsons+Logo",
+      mcm_o4_2023: "https://placehold.co/400x200/00f/fff?text=Best+Buy+Logo",
+      mcm_o5_2023: "https://placehold.co/400x200/f5f/fff?text=T-Mobile+Logo",
+      mcm_o6_2023: "https://placehold.co/400x200/3b3/fff?text=Chipotle+Logo",
+    };
+
+    return logoMap[offerId] || "https://placehold.co/400x200/ccf/fff?text=Logo";
+  };
+
+  // Get promotion text for preview
+  const getPromotionText = (offerId: string): string => {
+    // This is a mock function - in a real app, you would have a proper lookup
+    const textMap: { [key: string]: string } = {
+      o1: "30% off select vitamins",
+      o2: "Buy 1 Get 1 on cough & cold",
+      o3: "$5 off $25 grocery purchase",
+      o4: "15% off laptops",
+      o5: "$10 off monthly bill",
+      o6: "Free guacamole with entrée",
+      mcm_o1_2023: "30% off select vitamins",
+      mcm_o2_2023: "Buy 1 Get 1 on cough & cold",
+      mcm_o3_2023: "$5 off $25 grocery purchase",
+      mcm_o4_2023: "15% off laptops",
+      mcm_o5_2023: "$10 off monthly bill",
+      mcm_o6_2023: "Free guacamole with entrée",
+    };
+
+    return textMap[offerId] || "Promotion";
   };
 
   // Handle toggling the expanded state of an ad
@@ -359,6 +403,32 @@ export function CampaignCompletionChecklist({
                                     {getMediaTypeLabel(type)}
                                   </Badge>
                                 ))}
+                              </div>
+                            </div>
+
+                            {/* Add Promotion Widget Preview */}
+                            <div className="my-2 pt-2 border-t">
+                              <p className="text-[10px] font-medium mb-1">
+                                Preview:
+                              </p>
+                              <div className="w-full max-w-[140px] mx-auto">
+                                <PromotionWidget
+                                  merchantLogo={getMerchantLogo(ad.offerId)}
+                                  merchantName={ad.merchantName}
+                                  promotionText={getPromotionText(ad.offerId)}
+                                  featured={true}
+                                  bannerImage={
+                                    ad.mediaAssets.length > 0
+                                      ? ad.mediaAssets[0].previewUrl
+                                      : undefined
+                                  }
+                                  mediaType={
+                                    ad.mediaType.length > 0
+                                      ? ad.mediaType[0]
+                                      : undefined
+                                  }
+                                  className="transform scale-90 origin-top-left"
+                                />
                               </div>
                             </div>
 
