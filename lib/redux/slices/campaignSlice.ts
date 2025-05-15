@@ -74,6 +74,7 @@ export interface CampaignAd {
 export interface CampaignBudget {
   maxBudget: number;
   estimatedReach: number | null;
+  noMaxBudget: boolean;
 }
 
 export interface CampaignState {
@@ -119,6 +120,7 @@ const initialState: CampaignState = {
     budget: {
       maxBudget: 0,
       estimatedReach: null,
+      noMaxBudget: false,
     },
   },
   stepValidation: {

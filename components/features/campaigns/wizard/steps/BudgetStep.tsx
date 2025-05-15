@@ -5,6 +5,7 @@ import { Input } from "@/components/atoms/Input";
 import { Label } from "@/components/atoms/Label";
 import { CampaignBudget } from "@/lib/redux/slices/campaignSlice";
 import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface BudgetStepProps {
   formData: CampaignBudget;
@@ -19,20 +20,6 @@ const BudgetStep: React.FC<BudgetStepProps> = ({
   campaignWeight,
   setStepValidation,
 }) => {
-  // Get the estimated reach based on campaign weight
-  const getEstimatedReach = () => {
-    switch (campaignWeight) {
-      case "small":
-        return 50000;
-      case "medium":
-        return 100000;
-      case "large":
-        return 200000;
-      default:
-        return 0;
-    }
-  };
-
   // Get recommended budget range based on campaign weight
   const getBudgetRange = () => {
     switch (campaignWeight) {
@@ -48,7 +35,6 @@ const BudgetStep: React.FC<BudgetStepProps> = ({
   };
 
   const budgetRange = getBudgetRange();
-  const estimatedReach = getEstimatedReach();
 
   // Handle budget change from slider
   const handleBudgetSliderChange = (value: number[]) => {
@@ -66,23 +52,22 @@ const BudgetStep: React.FC<BudgetStepProps> = ({
     updateBudget({ maxBudget: clampedValue });
   };
 
-  // Calculate impressions per dollar
-  const impressionsPerDollar = estimatedReach / (formData.maxBudget || 1);
-
-  // Calculate estimated cost per click (CPC)
-  const estimatedCPC = (formData.maxBudget || 1) / (estimatedReach * 0.02); // Assuming 2% click rate
+  // Handler for toggling no maximum budget
+  const handleNoMaxBudgetChange = (checked: boolean) => {
+    updateBudget({
+      noMaxBudget: checked,
+    });
+  };
 
   // Validate the form whenever data changes
   useEffect(() => {
     // Always set as valid for purely presentational UI
     setStepValidation(true);
-
-    // Don't automatically update the budget with estimated reach to avoid loops
   }, [setStepValidation]);
 
   // Set default budget on initial render if not set
   useEffect(() => {
-    if (formData.maxBudget === 0) {
+    if (formData.maxBudget === 0 && !formData.noMaxBudget) {
       updateBudget({ maxBudget: budgetRange.default });
     }
   }, []);
@@ -97,86 +82,59 @@ const BudgetStep: React.FC<BudgetStepProps> = ({
             Set the maximum amount you're willing to spend on this campaign.
           </p>
 
-          <div className="mt-6 space-y-6">
-            <div className="flex items-center space-x-4">
-              <div className="w-full">
-                <Slider
-                  max={budgetRange.max}
-                  min={budgetRange.min}
-                  step={100}
-                  value={[formData.maxBudget || budgetRange.default]}
-                  onValueChange={handleBudgetSliderChange}
-                  className="w-full"
-                />
-                <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-                  <span>${budgetRange.min.toLocaleString()}</span>
-                  <span>${budgetRange.max.toLocaleString()}</span>
+          {!formData.noMaxBudget && (
+            <div className="mt-6 space-y-6">
+              <div className="flex items-center space-x-4">
+                <div className="w-full">
+                  <Slider
+                    max={budgetRange.max}
+                    min={budgetRange.min}
+                    step={100}
+                    value={[formData.maxBudget || budgetRange.default]}
+                    onValueChange={handleBudgetSliderChange}
+                    className="w-full"
+                    disabled={formData.noMaxBudget}
+                  />
+                  <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+                    <span>${budgetRange.min.toLocaleString()}</span>
+                    <span>${budgetRange.max.toLocaleString()}</span>
+                  </div>
+                </div>
+
+                <div className="w-32">
+                  <Label htmlFor="budget-input">Budget ($)</Label>
+                  <Input
+                    id="budget-input"
+                    type="number"
+                    min={budgetRange.min}
+                    max={budgetRange.max}
+                    value={formData.maxBudget || ""}
+                    onChange={handleBudgetInputChange}
+                    className="mt-1"
+                    disabled={formData.noMaxBudget}
+                  />
                 </div>
               </div>
-
-              <div className="w-32">
-                <Label htmlFor="budget-input">Budget ($)</Label>
-                <Input
-                  id="budget-input"
-                  type="number"
-                  min={budgetRange.min}
-                  max={budgetRange.max}
-                  value={formData.maxBudget || ""}
-                  onChange={handleBudgetInputChange}
-                  className="mt-1"
-                />
-              </div>
             </div>
-          </div>
-        </div>
+          )}
 
-        {/* Campaign Metrics */}
-        <div className="border rounded-md p-4 space-y-4">
-          <h4 className="font-medium">Estimated Performance Metrics</h4>
-          <p className="text-sm text-muted-foreground">
-            Based on your campaign weight and budget.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-            <div className="p-4 bg-blue-50 rounded-md">
-              <h5 className="text-sm font-medium text-blue-700">
-                Estimated Reach
-              </h5>
-              <p className="text-2xl font-bold text-blue-800 mt-1">
-                {estimatedReach.toLocaleString()}
-              </p>
-              <p className="text-xs text-blue-600 mt-1">Unique impressions</p>
-            </div>
-
-            <div className="p-4 bg-green-50 rounded-md">
-              <h5 className="text-sm font-medium text-green-700">
-                Impressions/Dollar
-              </h5>
-              <p className="text-2xl font-bold text-green-800 mt-1">
-                {Math.round(impressionsPerDollar).toLocaleString()}
-              </p>
-              <p className="text-xs text-green-600 mt-1">
-                Impressions per $1 spent
-              </p>
-            </div>
-
-            <div className="p-4 bg-purple-50 rounded-md">
-              <h5 className="text-sm font-medium text-purple-700">
-                Estimated CPC
-              </h5>
-              <p className="text-2xl font-bold text-purple-800 mt-1">
-                ${estimatedCPC.toFixed(2)}
-              </p>
-              <p className="text-xs text-purple-600 mt-1">
-                Cost per click (avg.)
-              </p>
-            </div>
+          <div className="flex items-center space-x-2 mt-4">
+            <Checkbox
+              id="no-max-budget"
+              checked={formData.noMaxBudget}
+              onCheckedChange={handleNoMaxBudgetChange}
+            />
+            <Label htmlFor="no-max-budget" className="text-sm cursor-pointer">
+              No maximum budget (campaign runs without spending limit)
+            </Label>
           </div>
 
-          <p className="text-xs text-muted-foreground mt-4">
-            Note: These are estimates based on historical data. Actual
-            performance may vary.
-          </p>
+          {formData.noMaxBudget && (
+            <p className="text-xs text-amber-600 mt-2">
+              Warning: Your campaign will run without a spending limit. You can
+              change this setting later.
+            </p>
+          )}
         </div>
       </div>
     </div>
