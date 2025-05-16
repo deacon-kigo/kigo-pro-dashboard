@@ -575,8 +575,14 @@ export function AssignToProgramsPanel({
                               isSomeProgramsSelected(partner);
                           }
                         }}
-                        onCheckedChange={(checked) =>
-                          handlePartnerSelection(partner, !!checked)
+                        onCheckedChange={(checked) => {
+                          handlePartnerSelection(partner, !!checked);
+                          // Stop propagation to prevent panel toggling
+                        }}
+                        className={
+                          isSomeProgramsSelected(partner)
+                            ? "data-[state=indeterminate]:bg-primary/40 data-[state=indeterminate]:text-primary-foreground"
+                            : ""
                         }
                         onClick={(e) => e.stopPropagation()}
                       />
@@ -642,8 +648,14 @@ export function AssignToProgramsPanel({
                                       );
                                   }
                                 }}
-                                onCheckedChange={(checked) =>
-                                  handleProgramSelection(program, !!checked)
+                                onCheckedChange={(checked) => {
+                                  handleProgramSelection(program, !!checked);
+                                  // Stop propagation to prevent panel toggling
+                                }}
+                                className={
+                                  isSomeCampaignsSelected(program.campaigns)
+                                    ? "data-[state=indeterminate]:bg-primary/40 data-[state=indeterminate]:text-primary-foreground"
+                                    : ""
                                 }
                                 onClick={(e) => e.stopPropagation()}
                               />
@@ -682,12 +694,14 @@ export function AssignToProgramsPanel({
                                     id={`campaign-${campaign.id}`}
                                     checked={!!selectedCampaigns[campaign.id]}
                                     disabled={campaign.active === false}
-                                    onCheckedChange={(checked) =>
+                                    onCheckedChange={(checked) => {
                                       handleCampaignSelection(
                                         campaign.id,
                                         !!checked
-                                      )
-                                    }
+                                      );
+                                      // Stop propagation to prevent unwanted toggling
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
                                   />
                                 </div>
 
