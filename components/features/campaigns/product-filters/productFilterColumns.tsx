@@ -335,22 +335,6 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
                   Edit Filter
                 </button>
 
-                {/* Assign to Programs option (only for non-drafts) */}
-                {!isDraft && (
-                  <button
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      document
-                        .getElementById(`filter-menu-${filterId}`)
-                        ?.classList.add("hidden");
-                      handleAssignPrograms();
-                    }}
-                  >
-                    Assign to Programs
-                  </button>
-                )}
-
                 {/* Delete option */}
                 <button
                   className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
