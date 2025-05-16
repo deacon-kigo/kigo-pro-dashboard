@@ -562,29 +562,18 @@ export function AssignToProgramsPanel({
                   </div>
 
                   <div className="flex items-center flex-1">
-                    <div className="mr-2">
+                    <div className="mr-2" onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         id={`partner-${partner.id}`}
                         checked={isAllProgramsSelected(partner.programs)}
-                        ref={(checkbox) => {
-                          if (checkbox) {
-                            const inputEl =
-                              checkbox as unknown as HTMLInputElement;
-                            inputEl.indeterminate =
-                              !isAllProgramsSelected(partner.programs) &&
-                              isSomeProgramsSelected(partner);
-                          }
-                        }}
                         onCheckedChange={(checked) => {
                           handlePartnerSelection(partner, !!checked);
                         }}
                         className={
-                          !isAllProgramsSelected(partner.programs) &&
                           isSomeProgramsSelected(partner)
-                            ? "bg-primary/40 text-primary-foreground"
+                            ? "bg-primary/40 data-[state=checked]:bg-primary"
                             : ""
                         }
-                        onClick={(e) => e.stopPropagation()}
                       />
                     </div>
 
@@ -629,35 +618,23 @@ export function AssignToProgramsPanel({
                           </div>
 
                           <div className="flex items-center flex-1">
-                            <div className="mr-2">
+                            <div
+                              className="mr-2"
+                              onClick={(e) => e.stopPropagation()}
+                            >
                               <Checkbox
                                 id={`program-${program.id}`}
                                 checked={isAllCampaignsSelected(
                                   program.campaigns
                                 )}
-                                ref={(checkbox) => {
-                                  if (checkbox) {
-                                    const inputEl =
-                                      checkbox as unknown as HTMLInputElement;
-                                    inputEl.indeterminate =
-                                      !isAllCampaignsSelected(
-                                        program.campaigns
-                                      ) &&
-                                      isSomeCampaignsSelected(
-                                        program.campaigns
-                                      );
-                                  }
-                                }}
                                 onCheckedChange={(checked) => {
                                   handleProgramSelection(program, !!checked);
                                 }}
                                 className={
-                                  !isAllCampaignsSelected(program.campaigns) &&
                                   isSomeCampaignsSelected(program.campaigns)
-                                    ? "bg-primary/40 text-primary-foreground"
+                                    ? "bg-primary/40 data-[state=checked]:bg-primary"
                                     : ""
                                 }
-                                onClick={(e) => e.stopPropagation()}
                               />
                             </div>
 
@@ -689,7 +666,10 @@ export function AssignToProgramsPanel({
                                   campaign.active === false ? "opacity-60" : ""
                                 } ${getSelectionFeedbackClass(campaign.id)}`}
                               >
-                                <div className="mr-2">
+                                <div
+                                  className="mr-2"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
                                   <Checkbox
                                     id={`campaign-${campaign.id}`}
                                     checked={!!selectedCampaigns[campaign.id]}
@@ -699,9 +679,7 @@ export function AssignToProgramsPanel({
                                         campaign.id,
                                         !!checked
                                       );
-                                      // Stop propagation to prevent unwanted toggling
                                     }}
-                                    onClick={(e) => e.stopPropagation()}
                                   />
                                 </div>
 
