@@ -28,6 +28,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
+import { useResizablePanel } from "@/lib/context/ResizablePanelContext";
+import { AssignToProgramsPanel } from "./AssignToProgramsPanel";
 
 // Define the shape of our data
 export type ProductFilter = {
@@ -258,6 +260,7 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
       const isDraft = status === "Draft";
       const filterId = row.original.id;
       const router = useRouter();
+      const { openPanel, closePanel } = useResizablePanel();
 
       // Handle actions for this filter
       const handleViewDetails = () => {
@@ -276,9 +279,20 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
         navigator.clipboard.writeText(filterId);
       };
 
+      const handleAssignPrograms = () => {
+        // Open the resizable panel with our program assignment component
+        openPanel(
+          <AssignToProgramsPanel
+            filterId={filterId}
+            filterName={row.original.name}
+            onClose={closePanel}
+          />
+        );
+      };
+
       return (
         <div className="flex">
-          {/* Using the shadcn Button component */}
+          {/* Using a native HTML button element to avoid any component nesting issues */}
           <div className="relative group">
             <Button
               variant="secondary"
@@ -298,7 +312,7 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
             {/* Custom dropdown menu to avoid infinite loops with the shadcn component */}
             <div
               id={`filter-menu-${filterId}`}
-              className="hidden absolute left-0 mt-1 w-48 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+              className="hidden absolute left-0 mt-1 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
               tabIndex={-1}
             >
               <div className="py-1">
@@ -331,6 +345,21 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
                   }}
                 >
                   Copy Filter ID
+                </button>
+
+                {/* New option to assign filter to program campaigns */}
+                <button
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    document
+                      .getElementById(`filter-menu-${filterId}`)
+                      ?.classList.add("hidden");
+                    // Open the resizable panel instead of navigating
+                    handleAssignPrograms();
+                  }}
+                >
+                  Assign to Program Campaigns
                 </button>
 
                 <div className="h-px bg-gray-200"></div>

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
-import { ReduxProvider } from "@/lib/redux/provider";
+import { Providers } from "@/lib/providers";
 import URLSyncProvider from "@/lib/providers/URLSyncProvider";
 import { Toaster } from "@/components/molecules/Toaster";
 
@@ -21,7 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ReduxProvider>
+        <Providers>
           <URLSyncProvider>
             <Suspense
               fallback={
@@ -38,7 +38,7 @@ export default function RootLayout({
               {children}
             </Suspense>
           </URLSyncProvider>
-        </ReduxProvider>
+        </Providers>
         <Toaster />
       </body>
     </html>

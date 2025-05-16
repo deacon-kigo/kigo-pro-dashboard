@@ -14,15 +14,27 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/atoms/Breadcrumb";
+import {
+  ResizablePanelProvider,
+  useResizablePanel,
+} from "@/lib/context/ResizablePanelContext";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 
 interface AppLayoutProps {
   children: ReactNode;
   customBreadcrumb?: ReactNode;
 }
 
-export const AppLayout = ({ children, customBreadcrumb }: AppLayoutProps) => {
+// A wrapper component that uses the context
+function AppLayoutContent({ children, customBreadcrumb }: AppLayoutProps) {
   const { sidebarCollapsed } = useAppSelector((state) => state.ui);
   const pathname = usePathname();
+  const { isPanelOpen, panelContent, panelMinWidth, panelMaxWidth } =
+    useResizablePanel();
 
   // Add client-side detection to avoid hydration errors
   const [isClient, setIsClient] = useState(false);
@@ -40,16 +52,6 @@ export const AppLayout = ({ children, customBreadcrumb }: AppLayoutProps) => {
       willChange: "padding-left",
     };
   }, [isClient]);
-
-  const contentContainerStyle = useMemo(() => {
-    return {
-      width: "100%",
-      maxWidth: "1600px",
-      margin: "0 auto",
-      transition: "width 300ms cubic-bezier(0.4, 0, 0.2, 1)",
-      transform: "translateZ(0)",
-    };
-  }, []);
 
   // Generate breadcrumb items based on current path
   const getBreadcrumbItems = () => {
@@ -97,24 +99,72 @@ export const AppLayout = ({ children, customBreadcrumb }: AppLayoutProps) => {
     );
   };
 
+  // Determine the layout based on whether the panel is open
+  if (!isPanelOpen) {
+    return (
+      <div className="flex min-h-screen bg-bg-light">
+        <Sidebar />
+        <div className="flex-1 flex flex-col w-full overflow-hidden">
+          <Header />
+          <main
+            className="pt-[72px] p-6 min-h-screen overflow-hidden transition-all duration-300 ease-in-out will-change-padding"
+            style={mainContentStyle}
+          >
+            <div className="h-full w-full pt-4">
+              {customBreadcrumb || getBreadcrumbItems()}
+              {children}
+            </div>
+          </main>
+        </div>
+        <AIChat />
+      </div>
+    );
+  }
+
+  // Layout with resizable panel
   return (
     <div className="flex min-h-screen bg-bg-light">
       <Sidebar />
       <div className="flex-1 flex flex-col w-full overflow-hidden">
         <Header />
         <main
-          className="pt-[72px] p-6 min-h-screen overflow-hidden transition-all duration-300 ease-in-out will-change-padding"
+          className="pt-[72px] min-h-screen overflow-hidden transition-all duration-300 ease-in-out"
           style={mainContentStyle}
         >
-          <div className="h-full w-full pt-4" style={contentContainerStyle}>
-            {customBreadcrumb || getBreadcrumbItems()}
-            {children}
-          </div>
+          <ResizablePanelGroup direction="horizontal" className="h-full">
+            {/* Main content panel */}
+            <ResizablePanel defaultSize={80} minSize={50}>
+              <div className="h-full p-6">
+                <div className="h-full w-full pt-4">
+                  {customBreadcrumb || getBreadcrumbItems()}
+                  {children}
+                </div>
+              </div>
+            </ResizablePanel>
+
+            {/* Resizable handle */}
+            <ResizableHandle withHandle />
+
+            {/* Side panel */}
+            <ResizablePanel
+              defaultSize={20}
+              minSize={15}
+              maxSize={40}
+              className="border-l border-border-light bg-white"
+            >
+              <div className="h-full p-6">{panelContent}</div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
         </main>
       </div>
       <AIChat />
     </div>
   );
+}
+
+// Export the main component that provides the context
+export const AppLayout = (props: AppLayoutProps) => {
+  return <AppLayoutContent {...props} />;
 };
 
 export default AppLayout;
