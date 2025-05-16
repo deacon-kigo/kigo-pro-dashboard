@@ -23,13 +23,6 @@ import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/molecules/PageHeader";
 import AppLayout from "@/components/templates/AppLayout/AppLayout";
 
-// This function is needed for static site generation
-export const generateStaticParams = async () => {
-  // Hardcode some example IDs for static generation
-  // In a real app, this would fetch all possible filter IDs from an API
-  return [{ id: "filter-123" }, { id: "filter-456" }, { id: "filter-789" }];
-};
-
 // Mock data for program campaigns
 // This would typically come from an API call
 const mockProgramCampaigns = [
@@ -338,9 +331,15 @@ export default function AssignProgramsPage() {
                         <Checkbox
                           id={`category-${category}`}
                           checked={isFullySelected}
-                          indeterminate={
-                            !isFullySelected && isPartiallySelected
-                          }
+                          ref={(checkbox) => {
+                            if (checkbox) {
+                              // Use HTMLInputElement to properly set indeterminate
+                              const inputEl =
+                                checkbox as unknown as HTMLInputElement;
+                              inputEl.indeterminate =
+                                !isFullySelected && isPartiallySelected;
+                            }
+                          }}
                           onCheckedChange={(checked) =>
                             handleCategorySelection(category, checked === true)
                           }
@@ -439,8 +438,8 @@ export default function AssignProgramsPage() {
                 >
                   Cancel
                 </Button>
-                <Button onClick={handleSave} disabled={saving} loading={saving}>
-                  Save Assignments
+                <Button onClick={handleSave} disabled={saving}>
+                  {saving ? "Saving..." : "Save Assignments"}
                 </Button>
               </div>
             </div>
