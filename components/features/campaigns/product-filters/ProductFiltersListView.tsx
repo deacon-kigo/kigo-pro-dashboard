@@ -21,6 +21,16 @@ import { ProductFilter, formatDate } from "./productFilterColumns";
 import { ProductFilterSearchBar, SearchField } from "./ProductFilterSearchBar";
 import { useDispatch } from "react-redux";
 import { clearAllDropdowns } from "@/lib/redux/slices/uiSlice";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/molecules/alert-dialog/AlertDialog";
 
 // Type for pagination state
 interface PaginationState {
@@ -40,25 +50,55 @@ const BulkActions = memo(function BulkActions({
   selectedCount: number;
   onDelete: () => void;
 }) {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
   if (selectedCount === 0) return null;
 
   return (
-    <div className="bg-gray-50 border rounded-md p-2 flex items-center gap-3 mb-4">
-      <span className="text-sm font-medium ml-2">
-        {selectedCount} {selectedCount === 1 ? "filter" : "filters"} selected
-      </span>
-      <div className="flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
-          onClick={onDelete}
-        >
-          <TrashIcon className="h-4 w-4" />
-          Delete
-        </Button>
+    <>
+      <div className="bg-gray-50 border rounded-md p-2 flex items-center gap-3 mb-4">
+        <span className="text-sm font-medium ml-2">
+          {selectedCount} {selectedCount === 1 ? "filter" : "filters"} selected
+        </span>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+            onClick={() => setDeleteDialogOpen(true)}
+          >
+            <TrashIcon className="h-4 w-4" />
+            Delete
+          </Button>
+        </div>
       </div>
-    </div>
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Filters</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete the selected {selectedCount}{" "}
+              {selectedCount === 1 ? "filter" : "filters"}? This action cannot
+              be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                onDelete();
+                setDeleteDialogOpen(false);
+              }}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 });
 

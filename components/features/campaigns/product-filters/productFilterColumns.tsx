@@ -30,6 +30,16 @@ import {
 import { useRouter } from "next/navigation";
 import { useResizablePanel } from "@/lib/context/ResizablePanelContext";
 import { AssignToProgramsPanel } from "./AssignToProgramsPanel";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/molecules/alert-dialog/AlertDialog";
 
 // Define the shape of our data
 export type ProductFilter = {
@@ -261,6 +271,8 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
       const filterId = row.original.id;
       const router = useRouter();
       const { openPanel, closePanel } = useResizablePanel();
+      // Add state for delete dialog
+      const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
       // Handle actions for this filter
       const handleViewDetails = () => {
@@ -288,6 +300,14 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
             onClose={closePanel}
           />
         );
+      };
+
+      // Handler for delete confirmation
+      const handleConfirmedDelete = () => {
+        // Handle delete logic here
+        console.log(`Deleting filter ${filterId}`);
+        // In a real implementation, you would call an API and then refresh the table
+        setDeleteDialogOpen(false);
       };
 
       return (
@@ -343,22 +363,39 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
                     document
                       .getElementById(`filter-menu-${filterId}`)
                       ?.classList.add("hidden");
-                    // Implement delete functionality (could show confirmation first)
-                    if (
-                      window.confirm(
-                        `Are you sure you want to delete this filter: ${row.original.name}?`
-                      )
-                    ) {
-                      // Handle delete logic here
-                      console.log(`Deleting filter ${filterId}`);
-                      // In a real implementation, you would call an API and then refresh the table
-                    }
+                    // Open the delete confirmation dialog
+                    setDeleteDialogOpen(true);
                   }}
                 >
                   Delete Filter
                 </button>
               </div>
             </div>
+
+            {/* Delete confirmation dialog */}
+            <AlertDialog
+              open={deleteDialogOpen}
+              onOpenChange={setDeleteDialogOpen}
+            >
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Filter</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete this filter: "
+                    {row.original.name}"? This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleConfirmedDelete}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       );
