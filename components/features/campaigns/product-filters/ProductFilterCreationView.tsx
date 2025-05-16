@@ -33,6 +33,9 @@ import {
   LightBulbIcon,
   FunnelIcon,
   PencilIcon,
+  UsersIcon,
+  DocumentTextIcon,
+  ClipboardDocumentListIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import {
@@ -81,6 +84,7 @@ import {
 import { getFieldPlaceholder } from "@/services/ai/tools";
 import { generateFilterCoverageStats } from "@/services/ai/filterHandler";
 import FilterCoveragePanel from "./FilterCoveragePanel";
+import { AssignToProgramsPanel } from "./AssignToProgramsPanel";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -760,7 +764,7 @@ export default function ProductFilterCreationView() {
         <div className="flex gap-3 h-full">
           {/* Left Column - AI Assistant Panel with fixed height and position */}
           <div
-            className="w-[448px] flex-shrink-0"
+            className="w-[350px] flex-shrink-0"
             style={{
               position: "sticky",
               top: "1rem",
@@ -953,7 +957,7 @@ export default function ProductFilterCreationView() {
                 <div className="p-4">
                   <div className="grid grid-cols-12 gap-6">
                     {/* Left side - Basic Information and Status */}
-                    <div className="col-span-4 space-y-6">
+                    <div className="col-span-5 space-y-6">
                       {/* Filter Conditions Summary Accordion - REMOVED */}
 
                       {/* Basic Information Section */}
@@ -961,16 +965,19 @@ export default function ProductFilterCreationView() {
                         type="single"
                         collapsible
                         defaultValue="basic-info"
-                        className="border rounded-md"
+                        className="border rounded-md overflow-hidden"
                       >
                         <AccordionItem
                           value="basic-info"
                           className="border-none"
                         >
                           <AccordionTrigger className="px-4 py-3 text-sm font-medium">
-                            Basic Information
+                            <div className="flex items-center">
+                              <DocumentTextIcon className="h-4 w-4 mr-2 text-blue-600" />
+                              Basic Information
+                            </div>
                           </AccordionTrigger>
-                          <AccordionContent className="px-4 text-left">
+                          <AccordionContent className="px-4 text-left overflow-hidden">
                             <div className="space-y-5 pb-2 text-left">
                               <div className="text-left">
                                 <Label
@@ -1055,51 +1062,73 @@ export default function ProductFilterCreationView() {
                         </AccordionItem>
                       </Accordion>
 
-                      {/* Coverage statistics as accordion */}
+                      {/* Assignment to Program Campaigns as accordion */}
                       <Accordion
                         type="single"
                         collapsible
-                        defaultValue="coverage-stats"
-                        className="border rounded-md"
+                        defaultValue="program-assignment"
+                        className="border rounded-md overflow-hidden"
                       >
                         <AccordionItem
-                          value="coverage-stats"
+                          value="program-assignment"
                           className="border-none"
                         >
                           <AccordionTrigger className="px-4 py-3 text-sm font-medium">
-                            Filter Coverage Statistics
+                            <div className="flex items-center">
+                              <UsersIcon className="h-4 w-4 mr-2" />
+                              Assign to Program Campaigns
+                              <Badge
+                                variant="outline"
+                                className="ml-2 text-xs bg-blue-50 text-blue-700"
+                              >
+                                Optional
+                              </Badge>
+                            </div>
                           </AccordionTrigger>
-                          <AccordionContent className="px-4 pb-4">
-                            <FilterCoveragePanel
-                              coverageStats={coverageStats}
-                              isLoading={isGeneratingFilters}
-                              onApplySuggestion={handleSuggestionApply}
-                            />
+                          <AccordionContent className="overflow-hidden">
+                            <div className="px-4 py-2 border-b border-gray-100 bg-gray-50 text-xs text-gray-600 mb-4">
+                              You can assign this filter to program campaigns
+                              now or later. This step is optional.
+                            </div>
+                            <div className="relative max-h-[350px] overflow-hidden pt-2 px-4">
+                              <AssignToProgramsPanel
+                                filterId={generateUniqueId()} // Using a temporary ID for new filters
+                                filterName={filterName}
+                                onClose={() => {}} // No-op since we're not in a resizable panel
+                              />
+                            </div>
                           </AccordionContent>
                         </AccordionItem>
                       </Accordion>
                     </div>
 
                     {/* Right side - Filter Builder and Conditions */}
-                    <div className="col-span-8 flex flex-col space-y-4">
+                    <div className="col-span-7 flex flex-col space-y-4">
                       {/* Condition Builder */}
                       <Accordion
                         type="single"
                         collapsible
                         defaultValue="condition-builder"
-                        className="border rounded-md"
+                        className="border rounded-md overflow-hidden"
                       >
                         <AccordionItem
                           value="condition-builder"
                           className="border-none"
                         >
                           <AccordionTrigger className="px-4 py-3 text-sm font-medium">
-                            Add Filter Condition
-                            <Badge variant="success" size="sm" className="ml-2">
-                              {filterCriteria.length}
-                            </Badge>
+                            <div className="flex items-center">
+                              <FunnelIcon className="h-4 w-4 mr-2 text-purple-600" />
+                              <span>Add Filter Condition</span>
+                              <Badge
+                                variant="success"
+                                size="sm"
+                                className="ml-2"
+                              >
+                                {filterCriteria.length}
+                              </Badge>
+                            </div>
                           </AccordionTrigger>
-                          <AccordionContent className="px-4">
+                          <AccordionContent className="px-4 overflow-hidden">
                             <div className="space-y-4 pb-2">
                               {/* Accessibility-enhanced help text with aria attributes */}
                               <div
@@ -1270,16 +1299,19 @@ export default function ProductFilterCreationView() {
                         type="single"
                         collapsible
                         defaultValue="current-conditions"
-                        className="border rounded-md"
+                        className="border rounded-md overflow-hidden"
                       >
                         <AccordionItem
                           value="current-conditions"
                           className="border-none"
                         >
                           <AccordionTrigger className="px-4 py-3 text-sm font-medium">
-                            Current Conditions
+                            <div className="flex items-center">
+                              <ClipboardDocumentListIcon className="h-4 w-4 mr-2 text-green-600" />
+                              Current Conditions
+                            </div>
                           </AccordionTrigger>
-                          <AccordionContent className="p-0">
+                          <AccordionContent className="p-0 overflow-hidden">
                             <div className="grid grid-cols-2 overflow-hidden">
                               {/* Include Rules */}
                               <div className="border-r flex flex-col">
