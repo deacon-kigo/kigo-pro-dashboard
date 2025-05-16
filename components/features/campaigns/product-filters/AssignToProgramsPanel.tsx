@@ -5,6 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/atoms/Button";
 import { Badge } from "@/components/atoms/Badge";
+import { Label } from "@/components/atoms/Label";
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,
@@ -12,56 +13,159 @@ import {
   SparklesIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import {
+  ChevronDown,
+  ChevronRight,
+  Building,
+  Briefcase,
+  LayoutGrid,
+  CheckCircle,
+} from "lucide-react";
 
-// Mock data for program campaigns
+// Define the hierarchical structure based on Kigo Pro glossary
+interface Campaign {
+  id: string;
+  name: string;
+  description?: string;
+  active?: boolean;
+  currentFilters?: string[];
+}
+
+interface Program {
+  id: string;
+  name: string;
+  campaigns: Campaign[];
+}
+
+interface Partner {
+  id: string;
+  name: string;
+  programs: Program[];
+}
+
+// Mock data for the nested hierarchy - using exact structure from ads-create
 // This would typically come from an API call
-const mockProgramCampaigns = [
+const mockPartners: Partner[] = [
   {
-    id: "pc-001",
-    name: "Summer Holiday Campaign",
-    description: "Special offers for summer vacation packages",
-    category: "Seasonal",
-    active: true,
-    currentFilters: ["filter-123"],
+    id: "partner1",
+    name: "Augeo",
+    programs: [
+      {
+        id: "prog1",
+        name: "LexisNexis",
+        campaigns: [
+          {
+            id: "camp1",
+            name: "Legal Research Promotion",
+            description:
+              "Promotional offers for legal research tools and services",
+            active: true,
+            currentFilters: ["filter-123"],
+          },
+          {
+            id: "camp2",
+            name: "Student Discount Initiative",
+            description: "Special discounts for law students",
+            active: true,
+            currentFilters: [],
+          },
+        ],
+      },
+      {
+        id: "prog2",
+        name: "Fidelity Investments",
+        campaigns: [
+          {
+            id: "camp3",
+            name: "Retirement Planning",
+            description: "Offers related to retirement planning services",
+            active: true,
+            currentFilters: [],
+          },
+          {
+            id: "camp4",
+            name: "Wealth Management",
+            description: "Premium offers for wealth management clients",
+            active: true,
+            currentFilters: ["filter-456"],
+          },
+        ],
+      },
+    ],
   },
   {
-    id: "pc-002",
-    name: "Winter Wonderland",
-    description: "Winter season promotional campaign",
-    category: "Seasonal",
-    active: true,
-    currentFilters: [],
+    id: "partner2",
+    name: "ampliFI",
+    programs: [
+      {
+        id: "prog3",
+        name: "Chase",
+        campaigns: [
+          {
+            id: "camp5",
+            name: "Credit Card Rewards",
+            description: "Exclusive offers for Chase credit card holders",
+            active: true,
+            currentFilters: [],
+          },
+          {
+            id: "camp6",
+            name: "Business Banking Solutions",
+            description: "Promotions for small business banking customers",
+            active: false,
+            currentFilters: [],
+          },
+        ],
+      },
+    ],
   },
   {
-    id: "pc-003",
-    name: "Anniversary Special",
-    description: "Celebrating our 10th anniversary with special offers",
-    category: "Special Event",
-    active: true,
-    currentFilters: ["filter-456"],
-  },
-  {
-    id: "pc-004",
-    name: "Family Package Promotion",
-    description: "Special rates for family packages",
-    category: "Demographic",
-    active: false,
-    currentFilters: [],
-  },
-  {
-    id: "pc-005",
-    name: "Weekend Getaway",
-    description: "Special offers for weekend trips",
-    category: "Travel Type",
-    active: true,
-    currentFilters: [],
+    id: "partner3",
+    name: "John Deere",
+    programs: [
+      {
+        id: "prog4",
+        name: "Dealer Network",
+        campaigns: [
+          {
+            id: "camp7",
+            name: "Oil Promotion",
+            description: "Special offers on oil changes and maintenance",
+            active: true,
+            currentFilters: [],
+          },
+          {
+            id: "camp8",
+            name: "Parts Discount",
+            description: "Discounts on genuine John Deere parts",
+            active: true,
+            currentFilters: [],
+          },
+          {
+            id: "camp9",
+            name: "Service Special",
+            description: "Seasonal service specials for equipment maintenance",
+            active: true,
+            currentFilters: ["filter-789"],
+          },
+        ],
+      },
+    ],
   },
 ];
 
 // Mock function to save filter assignments
 // This would typically be an API call
-const saveFilterAssignments = async (filterId, programIds) => {
-  console.log("Assigning filter", filterId, "to programs:", programIds);
+const saveFilterAssignments = async (
+  filterId: string,
+  campaignIds: string[]
+) => {
+  console.log(
+    "Assigning filter",
+    filterId,
+    "to program campaigns:",
+    campaignIds
+  );
   // Simulate API call delay
   await new Promise((resolve) => setTimeout(resolve, 800));
   // Return success
@@ -80,7 +184,7 @@ export function AssignToProgramsPanel({
   onClose,
 }: AssignToProgramsPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedPrograms, setSelectedPrograms] = useState<
+  const [selectedCampaigns, setSelectedCampaigns] = useState<
     Record<string, boolean>
   >({});
   const [saving, setSaving] = useState(false);
@@ -88,77 +192,163 @@ export function AssignToProgramsPanel({
   const [saveError, setSaveError] = useState<string | null>(null);
   const [aiAssistantEnabled, setAiAssistantEnabled] = useState(false);
 
-  // Categories for grouping programs
-  const categories = [
-    ...new Set(mockProgramCampaigns.map((pc) => pc.category)),
-  ];
+  // Keep track of expanded items
+  const [expandedPartners, setExpandedPartners] = useState<string[]>([]);
+  const [expandedPrograms, setExpandedPrograms] = useState<string[]>([]);
 
-  // Initialize selected programs when the panel opens
+  // Initialize selected campaigns when the panel opens
   useEffect(() => {
     const initialSelected: Record<string, boolean> = {};
-    mockProgramCampaigns.forEach((campaign) => {
-      if (campaign.currentFilters.includes(filterId)) {
-        initialSelected[campaign.id] = true;
-      }
+
+    mockPartners.forEach((partner) => {
+      partner.programs.forEach((program) => {
+        program.campaigns.forEach((campaign) => {
+          if (campaign.currentFilters?.includes(filterId)) {
+            initialSelected[campaign.id] = true;
+          }
+        });
+      });
     });
-    setSelectedPrograms(initialSelected);
+
+    setSelectedCampaigns(initialSelected);
     setSaveSuccess(false);
     setSaveError(null);
   }, [filterId]);
 
-  // Handle program selection
-  const handleProgramSelection = (programId: string, checked: boolean) => {
-    setSelectedPrograms((prev) => ({
+  // Toggle expansion of a partner
+  const togglePartner = (partnerId: string) => {
+    setExpandedPartners((prev) =>
+      prev.includes(partnerId)
+        ? prev.filter((id) => id !== partnerId)
+        : [...prev, partnerId]
+    );
+  };
+
+  // Toggle expansion of a program
+  const toggleProgram = (programId: string) => {
+    setExpandedPrograms((prev) =>
+      prev.includes(programId)
+        ? prev.filter((id) => id !== programId)
+        : [...prev, programId]
+    );
+  };
+
+  // Check if all campaigns in a program are selected
+  const isAllCampaignsSelected = (campaigns: Campaign[]) => {
+    return campaigns
+      .filter((campaign) => campaign.active !== false)
+      .every((campaign) => selectedCampaigns[campaign.id]);
+  };
+
+  // Check if some campaigns in a program are selected
+  const isSomeCampaignsSelected = (campaigns: Campaign[]) => {
+    const activeCampaigns = campaigns.filter(
+      (campaign) => campaign.active !== false
+    );
+    return (
+      activeCampaigns.some((campaign) => selectedCampaigns[campaign.id]) &&
+      !isAllCampaignsSelected(activeCampaigns)
+    );
+  };
+
+  // Check if all programs in a partner are selected
+  const isAllProgramsSelected = (programs: Program[]) => {
+    return programs.every((program) =>
+      isAllCampaignsSelected(program.campaigns)
+    );
+  };
+
+  // Check if some programs in a partner are selected
+  const isSomeProgramsSelected = (partner: Partner) => {
+    return (
+      partner.programs.some(
+        (program) =>
+          isSomeCampaignsSelected(program.campaigns) ||
+          isAllCampaignsSelected(program.campaigns)
+      ) && !isAllProgramsSelected(partner.programs)
+    );
+  };
+
+  // Handle campaign selection
+  const handleCampaignSelection = (campaignId: string, checked: boolean) => {
+    setSelectedCampaigns((prev) => ({
       ...prev,
-      [programId]: checked,
+      [campaignId]: checked,
     }));
   };
 
-  // Handle category selection (select/deselect all in category)
-  const handleCategorySelection = (category: string, checked: boolean) => {
-    const updatedSelection = { ...selectedPrograms };
+  // Handle program selection (select/deselect all campaigns in program)
+  const handleProgramSelection = (program: Program, checked: boolean) => {
+    const updatedSelection = { ...selectedCampaigns };
 
-    // Get all programs in this category
-    const programsInCategory = mockProgramCampaigns.filter(
-      (pc) => pc.category === category && pc.active
-    );
+    // Update all active campaigns in this program
+    program.campaigns
+      .filter((campaign) => campaign.active !== false)
+      .forEach((campaign) => {
+        updatedSelection[campaign.id] = checked;
+      });
 
-    // Update all programs in this category
-    programsInCategory.forEach((program) => {
-      updatedSelection[program.id] = checked;
+    setSelectedCampaigns(updatedSelection);
+  };
+
+  // Handle partner selection (select/deselect all campaigns in all programs)
+  const handlePartnerSelection = (partner: Partner, checked: boolean) => {
+    const updatedSelection = { ...selectedCampaigns };
+
+    // Update all active campaigns in all programs of this partner
+    partner.programs.forEach((program) => {
+      program.campaigns
+        .filter((campaign) => campaign.active !== false)
+        .forEach((campaign) => {
+          updatedSelection[campaign.id] = checked;
+        });
     });
 
-    setSelectedPrograms(updatedSelection);
+    setSelectedCampaigns(updatedSelection);
   };
 
-  // Filter campaigns by search query
-  const filteredPrograms = mockProgramCampaigns.filter(
-    (campaign) =>
-      campaign.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      campaign.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter partners, programs and campaigns by search query
+  const getFilteredPartners = () => {
+    if (!searchQuery.trim()) return mockPartners;
 
-  // Check if a category is fully selected
-  const isCategoryFullySelected = (category: string) => {
-    const programsInCategory = mockProgramCampaigns.filter(
-      (pc) => pc.category === category && pc.active
-    );
-    return programsInCategory.every((program) => selectedPrograms[program.id]);
+    const query = searchQuery.toLowerCase();
+
+    return mockPartners
+      .map((partner) => {
+        // Filter programs in this partner
+        const filteredPrograms = partner.programs
+          .map((program) => {
+            // Filter campaigns in this program
+            const filteredCampaigns = program.campaigns.filter(
+              (campaign) =>
+                campaign.name.toLowerCase().includes(query) ||
+                (campaign.description &&
+                  campaign.description.toLowerCase().includes(query))
+            );
+
+            if (filteredCampaigns.length === 0) return null;
+
+            return {
+              ...program,
+              campaigns: filteredCampaigns,
+            };
+          })
+          .filter(Boolean) as Program[];
+
+        if (filteredPrograms.length === 0) return null;
+
+        return {
+          ...partner,
+          programs: filteredPrograms,
+        };
+      })
+      .filter(Boolean) as Partner[];
   };
 
-  // Check if a category is partially selected
-  const isCategoryPartiallySelected = (category: string) => {
-    const programsInCategory = mockProgramCampaigns.filter(
-      (pc) => pc.category === category && pc.active
-    );
-    const selectedCount = programsInCategory.filter(
-      (program) => selectedPrograms[program.id]
-    ).length;
-    return selectedCount > 0 && selectedCount < programsInCategory.length;
-  };
+  const filteredPartners = getFilteredPartners();
 
-  // Get count of selected programs
-  const selectedCount = Object.values(selectedPrograms).filter(Boolean).length;
+  // Get count of selected campaigns
+  const selectedCount = Object.values(selectedCampaigns).filter(Boolean).length;
 
   // Handle AI assistant toggle
   const handleAiAssistantToggle = () => {
@@ -170,6 +360,26 @@ export function AssignToProgramsPanel({
     }
   };
 
+  // Select all campaigns
+  const selectAll = () => {
+    const allSelected: Record<string, boolean> = {};
+    mockPartners.forEach((partner) => {
+      partner.programs.forEach((program) => {
+        program.campaigns
+          .filter((campaign) => campaign.active !== false)
+          .forEach((campaign) => {
+            allSelected[campaign.id] = true;
+          });
+      });
+    });
+    setSelectedCampaigns(allSelected);
+  };
+
+  // Clear all selections
+  const clearAll = () => {
+    setSelectedCampaigns({});
+  };
+
   // Handle save
   const handleSave = async () => {
     try {
@@ -177,13 +387,13 @@ export function AssignToProgramsPanel({
       setSaveSuccess(false);
       setSaveError(null);
 
-      // Get list of selected program IDs
-      const selectedProgramIds = Object.keys(selectedPrograms).filter(
-        (id) => selectedPrograms[id]
+      // Get list of selected campaign IDs
+      const selectedCampaignIds = Object.keys(selectedCampaigns).filter(
+        (id) => selectedCampaigns[id]
       );
 
       // Call API to save assignments
-      const result = await saveFilterAssignments(filterId, selectedProgramIds);
+      const result = await saveFilterAssignments(filterId, selectedCampaignIds);
 
       if (result.success) {
         setSaveSuccess(true);
@@ -229,7 +439,7 @@ export function AssignToProgramsPanel({
         </div>
         <p className="text-sm text-muted-foreground mb-2">
           Assign "{filterName}" to program campaigns to control where offers
-          will be displayed.
+          will be displayed within partners and programs.
         </p>
         {aiAssistantEnabled && (
           <div className="mt-2 p-2 bg-blue-50 text-blue-700 rounded-md text-sm">
@@ -250,128 +460,241 @@ export function AssignToProgramsPanel({
           </div>
           <Input
             type="text"
-            placeholder="Search program campaigns..."
+            placeholder="Search partners, programs or campaigns..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
           />
         </div>
 
-        {/* Selected count */}
-        <div className="flex items-center gap-2 mb-4">
+        {/* Selected count and buttons */}
+        <div className="flex justify-between items-center mb-4">
           <span className="text-sm text-gray-500">
             {selectedCount} program campaign{selectedCount !== 1 ? "s" : ""}{" "}
             selected
           </span>
-          {selectedCount > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setSelectedPrograms({})}
-            >
-              Clear All
+          <div className="flex space-x-2">
+            {selectedCount > 0 && (
+              <Button variant="outline" size="sm" onClick={clearAll}>
+                Clear All
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={selectAll}>
+              <CheckCircle className="mr-1 h-4 w-4" />
+              Select All
             </Button>
-          )}
+          </div>
         </div>
 
         {/* Scrollable program list area */}
         <div className="flex-1 overflow-y-auto pr-2">
-          <div className="space-y-6">
-            {categories.map((category) => {
-              const programsInCategory = filteredPrograms.filter(
-                (p) => p.category === category
-              );
-
-              if (programsInCategory.length === 0) return null;
-
-              const isFullySelected = isCategoryFullySelected(category);
-              const isPartiallySelected = isCategoryPartiallySelected(category);
-
-              return (
-                <div key={category} className="space-y-3">
-                  {/* Category header with checkbox */}
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id={`panel-category-${category}`}
-                      checked={isFullySelected}
-                      // Support indeterminate state
-                      ref={(checkbox) => {
-                        if (checkbox) {
-                          // Use HTMLInputElement to properly set indeterminate
-                          const inputEl =
-                            checkbox as unknown as HTMLInputElement;
-                          inputEl.indeterminate =
-                            !isFullySelected && isPartiallySelected;
-                        }
-                      }}
-                      onCheckedChange={(checked) =>
-                        handleCategorySelection(category, !!checked)
-                      }
-                    />
-                    <label
-                      htmlFor={`panel-category-${category}`}
-                      className="text-sm font-medium cursor-pointer"
-                    >
-                      {category}
-                    </label>
+          <div className="space-y-1 border rounded-md overflow-hidden">
+            {filteredPartners.map((partner) => (
+              <div key={partner.id} className="border-b last:border-b-0">
+                {/* Partner level */}
+                <div
+                  className={`flex items-center p-3 bg-slate-50 hover:bg-slate-100 cursor-pointer ${
+                    expandedPartners.includes(partner.id) ? "border-b" : ""
+                  }`}
+                  onClick={() => togglePartner(partner.id)}
+                >
+                  <div className="mr-2">
+                    {expandedPartners.includes(partner.id) ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4" />
+                    )}
                   </div>
 
-                  {/* Programs in this category */}
-                  <div className="space-y-2 pl-6">
-                    {programsInCategory.map((program) => (
-                      <div
-                        key={program.id}
-                        className={`flex items-center space-x-3 rounded-md border p-3 ${
-                          !program.active ? "opacity-60" : ""
-                        }`}
-                      >
-                        <Checkbox
-                          id={`panel-program-${program.id}`}
-                          checked={!!selectedPrograms[program.id]}
-                          disabled={!program.active}
-                          onCheckedChange={(checked) =>
-                            handleProgramSelection(program.id, !!checked)
+                  <div className="flex items-center flex-1">
+                    <div className="mr-2">
+                      <Checkbox
+                        id={`partner-${partner.id}`}
+                        checked={isAllProgramsSelected(partner.programs)}
+                        ref={(checkbox) => {
+                          if (checkbox) {
+                            const inputEl =
+                              checkbox as unknown as HTMLInputElement;
+                            inputEl.indeterminate =
+                              !isAllProgramsSelected(partner.programs) &&
+                              isSomeProgramsSelected(partner);
                           }
-                        />
-                        <div className="flex flex-1 items-center justify-between">
-                          <div>
-                            <label
-                              htmlFor={`panel-program-${program.id}`}
-                              className={`block font-medium text-sm ${
-                                program.active
-                                  ? "cursor-pointer"
-                                  : "cursor-not-allowed"
-                              }`}
-                            >
-                              {program.name}
-                            </label>
-                            <p className="text-xs text-gray-500">
-                              {program.description}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {!program.active && (
-                              <Badge variant="outline" className="bg-gray-100">
-                                Inactive
-                              </Badge>
+                        }}
+                        onCheckedChange={(checked) =>
+                          handlePartnerSelection(partner, !!checked)
+                        }
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
+
+                    <div className="flex items-center">
+                      <Building className="h-4 w-4 mr-2 text-blue-600" />
+                      <Label
+                        htmlFor={`partner-${partner.id}`}
+                        className="font-medium cursor-pointer"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {partner.name}
+                      </Label>
+                    </div>
+                  </div>
+
+                  <Badge variant="outline" className="text-xs">
+                    {partner.programs.length} program
+                    {partner.programs.length !== 1 ? "s" : ""}
+                  </Badge>
+                </div>
+
+                {/* Programs under this partner */}
+                {expandedPartners.includes(partner.id) && (
+                  <div className="pl-9">
+                    {partner.programs.map((program) => (
+                      <div key={program.id} className="border-t">
+                        {/* Program level */}
+                        <div
+                          className={`flex items-center p-3 hover:bg-slate-50 cursor-pointer ${
+                            expandedPrograms.includes(program.id)
+                              ? "border-b"
+                              : ""
+                          }`}
+                          onClick={() => toggleProgram(program.id)}
+                        >
+                          <div className="mr-2">
+                            {expandedPrograms.includes(program.id) ? (
+                              <ChevronDown className="h-4 w-4" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4" />
                             )}
-                            {program.currentFilters.includes(filterId) && (
-                              <Badge
-                                variant="outline"
-                                className="bg-blue-50 text-blue-700"
+                          </div>
+
+                          <div className="flex items-center flex-1">
+                            <div className="mr-2">
+                              <Checkbox
+                                id={`program-${program.id}`}
+                                checked={isAllCampaignsSelected(
+                                  program.campaigns
+                                )}
+                                ref={(checkbox) => {
+                                  if (checkbox) {
+                                    const inputEl =
+                                      checkbox as unknown as HTMLInputElement;
+                                    inputEl.indeterminate =
+                                      !isAllCampaignsSelected(
+                                        program.campaigns
+                                      ) &&
+                                      isSomeCampaignsSelected(
+                                        program.campaigns
+                                      );
+                                  }
+                                }}
+                                onCheckedChange={(checked) =>
+                                  handleProgramSelection(program, !!checked)
+                                }
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
+
+                            <div className="flex items-center">
+                              <Briefcase className="h-4 w-4 mr-2 text-green-600" />
+                              <Label
+                                htmlFor={`program-${program.id}`}
+                                className="font-medium cursor-pointer"
+                                onClick={(e) => e.stopPropagation()}
                               >
-                                Current
-                              </Badge>
-                            )}
+                                {program.name}
+                              </Label>
+                            </div>
                           </div>
+
+                          <Badge variant="outline" className="text-xs">
+                            {program.campaigns.length} campaign
+                            {program.campaigns.length !== 1 ? "s" : ""}
+                          </Badge>
                         </div>
+
+                        {/* Campaigns under this program */}
+                        {expandedPrograms.includes(program.id) && (
+                          <div className="pl-9">
+                            {program.campaigns.map((campaign) => (
+                              <div
+                                key={campaign.id}
+                                className={`flex items-center p-3 hover:bg-slate-50 border-t ${
+                                  campaign.active === false ? "opacity-60" : ""
+                                }`}
+                              >
+                                <div className="mr-2">
+                                  <Checkbox
+                                    id={`campaign-${campaign.id}`}
+                                    checked={!!selectedCampaigns[campaign.id]}
+                                    disabled={campaign.active === false}
+                                    onCheckedChange={(checked) =>
+                                      handleCampaignSelection(
+                                        campaign.id,
+                                        !!checked
+                                      )
+                                    }
+                                  />
+                                </div>
+
+                                <div className="flex flex-1 items-center justify-between">
+                                  <div className="flex items-center">
+                                    <LayoutGrid className="h-4 w-4 mr-2 text-purple-600" />
+                                    <div>
+                                      <Label
+                                        htmlFor={`campaign-${campaign.id}`}
+                                        className={`block font-medium text-sm ${
+                                          campaign.active === false
+                                            ? "cursor-not-allowed"
+                                            : "cursor-pointer"
+                                        }`}
+                                      >
+                                        {campaign.name}
+                                      </Label>
+                                      {campaign.description && (
+                                        <p className="text-xs text-gray-500">
+                                          {campaign.description}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    {campaign.active === false && (
+                                      <Badge
+                                        variant="outline"
+                                        className="bg-gray-100"
+                                      >
+                                        Inactive
+                                      </Badge>
+                                    )}
+                                    {campaign.currentFilters?.includes(
+                                      filterId
+                                    ) && (
+                                      <Badge
+                                        variant="outline"
+                                        className="bg-blue-50 text-blue-700"
+                                      >
+                                        Current
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
-                </div>
-              );
-            })}
+                )}
+              </div>
+            ))}
           </div>
+
+          {filteredPartners.length === 0 && (
+            <div className="text-center py-8 text-muted-foreground">
+              No matching partners, programs or campaigns found.
+            </div>
+          )}
         </div>
 
         {/* Action buttons */}
@@ -380,7 +703,9 @@ export function AssignToProgramsPanel({
             {saveSuccess && (
               <div className="flex items-center text-green-600 gap-1">
                 <CheckCircleIcon className="h-5 w-5" />
-                <span>Assignments saved!</span>
+                <span>
+                  Filter assigned to {selectedCount} program campaigns
+                </span>
               </div>
             )}
             {saveError && (

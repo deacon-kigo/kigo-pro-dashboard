@@ -292,8 +292,8 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
 
       return (
         <div className="flex">
-          {/* Using a native HTML button element to avoid any component nesting issues */}
-          <div className="relative group">
+          {/* Single action button that opens dropdown */}
+          <div className="relative">
             <Button
               variant="secondary"
               className="h-auto px-3 py-1.5 font-medium"
@@ -306,21 +306,22 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
                 }
               }}
             >
-              View Details
+              {isDraft ? "Edit Filter" : "View Details"}
             </Button>
 
             {/* Custom dropdown menu to avoid infinite loops with the shadcn component */}
             <div
               id={`filter-menu-${filterId}`}
-              className="hidden absolute left-0 mt-1 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+              className="hidden absolute top-full left-0 mt-1 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
               tabIndex={-1}
             >
               <div className="py-1">
                 <div className="px-4 py-2 text-sm text-gray-700 font-medium">
-                  Actions
+                  Filter Actions
                 </div>
                 <div className="h-px bg-gray-200"></div>
 
+                {/* Primary action */}
                 <button
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   onClick={(e) => {
@@ -334,6 +335,7 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
                   {isDraft ? "Edit Filter" : "View Details"}
                 </button>
 
+                {/* Always available options */}
                 <button
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   onClick={(e) => {
@@ -347,35 +349,39 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
                   Copy Filter ID
                 </button>
 
-                {/* New option to assign filter to program campaigns */}
-                <button
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    document
-                      .getElementById(`filter-menu-${filterId}`)
-                      ?.classList.add("hidden");
-                    // Open the resizable panel instead of navigating
-                    handleAssignPrograms();
-                  }}
-                >
-                  Assign to Program Campaigns
-                </button>
+                {/* Only show assign option for non-draft filters */}
+                {!isDraft && (
+                  <button
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      document
+                        .getElementById(`filter-menu-${filterId}`)
+                        ?.classList.add("hidden");
+                      handleAssignPrograms();
+                    }}
+                  >
+                    Assign to Programs
+                  </button>
+                )}
 
                 <div className="h-px bg-gray-200"></div>
 
-                <button
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    document
-                      .getElementById(`filter-menu-${filterId}`)
-                      ?.classList.add("hidden");
-                    handleEditFilter();
-                  }}
-                >
-                  Edit Filter
-                </button>
+                {/* Edit options */}
+                {!isDraft && (
+                  <button
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      document
+                        .getElementById(`filter-menu-${filterId}`)
+                        ?.classList.add("hidden");
+                      handleEditFilter();
+                    }}
+                  >
+                    Edit Filter
+                  </button>
+                )}
 
                 <button
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
