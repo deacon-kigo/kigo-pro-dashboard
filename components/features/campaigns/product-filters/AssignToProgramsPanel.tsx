@@ -176,12 +176,14 @@ interface AssignToProgramsPanelProps {
   filterId: string;
   filterName: string;
   onClose: () => void;
+  onSelectionChange?: (count: number) => void;
 }
 
 export function AssignToProgramsPanel({
   filterId,
   filterName,
   onClose,
+  onSelectionChange,
 }: AssignToProgramsPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCampaigns, setSelectedCampaigns] = useState<
@@ -372,6 +374,13 @@ export function AssignToProgramsPanel({
 
   // Get count of selected campaigns
   const selectedCount = Object.values(selectedCampaigns).filter(Boolean).length;
+
+  // Notify parent component when selection count changes
+  useEffect(() => {
+    if (onSelectionChange) {
+      onSelectionChange(selectedCount);
+    }
+  }, [selectedCount, onSelectionChange]);
 
   // Select all campaigns
   const selectAll = () => {

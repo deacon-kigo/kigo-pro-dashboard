@@ -660,3 +660,17 @@ body.spotlight-open nav {
     @apply bg-background text-foreground;
   }
 }
+
+/* Shine Border Animation */
+@keyframes shine {
+  0% {
+    background-position: 200% 200%;
+  }
+  100% {
+    background-position: -200% -200%;
+  }
+}
+
+.animate-shine {
+  animation: shine var(--duration, 14s) linear infinite;
+}
