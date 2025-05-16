@@ -96,7 +96,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/molecules/alert-dialog/AlertDialog";
-import { ShineBorder } from "@/components/ui/shine-border";
+import { ShinyBorder } from "@/components/ui/shiny-border";
 
 // Custom DatePicker component
 interface DatePickerProps {
@@ -972,12 +972,9 @@ export default function ProductFilterCreationView() {
                       {/* Filter Conditions Summary Accordion - REMOVED */}
 
                       {/* Basic Information Section */}
-                      <ShineBorder
+                      <ShinyBorder
                         isActive={isBasicInfoComplete}
                         borderRadius={8}
-                        borderWidth={1.5}
-                        duration={10}
-                        color="#3b82f6"
                       >
                         <Accordion
                           type="single"
@@ -1079,15 +1076,12 @@ export default function ProductFilterCreationView() {
                             </AccordionContent>
                           </AccordionItem>
                         </Accordion>
-                      </ShineBorder>
+                      </ShinyBorder>
 
                       {/* Assignment to Program Campaigns as accordion */}
-                      <ShineBorder
+                      <ShinyBorder
                         isActive={selectedProgramCount > 0}
                         borderRadius={8}
-                        borderWidth={1.5}
-                        duration={14}
-                        color="#10b981"
                       >
                         <Accordion
                           type="single"
@@ -1129,18 +1123,15 @@ export default function ProductFilterCreationView() {
                             </AccordionContent>
                           </AccordionItem>
                         </Accordion>
-                      </ShineBorder>
+                      </ShinyBorder>
                     </div>
 
                     {/* Right side - Filter Builder and Conditions */}
                     <div className="col-span-7 flex flex-col space-y-4">
                       {/* Condition Builder */}
-                      <ShineBorder
+                      <ShinyBorder
                         isActive={isCriteriaComplete}
                         borderRadius={8}
-                        borderWidth={1.5}
-                        duration={12}
-                        color="#8b5cf6"
                       >
                         <Accordion
                           type="single"
@@ -1330,15 +1321,12 @@ export default function ProductFilterCreationView() {
                             </AccordionContent>
                           </AccordionItem>
                         </Accordion>
-                      </ShineBorder>
+                      </ShinyBorder>
 
                       {/* Current Conditions */}
-                      <ShineBorder
+                      <ShinyBorder
                         isActive={isCriteriaComplete}
                         borderRadius={8}
-                        borderWidth={1.5}
-                        duration={11}
-                        color="#ef4444"
                       >
                         <Accordion
                           type="single"
@@ -1521,7 +1509,7 @@ export default function ProductFilterCreationView() {
                             </AccordionContent>
                           </AccordionItem>
                         </Accordion>
-                      </ShineBorder>
+                      </ShinyBorder>
                     </div>
                   </div>
                 </div>

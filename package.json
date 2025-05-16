@@ -46,7 +46,7 @@
     "cmdk": "^1.1.1",
     "d3-geo": "^3.1.1",
     "date-fns": "^3.6.0",
-    "framer-motion": "^12.9.2",
+    "framer-motion": "^12.12.1",
     "langchain": "^0.3.24",
     "lucide-react": "^0.506.0",
     "mermaid": "^11.6.0",

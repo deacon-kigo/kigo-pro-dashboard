@@ -1,71 +1,137 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-
-type TColorProp = string | string[];
+import { motion } from "framer-motion";
+import { ReactNode } from "react";
+import { useEffect, useState } from "react";
+import { BorderTrail } from "../effects/BorderTrail";
 
 interface ShineBorderProps {
   borderRadius?: number;
-  borderWidth?: number;
-  duration?: number;
-  color?: TColorProp;
+  color?: string;
+  secondaryColor?: string;
+  isActive?: boolean;
   className?: string;
-  isActive?: boolean; // Added prop to control when animation is active
-  children: React.ReactNode;
+  children: ReactNode;
+  borderWidth?: number;
+  borderTrail?: boolean;
+  trailColor?: string;
+  trailSize?: number;
 }
 
 /**
- * @name Shine Border
- * @description It is an animated background border effect component with easy to use and configurable props.
- * @param borderRadius defines the radius of the border.
- * @param borderWidth defines the width of the border.
- * @param duration defines the animation duration to be applied on the shining border
- * @param color a string or string array to define border color.
- * @param isActive controls whether the animation is active (true) or inactive (false)
- * @param className defines the class name to be applied to the component
- * @param children contains react node elements.
+ * @name ShineBorder
+ * @description A component that adds an animated gradient border effect when requirements are met.
  */
 export function ShineBorder({
   borderRadius = 8,
-  borderWidth = 1,
-  duration = 14,
-  color = "#0284c7", // Default to a blue that matches our theme
+  color = "rgba(74, 222, 128, 0.8)", // Light green with some transparency
+  secondaryColor = "rgba(34, 197, 94, 0.8)", // Medium green with some transparency
   isActive = false,
   className,
   children,
+  borderWidth = 1.5, // Thinner border (was 2)
+  borderTrail = false,
+  trailColor,
+  trailSize = 10, // Smaller trail size (was 16)
 }: ShineBorderProps) {
+  // Handle client-side only animations to prevent hydration errors
+  const [isMounted, setIsMounted] = useState(false);
+  const [showBorder, setShowBorder] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isMounted && isActive) {
+      const timer = setTimeout(() => setShowBorder(true), 100);
+      return () => clearTimeout(timer);
+    } else {
+      setShowBorder(false);
+    }
+  }, [isActive, isMounted]);
+
+  // Don't render animations on server
+  const shouldShowBorder = isMounted && isActive;
+
+  // Use trail color that matches the primary color if not specified
+  const effectiveTrailColor = trailColor || color;
+
   return (
-    <div
-      style={
-        {
-          "--border-radius": `${borderRadius}px`,
-          position: "relative",
-        } as React.CSSProperties
-      }
-      className={cn(
-        "w-full rounded-[--border-radius] bg-white p-0 text-black dark:bg-black dark:text-white",
-        className
-      )}
-    >
-      {isActive && (
+    <div className={cn("relative", className)}>
+      {shouldShowBorder && (
         <div
-          style={
-            {
-              "--border-width": `${borderWidth}px`,
-              "--border-radius": `${borderRadius}px`,
-              "--duration": `${duration}s`,
-              "--mask-linear-gradient": `linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)`,
-              "--background-radial-gradient": `radial-gradient(transparent,transparent, ${color instanceof Array ? color.join(",") : color},transparent,transparent)`,
-              position: "absolute",
-              inset: 0,
-              pointerEvents: "none",
-              zIndex: 10,
-            } as React.CSSProperties
-          }
-          className={`rounded-[--border-radius] before:absolute before:inset-0 before:aspect-square before:size-full before:rounded-[--border-radius] before:p-[--border-width] before:will-change-[background-position] before:content-[""] before:![-webkit-mask-composite:xor] before:[mask-composite:exclude] before:[background-image:--background-radial-gradient] before:[background-size:300%_300%] before:[mask:--mask-linear-gradient] motion-safe:before:animate-shine`}
-        ></div>
+          className={cn(
+            "pointer-events-none absolute inset-0 overflow-hidden transition-opacity duration-500",
+            showBorder ? "opacity-100" : "opacity-0"
+          )}
+          style={{
+            borderRadius: `${borderRadius}px`,
+            zIndex: 0,
+          }}
+        >
+          {/* Border container with gradient background */}
+          <motion.div
+            className="absolute inset-0"
+            style={{
+              borderRadius: `${borderRadius}px`,
+              background: `linear-gradient(90deg, ${color}, ${secondaryColor}, ${color})`,
+              backgroundSize: "200% 100%",
+              boxShadow: `0 0 4px 0 ${color}99`, // Reduced glow
+              border: `${borderWidth}px solid transparent`,
+            }}
+            animate={{
+              backgroundPosition: ["0% 0%", "100% 0%", "200% 0%"],
+              boxShadow: [
+                `0 0 2px 0 ${color}80`,
+                `0 0 4px 0 ${color}99`,
+                `0 0 2px 0 ${color}80`,
+              ],
+            }}
+            transition={{
+              backgroundPosition: {
+                duration: 6, // Slower animation (was 3)
+                ease: "easeInOut",
+                repeat: Infinity,
+                repeatType: "loop",
+              },
+              boxShadow: {
+                duration: 4, // Slower pulse (was 2)
+                ease: "easeInOut",
+                repeat: Infinity,
+                repeatType: "reverse",
+              },
+            }}
+          >
+            {/* Inner mask to create border effect */}
+            <div
+              className="absolute bg-card"
+              style={{
+                top: borderWidth,
+                right: borderWidth,
+                bottom: borderWidth,
+                left: borderWidth,
+                borderRadius: `${borderRadius - borderWidth}px`,
+              }}
+            />
+          </motion.div>
+
+          {/* Add the BorderTrail component when borderTrail is true */}
+          {borderTrail && (
+            <BorderTrail
+              size={trailSize}
+              color={effectiveTrailColor}
+              transition={{
+                duration: 8, // Slower animation (was 4)
+                ease: "linear",
+                repeat: Infinity,
+              }}
+            />
+          )}
+        </div>
       )}
-      {children}
+      <div className="relative z-0">{children}</div>
     </div>
   );
 }
