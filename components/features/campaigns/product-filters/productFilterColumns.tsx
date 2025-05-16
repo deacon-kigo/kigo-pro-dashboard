@@ -321,7 +321,7 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
                 </div>
                 <div className="h-px bg-gray-200"></div>
 
-                {/* Primary action */}
+                {/* Edit Filter option */}
                 <button
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   onClick={(e) => {
@@ -329,27 +329,13 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
                     document
                       .getElementById(`filter-menu-${filterId}`)
                       ?.classList.add("hidden");
-                    isDraft ? handleEditFilter() : handleViewDetails();
+                    handleEditFilter();
                   }}
                 >
-                  {isDraft ? "Edit Filter" : "View Details"}
+                  Edit Filter
                 </button>
 
-                {/* Always available options */}
-                <button
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    document
-                      .getElementById(`filter-menu-${filterId}`)
-                      ?.classList.add("hidden");
-                    handleCopyId();
-                  }}
-                >
-                  Copy Filter ID
-                </button>
-
-                {/* Only show assign option for non-draft filters */}
+                {/* Assign to Programs option (only for non-drafts) */}
                 {!isDraft && (
                   <button
                     className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -365,35 +351,27 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
                   </button>
                 )}
 
-                <div className="h-px bg-gray-200"></div>
-
-                {/* Edit options */}
-                {!isDraft && (
-                  <button
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      document
-                        .getElementById(`filter-menu-${filterId}`)
-                        ?.classList.add("hidden");
-                      handleEditFilter();
-                    }}
-                  >
-                    Edit Filter
-                  </button>
-                )}
-
+                {/* Delete option */}
                 <button
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                   onClick={(e) => {
                     e.stopPropagation();
                     document
                       .getElementById(`filter-menu-${filterId}`)
                       ?.classList.add("hidden");
-                    handleManageCriteria();
+                    // Implement delete functionality (could show confirmation first)
+                    if (
+                      window.confirm(
+                        `Are you sure you want to delete this filter: ${row.original.name}?`
+                      )
+                    ) {
+                      // Handle delete logic here
+                      console.log(`Deleting filter ${filterId}`);
+                      // In a real implementation, you would call an API and then refresh the table
+                    }
                   }}
                 >
-                  Manage Criteria
+                  Delete Filter
                 </button>
               </div>
             </div>
