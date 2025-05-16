@@ -387,12 +387,9 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleConfirmedDelete}
-                    className="bg-red-600 hover:bg-red-700"
-                  >
+                  <Button variant="destructive" onClick={handleConfirmedDelete}>
                     Delete
-                  </AlertDialogAction>
+                  </Button>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>

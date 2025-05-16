@@ -86,15 +86,15 @@ const BulkActions = memo(function BulkActions({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
+            <Button
+              variant="destructive"
               onClick={() => {
                 onDelete();
                 setDeleteDialogOpen(false);
               }}
-              className="bg-red-600 hover:bg-red-700"
             >
               Delete
-            </AlertDialogAction>
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
