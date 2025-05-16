@@ -577,11 +577,11 @@ export function AssignToProgramsPanel({
                         }}
                         onCheckedChange={(checked) => {
                           handlePartnerSelection(partner, !!checked);
-                          // Stop propagation to prevent panel toggling
                         }}
                         className={
+                          !isAllProgramsSelected(partner.programs) &&
                           isSomeProgramsSelected(partner)
-                            ? "data-[state=indeterminate]:bg-primary/40 data-[state=indeterminate]:text-primary-foreground"
+                            ? "bg-primary/40 text-primary-foreground"
                             : ""
                         }
                         onClick={(e) => e.stopPropagation()}
@@ -650,11 +650,11 @@ export function AssignToProgramsPanel({
                                 }}
                                 onCheckedChange={(checked) => {
                                   handleProgramSelection(program, !!checked);
-                                  // Stop propagation to prevent panel toggling
                                 }}
                                 className={
+                                  !isAllCampaignsSelected(program.campaigns) &&
                                   isSomeCampaignsSelected(program.campaigns)
-                                    ? "data-[state=indeterminate]:bg-primary/40 data-[state=indeterminate]:text-primary-foreground"
+                                    ? "bg-primary/40 text-primary-foreground"
                                     : ""
                                 }
                                 onClick={(e) => e.stopPropagation()}
