@@ -1110,7 +1110,7 @@ export default function ProductFilterCreationView() {
                                 You can assign this filter to program campaigns
                                 now or later. This step is optional.
                               </div>
-                              <div className="relative max-h-[350px] overflow-hidden pt-2 px-4">
+                              <div className="relative max-h-[500px] overflow-auto pt-2 px-4">
                                 <AssignToProgramsPanel
                                   filterId={generateUniqueId()} // Using a temporary ID for new filters
                                   filterName={filterName}

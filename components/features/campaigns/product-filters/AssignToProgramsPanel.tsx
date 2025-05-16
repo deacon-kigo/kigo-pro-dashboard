@@ -475,7 +475,7 @@ export function AssignToProgramsPanel({
 
   return (
     <div
-      className={`flex flex-col ${isEmbedded ? "h-auto max-h-[340px]" : "h-full max-h-full"}`}
+      className={`flex flex-col ${isEmbedded ? "h-auto max-h-[550px]" : "h-full max-h-full"}`}
       ref={componentRef}
     >
       {/* Header - simplified when embedded */}
@@ -541,7 +541,7 @@ export function AssignToProgramsPanel({
 
         {/* Scrollable program list area */}
         <div
-          className={`flex-1 overflow-y-auto pr-2 ${isEmbedded ? "max-h-[170px]" : ""}`}
+          className={`flex-1 overflow-y-auto pr-2 ${isEmbedded ? "max-h-[320px]" : ""}`}
         >
           <div className="space-y-1 border rounded-md overflow-hidden">
             {filteredPartners.map((partner) => (
