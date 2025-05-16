@@ -19,9 +19,16 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/atoms/Breadcrumb";
-import { Card } from "@/components/atoms/Card";
+import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/molecules/PageHeader";
 import AppLayout from "@/components/templates/AppLayout/AppLayout";
+
+// This function is needed for static site generation
+export const generateStaticParams = async () => {
+  // Hardcode some example IDs for static generation
+  // In a real app, this would fetch all possible filter IDs from an API
+  return [{ id: "filter-123" }, { id: "filter-456" }, { id: "filter-789" }];
+};
 
 // Mock data for program campaigns
 // This would typically come from an API call
@@ -268,22 +275,22 @@ export default function AssignProgramsPage() {
         />
 
         {loading ? (
-          <Card className="p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex justify-center">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
             </div>
-          </Card>
+          </div>
         ) : error ? (
-          <Card className="p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-center text-red-500 gap-2">
               <ExclamationCircleIcon className="h-5 w-5" />
               <span>{error}</span>
             </div>
-          </Card>
+          </div>
         ) : (
           <div className="space-y-6">
             {/* Filter search */}
-            <Card className="p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <div className="mb-4">
                 <Input
                   type="text"
@@ -408,7 +415,7 @@ export default function AssignProgramsPage() {
                   );
                 })}
               </div>
-            </Card>
+            </div>
 
             {/* Save button */}
             <div className="flex justify-end">
