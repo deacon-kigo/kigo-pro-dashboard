@@ -27,6 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useRouter } from "next/navigation";
 
 // Define the shape of our data
 export type ProductFilter = {
@@ -75,47 +76,41 @@ const SortIcon = ({ sorted }: { sorted?: "asc" | "desc" | false }) => {
   );
 };
 
-// Pure component with no hooks or context dependencies
-function ActionMenu({
-  isDraft,
+// Button that shows a dropdown with View Details option
+function ViewDetailsButton({
   filterId,
+  isDraft,
 }: {
-  isDraft: boolean;
   filterId: string;
+  isDraft: boolean;
 }) {
+  const router = useRouter();
+
+  // Handle navigation for different actions
+  const handleViewDetails = () => {
+    router.push(`/campaigns/product-filters/${filterId}`);
+  };
+
+  const handleEditFilter = () => {
+    router.push(`/campaigns/product-filters/${filterId}/edit`);
+  };
+
+  const handleManageCriteria = () => {
+    router.push(`/campaigns/product-filters/${filterId}/criteria`);
+  };
+
+  const handleCopyId = () => {
+    navigator.clipboard.writeText(filterId);
+  };
+
   return (
-    <div className="flex justify-center">
-      <a
-        href="#"
-        onClick={(e) => {
-          e.preventDefault();
-          const actions = [
-            { label: isDraft ? "Edit filter" : "View details", action: "view" },
-            { label: "Duplicate", action: "duplicate" },
-            ...(isDraft ? [] : [{ label: "Extend expiry", action: "extend" }]),
-            { label: "Delete", action: "delete" },
-          ];
-
-          // Simple menu using the browser's native select
-          const actionIndex = window.prompt(
-            `Choose an action for filter ${filterId}:\n` +
-              actions.map((a, i) => `${i + 1}. ${a.label}`).join("\n")
-          );
-
-          if (actionIndex) {
-            const index = parseInt(actionIndex, 10) - 1;
-            if (index >= 0 && index < actions.length) {
-              const selectedAction = actions[index].action;
-              console.log(
-                `Performing action: ${selectedAction} on filter ${filterId}`
-              );
-            }
-          }
-        }}
-      >
-        <MoreHorizontal className="h-4 w-4" />
-      </a>
-    </div>
+    <Button
+      variant="ghost"
+      className="px-3 py-1.5 h-auto text-blue-600 hover:text-blue-800 hover:bg-blue-50 font-medium text-sm"
+      onClick={handleViewDetails}
+    >
+      View Details
+    </Button>
   );
 }
 
@@ -262,8 +257,114 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
       const status = row.getValue("status") as string;
       const isDraft = status === "Draft";
       const filterId = row.original.id;
+      const router = useRouter();
 
-      return <ActionMenu isDraft={isDraft} filterId={filterId} />;
+      // Handle actions for this filter
+      const handleViewDetails = () => {
+        router.push(`/campaigns/product-filters/${filterId}`);
+      };
+
+      const handleEditFilter = () => {
+        router.push(`/campaigns/product-filters/${filterId}/edit`);
+      };
+
+      const handleManageCriteria = () => {
+        router.push(`/campaigns/product-filters/${filterId}/criteria`);
+      };
+
+      const handleCopyId = () => {
+        navigator.clipboard.writeText(filterId);
+      };
+
+      return (
+        <div className="flex">
+          {/* Using the shadcn Button component */}
+          <div className="relative group">
+            <Button
+              variant="secondary"
+              className="h-auto px-3 py-1.5 font-medium"
+              onClick={(e) => {
+                e.stopPropagation();
+                // Show a custom popup menu instead of using DropdownMenu
+                const menu = document.getElementById(`filter-menu-${filterId}`);
+                if (menu) {
+                  menu.classList.toggle("hidden");
+                }
+              }}
+            >
+              View Details
+            </Button>
+
+            {/* Custom dropdown menu to avoid infinite loops with the shadcn component */}
+            <div
+              id={`filter-menu-${filterId}`}
+              className="hidden absolute left-0 mt-1 w-48 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+              tabIndex={-1}
+            >
+              <div className="py-1">
+                <div className="px-4 py-2 text-sm text-gray-700 font-medium">
+                  Actions
+                </div>
+                <div className="h-px bg-gray-200"></div>
+
+                <button
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    document
+                      .getElementById(`filter-menu-${filterId}`)
+                      ?.classList.add("hidden");
+                    isDraft ? handleEditFilter() : handleViewDetails();
+                  }}
+                >
+                  {isDraft ? "Edit Filter" : "View Details"}
+                </button>
+
+                <button
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    document
+                      .getElementById(`filter-menu-${filterId}`)
+                      ?.classList.add("hidden");
+                    handleCopyId();
+                  }}
+                >
+                  Copy Filter ID
+                </button>
+
+                <div className="h-px bg-gray-200"></div>
+
+                <button
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    document
+                      .getElementById(`filter-menu-${filterId}`)
+                      ?.classList.add("hidden");
+                    handleEditFilter();
+                  }}
+                >
+                  Edit Filter
+                </button>
+
+                <button
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    document
+                      .getElementById(`filter-menu-${filterId}`)
+                      ?.classList.add("hidden");
+                    handleManageCriteria();
+                  }}
+                >
+                  Manage Criteria
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
     },
     enableSorting: false,
   },
