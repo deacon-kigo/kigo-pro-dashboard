@@ -191,6 +191,7 @@ export function AssignToProgramsPanel({
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [aiAssistantEnabled, setAiAssistantEnabled] = useState(false);
+  const [recentlySelectedIds, setRecentlySelectedIds] = useState<string[]>([]);
 
   // Keep track of expanded items
   const [expandedPartners, setExpandedPartners] = useState<string[]>([]);
@@ -269,12 +270,18 @@ export function AssignToProgramsPanel({
     );
   };
 
-  // Handle campaign selection
+  // Handle campaign selection with visual feedback
   const handleCampaignSelection = (campaignId: string, checked: boolean) => {
     setSelectedCampaigns((prev) => ({
       ...prev,
       [campaignId]: checked,
     }));
+
+    // Add visual feedback by tracking recently selected items
+    setRecentlySelectedIds((prev) => [...prev, campaignId]);
+    setTimeout(() => {
+      setRecentlySelectedIds((prev) => prev.filter((id) => id !== campaignId));
+    }, 1000);
   };
 
   // Handle program selection (select/deselect all campaigns in program)
@@ -380,7 +387,7 @@ export function AssignToProgramsPanel({
     setSelectedCampaigns({});
   };
 
-  // Handle save
+  // Handle save with improved feedback
   const handleSave = async () => {
     try {
       setSaving(true);
@@ -392,11 +399,44 @@ export function AssignToProgramsPanel({
         (id) => selectedCampaigns[id]
       );
 
+      // Get campaign names for feedback message
+      const selectedCampaignDetails = selectedCampaignIds.map((id) => {
+        let campaignName = "";
+        let programName = "";
+        let partnerName = "";
+
+        mockPartners.forEach((partner) => {
+          partner.programs.forEach((program) => {
+            program.campaigns.forEach((campaign) => {
+              if (campaign.id === id) {
+                campaignName = campaign.name;
+                programName = program.name;
+                partnerName = partner.name;
+              }
+            });
+          });
+        });
+
+        return { id, campaignName, programName, partnerName };
+      });
+
       // Call API to save assignments
       const result = await saveFilterAssignments(filterId, selectedCampaignIds);
 
       if (result.success) {
         setSaveSuccess(true);
+
+        // Store details for success message
+        const successDetails = {
+          count: selectedCampaignIds.length,
+          campaigns: selectedCampaignDetails,
+        };
+
+        localStorage.setItem(
+          `filter_assignment_${filterId}`,
+          JSON.stringify(successDetails)
+        );
+
         // Close the panel after a short delay
         setTimeout(() => {
           onClose();
@@ -409,6 +449,13 @@ export function AssignToProgramsPanel({
     } finally {
       setSaving(false);
     }
+  };
+
+  // Get recently selected visual indicator className
+  const getSelectionFeedbackClass = (campaignId: string) => {
+    return recentlySelectedIds.includes(campaignId)
+      ? "bg-blue-50 transition-colors duration-500"
+      : "";
   };
 
   return (
@@ -425,7 +472,7 @@ export function AssignToProgramsPanel({
               onClick={handleAiAssistantToggle}
             >
               <SparklesIcon className="h-4 w-4" />
-              {aiAssistantEnabled ? "AI Enabled" : "Enable AI Assistant"}
+              Enable AI Assistant
             </Button>
             <Button
               variant="ghost"
@@ -620,7 +667,7 @@ export function AssignToProgramsPanel({
                                 key={campaign.id}
                                 className={`flex items-center p-3 hover:bg-slate-50 border-t ${
                                   campaign.active === false ? "opacity-60" : ""
-                                }`}
+                                } ${getSelectionFeedbackClass(campaign.id)}`}
                               >
                                 <div className="mr-2">
                                   <Checkbox
@@ -704,7 +751,8 @@ export function AssignToProgramsPanel({
               <div className="flex items-center text-green-600 gap-1">
                 <CheckCircleIcon className="h-5 w-5" />
                 <span>
-                  Filter assigned to {selectedCount} program campaigns
+                  Filter successfully assigned to {selectedCount} campaign
+                  {selectedCount !== 1 ? "s" : ""}
                 </span>
               </div>
             )}
@@ -720,7 +768,33 @@ export function AssignToProgramsPanel({
               Cancel
             </Button>
             <Button onClick={handleSave} disabled={saving}>
-              {saving ? "Saving..." : "Save Assignments"}
+              {saving ? (
+                <span className="flex items-center gap-2">
+                  <svg
+                    className="animate-spin h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  Saving...
+                </span>
+              ) : (
+                "Save Assignments"
+              )}
             </Button>
           </div>
         </div>
