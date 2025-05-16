@@ -10,7 +10,6 @@ import {
   CheckCircleIcon,
   ExclamationCircleIcon,
   MagnifyingGlassIcon,
-  SparklesIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import {
@@ -190,7 +189,6 @@ export function AssignToProgramsPanel({
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [aiAssistantEnabled, setAiAssistantEnabled] = useState(false);
   const [recentlySelectedIds, setRecentlySelectedIds] = useState<string[]>([]);
 
   // Keep track of expanded items
@@ -357,16 +355,6 @@ export function AssignToProgramsPanel({
   // Get count of selected campaigns
   const selectedCount = Object.values(selectedCampaigns).filter(Boolean).length;
 
-  // Handle AI assistant toggle
-  const handleAiAssistantToggle = () => {
-    setAiAssistantEnabled(!aiAssistantEnabled);
-    // If enabling AI assistant, we could trigger AI suggestions here
-    if (!aiAssistantEnabled) {
-      // This would be replaced with actual AI logic
-      console.log("AI assistant enabled for filter", filterId);
-    }
-  };
-
   // Select all campaigns
   const selectAll = () => {
     const allSelected: Record<string, boolean> = {};
@@ -466,15 +454,6 @@ export function AssignToProgramsPanel({
           <h2 className="text-lg font-semibold">Assign to Program Campaigns</h2>
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
-              size="sm"
-              className={`flex items-center gap-2 ${aiAssistantEnabled ? "bg-blue-50 text-blue-700 border-blue-200" : ""}`}
-              onClick={handleAiAssistantToggle}
-            >
-              <SparklesIcon className="h-4 w-4" />
-              Enable AI Assistant
-            </Button>
-            <Button
               variant="ghost"
               size="sm"
               onClick={onClose}
@@ -488,15 +467,6 @@ export function AssignToProgramsPanel({
           Assign "{filterName}" to program campaigns to control where offers
           will be displayed within partners and programs.
         </p>
-        {aiAssistantEnabled && (
-          <div className="mt-2 p-2 bg-blue-50 text-blue-700 rounded-md text-sm">
-            <p className="flex items-center gap-1">
-              <SparklesIcon className="h-4 w-4" />
-              AI Assistant is analyzing your filter and suggesting optimal
-              program campaigns.
-            </p>
-          </div>
-        )}
       </div>
 
       <div className="flex-1 flex flex-col h-full overflow-hidden">
