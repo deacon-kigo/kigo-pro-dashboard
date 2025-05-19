@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import AppLayout from "@/components/templates/AppLayout/AppLayout";
 import {
   Breadcrumb,
@@ -10,32 +10,15 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/atoms/Breadcrumb";
+import { ProductFilterCreationView } from "@/components/features/campaigns/product-filters";
 
-// Client-side only wrapper component
-const ClientOnlyView = () => {
-  const [Component, setComponent] = useState<React.ComponentType<any> | null>(
-    null
-  );
+export default function EditProductFilterPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const filterId = params.id;
 
-  useEffect(() => {
-    // Import the component only on the client side after mounting
-    import(
-      "@/components/features/campaigns/product-filters/ProductFilterCreationView"
-    )
-      .then((module) => {
-        setComponent(() => module.default);
-      })
-      .catch((err) => console.error("Failed to load component:", err));
-  }, []);
-
-  if (!Component) {
-    return <div className="p-4">Loading...</div>;
-  }
-
-  return <Component />;
-};
-
-export default function NewProductFilterPage() {
   // Navigation breadcrumb
   const breadcrumb = (
     <Breadcrumb className="mb-4">
@@ -51,7 +34,7 @@ export default function NewProductFilterPage() {
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbPage>Create New Filter</BreadcrumbPage>
+          <BreadcrumbPage>Edit Filter</BreadcrumbPage>
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>
@@ -59,7 +42,7 @@ export default function NewProductFilterPage() {
 
   return (
     <AppLayout customBreadcrumb={breadcrumb}>
-      <ClientOnlyView />
+      <ProductFilterCreationView filterId={filterId} mode="edit" />
     </AppLayout>
   );
 }

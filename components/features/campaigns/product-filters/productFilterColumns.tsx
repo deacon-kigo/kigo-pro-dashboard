@@ -319,7 +319,12 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
               className="h-auto px-3 py-1.5 font-medium"
               onClick={(e) => {
                 e.stopPropagation();
-                // Show a custom popup menu instead of using DropdownMenu
+                // For View Details, navigate directly to detail page instead of opening dropdown
+                if (!isDraft) {
+                  handleViewDetails();
+                  return;
+                }
+                // Show a custom popup menu instead of using DropdownMenu (for drafts)
                 const menu = document.getElementById(`filter-menu-${filterId}`);
                 if (menu) {
                   menu.classList.toggle("hidden");
