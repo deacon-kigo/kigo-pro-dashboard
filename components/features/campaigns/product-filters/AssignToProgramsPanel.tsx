@@ -23,7 +23,7 @@ import {
 import { AccordionContent } from "@/components/ui/accordion";
 
 // Define the hierarchical structure based on Kigo Pro glossary
-interface Campaign {
+interface PromotedProgram {
   id: string;
   name: string;
   description?: string;
@@ -34,7 +34,7 @@ interface Campaign {
 interface Program {
   id: string;
   name: string;
-  campaigns: Campaign[];
+  promotedPrograms: PromotedProgram[];
 }
 
 interface Partner {
@@ -53,9 +53,9 @@ const mockPartners: Partner[] = [
       {
         id: "prog1",
         name: "LexisNexis",
-        campaigns: [
+        promotedPrograms: [
           {
-            id: "camp1",
+            id: "pp1",
             name: "Legal Research Promotion",
             description:
               "Promotional offers for legal research tools and services",
@@ -63,10 +63,24 @@ const mockPartners: Partner[] = [
             currentFilters: ["filter-123"],
           },
           {
-            id: "camp2",
+            id: "pp2",
             name: "Student Discount Initiative",
             description: "Special discounts for law students",
             active: true,
+            currentFilters: [],
+          },
+          {
+            id: "pp3",
+            name: "Professional Certification",
+            description: "Offers for legal certification programs",
+            active: true,
+            currentFilters: [],
+          },
+          {
+            id: "pp4",
+            name: "Law Firm Solutions",
+            description: "Special services for law practices",
+            active: false,
             currentFilters: [],
           },
         ],
@@ -74,20 +88,61 @@ const mockPartners: Partner[] = [
       {
         id: "prog2",
         name: "Fidelity Investments",
-        campaigns: [
+        promotedPrograms: [
           {
-            id: "camp3",
+            id: "pp5",
             name: "Retirement Planning",
             description: "Offers related to retirement planning services",
             active: true,
             currentFilters: [],
           },
           {
-            id: "camp4",
+            id: "pp6",
             name: "Wealth Management",
             description: "Premium offers for wealth management clients",
             active: true,
             currentFilters: ["filter-456"],
+          },
+          {
+            id: "pp7",
+            name: "Investment Advisory",
+            description: "Personalized investment consultation services",
+            active: true,
+            currentFilters: [],
+          },
+          {
+            id: "pp8",
+            name: "Financial Education",
+            description: "Educational resources for financial literacy",
+            active: true,
+            currentFilters: [],
+          },
+        ],
+      },
+      {
+        id: "prog3",
+        name: "American Express",
+        promotedPrograms: [
+          {
+            id: "pp9",
+            name: "Premium Card Offers",
+            description: "Exclusive offers for premium cardholders",
+            active: true,
+            currentFilters: [],
+          },
+          {
+            id: "pp10",
+            name: "Travel Promotions",
+            description: "Special travel deals for members",
+            active: true,
+            currentFilters: [],
+          },
+          {
+            id: "pp11",
+            name: "Dining Rewards",
+            description: "Exclusive dining experiences and rewards",
+            active: true,
+            currentFilters: [],
           },
         ],
       },
@@ -98,21 +153,62 @@ const mockPartners: Partner[] = [
     name: "ampliFI",
     programs: [
       {
-        id: "prog3",
+        id: "prog4",
         name: "Chase",
-        campaigns: [
+        promotedPrograms: [
           {
-            id: "camp5",
+            id: "pp12",
             name: "Credit Card Rewards",
             description: "Exclusive offers for Chase credit card holders",
             active: true,
             currentFilters: [],
           },
           {
-            id: "camp6",
+            id: "pp13",
             name: "Business Banking Solutions",
             description: "Promotions for small business banking customers",
             active: false,
+            currentFilters: [],
+          },
+          {
+            id: "pp14",
+            name: "Home Lending",
+            description: "Special offers for mortgage and home equity",
+            active: true,
+            currentFilters: [],
+          },
+          {
+            id: "pp15",
+            name: "Auto Finance",
+            description: "Promotions for auto loans and leasing",
+            active: true,
+            currentFilters: [],
+          },
+        ],
+      },
+      {
+        id: "prog5",
+        name: "Bank of America",
+        promotedPrograms: [
+          {
+            id: "pp16",
+            name: "Preferred Rewards",
+            description: "Special offers for preferred banking customers",
+            active: true,
+            currentFilters: [],
+          },
+          {
+            id: "pp17",
+            name: "Cash Rewards Cards",
+            description: "Promotions for cash rewards credit cards",
+            active: true,
+            currentFilters: [],
+          },
+          {
+            id: "pp18",
+            name: "Travel Rewards",
+            description: "Travel benefits for premium customers",
+            active: true,
             currentFilters: [],
           },
         ],
@@ -124,29 +220,123 @@ const mockPartners: Partner[] = [
     name: "John Deere",
     programs: [
       {
-        id: "prog4",
+        id: "prog6",
         name: "Dealer Network",
-        campaigns: [
+        promotedPrograms: [
           {
-            id: "camp7",
+            id: "pp19",
             name: "Oil Promotion",
             description: "Special offers on oil changes and maintenance",
             active: true,
             currentFilters: [],
           },
           {
-            id: "camp8",
+            id: "pp20",
             name: "Parts Discount",
             description: "Discounts on genuine John Deere parts",
             active: true,
             currentFilters: [],
           },
           {
-            id: "camp9",
+            id: "pp21",
             name: "Service Special",
             description: "Seasonal service specials for equipment maintenance",
             active: true,
             currentFilters: ["filter-789"],
+          },
+          {
+            id: "pp22",
+            name: "New Equipment Financing",
+            description: "Special financing offers on new equipment",
+            active: true,
+            currentFilters: [],
+          },
+        ],
+      },
+      {
+        id: "prog7",
+        name: "Agricultural Solutions",
+        promotedPrograms: [
+          {
+            id: "pp23",
+            name: "Crop Management",
+            description: "Tools and services for better crop yield",
+            active: true,
+            currentFilters: [],
+          },
+          {
+            id: "pp24",
+            name: "Precision Technology",
+            description: "Advanced tech solutions for farming",
+            active: true,
+            currentFilters: [],
+          },
+          {
+            id: "pp25",
+            name: "Farm Equipment",
+            description: "Essential equipment for modern farming",
+            active: true,
+            currentFilters: [],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: "partner4",
+    name: "Mastercard",
+    programs: [
+      {
+        id: "prog8",
+        name: "Global Benefits",
+        promotedPrograms: [
+          {
+            id: "pp26",
+            name: "Travel Insurance",
+            description: "Comprehensive travel protection services",
+            active: true,
+            currentFilters: [],
+          },
+          {
+            id: "pp27",
+            name: "Shopping Protection",
+            description: "Extended warranties and purchase protection",
+            active: true,
+            currentFilters: [],
+          },
+          {
+            id: "pp28",
+            name: "Identity Theft Protection",
+            description: "Services to protect against identity theft",
+            active: true,
+            currentFilters: [],
+          },
+        ],
+      },
+      {
+        id: "prog9",
+        name: "World Elite",
+        promotedPrograms: [
+          {
+            id: "pp29",
+            name: "Airport Lounge Access",
+            description: "Exclusive access to VIP airport lounges",
+            active: true,
+            currentFilters: [],
+          },
+          {
+            id: "pp30",
+            name: "Concierge Services",
+            description: "Premium 24/7 concierge assistance",
+            active: true,
+            currentFilters: [],
+          },
+          {
+            id: "pp31",
+            name: "Luxury Hotel Collection",
+            description: "Exclusive hotel offers and upgrades",
+            active: true,
+            currentFilters: [],
           },
         ],
       },
@@ -158,13 +348,13 @@ const mockPartners: Partner[] = [
 // This would typically be an API call
 const saveFilterAssignments = async (
   filterId: string,
-  campaignIds: string[]
+  promotedProgramIds: string[]
 ) => {
   console.log(
     "Assigning filter",
     filterId,
-    "to program campaigns:",
-    campaignIds
+    "to promoted programs:",
+    promotedProgramIds
   );
   // Simulate API call delay
   await new Promise((resolve) => setTimeout(resolve, 800));
@@ -186,7 +376,7 @@ export function AssignToProgramsPanel({
   onSelectionChange,
 }: AssignToProgramsPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCampaigns, setSelectedCampaigns] = useState<
+  const [selectedPromotedPrograms, setSelectedPromotedPrograms] = useState<
     Record<string, boolean>
   >({});
   const [saving, setSaving] = useState(false);
@@ -215,21 +405,21 @@ export function AssignToProgramsPanel({
     }
   }, [onClose]);
 
-  // Initialize selected campaigns when the panel opens
+  // Initialize selected promoted programs when the panel opens
   useEffect(() => {
     const initialSelected: Record<string, boolean> = {};
 
     mockPartners.forEach((partner) => {
       partner.programs.forEach((program) => {
-        program.campaigns.forEach((campaign) => {
-          if (campaign.currentFilters?.includes(filterId)) {
-            initialSelected[campaign.id] = true;
+        program.promotedPrograms.forEach((promotedProgram) => {
+          if (promotedProgram.currentFilters?.includes(filterId)) {
+            initialSelected[promotedProgram.id] = true;
           }
         });
       });
     });
 
-    setSelectedCampaigns(initialSelected);
+    setSelectedPromotedPrograms(initialSelected);
     setSaveSuccess(false);
     setSaveError(null);
   }, [filterId]);
@@ -252,28 +442,33 @@ export function AssignToProgramsPanel({
     );
   };
 
-  // Check if all campaigns in a program are selected
-  const isAllCampaignsSelected = (campaigns: Campaign[]) => {
-    return campaigns
-      .filter((campaign) => campaign.active !== false)
-      .every((campaign) => selectedCampaigns[campaign.id]);
+  // Check if all promoted programs in a program are selected
+  const isAllPromotedProgramsSelected = (
+    promotedPrograms: PromotedProgram[]
+  ) => {
+    return promotedPrograms
+      .filter((promotedProgram) => promotedProgram.active !== false)
+      .every((promotedProgram) => selectedPromotedPrograms[promotedProgram.id]);
   };
 
-  // Check if some campaigns in a program are selected
-  const isSomeCampaignsSelected = (campaigns: Campaign[]) => {
-    const activeCampaigns = campaigns.filter(
-      (campaign) => campaign.active !== false
+  // Check if some promoted programs in a program are selected
+  const isSomePromotedProgramsSelected = (
+    promotedPrograms: PromotedProgram[]
+  ) => {
+    const activePromotedPrograms = promotedPrograms.filter(
+      (promotedProgram) => promotedProgram.active !== false
     );
     return (
-      activeCampaigns.some((campaign) => selectedCampaigns[campaign.id]) &&
-      !isAllCampaignsSelected(activeCampaigns)
+      activePromotedPrograms.some(
+        (promotedProgram) => selectedPromotedPrograms[promotedProgram.id]
+      ) && !isAllPromotedProgramsSelected(activePromotedPrograms)
     );
   };
 
   // Check if all programs in a partner are selected
   const isAllProgramsSelected = (programs: Program[]) => {
     return programs.every((program) =>
-      isAllCampaignsSelected(program.campaigns)
+      isAllPromotedProgramsSelected(program.promotedPrograms)
     );
   };
 
@@ -282,57 +477,62 @@ export function AssignToProgramsPanel({
     return (
       partner.programs.some(
         (program) =>
-          isSomeCampaignsSelected(program.campaigns) ||
-          isAllCampaignsSelected(program.campaigns)
+          isSomePromotedProgramsSelected(program.promotedPrograms) ||
+          isAllPromotedProgramsSelected(program.promotedPrograms)
       ) && !isAllProgramsSelected(partner.programs)
     );
   };
 
-  // Handle campaign selection with visual feedback
-  const handleCampaignSelection = (campaignId: string, checked: boolean) => {
-    setSelectedCampaigns((prev) => ({
+  // Handle promoted program selection with visual feedback
+  const handlePromotedProgramSelection = (
+    promotedProgramId: string,
+    checked: boolean
+  ) => {
+    setSelectedPromotedPrograms((prev) => ({
       ...prev,
-      [campaignId]: checked,
+      [promotedProgramId]: checked,
     }));
 
     // Add visual feedback by tracking recently selected items
-    setRecentlySelectedIds((prev) => [...prev, campaignId]);
+    setRecentlySelectedIds((prev) => [...prev, promotedProgramId]);
     setTimeout(() => {
-      setRecentlySelectedIds((prev) => prev.filter((id) => id !== campaignId));
+      setRecentlySelectedIds((prev) =>
+        prev.filter((id) => id !== promotedProgramId)
+      );
     }, 1000);
   };
 
-  // Handle program selection (select/deselect all campaigns in program)
+  // Handle program selection (select/deselect all promoted programs in program)
   const handleProgramSelection = (program: Program, checked: boolean) => {
-    const updatedSelection = { ...selectedCampaigns };
+    const updatedSelection = { ...selectedPromotedPrograms };
 
-    // Update all active campaigns in this program
-    program.campaigns
-      .filter((campaign) => campaign.active !== false)
-      .forEach((campaign) => {
-        updatedSelection[campaign.id] = checked;
+    // Update all active promoted programs in this program
+    program.promotedPrograms
+      .filter((promotedProgram) => promotedProgram.active !== false)
+      .forEach((promotedProgram) => {
+        updatedSelection[promotedProgram.id] = checked;
       });
 
-    setSelectedCampaigns(updatedSelection);
+    setSelectedPromotedPrograms(updatedSelection);
   };
 
-  // Handle partner selection (select/deselect all campaigns in all programs)
+  // Handle partner selection (select/deselect all promoted programs in all programs)
   const handlePartnerSelection = (partner: Partner, checked: boolean) => {
-    const updatedSelection = { ...selectedCampaigns };
+    const updatedSelection = { ...selectedPromotedPrograms };
 
-    // Update all active campaigns in all programs of this partner
+    // Update all active promoted programs in all programs of this partner
     partner.programs.forEach((program) => {
-      program.campaigns
-        .filter((campaign) => campaign.active !== false)
-        .forEach((campaign) => {
-          updatedSelection[campaign.id] = checked;
+      program.promotedPrograms
+        .filter((promotedProgram) => promotedProgram.active !== false)
+        .forEach((promotedProgram) => {
+          updatedSelection[promotedProgram.id] = checked;
         });
     });
 
-    setSelectedCampaigns(updatedSelection);
+    setSelectedPromotedPrograms(updatedSelection);
   };
 
-  // Filter partners, programs and campaigns by search query
+  // Filter partners, programs and promoted programs by search query
   const getFilteredPartners = () => {
     if (!searchQuery.trim()) return mockPartners;
 
@@ -343,19 +543,19 @@ export function AssignToProgramsPanel({
         // Filter programs in this partner
         const filteredPrograms = partner.programs
           .map((program) => {
-            // Filter campaigns in this program
-            const filteredCampaigns = program.campaigns.filter(
-              (campaign) =>
-                campaign.name.toLowerCase().includes(query) ||
-                (campaign.description &&
-                  campaign.description.toLowerCase().includes(query))
+            // Filter promoted programs in this program
+            const filteredPromotedPrograms = program.promotedPrograms.filter(
+              (promotedProgram) =>
+                promotedProgram.name.toLowerCase().includes(query) ||
+                (promotedProgram.description &&
+                  promotedProgram.description.toLowerCase().includes(query))
             );
 
-            if (filteredCampaigns.length === 0) return null;
+            if (filteredPromotedPrograms.length === 0) return null;
 
             return {
               ...program,
-              campaigns: filteredCampaigns,
+              promotedPrograms: filteredPromotedPrograms,
             };
           })
           .filter(Boolean) as Program[];
@@ -372,8 +572,10 @@ export function AssignToProgramsPanel({
 
   const filteredPartners = getFilteredPartners();
 
-  // Get count of selected campaigns
-  const selectedCount = Object.values(selectedCampaigns).filter(Boolean).length;
+  // Get count of selected promoted programs
+  const selectedCount = Object.values(selectedPromotedPrograms).filter(
+    Boolean
+  ).length;
 
   // Notify parent component when selection count changes
   useEffect(() => {
@@ -382,24 +584,24 @@ export function AssignToProgramsPanel({
     }
   }, [selectedCount, onSelectionChange]);
 
-  // Select all campaigns
+  // Select all promoted programs
   const selectAll = () => {
     const allSelected: Record<string, boolean> = {};
     mockPartners.forEach((partner) => {
       partner.programs.forEach((program) => {
-        program.campaigns
-          .filter((campaign) => campaign.active !== false)
-          .forEach((campaign) => {
-            allSelected[campaign.id] = true;
+        program.promotedPrograms
+          .filter((promotedProgram) => promotedProgram.active !== false)
+          .forEach((promotedProgram) => {
+            allSelected[promotedProgram.id] = true;
           });
       });
     });
-    setSelectedCampaigns(allSelected);
+    setSelectedPromotedPrograms(allSelected);
   };
 
   // Clear all selections
   const clearAll = () => {
-    setSelectedCampaigns({});
+    setSelectedPromotedPrograms({});
   };
 
   // Handle save with improved feedback
@@ -409,42 +611,47 @@ export function AssignToProgramsPanel({
       setSaveSuccess(false);
       setSaveError(null);
 
-      // Get list of selected campaign IDs
-      const selectedCampaignIds = Object.keys(selectedCampaigns).filter(
-        (id) => selectedCampaigns[id]
-      );
+      // Get list of selected promoted program IDs
+      const selectedPromotedProgramIds = Object.keys(
+        selectedPromotedPrograms
+      ).filter((id) => selectedPromotedPrograms[id]);
 
-      // Get campaign names for feedback message
-      const selectedCampaignDetails = selectedCampaignIds.map((id) => {
-        let campaignName = "";
-        let programName = "";
-        let partnerName = "";
+      // Get promoted program names for feedback message
+      const selectedPromotedProgramDetails = selectedPromotedProgramIds.map(
+        (id) => {
+          let promotedProgramName = "";
+          let programName = "";
+          let partnerName = "";
 
-        mockPartners.forEach((partner) => {
-          partner.programs.forEach((program) => {
-            program.campaigns.forEach((campaign) => {
-              if (campaign.id === id) {
-                campaignName = campaign.name;
-                programName = program.name;
-                partnerName = partner.name;
-              }
+          mockPartners.forEach((partner) => {
+            partner.programs.forEach((program) => {
+              program.promotedPrograms.forEach((promotedProgram) => {
+                if (promotedProgram.id === id) {
+                  promotedProgramName = promotedProgram.name;
+                  programName = program.name;
+                  partnerName = partner.name;
+                }
+              });
             });
           });
-        });
 
-        return { id, campaignName, programName, partnerName };
-      });
+          return { id, promotedProgramName, programName, partnerName };
+        }
+      );
 
       // Call API to save assignments
-      const result = await saveFilterAssignments(filterId, selectedCampaignIds);
+      const result = await saveFilterAssignments(
+        filterId,
+        selectedPromotedProgramIds
+      );
 
       if (result.success) {
         setSaveSuccess(true);
 
         // Store details for success message
         const successDetails = {
-          count: selectedCampaignIds.length,
-          campaigns: selectedCampaignDetails,
+          count: selectedPromotedProgramIds.length,
+          promotedPrograms: selectedPromotedProgramDetails,
         };
 
         localStorage.setItem(
@@ -467,8 +674,8 @@ export function AssignToProgramsPanel({
   };
 
   // Get recently selected visual indicator className
-  const getSelectionFeedbackClass = (campaignId: string) => {
-    return recentlySelectedIds.includes(campaignId)
+  const getSelectionFeedbackClass = (promotedProgramId: string) => {
+    return recentlySelectedIds.includes(promotedProgramId)
       ? "bg-blue-50 transition-colors duration-500"
       : "";
   };
@@ -483,7 +690,7 @@ export function AssignToProgramsPanel({
           </div>
           <Input
             type="text"
-            placeholder="Search partners, programs or campaigns..."
+            placeholder="Search partners, programs or promoted programs..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -493,7 +700,7 @@ export function AssignToProgramsPanel({
         {/* Selected count and buttons */}
         <div className="flex justify-between items-center mb-4">
           <span className="text-sm text-gray-500">
-            {selectedCount} program campaign{selectedCount !== 1 ? "s" : ""}{" "}
+            {selectedCount} promoted program{selectedCount !== 1 ? "s" : ""}{" "}
             selected
           </span>
           <div className="flex space-x-2">
@@ -592,14 +799,16 @@ export function AssignToProgramsPanel({
                             >
                               <Checkbox
                                 id={`program-${program.id}`}
-                                checked={isAllCampaignsSelected(
-                                  program.campaigns
+                                checked={isAllPromotedProgramsSelected(
+                                  program.promotedPrograms
                                 )}
                                 onCheckedChange={(checked) => {
                                   handleProgramSelection(program, !!checked);
                                 }}
                                 className={
-                                  isSomeCampaignsSelected(program.campaigns)
+                                  isSomePromotedProgramsSelected(
+                                    program.promotedPrograms
+                                  )
                                     ? "bg-primary/40 data-[state=checked]:bg-primary"
                                     : ""
                                 }
@@ -619,32 +828,38 @@ export function AssignToProgramsPanel({
                           </div>
 
                           <Badge variant="outline" className="text-xs">
-                            {program.campaigns.length} campaign
-                            {program.campaigns.length !== 1 ? "s" : ""}
+                            {program.promotedPrograms.length} promoted program
+                            {program.promotedPrograms.length !== 1 ? "s" : ""}
                           </Badge>
                         </div>
 
-                        {/* Campaigns under this program */}
+                        {/* Promoted Programs under this program */}
                         {expandedPrograms.includes(program.id) && (
                           <div className="pl-9">
-                            {program.campaigns.map((campaign) => (
+                            {program.promotedPrograms.map((promotedProgram) => (
                               <div
-                                key={campaign.id}
+                                key={promotedProgram.id}
                                 className={`flex items-center p-3 hover:bg-slate-50 border-t ${
-                                  campaign.active === false ? "opacity-60" : ""
-                                } ${getSelectionFeedbackClass(campaign.id)}`}
+                                  promotedProgram.active === false
+                                    ? "opacity-60"
+                                    : ""
+                                } ${getSelectionFeedbackClass(promotedProgram.id)}`}
                               >
                                 <div
                                   className="mr-2"
                                   onClick={(e) => e.stopPropagation()}
                                 >
                                   <Checkbox
-                                    id={`campaign-${campaign.id}`}
-                                    checked={!!selectedCampaigns[campaign.id]}
-                                    disabled={campaign.active === false}
+                                    id={`promoted-program-${promotedProgram.id}`}
+                                    checked={
+                                      !!selectedPromotedPrograms[
+                                        promotedProgram.id
+                                      ]
+                                    }
+                                    disabled={promotedProgram.active === false}
                                     onCheckedChange={(checked) => {
-                                      handleCampaignSelection(
-                                        campaign.id,
+                                      handlePromotedProgramSelection(
+                                        promotedProgram.id,
                                         !!checked
                                       );
                                     }}
@@ -656,24 +871,24 @@ export function AssignToProgramsPanel({
                                     <LayoutGrid className="h-4 w-4 mr-2 text-purple-600" />
                                     <div>
                                       <Label
-                                        htmlFor={`campaign-${campaign.id}`}
+                                        htmlFor={`promoted-program-${promotedProgram.id}`}
                                         className={`block font-medium text-sm ${
-                                          campaign.active === false
+                                          promotedProgram.active === false
                                             ? "cursor-not-allowed"
                                             : "cursor-pointer"
                                         }`}
                                       >
-                                        {campaign.name}
+                                        {promotedProgram.name}
                                       </Label>
-                                      {campaign.description && (
+                                      {promotedProgram.description && (
                                         <p className="text-xs text-gray-500">
-                                          {campaign.description}
+                                          {promotedProgram.description}
                                         </p>
                                       )}
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-2">
-                                    {campaign.active === false && (
+                                    {promotedProgram.active === false && (
                                       <Badge
                                         variant="outline"
                                         className="bg-gray-100"
@@ -681,7 +896,7 @@ export function AssignToProgramsPanel({
                                         Inactive
                                       </Badge>
                                     )}
-                                    {campaign.currentFilters?.includes(
+                                    {promotedProgram.currentFilters?.includes(
                                       filterId
                                     ) && (
                                       <Badge
@@ -707,7 +922,7 @@ export function AssignToProgramsPanel({
 
           {filteredPartners.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
-              No matching partners, programs or campaigns found.
+              No matching partners, programs or promoted programs found.
             </div>
           )}
         </div>
@@ -719,7 +934,7 @@ export function AssignToProgramsPanel({
               <div className="flex items-center text-green-600 gap-1">
                 <CheckCircleIcon className="h-5 w-5" />
                 <span>
-                  Filter assigned to {selectedCount} program campaigns
+                  Filter assigned to {selectedCount} promoted programs
                 </span>
               </div>
             )}
