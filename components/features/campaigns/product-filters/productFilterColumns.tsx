@@ -191,44 +191,6 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
     },
   },
   {
-    accessorKey: "publisherSpecific",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
-        >
-          Publisher
-          <SortIcon sorted={column.getIsSorted()} />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      const publisherSpecific = row.original.publisherSpecific;
-      const publisherName = row.original.publisherName;
-
-      if (!publisherSpecific) {
-        return <span className="text-muted-foreground text-left">General</span>;
-      }
-
-      return (
-        <span className="text-left">
-          {publisherName || "Publisher Specific"}
-        </span>
-      );
-    },
-    sortingFn: (rowA, rowB, columnId) => {
-      const publisherA = rowA.original.publisherSpecific
-        ? rowA.original.publisherName || "Publisher Specific"
-        : "General";
-      const publisherB = rowB.original.publisherSpecific
-        ? rowB.original.publisherName || "Publisher Specific"
-        : "General";
-      return publisherA.localeCompare(publisherB);
-    },
-  },
-  {
     accessorKey: "status",
     header: ({ column }) => {
       return (

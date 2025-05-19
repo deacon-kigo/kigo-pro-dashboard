@@ -23,6 +23,17 @@ import Card from "@/components/atoms/Card/Card";
 import { Button } from "@/components/atoms/Button";
 import { cn } from "@/lib/utils";
 
+// Custom CSS for selected rows
+const customTableStyles = `
+  [data-state=selected] {
+    background-color: rgba(219, 234, 254, 0.5) !important; /* Lighter blue-50 */
+  }
+  
+  [data-state=selected]:hover {
+    background-color: rgba(219, 234, 254, 0.7) !important; /* Slightly darker on hover but still light */
+  }
+`;
+
 export interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
@@ -195,6 +206,9 @@ export const DataTable = memo(function DataTable<TData, TValue>({
 
   return (
     <div className={cn("space-y-4", className)}>
+      <style jsx global>
+        {customTableStyles}
+      </style>
       <Card className="overflow-hidden rounded-none">
         <div className="p-0">
           <Table>
