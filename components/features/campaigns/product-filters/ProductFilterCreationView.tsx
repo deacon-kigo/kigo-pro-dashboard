@@ -6,6 +6,7 @@ import React, {
   ChangeEvent,
   useCallback,
   useRef,
+  useMemo,
 } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/atoms/Button";
@@ -66,7 +67,6 @@ import { RootState } from "@/lib/redux/store";
 import {
   setFilterName,
   setDescription,
-  setExpiryDate,
   addCriteria as addCriteriaAction,
   removeCriteria as removeCriteriaAction,
   setCriteria,
@@ -80,7 +80,7 @@ import {
 import {
   selectFilterName,
   selectDescription,
-  selectExpiryDate,
+  selectQueryViewName,
   selectCriteria,
   selectIsGenerating,
   selectLastGeneratedFilter,
@@ -112,92 +112,81 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Check,
+  ChevronRight,
+  FilterX,
+  PencilLine,
+  Plus,
+  X,
+} from "lucide-react";
+import {
+  ArrowPathIcon,
+  PlusCircleIcon,
+  ChatBubbleLeftRightIcon,
+  BoltIcon,
+  BookOpenIcon,
+  CalendarIcon,
+} from "@heroicons/react/24/outline";
+import {
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import AppLayout from "@/components/templates/AppLayout/AppLayout";
 
-// Custom DatePicker component
-interface DatePickerProps {
-  id: string;
-  selected: Date | null;
-  onSelect: (date: Date | null) => void;
-  placeholder: string;
-  className?: string;
-  disabled?: boolean;
-}
+// Add mock implementations
+// Mock Switch component
+const Switch = (props: any) => {
+  return (
+    <div
+      {...props}
+      className="inline-block w-10 h-6 bg-gray-200 rounded-full transition-colors"
+    />
+  );
+};
 
-const DatePicker = ({
-  id,
-  selected,
-  onSelect,
-  placeholder,
-  className,
-  disabled,
-}: DatePickerProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  // Get tomorrow's date for minimum selectable date
-  const tomorrow = addDays(new Date(), 1);
-
-  // Function to disable dates before tomorrow
-  const disablePastDates = (date: Date) => {
-    return date < tomorrow;
+// Mock useToast implementation
+const useToast = () => {
+  return {
+    toast: ({
+      title,
+      description,
+      variant,
+    }: {
+      title: string;
+      description: string;
+      variant?: string;
+    }) => {
+      console.log(`Toast: ${title} - ${description} (${variant || "default"})`);
+      alert(`${title}: ${description}`);
+    },
   };
-
-  return (
-    <div className={className}>
-      <Input
-        id={id}
-        placeholder={placeholder}
-        value={selected ? format(selected, "PPP") : ""}
-        onClick={() => setIsOpen(!isOpen)}
-        readOnly
-        disabled={disabled}
-      />
-      {isOpen && (
-        <div className="absolute mt-2 bg-white border rounded-md shadow-lg z-10">
-          <Calendar
-            mode="single"
-            selected={selected || undefined}
-            onSelect={(date: Date | undefined) => {
-              onSelect(date || null);
-              setIsOpen(false);
-            }}
-            disabled={disablePastDates}
-            initialFocus
-          />
-        </div>
-      )}
-    </div>
-  );
 };
 
-// Add generateUniqueId helper function
-const generateUniqueId = () => {
-  return (
-    Date.now().toString() + "-" + Math.random().toString(36).substring(2, 9)
-  );
-};
-
-// Add helper function to get instruction text for fields
-const getFieldInstruction = (fieldType: string): string => {
-  switch (fieldType) {
-    case "filter-name":
-      return "Enter a unique, descriptive name for your filter. Max 50 characters.";
-    case "query-view-name":
-      return "Enter a name for database query view. This will be used by the system.";
-    case "description":
-      return "Provide a detailed description of what this filter does. Max 250 characters.";
-    case "expiry-date":
-      return "Select a date when this filter should expire. Must be a future date.";
-    case "criteria-type":
-      return "Select what type of field you want to filter on.";
-    case "criteria-inclusion":
-      return "Choose whether to include or exclude conditions that match this criterion.";
-    case "criteria-value":
-      return "Enter the value to match against the selected field type.";
-    case "criteria-and-or":
-      return "Choose how this condition connects with others. 'AND' requires both conditions to be true. 'OR' requires either condition to be true.";
-    default:
-      return "";
-  }
+// Mock filterService implementation
+const filterService = {
+  saveFilter: async (filterData: any) => {
+    console.log("Filter saved:", filterData);
+    return { success: true, id: "mock-id" };
+  },
+  updateFilter: async (filterId: string, filterData: any) => {
+    console.log("Filter updated:", { ...filterData, id: filterId });
+    return { success: true, id: filterId };
+  },
+  createFilter: async (filterData: any) => {
+    console.log("Filter created:", filterData);
+    return { success: true, id: "mock-id" };
+  },
+  getFilter: async (filterId: string) => {
+    return {
+      id: filterId,
+      name: "Mock Filter",
+      description: "Mock Description",
+      criteria: [],
+    };
+  },
 };
 
 export interface ProductFilterCreationViewProps {
@@ -209,52 +198,55 @@ export default function ProductFilterCreationView({
   filterId,
   mode = "create",
 }: ProductFilterCreationViewProps) {
-  const router = useRouter();
   const dispatch = useDispatch();
-  const [activeTab, setActiveTab] = useState("details");
-  // Add validation message state
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const filterName = useSelector(selectFilterName);
+  const description = useSelector(selectDescription);
+  const queryViewName = useSelector(selectQueryViewName);
+  const filterCriteria = useSelector(selectCriteria);
+  const lastGeneratedFilter = useSelector(selectLastGeneratedFilter);
+  const isReduxFormValid = useSelector(selectIsFormValid);
+  const hasRequiredCriteria = useSelector(selectHasAllRequiredCriteria);
+
+  // State variables
+  const [isViewMode, setIsViewMode] = useState(mode === "view");
+  const [isEditMode, setIsEditMode] = useState(mode === "edit");
+  const [activeTab, setActiveTab] = useState("build");
+  const [showSaveConfirmation, setShowSaveConfirmation] = useState(false);
+  const [showBackConfirmation, setShowBackConfirmation] = useState(false);
+  const [criteriaType, setCriteriaType] = useState<string>("MerchantKeyword");
+  const [criteriaValue, setCriteriaValue] = useState<string>("");
+  const [criteriaRule, setCriteriaRule] = useState<string>("contains");
+  const [criteriaInclusion, setCriteriaInclusion] = useState<string>("Include");
+  const [criteriaAndOr, setCriteriaAndOr] = useState<string>("and");
+  const [isFormSubmitting, setIsFormSubmitting] = useState(false);
+  const [isAssignProgramsModalOpen, setIsAssignProgramsModalOpen] =
+    useState(false);
+  const [selectedProgramCount, setSelectedProgramCount] = useState(0);
+  const [isCreateLaunchModalOpen, setIsCreateLaunchModalOpen] = useState(false);
+  const [isPublishFlow, setIsPublishFlow] = useState(false);
+  const [isSubmitInProgress, setIsSubmitInProgress] = useState(false);
+  const [isPredefinedOpen, setIsPredefinedOpen] = useState(false);
+  const [selectingSuggestion, setSelectingSuggestion] = useState(false);
+  const [debugModeEnabled, setDebugModeEnabled] = useState(false);
+
   const [validationMessage, setValidationMessage] = useState<string | null>(
     null
   );
-  // Add success message state
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  // Add dialog open state for the back confirmation
   const [backDialogOpen, setBackDialogOpen] = useState(false);
-  // Add dialog open state for the create confirmation
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  // Replace isProgramPanelOpen with isAssignProgramsModalOpen
-  const [isAssignProgramsModalOpen, setIsAssignProgramsModalOpen] =
-    useState(false);
 
-  // Flag for edit/view mode
-  const isViewMode = mode === "view";
-  const isEditMode = mode === "edit";
+  const [tempFilterId] = useState(() => {
+    return (
+      Date.now().toString() + "-" + Math.random().toString(36).substring(2, 9)
+    );
+  });
+
   const isCreateMode = mode === "create";
 
-  // Use Redux selectors for form state
-  const filterName = useSelector(selectFilterName);
-  const description = useSelector(selectDescription);
-  const expiryDateString = useSelector(selectExpiryDate);
-  // Convert ISO string to Date object for UI
-  const expiryDate = expiryDateString ? new Date(expiryDateString) : null;
-
-  // Get criteria from Redux
-  const filterCriteria = useSelector(selectCriteria);
-  const isGeneratingFilters = useSelector(selectIsGenerating);
-  const lastGeneratedFilter = useSelector(selectLastGeneratedFilter);
-  const hasRequiredCriteria = useSelector(selectHasAllRequiredCriteria);
-  const isReduxFormValid = useSelector(selectIsFormValid);
-
-  // Local state for criteria creation form
-  const [criteriaType, setCriteriaType] = useState("");
-  const [criteriaValue, setCriteriaValue] = useState("");
-  const [criteriaAndOr, setCriteriaAndOr] = useState("OR");
-  const [criteriaInclusion, setCriteriaInclusion] = useState("Include");
-
-  // Track selected program campaigns
-  const [selectedProgramCount, setSelectedProgramCount] = useState(0);
-
-  // Combine all field types into a single array - no longer separate required vs optional
   const allFieldTypes = [
     "MerchantKeyword",
     "MerchantName",
@@ -270,29 +262,19 @@ export default function ProductFilterCreationView({
     "OfferType",
   ];
 
-  // Helper function to check if all required fields are filled - using Redux selector
   const isFormValid = () => isReduxFormValid;
 
-  // Helper function to check if all required criteria are present - using Redux selector
-  const hasAllRequiredCriteria = () => hasRequiredCriteria;
-
-  // Check if basic information is complete
   const isBasicInfoComplete =
     filterName.trim() !== "" && description.trim() !== "";
 
-  // Check if criteria section is complete (has at least one condition)
   const isCriteriaComplete = filterCriteria.length > 0;
 
-  // Add criteria (manual) - using Redux action
   const addCriteria = () => {
     if (criteriaType && criteriaValue) {
-      // isRequired is now determined solely by the Include/Exclude selection
       const isRequired = criteriaInclusion === "Include";
 
-      // Always use "contains" as the default rule
       const defaultRule = "contains";
 
-      // Dispatch action to add criteria to Redux store
       dispatch(
         addCriteriaAction({
           type: criteriaType,
@@ -303,7 +285,6 @@ export default function ProductFilterCreationView({
         })
       );
 
-      // Reset the form
       setCriteriaType("");
       setCriteriaValue("");
       setCriteriaAndOr("OR");
@@ -312,46 +293,37 @@ export default function ProductFilterCreationView({
       setValidationMessage(
         "Please select a field and enter a value for your filter condition"
       );
-      // Clear the validation message after 5 seconds
       setTimeout(() => setValidationMessage(null), 5000);
     }
   };
 
-  // Remove criteria - using Redux action
   const removeCriteria = (id: string) => {
     dispatch(removeCriteriaAction(id));
   };
 
-  // Create filter with confirmation
   const handleCreateFilterClick = () => {
-    // Check if basic form fields are filled based on new requirements
     const isBasicInfoValid =
       filterName.trim() !== "" && description.trim() !== "";
 
-    // Check if we have at least one filter condition
     const hasFilterConditions = filterCriteria.length > 0;
 
     if (!isBasicInfoValid) {
       setValidationMessage(
         "Please fill in the required filter name and description fields"
       );
-      // Clear the validation message after 5 seconds
       setTimeout(() => setValidationMessage(null), 5000);
       return;
     }
 
     if (!hasFilterConditions) {
       setValidationMessage("Please add at least one filter condition");
-      // Clear the validation message after 5 seconds
       setTimeout(() => setValidationMessage(null), 5000);
       return;
     }
 
-    // Open the confirmation dialog
     setCreateDialogOpen(true);
   };
 
-  // Handle confirmed filter creation
   const handleConfirmedCreateFilter = () => {
     // Close the dialog
     setCreateDialogOpen(false);
@@ -366,50 +338,41 @@ export default function ProductFilterCreationView({
     }, 3000);
   };
 
-  // Cancel and go back with confirmation
   const handleBackClick = () => {
-    // Check if form has changes before showing dialog
     if (filterName.trim() || description.trim() || filterCriteria.length > 0) {
       setBackDialogOpen(true);
     } else {
-      // If no changes, go back directly
       router.push("/campaigns/product-filters");
     }
   };
 
-  // Handle confirmed navigation
   const handleConfirmedNavigateBack = () => {
     dispatch(resetFilter());
     router.push("/campaigns/product-filters");
   };
 
-  // Navigate to next tab
   const nextTab = () => {
     if (activeTab === "details" && isFormValid()) {
       setActiveTab("criteria");
     }
   };
 
-  // Navigate to previous tab
   const prevTab = () => {
     if (activeTab === "criteria") {
       setActiveTab("details");
     }
   };
 
-  // Initialize AI assistant with product filter context
   useEffect(() => {
     dispatch(
       setProductFilterContext({
         filterName,
         filterDescription: description,
         currentCriteria: filterCriteria,
-        expiryDate: expiryDate ? expiryDate.toISOString() : null,
       })
     );
-  }, [dispatch, filterName, description, filterCriteria, expiryDate]);
+  }, [dispatch, filterName, description, filterCriteria]);
 
-  // When in edit mode, load the filter data on component mount
   useEffect(() => {
     if (filterId && (isEditMode || isViewMode)) {
       // In a real implementation, this would fetch data from an API
@@ -421,7 +384,6 @@ export default function ProductFilterCreationView({
           id: "1",
           name: "Pizza Edition",
           description: "All pizza-related offers for the summer campaign",
-          expiryDate: "2024-10-15",
           criteria: [
             {
               type: "MerchantKeyword",
@@ -443,7 +405,6 @@ export default function ProductFilterCreationView({
           id: "2",
           name: "Coffee & Treats",
           description: "Coffee and bakery offers for morning promotions",
-          expiryDate: "2024-11-05",
           criteria: [
             {
               type: "MerchantKeyword",
@@ -466,19 +427,12 @@ export default function ProductFilterCreationView({
       const filter = filters.find((f) => f.id === filterId);
 
       if (filter) {
-        // Set filter details in Redux
         dispatch(setFilterName(filter.name));
         dispatch(setDescription(filter.description));
 
-        if (filter.expiryDate) {
-          dispatch(setExpiryDate(new Date(filter.expiryDate)));
-        }
-
-        // Clear existing criteria and set the new ones
         dispatch(setCriteria([]));
 
         if (filter.criteria) {
-          // Add each criteria to the store
           filter.criteria.forEach((criteria) => {
             dispatch(
               addCriteriaAction({
@@ -495,33 +449,25 @@ export default function ProductFilterCreationView({
     }
   }, [filterId, isEditMode, isViewMode, dispatch]);
 
-  // Handle option selected from AI Assistant
   const handleOptionSelected = (optionId: string) => {
-    // Handle different AI suggestions/commands
-    console.log("Option selected:", optionId); // Debug logging
+    console.log("Option selected:", optionId);
 
     if (optionId.startsWith("apply_updates:")) {
       dispatch(setIsGenerating(true));
 
       try {
-        // Extract the JSON payload from the option ID
         const updatesJson = optionId.replace("apply_updates:", "");
         const updates = JSON.parse(updatesJson);
 
-        console.log("Parsed updates:", updates); // Debug logging
+        console.log("Parsed updates:", updates);
 
-        // Dispatch action to update the filter in Redux store
         dispatch(
           applyFilterUpdate({
             filterName: updates.filterName,
             criteriaToAdd: updates.criteriaToAdd,
-            expiryDate: updates.expiryDate
-              ? new Date(updates.expiryDate)
-              : undefined,
           })
         );
 
-        // Set last generated filter for UI feedback
         dispatch(setLastGeneratedFilter("complete"));
 
         setTimeout(() => {
@@ -553,11 +499,9 @@ export default function ProductFilterCreationView({
             setCriteriaValue(criteriaData.value);
             setCriteriaAndOr(andOr);
 
-            // isRequired is determined by the inclusion type (defaulting to Include if not specified)
             const inclusion = criteriaData.inclusion || "Include";
             const isRequired = inclusion === "Include";
 
-            // Dispatch action to add criteria to Redux store
             dispatch(
               addCriteriaAction({
                 type: criteriaData.type,
@@ -568,7 +512,6 @@ export default function ProductFilterCreationView({
               })
             );
 
-            // Reset form
             setCriteriaType("");
             setCriteriaValue("");
             setCriteriaAndOr("OR");
@@ -590,7 +533,6 @@ export default function ProductFilterCreationView({
         if (Array.isArray(criteriaList) && criteriaList.length > 0) {
           setTimeout(() => {
             const newCriteriaItems = criteriaList.map((criteriaItem) => {
-              // isRequired is determined by the inclusion type (defaulting to Include if not specified)
               const inclusion = criteriaItem.inclusion || "Include";
               const isRequired = inclusion === "Include";
 
@@ -603,12 +545,10 @@ export default function ProductFilterCreationView({
               };
             });
 
-            // Add each criteria to Redux store
             newCriteriaItems.forEach((criteria) => {
               dispatch(addCriteriaAction(criteria));
             });
 
-            // Reset form
             setCriteriaType("");
             setCriteriaValue("");
             setCriteriaAndOr("OR");
@@ -627,31 +567,23 @@ export default function ProductFilterCreationView({
         interface CompleteFilterData {
           name?: string;
           description?: string;
-          expiryDate?: string;
           criteria?: Array<Partial<FilterCriteria> & { inclusion?: string }>;
         }
         const filterData: CompleteFilterData = JSON.parse(
           optionId.replace("suggest_complete_filter:", "")
         );
         setTimeout(() => {
-          // Create update object for Redux
           const update: any = {};
 
           if (filterData.name) update.filterName = filterData.name;
           if (filterData.description)
             update.description = filterData.description;
-          if (filterData.expiryDate) {
-            const date = new Date(filterData.expiryDate);
-            if (!isNaN(date.getTime())) update.expiryDate = date;
-          }
 
-          // Format criteria for Redux using new isRequired logic
           if (
             Array.isArray(filterData.criteria) &&
             filterData.criteria.length > 0
           ) {
             const criteriaToAdd = filterData.criteria.map((criteriaItem) => {
-              // isRequired is determined by the inclusion type (defaulting to Include if not specified)
               const inclusion = criteriaItem.inclusion || "Include";
               const isRequired = inclusion === "Include";
 
@@ -667,7 +599,6 @@ export default function ProductFilterCreationView({
             update.criteriaToAdd = criteriaToAdd;
           }
 
-          // Dispatch single update action with all changes
           dispatch(applyFilterUpdate(update));
           dispatch(setLastGeneratedFilter("complete"));
           dispatch(setIsGenerating(false));
@@ -679,7 +610,6 @@ export default function ProductFilterCreationView({
     }
   };
 
-  // Friendly names mapping for technical terms
   const friendlyTypeNames: Record<string, string> = {
     MerchantKeyword: "Merchant Contains Keyword",
     MerchantName: "Merchant Name",
@@ -695,7 +625,6 @@ export default function ProductFilterCreationView({
     OfferType: "Offer Type",
   };
 
-  // Friendly names for rules
   const friendlyRuleNames: Record<string, string> = {
     equals: "is exactly",
     contains: "contains",
@@ -705,30 +634,16 @@ export default function ProductFilterCreationView({
     lessThan: "is less than",
   };
 
-  // Create a serializable-safe date selector function
-  const handleDateSelect = useCallback(
-    (date: Date | null) => {
-      // This dispatch will now use our serialization-safe action
-      dispatch(setExpiryDate(date));
-    },
-    [dispatch]
-  );
-
-  // Get coverage stats from Redux
   const coverageStats = useSelector(selectCoverageStats);
 
-  // Ref to track previous criteria length to prevent unnecessary updates
   const prevCriteriaLengthRef = useRef(filterCriteria.length);
 
-  // Update coverage stats whenever criteria change
   useEffect(() => {
-    // Only update if the criteria length has changed or if we haven't generated stats yet
     if (
       filterCriteria.length > 0 &&
       (prevCriteriaLengthRef.current !== filterCriteria.length ||
         !coverageStats?.totalOffers)
     ) {
-      // Update ref with current length
       prevCriteriaLengthRef.current = filterCriteria.length;
 
       const stats = generateFilterCoverageStats(filterCriteria);
@@ -736,56 +651,44 @@ export default function ProductFilterCreationView({
     }
   }, [filterCriteria, dispatch, coverageStats?.totalOffers]);
 
-  // Function to handle applying coverage suggestions
   const handleSuggestionApply = (suggestionValue: string) => {
-    // Parse the suggestion value
     const [type, action, target] = suggestionValue.split(":");
 
     if (type !== "coverage") return;
 
-    // Handle different types of coverage suggestions
     switch (action) {
       case "reduce":
-        // Remove one of the criteria of the specified type
         const criteriaToRemove = filterCriteria
           .filter((c) => c.type === target)
-          .slice(0, 1); // Take just one to remove
+          .slice(0, 1);
 
         if (criteriaToRemove.length > 0) {
           dispatch(removeCriteriaAction(criteriaToRemove[0].id));
 
-          // Show notification
           dispatch(setLastGeneratedFilter("criteria"));
         }
         break;
 
       case "relax":
-        // Find the criteria by ID and change its rule from "equals" to "contains"
         const criteriaIndex = filterCriteria.findIndex((c) => c.id === target);
 
         if (criteriaIndex >= 0) {
           const criteria = { ...filterCriteria[criteriaIndex] };
           criteria.rule = "contains";
 
-          // Update the criteria
           const updatedCriteria = [...filterCriteria];
           updatedCriteria[criteriaIndex] = criteria;
 
-          // Dispatch the action with the full updated array
           dispatch({
             type: "productFilter/setCriteria",
             payload: updatedCriteria,
           });
 
-          // Show notification
           dispatch(setLastGeneratedFilter("criteria"));
         }
         break;
 
-      // Add other cases as needed
-
       default:
-        // For generic suggestions, show an educational message
         alert(
           "To improve coverage, try using broader keywords or selecting 'contains' instead of 'equals' for keyword matches."
         );
@@ -793,34 +696,27 @@ export default function ProductFilterCreationView({
     }
   };
 
-  // Add a handler function for saving as draft
   const handleSaveAsDraft = () => {
-    // For drafts, we only validate that there's a filter name
     if (!filterName.trim()) {
       setValidationMessage("Please provide a filter name to save as draft");
-      // Clear the validation message after 5 seconds
       setTimeout(() => setValidationMessage(null), 5000);
       return;
     }
 
-    // Show success message
     setSuccessMessage("Filter saved as draft successfully!");
 
-    // Clear the success message after 3 seconds and redirect
     setTimeout(() => {
       setSuccessMessage(null);
       router.push("/campaigns/product-filters");
     }, 3000);
   };
 
-  // Update page title and button text based on mode
   const getPageTitle = () => {
     if (isViewMode) return "View Product Filter";
     if (isEditMode) return "Edit Product Filter";
     return "Create New Product Filter";
   };
 
-  // Create the back button for the header with trigger for confirmation dialog
   const backButton = (
     <Button
       variant="outline"
@@ -832,7 +728,6 @@ export default function ProductFilterCreationView({
     </Button>
   );
 
-  // Customize form actions based on mode
   const renderFormActions = () => {
     if (isViewMode) {
       return (
@@ -883,7 +778,6 @@ export default function ProductFilterCreationView({
       );
     }
 
-    // Create mode (default)
     return (
       <div className="flex items-center gap-2">
         <Button
@@ -909,13 +803,8 @@ export default function ProductFilterCreationView({
     );
   };
 
-  // Add a useEffect to ensure the ShinyBorder status reflects the current number of selected programs
-  // Right after the existing useEffect for filterCriteria
   useEffect(() => {
-    // If the modal is closed and we have at least one program selected,
-    // make sure the ShinyBorder is activated
     if (!isAssignProgramsModalOpen && selectedProgramCount > 0) {
-      // The ShinyBorder will automatically update based on selectedProgramCount
       console.log(`Programs selected: ${selectedProgramCount}`);
     }
   }, [isAssignProgramsModalOpen, selectedProgramCount]);
@@ -930,10 +819,8 @@ export default function ProductFilterCreationView({
         variant="aurora"
       />
 
-      {/* Back to Filters confirmation dialog */}
       <AlertDialog open={backDialogOpen} onOpenChange={setBackDialogOpen}>
         <AlertDialogTrigger asChild className="hidden">
-          {/* This is a hidden trigger that's programmatically activated */}
           <button />
         </AlertDialogTrigger>
         <AlertDialogContent>
@@ -964,7 +851,6 @@ export default function ProductFilterCreationView({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Create Filter confirmation dialog */}
       <AlertDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -982,13 +868,11 @@ export default function ProductFilterCreationView({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Main content container with strict viewport-based height */}
       <div
         className="flex-1 flex flex-col"
         style={{ height: "calc(100vh - 160px)" }}
       >
         <div className="flex gap-3 h-full">
-          {/* Left Column - AI Assistant Panel with fixed height and position */}
           <div
             className="w-[350px] flex-shrink-0"
             style={{
@@ -1005,7 +889,7 @@ export default function ProductFilterCreationView({
                 onOptionSelected={handleOptionSelected}
                 className="h-full overflow-auto"
               />
-              {isGeneratingFilters && (
+              {useSelector(selectIsGenerating) && (
                 <div className="fixed inset-0 bg-black/5 backdrop-blur-sm flex items-center justify-center z-50">
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
@@ -1031,7 +915,6 @@ export default function ProductFilterCreationView({
             </Card>
           </div>
 
-          {/* Right Column - Filter Configuration with scrollable content */}
           <ResizablePanelGroup direction="horizontal" className="flex-1">
             <ResizablePanel defaultSize={100} minSize={60}>
               <div className="overflow-auto pb-6 h-full pr-4">
@@ -1044,7 +927,6 @@ export default function ProductFilterCreationView({
                       transition={{ duration: 0.3 }}
                       className="mb-3 p-2 bg-primary/10 border border-primary/30 rounded-md flex items-center"
                       onAnimationComplete={() => {
-                        // Clear the notification after 5 seconds
                         setTimeout(
                           () => dispatch(setLastGeneratedFilter(null)),
                           5000
@@ -1083,7 +965,6 @@ export default function ProductFilterCreationView({
                     </motion.div>
                   )}
 
-                  {/* Validation Message Banner */}
                   {validationMessage && (
                     <motion.div
                       initial={{ opacity: 0, y: -20 }}
@@ -1117,7 +998,6 @@ export default function ProductFilterCreationView({
                     </motion.div>
                   )}
 
-                  {/* Success Message Banner */}
                   {successMessage && (
                     <motion.div
                       initial={{ opacity: 0, y: -20 }}
@@ -1166,11 +1046,7 @@ export default function ProductFilterCreationView({
 
                     <div className="p-4">
                       <div className="grid grid-cols-12 gap-6">
-                        {/* Left side - Basic Information and Status */}
                         <div className="col-span-5 space-y-6">
-                          {/* Filter Conditions Summary Accordion - REMOVED */}
-
-                          {/* Basic Information Section */}
                           <ShinyBorder
                             isActive={isBasicInfoComplete}
                             borderRadius={8}
@@ -1255,36 +1131,12 @@ export default function ProductFilterCreationView({
                                         this filter does. Max 250 characters.
                                       </p>
                                     </div>
-
-                                    <div className="text-left">
-                                      <Label
-                                        htmlFor="expiry-date"
-                                        className="text-sm"
-                                      >
-                                        Expiry Date
-                                      </Label>
-                                      <DatePicker
-                                        id="expiry-date"
-                                        selected={expiryDate}
-                                        onSelect={handleDateSelect}
-                                        placeholder={getFieldPlaceholder(
-                                          "expiry-date"
-                                        )}
-                                        className="mt-1 w-full"
-                                        disabled={isViewMode}
-                                      />
-                                      <p className="mt-1.5 text-xs font-medium text-gray-600">
-                                        Select a date when this filter should
-                                        expire. Must be a future date.
-                                      </p>
-                                    </div>
                                   </div>
                                 </AccordionContent>
                               </AccordionItem>
                             </Accordion>
                           </ShinyBorder>
 
-                          {/* Program Campaign Assignment Section - now a button to open panel */}
                           <ShinyBorder
                             isActive={selectedProgramCount > 0}
                             borderRadius={8}
@@ -1308,9 +1160,8 @@ export default function ProductFilterCreationView({
                                   </Badge>
                                   {selectedProgramCount > 0 && (
                                     <Badge
-                                      variant="success"
-                                      size="sm"
-                                      className="ml-2"
+                                      variant="outline"
+                                      className="ml-2 text-xs bg-blue-50 text-blue-700"
                                     >
                                       {selectedProgramCount} selected
                                     </Badge>
@@ -1322,9 +1173,7 @@ export default function ProductFilterCreationView({
                           </ShinyBorder>
                         </div>
 
-                        {/* Right side - Filter Builder and Conditions */}
                         <div className="col-span-7 flex flex-col space-y-4">
-                          {/* Condition Builder */}
                           <ShinyBorder
                             isActive={isCriteriaComplete}
                             borderRadius={8}
@@ -1354,7 +1203,6 @@ export default function ProductFilterCreationView({
                                 </AccordionTrigger>
                                 <AccordionContent className="px-4 overflow-hidden">
                                   <div className="space-y-4 pb-2">
-                                    {/* Accessibility-enhanced help text with aria attributes */}
                                     <div
                                       className="text-xs text-muted-foreground mb-3"
                                       role="note"
@@ -1372,7 +1220,6 @@ export default function ProductFilterCreationView({
                                       </span>
                                     </div>
 
-                                    {/* Filter condition sentence as a more cohesive flow */}
                                     <div
                                       className={`bg-gray-50 p-3 rounded-md border border-gray-200 ${isViewMode ? "opacity-75" : ""}`}
                                     >
@@ -1535,7 +1382,6 @@ export default function ProductFilterCreationView({
                             </Accordion>
                           </ShinyBorder>
 
-                          {/* Current Conditions */}
                           <ShinyBorder
                             isActive={isCriteriaComplete}
                             borderRadius={8}
@@ -1558,7 +1404,6 @@ export default function ProductFilterCreationView({
                                 </AccordionTrigger>
                                 <AccordionContent className="p-0 overflow-hidden">
                                   <div className="grid grid-cols-2 overflow-hidden">
-                                    {/* Include Rules */}
                                     <div className="border-r flex flex-col">
                                       <div className="bg-green-50 text-green-800 px-3 py-1.5 text-xs font-medium flex items-center justify-between border-b">
                                         <div className="flex items-center">
@@ -1644,7 +1489,6 @@ export default function ProductFilterCreationView({
                                       </ScrollArea>
                                     </div>
 
-                                    {/* Exclude Rules */}
                                     <div className="flex flex-col">
                                       <div className="bg-red-50 text-red-800 px-3 py-1.5 text-xs font-medium flex items-center justify-between border-b">
                                         <div className="flex items-center">
@@ -1745,11 +1589,9 @@ export default function ProductFilterCreationView({
         </div>
       </div>
 
-      {/* Replace the resizable panel implementation with a modal */}
       <Dialog
         open={isAssignProgramsModalOpen}
         onOpenChange={(open) => {
-          // When closing the dialog, update the ShinyBorder accordingly
           setIsAssignProgramsModalOpen(open);
         }}
       >
@@ -1763,7 +1605,7 @@ export default function ProductFilterCreationView({
           </DialogHeader>
           <div className="max-h-[calc(80vh-10rem)] overflow-hidden">
             <AssignToProgramsPanel
-              filterId={generateUniqueId()} // Using a temporary ID for new filters
+              filterId={isCreateMode ? tempFilterId : filterId || ""}
               filterName={filterName}
               onClose={() => setIsAssignProgramsModalOpen(false)}
               onSelectionChange={(count) => {

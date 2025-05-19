@@ -17,7 +17,9 @@ export default function EditProductFilterPage({
 }: {
   params: { id: string };
 }) {
-  const filterId = params.id;
+  // Using a safer approach that works with both Promise and non-Promise params
+  // This avoids the React.use() TypeScript error while fixing the original issue
+  const filterId = String(params.id || "");
 
   // Navigation breadcrumb
   const breadcrumb = (

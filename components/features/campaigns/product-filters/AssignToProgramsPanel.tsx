@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/atoms/Button";
@@ -369,6 +369,110 @@ interface AssignToProgramsPanelProps {
   onSelectionChange?: (count: number) => void;
 }
 
+// Helper function to generate mock partner data dynamically
+const generateMockPartners = (count = 10, currentFilterId = "") => {
+  const partners = [...mockPartners]; // Start with existing partners
+
+  // Company name prefixes for variety
+  const companyPrefixes = [
+    "Global",
+    "Advanced",
+    "United",
+    "Premier",
+    "Elite",
+    "Strategic",
+    "Innovative",
+    "Dynamic",
+    "Omni",
+    "Peak",
+  ];
+  // Company name suffixes for variety
+  const companySuffixes = [
+    "Partners",
+    "Solutions",
+    "Technologies",
+    "Enterprises",
+    "Services",
+    "Industries",
+    "Networks",
+    "Systems",
+    "Ventures",
+    "Brands",
+  ];
+  // Program types for variety
+  const programTypes = [
+    "Rewards",
+    "Loyalty",
+    "Premium",
+    "Discount",
+    "Membership",
+    "VIP",
+    "Affiliate",
+    "Referral",
+    "Benefits",
+    "Partnership",
+  ];
+  // Promotion types for variety
+  const promotionTypes = [
+    "Offer",
+    "Deal",
+    "Bundle",
+    "Package",
+    "Savings",
+    "Exclusive",
+    "Limited Time",
+    "Seasonal",
+    "Special",
+    "Featured",
+  ];
+
+  // Generate additional partners
+  for (let i = 4; i < count + 4; i++) {
+    const partnerId = `partner${i}`;
+    const partnerName = `${companyPrefixes[i % 10]} ${companySuffixes[i % 10]}`;
+
+    // Generate 2-4 programs per partner
+    const programCount = 2 + Math.floor(Math.random() * 3);
+    const programs: Program[] = [];
+
+    for (let j = 0; j < programCount; j++) {
+      const programId = `prog${i * 10 + j}`;
+      const programName = `${programTypes[j % 10]} Program ${j + 1}`;
+
+      // Generate 3-8 promoted programs per program
+      const promotedProgramCount = 3 + Math.floor(Math.random() * 6);
+      const promotedPrograms: PromotedProgram[] = [];
+
+      for (let k = 0; k < promotedProgramCount; k++) {
+        const promotedProgramId = `pp${i * 100 + j * 10 + k}`;
+        const promotedProgramName = `${promotionTypes[k % 10]} ${k + 1}`;
+
+        promotedPrograms.push({
+          id: promotedProgramId,
+          name: promotedProgramName,
+          description: `${partnerName} ${programName} promotion details for ${promotedProgramName}`,
+          active: Math.random() > 0.1, // 90% chance of being active
+          currentFilters: Math.random() > 0.8 ? [currentFilterId] : [], // 20% chance of having the current filter
+        });
+      }
+
+      programs.push({
+        id: programId,
+        name: programName,
+        promotedPrograms,
+      });
+    }
+
+    partners.push({
+      id: partnerId,
+      name: partnerName,
+      programs,
+    });
+  }
+
+  return partners;
+};
+
 export function AssignToProgramsPanel({
   filterId,
   filterName,
@@ -391,6 +495,57 @@ export function AssignToProgramsPanel({
   // Add a state to detect if we're embedded in the product filter creation form
   const [isEmbedded, setIsEmbedded] = useState(false);
   const componentRef = useRef<HTMLDivElement>(null);
+
+  // State for infinite scrolling
+  const [visiblePartners, setVisiblePartners] = useState<Partner[]>([]);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Track when sections are expanded for better scroll management
+  const [isExpanding, setIsExpanding] = useState(false);
+
+  // Generate extended mock data
+  const allPartners = useRef(generateMockPartners(30, filterId));
+
+  // Filter partners, programs and promoted programs by search query
+  const getFilteredPartners = useCallback(() => {
+    if (!searchQuery.trim()) return allPartners.current;
+
+    const query = searchQuery.toLowerCase();
+
+    return allPartners.current
+      .map((partner) => {
+        // Filter programs in this partner
+        const filteredPrograms = partner.programs
+          .map((program) => {
+            // Filter promoted programs in this program
+            const filteredPromotedPrograms = program.promotedPrograms.filter(
+              (promotedProgram) =>
+                promotedProgram.name.toLowerCase().includes(query) ||
+                (promotedProgram.description &&
+                  promotedProgram.description.toLowerCase().includes(query))
+            );
+
+            if (filteredPromotedPrograms.length === 0) return null;
+
+            return {
+              ...program,
+              promotedPrograms: filteredPromotedPrograms,
+            };
+          })
+          .filter(Boolean) as Program[];
+
+        if (filteredPrograms.length === 0) return null;
+
+        return {
+          ...partner,
+          programs: filteredPrograms,
+        };
+      })
+      .filter(Boolean) as Partner[];
+  }, [searchQuery]);
 
   // Check if the component is embedded in the product filter creation form
   useEffect(() => {
@@ -426,20 +581,30 @@ export function AssignToProgramsPanel({
 
   // Toggle expansion of a partner
   const togglePartner = (partnerId: string) => {
-    setExpandedPartners((prev) =>
-      prev.includes(partnerId)
+    setIsExpanding(true);
+    setExpandedPartners((prev) => {
+      const newExpandedPartners = prev.includes(partnerId)
         ? prev.filter((id) => id !== partnerId)
-        : [...prev, partnerId]
-    );
+        : [...prev, partnerId];
+
+      // Reset expanding state after a short delay to allow DOM to update
+      setTimeout(() => setIsExpanding(false), 150);
+      return newExpandedPartners;
+    });
   };
 
   // Toggle expansion of a program
   const toggleProgram = (programId: string) => {
-    setExpandedPrograms((prev) =>
-      prev.includes(programId)
+    setIsExpanding(true);
+    setExpandedPrograms((prev) => {
+      const newExpandedPrograms = prev.includes(programId)
         ? prev.filter((id) => id !== programId)
-        : [...prev, programId]
-    );
+        : [...prev, programId];
+
+      // Reset expanding state after a short delay to allow DOM to update
+      setTimeout(() => setIsExpanding(false), 150);
+      return newExpandedPrograms;
+    });
   };
 
   // Check if all promoted programs in a program are selected
@@ -532,45 +697,65 @@ export function AssignToProgramsPanel({
     setSelectedPromotedPrograms(updatedSelection);
   };
 
-  // Filter partners, programs and promoted programs by search query
-  const getFilteredPartners = () => {
-    if (!searchQuery.trim()) return mockPartners;
+  // Handle infinite scroll
+  const loadMorePartners = useCallback(() => {
+    if (loading || !hasMore || isExpanding) return;
 
-    const query = searchQuery.toLowerCase();
+    setLoading(true);
 
-    return mockPartners
-      .map((partner) => {
-        // Filter programs in this partner
-        const filteredPrograms = partner.programs
-          .map((program) => {
-            // Filter promoted programs in this program
-            const filteredPromotedPrograms = program.promotedPrograms.filter(
-              (promotedProgram) =>
-                promotedProgram.name.toLowerCase().includes(query) ||
-                (promotedProgram.description &&
-                  promotedProgram.description.toLowerCase().includes(query))
-            );
+    // Simulate API fetch delay
+    setTimeout(() => {
+      const filteredPartnersData = getFilteredPartners();
+      const itemsPerPage = 10;
+      const startIndex = 0;
+      const endIndex = page * itemsPerPage;
+      const newVisiblePartners = filteredPartnersData.slice(
+        startIndex,
+        endIndex
+      );
 
-            if (filteredPromotedPrograms.length === 0) return null;
+      setVisiblePartners(newVisiblePartners);
+      setHasMore(endIndex < filteredPartnersData.length);
+      setPage((prevPage) => prevPage + 1);
+      setLoading(false);
+    }, 200); // Shorter delay for better responsiveness
+  }, [page, loading, hasMore, getFilteredPartners, isExpanding]);
 
-            return {
-              ...program,
-              promotedPrograms: filteredPromotedPrograms,
-            };
-          })
-          .filter(Boolean) as Program[];
+  // Detect when user scrolls to bottom to load more
+  const handleScroll = useCallback(() => {
+    if (!scrollContainerRef.current || isExpanding) return;
 
-        if (filteredPrograms.length === 0) return null;
+    const { scrollTop, scrollHeight, clientHeight } =
+      scrollContainerRef.current;
 
-        return {
-          ...partner,
-          programs: filteredPrograms,
-        };
-      })
-      .filter(Boolean) as Partner[];
-  };
+    // Load more when scrolling near the bottom
+    if (scrollTop + clientHeight >= scrollHeight - 250 && hasMore && !loading) {
+      loadMorePartners();
+    }
+  }, [loadMorePartners, hasMore, loading, isExpanding]);
 
-  const filteredPartners = getFilteredPartners();
+  // Initialize first set of partners and set up scroll listener
+  useEffect(() => {
+    loadMorePartners();
+
+    const scrollContainer = scrollContainerRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener("scroll", handleScroll);
+      return () => scrollContainer.removeEventListener("scroll", handleScroll);
+    }
+  }, [loadMorePartners, handleScroll]);
+
+  // Reset pagination when search query changes
+  useEffect(() => {
+    setPage(1);
+    setHasMore(true);
+
+    const filteredPartnersData = getFilteredPartners();
+    const newVisiblePartners = filteredPartnersData.slice(0, 10);
+
+    setVisiblePartners(newVisiblePartners);
+    setHasMore(newVisiblePartners.length < filteredPartnersData.length);
+  }, [searchQuery, getFilteredPartners]);
 
   // Get count of selected promoted programs
   const selectedCount = Object.values(selectedPromotedPrograms).filter(
@@ -717,10 +902,16 @@ export function AssignToProgramsPanel({
         </div>
 
         {/* Scrollable program list area - with fixed height for modal */}
-        <div className="flex-1 overflow-y-auto pr-2 h-[400px]">
-          <div className="space-y-1 border rounded-md overflow-hidden">
-            {filteredPartners.map((partner) => (
-              <div key={partner.id} className="border-b last:border-b-0">
+        <div
+          className="flex-1 overflow-y-auto pr-2 h-[500px] max-h-[60vh] relative"
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+          style={{ willChange: "scroll-position" }}
+        >
+          {/* Partner/Program list container */}
+          <div className="space-y-1">
+            {visiblePartners.map((partner) => (
+              <div key={partner.id} className="mb-1 border rounded-md">
                 {/* Partner level */}
                 <div
                   className={`flex items-center p-3 bg-slate-50 hover:bg-slate-100 cursor-pointer ${
@@ -918,61 +1109,98 @@ export function AssignToProgramsPanel({
                 )}
               </div>
             ))}
+
+            {/* Loading indicator */}
+            {loading && (
+              <div className="py-4 text-center flex items-center justify-center">
+                <div
+                  className="h-5 w-5 animate-spin rounded-full border-2 border-solid border-primary border-r-transparent"
+                  role="status"
+                ></div>
+                <p className="text-sm text-muted-foreground ml-2">
+                  Loading more...
+                </p>
+              </div>
+            )}
+
+            {/* End of list message */}
+            {!hasMore && visiblePartners.length > 0 && (
+              <div className="py-3 text-center text-sm text-muted-foreground border border-t rounded-md mt-1">
+                ✓ All partners loaded
+              </div>
+            )}
           </div>
 
-          {filteredPartners.length === 0 && (
+          {visiblePartners.length === 0 && !loading && (
             <div className="text-center py-8 text-muted-foreground">
               No matching partners, programs or promoted programs found.
             </div>
           )}
         </div>
 
-        {/* Action buttons - remove unnecessary Cancel button since modal has close icon */}
-        <div className="pt-4 mt-4 border-t border-border-light flex justify-between items-center">
-          <div className="flex-1">
-            {saveSuccess && (
-              <div className="flex items-center text-green-600 gap-1">
-                <CheckCircleIcon className="h-5 w-5" />
-                <span>
-                  Filter assigned to {selectedCount} promoted programs
-                </span>
-              </div>
+        {/* Feedback and actions */}
+        <div className="mt-4 pt-4 border-t">
+          {/* Save error message */}
+          {saveError && (
+            <div className="mb-4 p-2 bg-red-50 text-red-600 rounded-md flex items-center">
+              <ExclamationCircleIcon className="h-5 w-5 mr-2" />
+              <span className="text-sm">{saveError}</span>
+            </div>
+          )}
+
+          {/* Save success message */}
+          {saveSuccess && (
+            <div className="mb-4 p-2 bg-green-50 text-green-600 rounded-md flex items-center">
+              <CheckCircleIcon className="h-5 w-5 mr-2" />
+              <span className="text-sm">
+                {selectedCount > 0
+                  ? `Successfully assigned to ${selectedCount} promoted programs`
+                  : "All assignments were cleared successfully"}
+              </span>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex justify-end gap-2">
+            {!isEmbedded && (
+              <Button variant="outline" onClick={onClose}>
+                Cancel
+              </Button>
             )}
-            {saveError && (
-              <div className="flex items-center text-red-500 gap-1">
-                <ExclamationCircleIcon className="h-5 w-5" />
-                <span>{saveError}</span>
-              </div>
-            )}
-          </div>
-          <div className="flex gap-3">
-            <Button onClick={handleSave} disabled={saving}>
+            <Button
+              onClick={handleSave}
+              disabled={saving}
+              className="relative"
+              aria-disabled={saving}
+            >
               {saving ? (
-                <span className="flex items-center gap-2">
-                  <svg
-                    className="animate-spin h-4 w-4 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
+                <div className="flex items-center">
+                  <span className="animate-spin mr-2">
+                    <svg
+                      className="h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                  </span>
                   Saving...
-                </span>
+                </div>
               ) : (
-                "Save Assignments"
+                <span>Save Assignments</span>
               )}
             </Button>
           </div>

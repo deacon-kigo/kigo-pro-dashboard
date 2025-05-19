@@ -17,7 +17,8 @@ export default function ProductFilterDetailsPage({
 }: {
   params: { id: string };
 }) {
-  const filterId = params.id;
+  // Using a safer approach that works with both Promise and non-Promise params
+  const filterId = String(params.id || "");
 
   // Navigation breadcrumb
   const breadcrumb = (

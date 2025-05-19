@@ -16,7 +16,6 @@ import {
   selectFilterName,
   selectQueryViewName,
   selectDescription,
-  selectExpiryDate,
   selectCriteria,
   selectCompleteFilterContext,
 } from "../selectors/productFilterSelectors";
@@ -488,9 +487,6 @@ Would you like to use any of these suggestions?`,
               criteriaToAdd,
               filterName: filterNameSuggestion,
               queryViewName: "RestaurantDiningView",
-              expiryDate: new Date(
-                Date.now() + 30 * 24 * 60 * 60 * 1000
-              ).toISOString(),
             })}`,
           },
           {
@@ -588,11 +584,6 @@ const aiAssistantMiddleware: Middleware =
         // Convert date string to Date object for the AI if needed
         const enhancedContext = {
           ...filterContext,
-          expiryDate: filterContext.expiryDate
-            ? typeof filterContext.expiryDate === "string"
-              ? new Date(filterContext.expiryDate)
-              : filterContext.expiryDate
-            : null,
         };
 
         // Invoke the tool with complete context
@@ -766,7 +757,6 @@ const aiAssistantMiddleware: Middleware =
             filterDescription: completeContext.description,
             currentCriteria: completeContext.criteria,
             conversationHistory: completeContext.conversationHistory,
-            expiryDate: completeContext.expiryDate,
           })
         );
 

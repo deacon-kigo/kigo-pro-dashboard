@@ -23,7 +23,6 @@ export interface ProductFilterState {
   filterName: string;
   queryViewName: string;
   description: string;
-  expiryDate: string | null;
   criteria: FilterCriteria[];
   isGenerating: boolean;
   lastGeneratedFilter: string | null;
@@ -35,7 +34,6 @@ const initialState: ProductFilterState = {
   filterName: "",
   queryViewName: "",
   description: "",
-  expiryDate: null,
   criteria: [],
   isGenerating: false,
   lastGeneratedFilter: null,
@@ -72,17 +70,11 @@ const ensureSerializable = <T>(obj: T): T => {
   return obj;
 };
 
-// Create a properly typed action creator for dates
-export const setExpiryDate = createAction<Date | null>(
-  "productFilter/setExpiryDate"
-);
-
 // Create a properly typed action creator for filter updates
 export const applyFilterUpdate = createAction<{
   filterName?: string;
   queryViewName?: string;
   description?: string;
-  expiryDate?: Date | null;
   criteriaToAdd?: Omit<FilterCriteria, "id">[];
 }>("productFilter/applyFilterUpdate");
 
@@ -99,10 +91,6 @@ export const productFilterSlice = createSlice({
     },
     setDescription: (state, action: PayloadAction<string>) => {
       state.description = action.payload;
-    },
-    // Direct string setter, but we'll use the action creator above
-    _setExpiryDate: (state, action: PayloadAction<string | null>) => {
-      state.expiryDate = action.payload;
     },
     addCriteria: (state, action: PayloadAction<Omit<FilterCriteria, "id">>) => {
       const id = generateUniqueId();
@@ -130,22 +118,15 @@ export const productFilterSlice = createSlice({
         filterName?: string;
         queryViewName?: string;
         description?: string;
-        expiryDate?: string | null;
         criteriaToAdd?: Omit<FilterCriteria, "id">[];
       }>
     ) => {
-      const {
-        filterName,
-        queryViewName,
-        description,
-        expiryDate,
-        criteriaToAdd,
-      } = action.payload;
+      const { filterName, queryViewName, description, criteriaToAdd } =
+        action.payload;
 
       if (filterName !== undefined) state.filterName = filterName;
       if (queryViewName !== undefined) state.queryViewName = queryViewName;
       if (description !== undefined) state.description = description;
-      if (expiryDate !== undefined) state.expiryDate = expiryDate;
 
       if (criteriaToAdd && criteriaToAdd.length > 0) {
         // Always add new criteria with new IDs, no longer replacing existing ones
@@ -163,20 +144,10 @@ export const productFilterSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // Handle date serialization
-    builder.addCase(setExpiryDate, (state, action) => {
-      state.expiryDate = action.payload ? action.payload.toISOString() : null;
-    });
-
     // Handle filter update with serialization
     builder.addCase(applyFilterUpdate, (state, action) => {
-      const {
-        filterName,
-        queryViewName,
-        description,
-        expiryDate,
-        criteriaToAdd,
-      } = action.payload;
+      const { filterName, queryViewName, description, criteriaToAdd } =
+        action.payload;
 
       productFilterSlice.caseReducers._applyFilterUpdate(state, {
         type: "_applyFilterUpdate",
@@ -184,7 +155,6 @@ export const productFilterSlice = createSlice({
           filterName,
           queryViewName,
           description,
-          expiryDate: expiryDate ? expiryDate.toISOString() : null,
           criteriaToAdd,
         },
       });

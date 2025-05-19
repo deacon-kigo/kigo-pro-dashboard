@@ -8,8 +8,6 @@ export const selectQueryViewName = (state: RootState) =>
   state.productFilter.queryViewName;
 export const selectDescription = (state: RootState) =>
   state.productFilter.description;
-export const selectExpiryDate = (state: RootState) =>
-  state.productFilter.expiryDate;
 export const selectCriteria = (state: RootState) =>
   state.productFilter.criteria;
 export const selectIsGenerating = (state: RootState) =>
@@ -59,15 +57,13 @@ export const selectCompleteFilterContext = createSelector(
   [
     selectFilterName,
     selectDescription,
-    selectExpiryDate,
     selectCriteria,
     (state: RootState) => state.aiAssistant.messages,
   ],
-  (filterName, description, expiryDate, criteria, messages) => {
+  (filterName, description, criteria, messages) => {
     return {
       filterName,
       description,
-      expiryDate,
       criteria,
       conversationHistory: messages,
     };

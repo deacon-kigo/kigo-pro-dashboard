@@ -23,9 +23,28 @@ import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/molecules/PageHeader";
 import AppLayout from "@/components/templates/AppLayout/AppLayout";
 
+// Define types for better TypeScript support
+interface ProgramCampaign {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  active: boolean;
+  currentFilters: string[];
+}
+
+interface FilterDetails {
+  id: string;
+  name: string;
+  description: string;
+  status: string;
+  createdBy: string;
+  createdDate: string;
+}
+
 // Mock data for program campaigns
 // This would typically come from an API call
-const mockProgramCampaigns = [
+const mockProgramCampaigns: ProgramCampaign[] = [
   {
     id: "pc-001",
     name: "Summer Holiday Campaign",
@@ -70,7 +89,7 @@ const mockProgramCampaigns = [
 
 // Mock data for product filter details
 // This would typically come from an API call
-const fetchFilterDetails = async (filterId) => {
+const fetchFilterDetails = async (filterId: string): Promise<FilterDetails> => {
   // Simulate API call
   return {
     id: filterId,
@@ -84,7 +103,10 @@ const fetchFilterDetails = async (filterId) => {
 
 // Mock function to save filter assignments
 // This would typically be an API call
-const saveFilterAssignments = async (filterId, programIds) => {
+const saveFilterAssignments = async (
+  filterId: string,
+  programIds: string[]
+): Promise<{ success: boolean }> => {
   console.log("Assigning filter", filterId, "to programs:", programIds);
   // Simulate API call delay
   await new Promise((resolve) => setTimeout(resolve, 800));
@@ -95,16 +117,18 @@ const saveFilterAssignments = async (filterId, programIds) => {
 export default function AssignProgramsPage() {
   const router = useRouter();
   const params = useParams();
-  const filterId = params.id as string;
+  const filterId = String(params.id || "");
 
-  const [filter, setFilter] = useState(null);
+  const [filter, setFilter] = useState<FilterDetails | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedPrograms, setSelectedPrograms] = useState({});
+  const [selectedPrograms, setSelectedPrograms] = useState<
+    Record<string, boolean>
+  >({});
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const [saveError, setSaveError] = useState(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Categories for grouping programs
   const categories = [
@@ -120,14 +144,14 @@ export default function AssignProgramsPage() {
         setFilter(data);
 
         // Initialize selected programs from current assignments
-        const initialSelected = {};
+        const initialSelected: Record<string, boolean> = {};
         mockProgramCampaigns.forEach((campaign) => {
           if (campaign.currentFilters.includes(filterId)) {
             initialSelected[campaign.id] = true;
           }
         });
         setSelectedPrograms(initialSelected);
-      } catch (err) {
+      } catch (err: any) {
         setError(err.message || "Failed to load filter details");
       } finally {
         setLoading(false);
@@ -138,7 +162,7 @@ export default function AssignProgramsPage() {
   }, [filterId]);
 
   // Handle program selection
-  const handleProgramSelection = (programId, checked) => {
+  const handleProgramSelection = (programId: string, checked: boolean) => {
     setSelectedPrograms((prev) => ({
       ...prev,
       [programId]: checked,
@@ -146,7 +170,7 @@ export default function AssignProgramsPage() {
   };
 
   // Handle category selection (select/deselect all in category)
-  const handleCategorySelection = (category, checked) => {
+  const handleCategorySelection = (category: string, checked: boolean) => {
     const updatedSelection = { ...selectedPrograms };
 
     // Get all programs in this category
@@ -170,7 +194,7 @@ export default function AssignProgramsPage() {
   );
 
   // Check if a category is fully selected
-  const isCategoryFullySelected = (category) => {
+  const isCategoryFullySelected = (category: string) => {
     const programsInCategory = mockProgramCampaigns.filter(
       (pc) => pc.category === category && pc.active
     );
@@ -178,7 +202,7 @@ export default function AssignProgramsPage() {
   };
 
   // Check if a category is partially selected
-  const isCategoryPartiallySelected = (category) => {
+  const isCategoryPartiallySelected = (category: string) => {
     const programsInCategory = mockProgramCampaigns.filter(
       (pc) => pc.category === category && pc.active
     );
@@ -215,7 +239,7 @@ export default function AssignProgramsPage() {
       } else {
         setSaveError("Failed to save assignments");
       }
-    } catch (err) {
+    } catch (err: any) {
       setSaveError(err.message || "Failed to save assignments");
     } finally {
       setSaving(false);
