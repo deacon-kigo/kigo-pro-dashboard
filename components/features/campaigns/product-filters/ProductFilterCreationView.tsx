@@ -104,6 +104,14 @@ import {
   AlertDialogTrigger,
 } from "@/components/molecules/alert-dialog/AlertDialog";
 import { ShinyBorder } from "@/components/ui/shiny-border";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 // Custom DatePicker component
 interface DatePickerProps {
@@ -214,8 +222,9 @@ export default function ProductFilterCreationView({
   const [backDialogOpen, setBackDialogOpen] = useState(false);
   // Add dialog open state for the create confirmation
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  // Add state for program assignment panel
-  const [isProgramPanelOpen, setIsProgramPanelOpen] = useState(false);
+  // Replace isProgramPanelOpen with isAssignProgramsModalOpen
+  const [isAssignProgramsModalOpen, setIsAssignProgramsModalOpen] =
+    useState(false);
 
   // Flag for edit/view mode
   const isViewMode = mode === "view";
@@ -1013,10 +1022,7 @@ export default function ProductFilterCreationView({
 
           {/* Right Column - Filter Configuration with scrollable content */}
           <ResizablePanelGroup direction="horizontal" className="flex-1">
-            <ResizablePanel
-              defaultSize={isProgramPanelOpen ? 70 : 100}
-              minSize={60}
-            >
+            <ResizablePanel defaultSize={100} minSize={60}>
               <div className="overflow-auto pb-6 h-full pr-4">
                 <div className="flex flex-col">
                   {lastGeneratedFilter && (
@@ -1277,7 +1283,7 @@ export default function ProductFilterCreationView({
                                 variant="ghost"
                                 className="w-full justify-between px-4 py-3 text-sm font-medium"
                                 onClick={() =>
-                                  setIsProgramPanelOpen(!isProgramPanelOpen)
+                                  setIsAssignProgramsModalOpen(true)
                                 }
                               >
                                 <div className="flex items-center">
@@ -1299,11 +1305,7 @@ export default function ProductFilterCreationView({
                                     </Badge>
                                   )}
                                 </div>
-                                {isProgramPanelOpen ? (
-                                  <ChevronDownIcon className="h-4 w-4" />
-                                ) : (
-                                  <ChevronRightIcon className="h-4 w-4" />
-                                )}
+                                <ChevronRightIcon className="h-4 w-4" />
                               </Button>
                             </div>
                           </ShinyBorder>
@@ -1728,45 +1730,33 @@ export default function ProductFilterCreationView({
                 </div>
               </div>
             </ResizablePanel>
-
-            {isProgramPanelOpen && (
-              <>
-                <ResizableHandle withHandle />
-                <ResizablePanel defaultSize={30} minSize={25} maxSize={50}>
-                  <div className="h-full border-l border-border-light bg-white p-0">
-                    <div className="flex items-center justify-between p-3 border-b bg-muted/20">
-                      <div className="flex items-center">
-                        <UsersIcon className="h-5 w-5 mr-2 text-primary" />
-                        <h3 className="font-medium">
-                          Assign to Program Campaigns
-                        </h3>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setIsProgramPanelOpen(false)}
-                        className="h-8 w-8 p-0"
-                      >
-                        <XMarkIcon className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <div className="p-0 h-[calc(100%-48px)] overflow-hidden">
-                      <AssignToProgramsPanel
-                        filterId={generateUniqueId()} // Using a temporary ID for new filters
-                        filterName={filterName}
-                        onClose={() => setIsProgramPanelOpen(false)}
-                        onSelectionChange={(count) =>
-                          setSelectedProgramCount(count)
-                        }
-                      />
-                    </div>
-                  </div>
-                </ResizablePanel>
-              </>
-            )}
           </ResizablePanelGroup>
         </div>
       </div>
+
+      {/* Replace the resizable panel implementation with a modal */}
+      <Dialog
+        open={isAssignProgramsModalOpen}
+        onOpenChange={setIsAssignProgramsModalOpen}
+      >
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle>Assign to Program Campaigns</DialogTitle>
+            <DialogDescription>
+              Assign "{filterName}" to program campaigns to control where offers
+              will be displayed within partners and programs.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[calc(80vh-10rem)] overflow-hidden">
+            <AssignToProgramsPanel
+              filterId={generateUniqueId()} // Using a temporary ID for new filters
+              filterName={filterName}
+              onClose={() => setIsAssignProgramsModalOpen(false)}
+              onSelectionChange={(count) => setSelectedProgramCount(count)}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

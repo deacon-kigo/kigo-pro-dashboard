@@ -474,38 +474,8 @@ export function AssignToProgramsPanel({
   };
 
   return (
-    <div
-      className={`flex flex-col ${isEmbedded ? "h-auto max-h-[550px]" : "h-full max-h-full"}`}
-      ref={componentRef}
-    >
-      {/* Header - simplified when embedded */}
-      {!isEmbedded && (
-        <div className="border-b border-border-light pb-4 mb-6">
-          <div className="flex justify-between items-center mb-2">
-            <h2 className="text-lg font-semibold">
-              Assign to Program Campaigns
-            </h2>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onClose}
-                className="rounded-full h-8 w-8 p-0 flex items-center justify-center"
-              >
-                <XMarkIcon className="h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-          <p className="text-sm text-muted-foreground mb-2">
-            Assign "{filterName}" to program campaigns to control where offers
-            will be displayed within partners and programs.
-          </p>
-        </div>
-      )}
-
-      <div
-        className={`flex-1 flex flex-col ${isEmbedded ? "h-auto overflow-hidden" : "h-full overflow-hidden"}`}
-      >
+    <div className="flex flex-col h-full" ref={componentRef}>
+      <div className="flex-1 flex flex-col">
         {/* Search input */}
         <div className="relative mb-4">
           <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -539,10 +509,8 @@ export function AssignToProgramsPanel({
           </div>
         </div>
 
-        {/* Scrollable program list area */}
-        <div
-          className={`flex-1 overflow-y-auto pr-2 ${isEmbedded ? "max-h-[320px]" : ""}`}
-        >
+        {/* Scrollable program list area - with fixed height for modal */}
+        <div className="flex-1 overflow-y-auto pr-2 h-[400px]">
           <div className="space-y-1 border rounded-md overflow-hidden">
             {filteredPartners.map((partner) => (
               <div key={partner.id} className="border-b last:border-b-0">
@@ -744,7 +712,7 @@ export function AssignToProgramsPanel({
           )}
         </div>
 
-        {/* Action buttons */}
+        {/* Action buttons - remove unnecessary Cancel button since modal has close icon */}
         <div className="pt-4 mt-4 border-t border-border-light flex justify-between items-center">
           <div className="flex-1">
             {saveSuccess && (
@@ -763,11 +731,6 @@ export function AssignToProgramsPanel({
             )}
           </div>
           <div className="flex gap-3">
-            {!isEmbedded && (
-              <Button variant="outline" onClick={onClose} disabled={saving}>
-                Cancel
-              </Button>
-            )}
             <Button onClick={handleSave} disabled={saving}>
               {saving ? (
                 <span className="flex items-center gap-2">
