@@ -56,21 +56,19 @@ const BulkActions = memo(function BulkActions({
 
   return (
     <>
-      <div className="bg-gray-50 border rounded-md p-2 flex items-center gap-3 mb-4">
-        <span className="text-sm font-medium ml-2">
-          {selectedCount} {selectedCount === 1 ? "filter" : "filters"} selected
+      <div className="flex items-center gap-2 mx-3">
+        <span className="text-sm font-medium whitespace-nowrap">
+          {selectedCount} selected
         </span>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
-            onClick={() => setDeleteDialogOpen(true)}
-          >
-            <TrashIcon className="h-4 w-4" />
-            Delete
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+          onClick={() => setDeleteDialogOpen(true)}
+        >
+          <TrashIcon className="h-3.5 w-3.5" />
+          Delete
+        </Button>
       </div>
 
       {/* Delete confirmation dialog */}
@@ -775,15 +773,6 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
     [selectedFilters]
   );
 
-  // Memoize the bulk actions component
-  const bulkActionsComponent = useMemo(() => {
-    if (selectedCount === 0) return null;
-
-    return (
-      <BulkActions selectedCount={selectedCount} onDelete={handleBulkDelete} />
-    );
-  }, [selectedCount, handleBulkDelete]);
-
   return (
     <div className="space-y-6">
       <PageHeader
@@ -800,15 +789,23 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
         onValueChange={handleTabChange}
       >
         <div className="flex items-center justify-between mb-4">
-          <ProductFilterSearchBar onSearch={handleSearch} />
+          <div className="flex items-center gap-4">
+            <ProductFilterSearchBar onSearch={handleSearch} />
+            {selectedCount > 0 && (
+              <div className="flex items-center border-l pl-4 ml-1 border-gray-200">
+                <BulkActions
+                  selectedCount={selectedCount}
+                  onDelete={handleBulkDelete}
+                />
+              </div>
+            )}
+          </div>
           <TabsList>
             <TabsTrigger value="active">Active Filters</TabsTrigger>
             <TabsTrigger value="draft">Draft Filters</TabsTrigger>
             <TabsTrigger value="all">All Filters</TabsTrigger>
           </TabsList>
         </div>
-
-        {bulkActionsComponent}
 
         <TabsContent value="active" className="mt-4">
           <ProductFilterTable

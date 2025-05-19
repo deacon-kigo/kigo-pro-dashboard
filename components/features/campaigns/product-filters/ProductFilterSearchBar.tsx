@@ -29,7 +29,7 @@ export function ProductFilterSearchBar({
   };
 
   return (
-    <div className="relative w-full max-w-md">
+    <div className="relative max-w-md">
       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
         <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
       </div>
@@ -38,7 +38,7 @@ export function ProductFilterSearchBar({
         placeholder="Search product filters..."
         value={searchQuery}
         onChange={handleInputChange}
-        className="pl-10 pr-3 py-2 w-full border border-gray-300 rounded-md"
+        className="pl-10 pr-3 py-2 border border-gray-300 rounded-md"
       />
     </div>
   );
