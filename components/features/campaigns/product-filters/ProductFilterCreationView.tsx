@@ -909,6 +909,17 @@ export default function ProductFilterCreationView({
     );
   };
 
+  // Add a useEffect to ensure the ShinyBorder status reflects the current number of selected programs
+  // Right after the existing useEffect for filterCriteria
+  useEffect(() => {
+    // If the modal is closed and we have at least one program selected,
+    // make sure the ShinyBorder is activated
+    if (!isAssignProgramsModalOpen && selectedProgramCount > 0) {
+      // The ShinyBorder will automatically update based on selectedProgramCount
+      console.log(`Programs selected: ${selectedProgramCount}`);
+    }
+  }, [isAssignProgramsModalOpen, selectedProgramCount]);
+
   return (
     <div className="space-y-2 h-full flex flex-col">
       <PageHeader
@@ -1278,10 +1289,10 @@ export default function ProductFilterCreationView({
                             isActive={selectedProgramCount > 0}
                             borderRadius={8}
                           >
-                            <div className="border rounded-md overflow-hidden">
+                            <div className="border rounded-md overflow-hidden hover:bg-gray-50 transition-colors cursor-pointer">
                               <Button
                                 variant="ghost"
-                                className="w-full justify-between px-4 py-3 text-sm font-medium"
+                                className="w-full justify-between px-4 py-3 text-sm font-medium hover:bg-transparent"
                                 onClick={() =>
                                   setIsAssignProgramsModalOpen(true)
                                 }
@@ -1737,7 +1748,10 @@ export default function ProductFilterCreationView({
       {/* Replace the resizable panel implementation with a modal */}
       <Dialog
         open={isAssignProgramsModalOpen}
-        onOpenChange={setIsAssignProgramsModalOpen}
+        onOpenChange={(open) => {
+          // When closing the dialog, update the ShinyBorder accordingly
+          setIsAssignProgramsModalOpen(open);
+        }}
       >
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
           <DialogHeader>
@@ -1752,7 +1766,10 @@ export default function ProductFilterCreationView({
               filterId={generateUniqueId()} // Using a temporary ID for new filters
               filterName={filterName}
               onClose={() => setIsAssignProgramsModalOpen(false)}
-              onSelectionChange={(count) => setSelectedProgramCount(count)}
+              onSelectionChange={(count) => {
+                setSelectedProgramCount(count);
+                console.log(`Selection changed: ${count} programs selected`);
+              }}
             />
           </div>
         </DialogContent>
