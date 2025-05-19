@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo, useCallback, useState } from "react";
+import React, { memo, useCallback, useState, useEffect } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/atoms/Button";
 import {
@@ -11,7 +11,7 @@ import {
   ChevronUpIcon,
   ChevronDownIcon,
 } from "@heroicons/react/24/outline";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { ArrowUpDown, MoreHorizontal, ChevronDown } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -310,6 +310,28 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
         setDeleteDialogOpen(false);
       };
 
+      // Add effect to close dropdown when clicking outside
+      useEffect(() => {
+        const handleOutsideClick = (event: MouseEvent) => {
+          const menu = document.getElementById(`filter-menu-${filterId}`);
+          if (menu && !menu.classList.contains("hidden")) {
+            const isClickInside = menu.contains(event.target as Node);
+            const isButtonClick = (event.target as Element)
+              .closest(`button`)
+              ?.textContent?.includes(isDraft ? "Edit Filter" : "View Details");
+
+            if (!isClickInside && !isButtonClick) {
+              menu.classList.add("hidden");
+            }
+          }
+        };
+
+        document.addEventListener("mousedown", handleOutsideClick);
+        return () => {
+          document.removeEventListener("mousedown", handleOutsideClick);
+        };
+      }, [filterId, isDraft]);
+
       return (
         <div className="flex">
           {/* Single action button that opens dropdown */}
@@ -319,12 +341,7 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
               className="h-auto px-3 py-1.5 font-medium"
               onClick={(e) => {
                 e.stopPropagation();
-                // For View Details, navigate directly to detail page instead of opening dropdown
-                if (!isDraft) {
-                  handleViewDetails();
-                  return;
-                }
-                // Show a custom popup menu instead of using DropdownMenu (for drafts)
+                // Show dropdown menu for all filter types
                 const menu = document.getElementById(`filter-menu-${filterId}`);
                 if (menu) {
                   menu.classList.toggle("hidden");
@@ -334,7 +351,7 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
               {isDraft ? "Edit Filter" : "View Details"}
             </Button>
 
-            {/* Custom dropdown menu to avoid infinite loops with the shadcn component */}
+            {/* Custom dropdown menu for all filter types */}
             <div
               id={`filter-menu-${filterId}`}
               className="hidden absolute top-full left-0 mt-1 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
