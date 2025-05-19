@@ -56,14 +56,14 @@ const BulkActions = memo(function BulkActions({
 
   return (
     <>
-      <div className="flex items-center gap-2 mx-3">
+      <div className="flex items-center gap-2">
         <span className="text-sm font-medium whitespace-nowrap">
           {selectedCount} selected
         </span>
         <Button
-          variant="outline"
+          variant="destructive"
           size="sm"
-          className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+          className="flex items-center gap-1"
           onClick={() => setDeleteDialogOpen(true)}
         >
           <TrashIcon className="h-3.5 w-3.5" />
@@ -788,18 +788,20 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
         className="w-full"
         onValueChange={handleTabChange}
       >
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-4">
+        <div className="flex items-center space-x-4 mb-4">
+          <div className="flex-grow">
             <ProductFilterSearchBar onSearch={handleSearch} />
-            {selectedCount > 0 && (
-              <div className="flex items-center border-l pl-4 ml-1 border-gray-200">
-                <BulkActions
-                  selectedCount={selectedCount}
-                  onDelete={handleBulkDelete}
-                />
-              </div>
-            )}
           </div>
+
+          {selectedCount > 0 && (
+            <div className="flex items-center border-l border-r px-4 h-9 border-gray-200">
+              <BulkActions
+                selectedCount={selectedCount}
+                onDelete={handleBulkDelete}
+              />
+            </div>
+          )}
+
           <TabsList>
             <TabsTrigger value="active">Active Filters</TabsTrigger>
             <TabsTrigger value="draft">Draft Filters</TabsTrigger>
