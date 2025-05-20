@@ -48,7 +48,7 @@ export default function Card({
   footer,
 }: CardProps) {
   // Base classes for the card
-  let cardClasses = "rounded-xl overflow-hidden ";
+  let cardClasses = "rounded-lg overflow-hidden ";
 
   // Add variant-specific classes
   switch (variant) {
@@ -60,7 +60,7 @@ export default function Card({
       cardClasses += `bg-gradient-to-r ${gradientFrom} ${gradientTo} text-white `;
       break;
     default:
-      cardClasses += "bg-white rounded-xl shadow-sm border border-gray-200 ";
+      cardClasses += "bg-white shadow-sm border border-gray-200 ";
   }
 
   // Add any custom classes
