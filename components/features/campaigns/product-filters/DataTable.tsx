@@ -1,5 +1,6 @@
 import React from "react";
-import { Card, Table } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { Table } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
 const DataTable: React.FC<{
@@ -15,7 +16,7 @@ const DataTable: React.FC<{
 }) => {
   return (
     <div className={cn("space-y-4", className)}>
-      <Card className="overflow-hidden rounded-md">
+      <Card className="overflow-hidden rounded-lg">
         <div className="p-0">
           <Table>
             {tableHeaderContent}

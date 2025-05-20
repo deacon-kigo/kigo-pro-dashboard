@@ -206,23 +206,17 @@ export const DataTable = memo(function DataTable<TData, TValue>({
 
   return (
     <div className={cn("space-y-4", className)}>
-      <style jsx global>
-        {customTableStyles}
-      </style>
-      <Card className="overflow-hidden rounded-none">
+      <style>{customTableStyles}</style>
+      <Card className="overflow-hidden rounded-lg">
         <div className="p-0">
           <Table>
             {tableHeader}
             {tableBody}
           </Table>
         </div>
-        {(!disablePagination || customPagination) && (
-          <div className="flex items-center justify-end space-x-2 p-4 border-t">
-            {customPagination ? (
-              <div className="w-full">{customPagination}</div>
-            ) : (
-              defaultPagination
-            )}
+        {!disablePagination && (
+          <div className="flex items-center justify-end p-4 border-t">
+            {customPagination || defaultPagination}
           </div>
         )}
       </Card>
