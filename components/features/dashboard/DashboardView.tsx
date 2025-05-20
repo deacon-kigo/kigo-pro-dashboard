@@ -6,7 +6,7 @@ import CVSTokenManagementView from "./views/CVSTokenManagementView";
 import DeaconsPizzaView from "./views/DeaconsPizzaView";
 import GenericDashboardView from "./views/GenericDashboardView";
 import CampaignManagerView from "./views/CampaignManagerView";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, usePathname } from "next/navigation";
 
 /**
  * Main Dashboard component that renders the correct dashboard view based on the current context.
@@ -14,8 +14,8 @@ import { useSearchParams } from "next/navigation";
  */
 export default function DashboardView() {
   const { userProfile, clientId, scenario, role, version } = useDemoState();
-  const searchParams = useSearchParams();
-  const isCampaignManager = searchParams.get("view") === "campaign-manager";
+  const pathname = usePathname();
+  const isCampaignManager = pathname?.includes("/campaign-manager");
 
   // Add more detailed logging to help debug the context and routing
   useEffect(() => {
@@ -32,9 +32,9 @@ export default function DashboardView() {
   }, [userProfile, role, clientId, scenario, version, isCampaignManager]);
 
   const DashboardComponent = useMemo(() => {
-    // Check if we should show campaign manager view based on query parameter
+    // Check if we should show campaign manager view based on URL path
     if (isCampaignManager) {
-      console.log("Using CampaignManagerView based on query parameter");
+      console.log("Using CampaignManagerView based on URL path");
       return CampaignManagerView;
     }
 

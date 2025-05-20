@@ -55,18 +55,13 @@ export default function AdvertisementCampaignCreatePage() {
   // Make wizard the default mode, only use accordion mode if explicitly set to false
   const useWizard = searchParams.get("wizard") !== "false";
 
-  // Fix sidebar active state
+  // Preserve wizard parameter if needed
   useEffect(() => {
-    // Add view=campaign-manager parameter to mark Dashboard as active in sidebar
-    const url = new URL(window.location.href);
-    url.searchParams.set("view", "campaign-manager");
-
-    // Preserve wizard parameter if explicitly set to false
     if (!useWizard) {
+      const url = new URL(window.location.href);
       url.searchParams.set("wizard", "false");
+      window.history.replaceState({}, "", url);
     }
-
-    window.history.replaceState({}, "", url);
   }, [useWizard]);
 
   // Custom breadcrumb showing navigation path

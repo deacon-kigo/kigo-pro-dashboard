@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, Suspense } from "react";
+import React, { Suspense } from "react";
 import dynamic from "next/dynamic";
 import AppLayout from "@/components/templates/AppLayout/AppLayout";
 import {
@@ -34,14 +34,6 @@ const CampaignWizard = dynamic(
 );
 
 export default function CampaignCreatePage() {
-  // Fix sidebar active state
-  useEffect(() => {
-    // Add view=campaign-manager parameter to mark Dashboard as active in sidebar
-    const url = new URL(window.location.href);
-    url.searchParams.set("view", "campaign-manager");
-    window.history.replaceState({}, "", url);
-  }, []);
-
   // Custom breadcrumb showing navigation path
   const breadcrumb = (
     <Breadcrumb className="mb-4">

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   HomeIcon,
   RocketLaunchIcon,
@@ -59,11 +59,6 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
   const { clientId } = useSelector((state: RootState) => state.demo);
   const { clientName } = useDemoState();
 
-  // Get search params to check for view=campaign-manager
-  const searchParams = useSearchParams();
-  const isCampaignManagerView =
-    searchParams?.get("view") === "campaign-manager";
-
   // State for sign out dialog and hydration
   const [signOutDialogOpen, setSignOutDialogOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
@@ -79,6 +74,9 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     }
     return rawPathname;
   }, [rawPathname]);
+
+  // Determine if we're in campaign manager view based on pathname
+  const isCampaignManagerView = pathname.includes("/campaign-manager");
 
   // Memoize the CVS context to avoid recalculations
   const isCVSContextBool = useMemo(() => {
@@ -136,8 +134,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         (pathname === "/" ||
           pathname === "/demos/cvs-dashboard" ||
           pathname.includes("cvs-dashboard") ||
-          pathname.includes("/campaign-manager") ||
-          isCampaignManagerView)
+          pathname.includes("/campaign-manager"))
       ) {
         return true;
       }
@@ -170,7 +167,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
 
       return isPathActive(pathname, path);
     },
-    [pathname, isCampaignManagerView, isCVSContextBool]
+    [pathname, isCVSContextBool]
   );
 
   // Memoize campaign submenu items to prevent recreation on each render

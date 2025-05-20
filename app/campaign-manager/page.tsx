@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, Suspense } from "react";
+import React, { Suspense } from "react";
 import CampaignManagerView from "@/components/features/dashboard/views/CampaignManagerView";
 import AppLayout from "@/components/templates/AppLayout/AppLayout";
 import {
@@ -11,14 +11,6 @@ import {
 } from "@/components/atoms/Breadcrumb";
 
 export default function CampaignManagerPage() {
-  // Fix sidebar active state
-  useEffect(() => {
-    // Add view=campaign-manager parameter to mark Dashboard as active in sidebar
-    const url = new URL(window.location.href);
-    url.searchParams.set("view", "campaign-manager");
-    window.history.replaceState({}, "", url);
-  }, []);
-
   // Custom breadcrumb showing just "Dashboard"
   const dashboardBreadcrumb = (
     <Breadcrumb className="mb-4">

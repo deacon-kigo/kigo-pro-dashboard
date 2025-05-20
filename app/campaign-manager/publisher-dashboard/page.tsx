@@ -16,7 +16,6 @@ export default function PublisherDashboardPage() {
   // Set URL parameters to maintain proper context
   useEffect(() => {
     const url = new URL(window.location.href);
-    url.searchParams.set("view", "campaign-manager");
     url.searchParams.set("userType", "publisher");
     window.history.replaceState({}, "", url);
 
