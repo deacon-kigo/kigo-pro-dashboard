@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/atoms/Button";
@@ -365,8 +371,10 @@ const saveFilterAssignments = async (
 interface AssignToProgramsPanelProps {
   filterId: string;
   filterName: string;
-  onClose: () => void;
+  onClose: (selectedIds?: string[]) => void;
   onSelectionChange?: (count: number) => void;
+  initialSelection?: string[];
+  partnerData?: Partner[];
 }
 
 // Helper function to generate mock partner data dynamically
@@ -478,11 +486,19 @@ export function AssignToProgramsPanel({
   filterName,
   onClose,
   onSelectionChange,
+  initialSelection = [],
+  partnerData = [],
 }: AssignToProgramsPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPromotedPrograms, setSelectedPromotedPrograms] = useState<
     Record<string, boolean>
-  >({});
+  >(() => {
+    const selection: Record<string, boolean> = {};
+    initialSelection.forEach((id) => {
+      selection[id] = true;
+    });
+    return selection;
+  });
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -507,15 +523,21 @@ export function AssignToProgramsPanel({
   const [isExpanding, setIsExpanding] = useState(false);
 
   // Generate extended mock data
-  const allPartners = useRef(generateMockPartners(30, filterId));
+  const allPartners = useMemo(() => {
+    if (partnerData.length > 0) {
+      return partnerData;
+    } else {
+      return generateMockPartners(10, filterId);
+    }
+  }, [partnerData, filterId]);
 
   // Filter partners, programs and promoted programs by search query
   const getFilteredPartners = useCallback(() => {
-    if (!searchQuery.trim()) return allPartners.current;
+    if (!searchQuery.trim()) return allPartners;
 
     const query = searchQuery.toLowerCase();
 
-    return allPartners.current
+    return allPartners
       .map((partner) => {
         // Filter programs in this partner
         const filteredPrograms = partner.programs
@@ -545,7 +567,7 @@ export function AssignToProgramsPanel({
         };
       })
       .filter(Boolean) as Partner[];
-  }, [searchQuery]);
+  }, [searchQuery, allPartners]);
 
   // Check if the component is embedded in the product filter creation form
   useEffect(() => {
@@ -559,25 +581,6 @@ export function AssignToProgramsPanel({
       }
     }
   }, [onClose]);
-
-  // Initialize selected promoted programs when the panel opens
-  useEffect(() => {
-    const initialSelected: Record<string, boolean> = {};
-
-    mockPartners.forEach((partner) => {
-      partner.programs.forEach((program) => {
-        program.promotedPrograms.forEach((promotedProgram) => {
-          if (promotedProgram.currentFilters?.includes(filterId)) {
-            initialSelected[promotedProgram.id] = true;
-          }
-        });
-      });
-    });
-
-    setSelectedPromotedPrograms(initialSelected);
-    setSaveSuccess(false);
-    setSaveError(null);
-  }, [filterId]);
 
   // Toggle expansion of a partner
   const togglePartner = (partnerId: string) => {
@@ -757,13 +760,16 @@ export function AssignToProgramsPanel({
     setHasMore(newVisiblePartners.length < filteredPartnersData.length);
   }, [searchQuery, getFilteredPartners]);
 
-  // Get count of selected promoted programs
-  const selectedCount = Object.values(selectedPromotedPrograms).filter(
-    Boolean
-  ).length;
+  // Add a computed selectedCount property based on selected programs
+  const selectedCount = useMemo(() => {
+    return Object.keys(selectedPromotedPrograms).filter(
+      (id) => selectedPromotedPrograms[id]
+    ).length;
+  }, [selectedPromotedPrograms]);
 
-  // Notify parent component when selection count changes
+  // Update the useEffect to use this value
   useEffect(() => {
+    // Call onSelectionChange if provided
     if (onSelectionChange) {
       onSelectionChange(selectedCount);
     }
@@ -772,7 +778,7 @@ export function AssignToProgramsPanel({
   // Select all promoted programs
   const selectAll = () => {
     const allSelected: Record<string, boolean> = {};
-    mockPartners.forEach((partner) => {
+    allPartners.forEach((partner) => {
       partner.programs.forEach((program) => {
         program.promotedPrograms
           .filter((promotedProgram) => promotedProgram.active !== false)
@@ -791,71 +797,62 @@ export function AssignToProgramsPanel({
 
   // Handle save with improved feedback
   const handleSave = async () => {
-    try {
-      setSaving(true);
-      setSaveSuccess(false);
-      setSaveError(null);
+    setSaving(true);
+    setSaveSuccess(false);
+    setSaveError(null);
 
-      // Get list of selected promoted program IDs
-      const selectedPromotedProgramIds = Object.keys(
-        selectedPromotedPrograms
-      ).filter((id) => selectedPromotedPrograms[id]);
+    // Collect all selected promoted program IDs
+    const selectedIds = Object.keys(selectedPromotedPrograms).filter(
+      (id) => selectedPromotedPrograms[id]
+    );
 
-      // Get promoted program names for feedback message
-      const selectedPromotedProgramDetails = selectedPromotedProgramIds.map(
-        (id) => {
-          let promotedProgramName = "";
-          let programName = "";
-          let partnerName = "";
+    // Get promoted program names for feedback message
+    const selectedPromotedProgramDetails = selectedIds.map((id) => {
+      let promotedProgramName = "";
+      let programName = "";
+      let partnerName = "";
 
-          mockPartners.forEach((partner) => {
-            partner.programs.forEach((program) => {
-              program.promotedPrograms.forEach((promotedProgram) => {
-                if (promotedProgram.id === id) {
-                  promotedProgramName = promotedProgram.name;
-                  programName = program.name;
-                  partnerName = partner.name;
-                }
-              });
-            });
+      allPartners.forEach((partner) => {
+        partner.programs.forEach((program) => {
+          program.promotedPrograms.forEach((promotedProgram) => {
+            if (promotedProgram.id === id) {
+              promotedProgramName = promotedProgram.name;
+              programName = program.name;
+              partnerName = partner.name;
+            }
           });
+        });
+      });
 
-          return { id, promotedProgramName, programName, partnerName };
-        }
+      return { id, promotedProgramName, programName, partnerName };
+    });
+
+    // Call API to save assignments
+    const result = await saveFilterAssignments(filterId, selectedIds);
+
+    if (result.success) {
+      setSaveSuccess(true);
+
+      // Store details for success message
+      const successDetails = {
+        count: selectedIds.length,
+        promotedPrograms: selectedPromotedProgramDetails,
+      };
+
+      localStorage.setItem(
+        `filter_assignment_${filterId}`,
+        JSON.stringify(successDetails)
       );
 
-      // Call API to save assignments
-      const result = await saveFilterAssignments(
-        filterId,
-        selectedPromotedProgramIds
-      );
-
-      if (result.success) {
-        setSaveSuccess(true);
-
-        // Store details for success message
-        const successDetails = {
-          count: selectedPromotedProgramIds.length,
-          promotedPrograms: selectedPromotedProgramDetails,
-        };
-
-        localStorage.setItem(
-          `filter_assignment_${filterId}`,
-          JSON.stringify(successDetails)
-        );
-
-        // Close the panel after a short delay
-        setTimeout(() => {
-          onClose();
-        }, 1500);
-      } else {
-        setSaveError("Failed to save assignments");
-      }
-    } catch (err: any) {
-      setSaveError(err.message || "Failed to save assignments");
-    } finally {
-      setSaving(false);
+      // Close the panel after a short delay
+      setTimeout(() => {
+        onClose(selectedIds);
+      }, 1500);
+    } else {
+      setSaveError("Failed to save assignments");
     }
+
+    setSaving(false);
   };
 
   // Get recently selected visual indicator className
@@ -865,8 +862,20 @@ export function AssignToProgramsPanel({
       : "";
   };
 
+  // Update the cancel function
+  const handleCancel = () => {
+    // Get the selected IDs to pass back
+    const selectedIds = Object.keys(selectedPromotedPrograms).filter(
+      (id) => selectedPromotedPrograms[id]
+    );
+    onClose(selectedIds);
+  };
+
   return (
-    <div className="flex flex-col h-full" ref={componentRef}>
+    <div
+      className="flex flex-col h-full max-h-[600px] overflow-hidden"
+      ref={componentRef}
+    >
       <div className="flex-1 flex flex-col">
         {/* Search input */}
         <div className="relative mb-4">
@@ -1161,47 +1170,21 @@ export function AssignToProgramsPanel({
           )}
 
           {/* Actions */}
-          <div className="flex justify-end gap-2">
-            {!isEmbedded && (
-              <Button variant="outline" onClick={onClose}>
-                Cancel
-              </Button>
-            )}
+          <div className="flex items-center justify-end space-x-2 p-4 border-t mt-auto">
+            <Button variant="outline" onClick={handleCancel}>
+              Cancel
+            </Button>
             <Button
+              type="button"
               onClick={handleSave}
-              disabled={saving}
-              className="relative"
-              aria-disabled={saving}
+              disabled={
+                saving ||
+                Object.keys(selectedPromotedPrograms).filter(
+                  (id) => selectedPromotedPrograms[id]
+                ).length === 0
+              }
             >
-              {saving ? (
-                <div className="flex items-center">
-                  <span className="animate-spin mr-2">
-                    <svg
-                      className="h-4 w-4"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                  </span>
-                  Saving...
-                </div>
-              ) : (
-                <span>Save Assignments</span>
-              )}
+              {saving ? "Saving..." : "Save Assignments"}
             </Button>
           </div>
         </div>

@@ -135,6 +135,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import AppLayout from "@/components/templates/AppLayout/AppLayout";
+import { SelectedProgramsDisplay } from "./SelectedProgramsDisplay";
 
 // Add mock implementations
 // Mock Switch component
@@ -809,6 +810,106 @@ export default function ProductFilterCreationView({
     }
   }, [isAssignProgramsModalOpen, selectedProgramCount]);
 
+  const [selectedPrograms, setSelectedPrograms] = useState<string[]>([]);
+  const [selectedProgramsCollapsed, setSelectedProgramsCollapsed] =
+    useState(true);
+  const [mockPartners, setMockPartners] = useState(() => [
+    {
+      id: "partner1",
+      name: "Augeo",
+      programs: [
+        {
+          id: "prog1",
+          name: "LexisNexis",
+          promotedPrograms: [
+            {
+              id: "pp1",
+              name: "Legal Research Promotion",
+              description:
+                "Promotional offers for legal research tools and services",
+              active: true,
+            },
+            {
+              id: "pp2",
+              name: "Student Discount Initiative",
+              description: "Special discounts for law students",
+              active: true,
+            },
+            {
+              id: "pp3",
+              name: "Professional Certification",
+              description: "Offers for legal certification programs",
+              active: true,
+            },
+            {
+              id: "pp4",
+              name: "Law Firm Solutions",
+              description: "Special services for law practices",
+              active: false,
+            },
+          ],
+        },
+        {
+          id: "prog2",
+          name: "Fidelity Investments",
+          promotedPrograms: [
+            {
+              id: "pp5",
+              name: "Retirement Planning",
+              description: "Offers related to retirement planning services",
+              active: true,
+            },
+            {
+              id: "pp6",
+              name: "Wealth Management",
+              description: "Premium offers for wealth management clients",
+              active: true,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: "partner2",
+      name: "ampliFI",
+      programs: [
+        {
+          id: "prog3",
+          name: "Chase",
+          promotedPrograms: [
+            {
+              id: "pp7",
+              name: "Credit Card Rewards",
+              description: "Exclusive offers for credit card holders",
+              active: true,
+            },
+            {
+              id: "pp8",
+              name: "Business Banking Solutions",
+              description: "Promotions for small business banking customers",
+              active: false,
+            },
+          ],
+        },
+      ],
+    },
+  ]);
+
+  const handleAssignProgramsModalClose = (selectedIds: string[] = []) => {
+    setIsAssignProgramsModalOpen(false);
+
+    // If we received selected IDs from the modal, update the state
+    if (selectedIds.length > 0) {
+      setSelectedPrograms(selectedIds);
+      setSelectedProgramCount(selectedIds.length);
+    }
+  };
+
+  // Add this function to toggle the selected programs collapsed state
+  const toggleSelectedProgramsCollapsed = () => {
+    setSelectedProgramsCollapsed((prevState) => !prevState);
+  };
+
   return (
     <div className="space-y-2 h-full flex flex-col">
       <PageHeader
@@ -1141,35 +1242,42 @@ export default function ProductFilterCreationView({
                             isActive={selectedProgramCount > 0}
                             borderRadius={8}
                           >
-                            <div className="border rounded-md overflow-hidden hover:bg-gray-50 transition-colors cursor-pointer">
-                              <Button
-                                variant="ghost"
-                                className="w-full justify-between px-4 py-3 text-sm font-medium hover:bg-transparent"
-                                onClick={() =>
+                            {selectedProgramCount > 0 ? (
+                              <SelectedProgramsDisplay
+                                partners={mockPartners}
+                                selectedProgramIds={selectedPrograms}
+                                maxHeight="250px"
+                                collapsed={selectedProgramsCollapsed}
+                                onEditClick={() =>
                                   setIsAssignProgramsModalOpen(true)
                                 }
-                              >
-                                <div className="flex items-center">
-                                  <UsersIcon className="h-4 w-4 mr-2" />
-                                  Assign to Program Campaigns
-                                  <Badge
-                                    variant="outline"
-                                    className="ml-2 text-xs bg-blue-50 text-blue-700"
-                                  >
-                                    Optional
-                                  </Badge>
-                                  {selectedProgramCount > 0 && (
+                                onToggleCollapse={
+                                  toggleSelectedProgramsCollapsed
+                                }
+                              />
+                            ) : (
+                              <div className="border rounded-md overflow-hidden hover:bg-gray-50 transition-colors cursor-pointer">
+                                <Button
+                                  variant="ghost"
+                                  className="w-full justify-between px-4 py-3 text-sm font-medium hover:bg-transparent"
+                                  onClick={() =>
+                                    setIsAssignProgramsModalOpen(true)
+                                  }
+                                >
+                                  <div className="flex items-center">
+                                    <UsersIcon className="h-4 w-4 mr-2" />
+                                    Assign to Program Campaigns
                                     <Badge
                                       variant="outline"
                                       className="ml-2 text-xs bg-blue-50 text-blue-700"
                                     >
-                                      {selectedProgramCount} selected
+                                      Optional
                                     </Badge>
-                                  )}
-                                </div>
-                                <ChevronRightIcon className="h-4 w-4" />
-                              </Button>
-                            </div>
+                                  </div>
+                                  <ChevronRightIcon className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            )}
                           </ShinyBorder>
                         </div>
 
@@ -1589,33 +1697,41 @@ export default function ProductFilterCreationView({
         </div>
       </div>
 
-      <Dialog
-        open={isAssignProgramsModalOpen}
-        onOpenChange={(open) => {
-          setIsAssignProgramsModalOpen(open);
-        }}
-      >
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
-          <DialogHeader>
-            <DialogTitle>Assign to Program Campaigns</DialogTitle>
-            <DialogDescription>
-              Assign "{filterName}" to program campaigns to control where offers
-              will be displayed within partners and programs.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="max-h-[calc(80vh-10rem)] overflow-hidden">
-            <AssignToProgramsPanel
-              filterId={isCreateMode ? tempFilterId : filterId || ""}
-              filterName={filterName}
-              onClose={() => setIsAssignProgramsModalOpen(false)}
-              onSelectionChange={(count) => {
-                setSelectedProgramCount(count);
-                console.log(`Selection changed: ${count} programs selected`);
-              }}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
+      {isAssignProgramsModalOpen && (
+        <Dialog
+          open={isAssignProgramsModalOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              // If dialog is closing, ensure we get the current selection
+              setIsAssignProgramsModalOpen(false);
+            }
+          }}
+        >
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+            <DialogHeader>
+              <DialogTitle>Assign Filter to Programs</DialogTitle>
+              <DialogDescription>
+                Select which program campaigns this filter should be assigned
+                to.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="max-h-[calc(80vh-10rem)] overflow-hidden">
+              <AssignToProgramsPanel
+                filterId={tempFilterId}
+                filterName={filterName || "Untitled Filter"}
+                onClose={(selectedIds) =>
+                  handleAssignProgramsModalClose(selectedIds)
+                }
+                initialSelection={selectedPrograms}
+                partnerData={mockPartners}
+                onSelectionChange={(count) => {
+                  setSelectedProgramCount(count);
+                }}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
