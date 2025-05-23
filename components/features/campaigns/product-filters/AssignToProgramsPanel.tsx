@@ -51,7 +51,7 @@ interface Partner {
 
 // Mock data for the nested hierarchy - using exact structure from ads-create
 // This would typically come from an API call
-const mockPartners: Partner[] = [
+export const mockPartners: Partner[] = [
   {
     id: "partner1",
     name: "Augeo",
@@ -378,7 +378,7 @@ interface AssignToProgramsPanelProps {
 }
 
 // Helper function to generate mock partner data dynamically
-const generateMockPartners = (count = 10, currentFilterId = "") => {
+const generateMockPartners = (count = 25, currentFilterId = "") => {
   const partners = [...mockPartners]; // Start with existing partners
 
   // Company name prefixes for variety
@@ -393,6 +393,16 @@ const generateMockPartners = (count = 10, currentFilterId = "") => {
     "Dynamic",
     "Omni",
     "Peak",
+    "Universal",
+    "Apex",
+    "Precision",
+    "Excelsior",
+    "Pinnacle",
+    "Superior",
+    "Capital",
+    "First",
+    "National",
+    "Modern",
   ];
   // Company name suffixes for variety
   const companySuffixes = [
@@ -406,6 +416,16 @@ const generateMockPartners = (count = 10, currentFilterId = "") => {
     "Systems",
     "Ventures",
     "Brands",
+    "Group",
+    "Financial",
+    "Alliance",
+    "Associates",
+    "Corporation",
+    "Holdings",
+    "Investments",
+    "International",
+    "Cooperative",
+    "Exchange",
   ];
   // Program types for variety
   const programTypes = [
@@ -504,9 +524,15 @@ export function AssignToProgramsPanel({
   const [saveError, setSaveError] = useState<string | null>(null);
   const [recentlySelectedIds, setRecentlySelectedIds] = useState<string[]>([]);
 
-  // Keep track of expanded items
-  const [expandedPartners, setExpandedPartners] = useState<string[]>([]);
-  const [expandedPrograms, setExpandedPrograms] = useState<string[]>([]);
+  // Keep track of expanded items (auto-expand the first few partners by default)
+  const [expandedPartners, setExpandedPartners] = useState<string[]>(() => {
+    // Expand the first 3 partners by default for better visibility
+    return ["partner1", "partner2", "partner3"];
+  });
+  const [expandedPrograms, setExpandedPrograms] = useState<string[]>(() => {
+    // Expand the first program of each default expanded partner
+    return ["prog1", "prog4", "prog6"];
+  });
 
   // Add a state to detect if we're embedded in the product filter creation form
   const [isEmbedded, setIsEmbedded] = useState(false);
@@ -514,7 +540,6 @@ export function AssignToProgramsPanel({
 
   // State for infinite scrolling
   const [visiblePartners, setVisiblePartners] = useState<Partner[]>([]);
-  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -527,7 +552,8 @@ export function AssignToProgramsPanel({
     if (partnerData.length > 0) {
       return partnerData;
     } else {
-      return generateMockPartners(10, filterId);
+      // Generate more mock partners to ensure we have a good selection
+      return generateMockPartners(25, filterId);
     }
   }, [partnerData, filterId]);
 
@@ -702,45 +728,28 @@ export function AssignToProgramsPanel({
 
   // Handle infinite scroll
   const loadMorePartners = useCallback(() => {
-    if (loading || !hasMore || isExpanding) return;
+    if (loading || isExpanding) return;
 
     setLoading(true);
 
-    // Simulate API fetch delay
-    setTimeout(() => {
-      const filteredPartnersData = getFilteredPartners();
-      const itemsPerPage = 10;
-      const startIndex = 0;
-      const endIndex = page * itemsPerPage;
-      const newVisiblePartners = filteredPartnersData.slice(
-        startIndex,
-        endIndex
-      );
-
-      setVisiblePartners(newVisiblePartners);
-      setHasMore(endIndex < filteredPartnersData.length);
-      setPage((prevPage) => prevPage + 1);
-      setLoading(false);
-    }, 200); // Shorter delay for better responsiveness
-  }, [page, loading, hasMore, getFilteredPartners, isExpanding]);
+    // Get all filtered partners immediately instead of paginating
+    const filteredPartnersData = getFilteredPartners();
+    setVisiblePartners(filteredPartnersData);
+    setHasMore(false); // No more items to load
+    setLoading(false);
+  }, [loading, getFilteredPartners, isExpanding]);
 
   // Detect when user scrolls to bottom to load more
   const handleScroll = useCallback(() => {
-    if (!scrollContainerRef.current || isExpanding) return;
+    // We're now loading everything at once, so this can be simplified
+    // Just keeping the function for compatibility
+  }, []);
 
-    const { scrollTop, scrollHeight, clientHeight } =
-      scrollContainerRef.current;
-
-    // Load more when scrolling near the bottom
-    if (scrollTop + clientHeight >= scrollHeight - 250 && hasMore && !loading) {
-      loadMorePartners();
-    }
-  }, [loadMorePartners, hasMore, loading, isExpanding]);
-
-  // Initialize first set of partners and set up scroll listener
+  // Initialize with all partners immediately
   useEffect(() => {
     loadMorePartners();
 
+    // Still keep scroll listener for future enhancements
     const scrollContainer = scrollContainerRef.current;
     if (scrollContainer) {
       scrollContainer.addEventListener("scroll", handleScroll);
@@ -748,16 +757,12 @@ export function AssignToProgramsPanel({
     }
   }, [loadMorePartners, handleScroll]);
 
-  // Reset pagination when search query changes
+  // Reset when search query changes
   useEffect(() => {
-    setPage(1);
-    setHasMore(true);
-
+    // Load all filtered partners when search changes
     const filteredPartnersData = getFilteredPartners();
-    const newVisiblePartners = filteredPartnersData.slice(0, 10);
-
-    setVisiblePartners(newVisiblePartners);
-    setHasMore(newVisiblePartners.length < filteredPartnersData.length);
+    setVisiblePartners(filteredPartnersData);
+    setHasMore(false);
   }, [searchQuery, getFilteredPartners]);
 
   // Add a computed selectedCount property based on selected programs
@@ -906,6 +911,27 @@ export function AssignToProgramsPanel({
             <Button variant="outline" size="sm" onClick={selectAll}>
               <CheckCircle className="mr-1 h-4 w-4" />
               Select All
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                // Expand all partners and programs
+                const allPartnerIds = allPartners.map((p) => p.id);
+                const allProgramIds: string[] = [];
+
+                allPartners.forEach((partner) => {
+                  partner.programs.forEach((program) => {
+                    allProgramIds.push(program.id);
+                  });
+                });
+
+                setExpandedPartners(allPartnerIds);
+                setExpandedPrograms(allProgramIds);
+              }}
+            >
+              <ChevronDown className="mr-1 h-4 w-4" />
+              Expand All
             </Button>
           </div>
         </div>

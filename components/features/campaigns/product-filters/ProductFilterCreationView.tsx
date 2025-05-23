@@ -91,7 +91,7 @@ import {
 import { getFieldPlaceholder } from "@/services/ai/tools";
 import { generateFilterCoverageStats } from "@/services/ai/filterHandler";
 import FilterCoveragePanel from "./FilterCoveragePanel";
-import { AssignToProgramsPanel } from "./AssignToProgramsPanel";
+import { AssignToProgramsPanel, mockPartners } from "./AssignToProgramsPanel";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -813,87 +813,6 @@ export default function ProductFilterCreationView({
   const [selectedPrograms, setSelectedPrograms] = useState<string[]>([]);
   const [selectedProgramsCollapsed, setSelectedProgramsCollapsed] =
     useState(true);
-  const [mockPartners, setMockPartners] = useState(() => [
-    {
-      id: "partner1",
-      name: "Augeo",
-      programs: [
-        {
-          id: "prog1",
-          name: "LexisNexis",
-          promotedPrograms: [
-            {
-              id: "pp1",
-              name: "Legal Research Promotion",
-              description:
-                "Promotional offers for legal research tools and services",
-              active: true,
-            },
-            {
-              id: "pp2",
-              name: "Student Discount Initiative",
-              description: "Special discounts for law students",
-              active: true,
-            },
-            {
-              id: "pp3",
-              name: "Professional Certification",
-              description: "Offers for legal certification programs",
-              active: true,
-            },
-            {
-              id: "pp4",
-              name: "Law Firm Solutions",
-              description: "Special services for law practices",
-              active: false,
-            },
-          ],
-        },
-        {
-          id: "prog2",
-          name: "Fidelity Investments",
-          promotedPrograms: [
-            {
-              id: "pp5",
-              name: "Retirement Planning",
-              description: "Offers related to retirement planning services",
-              active: true,
-            },
-            {
-              id: "pp6",
-              name: "Wealth Management",
-              description: "Premium offers for wealth management clients",
-              active: true,
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: "partner2",
-      name: "ampliFI",
-      programs: [
-        {
-          id: "prog3",
-          name: "Chase",
-          promotedPrograms: [
-            {
-              id: "pp7",
-              name: "Credit Card Rewards",
-              description: "Exclusive offers for credit card holders",
-              active: true,
-            },
-            {
-              id: "pp8",
-              name: "Business Banking Solutions",
-              description: "Promotions for small business banking customers",
-              active: false,
-            },
-          ],
-        },
-      ],
-    },
-  ]);
 
   const handleAssignProgramsModalClose = (selectedIds: string[] = []) => {
     setIsAssignProgramsModalOpen(false);
