@@ -1384,7 +1384,7 @@ export default function ProductFilterCreationView({
                                                 className="h-8"
                                                 width="100%"
                                                 isDisabled={isViewMode}
-                                                maxDisplayValues={3}
+                                                maxDisplayValues={2}
                                               />
                                             ) : (
                                               <Input
