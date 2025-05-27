@@ -136,6 +136,7 @@ import {
 } from "@/components/ui/tooltip";
 import AppLayout from "@/components/templates/AppLayout/AppLayout";
 import { SelectedProgramsDisplay } from "./SelectedProgramsDisplay";
+import { MultiSelectCombobox } from "@/components/ui/multi-select-combobox";
 
 // Add mock implementations
 // Mock Switch component
@@ -270,26 +271,66 @@ export default function ProductFilterCreationView({
 
   const isCriteriaComplete = filterCriteria.length > 0;
 
-  const addCriteria = () => {
-    if (criteriaType && criteriaValue) {
-      const isRequired = criteriaInclusion === "Include";
+  const [criteriaMultiValues, setCriteriaMultiValues] = useState<string[]>([]);
 
+  const offerTypeOptions = [
+    { label: "Amount (Dollars off)", value: "Amount" },
+    { label: "Buy one get one free", value: "BOGO" },
+    { label: "Click (online offer)", value: "Click" },
+    { label: "Free with purchase", value: "Free" },
+    { label: "Percent (percent off)", value: "Percent" },
+    { label: "Special (Price point)", value: "Special" },
+  ];
+
+  const addCriteria = () => {
+    if (criteriaType) {
+      const isRequired = criteriaInclusion === "Include";
       const defaultRule = "contains";
 
-      dispatch(
-        addCriteriaAction({
-          type: criteriaType,
-          value: criteriaValue,
-          rule: defaultRule,
-          and_or: criteriaAndOr,
-          isRequired,
-        })
-      );
+      if (criteriaType === "OfferType" && criteriaMultiValues.length > 0) {
+        criteriaMultiValues.forEach((value, index) => {
+          dispatch(
+            addCriteriaAction({
+              type: criteriaType,
+              value: value,
+              rule: defaultRule,
+              and_or: index === 0 ? criteriaAndOr : "OR",
+              isRequired,
+            })
+          );
+        });
 
-      setCriteriaType("");
-      setCriteriaValue("");
-      setCriteriaAndOr("OR");
-      setCriteriaInclusion("Include");
+        setCriteriaType("");
+        setCriteriaMultiValues([]);
+        setCriteriaAndOr("OR");
+        setCriteriaInclusion("Include");
+      } else if (criteriaType !== "OfferType" && criteriaValue) {
+        dispatch(
+          addCriteriaAction({
+            type: criteriaType,
+            value: criteriaValue,
+            rule: defaultRule,
+            and_or: criteriaAndOr,
+            isRequired,
+          })
+        );
+
+        setCriteriaType("");
+        setCriteriaValue("");
+        setCriteriaAndOr("OR");
+        setCriteriaInclusion("Include");
+      } else {
+        if (criteriaType === "OfferType" && criteriaMultiValues.length === 0) {
+          setValidationMessage(
+            "Please select at least one offer type for your filter condition"
+          );
+        } else if (criteriaType !== "OfferType" && !criteriaValue) {
+          setValidationMessage(
+            "Please enter a value for your filter condition"
+          );
+        }
+        setTimeout(() => setValidationMessage(null), 5000);
+      }
     } else {
       setValidationMessage(
         "Please select a field and enter a value for your filter condition"
@@ -1254,152 +1295,211 @@ export default function ProductFilterCreationView({
                                         Build your filter condition:
                                       </div>
 
-                                      <div className="flex flex-wrap items-center gap-2 text-xs">
-                                        <div className="flex items-center bg-white px-2 py-1 rounded border border-gray-200">
-                                          <span className="font-medium text-gray-600">
-                                            Find conditions where
-                                          </span>
-                                        </div>
+                                      <div className="flex flex-col space-y-4">
+                                        {/* Row 1: Find conditions where + field type + include/exclude */}
+                                        <div className="flex items-center gap-3">
+                                          <div className="flex items-center bg-white px-2 py-1 rounded border border-gray-200 h-8 shrink-0">
+                                            <span className="font-medium text-gray-600 text-xs">
+                                              Find conditions where
+                                            </span>
+                                          </div>
 
-                                        <div className="inline-flex flex-col">
-                                          <Select
-                                            value={criteriaType}
-                                            onValueChange={setCriteriaType}
-                                            disabled={isViewMode}
-                                          >
-                                            <SelectTrigger className="min-w-[160px] h-8">
-                                              <SelectValue placeholder="select a field" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                              {allFieldTypes.map((type) => (
-                                                <SelectItem
-                                                  key={type}
-                                                  value={type}
-                                                >
-                                                  {friendlyTypeNames[type] ||
-                                                    type}
+                                          <div className="w-[180px]">
+                                            <Select
+                                              value={criteriaType}
+                                              onValueChange={setCriteriaType}
+                                              disabled={isViewMode}
+                                            >
+                                              <SelectTrigger className="h-8">
+                                                <SelectValue placeholder="select a field" />
+                                              </SelectTrigger>
+                                              <SelectContent>
+                                                {allFieldTypes.map((type) => (
+                                                  <SelectItem
+                                                    key={type}
+                                                    value={type}
+                                                  >
+                                                    {friendlyTypeNames[type] ||
+                                                      type}
+                                                  </SelectItem>
+                                                ))}
+                                              </SelectContent>
+                                            </Select>
+                                            <span className="mt-1 text-xs font-medium text-gray-600 px-1">
+                                              Select what field to filter on
+                                            </span>
+                                          </div>
+
+                                          <div className="w-[120px]">
+                                            <Select
+                                              value={criteriaInclusion}
+                                              onValueChange={
+                                                setCriteriaInclusion
+                                              }
+                                              disabled={isViewMode}
+                                            >
+                                              <SelectTrigger className="h-8">
+                                                <SelectValue placeholder="inclusion" />
+                                              </SelectTrigger>
+                                              <SelectContent>
+                                                <SelectItem value="Include">
+                                                  Include
                                                 </SelectItem>
-                                              ))}
-                                            </SelectContent>
-                                          </Select>
-                                          <span className="mt-1 text-xs font-medium text-gray-600 px-1">
-                                            Select what field to filter on
-                                          </span>
+                                                <SelectItem value="Exclude">
+                                                  Exclude
+                                                </SelectItem>
+                                              </SelectContent>
+                                            </Select>
+                                            <span className="mt-1 text-xs font-medium text-gray-600 px-1">
+                                              Include or exclude matches
+                                            </span>
+                                          </div>
                                         </div>
 
-                                        <div className="inline-flex flex-col">
-                                          <Select
-                                            value={criteriaInclusion}
-                                            onValueChange={setCriteriaInclusion}
-                                            disabled={isViewMode}
-                                          >
-                                            <SelectTrigger className="min-w-[110px] h-8">
-                                              <SelectValue placeholder="inclusion" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                              <SelectItem value="Include">
-                                                Include
-                                              </SelectItem>
-                                              <SelectItem value="Exclude">
-                                                Exclude
-                                              </SelectItem>
-                                            </SelectContent>
-                                          </Select>
-                                          <span className="mt-1 text-xs font-medium text-gray-600 px-1">
-                                            Include or exclude matches
-                                          </span>
+                                        {/* Row 2: Input field (dynamic based on field type) */}
+                                        <div className="flex items-center gap-3">
+                                          <div className="w-[300px]">
+                                            {criteriaType === "OfferType" ? (
+                                              <MultiSelectCombobox
+                                                options={offerTypeOptions}
+                                                values={criteriaMultiValues}
+                                                onChange={
+                                                  setCriteriaMultiValues
+                                                }
+                                                placeholder="Select offer types"
+                                                className="h-8"
+                                                width="100%"
+                                                disabled={isViewMode}
+                                              />
+                                            ) : (
+                                              <Input
+                                                placeholder="value"
+                                                value={criteriaValue}
+                                                onChange={(e) =>
+                                                  setCriteriaValue(
+                                                    e.target.value
+                                                  )
+                                                }
+                                                className="h-8"
+                                                disabled={isViewMode}
+                                              />
+                                            )}
+                                            <span className="mt-1 text-xs font-medium text-gray-600 px-1">
+                                              {criteriaType === "OfferType"
+                                                ? "Select offer types to match"
+                                                : "Enter the value to match"}
+                                            </span>
+                                          </div>
                                         </div>
 
-                                        <div className="inline-flex flex-col">
-                                          <Input
-                                            placeholder="value"
-                                            value={criteriaValue}
-                                            onChange={(e) =>
-                                              setCriteriaValue(e.target.value)
-                                            }
-                                            className="h-8 w-[160px]"
-                                            disabled={isViewMode}
-                                          />
-                                          <span className="mt-1 text-xs font-medium text-gray-600 px-1">
-                                            Enter the value to match
-                                          </span>
-                                        </div>
+                                        {/* Row 3: Connect with + AND/OR operator + Add button */}
+                                        <div className="flex items-center gap-3">
+                                          <div className="flex items-center bg-white px-2 py-1 rounded border border-gray-200 h-8 shrink-0">
+                                            <span className="font-medium text-gray-600 text-xs">
+                                              connect with
+                                            </span>
+                                          </div>
 
-                                        <div className="flex items-center bg-white px-2 py-1 rounded border border-gray-200">
-                                          <span className="font-medium text-gray-600">
-                                            connect with
-                                          </span>
-                                        </div>
+                                          <div className="w-[100px]">
+                                            <Select
+                                              value={criteriaAndOr}
+                                              onValueChange={setCriteriaAndOr}
+                                              disabled={isViewMode}
+                                            >
+                                              <SelectTrigger className="h-8">
+                                                <SelectValue placeholder="operator" />
+                                              </SelectTrigger>
+                                              <SelectContent>
+                                                <SelectItem value="OR">
+                                                  <span className="font-medium">
+                                                    OR
+                                                  </span>
+                                                </SelectItem>
+                                                <SelectItem value="AND">
+                                                  <span className="font-medium">
+                                                    AND
+                                                  </span>
+                                                </SelectItem>
+                                              </SelectContent>
+                                            </Select>
+                                            <span className="mt-1 text-xs font-medium text-gray-600 px-1">
+                                              How to combine conditions
+                                            </span>
+                                          </div>
 
-                                        <div className="inline-flex flex-col">
-                                          <Select
-                                            value={criteriaAndOr}
-                                            onValueChange={setCriteriaAndOr}
-                                            disabled={isViewMode}
-                                          >
-                                            <SelectTrigger className="w-[90px] h-8">
-                                              <SelectValue placeholder="operator" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                              <SelectItem value="OR">
-                                                <span className="font-medium">
-                                                  OR
-                                                </span>
-                                              </SelectItem>
-                                              <SelectItem value="AND">
-                                                <span className="font-medium">
-                                                  AND
-                                                </span>
-                                              </SelectItem>
-                                            </SelectContent>
-                                          </Select>
-                                          <span className="mt-1 text-xs font-medium text-gray-600 px-1">
-                                            How to combine conditions
-                                          </span>
-                                        </div>
-
-                                        {!isViewMode && (
-                                          <Button
-                                            onClick={() => {
-                                              if (!criteriaType) {
-                                                setValidationMessage(
-                                                  "Please select a field type for your filter condition"
-                                                );
-                                                setTimeout(
-                                                  () =>
-                                                    setValidationMessage(null),
-                                                  5000
-                                                );
-                                                return;
+                                          {!isViewMode && (
+                                            <Button
+                                              onClick={() => {
+                                                if (!criteriaType) {
+                                                  setValidationMessage(
+                                                    "Please select a field type for your filter condition"
+                                                  );
+                                                  setTimeout(
+                                                    () =>
+                                                      setValidationMessage(
+                                                        null
+                                                      ),
+                                                    5000
+                                                  );
+                                                  return;
+                                                }
+                                                if (
+                                                  criteriaType ===
+                                                    "OfferType" &&
+                                                  criteriaMultiValues.length ===
+                                                    0
+                                                ) {
+                                                  setValidationMessage(
+                                                    "Please select at least one offer type for your filter condition"
+                                                  );
+                                                  setTimeout(
+                                                    () =>
+                                                      setValidationMessage(
+                                                        null
+                                                      ),
+                                                    5000
+                                                  );
+                                                  return;
+                                                }
+                                                if (
+                                                  criteriaType !==
+                                                    "OfferType" &&
+                                                  !criteriaValue
+                                                ) {
+                                                  setValidationMessage(
+                                                    "Please enter a value for your filter condition"
+                                                  );
+                                                  setTimeout(
+                                                    () =>
+                                                      setValidationMessage(
+                                                        null
+                                                      ),
+                                                    5000
+                                                  );
+                                                  return;
+                                                }
+                                                addCriteria();
+                                              }}
+                                              disabled={
+                                                !criteriaType ||
+                                                (criteriaType === "OfferType"
+                                                  ? criteriaMultiValues.length ===
+                                                    0
+                                                  : !criteriaValue)
                                               }
-                                              if (!criteriaValue) {
-                                                setValidationMessage(
-                                                  "Please enter a value for your filter condition"
-                                                );
-                                                setTimeout(
-                                                  () =>
-                                                    setValidationMessage(null),
-                                                  5000
-                                                );
-                                                return;
-                                              }
-                                              addCriteria();
-                                            }}
-                                            disabled={
-                                              !criteriaType || !criteriaValue
-                                            }
-                                            size="sm"
-                                            className="h-8 self-start"
-                                          >
-                                            <PlusIcon className="h-3.5 w-3.5 mr-1" />
-                                            Add
-                                          </Button>
-                                        )}
+                                              size="sm"
+                                              className="h-8 self-start"
+                                            >
+                                              <PlusIcon className="h-3.5 w-3.5 mr-1" />
+                                              Add
+                                            </Button>
+                                          )}
+                                        </div>
                                       </div>
 
                                       <div className="mt-3 text-xs font-medium text-gray-600 bg-white p-2 rounded border border-gray-200">
                                         {criteriaType
-                                          ? `${criteriaInclusion === "Include" ? "Include" : "Exclude"} conditions where ${friendlyTypeNames[criteriaType] || criteriaType} contains "${criteriaValue}".`
+                                          ? `${criteriaInclusion === "Include" ? "Include" : "Exclude"} conditions where ${friendlyTypeNames[criteriaType] || criteriaType} ${criteriaType === "OfferType" ? "is one of the selected types" : `contains "${criteriaValue}"`}.`
                                           : "Select a field to get started with building your filter condition."}
                                       </div>
                                     </div>
