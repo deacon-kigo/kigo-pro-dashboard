@@ -116,7 +116,9 @@ export default function BoADashboardView() {
     const getCardStyle = () => {
       return {
         background: "#FFFFFF",
-        borderColor: "#E2E8F0",
+        borderColor: "#002D72",
+        borderWidth: "1px",
+        borderOpacity: "0.15",
         position: "relative" as const,
         overflow: "hidden" as const,
         boxShadow: "0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03)",
@@ -145,17 +147,17 @@ export default function BoADashboardView() {
     const getIconColor = () => {
       switch (title) {
         case "Active Advertisers":
-          return "text-blue-700";
+          return "text-[#002D72]"; // BoA primary blue
         case "Active Programs":
-          return "text-blue-600";
+          return "text-[#0052CC]"; // BoA secondary blue
         case "Active Offers":
-          return "text-blue-500";
+          return "text-[#0066B3]"; // BoA tertiary blue
         case "Redemptions (12m)":
-          return "text-blue-800";
+          return "text-[#002D72]"; // BoA primary blue
         case "Redemptions (30d)":
-          return "text-blue-900";
+          return "text-[#0052CC]"; // BoA secondary blue
         default:
-          return "text-blue-600";
+          return "text-[#0066B3]"; // BoA tertiary blue
       }
     };
 
@@ -232,25 +234,25 @@ export default function BoADashboardView() {
         case "Program Performance":
           return {
             bgColor: "#F0F4F9",
-            textColor: "#0052CC", // BoA blue
+            textColor: "#002D72", // BoA primary blue
             iconBg: "#DBEAFE",
           };
         case "Revenue Analytics":
           return {
             bgColor: "#F0F4F9",
-            textColor: "#0066B3", // BoA medium blue
+            textColor: "#0066B3", // BoA tertiary blue
             iconBg: "#E0F2FE",
           };
         case "Advertiser Insights":
           return {
             bgColor: "#F0F4F9",
-            textColor: "#13579A", // BoA darker blue
+            textColor: "#0052CC", // BoA secondary blue
             iconBg: "#CCE5FF",
           };
         default:
           return {
             bgColor: "#F0F4F9",
-            textColor: "#6B7280",
+            textColor: "#002D72",
             iconBg: "#F3F4F6",
           };
       }
@@ -299,7 +301,7 @@ export default function BoADashboardView() {
         logo={
           <div className="w-12 h-12 relative">
             <Image
-              src="/logos/boa-logo.svg"
+              src="/logos/boa-logo-no-name.svg"
               alt="Bank of America"
               width={48}
               height={48}
@@ -309,8 +311,8 @@ export default function BoADashboardView() {
         }
         variant="default"
         gradientColors={{
-          from: "rgba(27, 54, 93, 0.95)", // Darker blue for better contrast with logo
-          to: "rgba(37, 87, 167, 0.85)", // Medium blue
+          from: "rgba(0, 45, 114, 0.9)", // BoA primary blue
+          to: "rgba(0, 82, 204, 0.7)", // BoA secondary blue
         }}
       />
 
@@ -335,14 +337,14 @@ export default function BoADashboardView() {
           <div className="h-full flex flex-col">
             {/* Page title and actions */}
             <div className="flex justify-between items-center mb-4">
-              <h1 className="text-xl font-semibold text-gray-900">
+              <h1 className="text-xl font-semibold text-[#002D72]">
                 Bank of America Program Analytics
               </h1>
               <div className="flex space-x-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex items-center"
+                  className="flex items-center text-[#002D72] border-[#002D72]"
                 >
                   <CalendarIcon className="h-4 w-4 mr-1.5" />
                   Last Updated: April 22, 2024
@@ -350,18 +352,12 @@ export default function BoADashboardView() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex items-center"
+                  className="flex items-center text-[#002D72] border-[#002D72]"
                   asChild
                 >
                   <a href="/campaign-manager/publisher-dashboard">
-                    <Image
-                      src="/logos/bread-financial-logo.png"
-                      alt="Bread Financial"
-                      width={16}
-                      height={16}
-                      className="mr-1.5"
-                    />
-                    View Bread Financial
+                    <ArrowsRightLeftIcon className="h-4 w-4 mr-1.5 text-[#002D72]" />
+                    Return to Publisher Dashboard
                   </a>
                 </Button>
               </div>
@@ -412,10 +408,10 @@ export default function BoADashboardView() {
               {/* Left side: Filters */}
               <div className="lg:col-span-3">
                 {/* Filter section */}
-                <Card className="p-4 mb-4 bg-white shadow-sm">
+                <Card className="p-4 mb-4 bg-white shadow-sm border-[#002D72]/20">
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-[#002D72] mb-1">
                         Advertiser
                       </label>
                       <Select
@@ -424,7 +420,7 @@ export default function BoADashboardView() {
                           setSelectedAdvertiserId(value)
                         }
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="border-[#002D72]/30">
                           <SelectValue placeholder="Select Advertiser" />
                         </SelectTrigger>
                         <SelectContent>
@@ -437,14 +433,14 @@ export default function BoADashboardView() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-[#002D72] mb-1">
                         Program Type
                       </label>
                       <Select
                         value={selectedProgramType}
                         onValueChange={(value) => setSelectedProgramType(value)}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="border-[#002D72]/30">
                           <SelectValue placeholder="Select Program Type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -457,7 +453,7 @@ export default function BoADashboardView() {
                     </div>
 
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-[#002D72] mb-1">
                         Date Range
                       </label>
                       <div className="flex items-center space-x-2">
@@ -468,7 +464,7 @@ export default function BoADashboardView() {
                             setDateRange({ ...dateRange, startDate: date })
                           }
                         />
-                        <ArrowsRightLeftIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                        <ArrowsRightLeftIcon className="h-4 w-4 text-[#002D72]/50 flex-shrink-0" />
                         <DatePicker
                           date={dateRange.endDate}
                           onSelect={(date) =>
@@ -487,9 +483,9 @@ export default function BoADashboardView() {
                     title="Program Performance"
                     icon={<ChartBarIcon className="h-6 w-6" />}
                     description="Track campaign performance across all advertiser programs"
-                    bgColor="bg-blue-50"
-                    iconBgColor="bg-blue-100"
-                    textColor="text-blue-600"
+                    bgColor="#F0F4F9"
+                    iconBgColor="#DBEAFE"
+                    textColor="#002D72"
                     buttonText="View Dashboard"
                   />
 
@@ -497,18 +493,20 @@ export default function BoADashboardView() {
                     title="Revenue Analytics"
                     icon={<BanknotesIcon className="h-6 w-6" />}
                     description="View financial performance and revenue by advertiser"
-                    bgColor="bg-blue-50"
-                    iconBgColor="bg-blue-100"
-                    textColor="text-blue-600"
+                    bgColor="#F0F4F9"
+                    iconBgColor="#E0F2FE"
+                    textColor="#0066B3"
+                    buttonText="View Report"
                   />
 
                   <ReportCard
                     title="Advertiser Insights"
                     icon={<ChartPieIcon className="h-6 w-6" />}
                     description="Analyze promotion performance by advertiser segments"
-                    bgColor="bg-blue-50"
-                    iconBgColor="bg-blue-100"
-                    textColor="text-blue-600"
+                    bgColor="#F0F4F9"
+                    iconBgColor="#CCE5FF"
+                    textColor="#0052CC"
+                    buttonText="View Analysis"
                   />
                 </div>
               </div>
