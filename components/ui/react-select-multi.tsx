@@ -37,7 +37,7 @@ export function ReactSelectMulti({
   placeholder = "Select options",
   className,
   isDisabled = false,
-  maxDisplayValues = 3,
+  maxDisplayValues = 2,
   width = "100%",
 }: ReactSelectMultiProps) {
   // Convert string values to Option objects for react-select
@@ -75,10 +75,11 @@ export function ReactSelectMulti({
       minHeight: "2rem",
       height: "2rem",
       backgroundColor: "white",
-      borderColor: state.isFocused ? "#0066CC" : "#e2e8f0",
-      boxShadow: state.isFocused ? "0 0 0 1px #0066CC" : "none",
+      borderColor: state.isFocused ? "#2563eb" : "#e2e8f0",
+      borderRadius: "0.375rem", // Matches Shadcn rounded-md
+      boxShadow: state.isFocused ? "0 0 0 2px rgba(37, 99, 235, 0.2)" : "none",
       "&:hover": {
-        borderColor: state.isFocused ? "#0066CC" : "#cbd5e1",
+        borderColor: state.isFocused ? "#2563eb" : "#cbd5e1",
       },
       cursor: isDisabled ? "not-allowed" : "pointer",
       opacity: isDisabled ? 0.7 : 1,
@@ -91,13 +92,14 @@ export function ReactSelectMulti({
     multiValue: (base) => ({
       ...base,
       backgroundColor: "#e6f0ff",
-      borderRadius: "4px",
+      borderRadius: "0.25rem",
     }),
     multiValueLabel: (base) => ({
       ...base,
       color: "#0052CC",
       padding: "0 4px",
       fontSize: "0.75rem",
+      fontWeight: 500,
     }),
     multiValueRemove: (base) => ({
       ...base,
@@ -115,6 +117,7 @@ export function ReactSelectMulti({
       position: "absolute",
       width: "auto",
       minWidth: "100%",
+      borderRadius: "0.375rem", // Matches Shadcn rounded-md
     }),
     menuPortal: (base) => ({
       ...base,
@@ -122,19 +125,24 @@ export function ReactSelectMulti({
     }),
     option: (base, { isSelected, isFocused }) => ({
       ...base,
-      backgroundColor: isSelected ? "#0052CC" : isFocused ? "#e6f0ff" : "white",
+      backgroundColor: isSelected
+        ? "#2563eb" // Primary blue color
+        : isFocused
+          ? "#f1f5f9" // Light gray background on hover
+          : "white",
       color: isSelected ? "white" : "#1e293b",
       fontSize: "0.875rem",
       padding: "8px 12px",
       cursor: "pointer",
       "&:active": {
-        backgroundColor: isSelected ? "#0052CC" : "#cce0ff",
+        backgroundColor: isSelected ? "#2563eb" : "#e2e8f0",
       },
     }),
     placeholder: (base) => ({
       ...base,
-      color: "#94a3b8", // Match the placeholder color with other inputs
+      color: "#6b7280", // Match the Shadcn placeholder color
       fontSize: "0.875rem",
+      fontWeight: 400,
     }),
     dropdownIndicator: (base) => ({
       ...base,
