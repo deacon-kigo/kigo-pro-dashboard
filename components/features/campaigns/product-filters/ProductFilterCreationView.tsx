@@ -213,7 +213,7 @@ export default function ProductFilterCreationView({
   const hasRequiredCriteria = useSelector(selectHasAllRequiredCriteria);
 
   // State variables
-  const [isViewMode, setIsViewMode] = useState(mode === "view");
+  const [isViewMode, setIsViewMode] = useState(false);
   const [isEditMode, setIsEditMode] = useState(mode === "edit");
   const [activeTab, setActiveTab] = useState("build");
   const [showSaveConfirmation, setShowSaveConfirmation] = useState(false);
