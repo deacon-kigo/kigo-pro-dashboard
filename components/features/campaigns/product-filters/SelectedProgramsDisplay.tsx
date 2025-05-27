@@ -40,8 +40,6 @@ interface SelectedProgramsDisplayProps {
   selectedProgramIds: string[];
   maxHeight?: string;
   onEditClick: () => void;
-  collapsed?: boolean;
-  onToggleCollapse?: () => void;
 }
 
 export function SelectedProgramsDisplay({
@@ -49,8 +47,6 @@ export function SelectedProgramsDisplay({
   selectedProgramIds,
   maxHeight = "200px",
   onEditClick,
-  collapsed = false,
-  onToggleCollapse,
 }: SelectedProgramsDisplayProps) {
   const [expandedPartners, setExpandedPartners] = useState<string[]>([]);
   const [expandedPrograms, setExpandedPrograms] = useState<string[]>([]);
@@ -132,35 +128,6 @@ export function SelectedProgramsDisplay({
     }
   };
 
-  if (collapsed) {
-    return (
-      <div className="border rounded-md p-3 bg-gray-50">
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="text-sm font-medium">
-              {selectionInfo.totalSelected} program
-              {selectionInfo.totalSelected !== 1 ? "s" : ""} selected
-            </span>
-            <p className="text-xs text-gray-500 mt-0.5">
-              From {selectionInfo.partnerCount} partner
-              {selectionInfo.partnerCount !== 1 ? "s" : ""}
-              and {selectionInfo.programCount} program
-              {selectionInfo.programCount !== 1 ? "s" : ""}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button size="sm" variant="ghost" onClick={onToggleCollapse}>
-              View
-            </Button>
-            <Button size="sm" variant="outline" onClick={onEditClick}>
-              Edit
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   if (selectedProgramIds.length === 0) {
     return (
       <div className="border rounded-md p-3 bg-gray-50 text-center">
@@ -196,16 +163,6 @@ export function SelectedProgramsDisplay({
           >
             {expandedPartners.length > 0 ? "Collapse All" : "Expand All"}
           </Button>
-          {onToggleCollapse && (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={onToggleCollapse}
-              className="h-8 px-2 text-xs"
-            >
-              Collapse
-            </Button>
-          )}
           <Button
             size="sm"
             variant="outline"
