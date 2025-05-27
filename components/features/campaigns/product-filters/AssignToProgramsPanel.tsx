@@ -378,7 +378,7 @@ interface AssignToProgramsPanelProps {
 }
 
 // Helper function to generate mock partner data dynamically
-const generateMockPartners = (count = 25, currentFilterId = "") => {
+const generateMockPartners = (count = 50, currentFilterId = "") => {
   const partners = [...mockPartners]; // Start with existing partners
 
   // Company name prefixes for variety
@@ -403,6 +403,16 @@ const generateMockPartners = (count = 25, currentFilterId = "") => {
     "First",
     "National",
     "Modern",
+    "Digital",
+    "Pacific",
+    "Atlantic",
+    "Northern",
+    "Southern",
+    "Eastern",
+    "Western",
+    "Central",
+    "Metro",
+    "Urban",
   ];
   // Company name suffixes for variety
   const companySuffixes = [
@@ -426,6 +436,16 @@ const generateMockPartners = (count = 25, currentFilterId = "") => {
     "International",
     "Cooperative",
     "Exchange",
+    "Media",
+    "Logistics",
+    "Healthcare",
+    "Education",
+    "Retail",
+    "Banking",
+    "Insurance",
+    "Consulting",
+    "Energy",
+    "Transportation",
   ];
   // Program types for variety
   const programTypes = [
@@ -439,6 +459,26 @@ const generateMockPartners = (count = 25, currentFilterId = "") => {
     "Referral",
     "Benefits",
     "Partnership",
+    "Platinum",
+    "Gold",
+    "Silver",
+    "Bronze",
+    "Elite",
+    "Executive",
+    "Business",
+    "Consumer",
+    "Student",
+    "Senior",
+    "Family",
+    "Lifestyle",
+    "Travel",
+    "Dining",
+    "Shopping",
+    "Entertainment",
+    "Wellness",
+    "Education",
+    "Technology",
+    "Professional",
   ];
   // Promotion types for variety
   const promotionTypes = [
@@ -452,33 +492,109 @@ const generateMockPartners = (count = 25, currentFilterId = "") => {
     "Seasonal",
     "Special",
     "Featured",
+    "Premium",
+    "Discount",
+    "Bonus",
+    "Reward",
+    "Gift",
+    "Trial",
+    "Subscription",
+    "Membership",
+    "Cashback",
+    "Points",
+    "Holiday",
+    "Summer",
+    "Winter",
+    "Spring",
+    "Fall",
+    "Weekend",
+    "Weekday",
+    "Flash",
+    "Clearance",
+    "New Customer",
+  ];
+
+  // Additional industry keywords for more realistic searches
+  const industryKeywords = [
+    "Financial",
+    "Travel",
+    "Retail",
+    "Food",
+    "Dining",
+    "Automotive",
+    "Technology",
+    "Health",
+    "Wellness",
+    "Fashion",
+    "Home",
+    "Garden",
+    "Sports",
+    "Fitness",
+    "Entertainment",
+    "Education",
+    "Professional",
+    "Legal",
+    "Medical",
+    "Insurance",
+    "Banking",
+    "Investment",
+    "Telecom",
+    "Utilities",
+    "Real Estate",
+    "Construction",
+    "Manufacturing",
+    "Hospitality",
+    "Transportation",
+    "Logistics",
   ];
 
   // Generate additional partners
   for (let i = 4; i < count + 4; i++) {
     const partnerId = `partner${i}`;
-    const partnerName = `${companyPrefixes[i % 10]} ${companySuffixes[i % 10]}`;
 
-    // Generate 2-4 programs per partner
-    const programCount = 2 + Math.floor(Math.random() * 3);
+    // Create more varied partner names
+    const useIndustry = Math.random() > 0.7;
+    const industryKeyword = useIndustry
+      ? ` ${industryKeywords[i % industryKeywords.length]}`
+      : "";
+    const partnerName = `${companyPrefixes[i % companyPrefixes.length]}${industryKeyword} ${companySuffixes[i % companySuffixes.length]}`;
+
+    // Generate 2-5 programs per partner for more variety
+    const programCount = 2 + Math.floor(Math.random() * 4);
     const programs: Program[] = [];
 
     for (let j = 0; j < programCount; j++) {
       const programId = `prog${i * 10 + j}`;
-      const programName = `${programTypes[j % 10]} Program ${j + 1}`;
+      const programIndex = (i * 3 + j) % programTypes.length;
+      const programName = `${programTypes[programIndex]} Program ${j + 1}`;
 
-      // Generate 3-8 promoted programs per program
-      const promotedProgramCount = 3 + Math.floor(Math.random() * 6);
+      // Generate 3-10 promoted programs per program for more test data
+      const promotedProgramCount = 3 + Math.floor(Math.random() * 8);
       const promotedPrograms: PromotedProgram[] = [];
 
       for (let k = 0; k < promotedProgramCount; k++) {
         const promotedProgramId = `pp${i * 100 + j * 10 + k}`;
-        const promotedProgramName = `${promotionTypes[k % 10]} ${k + 1}`;
+        const promotionIndex = (i + j + k) % promotionTypes.length;
+
+        // Add industry keyword to some program names for better search testing
+        const useIndustryInPromo = Math.random() > 0.8;
+        const industryInPromo = useIndustryInPromo
+          ? ` ${industryKeywords[(i + k) % industryKeywords.length]}`
+          : "";
+
+        const promotedProgramName = `${promotionTypes[promotionIndex]}${industryInPromo} ${k + 1}`;
+
+        // Create more detailed descriptions for better search matching
+        const description = `${partnerName} ${programName} promotion: ${promotedProgramName} - ${
+          Math.random() > 0.5
+            ? `Special offers for ${industryKeywords[(i + j + k) % industryKeywords.length].toLowerCase()} customers`
+            : `Exclusive ${promotionTypes[promotionIndex].toLowerCase()} deals and savings`
+        }`;
 
         promotedPrograms.push({
           id: promotedProgramId,
           name: promotedProgramName,
-          description: `${partnerName} ${programName} promotion details for ${promotedProgramName}`,
+          description: description,
           active: Math.random() > 0.1, // 90% chance of being active
           currentFilters: Math.random() > 0.8 ? [currentFilterId] : [], // 20% chance of having the current filter
         });
