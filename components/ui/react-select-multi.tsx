@@ -101,14 +101,17 @@ export function ReactSelectMulti({
       minHeight: "2rem",
       height: "2rem",
       backgroundColor: "white",
-      borderColor: state.isFocused ? "#2563eb" : "#e2e8f0",
-      borderRadius: "0.375rem", // Matches Shadcn rounded-md
-      boxShadow: state.isFocused ? "0 0 0 2px rgba(37, 99, 235, 0.2)" : "none",
+      borderColor: state.isFocused ? "rgb(59, 130, 246)" : "rgb(229, 231, 235)",
+      borderRadius: "0.375rem",
+      boxShadow: state.isFocused ? "0 0 0 2px rgba(59, 130, 246, 0.3)" : "none",
       "&:hover": {
-        borderColor: state.isFocused ? "#2563eb" : "#cbd5e1",
+        borderColor: state.isFocused
+          ? "rgb(59, 130, 246)"
+          : "rgb(209, 213, 219)",
       },
       cursor: isDisabled ? "not-allowed" : "pointer",
       opacity: isDisabled ? 0.7 : 1,
+      padding: "0",
     }),
     valueContainer: (base) => ({
       ...base,
@@ -176,9 +179,12 @@ export function ReactSelectMulti({
     }),
     placeholder: (base) => ({
       ...base,
-      color: "#6b7280", // Match the Shadcn placeholder color
+      color: "rgb(107, 114, 128)", // Exact match for gray-500 in Shadcn
       fontSize: "0.875rem",
       fontWeight: 400,
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap",
     }),
     dropdownIndicator: (base) => ({
       ...base,
