@@ -1040,9 +1040,9 @@ export function AssignToProgramsPanel({
       className="flex flex-col h-full max-h-[600px] overflow-hidden"
       ref={componentRef}
     >
-      <div className="flex-1 flex flex-col">
+      <div className="flex flex-col h-full">
         {/* Search input */}
-        <div className="relative mb-4">
+        <div className="relative mb-4 flex-shrink-0">
           <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
             <MagnifyingGlassIcon className="w-4 h-4 text-gray-400" />
           </div>
@@ -1056,7 +1056,7 @@ export function AssignToProgramsPanel({
         </div>
 
         {/* Selected count and buttons */}
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center mb-4 flex-shrink-0">
           <span className="text-sm text-gray-500">
             {selectedCount} promoted program{selectedCount !== 1 ? "s" : ""}{" "}
             selected
@@ -1095,9 +1095,9 @@ export function AssignToProgramsPanel({
           </div>
         </div>
 
-        {/* Scrollable program list area - with fixed height for modal */}
+        {/* Scrollable program list area - with fixed height to ensure buttons stay at bottom */}
         <div
-          className="flex-1 overflow-y-auto pr-2 h-[500px] max-h-[60vh] relative"
+          className="flex-1 overflow-y-auto pr-2 min-h-0"
           ref={scrollContainerRef}
           onScroll={handleScroll}
           style={{ willChange: "scroll-position" }}
@@ -1333,7 +1333,7 @@ export function AssignToProgramsPanel({
         </div>
 
         {/* Feedback and actions */}
-        <div className="mt-4 pt-4 border-t">
+        <div className="mt-4 pt-4 border-t flex-shrink-0">
           {/* Save error message */}
           {saveError && (
             <div className="mb-4 p-2 bg-red-50 text-red-600 rounded-md flex items-center">
@@ -1355,7 +1355,7 @@ export function AssignToProgramsPanel({
           )}
 
           {/* Actions */}
-          <div className="flex items-center justify-end space-x-2 p-4 border-t mt-auto">
+          <div className="flex items-center justify-end space-x-2 mt-auto">
             <Button variant="outline" onClick={handleCancel}>
               Cancel
             </Button>
