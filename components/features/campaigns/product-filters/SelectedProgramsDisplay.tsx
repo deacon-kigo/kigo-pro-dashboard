@@ -5,16 +5,13 @@ import { Badge } from "@/components/atoms/Badge";
 import { Button } from "@/components/atoms/Button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
   ChevronDown,
   ChevronRight,
   Building,
   Briefcase,
+  LayoutGrid,
   CheckCircle,
+  PencilIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -55,13 +52,8 @@ export function SelectedProgramsDisplay({
   collapsed = false,
   onToggleCollapse,
 }: SelectedProgramsDisplayProps) {
-  const [expandedPartners, setExpandedPartners] = useState<
-    Record<string, boolean>
-  >({});
-  const [expandedPrograms, setExpandedPrograms] = useState<
-    Record<string, boolean>
-  >({});
-  const [isAllExpanded, setIsAllExpanded] = useState(false);
+  const [expandedPartners, setExpandedPartners] = useState<string[]>([]);
+  const [expandedPrograms, setExpandedPrograms] = useState<string[]>([]);
 
   // Filter partners to only include those with selected programs
   const filteredData = useMemo(() => {
@@ -98,39 +90,46 @@ export function SelectedProgramsDisplay({
     return { totalSelected, partnerCount, programCount };
   }, [filteredData]);
 
-  // Toggle expand/collapse for a partner
+  // Toggle expansion of a partner
   const togglePartner = (partnerId: string) => {
-    setExpandedPartners((prev) => ({
-      ...prev,
-      [partnerId]: !prev[partnerId],
-    }));
+    setExpandedPartners((prev) => {
+      const newExpandedPartners = prev.includes(partnerId)
+        ? prev.filter((id) => id !== partnerId)
+        : [...prev, partnerId];
+      return newExpandedPartners;
+    });
   };
 
-  // Toggle expand/collapse for a program
+  // Toggle expansion of a program
   const toggleProgram = (programId: string) => {
-    setExpandedPrograms((prev) => ({
-      ...prev,
-      [programId]: !prev[programId],
-    }));
+    setExpandedPrograms((prev) => {
+      const newExpandedPrograms = prev.includes(programId)
+        ? prev.filter((id) => id !== programId)
+        : [...prev, programId];
+      return newExpandedPrograms;
+    });
   };
 
   // Toggle expand/collapse all
   const toggleExpandAll = () => {
-    const newState = !isAllExpanded;
-    setIsAllExpanded(newState);
+    if (expandedPartners.length === 0) {
+      // Expand all
+      const allPartnerIds = filteredData.map((partner) => partner.id);
+      const allProgramIds: string[] = [];
 
-    const partnerState: Record<string, boolean> = {};
-    const programState: Record<string, boolean> = {};
-
-    filteredData.forEach((partner) => {
-      partnerState[partner.id] = newState;
-      partner.programs.forEach((program) => {
-        programState[program.id] = newState;
+      filteredData.forEach((partner) => {
+        partner.programs.forEach((program) => {
+          allProgramIds.push(program.id);
+        });
       });
-    });
 
-    setExpandedPartners(partnerState);
-    setExpandedPrograms(programState);
+      setExpandedPartners(allPartnerIds);
+      setExpandedPrograms(allProgramIds);
+    } else {
+      // Collapse all
+      setExpandedPartners([]);
+      setExpandedPrograms([]);
+    }
   };
 
   if (collapsed) {
@@ -179,13 +178,14 @@ export function SelectedProgramsDisplay({
   }
 
   return (
-    <div className="border rounded-md">
-      <div className="flex items-center justify-between bg-gray-50 p-3 border-b">
+    <div className="border rounded-md overflow-hidden">
+      <div className="flex items-center justify-between bg-slate-50 p-3 border-b">
         <div className="flex items-center">
-          <Badge variant="outline" className="mr-2">
+          <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+          <span className="text-sm font-medium">Selected Programs</span>
+          <Badge variant="outline" className="ml-2 text-xs">
             {selectionInfo.totalSelected}
           </Badge>
-          <span className="text-sm font-medium">Selected Programs</span>
         </div>
         <div className="flex gap-2">
           <Button
@@ -194,115 +194,138 @@ export function SelectedProgramsDisplay({
             onClick={toggleExpandAll}
             className="h-8 px-2 text-xs"
           >
-            {isAllExpanded ? "Collapse All" : "Expand All"}
+            {expandedPartners.length > 0 ? "Collapse All" : "Expand All"}
           </Button>
+          {onToggleCollapse && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={onToggleCollapse}
+              className="h-8 px-2 text-xs"
+            >
+              Collapse
+            </Button>
+          )}
           <Button
             size="sm"
-            variant="ghost"
-            onClick={onToggleCollapse}
-            className="h-8 px-2 text-xs"
+            variant="outline"
+            onClick={onEditClick}
+            className="flex items-center gap-1"
           >
-            Collapse
-          </Button>
-          <Button size="sm" variant="outline" onClick={onEditClick}>
+            <PencilIcon className="h-3 w-3" />
             Edit
           </Button>
         </div>
       </div>
 
       <ScrollArea
-        className={cn("max-h-[200px]", maxHeight ? `max-h-[${maxHeight}]` : "")}
+        className={cn("overflow-auto", maxHeight ? `max-h-[${maxHeight}]` : "")}
+        style={{ maxHeight }}
       >
-        <div className="p-2">
-          {filteredData.length === 0 ? (
-            <div className="text-center p-4 text-sm text-gray-500">
-              No programs selected
-            </div>
-          ) : (
-            <div className="space-y-1">
-              {filteredData.map((partner) => (
-                <Collapsible
-                  key={partner.id}
-                  open={expandedPartners[partner.id]}
-                  className="border border-gray-100 rounded-sm overflow-hidden"
-                >
-                  <CollapsibleTrigger asChild>
-                    <button
-                      onClick={() => togglePartner(partner.id)}
-                      className="flex items-center w-full p-2 hover:bg-gray-50 text-left"
-                    >
-                      {expandedPartners[partner.id] ? (
-                        <ChevronDown className="h-4 w-4 mr-1 text-gray-500" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4 mr-1 text-gray-500" />
-                      )}
-                      <Building className="h-4 w-4 mr-1.5 text-blue-600" />
-                      <span className="text-sm font-medium">
-                        {partner.name}
-                      </span>
-                      <Badge variant="outline" className="ml-2 text-xs">
-                        {partner.programs.reduce(
-                          (count, program) =>
-                            count + program.promotedPrograms.length,
-                          0
-                        )}
-                      </Badge>
-                    </button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <div className="pl-6 space-y-1 pb-1">
-                      {partner.programs.map((program) => (
-                        <Collapsible
-                          key={program.id}
-                          open={expandedPrograms[program.id]}
-                          className="border-l border-gray-200"
-                        >
-                          <CollapsibleTrigger asChild>
-                            <button
-                              onClick={() => toggleProgram(program.id)}
-                              className="flex items-center w-full p-1.5 hover:bg-gray-50 text-left"
+        <div className="space-y-1">
+          {filteredData.map((partner) => (
+            <div key={partner.id} className="border-b last:border-b-0">
+              {/* Partner level */}
+              <div
+                className={`flex items-center p-3 hover:bg-slate-50 cursor-pointer ${
+                  expandedPartners.includes(partner.id) ? "border-b" : ""
+                }`}
+                onClick={() => togglePartner(partner.id)}
+              >
+                <div className="mr-2">
+                  {expandedPartners.includes(partner.id) ? (
+                    <ChevronDown className="h-4 w-4" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4" />
+                  )}
+                </div>
+
+                <div className="flex items-center flex-1">
+                  <div className="flex items-center">
+                    <Building className="h-4 w-4 mr-2 text-blue-600" />
+                    <span className="font-medium text-sm">{partner.name}</span>
+                  </div>
+                </div>
+
+                <Badge variant="outline" className="text-xs">
+                  {partner.programs.reduce(
+                    (count, program) => count + program.promotedPrograms.length,
+                    0
+                  )}
+                </Badge>
+              </div>
+
+              {/* Programs under this partner */}
+              {expandedPartners.includes(partner.id) && (
+                <div className="pl-9">
+                  {partner.programs.map((program) => (
+                    <div key={program.id} className="border-t">
+                      {/* Program level */}
+                      <div
+                        className={`flex items-center p-3 hover:bg-slate-50 cursor-pointer ${
+                          expandedPrograms.includes(program.id)
+                            ? "border-b"
+                            : ""
+                        }`}
+                        onClick={() => toggleProgram(program.id)}
+                      >
+                        <div className="mr-2">
+                          {expandedPrograms.includes(program.id) ? (
+                            <ChevronDown className="h-4 w-4" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4" />
+                          )}
+                        </div>
+
+                        <div className="flex items-center flex-1">
+                          <div className="flex items-center">
+                            <Briefcase className="h-4 w-4 mr-2 text-green-600" />
+                            <span className="font-medium text-sm">
+                              {program.name}
+                            </span>
+                          </div>
+                        </div>
+
+                        <Badge variant="outline" className="text-xs">
+                          {program.promotedPrograms.length}
+                        </Badge>
+                      </div>
+
+                      {/* Promoted Programs under this program */}
+                      {expandedPrograms.includes(program.id) && (
+                        <div className="pl-9">
+                          {program.promotedPrograms.map((promotedProgram) => (
+                            <div
+                              key={promotedProgram.id}
+                              className="flex items-center p-3 hover:bg-slate-50 border-t"
                             >
-                              {expandedPrograms[program.id] ? (
-                                <ChevronDown className="h-3.5 w-3.5 mr-1 text-gray-500" />
-                              ) : (
-                                <ChevronRight className="h-3.5 w-3.5 mr-1 text-gray-500" />
-                              )}
-                              <Briefcase className="h-3.5 w-3.5 mr-1.5 text-purple-600" />
-                              <span className="text-xs font-medium">
-                                {program.name}
-                              </span>
-                              <Badge variant="outline" className="ml-2 text-xs">
-                                {program.promotedPrograms.length}
-                              </Badge>
-                            </button>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <div className="pl-6 space-y-0.5 pb-1">
-                              {program.promotedPrograms.map((pp) => (
-                                <div
-                                  key={pp.id}
-                                  className="flex items-center p-1.5 hover:bg-gray-50"
-                                >
-                                  <CheckCircle className="h-3.5 w-3.5 mr-1.5 text-green-600" />
-                                  <span className="text-xs">{pp.name}</span>
-                                  {!pp.active && (
-                                    <Badge
-                                      variant="outline"
-                                      className="ml-1.5 text-[10px] bg-gray-100 text-gray-600"
-                                    >
-                                      Inactive
-                                    </Badge>
+                              <div className="flex items-center flex-1">
+                                <LayoutGrid className="h-4 w-4 mr-2 text-purple-600" />
+                                <div>
+                                  <span className="block font-medium text-sm">
+                                    {promotedProgram.name}
+                                  </span>
+                                  {promotedProgram.description && (
+                                    <p className="text-xs text-gray-500">
+                                      {promotedProgram.description}
+                                    </p>
                                   )}
                                 </div>
-                              ))}
+                              </div>
                             </div>
-                          </CollapsibleContent>
-                        </Collapsible>
-                      ))}
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  </CollapsibleContent>
-                </Collapsible>
-              ))}
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+
+          {filteredData.length === 0 && (
+            <div className="text-center p-4 text-sm text-gray-500">
+              No programs selected
             </div>
           )}
         </div>
