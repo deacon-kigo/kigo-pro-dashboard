@@ -640,14 +640,31 @@ export function AssignToProgramsPanel({
   const [saveError, setSaveError] = useState<string | null>(null);
   const [recentlySelectedIds, setRecentlySelectedIds] = useState<string[]>([]);
 
+  // Generate extended mock data
+  const allPartners = useMemo(() => {
+    if (partnerData.length > 0) {
+      return partnerData;
+    } else {
+      // Generate more mock partners to ensure we have a good selection
+      return generateMockPartners(75, filterId);
+    }
+  }, [partnerData, filterId]);
+
   // Keep track of expanded items (auto-expand the first few partners by default)
   const [expandedPartners, setExpandedPartners] = useState<string[]>(() => {
-    // Expand the first 3 partners by default for better visibility
-    return ["partner1", "partner2", "partner3"];
+    // Expand the first 6 partners by default for better visibility
+    return [
+      "partner1",
+      "partner2",
+      "partner3",
+      "partner4",
+      "partner5",
+      "partner6",
+    ];
   });
   const [expandedPrograms, setExpandedPrograms] = useState<string[]>(() => {
     // Expand the first program of each default expanded partner
-    return ["prog1", "prog4", "prog6"];
+    return ["prog1", "prog4", "prog6", "prog8", "prog50", "prog60"];
   });
 
   // Add a state to detect if we're embedded in the product filter creation form
@@ -662,16 +679,6 @@ export function AssignToProgramsPanel({
 
   // Track when sections are expanded for better scroll management
   const [isExpanding, setIsExpanding] = useState(false);
-
-  // Generate extended mock data
-  const allPartners = useMemo(() => {
-    if (partnerData.length > 0) {
-      return partnerData;
-    } else {
-      // Generate more mock partners to ensure we have a good selection
-      return generateMockPartners(25, filterId);
-    }
-  }, [partnerData, filterId]);
 
   // Filter partners, programs and promoted programs by search query
   const getFilteredPartners = useCallback(() => {
@@ -861,9 +868,53 @@ export function AssignToProgramsPanel({
     // Just keeping the function for compatibility
   }, []);
 
-  // Initialize with all partners immediately
+  // Reset when search query changes
   useEffect(() => {
+    // Load all filtered partners when search changes
+    const filteredPartnersData = getFilteredPartners();
+    setVisiblePartners(filteredPartnersData);
+    setHasMore(false);
+
+    // Auto-expand all matching partners and their programs when searching
+    if (searchQuery.trim()) {
+      const partnerIdsToExpand: string[] = [];
+      const programIdsToExpand: string[] = [];
+
+      filteredPartnersData.forEach((partner) => {
+        partnerIdsToExpand.push(partner.id);
+
+        partner.programs.forEach((program) => {
+          programIdsToExpand.push(program.id);
+        });
+      });
+
+      setExpandedPartners(partnerIdsToExpand);
+      setExpandedPrograms(programIdsToExpand);
+    }
+  }, [searchQuery, getFilteredPartners]);
+
+  // Ensure initial load shows more data
+  useEffect(() => {
+    // Immediately load all data
     loadMorePartners();
+
+    // For better UX, expand all partners when there are search results
+    if (searchQuery.trim()) {
+      const filteredPartnersData = getFilteredPartners();
+      const partnerIdsToExpand = filteredPartnersData.map(
+        (partner) => partner.id
+      );
+      const programIdsToExpand: string[] = [];
+
+      filteredPartnersData.forEach((partner) => {
+        partner.programs.forEach((program) => {
+          programIdsToExpand.push(program.id);
+        });
+      });
+
+      setExpandedPartners(partnerIdsToExpand);
+      setExpandedPrograms(programIdsToExpand);
+    }
 
     // Still keep scroll listener for future enhancements
     const scrollContainer = scrollContainerRef.current;
@@ -871,15 +922,7 @@ export function AssignToProgramsPanel({
       scrollContainer.addEventListener("scroll", handleScroll);
       return () => scrollContainer.removeEventListener("scroll", handleScroll);
     }
-  }, [loadMorePartners, handleScroll]);
-
-  // Reset when search query changes
-  useEffect(() => {
-    // Load all filtered partners when search changes
-    const filteredPartnersData = getFilteredPartners();
-    setVisiblePartners(filteredPartnersData);
-    setHasMore(false);
-  }, [searchQuery, getFilteredPartners]);
+  }, [loadMorePartners, handleScroll, searchQuery, getFilteredPartners]);
 
   // Add a computed selectedCount property based on selected programs
   const selectedCount = useMemo(() => {
