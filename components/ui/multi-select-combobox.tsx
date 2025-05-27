@@ -50,6 +50,13 @@ export function MultiSelectCombobox({
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
 
+  // Don't allow opening the popover if disabled
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!disabled) {
+      setOpen(newOpen);
+    }
+  };
+
   // Filter options based on search query
   const filteredOptions = React.useMemo(() => {
     if (!searchQuery.trim()) return options;
@@ -130,7 +137,7 @@ export function MultiSelectCombobox({
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -139,6 +146,7 @@ export function MultiSelectCombobox({
           className={cn(
             "justify-between text-sm font-normal bg-white text-gray-800 h-10 px-3 py-2",
             "border border-gray-200 rounded-md",
+            disabled && "opacity-50 cursor-not-allowed",
             className
           )}
           style={{ width }}

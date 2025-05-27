@@ -213,7 +213,7 @@ export default function ProductFilterCreationView({
   const hasRequiredCriteria = useSelector(selectHasAllRequiredCriteria);
 
   // State variables
-  const [isViewMode, setIsViewMode] = useState(false);
+  const [isViewMode, setIsViewMode] = useState(mode === "view");
   const [isEditMode, setIsEditMode] = useState(mode === "edit");
   const [activeTab, setActiveTab] = useState("build");
   const [showSaveConfirmation, setShowSaveConfirmation] = useState(false);
@@ -247,6 +247,7 @@ export default function ProductFilterCreationView({
     );
   });
 
+  // Added derived variable for clarity
   const isCreateMode = mode === "create";
 
   const allFieldTypes = [
@@ -283,59 +284,67 @@ export default function ProductFilterCreationView({
   ];
 
   const addCriteria = () => {
-    if (criteriaType) {
-      const isRequired = criteriaInclusion === "Include";
-      const defaultRule = "contains";
+    // Validation
+    if (!criteriaType) {
+      setValidationMessage(
+        "Please select a field type for your filter condition"
+      );
+      setTimeout(() => setValidationMessage(null), 5000);
+      return;
+    }
 
-      if (criteriaType === "OfferType" && criteriaMultiValues.length > 0) {
-        criteriaMultiValues.forEach((value, index) => {
-          dispatch(
-            addCriteriaAction({
-              type: criteriaType,
-              value: value,
-              rule: defaultRule,
-              and_or: index === 0 ? criteriaAndOr : "OR",
-              isRequired,
-            })
-          );
-        });
+    if (criteriaType === "OfferType" && criteriaMultiValues.length === 0) {
+      setValidationMessage(
+        "Please select at least one offer type for your filter condition"
+      );
+      setTimeout(() => setValidationMessage(null), 5000);
+      return;
+    }
 
-        setCriteriaType("");
-        setCriteriaMultiValues([]);
-        setCriteriaAndOr("OR");
-        setCriteriaInclusion("Include");
-      } else if (criteriaType !== "OfferType" && criteriaValue) {
+    if (criteriaType !== "OfferType" && !criteriaValue) {
+      setValidationMessage("Please enter a value for your filter condition");
+      setTimeout(() => setValidationMessage(null), 5000);
+      return;
+    }
+
+    // If validation passes, add criteria
+    const isRequired = criteriaInclusion === "Include";
+    const defaultRule = "contains";
+
+    if (criteriaType === "OfferType" && criteriaMultiValues.length > 0) {
+      criteriaMultiValues.forEach((value, index) => {
         dispatch(
           addCriteriaAction({
             type: criteriaType,
-            value: criteriaValue,
+            value: value,
             rule: defaultRule,
-            and_or: criteriaAndOr,
+            and_or: index === 0 ? criteriaAndOr : "OR", // First one uses the selected AND/OR, rest use OR
             isRequired,
           })
         );
+      });
 
-        setCriteriaType("");
-        setCriteriaValue("");
-        setCriteriaAndOr("OR");
-        setCriteriaInclusion("Include");
-      } else {
-        if (criteriaType === "OfferType" && criteriaMultiValues.length === 0) {
-          setValidationMessage(
-            "Please select at least one offer type for your filter condition"
-          );
-        } else if (criteriaType !== "OfferType" && !criteriaValue) {
-          setValidationMessage(
-            "Please enter a value for your filter condition"
-          );
-        }
-        setTimeout(() => setValidationMessage(null), 5000);
-      }
-    } else {
-      setValidationMessage(
-        "Please select a field and enter a value for your filter condition"
+      // Reset form
+      setCriteriaType("");
+      setCriteriaMultiValues([]);
+      setCriteriaAndOr("OR");
+      setCriteriaInclusion("Include");
+    } else if (criteriaType !== "OfferType" && criteriaValue) {
+      dispatch(
+        addCriteriaAction({
+          type: criteriaType,
+          value: criteriaValue,
+          rule: defaultRule,
+          and_or: criteriaAndOr,
+          isRequired,
+        })
       );
-      setTimeout(() => setValidationMessage(null), 5000);
+
+      // Reset form
+      setCriteriaType("");
+      setCriteriaValue("");
+      setCriteriaAndOr("OR");
+      setCriteriaInclusion("Include");
     }
   };
 
@@ -1369,7 +1378,6 @@ export default function ProductFilterCreationView({
                                                 placeholder="Select offer types"
                                                 className="h-8"
                                                 width="100%"
-                                                disabled={isViewMode}
                                               />
                                             ) : (
                                               <Input
@@ -1429,57 +1437,7 @@ export default function ProductFilterCreationView({
 
                                           {!isViewMode && (
                                             <Button
-                                              onClick={() => {
-                                                if (!criteriaType) {
-                                                  setValidationMessage(
-                                                    "Please select a field type for your filter condition"
-                                                  );
-                                                  setTimeout(
-                                                    () =>
-                                                      setValidationMessage(
-                                                        null
-                                                      ),
-                                                    5000
-                                                  );
-                                                  return;
-                                                }
-                                                if (
-                                                  criteriaType ===
-                                                    "OfferType" &&
-                                                  criteriaMultiValues.length ===
-                                                    0
-                                                ) {
-                                                  setValidationMessage(
-                                                    "Please select at least one offer type for your filter condition"
-                                                  );
-                                                  setTimeout(
-                                                    () =>
-                                                      setValidationMessage(
-                                                        null
-                                                      ),
-                                                    5000
-                                                  );
-                                                  return;
-                                                }
-                                                if (
-                                                  criteriaType !==
-                                                    "OfferType" &&
-                                                  !criteriaValue
-                                                ) {
-                                                  setValidationMessage(
-                                                    "Please enter a value for your filter condition"
-                                                  );
-                                                  setTimeout(
-                                                    () =>
-                                                      setValidationMessage(
-                                                        null
-                                                      ),
-                                                    5000
-                                                  );
-                                                  return;
-                                                }
-                                                addCriteria();
-                                              }}
+                                              onClick={addCriteria}
                                               disabled={
                                                 !criteriaType ||
                                                 (criteriaType === "OfferType"
