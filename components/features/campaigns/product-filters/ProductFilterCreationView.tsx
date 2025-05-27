@@ -1297,20 +1297,20 @@ export default function ProductFilterCreationView({
 
                                       <div className="flex flex-col space-y-4">
                                         {/* Row 1: Find conditions where + field type + include/exclude */}
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-3 w-full">
                                           <div className="flex items-center bg-white px-2 py-1 rounded border border-gray-200 h-8 shrink-0">
                                             <span className="font-medium text-gray-600 text-xs">
                                               Find conditions where
                                             </span>
                                           </div>
 
-                                          <div className="w-[180px]">
+                                          <div className="flex-1">
                                             <Select
                                               value={criteriaType}
                                               onValueChange={setCriteriaType}
                                               disabled={isViewMode}
                                             >
-                                              <SelectTrigger className="h-8">
+                                              <SelectTrigger className="h-8 w-full">
                                                 <SelectValue placeholder="select a field" />
                                               </SelectTrigger>
                                               <SelectContent>
@@ -1330,7 +1330,7 @@ export default function ProductFilterCreationView({
                                             </span>
                                           </div>
 
-                                          <div className="w-[120px]">
+                                          <div className="w-[150px]">
                                             <Select
                                               value={criteriaInclusion}
                                               onValueChange={
@@ -1338,7 +1338,7 @@ export default function ProductFilterCreationView({
                                               }
                                               disabled={isViewMode}
                                             >
-                                              <SelectTrigger className="h-8">
+                                              <SelectTrigger className="h-8 w-full">
                                                 <SelectValue placeholder="inclusion" />
                                               </SelectTrigger>
                                               <SelectContent>
@@ -1357,8 +1357,8 @@ export default function ProductFilterCreationView({
                                         </div>
 
                                         {/* Row 2: Input field (dynamic based on field type) */}
-                                        <div className="flex items-center gap-3">
-                                          <div className="w-[300px]">
+                                        <div className="flex items-center w-full">
+                                          <div className="w-full">
                                             {criteriaType === "OfferType" ? (
                                               <MultiSelectCombobox
                                                 options={offerTypeOptions}
@@ -1380,7 +1380,7 @@ export default function ProductFilterCreationView({
                                                     e.target.value
                                                   )
                                                 }
-                                                className="h-8"
+                                                className="h-8 w-full"
                                                 disabled={isViewMode}
                                               />
                                             )}
@@ -1393,20 +1393,20 @@ export default function ProductFilterCreationView({
                                         </div>
 
                                         {/* Row 3: Connect with + AND/OR operator + Add button */}
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-3 w-full">
                                           <div className="flex items-center bg-white px-2 py-1 rounded border border-gray-200 h-8 shrink-0">
                                             <span className="font-medium text-gray-600 text-xs">
                                               connect with
                                             </span>
                                           </div>
 
-                                          <div className="w-[100px]">
+                                          <div className="flex-1">
                                             <Select
                                               value={criteriaAndOr}
                                               onValueChange={setCriteriaAndOr}
                                               disabled={isViewMode}
                                             >
-                                              <SelectTrigger className="h-8">
+                                              <SelectTrigger className="h-8 w-full">
                                                 <SelectValue placeholder="operator" />
                                               </SelectTrigger>
                                               <SelectContent>
@@ -1488,7 +1488,7 @@ export default function ProductFilterCreationView({
                                                   : !criteriaValue)
                                               }
                                               size="sm"
-                                              className="h-8 self-start"
+                                              className="h-8 shrink-0"
                                             >
                                               <PlusIcon className="h-3.5 w-3.5 mr-1" />
                                               Add
