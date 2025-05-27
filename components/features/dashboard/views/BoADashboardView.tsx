@@ -50,8 +50,8 @@ interface ReportCardProps {
   buttonText?: string;
 }
 
-// The main Publisher Dashboard component
-export default function PublisherDashboardView() {
+// The main BoA Dashboard component
+export default function BoADashboardView() {
   const demoState = useDemoState();
   const mockUserProfile = demoState.userProfile;
   const userProfile = useMemo(
@@ -75,17 +75,17 @@ export default function PublisherDashboardView() {
 
   // Sample publisher metrics data
   const publisherMetrics = {
-    activeAdvertisers: 143,
-    activeAdvertisersChange: 7.5,
-    activePrograms: 38,
-    activeProgramsChange: 12.4,
-    activeOffers: 256,
-    activeOffersChange: 9.1,
-    totalRedemptions12m: 843256,
-    totalRedemptions12mChange: 15.8,
-    redemptionsLast30d: 83426,
-    redemptionsLast30dWoWChange: 6.7,
-    redemptionsLast30dMoMChange: 8.3,
+    activeAdvertisers: 187,
+    activeAdvertisersChange: 9.2,
+    activePrograms: 52,
+    activeProgramsChange: 14.8,
+    activeOffers: 324,
+    activeOffersChange: 11.5,
+    totalRedemptions12m: 1243576,
+    totalRedemptions12mChange: 17.2,
+    redemptionsLast30d: 98762,
+    redemptionsLast30dWoWChange: 7.9,
+    redemptionsLast30dMoMChange: 9.5,
   };
 
   const [dateRange, setDateRange] = useState({
@@ -127,35 +127,35 @@ export default function PublisherDashboardView() {
     const getIconBg = () => {
       switch (title) {
         case "Active Advertisers":
-          return { background: "#FEF2F2" }; // Light red
+          return { background: "#EBF3FF" }; // Light blue for BoA
         case "Active Programs":
-          return { background: "#EFF6FF" }; // Light blue
+          return { background: "#E0F2FE" }; // Light blue
         case "Active Offers":
-          return { background: "#FFFBEB" }; // Light amber
+          return { background: "#CCE5FF" }; // Light blue
         case "Redemptions (12m)":
-          return { background: "#ECFDF5" }; // Light green
+          return { background: "#DBEAFE" }; // Light blue
         case "Redemptions (30d)":
-          return { background: "#F0FDFA" }; // Light teal
+          return { background: "#BFDBFE" }; // Light blue
         default:
-          return { background: "#F9FAFB" }; // Light gray
+          return { background: "#F0F4F9" }; // Light blue gray
       }
     };
 
-    // Get distinctive text color for each metric type's icon
+    // Get distinctive text color for each metric type's icon - using BoA blue shades
     const getIconColor = () => {
       switch (title) {
         case "Active Advertisers":
-          return "text-red-600";
+          return "text-blue-700";
         case "Active Programs":
           return "text-blue-600";
         case "Active Offers":
-          return "text-amber-600";
+          return "text-blue-500";
         case "Redemptions (12m)":
-          return "text-green-600";
+          return "text-blue-800";
         case "Redemptions (30d)":
-          return "text-teal-600";
+          return "text-blue-900";
         default:
-          return "text-gray-600";
+          return "text-blue-600";
       }
     };
 
@@ -226,33 +226,33 @@ export default function PublisherDashboardView() {
     textColor,
     buttonText = "View Report",
   }: ReportCardProps) => {
-    // Get color based on card type
+    // Get color based on card type - using BoA blue palette
     const getCardColor = () => {
       switch (title) {
         case "Program Performance":
           return {
-            bgColor: "#F9FAFB",
-            textColor: "#3B82F6",
-            iconBg: "#EFF6FF",
-          }; // Blue
+            bgColor: "#F0F4F9",
+            textColor: "#0052CC", // BoA blue
+            iconBg: "#DBEAFE",
+          };
         case "Revenue Analytics":
           return {
-            bgColor: "#F9FAFB",
-            textColor: "#10B981",
-            iconBg: "#ECFDF5",
-          }; // Green
+            bgColor: "#F0F4F9",
+            textColor: "#0066B3", // BoA medium blue
+            iconBg: "#E0F2FE",
+          };
         case "Advertiser Insights":
           return {
-            bgColor: "#F9FAFB",
-            textColor: "#8B5CF6",
-            iconBg: "#F5F3FF",
-          }; // Purple
+            bgColor: "#F0F4F9",
+            textColor: "#13579A", // BoA darker blue
+            iconBg: "#CCE5FF",
+          };
         default:
           return {
-            bgColor: "#F9FAFB",
+            bgColor: "#F0F4F9",
             textColor: "#6B7280",
             iconBg: "#F3F4F6",
-          }; // Gray
+          };
       }
     };
 
@@ -292,15 +292,15 @@ export default function PublisherDashboardView() {
 
   return (
     <div className="space-y-4">
-      {/* Custom PageHeader with Bread Financial logo and background image */}
+      {/* Custom PageHeader with Bank of America logo and background image */}
       <PageHeader
         title={`Welcome, ${userProfile?.name?.split(" ")[0] || "User"}!`}
-        description={`${currentDate} • Bread Financial • Publisher`}
+        description={`${currentDate} • Bank of America • Publisher`}
         logo={
           <div className="w-12 h-12 relative">
             <Image
-              src="/logos/bread-financial-logo.png"
-              alt="Bread Financial"
+              src="/logos/boa-logo.svg"
+              alt="Bank of America"
               width={48}
               height={48}
               style={{ objectFit: "contain" }}
@@ -309,8 +309,8 @@ export default function PublisherDashboardView() {
         }
         variant="default"
         gradientColors={{
-          from: "rgba(0, 0, 0, 0.8)",
-          to: "rgba(0, 0, 0, 0.65)",
+          from: "rgba(27, 54, 93, 0.95)", // Darker blue for better contrast with logo
+          to: "rgba(37, 87, 167, 0.85)", // Medium blue
         }}
       />
 
@@ -325,7 +325,7 @@ export default function PublisherDashboardView() {
             boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.05)",
             minHeight: "700px",
             backgroundImage:
-              "url('/images/bread-financial/hero-bg-desktop.png')",
+              'radial-gradient(circle at 80% 10%, rgba(0, 43, 128, 0.03) 0%, rgba(255, 255, 255, 0) 50%), linear-gradient(to right bottom, rgba(255, 255, 255, 0.99), rgba(255, 255, 255, 0.96)), url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800"><defs><linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:%23002d72;stop-opacity:0.05" /><stop offset="100%" style="stop-color:%230052CC;stop-opacity:0.08" /></linearGradient></defs><rect x="560" y="20" width="180" height="100" rx="20" fill="url(%23grad1)" /><rect x="620" y="150" width="120" height="70" rx="15" fill="%230052CC" opacity="0.04" /><rect x="680" y="250" width="80" height="50" rx="10" fill="%230066B3" opacity="0.03" /><rect x="630" y="330" width="100" height="60" rx="12" fill="%23002d72" opacity="0.025" /><path d="M700 40 L740 10 L780 40 L740 70 Z" fill="%23002d72" opacity="0.05" /><circle cx="720" cy="180" r="15" fill="%230052CC" opacity="0.04" /><circle cx="680" cy="200" r="10" fill="%230066B3" opacity="0.03" /><circle cx="730" cy="400" r="25" fill="%23002d72" opacity="0.025" /><path d="M650 340 C650 320, 670 300, 690 300 C710 300, 730 320, 730 340 C730 360, 710 380, 690 380 C670 380, 650 360, 650 340 Z" fill="%230052CC" opacity="0.03" /></svg>\')',
             backgroundPosition: "right top",
             backgroundRepeat: "no-repeat",
             backgroundSize: "contain",
@@ -336,7 +336,7 @@ export default function PublisherDashboardView() {
             {/* Page title and actions */}
             <div className="flex justify-between items-center mb-4">
               <h1 className="text-xl font-semibold text-gray-900">
-                Publisher Program Analytics
+                Bank of America Program Analytics
               </h1>
               <div className="flex space-x-2">
                 <Button
@@ -353,15 +353,15 @@ export default function PublisherDashboardView() {
                   className="flex items-center"
                   asChild
                 >
-                  <a href="/campaign-manager/publisher-dashboard/boa">
+                  <a href="/campaign-manager/publisher-dashboard">
                     <Image
-                      src="/logos/boa-logo.svg"
-                      alt="BoA"
+                      src="/logos/bread-financial-logo.png"
+                      alt="Bread Financial"
                       width={16}
                       height={16}
                       className="mr-1.5"
                     />
-                    View BoA Dashboard
+                    View Bread Financial
                   </a>
                 </Button>
               </div>
@@ -429,9 +429,9 @@ export default function PublisherDashboardView() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="All">All Advertisers</SelectItem>
-                          <SelectItem value="A1001">Target</SelectItem>
-                          <SelectItem value="A1002">Walmart</SelectItem>
-                          <SelectItem value="A1003">Kroger</SelectItem>
+                          <SelectItem value="A1001">Home Depot</SelectItem>
+                          <SelectItem value="A1002">Best Buy</SelectItem>
+                          <SelectItem value="A1003">Macy's</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -497,23 +497,22 @@ export default function PublisherDashboardView() {
                     title="Revenue Analytics"
                     icon={<BanknotesIcon className="h-6 w-6" />}
                     description="View financial performance and revenue by advertiser"
-                    bgColor="bg-green-50"
-                    iconBgColor="bg-green-100"
-                    textColor="text-green-600"
+                    bgColor="bg-blue-50"
+                    iconBgColor="bg-blue-100"
+                    textColor="text-blue-600"
                   />
 
                   <ReportCard
                     title="Advertiser Insights"
                     icon={<ChartPieIcon className="h-6 w-6" />}
                     description="Analyze promotion performance by advertiser segments"
-                    bgColor="bg-purple-50"
-                    iconBgColor="bg-purple-100"
-                    textColor="text-purple-600"
+                    bgColor="bg-blue-50"
+                    iconBgColor="bg-blue-100"
+                    textColor="text-blue-600"
                   />
                 </div>
               </div>
             </div>
-            {/* Dashboard content ends here */}
           </div>
         </div>
       </div>
