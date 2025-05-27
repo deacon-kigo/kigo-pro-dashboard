@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import Select, { MultiValue, StylesConfig, components } from "react-select";
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
@@ -45,16 +45,41 @@ export function ReactSelectMulti({
     values.includes(option.value)
   );
 
-  // Create a custom MultiValue component that uses the maxDisplayValues
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [effectiveMaxDisplayValues, setEffectiveMaxDisplayValues] =
+    useState(maxDisplayValues);
+
+  // Use ResizeObserver to dynamically adjust max display values based on width
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      const containerWidth = entries[0].contentRect.width;
+      // Adjust threshold as needed based on testing
+      if (containerWidth < 300) {
+        setEffectiveMaxDisplayValues(1);
+      } else {
+        setEffectiveMaxDisplayValues(maxDisplayValues);
+      }
+    });
+
+    resizeObserver.observe(containerRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [maxDisplayValues]);
+
+  // Create a custom MultiValue component that uses the effectiveMaxDisplayValues
   const MultiValue = (props: any) => {
     const { data, index } = props;
     const allValues = props.selectProps.value || [];
 
-    // Only show the first maxDisplayValues values
-    if (index >= maxDisplayValues) {
+    // Only show the first effectiveMaxDisplayValues values
+    if (index >= effectiveMaxDisplayValues) {
       // For the last visible item, show a +X more indicator
-      if (index === maxDisplayValues) {
-        const remaining = allValues.length - maxDisplayValues;
+      if (index === effectiveMaxDisplayValues) {
+        const remaining = allValues.length - effectiveMaxDisplayValues;
         return (
           <div className="bg-[#e6f0ff] text-[#0052CC] px-2 py-0.5 m-1 rounded text-xs flex items-center font-medium">
             +{remaining} more
@@ -64,7 +89,7 @@ export function ReactSelectMulti({
       return null; // Hide other items
     }
 
-    // Regular display for items within the maxDisplayValues limit
+    // Regular display for items within the effectiveMaxDisplayValues limit
     return <components.MultiValue {...props} />;
   };
 
@@ -170,7 +195,7 @@ export function ReactSelectMulti({
   };
 
   return (
-    <div className={cn(className)} style={{ width }}>
+    <div className={cn(className)} style={{ width }} ref={containerRef}>
       <Select
         isMulti
         options={options}
