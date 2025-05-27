@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
-import Select, { MultiValue, StylesConfig } from "react-select";
+import React, { useRef } from "react";
+import Select, { MultiValue, StylesConfig, components } from "react-select";
 import { cn } from "@/lib/utils";
+import { ChevronDown } from "lucide-react";
 
 export interface Option {
   label: string;
@@ -20,11 +21,14 @@ interface ReactSelectMultiProps {
   width?: string;
 }
 
-const formatOptionLabel = ({ label, value }: Option) => (
-  <div className="flex items-center">
-    <span>{label}</span>
-  </div>
-);
+// Custom dropdown indicator to match the rest of the UI
+const DropdownIndicator = (props: any) => {
+  return (
+    <components.DropdownIndicator {...props}>
+      <ChevronDown className="h-4 w-4 opacity-50" />
+    </components.DropdownIndicator>
+  );
+};
 
 export function ReactSelectMulti({
   options,
@@ -40,6 +44,29 @@ export function ReactSelectMulti({
   const selectedValues = options.filter((option) =>
     values.includes(option.value)
   );
+
+  // Create a custom MultiValue component that uses the maxDisplayValues
+  const MultiValue = (props: any) => {
+    const { data, index } = props;
+    const allValues = props.selectProps.value || [];
+
+    // Only show the first maxDisplayValues values
+    if (index >= maxDisplayValues) {
+      // For the last visible item, show a +X more indicator
+      if (index === maxDisplayValues) {
+        const remaining = allValues.length - maxDisplayValues;
+        return (
+          <div className="bg-[#e6f0ff] text-[#0052CC] px-2 py-0.5 m-1 rounded text-xs flex items-center font-medium">
+            +{remaining} more
+          </div>
+        );
+      }
+      return null; // Hide other items
+    }
+
+    // Regular display for items within the maxDisplayValues limit
+    return <components.MultiValue {...props} />;
+  };
 
   // Custom styles for react-select
   const customStyles: StylesConfig<Option, true> = {
@@ -82,60 +109,52 @@ export function ReactSelectMulti({
     }),
     menu: (base) => ({
       ...base,
-      zIndex: 50,
+      zIndex: 9999, // Ensure the menu always appears at the front
+      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+      border: "1px solid #e2e8f0",
+      position: "absolute",
+      width: "auto",
+      minWidth: "100%",
+    }),
+    menuPortal: (base) => ({
+      ...base,
+      zIndex: 9999,
     }),
     option: (base, { isSelected, isFocused }) => ({
       ...base,
       backgroundColor: isSelected ? "#0052CC" : isFocused ? "#e6f0ff" : "white",
       color: isSelected ? "white" : "#1e293b",
       fontSize: "0.875rem",
+      padding: "8px 12px",
+      cursor: "pointer",
       "&:active": {
         backgroundColor: isSelected ? "#0052CC" : "#cce0ff",
       },
     }),
     placeholder: (base) => ({
       ...base,
-      color: "#94a3b8",
+      color: "#94a3b8", // Match the placeholder color with other inputs
       fontSize: "0.875rem",
     }),
     dropdownIndicator: (base) => ({
       ...base,
       padding: "0 4px",
+      color: "#64748b", // Match the dropdown indicator color
+      "&:hover": {
+        color: "#334155",
+      },
     }),
     clearIndicator: (base) => ({
       ...base,
       padding: "0 4px",
+      color: "#64748b",
+      "&:hover": {
+        color: "#334155",
+      },
     }),
     indicatorSeparator: () => ({
-      display: "none",
+      display: "none", // Hide the separator to match the UI
     }),
-  };
-
-  // Format the display value to show maxDisplayValues and +X more
-  const formatMultiValueDisplay = (selected: MultiValue<Option>) => {
-    if (selected.length <= maxDisplayValues) {
-      return null; // Let react-select handle the default display
-    }
-
-    // Only show the first maxDisplayValues options and a +X indicator
-    const visible = selected.slice(0, maxDisplayValues);
-    const remaining = selected.length - maxDisplayValues;
-
-    return (
-      <div className="flex items-center gap-1">
-        {visible.map((option) => (
-          <div
-            key={option.value}
-            className="bg-[#e6f0ff] text-[#0052CC] px-2 py-0.5 rounded text-xs flex items-center"
-          >
-            {option.label}
-          </div>
-        ))}
-        <div className="bg-[#e6f0ff] text-[#0052CC] px-2 py-0.5 rounded text-xs flex items-center font-medium">
-          +{remaining}
-        </div>
-      </div>
-    );
   };
 
   const handleChange = (newValue: MultiValue<Option>) => {
@@ -152,30 +171,18 @@ export function ReactSelectMulti({
         placeholder={placeholder}
         styles={customStyles}
         isDisabled={isDisabled}
-        formatOptionLabel={formatOptionLabel}
         components={{
-          MultiValueContainer: (props) => {
-            // If we have more than maxDisplayValues, use our custom display
-            if (
-              props.selectProps.value &&
-              props.selectProps.value.length > maxDisplayValues
-            ) {
-              // This will only be rendered once for the whole component
-              if (props.index === 0) {
-                return formatMultiValueDisplay(props.selectProps.value);
-              }
-              // Don't render other values
-              return null;
-            }
-            // Default behavior for <= maxDisplayValues
-            return (
-              <div className="flex items-center gap-1">{props.children}</div>
-            );
-          },
+          DropdownIndicator,
+          MultiValue,
         }}
+        closeMenuOnSelect={false}
         classNames={{
           control: () => "!min-h-8 h-8 text-sm",
         }}
+        menuPortalTarget={
+          typeof document !== "undefined" ? document.body : undefined
+        }
+        menuPosition="fixed"
       />
     </div>
   );
