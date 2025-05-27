@@ -663,10 +663,10 @@ export default function ProductFilterCreationView({
   };
 
   const friendlyTypeNames: Record<string, string> = {
-    MerchantKeyword: "Merchant Contains Keyword",
+    MerchantKeyword: "Merchant Keyword",
     MerchantName: "Merchant Name",
     OfferCommodity: "Offer Commodity",
-    OfferKeyword: "Offer Contains Keyword",
+    OfferKeyword: "Offer Keyword",
     Client: "Client",
     MerchantId: "Merchant ID",
     OfferCategory: "Offer Category",
@@ -1307,27 +1307,31 @@ export default function ProductFilterCreationView({
 
                                       <div className="flex flex-col space-y-4">
                                         {/* Row 1: Find conditions where + field type + include/exclude */}
-                                        <div className="flex items-center gap-3 w-full">
-                                          <div className="flex items-center bg-white px-2 py-1 rounded border border-gray-200 h-8 shrink-0">
+                                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full">
+                                          <div className="flex items-center bg-white px-2 py-1 rounded border border-gray-200 h-8 shrink-0 mb-1 sm:mb-0">
                                             <span className="font-medium text-gray-600 text-xs">
                                               Find conditions where
                                             </span>
                                           </div>
 
-                                          <div className="flex-1">
+                                          <div className="flex-1 w-full">
                                             <Select
                                               value={criteriaType}
                                               onValueChange={setCriteriaType}
                                               disabled={isViewMode}
                                             >
                                               <SelectTrigger className="h-8 w-full">
-                                                <SelectValue placeholder="select a field" />
+                                                <SelectValue
+                                                  placeholder="select a field"
+                                                  className="truncate"
+                                                />
                                               </SelectTrigger>
-                                              <SelectContent>
+                                              <SelectContent className="max-w-[300px]">
                                                 {allFieldTypes.map((type) => (
                                                   <SelectItem
                                                     key={type}
                                                     value={type}
+                                                    className="truncate"
                                                   >
                                                     {friendlyTypeNames[type] ||
                                                       type}
@@ -1340,7 +1344,7 @@ export default function ProductFilterCreationView({
                                             </span>
                                           </div>
 
-                                          <div className="w-[150px]">
+                                          <div className="w-full sm:w-[150px]">
                                             <Select
                                               value={criteriaInclusion}
                                               onValueChange={
@@ -1404,14 +1408,14 @@ export default function ProductFilterCreationView({
                                         </div>
 
                                         {/* Row 3: Connect with + AND/OR operator + Add button */}
-                                        <div className="flex items-center gap-3 w-full">
-                                          <div className="flex items-center bg-white px-2 py-1 rounded border border-gray-200 h-8 shrink-0">
+                                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full">
+                                          <div className="flex items-center bg-white px-2 py-1 rounded border border-gray-200 h-8 shrink-0 mb-1 sm:mb-0">
                                             <span className="font-medium text-gray-600 text-xs">
                                               connect with
                                             </span>
                                           </div>
 
-                                          <div className="flex-1">
+                                          <div className="flex-1 w-full">
                                             <Select
                                               value={criteriaAndOr}
                                               onValueChange={setCriteriaAndOr}
@@ -1438,23 +1442,25 @@ export default function ProductFilterCreationView({
                                             </span>
                                           </div>
 
-                                          {!isViewMode && (
-                                            <Button
-                                              onClick={addCriteria}
-                                              disabled={
-                                                !criteriaType ||
-                                                (criteriaType === "OfferType"
-                                                  ? criteriaMultiValues.length ===
-                                                    0
-                                                  : !criteriaValue)
-                                              }
-                                              size="sm"
-                                              className="h-8 shrink-0"
-                                            >
-                                              <PlusIcon className="h-3.5 w-3.5 mr-1" />
-                                              Add
-                                            </Button>
-                                          )}
+                                          <div className="w-full sm:w-auto mt-2 sm:mt-0">
+                                            {!isViewMode && (
+                                              <Button
+                                                onClick={addCriteria}
+                                                disabled={
+                                                  !criteriaType ||
+                                                  (criteriaType === "OfferType"
+                                                    ? criteriaMultiValues.length ===
+                                                      0
+                                                    : !criteriaValue)
+                                                }
+                                                size="sm"
+                                                className="h-8 w-full sm:w-auto"
+                                              >
+                                                <PlusIcon className="h-3.5 w-3.5 mr-1" />
+                                                Add
+                                              </Button>
+                                            )}
+                                          </div>
                                         </div>
                                       </div>
 
