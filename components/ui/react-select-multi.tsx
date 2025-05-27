@@ -55,8 +55,9 @@ export function ReactSelectMulti({
 
     const resizeObserver = new ResizeObserver((entries) => {
       const containerWidth = entries[0].contentRect.width;
-      // Adjust threshold as needed based on testing
-      if (containerWidth < 300) {
+      // More conservative threshold with additional buffer for controls
+      // Dropdown indicator + clear button + padding takes ~60-70px
+      if (containerWidth < 350) {
         setEffectiveMaxDisplayValues(1);
       } else {
         setEffectiveMaxDisplayValues(maxDisplayValues);
@@ -81,7 +82,7 @@ export function ReactSelectMulti({
       if (index === effectiveMaxDisplayValues) {
         const remaining = allValues.length - effectiveMaxDisplayValues;
         return (
-          <div className="bg-[#e6f0ff] text-[#0052CC] px-2 py-0.5 m-1 rounded text-xs flex items-center font-medium">
+          <div className="bg-[#e6f0ff] text-[#0052CC] px-1 py-0.5 m-0.5 rounded text-xs flex items-center font-medium truncate max-w-[60px]">
             +{remaining} more
           </div>
         );
@@ -111,20 +112,30 @@ export function ReactSelectMulti({
     }),
     valueContainer: (base) => ({
       ...base,
-      padding: "0 8px",
+      padding: "0 4px", // Reduce padding to provide more space
       fontSize: "0.875rem",
+      flexWrap: "nowrap", // Prevent wrapping which can cause overflow
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap",
+      maxWidth: "calc(100% - 28px)", // Reserve space for dropdown indicator
     }),
     multiValue: (base) => ({
       ...base,
       backgroundColor: "#e6f0ff",
       borderRadius: "0.25rem",
+      maxWidth: "calc(100% - 8px)", // Ensure it doesn't overflow container
+      margin: "1px 2px",
     }),
     multiValueLabel: (base) => ({
       ...base,
       color: "#0052CC",
-      padding: "0 4px",
-      fontSize: "0.75rem",
+      padding: "0 3px", // Reduce padding
+      fontSize: "0.7rem", // Slightly smaller font
       fontWeight: 500,
+      whiteSpace: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
     }),
     multiValueRemove: (base) => ({
       ...base,
