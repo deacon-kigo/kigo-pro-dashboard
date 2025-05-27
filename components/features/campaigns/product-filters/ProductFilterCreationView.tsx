@@ -137,6 +137,7 @@ import {
 import AppLayout from "@/components/templates/AppLayout/AppLayout";
 import { SelectedProgramsDisplay } from "./SelectedProgramsDisplay";
 import { MultiSelectCombobox } from "@/components/ui/multi-select-combobox";
+import { ReactSelectMulti } from "@/components/ui/react-select-multi";
 
 // Add mock implementations
 // Mock Switch component
@@ -1369,7 +1370,7 @@ export default function ProductFilterCreationView({
                                         <div className="flex items-center w-full">
                                           <div className="w-full">
                                             {criteriaType === "OfferType" ? (
-                                              <MultiSelectCombobox
+                                              <ReactSelectMulti
                                                 options={offerTypeOptions}
                                                 values={criteriaMultiValues}
                                                 onChange={
@@ -1378,6 +1379,8 @@ export default function ProductFilterCreationView({
                                                 placeholder="Select offer types"
                                                 className="h-8"
                                                 width="100%"
+                                                isDisabled={isViewMode}
+                                                maxDisplayValues={3}
                                               />
                                             ) : (
                                               <Input
