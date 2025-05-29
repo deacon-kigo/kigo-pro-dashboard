@@ -109,6 +109,9 @@ export default function JohnDeereView({
 }: JohnDeereViewProps) {
   const { userProfile } = useDemoState();
   const [activeTab, setActiveTab] = useState("campaign");
+  const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">(
+    "desktop"
+  );
 
   return (
     <>
@@ -1649,11 +1652,63 @@ export default function JohnDeereView({
                       <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
                         <h3 className="font-medium">Landing Page Editor</h3>
                         <div className="flex items-center space-x-2">
-                          <select className="px-3 py-1 text-sm border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500">
-                            <option>Desktop View</option>
-                            <option>Mobile View</option>
-                            <option>Tablet View</option>
-                          </select>
+                          <div className="flex items-center space-x-1 bg-white border border-gray-300 rounded-md p-1">
+                            <button
+                              onClick={() => setPreviewMode("desktop")}
+                              className={`px-3 py-1 text-sm rounded flex items-center justify-center ${
+                                previewMode === "desktop"
+                                  ? "text-yellow-300"
+                                  : "text-gray-600 hover:bg-gray-100"
+                              }`}
+                              style={
+                                previewMode === "desktop"
+                                  ? { backgroundColor: "#377d2b" }
+                                  : {}
+                              }
+                              title="Desktop View"
+                            >
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={
+                                    previewMode === "desktop" ? 2.5 : 2
+                                  }
+                                  d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                                />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => setPreviewMode("mobile")}
+                              className={`px-3 py-1 text-sm rounded flex items-center justify-center ${
+                                previewMode === "mobile"
+                                  ? "bg-green-600 text-yellow-300"
+                                  : "text-gray-600 hover:bg-gray-100"
+                              }`}
+                              title="Mobile View"
+                            >
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={
+                                    previewMode === "mobile" ? 2.5 : 2
+                                  }
+                                  d="M12 18h.01M8 21h8a1 1 0 001-1V4a1 1 0 00-1-1H8a1 1 0 00-1 1v16a1 1 0 001 1z"
+                                />
+                              </svg>
+                            </button>
+                          </div>
                           <Button variant="outline" size="xs">
                             Preview
                           </Button>
@@ -1662,9 +1717,13 @@ export default function JohnDeereView({
 
                       {/* Page Preview */}
                       <div className="p-6 border-b border-gray-200">
-                        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md">
+                        <div
+                          className={`bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md mx-auto ${
+                            previewMode === "mobile" ? "max-w-sm" : "max-w-full"
+                          }`}
+                        >
                           {/* Header */}
-                          <div className="bg-[#377d2b] p-4 flex items-center justify-between">
+                          <div className="bg-[#377d2b] p-4 flex items-center justify-center">
                             <div className="flex items-center">
                               <div className="bg-white h-8 w-20 rounded flex items-center justify-center">
                                 <div className="h-6 w-16 relative">
@@ -1675,25 +1734,6 @@ export default function JohnDeereView({
                                   />
                                 </div>
                               </div>
-                              <nav className="hidden md:flex ml-6 space-x-4">
-                                <span className="text-white hover:text-[#ffdb00] cursor-pointer text-sm">
-                                  Products
-                                </span>
-                                <span className="text-white hover:text-[#ffdb00] cursor-pointer text-sm">
-                                  Agriculture
-                                </span>
-                                <span className="text-white hover:text-[#ffdb00] cursor-pointer text-sm">
-                                  Construction
-                                </span>
-                                <span className="text-white hover:text-[#ffdb00] cursor-pointer text-sm">
-                                  Dealers
-                                </span>
-                              </nav>
-                            </div>
-                            <div className="text-white text-sm">
-                              <span className="cursor-pointer hover:text-[#ffdb00]">
-                                Sign In
-                              </span>
                             </div>
                           </div>
 
@@ -1706,15 +1746,15 @@ export default function JohnDeereView({
                                 className="w-full h-full object-cover"
                               />
                               <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-                              <div className="absolute inset-0 flex flex-col justify-center p-8">
+                              <div className="absolute inset-0 flex flex-col justify-center items-center p-8 text-center">
                                 <h2 className="text-white text-2xl font-bold mb-2">
                                   330 P-Tier Skid Steer Loader
                                 </h2>
                                 <p className="text-white text-sm mb-4">
                                   Powerful and versatile for your toughest jobs
                                 </p>
-                                <button className="bg-[#ffdb00] hover:bg-yellow-400 text-[#377d2b] font-medium rounded px-4 py-2 w-40 text-sm transition-colors">
-                                  Learn More
+                                <button className="bg-[#ffdb00] hover:bg-yellow-400 text-[#377d2b] font-medium rounded px-4 py-2 text-sm transition-colors">
+                                  Log in to Perks Hub
                                 </button>
                               </div>
                             </div>
@@ -1746,76 +1786,157 @@ export default function JohnDeereView({
                               </div>
                             </div>
 
-                            {/* Form */}
-                            <div className="mt-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
-                              <h3 className="font-bold text-[#377d2b] mb-3">
-                                Get Exclusive Offer
+                            {/* Key Specifications */}
+                            <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+                              <h3 className="font-bold text-[#377d2b] mb-4 text-center">
+                                Key Specifications
                               </h3>
-                              <p className="text-sm text-gray-600 mb-4">
-                                Sign up to receive your special pricing and
-                                financing options.
-                              </p>
-                              <div className="space-y-3">
-                                <div className="grid grid-cols-2 gap-3">
-                                  <input
-                                    type="text"
-                                    placeholder="First Name"
-                                    className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-[#377d2b] focus:border-[#377d2b]"
-                                  />
-                                  <input
-                                    type="text"
-                                    placeholder="Last Name"
-                                    className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-[#377d2b] focus:border-[#377d2b]"
-                                  />
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                                <div>
+                                  <div className="text-lg font-bold text-[#377d2b]">
+                                    100 HP
+                                  </div>
+                                  <div className="text-xs text-gray-600">
+                                    Engine Power
+                                  </div>
                                 </div>
-                                <input
-                                  type="email"
-                                  placeholder="Email Address"
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-[#377d2b] focus:border-[#377d2b]"
-                                />
-                                <input
-                                  type="tel"
-                                  placeholder="Phone Number"
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-[#377d2b] focus:border-[#377d2b]"
-                                />
-                                <div className="flex items-center">
-                                  <input
-                                    type="checkbox"
-                                    id="consent"
-                                    className="mr-2 text-[#377d2b] focus:ring-[#377d2b] rounded"
-                                  />
-                                  <label
-                                    htmlFor="consent"
-                                    className="text-xs text-gray-600"
-                                  >
-                                    I consent to receive marketing
-                                    communications from John Deere
-                                  </label>
+                                <div>
+                                  <div className="text-lg font-bold text-[#377d2b]">
+                                    3,200 lbs
+                                  </div>
+                                  <div className="text-xs text-gray-600">
+                                    Operating Weight
+                                  </div>
                                 </div>
-                                <button className="w-full bg-[#377d2b] hover:bg-[#2b6522] text-white rounded-md py-2 text-sm transition-colors">
-                                  Submit
-                                </button>
+                                <div>
+                                  <div className="text-lg font-bold text-[#377d2b]">
+                                    9,100 lbs
+                                  </div>
+                                  <div className="text-xs text-gray-600">
+                                    Breakout Force
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="text-lg font-bold text-[#377d2b]">
+                                    12.5 GPM
+                                  </div>
+                                  <div className="text-xs text-gray-600">
+                                    Hydraulic Flow
+                                  </div>
+                                </div>
                               </div>
                             </div>
-                          </div>
 
-                          {/* Footer */}
-                          <div className="bg-gray-800 text-gray-400 p-4 text-xs">
-                            <div className="flex flex-wrap justify-between">
-                              <div>
-                                © 2023 Deere & Company. All Rights Reserved.
+                            {/* Customer Testimonial */}
+                            <div className="mt-8 p-6 bg-[#377d2b] text-white rounded-lg">
+                              <div className="text-center">
+                                <div className="text-lg mb-2">
+                                  "This machine has transformed our operation"
+                                </div>
+                                <p className="text-sm opacity-90 mb-4">
+                                  "The 330 P-Tier's power and reliability have
+                                  increased our productivity by 30%. It's the
+                                  perfect addition to our fleet."
+                                </p>
+                                <div className="text-sm font-medium">
+                                  - Mike Johnson, Johnson Construction
+                                </div>
                               </div>
-                              <div className="space-x-4">
-                                <span className="cursor-pointer hover:text-white">
-                                  Privacy
-                                </span>
-                                <span className="cursor-pointer hover:text-white">
-                                  Terms
-                                </span>
-                                <span className="cursor-pointer hover:text-white">
-                                  Contact
-                                </span>
+                            </div>
+
+                            {/* Features Grid */}
+                            <div className="mt-8">
+                              <h3 className="font-bold text-[#377d2b] mb-4 text-center">
+                                Why Choose the 330 P-Tier?
+                              </h3>
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="text-center p-4 border border-gray-200 rounded-lg">
+                                  <div className="w-12 h-12 bg-[#377d2b] rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <svg
+                                      className="w-6 h-6 text-white"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M13 10V3L4 14h7v7l9-11h-7z"
+                                      />
+                                    </svg>
+                                  </div>
+                                  <h4 className="font-semibold text-sm mb-2">
+                                    Superior Power
+                                  </h4>
+                                  <p className="text-xs text-gray-600">
+                                    Best-in-class hydraulic performance for
+                                    demanding jobs
+                                  </p>
+                                </div>
+                                <div className="text-center p-4 border border-gray-200 rounded-lg">
+                                  <div className="w-12 h-12 bg-[#377d2b] rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <svg
+                                      className="w-6 h-6 text-white"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                      />
+                                    </svg>
+                                  </div>
+                                  <h4 className="font-semibold text-sm mb-2">
+                                    Proven Reliability
+                                  </h4>
+                                  <p className="text-xs text-gray-600">
+                                    Built to last with John Deere's legendary
+                                    durability
+                                  </p>
+                                </div>
+                                <div className="text-center p-4 border border-gray-200 rounded-lg">
+                                  <div className="w-12 h-12 bg-[#377d2b] rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <svg
+                                      className="w-6 h-6 text-white"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                                      />
+                                    </svg>
+                                  </div>
+                                  <h4 className="font-semibold text-sm mb-2">
+                                    Great Value
+                                  </h4>
+                                  <p className="text-xs text-gray-600">
+                                    Competitive pricing with exclusive financing
+                                    options
+                                  </p>
+                                </div>
                               </div>
+                            </div>
+
+                            {/* Final CTA Section */}
+                            <div className="mt-8 p-6 bg-[#ffdb00] rounded-lg text-center">
+                              <h3 className="font-bold text-[#377d2b] mb-2">
+                                Ready to Get Started?
+                              </h3>
+                              <p className="text-sm text-[#377d2b] mb-4">
+                                Join thousands of contractors who trust John
+                                Deere equipment
+                              </p>
+                              <button className="bg-[#377d2b] hover:bg-[#2b6522] text-white font-medium rounded px-6 py-3 text-sm transition-colors">
+                                Log in to Perks Hub
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -2946,6 +3067,18 @@ export default function JohnDeereView({
             </Card>
           </TabsContent>
         </Tabs>
+      </div>
+
+      {/* Footer */}
+      <div className="bg-gray-800 text-gray-400 p-4 text-xs">
+        <div className="flex flex-wrap justify-between">
+          <div>© 2023 Deere & Company. All Rights Reserved.</div>
+          <div className="space-x-4">
+            <span className="cursor-pointer hover:text-white">Privacy</span>
+            <span className="cursor-pointer hover:text-white">Terms</span>
+            <span className="cursor-pointer hover:text-white">Contact</span>
+          </div>
+        </div>
       </div>
     </>
   );
