@@ -544,7 +544,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
           </h4>
         </div>
 
-        <div className="p-2">
+        <div className="p-3">
           {/* Form Controls - Stacked vertically */}
           <div className="space-y-2 mb-3">
             <div>
@@ -852,7 +852,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
 
       {/* Empty State */}
       {ads.length === 0 && !currentAd.merchantId && (
-        <Card className="p-4 text-center border-dashed bg-slate-50/50 border-slate-300">
+        <Card className="p-3 text-center border-dashed bg-slate-50/50 border-slate-300">
           <div className="flex flex-col items-center">
             <div className="bg-slate-100 rounded-full p-2 mb-2">
               <ImagePlus className="h-4 w-4 text-slate-500" />
