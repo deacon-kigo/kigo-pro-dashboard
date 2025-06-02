@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { RootState } from "@/lib/redux/store";
 import { AIAssistantPanel } from "@/components/features/ai";
 import Card from "@/components/atoms/Card/Card";
+import { Button } from "@/components/atoms/Button";
 import {
   CAMPAIGN_STEPS,
   setCurrentStep,
@@ -208,7 +209,9 @@ const AdvertisementWizard: React.FC = () => {
 
   // Create back button
   const backButton = (
-    <button
+    <Button
+      variant="secondary"
+      size="sm"
       onClick={() => router.push("/campaign-manager")}
       className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
     >
@@ -228,11 +231,11 @@ const AdvertisementWizard: React.FC = () => {
         />
       </svg>
       Back to Campaign Manager
-    </button>
+    </Button>
   );
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col">
       <div className="flex-shrink-0">
         <PageHeader
           title="Create Advertisement Campaign"
@@ -243,7 +246,10 @@ const AdvertisementWizard: React.FC = () => {
         />
       </div>
 
-      <div className="flex-1 min-h-0 overflow-hidden">
+      <div
+        className="overflow-hidden"
+        style={{ height: "calc(100vh - 140px)" }}
+      >
         <div className="flex gap-3 h-full">
           {/* Left Column - AI Assistant Panel */}
           <div className="w-1/4 h-full flex flex-col">

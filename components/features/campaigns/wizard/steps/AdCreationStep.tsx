@@ -521,34 +521,37 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
   };
 
   return (
-    <div className="space-y-5">
-      <div className="flex justify-between items-center mb-2">
-        <h3 className="text-lg font-medium">Campaign Assets</h3>
-        <Badge variant="outline" className="px-2 py-1">
+    <div className="space-y-3">
+      <div className="flex justify-between items-center">
+        <h3 className="text-sm font-medium text-slate-700">Campaign Assets</h3>
+        <Badge variant="outline" className="text-xs px-2 py-0.5">
           {ads.length} Assets
         </Badge>
       </div>
 
       {/* Asset Creation Form */}
-      <Card className="overflow-hidden border shadow-sm">
-        <div className="flex items-center bg-slate-50 border-b px-4 py-2">
-          <div className="h-5 w-5 rounded-full flex items-center justify-center bg-primary/10 text-primary mr-2">
+      <Card className="overflow-hidden border border-slate-200">
+        <div className="flex items-center border-b border-slate-200 px-2 py-2 bg-slate-50">
+          <div className="h-4 w-4 rounded-sm flex items-center justify-center bg-slate-600 text-white mr-2">
             {isEditing ? (
-              <Edit className="h-3 w-3" />
+              <Edit className="h-2.5 w-2.5" />
             ) : (
-              <Plus className="h-3 w-3" />
+              <Plus className="h-2.5 w-2.5" />
             )}
           </div>
-          <h4 className="text-sm font-medium">
+          <h4 className="text-xs font-medium text-slate-600">
             {isEditing ? "Edit Asset" : "Add Asset"}
           </h4>
         </div>
 
-        <div className="p-4">
+        <div className="p-2">
           {/* Form Controls - Stacked vertically */}
-          <div className="space-y-4 mb-4">
+          <div className="space-y-2 mb-3">
             <div>
-              <Label htmlFor="merchant" className="text-xs mb-1 block">
+              <Label
+                htmlFor="merchant"
+                className="text-xs mb-1 block font-medium text-slate-600"
+              >
                 Merchant*
               </Label>
               <Combobox
@@ -558,12 +561,15 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                 placeholder="Search or select merchant"
                 searchPlaceholder="Type to search merchants..."
                 emptyText="No merchants found"
-                className="h-9 border-blue-100 hover:border-blue-200 shadow-sm"
+                className="h-8 border-slate-300 hover:border-blue-400 focus:border-blue-500 shadow-sm text-xs"
               />
             </div>
 
             <div>
-              <Label htmlFor="offer" className="text-xs mb-1 block">
+              <Label
+                htmlFor="offer"
+                className="text-xs mb-1 block font-medium text-slate-600"
+              >
                 Offer*
               </Label>
               {currentAd.merchantId ? (
@@ -574,12 +580,12 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                   placeholder="Select an offer"
                   searchPlaceholder="Search offers..."
                   emptyText="No offers found for this merchant"
-                  className="h-9 border-green-100 hover:border-green-200 shadow-sm"
+                  className="h-8 border-slate-300 hover:border-green-400 focus:border-green-500 shadow-sm text-xs"
                 />
               ) : (
                 <Button
                   variant="outline"
-                  className="w-full h-9 text-gray-600 justify-start font-normal"
+                  className="w-full h-8 text-slate-500 justify-start font-normal border-slate-200 text-xs"
                   disabled
                 >
                   Select a merchant first
@@ -589,21 +595,25 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
           </div>
 
           {/* Media Type Options */}
-          <div className="mb-4">
-            <Label className="text-xs mb-1 block">Media Type*</Label>
-            <div className="flex gap-2">
+          <div className="mb-3">
+            <Label className="text-xs mb-1 block font-medium text-slate-600">
+              Media Type*
+            </Label>
+            <div className="grid grid-cols-3 gap-1.5">
               {mediaTypes.map((type) => (
                 <div
                   key={type.id}
-                  className={`flex-1 p-2 border rounded hover:border-primary cursor-pointer transition-colors ${
+                  className={`p-1.5 border rounded cursor-pointer transition-colors ${
                     currentAd.mediaType === type.id
-                      ? "border-primary bg-primary/5"
-                      : ""
+                      ? "border-blue-500 bg-blue-50 shadow-sm"
+                      : "border-slate-200 hover:border-slate-300"
                   }`}
                   onClick={() => handleMediaTypeChange(type.id)}
                 >
-                  <div className="text-xs font-medium mb-0.5">{type.label}</div>
-                  <div className="text-[10px] text-muted-foreground">
+                  <div className="text-xs font-medium mb-0.5 text-slate-700">
+                    {type.label}
+                  </div>
+                  <div className="text-[10px] text-slate-500">
                     {type.dimensions}
                   </div>
                 </div>
@@ -613,11 +623,13 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
 
           {/* Preview and Upload - Only shown when the required fields are filled */}
           {currentAd.merchantId && currentAd.offerId && currentAd.mediaType && (
-            <div className="border-t pt-4 space-y-4">
+            <div className="border-t border-slate-200 pt-3 space-y-3">
               {/* Preview Section */}
               <div className="flex flex-col">
-                <Label className="text-xs mb-2 block">Promotion Preview</Label>
-                <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-4 rounded-lg border shadow-sm">
+                <Label className="text-xs mb-1.5 block font-medium text-slate-600">
+                  Promotion Preview
+                </Label>
+                <div className="bg-slate-50 p-2 rounded border">
                   <div className="max-w-md mx-auto">
                     <PromotionWidget
                       merchantLogo={getLogoUrl(currentAd.offerId)}
@@ -635,7 +647,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
 
               {/* Upload Section or Native Info */}
               <div>
-                <Label className="text-xs mb-2 block">
+                <Label className="text-xs mb-1.5 block font-medium text-slate-600">
                   {currentAd.mediaType !== "native"
                     ? "Upload Asset"
                     : "Native Format"}
@@ -643,10 +655,10 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
 
                 {currentAd.mediaType !== "native" ? (
                   <div
-                    className={`flex flex-col border-2 border-dashed rounded p-3 ${
+                    className={`flex flex-col border-2 border-dashed rounded p-2 ${
                       isDragging
-                        ? "border-primary bg-primary/5"
-                        : "border-muted"
+                        ? "border-blue-400 bg-blue-50"
+                        : "border-slate-300"
                     }`}
                     onDragOver={(e) => {
                       e.preventDefault();
@@ -656,12 +668,12 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                     onDrop={handleFileDrop}
                   >
                     {currentAd.mediaAssets.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-3 text-center">
-                        <ImagePlus className="h-5 w-5 text-muted-foreground mb-2" />
-                        <p className="text-xs font-medium mb-1">
+                      <div className="flex flex-col items-center justify-center py-2 text-center">
+                        <ImagePlus className="h-4 w-4 text-slate-400 mb-1.5" />
+                        <p className="text-xs font-medium mb-0.5 text-slate-600">
                           Upload Media Asset
                         </p>
-                        <p className="text-xs text-muted-foreground mb-2">
+                        <p className="text-xs text-slate-500 mb-1.5">
                           Drag a file or browse
                         </p>
                         <input
@@ -673,19 +685,19 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                         />
                         <Button
                           size="sm"
-                          className="h-7 text-xs"
+                          className="h-6 text-xs px-2"
                           onClick={() =>
                             document.getElementById("fileUpload")?.click()
                           }
                         >
-                          <Upload className="h-3 w-3 mr-1" />
+                          <Upload className="h-2.5 w-2.5 mr-1" />
                           Browse
                         </Button>
                       </div>
                     ) : (
                       <div className="flex items-center justify-between py-1">
                         <div className="flex items-center">
-                          <div className="h-10 w-10 bg-muted rounded overflow-hidden mr-2">
+                          <div className="h-8 w-8 bg-slate-100 rounded overflow-hidden mr-2">
                             <img
                               src={currentAd.mediaAssets[0].previewUrl}
                               alt={currentAd.mediaAssets[0].name}
@@ -693,10 +705,10 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                             />
                           </div>
                           <div>
-                            <p className="text-xs font-medium truncate w-32">
+                            <p className="text-xs font-medium truncate w-32 text-slate-700">
                               {currentAd.mediaAssets[0].name}
                             </p>
-                            <p className="text-[10px] text-muted-foreground">
+                            <p className="text-[10px] text-slate-500">
                               {formatFileSize(currentAd.mediaAssets[0].size)}
                             </p>
                           </div>
@@ -707,16 +719,16 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                           onClick={handleRemoveMedia}
                           className="h-6 w-6 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
                         >
-                          <X className="h-3 w-3" />
+                          <X className="h-2.5 w-2.5" />
                         </Button>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center bg-slate-50 border rounded p-3">
+                  <div className="flex items-center justify-center bg-slate-50 border rounded p-2">
                     <div className="flex items-center text-sm">
-                      <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-xs">
+                      <CheckCircle className="h-3 w-3 text-green-500 mr-1.5" />
+                      <span className="text-xs text-slate-600">
                         Native format uses the merchant logo - no upload
                         required
                       </span>
@@ -728,19 +740,19 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
           )}
 
           {/* Form Actions */}
-          <div className="flex justify-end mt-4">
+          <div className="flex justify-end mt-3 pt-2 border-t border-slate-200">
             <Button
               variant="outline"
               size="sm"
               onClick={resetForm}
-              className="mr-2 h-8 text-xs"
+              className="mr-2 h-7 text-xs px-2"
             >
               Cancel
             </Button>
             <Button
               size="sm"
               onClick={handleSaveAd}
-              className="h-8 text-xs"
+              className="h-7 text-xs px-2"
               disabled={
                 !currentAd.merchantId ||
                 !currentAd.offerId ||
@@ -755,15 +767,100 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
         </div>
       </Card>
 
+      {/* Created Assets List */}
+      {ads.length > 0 && (
+        <Card className="overflow-hidden border border-slate-200">
+          <div className="border-b border-slate-200 px-2 py-2 bg-slate-50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="h-4 w-4 rounded-sm flex items-center justify-center bg-green-600 text-white mr-2">
+                  <CheckCircle className="h-2.5 w-2.5" />
+                </div>
+                <h4 className="text-xs font-medium text-slate-600">
+                  Created Assets ({ads.length})
+                </h4>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-2">
+            <div className="space-y-2">
+              {ads.map((ad, index) => (
+                <div
+                  key={ad.id}
+                  className="border border-slate-200 rounded p-2 bg-slate-50/30"
+                >
+                  <div className="flex items-start gap-2">
+                    <div className="w-12 h-12 bg-white rounded border border-slate-200 overflow-hidden flex-shrink-0">
+                      <img
+                        src={getLogoUrl(ad.offerId)}
+                        alt={ad.merchantName}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h5 className="text-xs font-medium text-slate-900 truncate">
+                            {ad.merchantName}
+                          </h5>
+                          <p className="text-xs text-slate-600 mt-0.5 line-clamp-1">
+                            {getOfferName(ad.offerId)}
+                          </p>
+                          <div className="flex items-center gap-1.5 mt-1.5">
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] h-4 px-1"
+                            >
+                              {ad.mediaType}
+                            </Badge>
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] h-4 px-1"
+                            >
+                              {ad.mediaAssets.length} media
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="flex gap-0.5 ml-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditAd(ad.id)}
+                            className="h-6 w-6 p-0 text-slate-500 hover:text-blue-600"
+                          >
+                            <Edit className="h-2.5 w-2.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteAd(ad.id)}
+                            className="h-6 w-6 p-0 text-slate-500 hover:text-red-600"
+                          >
+                            <Trash className="h-2.5 w-2.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Card>
+      )}
+
       {/* Empty State */}
       {ads.length === 0 && !currentAd.merchantId && (
-        <Card className="p-6 text-center border-dashed bg-slate-50">
+        <Card className="p-4 text-center border-dashed bg-slate-50/50 border-slate-300">
           <div className="flex flex-col items-center">
-            <div className="bg-primary/10 rounded-full p-2 mb-2">
-              <ImagePlus className="h-5 w-5 text-primary" />
+            <div className="bg-slate-100 rounded-full p-2 mb-2">
+              <ImagePlus className="h-4 w-4 text-slate-500" />
             </div>
-            <h3 className="text-sm font-medium mb-1">No Campaign Assets Yet</h3>
-            <p className="text-xs text-muted-foreground mb-0">
+            <h3 className="text-xs font-medium mb-1 text-slate-700">
+              No Campaign Assets Yet
+            </h3>
+            <p className="text-xs text-slate-500 mb-0">
               Add assets by completing the form above
             </p>
           </div>
