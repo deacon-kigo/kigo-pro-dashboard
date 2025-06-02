@@ -363,7 +363,10 @@ export default function AdvertisementCampaignCreationContent() {
           </div>
 
           {/* Middle Column - Campaign Configuration with scrollable content */}
-          <div className="w-[37.5%] overflow-auto pb-6">
+          <div
+            className="w-[37.5%] overflow-auto pb-6"
+            style={{ height: "100vh" }}
+          >
             <div className="flex flex-col h-full">
               {/* Validation Message Banner */}
               {validationMessage && (
