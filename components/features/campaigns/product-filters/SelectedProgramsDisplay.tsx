@@ -393,7 +393,7 @@ export function SelectedProgramsDisplay({
                     </div>
 
                     {/* Right Section: Status + Count */}
-                    <div className="flex items-center space-x-3 ml-3">
+                    <div className="flex items-center space-x-3">
                       {hasActiveAssignments && partnerItems.length > 0 && (
                         <div className="w-5 h-5 flex items-center justify-center">
                           {(() => {
@@ -449,10 +449,10 @@ export function SelectedProgramsDisplay({
 
                         return (
                           <div key={program.id}>
-                            {/* Program Level - Optimized Layout */}
+                            {/* Program Level - Fixed Layout */}
                             <div
                               className={cn(
-                                "flex items-center px-4 py-2.5 ml-4 hover:bg-gray-50 cursor-pointer transition-all duration-200",
+                                "flex items-center px-4 py-2.5 hover:bg-gray-50 cursor-pointer transition-all duration-200",
                                 getStatusBackgroundColor(programItems),
                                 expandedPrograms.includes(program.id)
                                   ? "bg-gray-50"
@@ -460,6 +460,9 @@ export function SelectedProgramsDisplay({
                               )}
                               onClick={() => toggleProgram(program.id)}
                             >
+                              {/* Indentation spacer */}
+                              <div className="w-4 flex-shrink-0" />
+
                               {/* Left Section: Expand Icon + Program Info */}
                               <div className="flex items-center flex-1 min-w-0">
                                 <div className="w-5 h-5 flex items-center justify-center mr-2 flex-shrink-0">
@@ -497,7 +500,7 @@ export function SelectedProgramsDisplay({
                               </div>
 
                               {/* Right Section: Status + Count - Compact */}
-                              <div className="flex items-center space-x-2 ml-2">
+                              <div className="flex items-center space-x-2">
                                 {hasActiveAssignments &&
                                   programItems.length > 0 && (
                                     <div className="w-4 h-4 flex items-center justify-center">
@@ -564,36 +567,34 @@ export function SelectedProgramsDisplay({
                                       <div
                                         key={promotedProgram.id}
                                         className={cn(
-                                          "flex items-center px-4 py-2 ml-8 transition-all duration-200",
+                                          "flex items-center px-4 py-2 transition-all duration-200",
                                           statusBg
                                         )}
                                       >
+                                        {/* Double indentation spacer for promoted programs */}
+                                        <div className="w-8 flex-shrink-0" />
+
                                         {/* Left Section: Icon + Program Info */}
                                         <div className="flex items-center flex-1 min-w-0">
-                                          <div className="w-5 h-5 flex items-center justify-center mr-2 flex-shrink-0">
+                                          <div className="w-5 h-5 flex items-center justify-center mr-3 flex-shrink-0">
                                             <LayoutGrid className="h-3 w-3 text-purple-600" />
                                           </div>
 
-                                          <div className="flex-1 min-w-0 mr-3">
-                                            <div className="font-medium text-sm text-gray-800 truncate">
+                                          <div className="flex-1 min-w-0">
+                                            <span className="font-medium text-sm text-gray-800 truncate block">
                                               {promotedProgram.name}
-                                            </div>
-                                            {promotedProgram.description && (
-                                              <p className="text-xs text-gray-500 mt-0.5 truncate">
-                                                {promotedProgram.description}
-                                              </p>
-                                            )}
+                                            </span>
                                           </div>
                                         </div>
 
-                                        {/* Right Section: Status + Actions - Stacked for space */}
-                                        <div className="flex flex-col items-end space-y-1 ml-2">
+                                        {/* Right Section: Status + Actions - Horizontal Layout */}
+                                        <div className="flex items-center space-x-3">
                                           {status && (
                                             <div className="flex items-center space-x-1.5">
                                               <div className="w-4 h-4 flex items-center justify-center">
                                                 <StatusIcon status={status} />
                                               </div>
-                                              <span className="text-xs font-medium text-gray-600 capitalize">
+                                              <span className="text-xs font-medium text-gray-600 capitalize whitespace-nowrap">
                                                 {status === "processing"
                                                   ? "Assigning"
                                                   : status}
