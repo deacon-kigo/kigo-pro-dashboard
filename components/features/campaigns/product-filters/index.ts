@@ -5,3 +5,7 @@ export { default as ProductFilterCreationView } from "./ProductFilterCreationVie
 export { ProductFilterTable } from "./ProductFilterTable";
 export { ProductFilterSearchBar } from "./ProductFilterSearchBar";
 export { default as FilterCoveragePanel } from "./FilterCoveragePanel";
+export { AssignToProgramsSheet } from "./AssignToProgramsSheet";
+export { AssignToProgramsPanel } from "./AssignToProgramsPanel";
+export { BulkAssignmentProgress } from "./BulkAssignmentProgress";
+export { AssignmentManager } from "./AssignmentManager";

@@ -92,6 +92,8 @@ import { getFieldPlaceholder } from "@/services/ai/tools";
 import { generateFilterCoverageStats } from "@/services/ai/filterHandler";
 import FilterCoveragePanel from "./FilterCoveragePanel";
 import { AssignToProgramsPanel, mockPartners } from "./AssignToProgramsPanel";
+import { AssignmentManager, useAssignmentStatus } from "./AssignmentManager";
+import { AssignmentItem } from "./BulkAssignmentProgress";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -204,6 +206,11 @@ export default function ProductFilterCreationView({
   const dispatch = useDispatch();
   const router = useRouter();
   const { toast } = useToast();
+
+  // Get assignment status from context
+  const { assignmentItems, startAssignment } = useAssignmentStatus();
+
+  console.log("🎮 ProductFilterCreationView assignmentItems:", assignmentItems);
 
   const filterName = useSelector(selectFilterName);
   const description = useSelector(selectDescription);
@@ -881,843 +888,859 @@ export default function ProductFilterCreationView({
   };
 
   return (
-    <div className="space-y-2 h-full flex flex-col">
-      <PageHeader
-        title={getPageTitle()}
-        description="Define filters to control which offers are displayed to users."
-        emoji="✨"
-        actions={backButton}
-        variant="aurora"
-      />
+    <AssignmentManager
+      filterId={tempFilterId}
+      filterName={filterName || "Untitled Filter"}
+    >
+      <div className="space-y-2 h-full flex flex-col">
+        <PageHeader
+          title={getPageTitle()}
+          description="Define filters to control which offers are displayed to users."
+          emoji="✨"
+          actions={backButton}
+          variant="aurora"
+        />
 
-      <AlertDialog open={backDialogOpen} onOpenChange={setBackDialogOpen}>
-        <AlertDialogTrigger asChild className="hidden">
-          <button />
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
-            <AlertDialogDescription>
-              You have unsaved changes. What would you like to do?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex justify-end gap-2">
-            <Button variant="ghost" onClick={() => setBackDialogOpen(false)}>
-              Continue Editing
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setBackDialogOpen(false);
-                handleSaveAsDraft();
+        <AlertDialog open={backDialogOpen} onOpenChange={setBackDialogOpen}>
+          <AlertDialogTrigger asChild className="hidden">
+            <button />
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
+              <AlertDialogDescription>
+                You have unsaved changes. What would you like to do?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="flex justify-end gap-2">
+              <Button variant="ghost" onClick={() => setBackDialogOpen(false)}>
+                Continue Editing
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setBackDialogOpen(false);
+                  handleSaveAsDraft();
+                }}
+                disabled={!filterName.trim()}
+              >
+                Save as Draft
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleConfirmedNavigateBack}
+              >
+                Discard Changes
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Create Product Filter</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to create the filter "{filterName}"?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleConfirmedCreateFilter}>
+                Yes, create filter
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <div
+          className="flex-1 flex flex-col"
+          style={{ height: "calc(100vh - 160px)" }}
+        >
+          <div className="flex gap-3 h-full">
+            <div
+              className="w-[350px] flex-shrink-0"
+              style={{
+                position: "sticky",
+                top: "1rem",
+                height: "calc(100vh - 180px)",
               }}
-              disabled={!filterName.trim()}
             >
-              Save as Draft
-            </Button>
-            <Button variant="destructive" onClick={handleConfirmedNavigateBack}>
-              Discard Changes
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Create Product Filter</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to create the filter "{filterName}"?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmedCreateFilter}>
-              Yes, create filter
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <div
-        className="flex-1 flex flex-col"
-        style={{ height: "calc(100vh - 160px)" }}
-      >
-        <div className="flex gap-3 h-full">
-          <div
-            className="w-[350px] flex-shrink-0"
-            style={{
-              position: "sticky",
-              top: "1rem",
-              height: "calc(100vh - 180px)",
-            }}
-          >
-            <Card className="p-0 h-full flex flex-col overflow-hidden">
-              <AIAssistantPanel
-                title="AI Filter Assistant"
-                description="Tell me what offers you want to filter"
-                requiredCriteriaTypes={[]}
-                onOptionSelected={handleOptionSelected}
-                className="h-full overflow-auto"
-              />
-              {useSelector(selectIsGenerating) && (
-                <div className="fixed inset-0 bg-black/5 backdrop-blur-sm flex items-center justify-center z-50">
-                  <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="bg-white p-4 rounded-lg shadow-lg flex flex-col items-center"
-                  >
+              <Card className="p-0 h-full flex flex-col overflow-hidden">
+                <AIAssistantPanel
+                  title="AI Filter Assistant"
+                  description="Tell me what offers you want to filter"
+                  requiredCriteriaTypes={[]}
+                  onOptionSelected={handleOptionSelected}
+                  className="h-full overflow-auto"
+                />
+                {useSelector(selectIsGenerating) && (
+                  <div className="fixed inset-0 bg-black/5 backdrop-blur-sm flex items-center justify-center z-50">
                     <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{
-                        duration: 1.5,
-                        repeat: Infinity,
-                        ease: "linear",
-                      }}
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="bg-white p-4 rounded-lg shadow-lg flex flex-col items-center"
                     >
-                      <SparklesIcon className="h-10 w-10 text-primary" />
-                    </motion.div>
-                    <p className="mt-3 text-sm font-medium">
-                      Generating filters...
-                    </p>
-                  </motion.div>
-                </div>
-              )}
-            </Card>
-          </div>
-
-          <ResizablePanelGroup direction="horizontal" className="flex-1">
-            <ResizablePanel defaultSize={100} minSize={60}>
-              <div className="overflow-auto pb-6 h-full pr-4">
-                <div className="flex flex-col">
-                  {lastGeneratedFilter && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ duration: 0.3 }}
-                      className="mb-3 p-2 bg-primary/10 border border-primary/30 rounded-md flex items-center"
-                      onAnimationComplete={() => {
-                        setTimeout(
-                          () => dispatch(setLastGeneratedFilter(null)),
-                          5000
-                        );
-                      }}
-                    >
-                      <SparklesIcon className="h-5 w-5 text-primary mr-2" />
-                      <span className="text-sm">
-                        {lastGeneratedFilter === "name" &&
-                          "Filter name updated from AI suggestion"}
-                        {lastGeneratedFilter === "criteria" &&
-                          "New filter criteria added from AI suggestion"}
-                        {lastGeneratedFilter === "multiple" &&
-                          "Multiple filter criteria added from AI suggestions"}
-                        {lastGeneratedFilter === "complete" &&
-                          "Complete filter configuration applied from AI"}
-                      </span>
-                      <button
-                        onClick={() => dispatch(setLastGeneratedFilter(null))}
-                        className="ml-auto text-gray-500 hover:text-gray-700"
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{
+                          duration: 1.5,
+                          repeat: Infinity,
+                          ease: "linear",
+                        }}
                       >
-                        <svg
-                          className="h-4 w-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </button>
+                        <SparklesIcon className="h-10 w-10 text-primary" />
+                      </motion.div>
+                      <p className="mt-3 text-sm font-medium">
+                        Generating filters...
+                      </p>
                     </motion.div>
-                  )}
+                  </div>
+                )}
+              </Card>
+            </div>
 
-                  {validationMessage && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ duration: 0.3 }}
-                      className="mb-3 p-2 bg-yellow-100 border border-yellow-300 rounded-md flex items-center"
-                    >
-                      <ExclamationCircleIcon className="h-5 w-5 text-yellow-600 mr-2" />
-                      <span className="text-sm text-yellow-700">
-                        {validationMessage}
-                      </span>
-                      <button
-                        onClick={() => setValidationMessage(null)}
-                        className="ml-auto text-yellow-500 hover:text-yellow-700"
+            <ResizablePanelGroup direction="horizontal" className="flex-1">
+              <ResizablePanel defaultSize={100} minSize={60}>
+                <div className="overflow-auto pb-6 h-full pr-4">
+                  <div className="flex flex-col">
+                    {lastGeneratedFilter && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
+                        className="mb-3 p-2 bg-primary/10 border border-primary/30 rounded-md flex items-center"
+                        onAnimationComplete={() => {
+                          setTimeout(
+                            () => dispatch(setLastGeneratedFilter(null)),
+                            5000
+                          );
+                        }}
                       >
-                        <svg
-                          className="h-4 w-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
+                        <SparklesIcon className="h-5 w-5 text-primary mr-2" />
+                        <span className="text-sm">
+                          {lastGeneratedFilter === "name" &&
+                            "Filter name updated from AI suggestion"}
+                          {lastGeneratedFilter === "criteria" &&
+                            "New filter criteria added from AI suggestion"}
+                          {lastGeneratedFilter === "multiple" &&
+                            "Multiple filter criteria added from AI suggestions"}
+                          {lastGeneratedFilter === "complete" &&
+                            "Complete filter configuration applied from AI"}
+                        </span>
+                        <button
+                          onClick={() => dispatch(setLastGeneratedFilter(null))}
+                          className="ml-auto text-gray-500 hover:text-gray-700"
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </button>
-                    </motion.div>
-                  )}
-
-                  {successMessage && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ duration: 0.3 }}
-                      className="mb-3 p-2 bg-green-100 border border-green-300 rounded-md flex items-center"
-                    >
-                      <CheckCircleIcon className="h-5 w-5 text-green-600 mr-2" />
-                      <span className="text-sm text-green-700">
-                        {successMessage}
-                      </span>
-                      <button
-                        onClick={() => setSuccessMessage(null)}
-                        className="ml-auto text-green-500 hover:text-green-700"
-                      >
-                        <svg
-                          className="h-4 w-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </button>
-                    </motion.div>
-                  )}
-
-                  <Card className="p-0">
-                    <div className="flex items-center justify-between p-3 border-b bg-muted/20 flex-shrink-0 sticky top-0 z-10">
-                      <div className="flex items-center">
-                        <FunnelIcon className="h-5 w-5 mr-2 text-primary" />
-                        <h3 className="font-medium">
-                          Product Filter Configuration
-                        </h3>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {renderFormActions()}
-                      </div>
-                    </div>
-
-                    <div className="p-4">
-                      <div className="grid grid-cols-12 gap-6">
-                        <div className="col-span-5 space-y-6">
-                          <ShinyBorder
-                            isActive={isBasicInfoComplete}
-                            borderRadius={8}
+                          <svg
+                            className="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
                           >
-                            <Accordion
-                              type="single"
-                              collapsible
-                              defaultValue="basic-info"
-                              className="border rounded-md overflow-hidden"
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      </motion.div>
+                    )}
+
+                    {validationMessage && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
+                        className="mb-3 p-2 bg-yellow-100 border border-yellow-300 rounded-md flex items-center"
+                      >
+                        <ExclamationCircleIcon className="h-5 w-5 text-yellow-600 mr-2" />
+                        <span className="text-sm text-yellow-700">
+                          {validationMessage}
+                        </span>
+                        <button
+                          onClick={() => setValidationMessage(null)}
+                          className="ml-auto text-yellow-500 hover:text-yellow-700"
+                        >
+                          <svg
+                            className="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      </motion.div>
+                    )}
+
+                    {successMessage && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
+                        className="mb-3 p-2 bg-green-100 border border-green-300 rounded-md flex items-center"
+                      >
+                        <CheckCircleIcon className="h-5 w-5 text-green-600 mr-2" />
+                        <span className="text-sm text-green-700">
+                          {successMessage}
+                        </span>
+                        <button
+                          onClick={() => setSuccessMessage(null)}
+                          className="ml-auto text-green-500 hover:text-green-700"
+                        >
+                          <svg
+                            className="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      </motion.div>
+                    )}
+
+                    <Card className="p-0">
+                      <div className="flex items-center justify-between p-3 border-b bg-muted/20 flex-shrink-0 sticky top-0 z-10">
+                        <div className="flex items-center">
+                          <FunnelIcon className="h-5 w-5 mr-2 text-primary" />
+                          <h3 className="font-medium">
+                            Product Filter Configuration
+                          </h3>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {renderFormActions()}
+                        </div>
+                      </div>
+
+                      <div className="p-4">
+                        <div className="grid grid-cols-12 gap-6">
+                          <div className="col-span-5 space-y-6">
+                            <ShinyBorder
+                              isActive={isBasicInfoComplete}
+                              borderRadius={8}
                             >
-                              <AccordionItem
-                                value="basic-info"
-                                className="border-none"
+                              <Accordion
+                                type="single"
+                                collapsible
+                                defaultValue="basic-info"
+                                className="border rounded-md overflow-hidden"
                               >
-                                <AccordionTrigger className="px-4 py-3 text-sm font-medium">
-                                  <div className="flex items-center">
-                                    <DocumentTextIcon className="h-4 w-4 mr-2 text-blue-600" />
-                                    Basic Information
-                                  </div>
-                                </AccordionTrigger>
-                                <AccordionContent className="px-4 text-left overflow-hidden">
-                                  <div className="space-y-5 pb-2 text-left">
-                                    <div className="text-left">
-                                      <Label
-                                        htmlFor="filter-name"
-                                        className="text-sm"
-                                      >
-                                        Filter Name*
-                                        <span className="text-xs font-medium text-gray-600 ml-1">
-                                          (required for draft)
-                                        </span>
-                                      </Label>
-                                      <Input
-                                        id="filter-name"
-                                        placeholder={getFieldPlaceholder(
-                                          "filter-name"
-                                        )}
-                                        value={filterName}
-                                        onChange={(e) =>
-                                          dispatch(
-                                            setFilterName(e.target.value)
-                                          )
-                                        }
-                                        className="mt-1"
-                                        maxLength={50}
-                                        disabled={isViewMode}
-                                      />
-                                      <p className="mt-1.5 text-xs font-medium text-gray-600">
-                                        Enter a unique, descriptive name for
-                                        your filter. Max 50 characters.
-                                      </p>
+                                <AccordionItem
+                                  value="basic-info"
+                                  className="border-none"
+                                >
+                                  <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                                    <div className="flex items-center">
+                                      <DocumentTextIcon className="h-4 w-4 mr-2 text-blue-600" />
+                                      Basic Information
                                     </div>
+                                  </AccordionTrigger>
+                                  <AccordionContent className="px-4 text-left overflow-hidden">
+                                    <div className="space-y-5 pb-2 text-left">
+                                      <div className="text-left">
+                                        <Label
+                                          htmlFor="filter-name"
+                                          className="text-sm"
+                                        >
+                                          Filter Name*
+                                          <span className="text-xs font-medium text-gray-600 ml-1">
+                                            (required for draft)
+                                          </span>
+                                        </Label>
+                                        <Input
+                                          id="filter-name"
+                                          placeholder={getFieldPlaceholder(
+                                            "filter-name"
+                                          )}
+                                          value={filterName}
+                                          onChange={(e) =>
+                                            dispatch(
+                                              setFilterName(e.target.value)
+                                            )
+                                          }
+                                          className="mt-1"
+                                          maxLength={50}
+                                          disabled={isViewMode}
+                                        />
+                                        <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                          Enter a unique, descriptive name for
+                                          your filter. Max 50 characters.
+                                        </p>
+                                      </div>
 
-                                    <div className="text-left">
-                                      <Label
-                                        htmlFor="description"
-                                        className="text-sm"
-                                      >
-                                        Description*
-                                        <span className="text-xs font-medium text-gray-600 ml-1">
-                                          (required for publishing)
-                                        </span>
-                                      </Label>
-                                      <Textarea
-                                        id="description"
-                                        placeholder={getFieldPlaceholder(
-                                          "description"
-                                        )}
-                                        value={description}
-                                        onChange={(e) =>
-                                          dispatch(
-                                            setDescription(e.target.value)
-                                          )
-                                        }
-                                        className="mt-1"
-                                        rows={3}
-                                        maxLength={250}
-                                        disabled={isViewMode}
-                                      />
-                                      <p className="mt-1.5 text-xs font-medium text-gray-600">
-                                        Provide a detailed description of what
-                                        this filter does. Max 250 characters.
-                                      </p>
+                                      <div className="text-left">
+                                        <Label
+                                          htmlFor="description"
+                                          className="text-sm"
+                                        >
+                                          Description*
+                                          <span className="text-xs font-medium text-gray-600 ml-1">
+                                            (required for publishing)
+                                          </span>
+                                        </Label>
+                                        <Textarea
+                                          id="description"
+                                          placeholder={getFieldPlaceholder(
+                                            "description"
+                                          )}
+                                          value={description}
+                                          onChange={(e) =>
+                                            dispatch(
+                                              setDescription(e.target.value)
+                                            )
+                                          }
+                                          className="mt-1"
+                                          rows={3}
+                                          maxLength={250}
+                                          disabled={isViewMode}
+                                        />
+                                        <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                          Provide a detailed description of what
+                                          this filter does. Max 250 characters.
+                                        </p>
+                                      </div>
                                     </div>
-                                  </div>
-                                </AccordionContent>
-                              </AccordionItem>
-                            </Accordion>
-                          </ShinyBorder>
+                                  </AccordionContent>
+                                </AccordionItem>
+                              </Accordion>
+                            </ShinyBorder>
 
-                          <ShinyBorder
-                            isActive={selectedProgramCount > 0}
-                            borderRadius={8}
-                          >
-                            {selectedProgramCount > 0 ? (
-                              <SelectedProgramsDisplay
-                                partners={mockPartners}
-                                selectedProgramIds={selectedPrograms}
-                                maxHeight="250px"
-                                collapsed={selectedProgramsCollapsed}
-                                onEditClick={() =>
-                                  setIsAssignProgramsModalOpen(true)
-                                }
-                                onToggleCollapse={
-                                  toggleSelectedProgramsCollapsed
-                                }
-                              />
-                            ) : (
-                              <div className="border rounded-md overflow-hidden hover:bg-gray-50 transition-colors cursor-pointer">
-                                <Button
-                                  variant="ghost"
-                                  className="w-full justify-between px-4 py-3 text-sm font-medium hover:bg-transparent"
-                                  onClick={() =>
+                            <ShinyBorder
+                              isActive={selectedProgramCount > 0}
+                              borderRadius={8}
+                            >
+                              {selectedProgramCount > 0 ? (
+                                <SelectedProgramsDisplay
+                                  partners={mockPartners}
+                                  selectedProgramIds={selectedPrograms}
+                                  maxHeight="250px"
+                                  collapsed={selectedProgramsCollapsed}
+                                  onEditClick={() =>
                                     setIsAssignProgramsModalOpen(true)
                                   }
+                                  onToggleCollapse={
+                                    toggleSelectedProgramsCollapsed
+                                  }
+                                  assignmentItems={assignmentItems}
+                                />
+                              ) : (
+                                <div className="border rounded-md overflow-hidden hover:bg-gray-50 transition-colors cursor-pointer">
+                                  <Button
+                                    variant="ghost"
+                                    className="w-full justify-between px-4 py-3 text-sm font-medium hover:bg-transparent"
+                                    onClick={() =>
+                                      setIsAssignProgramsModalOpen(true)
+                                    }
+                                  >
+                                    <div className="flex items-center">
+                                      <UsersIcon className="h-4 w-4 mr-2" />
+                                      Assign to Program Campaigns
+                                      <Badge
+                                        variant="outline"
+                                        className="ml-2 text-xs bg-blue-50 text-blue-700"
+                                      >
+                                        Optional
+                                      </Badge>
+                                    </div>
+                                    <ChevronRightIcon className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              )}
+                            </ShinyBorder>
+                          </div>
+
+                          <div className="col-span-7 flex flex-col space-y-4">
+                            <ShinyBorder
+                              isActive={isCriteriaComplete}
+                              borderRadius={8}
+                            >
+                              <Accordion
+                                type="single"
+                                collapsible
+                                defaultValue="condition-builder"
+                                className="border rounded-md overflow-hidden"
+                              >
+                                <AccordionItem
+                                  value="condition-builder"
+                                  className="border-none"
                                 >
-                                  <div className="flex items-center">
-                                    <UsersIcon className="h-4 w-4 mr-2" />
-                                    Assign to Program Campaigns
-                                    <Badge
-                                      variant="outline"
-                                      className="ml-2 text-xs bg-blue-50 text-blue-700"
-                                    >
-                                      Optional
-                                    </Badge>
-                                  </div>
-                                  <ChevronRightIcon className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            )}
-                          </ShinyBorder>
-                        </div>
-
-                        <div className="col-span-7 flex flex-col space-y-4">
-                          <ShinyBorder
-                            isActive={isCriteriaComplete}
-                            borderRadius={8}
-                          >
-                            <Accordion
-                              type="single"
-                              collapsible
-                              defaultValue="condition-builder"
-                              className="border rounded-md overflow-hidden"
-                            >
-                              <AccordionItem
-                                value="condition-builder"
-                                className="border-none"
-                              >
-                                <AccordionTrigger className="px-4 py-3 text-sm font-medium">
-                                  <div className="flex items-center">
-                                    <FunnelIcon className="h-4 w-4 mr-2 text-purple-600" />
-                                    <span>Add Filter Condition</span>
-                                    <Badge
-                                      variant="success"
-                                      size="sm"
-                                      className="ml-2"
-                                    >
-                                      {filterCriteria.length}
-                                    </Badge>
-                                  </div>
-                                </AccordionTrigger>
-                                <AccordionContent className="px-4 overflow-hidden">
-                                  <div className="space-y-4 pb-2">
-                                    <div
-                                      className="text-xs text-muted-foreground mb-3"
-                                      role="note"
-                                      aria-live="polite"
-                                    >
-                                      <span className="inline-flex items-center">
-                                        <InformationCircleIcon
-                                          className="h-3.5 w-3.5 mr-1"
-                                          aria-hidden="true"
-                                        />
-                                        <span id="filter-requirement-help">
-                                          At least one condition is required to
-                                          create a filter
+                                  <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                                    <div className="flex items-center">
+                                      <FunnelIcon className="h-4 w-4 mr-2 text-purple-600" />
+                                      <span>Add Filter Condition</span>
+                                      <Badge
+                                        variant="success"
+                                        size="sm"
+                                        className="ml-2"
+                                      >
+                                        {filterCriteria.length}
+                                      </Badge>
+                                    </div>
+                                  </AccordionTrigger>
+                                  <AccordionContent className="px-4 overflow-hidden">
+                                    <div className="space-y-4 pb-2">
+                                      <div
+                                        className="text-xs text-muted-foreground mb-3"
+                                        role="note"
+                                        aria-live="polite"
+                                      >
+                                        <span className="inline-flex items-center">
+                                          <InformationCircleIcon
+                                            className="h-3.5 w-3.5 mr-1"
+                                            aria-hidden="true"
+                                          />
+                                          <span id="filter-requirement-help">
+                                            At least one condition is required
+                                            to create a filter
+                                          </span>
                                         </span>
-                                      </span>
-                                    </div>
-
-                                    <div
-                                      className={`bg-gray-50 p-3 rounded-md border border-gray-200 ${isViewMode ? "opacity-75" : ""}`}
-                                    >
-                                      <div className="mb-2 font-medium text-sm text-gray-700">
-                                        Build your filter condition:
                                       </div>
 
-                                      <div className="flex flex-col space-y-4">
-                                        {/* Row 1: Find conditions where + field type + include/exclude */}
-                                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full">
-                                          <div className="flex items-center bg-white px-2 py-1 rounded border border-gray-200 h-8 shrink-0 mb-1 sm:mb-0">
-                                            <span className="font-medium text-gray-600 text-xs">
-                                              Find conditions where
-                                            </span>
-                                          </div>
-
-                                          <div className="flex-1 w-full">
-                                            <Select
-                                              value={criteriaType}
-                                              onValueChange={setCriteriaType}
-                                              disabled={isViewMode}
-                                            >
-                                              <SelectTrigger className="h-8 w-full">
-                                                <SelectValue
-                                                  placeholder="select a field"
-                                                  className="truncate"
-                                                />
-                                              </SelectTrigger>
-                                              <SelectContent className="max-w-[300px]">
-                                                {allFieldTypes.map((type) => (
-                                                  <SelectItem
-                                                    key={type}
-                                                    value={type}
-                                                    className="truncate"
-                                                  >
-                                                    {friendlyTypeNames[type] ||
-                                                      type}
-                                                  </SelectItem>
-                                                ))}
-                                              </SelectContent>
-                                            </Select>
-                                            <span className="mt-1 text-xs font-medium text-gray-600 px-1">
-                                              Select what field to filter on
-                                            </span>
-                                          </div>
-
-                                          <div className="w-full sm:w-[150px]">
-                                            <Select
-                                              value={criteriaInclusion}
-                                              onValueChange={
-                                                setCriteriaInclusion
-                                              }
-                                              disabled={isViewMode}
-                                            >
-                                              <SelectTrigger className="h-8 w-full">
-                                                <SelectValue placeholder="inclusion" />
-                                              </SelectTrigger>
-                                              <SelectContent>
-                                                <SelectItem value="Include">
-                                                  Include
-                                                </SelectItem>
-                                                <SelectItem value="Exclude">
-                                                  Exclude
-                                                </SelectItem>
-                                              </SelectContent>
-                                            </Select>
-                                            <span className="mt-1 text-xs font-medium text-gray-600 px-1">
-                                              Include or exclude matches
-                                            </span>
-                                          </div>
+                                      <div
+                                        className={`bg-gray-50 p-3 rounded-md border border-gray-200 ${isViewMode ? "opacity-75" : ""}`}
+                                      >
+                                        <div className="mb-2 font-medium text-sm text-gray-700">
+                                          Build your filter condition:
                                         </div>
 
-                                        {/* Row 2: Input field (dynamic based on field type) */}
-                                        <div className="flex items-center w-full">
-                                          <div className="w-full">
-                                            {criteriaType === "OfferType" ? (
-                                              <ReactSelectMulti
-                                                options={offerTypeOptions}
-                                                values={criteriaMultiValues}
-                                                onChange={
-                                                  setCriteriaMultiValues
-                                                }
-                                                placeholder="Select offer types"
-                                                className="h-8"
-                                                width="100%"
-                                                isDisabled={isViewMode}
-                                                maxDisplayValues={2}
-                                              />
-                                            ) : (
-                                              <Input
-                                                placeholder="value"
-                                                value={criteriaValue}
-                                                onChange={(e) =>
-                                                  setCriteriaValue(
-                                                    e.target.value
-                                                  )
-                                                }
-                                                className="h-8 w-full"
+                                        <div className="flex flex-col space-y-4">
+                                          {/* Row 1: Find conditions where + field type + include/exclude */}
+                                          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full">
+                                            <div className="flex items-center bg-white px-2 py-1 rounded border border-gray-200 h-8 shrink-0 mb-1 sm:mb-0">
+                                              <span className="font-medium text-gray-600 text-xs">
+                                                Find conditions where
+                                              </span>
+                                            </div>
+
+                                            <div className="flex-1 w-full">
+                                              <Select
+                                                value={criteriaType}
+                                                onValueChange={setCriteriaType}
                                                 disabled={isViewMode}
-                                              />
-                                            )}
-                                            <span className="mt-1 text-xs font-medium text-gray-600 px-1">
-                                              {criteriaType === "OfferType"
-                                                ? "Select offer types to match"
-                                                : "Enter the value to match"}
-                                            </span>
-                                          </div>
-                                        </div>
-
-                                        {/* Row 3: Connect with + AND/OR operator + Add button */}
-                                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full">
-                                          <div className="flex items-center bg-white px-2 py-1 rounded border border-gray-200 h-8 shrink-0 mb-1 sm:mb-0">
-                                            <span className="font-medium text-gray-600 text-xs">
-                                              connect with
-                                            </span>
-                                          </div>
-
-                                          <div className="flex-1 w-full">
-                                            <Select
-                                              value={criteriaAndOr}
-                                              onValueChange={setCriteriaAndOr}
-                                              disabled={isViewMode}
-                                            >
-                                              <SelectTrigger className="h-8 w-full">
-                                                <SelectValue placeholder="operator" />
-                                              </SelectTrigger>
-                                              <SelectContent>
-                                                <SelectItem value="OR">
-                                                  <span className="font-medium">
-                                                    OR
-                                                  </span>
-                                                </SelectItem>
-                                                <SelectItem value="AND">
-                                                  <span className="font-medium">
-                                                    AND
-                                                  </span>
-                                                </SelectItem>
-                                              </SelectContent>
-                                            </Select>
-                                            <span className="mt-1 text-xs font-medium text-gray-600 px-1">
-                                              How to combine conditions
-                                            </span>
-                                          </div>
-
-                                          <div className="w-full sm:w-auto mt-2 sm:mt-0">
-                                            {!isViewMode && (
-                                              <Button
-                                                onClick={addCriteria}
-                                                disabled={
-                                                  !criteriaType ||
-                                                  (criteriaType === "OfferType"
-                                                    ? criteriaMultiValues.length ===
-                                                      0
-                                                    : !criteriaValue)
-                                                }
-                                                size="sm"
-                                                className="h-8 w-full sm:w-auto"
                                               >
-                                                <PlusIcon className="h-3.5 w-3.5 mr-1" />
-                                                Add
-                                              </Button>
-                                            )}
+                                                <SelectTrigger className="h-8 w-full">
+                                                  <SelectValue
+                                                    placeholder="select a field"
+                                                    className="truncate"
+                                                  />
+                                                </SelectTrigger>
+                                                <SelectContent className="max-w-[300px]">
+                                                  {allFieldTypes.map((type) => (
+                                                    <SelectItem
+                                                      key={type}
+                                                      value={type}
+                                                      className="truncate"
+                                                    >
+                                                      {friendlyTypeNames[
+                                                        type
+                                                      ] || type}
+                                                    </SelectItem>
+                                                  ))}
+                                                </SelectContent>
+                                              </Select>
+                                              <span className="mt-1 text-xs font-medium text-gray-600 px-1">
+                                                Select what field to filter on
+                                              </span>
+                                            </div>
+
+                                            <div className="w-full sm:w-[150px]">
+                                              <Select
+                                                value={criteriaInclusion}
+                                                onValueChange={
+                                                  setCriteriaInclusion
+                                                }
+                                                disabled={isViewMode}
+                                              >
+                                                <SelectTrigger className="h-8 w-full">
+                                                  <SelectValue placeholder="inclusion" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                  <SelectItem value="Include">
+                                                    Include
+                                                  </SelectItem>
+                                                  <SelectItem value="Exclude">
+                                                    Exclude
+                                                  </SelectItem>
+                                                </SelectContent>
+                                              </Select>
+                                              <span className="mt-1 text-xs font-medium text-gray-600 px-1">
+                                                Include or exclude matches
+                                              </span>
+                                            </div>
+                                          </div>
+
+                                          {/* Row 2: Input field (dynamic based on field type) */}
+                                          <div className="flex items-center w-full">
+                                            <div className="w-full">
+                                              {criteriaType === "OfferType" ? (
+                                                <ReactSelectMulti
+                                                  options={offerTypeOptions}
+                                                  values={criteriaMultiValues}
+                                                  onChange={
+                                                    setCriteriaMultiValues
+                                                  }
+                                                  placeholder="Select offer types"
+                                                  className="h-8"
+                                                  width="100%"
+                                                  isDisabled={isViewMode}
+                                                  maxDisplayValues={2}
+                                                />
+                                              ) : (
+                                                <Input
+                                                  placeholder="value"
+                                                  value={criteriaValue}
+                                                  onChange={(e) =>
+                                                    setCriteriaValue(
+                                                      e.target.value
+                                                    )
+                                                  }
+                                                  className="h-8 w-full"
+                                                  disabled={isViewMode}
+                                                />
+                                              )}
+                                              <span className="mt-1 text-xs font-medium text-gray-600 px-1">
+                                                {criteriaType === "OfferType"
+                                                  ? "Select offer types to match"
+                                                  : "Enter the value to match"}
+                                              </span>
+                                            </div>
+                                          </div>
+
+                                          {/* Row 3: Connect with + AND/OR operator + Add button */}
+                                          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full">
+                                            <div className="flex items-center bg-white px-2 py-1 rounded border border-gray-200 h-8 shrink-0 mb-1 sm:mb-0">
+                                              <span className="font-medium text-gray-600 text-xs">
+                                                connect with
+                                              </span>
+                                            </div>
+
+                                            <div className="flex-1 w-full">
+                                              <Select
+                                                value={criteriaAndOr}
+                                                onValueChange={setCriteriaAndOr}
+                                                disabled={isViewMode}
+                                              >
+                                                <SelectTrigger className="h-8 w-full">
+                                                  <SelectValue placeholder="operator" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                  <SelectItem value="OR">
+                                                    <span className="font-medium">
+                                                      OR
+                                                    </span>
+                                                  </SelectItem>
+                                                  <SelectItem value="AND">
+                                                    <span className="font-medium">
+                                                      AND
+                                                    </span>
+                                                  </SelectItem>
+                                                </SelectContent>
+                                              </Select>
+                                              <span className="mt-1 text-xs font-medium text-gray-600 px-1">
+                                                How to combine conditions
+                                              </span>
+                                            </div>
+
+                                            <div className="w-full sm:w-auto mt-2 sm:mt-0">
+                                              {!isViewMode && (
+                                                <Button
+                                                  onClick={addCriteria}
+                                                  disabled={
+                                                    !criteriaType ||
+                                                    (criteriaType ===
+                                                    "OfferType"
+                                                      ? criteriaMultiValues.length ===
+                                                        0
+                                                      : !criteriaValue)
+                                                  }
+                                                  size="sm"
+                                                  className="h-8 w-full sm:w-auto"
+                                                >
+                                                  <PlusIcon className="h-3.5 w-3.5 mr-1" />
+                                                  Add
+                                                </Button>
+                                              )}
+                                            </div>
                                           </div>
                                         </div>
-                                      </div>
 
-                                      <div className="mt-3 text-xs font-medium text-gray-600 bg-white p-2 rounded border border-gray-200">
-                                        {criteriaType
-                                          ? `${criteriaInclusion === "Include" ? "Include" : "Exclude"} conditions where ${friendlyTypeNames[criteriaType] || criteriaType} ${criteriaType === "OfferType" ? "is one of the selected types" : `contains "${criteriaValue}"`}.`
-                                          : "Select a field to get started with building your filter condition."}
+                                        <div className="mt-3 text-xs font-medium text-gray-600 bg-white p-2 rounded border border-gray-200">
+                                          {criteriaType
+                                            ? `${criteriaInclusion === "Include" ? "Include" : "Exclude"} conditions where ${friendlyTypeNames[criteriaType] || criteriaType} ${criteriaType === "OfferType" ? "is one of the selected types" : `contains "${criteriaValue}"`}.`
+                                            : "Select a field to get started with building your filter condition."}
+                                        </div>
                                       </div>
                                     </div>
-                                  </div>
-                                </AccordionContent>
-                              </AccordionItem>
-                            </Accordion>
-                          </ShinyBorder>
+                                  </AccordionContent>
+                                </AccordionItem>
+                              </Accordion>
+                            </ShinyBorder>
 
-                          <ShinyBorder
-                            isActive={isCriteriaComplete}
-                            borderRadius={8}
-                          >
-                            <Accordion
-                              type="single"
-                              collapsible
-                              defaultValue="current-conditions"
-                              className="border rounded-md overflow-hidden"
+                            <ShinyBorder
+                              isActive={isCriteriaComplete}
+                              borderRadius={8}
                             >
-                              <AccordionItem
-                                value="current-conditions"
-                                className="border-none"
+                              <Accordion
+                                type="single"
+                                collapsible
+                                defaultValue="current-conditions"
+                                className="border rounded-md overflow-hidden"
                               >
-                                <AccordionTrigger className="px-4 py-3 text-sm font-medium">
-                                  <div className="flex items-center">
-                                    <ClipboardDocumentListIcon className="h-4 w-4 mr-2 text-green-600" />
-                                    Current Conditions
-                                  </div>
-                                </AccordionTrigger>
-                                <AccordionContent className="p-0 overflow-hidden">
-                                  <div className="grid grid-cols-2 overflow-hidden">
-                                    <div className="border-r flex flex-col">
-                                      <div className="bg-green-50 text-green-800 px-3 py-1.5 text-xs font-medium flex items-center justify-between border-b">
-                                        <div className="flex items-center">
-                                          <CheckCircleIcon className="h-3.5 w-3.5 mr-1.5" />
-                                          <span>INCLUDE CONDITIONS</span>
-                                        </div>
-                                        <Badge
-                                          variant="secondary"
-                                          className="text-[10px] bg-green-100"
-                                        >
-                                          {
-                                            filterCriteria.filter(
-                                              (c: FilterCriteria) =>
-                                                c.isRequired
-                                            ).length
-                                          }
-                                        </Badge>
-                                      </div>
-
-                                      <ScrollArea className="p-2 h-[250px]">
-                                        {filterCriteria.filter(
-                                          (c: FilterCriteria) => c.isRequired
-                                        ).length === 0 ? (
-                                          <div className="text-xs text-muted-foreground p-4 text-center">
-                                            No include conditions added yet
+                                <AccordionItem
+                                  value="current-conditions"
+                                  className="border-none"
+                                >
+                                  <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                                    <div className="flex items-center">
+                                      <ClipboardDocumentListIcon className="h-4 w-4 mr-2 text-green-600" />
+                                      Current Conditions
+                                    </div>
+                                  </AccordionTrigger>
+                                  <AccordionContent className="p-0 overflow-hidden">
+                                    <div className="grid grid-cols-2 overflow-hidden">
+                                      <div className="border-r flex flex-col">
+                                        <div className="bg-green-50 text-green-800 px-3 py-1.5 text-xs font-medium flex items-center justify-between border-b">
+                                          <div className="flex items-center">
+                                            <CheckCircleIcon className="h-3.5 w-3.5 mr-1.5" />
+                                            <span>INCLUDE CONDITIONS</span>
                                           </div>
-                                        ) : (
-                                          <div className="space-y-1.5">
-                                            {filterCriteria
-                                              .filter(
+                                          <Badge
+                                            variant="secondary"
+                                            className="text-[10px] bg-green-100"
+                                          >
+                                            {
+                                              filterCriteria.filter(
                                                 (c: FilterCriteria) =>
                                                   c.isRequired
-                                              )
-                                              .map(
-                                                (criteria: FilterCriteria) => (
-                                                  <div
-                                                    key={criteria.id}
-                                                    className="border rounded-md p-1.5 relative hover:shadow-sm transition-all group"
-                                                  >
-                                                    <button
-                                                      onClick={() =>
-                                                        removeCriteria(
-                                                          criteria.id
-                                                        )
-                                                      }
-                                                      className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                      aria-label="Remove condition"
-                                                    >
-                                                      <XCircleIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
-                                                    </button>
+                                              ).length
+                                            }
+                                          </Badge>
+                                        </div>
 
-                                                    <div className="text-xs">
-                                                      <div className="font-medium">
-                                                        {friendlyTypeNames[
-                                                          criteria.type
-                                                        ] || criteria.type}
-                                                      </div>
-                                                      <div className="flex items-center flex-wrap gap-1 mt-0.5">
-                                                        <span className="text-muted-foreground text-[10px]">
-                                                          {friendlyRuleNames[
-                                                            criteria.rule
-                                                          ] || criteria.rule}
-                                                        </span>
-                                                        <Badge
-                                                          variant="outline"
-                                                          className="font-mono text-[10px] py-0 h-4"
-                                                        >
-                                                          {criteria.value}
-                                                        </Badge>
-                                                        <Badge
-                                                          variant="secondary"
-                                                          className="text-[10px] py-0 h-4 ml-auto"
-                                                        >
-                                                          {criteria.and_or}
-                                                        </Badge>
+                                        <ScrollArea className="p-2 h-[250px]">
+                                          {filterCriteria.filter(
+                                            (c: FilterCriteria) => c.isRequired
+                                          ).length === 0 ? (
+                                            <div className="text-xs text-muted-foreground p-4 text-center">
+                                              No include conditions added yet
+                                            </div>
+                                          ) : (
+                                            <div className="space-y-1.5">
+                                              {filterCriteria
+                                                .filter(
+                                                  (c: FilterCriteria) =>
+                                                    c.isRequired
+                                                )
+                                                .map(
+                                                  (
+                                                    criteria: FilterCriteria
+                                                  ) => (
+                                                    <div
+                                                      key={criteria.id}
+                                                      className="border rounded-md p-1.5 relative hover:shadow-sm transition-all group"
+                                                    >
+                                                      <button
+                                                        onClick={() =>
+                                                          removeCriteria(
+                                                            criteria.id
+                                                          )
+                                                        }
+                                                        className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        aria-label="Remove condition"
+                                                      >
+                                                        <XCircleIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
+                                                      </button>
+
+                                                      <div className="text-xs">
+                                                        <div className="font-medium">
+                                                          {friendlyTypeNames[
+                                                            criteria.type
+                                                          ] || criteria.type}
+                                                        </div>
+                                                        <div className="flex items-center flex-wrap gap-1 mt-0.5">
+                                                          <span className="text-muted-foreground text-[10px]">
+                                                            {friendlyRuleNames[
+                                                              criteria.rule
+                                                            ] || criteria.rule}
+                                                          </span>
+                                                          <Badge
+                                                            variant="outline"
+                                                            className="font-mono text-[10px] py-0 h-4"
+                                                          >
+                                                            {criteria.value}
+                                                          </Badge>
+                                                          <Badge
+                                                            variant="secondary"
+                                                            className="text-[10px] py-0 h-4 ml-auto"
+                                                          >
+                                                            {criteria.and_or}
+                                                          </Badge>
+                                                        </div>
                                                       </div>
                                                     </div>
-                                                  </div>
-                                                )
-                                              )}
-                                          </div>
-                                        )}
-                                      </ScrollArea>
-                                    </div>
-
-                                    <div className="flex flex-col">
-                                      <div className="bg-red-50 text-red-800 px-3 py-1.5 text-xs font-medium flex items-center justify-between border-b">
-                                        <div className="flex items-center">
-                                          <XCircleIcon className="h-3.5 w-3.5 mr-1.5" />
-                                          <span>EXCLUDE CONDITIONS</span>
-                                        </div>
-                                        <Badge
-                                          variant="secondary"
-                                          className="text-[10px] bg-red-100"
-                                        >
-                                          {
-                                            filterCriteria.filter(
-                                              (c: FilterCriteria) =>
-                                                !c.isRequired
-                                            ).length
-                                          }
-                                        </Badge>
+                                                  )
+                                                )}
+                                            </div>
+                                          )}
+                                        </ScrollArea>
                                       </div>
 
-                                      <ScrollArea className="p-2 h-[250px]">
-                                        {filterCriteria.filter(
-                                          (c: FilterCriteria) => !c.isRequired
-                                        ).length === 0 ? (
-                                          <div className="text-xs text-muted-foreground p-4 text-center">
-                                            No exclude conditions added yet
+                                      <div className="flex flex-col">
+                                        <div className="bg-red-50 text-red-800 px-3 py-1.5 text-xs font-medium flex items-center justify-between border-b">
+                                          <div className="flex items-center">
+                                            <XCircleIcon className="h-3.5 w-3.5 mr-1.5" />
+                                            <span>EXCLUDE CONDITIONS</span>
                                           </div>
-                                        ) : (
-                                          <div className="space-y-1.5">
-                                            {filterCriteria
-                                              .filter(
+                                          <Badge
+                                            variant="secondary"
+                                            className="text-[10px] bg-red-100"
+                                          >
+                                            {
+                                              filterCriteria.filter(
                                                 (c: FilterCriteria) =>
                                                   !c.isRequired
-                                              )
-                                              .map(
-                                                (criteria: FilterCriteria) => (
-                                                  <div
-                                                    key={criteria.id}
-                                                    className="border rounded-md p-1.5 relative hover:shadow-sm transition-all group"
-                                                  >
-                                                    <button
-                                                      onClick={() =>
-                                                        removeCriteria(
-                                                          criteria.id
-                                                        )
-                                                      }
-                                                      className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                      aria-label="Remove condition"
-                                                    >
-                                                      <XCircleIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
-                                                    </button>
+                                              ).length
+                                            }
+                                          </Badge>
+                                        </div>
 
-                                                    <div className="text-xs">
-                                                      <div className="font-medium">
-                                                        {friendlyTypeNames[
-                                                          criteria.type
-                                                        ] || criteria.type}
-                                                      </div>
-                                                      <div className="flex items-center flex-wrap gap-1 mt-0.5">
-                                                        <span className="text-muted-foreground text-[10px]">
-                                                          {friendlyRuleNames[
-                                                            criteria.rule
-                                                          ] || criteria.rule}
-                                                        </span>
-                                                        <Badge
-                                                          variant="outline"
-                                                          className="font-mono text-[10px] py-0 h-4"
-                                                        >
-                                                          {criteria.value}
-                                                        </Badge>
-                                                        <Badge
-                                                          variant="secondary"
-                                                          className="text-[10px] py-0 h-4 ml-auto"
-                                                        >
-                                                          {criteria.and_or}
-                                                        </Badge>
+                                        <ScrollArea className="p-2 h-[250px]">
+                                          {filterCriteria.filter(
+                                            (c: FilterCriteria) => !c.isRequired
+                                          ).length === 0 ? (
+                                            <div className="text-xs text-muted-foreground p-4 text-center">
+                                              No exclude conditions added yet
+                                            </div>
+                                          ) : (
+                                            <div className="space-y-1.5">
+                                              {filterCriteria
+                                                .filter(
+                                                  (c: FilterCriteria) =>
+                                                    !c.isRequired
+                                                )
+                                                .map(
+                                                  (
+                                                    criteria: FilterCriteria
+                                                  ) => (
+                                                    <div
+                                                      key={criteria.id}
+                                                      className="border rounded-md p-1.5 relative hover:shadow-sm transition-all group"
+                                                    >
+                                                      <button
+                                                        onClick={() =>
+                                                          removeCriteria(
+                                                            criteria.id
+                                                          )
+                                                        }
+                                                        className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        aria-label="Remove condition"
+                                                      >
+                                                        <XCircleIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
+                                                      </button>
+
+                                                      <div className="text-xs">
+                                                        <div className="font-medium">
+                                                          {friendlyTypeNames[
+                                                            criteria.type
+                                                          ] || criteria.type}
+                                                        </div>
+                                                        <div className="flex items-center flex-wrap gap-1 mt-0.5">
+                                                          <span className="text-muted-foreground text-[10px]">
+                                                            {friendlyRuleNames[
+                                                              criteria.rule
+                                                            ] || criteria.rule}
+                                                          </span>
+                                                          <Badge
+                                                            variant="outline"
+                                                            className="font-mono text-[10px] py-0 h-4"
+                                                          >
+                                                            {criteria.value}
+                                                          </Badge>
+                                                          <Badge
+                                                            variant="secondary"
+                                                            className="text-[10px] py-0 h-4 ml-auto"
+                                                          >
+                                                            {criteria.and_or}
+                                                          </Badge>
+                                                        </div>
                                                       </div>
                                                     </div>
-                                                  </div>
-                                                )
-                                              )}
-                                          </div>
-                                        )}
-                                      </ScrollArea>
+                                                  )
+                                                )}
+                                            </div>
+                                          )}
+                                        </ScrollArea>
+                                      </div>
                                     </div>
-                                  </div>
-                                </AccordionContent>
-                              </AccordionItem>
-                            </Accordion>
-                          </ShinyBorder>
+                                  </AccordionContent>
+                                </AccordionItem>
+                              </Accordion>
+                            </ShinyBorder>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </Card>
+                    </Card>
+                  </div>
                 </div>
-              </div>
-            </ResizablePanel>
-          </ResizablePanelGroup>
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          </div>
         </div>
-      </div>
 
-      {isAssignProgramsModalOpen && (
-        <Dialog
-          open={isAssignProgramsModalOpen}
-          onOpenChange={(open) => {
-            if (!open) {
-              // If dialog is closing, ensure we get the current selection
-              setIsAssignProgramsModalOpen(false);
-            }
-          }}
-        >
-          <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
-            <DialogHeader>
-              <DialogTitle>Assign Filter to Programs</DialogTitle>
-              <DialogDescription>
-                Select which program campaigns this filter should be assigned
-                to.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="max-h-[calc(80vh-10rem)] overflow-hidden">
-              <AssignToProgramsPanel
-                filterId={tempFilterId}
-                filterName={filterName || "Untitled Filter"}
-                onClose={(selectedIds) =>
-                  handleAssignProgramsModalClose(selectedIds)
-                }
-                initialSelection={selectedPrograms}
-                partnerData={mockPartners}
-                onSelectionChange={(count) => {
-                  setSelectedProgramCount(count);
-                }}
-              />
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
-    </div>
+        {isAssignProgramsModalOpen && (
+          <Dialog
+            open={isAssignProgramsModalOpen}
+            onOpenChange={(open) => {
+              if (!open) {
+                // If dialog is closing, ensure we get the current selection
+                setIsAssignProgramsModalOpen(false);
+              }
+            }}
+          >
+            <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+              <DialogHeader>
+                <DialogTitle>Assign Filter to Programs</DialogTitle>
+                <DialogDescription>
+                  Select which program campaigns this filter should be assigned
+                  to.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="max-h-[calc(80vh-10rem)] overflow-hidden">
+                <AssignToProgramsPanel
+                  filterId={tempFilterId}
+                  filterName={filterName || "Untitled Filter"}
+                  onClose={(selectedIds) =>
+                    handleAssignProgramsModalClose(selectedIds)
+                  }
+                  initialSelection={selectedPrograms}
+                  partnerData={mockPartners}
+                  onSelectionChange={(count) => {
+                    setSelectedProgramCount(count);
+                  }}
+                  onStartAssignment={startAssignment}
+                />
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
+    </AssignmentManager>
   );
 }
