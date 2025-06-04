@@ -44,6 +44,7 @@ import {
   deselectMultiplePrograms,
   clearAllSelections,
 } from "@/lib/redux/slices/programSelectionSlice";
+import { clearAssignment } from "@/lib/redux/slices/assignmentSlice";
 
 // Define the hierarchical structure based on Kigo Pro glossary
 interface PromotedProgram {
@@ -1053,6 +1054,9 @@ export function AssignToProgramsPanel({
     }
 
     try {
+      // Clear any existing assignment state before starting new assignment
+      dispatch(clearAssignment());
+
       // Prepare assignment items with hierarchical information
       const preparedItems: AssignmentItem[] = [];
 

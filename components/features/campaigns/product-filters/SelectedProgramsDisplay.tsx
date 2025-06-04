@@ -81,7 +81,7 @@ export function SelectedProgramsDisplay({
   const StatusIcon = ({ status }: { status: AssignmentItem["status"] }) => {
     switch (status) {
       case "success":
-        return <CheckCircle className="h-2.5 w-2.5 text-green-600" />;
+        return <CheckCircle className="h-3 w-3" color="#16a34a" />;
       case "failed":
         return <XCircle className="h-2.5 w-2.5 text-red-600" />;
       case "processing":
@@ -101,6 +101,13 @@ export function SelectedProgramsDisplay({
 
   // Check if any program is being assigned
   const hasActiveAssignments = assignmentItems.length > 0;
+
+  // Check if all assignments are completed (no processing items)
+  const isAssignmentComplete =
+    hasActiveAssignments &&
+    assignmentStats &&
+    assignmentStats.processing === 0 &&
+    assignmentStats.completed === assignmentStats.total;
 
   // Helper function to get background color based on status
   const getStatusBackgroundColor = (items: AssignmentItem[]) => {
@@ -252,18 +259,22 @@ export function SelectedProgramsDisplay({
       <div className="flex items-center justify-between bg-slate-50 p-4 border-b flex-shrink-0">
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-3">
-            {hasActiveAssignments ? (
+            {hasActiveAssignments && !isAssignmentComplete ? (
               <div className="relative">
                 <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
               </div>
+            ) : hasActiveAssignments && isAssignmentComplete ? (
+              <CheckCircle className="h-5 w-5" color="#16a34a" />
             ) : (
-              <CheckCircle className="h-5 w-5 text-green-600" />
+              <CheckCircle className="h-5 w-5" color="#16a34a" />
             )}
             <div className="flex flex-col">
               <div className="font-semibold text-sm leading-tight">
-                {hasActiveAssignments
+                {hasActiveAssignments && !isAssignmentComplete
                   ? "Bulk Assignment in Progress"
-                  : "Programs Selected"}
+                  : hasActiveAssignments && isAssignmentComplete
+                    ? "Programs Assigned"
+                    : "Programs Selected"}
               </div>
               {hasActiveAssignments &&
               assignmentStats &&
@@ -322,15 +333,21 @@ export function SelectedProgramsDisplay({
             variant="outline"
             onClick={onEditClick}
             className="flex items-center gap-1.5 h-8 px-3"
-            disabled={hasActiveAssignments}
+            disabled={hasActiveAssignments && !isAssignmentComplete}
             title={
-              hasActiveAssignments
+              hasActiveAssignments && !isAssignmentComplete
                 ? "Cannot edit selection while bulk assignment is in progress"
-                : "Edit program selection"
+                : hasActiveAssignments && isAssignmentComplete
+                  ? "Edit and reassign programs"
+                  : "Edit program selection"
             }
           >
             <PencilIcon className="h-3 w-3" />
-            <span className="text-xs font-medium">Edit</span>
+            <span className="text-xs font-medium">
+              {hasActiveAssignments && isAssignmentComplete
+                ? "Reassign"
+                : "Edit"}
+            </span>
           </Button>
         </div>
       </div>
@@ -389,6 +406,11 @@ export function SelectedProgramsDisplay({
                             </span>
                           )}
                         </div>
+                        {isAssignmentComplete && (
+                          <span className="text-xs text-green-600 font-medium">
+                            Programs Assigned
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -416,7 +438,10 @@ export function SelectedProgramsDisplay({
                               return failed > 0 ? (
                                 <XCircle className="h-4 w-4 text-red-600" />
                               ) : (
-                                <CheckCircle className="h-4 w-4 text-green-600" />
+                                <CheckCircle
+                                  className="h-4 w-4"
+                                  color="#16a34a"
+                                />
                               );
                             }
                             return <Clock className="h-4 w-4 text-gray-400" />;
@@ -527,7 +552,10 @@ export function SelectedProgramsDisplay({
                                           return failed > 0 ? (
                                             <XCircle className="h-3.5 w-3.5 text-red-600" />
                                           ) : (
-                                            <CheckCircle className="h-3.5 w-3.5 text-green-600" />
+                                            <CheckCircle
+                                              className="h-3.5 w-3.5"
+                                              color="#16a34a"
+                                            />
                                           );
                                         }
                                         return (
