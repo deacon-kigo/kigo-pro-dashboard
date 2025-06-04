@@ -7,6 +7,7 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/atoms/Button";
@@ -33,6 +34,16 @@ import {
 } from "lucide-react";
 import { AccordionContent } from "@/components/ui/accordion";
 import { AssignmentItem } from "./BulkAssignmentProgress";
+
+// Redux imports
+import { selectSelectedProgramIds } from "@/lib/redux/selectors/programSelectionSelectors";
+import {
+  selectProgram,
+  deselectProgram,
+  selectMultiplePrograms,
+  deselectMultiplePrograms,
+  clearAllSelections,
+} from "@/lib/redux/slices/programSelectionSlice";
 
 // Define the hierarchical structure based on Kigo Pro glossary
 interface PromotedProgram {
@@ -639,16 +650,19 @@ export function AssignToProgramsPanel({
   assignmentItems = [],
   onRetryFailed,
 }: AssignToProgramsPanelProps) {
+  const dispatch = useDispatch();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedPromotedPrograms, setSelectedPromotedPrograms] = useState<
-    Record<string, boolean>
-  >(() => {
-    const selection: Record<string, boolean> = {};
-    initialSelection.forEach((id) => {
-      selection[id] = true;
+
+  // Use Redux for selected programs instead of local state
+  const selectedPromotedPrograms = useSelector(selectSelectedProgramIds);
+  const selectedPromotedProgramsRecord = useMemo(() => {
+    const record: Record<string, boolean> = {};
+    selectedPromotedPrograms.forEach((id) => {
+      record[id] = true;
     });
-    return selection;
-  });
+    return record;
+  }, [selectedPromotedPrograms]);
+
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -779,7 +793,9 @@ export function AssignToProgramsPanel({
   ) => {
     return promotedPrograms
       .filter((promotedProgram) => promotedProgram.active !== false)
-      .every((promotedProgram) => selectedPromotedPrograms[promotedProgram.id]);
+      .every(
+        (promotedProgram) => selectedPromotedProgramsRecord[promotedProgram.id]
+      );
   };
 
   // Check if some promoted programs in a program are selected
@@ -791,7 +807,7 @@ export function AssignToProgramsPanel({
     );
     return (
       activePromotedPrograms.some(
-        (promotedProgram) => selectedPromotedPrograms[promotedProgram.id]
+        (promotedProgram) => selectedPromotedProgramsRecord[promotedProgram.id]
       ) && !isAllPromotedProgramsSelected(activePromotedPrograms)
     );
   };
@@ -814,15 +830,26 @@ export function AssignToProgramsPanel({
     );
   };
 
-  // Handle promoted program selection with visual feedback
+  // Handle promoted program selection using Redux
   const handlePromotedProgramSelection = (
     promotedProgramId: string,
     checked: boolean
   ) => {
-    setSelectedPromotedPrograms((prev) => ({
-      ...prev,
-      [promotedProgramId]: checked,
-    }));
+    if (checked) {
+      dispatch(
+        selectProgram({
+          programId: promotedProgramId,
+          context: "program_selection_panel",
+        })
+      );
+    } else {
+      dispatch(
+        deselectProgram({
+          programId: promotedProgramId,
+          context: "program_selection_panel",
+        })
+      );
+    }
 
     // Add visual feedback by tracking recently selected items
     setRecentlySelectedIds((prev) => [...prev, promotedProgramId]);
@@ -831,36 +858,67 @@ export function AssignToProgramsPanel({
         prev.filter((id) => id !== promotedProgramId)
       );
     }, 1000);
+
+    // Update parent component count (if still needed)
+    if (onSelectionChange) {
+      const newCount = checked
+        ? selectedPromotedPrograms.length + 1
+        : selectedPromotedPrograms.length - 1;
+      onSelectionChange(newCount);
+    }
   };
 
-  // Handle program selection (select/deselect all promoted programs in program)
+  // Handle program selection (select/deselect all promoted programs in program) using Redux
   const handleProgramSelection = (program: Program, checked: boolean) => {
-    const updatedSelection = { ...selectedPromotedPrograms };
-
-    // Update all active promoted programs in this program
-    program.promotedPrograms
+    const programIds = program.promotedPrograms
       .filter((promotedProgram) => promotedProgram.active !== false)
-      .forEach((promotedProgram) => {
-        updatedSelection[promotedProgram.id] = checked;
-      });
+      .map((promotedProgram) => promotedProgram.id);
 
-    setSelectedPromotedPrograms(updatedSelection);
+    if (checked) {
+      dispatch(
+        selectMultiplePrograms({
+          programIds,
+          context: "bulk_program_selection",
+        })
+      );
+    } else {
+      dispatch(
+        deselectMultiplePrograms({
+          programIds,
+          context: "bulk_program_deselection",
+        })
+      );
+    }
   };
 
-  // Handle partner selection (select/deselect all promoted programs in all programs)
+  // Handle partner selection (select/deselect all promoted programs in all programs) using Redux
   const handlePartnerSelection = (partner: Partner, checked: boolean) => {
-    const updatedSelection = { ...selectedPromotedPrograms };
+    const programIds: string[] = [];
 
-    // Update all active promoted programs in all programs of this partner
+    // Collect all active promoted programs in all programs of this partner
     partner.programs.forEach((program) => {
       program.promotedPrograms
         .filter((promotedProgram) => promotedProgram.active !== false)
         .forEach((promotedProgram) => {
-          updatedSelection[promotedProgram.id] = checked;
+          programIds.push(promotedProgram.id);
         });
     });
 
-    setSelectedPromotedPrograms(updatedSelection);
+    if (checked) {
+      dispatch(
+        selectMultiplePrograms({
+          programIds,
+          context: "bulk_partner_selection",
+        })
+      );
+    } else {
+      dispatch(
+        deselectMultiplePrograms({
+          programIds,
+          context: "bulk_partner_deselection",
+        })
+      );
+    }
   };
 
   // Handle infinite scroll
@@ -953,36 +1011,40 @@ export function AssignToProgramsPanel({
     }
   }, [selectedCount, onSelectionChange]);
 
-  // Select all promoted programs
+  // Update select all to use Redux
   const selectAll = () => {
-    const allSelected: Record<string, boolean> = {};
+    const allIds: string[] = [];
     allPartners.forEach((partner) => {
       partner.programs.forEach((program) => {
         program.promotedPrograms
-          .filter((promotedProgram) => promotedProgram.active !== false)
-          .forEach((promotedProgram) => {
-            allSelected[promotedProgram.id] = true;
+          .filter((pp) => pp.active !== false)
+          .forEach((pp) => {
+            allIds.push(pp.id);
           });
       });
     });
-    setSelectedPromotedPrograms(allSelected);
+
+    dispatch(
+      selectMultiplePrograms({
+        programIds: allIds,
+        context: "select_all",
+      })
+    );
   };
 
-  // Clear all selections
+  // Update clear all to use Redux
   const clearAll = () => {
-    setSelectedPromotedPrograms({});
+    dispatch(clearAllSelections({ context: "clear_all" }));
   };
 
-  // Simplified handle save - no modal, start assignment immediately
+  // Update save function to use Redux state
   const handleSave = async () => {
     setSaving(true);
     setSaveSuccess(false);
     setSaveError(null);
 
-    // Collect all selected promoted program IDs
-    const selectedIds = Object.keys(selectedPromotedPrograms).filter(
-      (id) => selectedPromotedPrograms[id]
-    );
+    // Use Redux selected programs
+    const selectedIds = selectedPromotedPrograms;
 
     if (selectedIds.length === 0) {
       setSaveError("No items selected for assignment");
@@ -1036,13 +1098,10 @@ export function AssignToProgramsPanel({
       : "";
   };
 
-  // Update the cancel function
+  // Update cancel function to use Redux state
   const handleCancel = () => {
-    // Get the selected IDs to pass back
-    const selectedIds = Object.keys(selectedPromotedPrograms).filter(
-      (id) => selectedPromotedPrograms[id]
-    );
-    onClose(selectedIds);
+    // Get the selected IDs from Redux to pass back
+    onClose(selectedPromotedPrograms);
   };
 
   // Status icon component (from card-status-list)
@@ -1141,6 +1200,18 @@ export function AssignToProgramsPanel({
 
   const progressStats = getProgressStats();
   const displayPartners = statusMode ? getDisplayPartners() : visiblePartners;
+
+  // Initialize Redux state with initial selection
+  useEffect(() => {
+    if (initialSelection.length > 0) {
+      dispatch(
+        selectMultiplePrograms({
+          programIds: initialSelection,
+          context: "initial_load",
+        })
+      );
+    }
+  }, [initialSelection, dispatch]);
 
   return (
     <div
@@ -1394,7 +1465,7 @@ export function AssignToProgramsPanel({
                                     <Checkbox
                                       id={`promoted-program-${promotedProgram.id}`}
                                       checked={
-                                        !!selectedPromotedPrograms[
+                                        !!selectedPromotedProgramsRecord[
                                           promotedProgram.id
                                         ]
                                       }

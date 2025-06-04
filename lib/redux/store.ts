@@ -10,6 +10,8 @@ import sessionReducer from "./slices/sessionSlice";
 import aiAssistantReducer from "./slices/ai-assistantSlice";
 import productFilterReducer from "./slices/productFilterSlice";
 import campaignReducer from "./slices/campaignSlice";
+import assignmentReducer from "./slices/assignmentSlice";
+import programSelectionReducer from "./slices/programSelectionSlice";
 import { useDispatch } from "react-redux";
 import { ActionWithType } from "../../types/redux";
 import aiAssistantMiddleware from "./middleware/ai-assistantMiddleware";
@@ -22,8 +24,8 @@ const ENABLE_ACTION_LOGGING = true;
 // Simple set to track the types of actions we've already seen
 const seenActionTypes = new Set<string>();
 
-// Simplified middleware that avoids accessing store state during action processing
-const demoActionLoggerMiddleware =
+// Properly typed middleware function
+const demoActionLoggerMiddleware: any =
   (store: any) => (next: any) => (action: any) => {
     // Process the action first to ensure proper flow
     const result = next(action);
@@ -61,6 +63,8 @@ export function makeStore() {
       aiAssistant: aiAssistantReducer,
       productFilter: productFilterReducer,
       campaign: campaignReducer,
+      assignment: assignmentReducer,
+      programSelection: programSelectionReducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
@@ -81,11 +85,11 @@ export function makeStore() {
             "campaign.formData.basicInfo.endDate",
           ],
         },
-      }).concat([
-        demoActionLoggerMiddleware, 
-        aiAssistantMiddleware,
-        campaignAssistantMiddleware
-      ]),
+      }).concat(
+        demoActionLoggerMiddleware,
+        aiAssistantMiddleware as any,
+        campaignAssistantMiddleware as any
+      ),
     // Enable Redux DevTools in development
     devTools: process.env.NODE_ENV !== "production",
   });

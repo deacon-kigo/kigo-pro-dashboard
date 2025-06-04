@@ -31,7 +31,7 @@ interface AppLayoutProps {
 
 // A wrapper component that uses the context
 function AppLayoutContent({ children, customBreadcrumb }: AppLayoutProps) {
-  const { sidebarCollapsed } = useAppSelector((state) => state.ui);
+  const { sidebarCollapsed, isHydrated } = useAppSelector((state) => state.ui);
   const pathname = usePathname();
   const { isPanelOpen, panelContent, panelMinWidth, panelMaxWidth } =
     useResizablePanel();
@@ -44,14 +44,25 @@ function AppLayoutContent({ children, customBreadcrumb }: AppLayoutProps) {
     setIsClient(true);
   }, []);
 
-  // Main content style using CSS variables
+  // Calculate content padding directly from Redux state to avoid CSS variable sync issues
   const mainContentStyle = useMemo(() => {
+    if (!isClient || !isHydrated) {
+      // During SSR and before hydration, use collapsed sidebar spacing
+      return {
+        paddingLeft: "calc(70px + 1.5rem)", // collapsed sidebar width + padding
+        transition: "padding-left 300ms cubic-bezier(0.4, 0, 0.2, 1)",
+        willChange: "padding-left",
+      };
+    }
+
+    // After hydration, use actual Redux state
+    const sidebarWidth = sidebarCollapsed ? "70px" : "225px";
     return {
-      paddingLeft: isClient ? "var(--content-padding-left, 1.5rem)" : "1.5rem",
+      paddingLeft: `calc(${sidebarWidth} + 1.5rem)`,
       transition: "padding-left 300ms cubic-bezier(0.4, 0, 0.2, 1)",
       willChange: "padding-left",
     };
-  }, [isClient]);
+  }, [isClient, isHydrated, sidebarCollapsed]);
 
   // Generate breadcrumb items based on current path
   const getBreadcrumbItems = () => {

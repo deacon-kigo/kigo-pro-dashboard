@@ -33,7 +33,7 @@ export default function AppStateProvider({
 
   // Handle initial hydration
   useEffect(() => {
-    // Mark the app as hydrated
+    // Mark the app as hydrated (this will trigger CSS variable update in the reducer)
     dispatch(setHydrated(true));
 
     // After hydration is complete, we can safely load state from localStorage
@@ -46,9 +46,14 @@ export default function AppStateProvider({
             sidebarCollapsed: storedSidebarState === "true",
           })
         );
+      } else {
+        // If no stored state, ensure CSS variables match current Redux state
+        dispatch(setSidebarCollapsed(sidebarCollapsed));
       }
     } catch (error) {
       console.warn("Error loading state from localStorage:", error);
+      // Fallback: ensure CSS variables are set
+      dispatch(setSidebarCollapsed(sidebarCollapsed));
     }
 
     // Setup responsive behavior

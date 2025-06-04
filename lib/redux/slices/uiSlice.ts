@@ -92,6 +92,11 @@ export const uiSlice = createSlice({
   reducers: {
     setHydrated: (state, action: PayloadAction<boolean>) => {
       state.isHydrated = action.payload;
+
+      // Immediately update CSS variables when hydrated to ensure layout sync
+      if (action.payload && typeof document !== "undefined") {
+        updateCssVariables(state);
+      }
     },
 
     loadSavedState: (state, action: PayloadAction<Partial<UIState>>) => {
@@ -104,7 +109,7 @@ export const uiSlice = createSlice({
             ? COLLAPSED_WIDTH
             : EXPANDED_WIDTH;
 
-          // Apply CSS variables but don't store them in localStorage
+          // Immediately apply CSS variables to prevent layout gaps
           updateCssVariables(state);
         }
       }
@@ -201,6 +206,25 @@ function updateCssVariables(state: UIState) {
       `calc(${state.sidebarWidth} + 1.5rem)`
     );
   }
+}
+
+// Initialize CSS variables with default state to prevent layout issues
+function initializeCssVariables() {
+  if (typeof document !== "undefined") {
+    const defaultWidth = DEFAULT_SIDEBAR_COLLAPSED
+      ? COLLAPSED_WIDTH
+      : EXPANDED_WIDTH;
+    document.documentElement.style.setProperty("--sidebar-width", defaultWidth);
+    document.documentElement.style.setProperty(
+      "--content-padding-left",
+      `calc(${defaultWidth} + 1.5rem)`
+    );
+  }
+}
+
+// Initialize CSS variables immediately when module loads
+if (typeof window !== "undefined") {
+  initializeCssVariables();
 }
 
 export const {
