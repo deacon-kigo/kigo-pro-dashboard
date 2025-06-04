@@ -18,7 +18,14 @@ const AssignmentContext = createContext<AssignmentContextType | null>(null);
 
 export const useAssignmentStatus = () => {
   const context = useContext(AssignmentContext);
+  console.log("🔍 useAssignmentStatus called, context is:", context);
+  console.log("🔍 context null?", context === null);
+  console.log("🔍 context undefined?", context === undefined);
+
   if (!context) {
+    console.log(
+      "⚠️ useAssignmentStatus returning fallback values - context is null/undefined"
+    );
     return {
       assignmentItems: [],
       isProcessing: false,
@@ -27,6 +34,9 @@ export const useAssignmentStatus = () => {
       retryFailed: async () => {},
     };
   }
+
+  console.log("✅ useAssignmentStatus returning actual context values");
+  console.log("✅ context.startAssignment function:", context.startAssignment);
   return context;
 };
 
@@ -74,6 +84,7 @@ export function AssignmentManager({
   // Handle starting assignment from child components
   const handleStartAssignment = async (items: AssignmentItem[]) => {
     console.log("🚀 Assignment started with items:", items);
+    console.log("🚀 handleStartAssignment called in AssignmentManager");
     setAssignmentItems(items);
 
     try {
@@ -107,6 +118,11 @@ export function AssignmentManager({
     startAssignment: handleStartAssignment,
     retryFailed: handleRetryFailed,
   };
+
+  console.log(
+    "🔧 AssignmentManager creating context with startAssignment function:",
+    handleStartAssignment
+  );
 
   // Debug logging - only log when assignment items change
   const prevItemsCount = useRef(0);

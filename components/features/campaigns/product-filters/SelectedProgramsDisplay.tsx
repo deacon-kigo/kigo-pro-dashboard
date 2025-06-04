@@ -83,8 +83,15 @@ export function SelectedProgramsDisplay({
 
   // Get assignment status for a promoted program
   const getAssignmentStatus = (promotedProgramId: string) => {
-    const item = assignmentItems.find((item) => item.id === promotedProgramId);
-    return item?.status;
+    const foundItem = assignmentItems.find(
+      (item) => item.id === promotedProgramId
+    );
+    console.log(`🔍 Looking for status of ${promotedProgramId}:`, {
+      foundItem,
+      assignmentItemsCount: assignmentItems.length,
+      allItemIds: assignmentItems.map((item) => item.id),
+    });
+    return foundItem?.status;
   };
 
   // Check if any program is being assigned

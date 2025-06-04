@@ -1012,6 +1012,10 @@ export function AssignToProgramsPanel({
 
       // Notify parent to start assignment process and show status indicator
       if (onStartAssignment) {
+        console.log(
+          "📤 AssignToProgramsPanel calling onStartAssignment with:",
+          preparedItems
+        );
         onStartAssignment(preparedItems);
       }
 
