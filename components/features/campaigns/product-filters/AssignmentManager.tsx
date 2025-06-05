@@ -1,163 +1,168 @@
 "use client";
 
-import React, { useState, createContext, useContext, useRef } from "react";
+import React, { useState, useCallback } from "react";
+import { useDispatch } from "react-redux";
 import { AssignToProgramsPanel } from "./AssignToProgramsPanel";
-import { AssignmentItem } from "./BulkAssignmentProgress";
-import { useBulkAssignment } from "@/hooks/useBulkAssignment";
+import { SelectedProgramsDisplay } from "./SelectedProgramsDisplay";
+import { clearAssignment } from "@/lib/redux/slices/assignmentSlice";
 
-// Create context for assignment status
-interface AssignmentContextType {
-  assignmentItems: AssignmentItem[];
-  isProcessing: boolean;
-  hasActiveAssignments: boolean;
-  startAssignment: (items: AssignmentItem[]) => Promise<void>;
-  retryFailed: () => Promise<void>;
-}
-
-const AssignmentContext = createContext<AssignmentContextType | null>(null);
-
-export const useAssignmentStatus = () => {
-  const context = useContext(AssignmentContext);
-  console.log("🔍 useAssignmentStatus called, context is:", context);
-  console.log("🔍 context null?", context === null);
-  console.log("🔍 context undefined?", context === undefined);
-
-  if (!context) {
-    console.log(
-      "⚠️ useAssignmentStatus returning fallback values - context is null/undefined"
-    );
-    return {
-      assignmentItems: [],
-      isProcessing: false,
-      hasActiveAssignments: false,
-      startAssignment: async () => {},
-      retryFailed: async () => {},
-    };
-  }
-
-  console.log("✅ useAssignmentStatus returning actual context values");
-  console.log("✅ context.startAssignment function:", context.startAssignment);
-  return context;
-};
+// Define bulk assignment status
+type BulkAssignmentStatus = "idle" | "assigning" | "success" | "failed";
 
 interface AssignmentManagerProps {
   filterId: string;
   filterName: string;
-  children: React.ReactNode;
+  onClose?: () => void;
+  initialSelection?: string[];
 }
 
 export function AssignmentManager({
   filterId,
   filterName,
-  children,
+  onClose,
+  initialSelection = [],
 }: AssignmentManagerProps) {
-  const [showStatusModal, setShowStatusModal] = useState(false);
-  const [assignmentItems, setAssignmentItems] = useState<AssignmentItem[]>([]);
+  const dispatch = useDispatch();
+  const [showSelectionPanel, setShowSelectionPanel] = useState(false);
+  const [selectedProgramIds, setSelectedProgramIds] =
+    useState<string[]>(initialSelection);
+  const [bulkAssignmentStatus, setBulkAssignmentStatus] =
+    useState<BulkAssignmentStatus>("idle");
 
-  // Initialize bulk assignment hook
-  const {
-    items: bulkItems,
-    isProcessing,
-    startAssignment: startBulkAssignment,
-    retryFailed,
-    resetAssignment,
-    getStats,
-  } = useBulkAssignment({
-    onAssignmentComplete: (results) => {
-      console.log("Assignment completed:", results);
-      const stats = getStats();
+  // Mock bulk assignment process
+  const handleStartBulkAssignment = useCallback(
+    async (selectedIds: string[], totalCount: number) => {
+      console.log("🚀 Starting bulk assignment:", { selectedIds, totalCount });
 
-      // Keep the assignment items visible even after completion
-      // Auto-clear after successful completion
-      if (stats.failed === 0) {
-        setTimeout(() => {
-          setAssignmentItems([]);
-          resetAssignment();
-        }, 5000);
+      setBulkAssignmentStatus("assigning");
+      setSelectedProgramIds(selectedIds);
+
+      try {
+        // Mock POST request to create filter
+        console.log("📤 POST /api/filters - Creating filter...");
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // Mock PATCH request to bulk assign
+        console.log(
+          "📤 PATCH /api/filters/bulk-assign - Assigning to programs..."
+        );
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        // Simulate success/failure (90% success rate)
+        const success = Math.random() > 0.1;
+
+        if (success) {
+          setBulkAssignmentStatus("success");
+          console.log("✅ Bulk assignment completed successfully");
+        } else {
+          setBulkAssignmentStatus("failed");
+          console.log("❌ Bulk assignment failed");
+        }
+      } catch (error) {
+        console.error("💥 Bulk assignment error:", error);
+        setBulkAssignmentStatus("failed");
       }
     },
-    onProgressUpdate: (current, total) => {
-      console.log(`Progress: ${current}/${total}`);
-    },
-  });
-
-  // Handle starting assignment from child components
-  const handleStartAssignment = async (items: AssignmentItem[]) => {
-    console.log("🚀 Assignment started with items:", items);
-    console.log("🚀 handleStartAssignment called in AssignmentManager");
-    setAssignmentItems(items);
-
-    try {
-      await startBulkAssignment({
-        filterId,
-        items,
-        batchSize: 3,
-        delayBetweenBatches: 500,
-      });
-      console.log("✅ Assignment initiated successfully");
-    } catch (error) {
-      console.error("❌ Failed to start bulk assignment:", error);
-    }
-  };
-
-  // Handle retrying failed assignments
-  const handleRetryFailed = async () => {
-    try {
-      await retryFailed(filterId);
-    } catch (error) {
-      console.error("Failed to retry assignment:", error);
-    }
-  };
-
-  // Context value
-  const contextValue: AssignmentContextType = {
-    assignmentItems: bulkItems.length > 0 ? bulkItems : assignmentItems,
-    isProcessing,
-    hasActiveAssignments:
-      (bulkItems.length > 0 ? bulkItems : assignmentItems).length > 0,
-    startAssignment: handleStartAssignment,
-    retryFailed: handleRetryFailed,
-  };
-
-  console.log(
-    "🔧 AssignmentManager creating context with startAssignment function:",
-    handleStartAssignment
+    []
   );
 
-  // Debug logging - only log when assignment items change
-  const prevItemsCount = useRef(0);
-  if (contextValue.assignmentItems.length !== prevItemsCount.current) {
-    console.log("📊 AssignmentManager context value changed:", {
-      assignmentItemsCount: contextValue.assignmentItems.length,
-      isProcessing: contextValue.isProcessing,
-      hasActiveAssignments: contextValue.hasActiveAssignments,
-      bulkItemsCount: bulkItems.length,
-      localAssignmentItemsCount: assignmentItems.length,
-    });
-    prevItemsCount.current = contextValue.assignmentItems.length;
+  // Handle retry for failed assignments
+  const handleRetryAssignment = useCallback(() => {
+    if (selectedProgramIds.length > 0) {
+      handleStartBulkAssignment(selectedProgramIds, selectedProgramIds.length);
+    }
+  }, [selectedProgramIds, handleStartBulkAssignment]);
+
+  // Handle edit button click
+  const handleEditClick = useCallback(() => {
+    // Clear assignment state when starting fresh
+    dispatch(clearAssignment());
+    setBulkAssignmentStatus("idle");
+    setShowSelectionPanel(true);
+  }, [dispatch]);
+
+  // Handle panel close
+  const handlePanelClose = useCallback((newSelectedIds?: string[]) => {
+    setShowSelectionPanel(false);
+    if (newSelectedIds) {
+      setSelectedProgramIds(newSelectedIds);
+    }
+  }, []);
+
+  // Mock partner data for demonstration
+  const mockPartners = [
+    {
+      id: "partner1",
+      name: "Augeo",
+      programs: [
+        {
+          id: "prog1",
+          name: "LexisNexis",
+          promotedPrograms: [
+            { id: "pp1", name: "Legal Research Promotion", active: true },
+            { id: "pp2", name: "Student Discount Initiative", active: true },
+            { id: "pp3", name: "Professional Certification", active: true },
+          ],
+        },
+        {
+          id: "prog2",
+          name: "Fidelity Investments",
+          promotedPrograms: [
+            { id: "pp4", name: "Retirement Planning", active: true },
+            { id: "pp5", name: "Wealth Management", active: true },
+          ],
+        },
+      ],
+    },
+    {
+      id: "partner2",
+      name: "ampliFI",
+      programs: [
+        {
+          id: "prog3",
+          name: "Chase",
+          promotedPrograms: [
+            { id: "pp6", name: "Credit Card Rewards", active: true },
+            { id: "pp7", name: "Business Banking Solutions", active: true },
+          ],
+        },
+      ],
+    },
+  ];
+
+  if (showSelectionPanel) {
+    return (
+      <AssignToProgramsPanel
+        filterId={filterId}
+        filterName={filterName}
+        onClose={handlePanelClose}
+        onStartBulkAssignment={handleStartBulkAssignment}
+        initialSelection={selectedProgramIds}
+        partnerData={mockPartners}
+      />
+    );
   }
 
   return (
-    <AssignmentContext.Provider value={contextValue}>
-      {children}
+    <div className="space-y-4">
+      <SelectedProgramsDisplay
+        partners={mockPartners}
+        selectedProgramIds={selectedProgramIds}
+        onEditClick={handleEditClick}
+        bulkAssignmentStatus={bulkAssignmentStatus}
+        onRetryAssignment={handleRetryAssignment}
+      />
 
-      {/* Optional status modal for detailed view - only show if explicitly requested */}
-      {showStatusModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl h-[80vh] flex flex-col">
-            <AssignToProgramsPanel
-              filterId={filterId}
-              filterName={filterName}
-              onClose={() => setShowStatusModal(false)}
-              statusMode={true}
-              assignmentItems={
-                bulkItems.length > 0 ? bulkItems : assignmentItems
-              }
-              onRetryFailed={handleRetryFailed}
-            />
-          </div>
+      {onClose && (
+        <div className="flex justify-end">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+          >
+            Close
+          </button>
         </div>
       )}
-    </AssignmentContext.Provider>
+    </div>
   );
 }

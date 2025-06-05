@@ -9,3 +9,8 @@ export { AssignToProgramsSheet } from "./AssignToProgramsSheet";
 export { AssignToProgramsPanel } from "./AssignToProgramsPanel";
 export { BulkAssignmentProgress } from "./BulkAssignmentProgress";
 export { AssignmentManager } from "./AssignmentManager";
+export {
+  useAssignmentWorkflow,
+  type BulkAssignmentStatus,
+} from "./useAssignmentWorkflow";
+export { SelectedProgramsDisplay } from "./SelectedProgramsDisplay";

@@ -33,9 +33,10 @@ import {
   X,
 } from "lucide-react";
 import { AccordionContent } from "@/components/ui/accordion";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { AssignmentItem } from "./BulkAssignmentProgress";
 
 // Redux imports
+import { selectSelectedProgramIds } from "@/lib/redux/selectors/programSelectionSelectors";
 import {
   selectProgram,
   deselectProgram,
@@ -43,10 +44,6 @@ import {
   deselectMultiplePrograms,
   clearAllSelections,
 } from "@/lib/redux/slices/programSelectionSlice";
-import {
-  selectSelectedProgramIds,
-  selectTotalSelectedCount,
-} from "@/lib/redux/selectors/programSelectionSelectors";
 import { clearAssignment } from "@/lib/redux/slices/assignmentSlice";
 
 // Define the hierarchical structure based on Kigo Pro glossary
@@ -394,9 +391,12 @@ interface AssignToProgramsPanelProps {
   filterName: string;
   onClose: (selectedIds?: string[]) => void;
   onSelectionChange?: (count: number) => void;
-  onStartBulkAssignment?: (selectedIds: string[], totalCount: number) => void;
+  onStartAssignment?: (items: AssignmentItem[]) => void;
   initialSelection?: string[];
   partnerData?: Partner[];
+  statusMode?: boolean;
+  assignmentItems?: AssignmentItem[];
+  onRetryFailed?: () => void;
 }
 
 // Helper function to generate mock partner data dynamically
@@ -644,9 +644,12 @@ export function AssignToProgramsPanel({
   filterName,
   onClose,
   onSelectionChange,
-  onStartBulkAssignment,
+  onStartAssignment,
   initialSelection = [],
   partnerData = [],
+  statusMode = false,
+  assignmentItems = [],
+  onRetryFailed,
 }: AssignToProgramsPanelProps) {
   const dispatch = useDispatch();
   const [searchQuery, setSearchQuery] = useState("");
@@ -660,16 +663,6 @@ export function AssignToProgramsPanel({
     });
     return record;
   }, [selectedPromotedPrograms]);
-
-  const selectedCount = selectedPromotedPrograms.length;
-
-  // Update the useEffect to use this value
-  useEffect(() => {
-    // Call onSelectionChange if provided
-    if (onSelectionChange) {
-      onSelectionChange(selectedCount);
-    }
-  }, [selectedCount, onSelectionChange]);
 
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -1004,6 +997,21 @@ export function AssignToProgramsPanel({
     }
   }, [loadMorePartners, handleScroll, searchQuery, getFilteredPartners]);
 
+  // Add a computed selectedCount property based on selected programs
+  const selectedCount = useMemo(() => {
+    return Object.keys(selectedPromotedPrograms).filter(
+      (id) => selectedPromotedPrograms[id]
+    ).length;
+  }, [selectedPromotedPrograms]);
+
+  // Update the useEffect to use this value
+  useEffect(() => {
+    // Call onSelectionChange if provided
+    if (onSelectionChange) {
+      onSelectionChange(selectedCount);
+    }
+  }, [selectedCount, onSelectionChange]);
+
   // Update select all to use Redux
   const selectAll = () => {
     const allIds: string[] = [];
@@ -1049,14 +1057,32 @@ export function AssignToProgramsPanel({
       // Clear any existing assignment state before starting new assignment
       dispatch(clearAssignment());
 
+      // Prepare assignment items with hierarchical information
+      const preparedItems: AssignmentItem[] = [];
+
+      allPartners.forEach((partner) => {
+        partner.programs.forEach((program) => {
+          program.promotedPrograms.forEach((promotedProgram) => {
+            if (selectedIds.includes(promotedProgram.id)) {
+              preparedItems.push({
+                id: promotedProgram.id,
+                name: promotedProgram.name,
+                type: "promotedProgram",
+                parentName: `${partner.name} > ${program.name}`,
+                status: "pending",
+              });
+            }
+          });
+        });
+      });
+
       // Notify parent to start assignment process and show status indicator
-      if (onStartBulkAssignment) {
+      if (onStartAssignment) {
         console.log(
-          "📤 AssignToProgramsPanel calling onStartBulkAssignment with:",
-          selectedIds,
-          selectedIds.length
+          "📤 AssignToProgramsPanel calling onStartAssignment with:",
+          preparedItems
         );
-        onStartBulkAssignment(selectedIds, selectedIds.length);
+        onStartAssignment(preparedItems);
       }
 
       // Close the panel immediately
@@ -1078,10 +1104,106 @@ export function AssignToProgramsPanel({
 
   // Update cancel function to use Redux state
   const handleCancel = () => {
-    onClose();
+    // Get the selected IDs from Redux to pass back
+    onClose(selectedPromotedPrograms);
   };
 
-  const displayPartners = visiblePartners;
+  // Status icon component (from card-status-list)
+  const StatusIcon = ({ status }: { status: AssignmentItem["status"] }) => {
+    switch (status) {
+      case "success":
+        return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case "failed":
+        return <XCircle className="h-4 w-4 text-red-600" />;
+      case "processing":
+        return <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />;
+      default:
+        return <Clock className="h-4 w-4 text-gray-400" />;
+    }
+  };
+
+  // Get status for a promoted program in status mode
+  const getPromotedProgramStatus = (
+    promotedProgramId: string
+  ): AssignmentItem["status"] => {
+    if (!statusMode) return "pending";
+    const item = assignmentItems.find((item) => item.id === promotedProgramId);
+    return item?.status || "pending";
+  };
+
+  // Check if we should show this promoted program in status mode
+  const shouldShowInStatusMode = (promotedProgramId: string) => {
+    if (!statusMode) return true;
+    return assignmentItems.some((item) => item.id === promotedProgramId);
+  };
+
+  // Filter partners for status mode - only show those with assignment items
+  const getDisplayPartners = useCallback(() => {
+    const basePartners = getFilteredPartners();
+
+    if (!statusMode) return basePartners;
+
+    // In status mode, only show partners that have promoted programs being assigned
+    return basePartners
+      .map((partner) => ({
+        ...partner,
+        programs: partner.programs
+          .map((program) => ({
+            ...program,
+            promotedPrograms: program.promotedPrograms.filter((pp) =>
+              shouldShowInStatusMode(pp.id)
+            ),
+          }))
+          .filter((program) => program.promotedPrograms.length > 0),
+      }))
+      .filter((partner) => partner.programs.length > 0);
+  }, [getFilteredPartners, statusMode, assignmentItems]);
+
+  // Calculate progress stats for status mode
+  const getProgressStats = () => {
+    if (!statusMode) return null;
+
+    const total = assignmentItems.length;
+    const completed = assignmentItems.filter(
+      (item) => item.status === "success" || item.status === "failed"
+    ).length;
+    const successful = assignmentItems.filter(
+      (item) => item.status === "success"
+    ).length;
+    const failed = assignmentItems.filter(
+      (item) => item.status === "failed"
+    ).length;
+    const processing = assignmentItems.filter(
+      (item) => item.status === "processing"
+    ).length;
+
+    return { total, completed, successful, failed, processing };
+  };
+
+  // Modified to use getDisplayPartners instead of visiblePartners for status mode
+  useEffect(() => {
+    if (statusMode) {
+      // In status mode, expand all by default
+      const displayPartners = getDisplayPartners();
+      const partnerIds = displayPartners.map((p) => p.id);
+      const programIds: string[] = [];
+
+      displayPartners.forEach((partner) => {
+        partner.programs.forEach((program) => {
+          programIds.push(program.id);
+        });
+      });
+
+      setExpandedPartners(partnerIds);
+      setExpandedPrograms(programIds);
+    } else {
+      // Normal selection mode
+      loadMorePartners();
+    }
+  }, [statusMode, getDisplayPartners, loadMorePartners]);
+
+  const progressStats = getProgressStats();
+  const displayPartners = statusMode ? getDisplayPartners() : visiblePartners;
 
   // Initialize Redux state with initial selection
   useEffect(() => {
@@ -1101,55 +1223,90 @@ export function AssignToProgramsPanel({
       ref={componentRef}
     >
       <div className="flex flex-col h-full">
-        {/* Search input */}
-        <div className="relative mb-4 flex-shrink-0">
-          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <MagnifyingGlassIcon className="w-4 h-4 text-gray-400" />
+        {/* Search input - hide in status mode */}
+        {!statusMode && (
+          <div className="relative mb-4 flex-shrink-0">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+              <MagnifyingGlassIcon className="w-4 h-4 text-gray-400" />
+            </div>
+            <Input
+              type="text"
+              placeholder="Search partners, programs or promoted programs..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
           </div>
-          <Input
-            type="text"
-            placeholder="Search partners, programs or promoted programs..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
+        )}
 
-        {/* Header info - Selection mode */}
+        {/* Header info */}
         <div className="flex justify-between items-center mb-4 flex-shrink-0">
-          <span className="text-sm text-gray-500">
-            {selectedCount} promoted program{selectedCount !== 1 ? "s" : ""}{" "}
-            selected
-          </span>
-          <div className="flex space-x-2">
-            {selectedCount > 0 && (
-              <Button variant="outline" size="sm" onClick={clearAll}>
-                Clear All
-              </Button>
-            )}
-            <Button variant="outline" size="sm" onClick={selectAll}>
-              <CheckCircle className="mr-1 h-4 w-4" />
-              Select All
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                const allPartnerIds = allPartners.map((p) => p.id);
-                const allProgramIds: string[] = [];
-                allPartners.forEach((partner) => {
-                  partner.programs.forEach((program) => {
-                    allProgramIds.push(program.id);
-                  });
-                });
-                setExpandedPartners(allPartnerIds);
-                setExpandedPrograms(allProgramIds);
-              }}
-            >
-              <ChevronDown className="mr-1 h-4 w-4" />
-              Expand All
-            </Button>
-          </div>
+          {statusMode ? (
+            // Status mode header
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold mb-1">
+                Assignment Progress
+              </h3>
+              <div className="text-sm text-gray-600">
+                Assigning filter "{filterName}" to {progressStats?.total || 0}{" "}
+                items
+              </div>
+              {progressStats && (
+                <div className="flex gap-4 mt-2 text-sm">
+                  <span className="text-green-600">
+                    ✓ {progressStats.successful} completed
+                  </span>
+                  {progressStats.failed > 0 && (
+                    <span className="text-red-600">
+                      ✗ {progressStats.failed} failed
+                    </span>
+                  )}
+                  {progressStats.processing > 0 && (
+                    <span className="text-blue-600">
+                      ⟳ {progressStats.processing} processing
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
+            // Selection mode header
+            <>
+              <span className="text-sm text-gray-500">
+                {selectedCount} promoted program{selectedCount !== 1 ? "s" : ""}{" "}
+                selected
+              </span>
+              <div className="flex space-x-2">
+                {selectedCount > 0 && (
+                  <Button variant="outline" size="sm" onClick={clearAll}>
+                    Clear All
+                  </Button>
+                )}
+                <Button variant="outline" size="sm" onClick={selectAll}>
+                  <CheckCircle className="mr-1 h-4 w-4" />
+                  Select All
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const allPartnerIds = allPartners.map((p) => p.id);
+                    const allProgramIds: string[] = [];
+                    allPartners.forEach((partner) => {
+                      partner.programs.forEach((program) => {
+                        allProgramIds.push(program.id);
+                      });
+                    });
+                    setExpandedPartners(allPartnerIds);
+                    setExpandedPrograms(allProgramIds);
+                  }}
+                >
+                  <ChevronDown className="mr-1 h-4 w-4" />
+                  Expand All
+                </Button>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Scrollable program list area - with fixed height to ensure buttons stay at bottom */}
@@ -1179,20 +1336,25 @@ export function AssignToProgramsPanel({
                   </div>
 
                   <div className="flex items-center flex-1">
-                    <div className="mr-2" onClick={(e) => e.stopPropagation()}>
-                      <Checkbox
-                        id={`partner-${partner.id}`}
-                        checked={isAllProgramsSelected(partner.programs)}
-                        onCheckedChange={(checked) => {
-                          handlePartnerSelection(partner, !!checked);
-                        }}
-                        className={
-                          isSomeProgramsSelected(partner)
-                            ? "bg-primary/40 data-[state=checked]:bg-primary"
-                            : ""
-                        }
-                      />
-                    </div>
+                    {!statusMode && (
+                      <div
+                        className="mr-2"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Checkbox
+                          id={`partner-${partner.id}`}
+                          checked={isAllProgramsSelected(partner.programs)}
+                          onCheckedChange={(checked) => {
+                            handlePartnerSelection(partner, !!checked);
+                          }}
+                          className={
+                            isSomeProgramsSelected(partner)
+                              ? "bg-primary/40 data-[state=checked]:bg-primary"
+                              : ""
+                          }
+                        />
+                      </div>
+                    )}
 
                     <div className="flex items-center">
                       <Building className="h-4 w-4 mr-2 text-blue-600" />
@@ -1235,27 +1397,29 @@ export function AssignToProgramsPanel({
                           </div>
 
                           <div className="flex items-center flex-1">
-                            <div
-                              className="mr-2"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <Checkbox
-                                id={`program-${program.id}`}
-                                checked={isAllPromotedProgramsSelected(
-                                  program.promotedPrograms
-                                )}
-                                onCheckedChange={(checked) => {
-                                  handleProgramSelection(program, !!checked);
-                                }}
-                                className={
-                                  isSomePromotedProgramsSelected(
+                            {!statusMode && (
+                              <div
+                                className="mr-2"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <Checkbox
+                                  id={`program-${program.id}`}
+                                  checked={isAllPromotedProgramsSelected(
                                     program.promotedPrograms
-                                  )
-                                    ? "bg-primary/40 data-[state=checked]:bg-primary"
-                                    : ""
-                                }
-                              />
-                            </div>
+                                  )}
+                                  onCheckedChange={(checked) => {
+                                    handleProgramSelection(program, !!checked);
+                                  }}
+                                  className={
+                                    isSomePromotedProgramsSelected(
+                                      program.promotedPrograms
+                                    )
+                                      ? "bg-primary/40 data-[state=checked]:bg-primary"
+                                      : ""
+                                  }
+                                />
+                              </div>
+                            )}
 
                             <div className="flex items-center">
                               <Briefcase className="h-4 w-4 mr-2 text-green-600" />
@@ -1287,26 +1451,40 @@ export function AssignToProgramsPanel({
                                     : ""
                                 } ${getSelectionFeedbackClass(promotedProgram.id)}`}
                               >
-                                <div
-                                  className="mr-2"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <Checkbox
-                                    id={`promoted-program-${promotedProgram.id}`}
-                                    checked={
-                                      !!selectedPromotedProgramsRecord[
+                                {statusMode ? (
+                                  // Status mode - show status icon
+                                  <div className="mr-2">
+                                    <StatusIcon
+                                      status={getPromotedProgramStatus(
                                         promotedProgram.id
-                                      ]
-                                    }
-                                    disabled={promotedProgram.active === false}
-                                    onCheckedChange={(checked) => {
-                                      handlePromotedProgramSelection(
-                                        promotedProgram.id,
-                                        !!checked
-                                      );
-                                    }}
-                                  />
-                                </div>
+                                      )}
+                                    />
+                                  </div>
+                                ) : (
+                                  // Selection mode - show checkbox
+                                  <div
+                                    className="mr-2"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <Checkbox
+                                      id={`promoted-program-${promotedProgram.id}`}
+                                      checked={
+                                        !!selectedPromotedProgramsRecord[
+                                          promotedProgram.id
+                                        ]
+                                      }
+                                      disabled={
+                                        promotedProgram.active === false
+                                      }
+                                      onCheckedChange={(checked) => {
+                                        handlePromotedProgramSelection(
+                                          promotedProgram.id,
+                                          !!checked
+                                        );
+                                      }}
+                                    />
+                                  </div>
+                                )}
 
                                 <div className="flex flex-1 items-center justify-between">
                                   <div className="flex items-center">
@@ -1315,7 +1493,8 @@ export function AssignToProgramsPanel({
                                       <Label
                                         htmlFor={`promoted-program-${promotedProgram.id}`}
                                         className={`block font-medium text-sm ${
-                                          promotedProgram.active === false
+                                          promotedProgram.active === false ||
+                                          statusMode
                                             ? "cursor-default"
                                             : "cursor-pointer"
                                         }`}
@@ -1329,26 +1508,60 @@ export function AssignToProgramsPanel({
                                       )}
                                     </div>
                                   </div>
-
                                   <div className="flex items-center gap-2">
-                                    {promotedProgram.active === false && (
+                                    {statusMode && (
                                       <Badge
                                         variant="outline"
-                                        className="bg-gray-100"
+                                        className={`text-xs ${
+                                          getPromotedProgramStatus(
+                                            promotedProgram.id
+                                          ) === "success"
+                                            ? "bg-green-50 text-green-700 border-green-200"
+                                            : getPromotedProgramStatus(
+                                                  promotedProgram.id
+                                                ) === "failed"
+                                              ? "bg-red-50 text-red-700 border-red-200"
+                                              : getPromotedProgramStatus(
+                                                    promotedProgram.id
+                                                  ) === "processing"
+                                                ? "bg-blue-50 text-blue-700 border-blue-200"
+                                                : "bg-gray-50 text-gray-600 border-gray-200"
+                                        }`}
                                       >
-                                        Inactive
+                                        {getPromotedProgramStatus(
+                                          promotedProgram.id
+                                        ) === "success" && "Completed"}
+                                        {getPromotedProgramStatus(
+                                          promotedProgram.id
+                                        ) === "failed" && "Failed"}
+                                        {getPromotedProgramStatus(
+                                          promotedProgram.id
+                                        ) === "processing" && "Processing"}
+                                        {getPromotedProgramStatus(
+                                          promotedProgram.id
+                                        ) === "pending" && "Pending"}
                                       </Badge>
                                     )}
-                                    {promotedProgram.currentFilters?.includes(
-                                      filterId
-                                    ) && (
-                                      <Badge
-                                        variant="outline"
-                                        className="bg-blue-50 text-blue-700"
-                                      >
-                                        Current
-                                      </Badge>
-                                    )}
+                                    {!statusMode &&
+                                      promotedProgram.active === false && (
+                                        <Badge
+                                          variant="outline"
+                                          className="bg-gray-100"
+                                        >
+                                          Inactive
+                                        </Badge>
+                                      )}
+                                    {!statusMode &&
+                                      promotedProgram.currentFilters?.includes(
+                                        filterId
+                                      ) && (
+                                        <Badge
+                                          variant="outline"
+                                          className="bg-blue-50 text-blue-700"
+                                        >
+                                          Current
+                                        </Badge>
+                                      )}
                                   </div>
                                 </div>
                               </div>
@@ -1412,16 +1625,40 @@ export function AssignToProgramsPanel({
 
           {/* Actions */}
           <div className="flex items-center justify-end space-x-2 mt-auto">
-            <Button variant="outline" onClick={handleCancel}>
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              onClick={handleSave}
-              disabled={saving || selectedCount === 0}
-            >
-              {saving ? "Starting Assignment..." : "Start Assignment"}
-            </Button>
+            {statusMode ? (
+              // Status mode actions
+              <>
+                {progressStats && progressStats.failed > 0 && onRetryFailed && (
+                  <Button variant="outline" onClick={onRetryFailed}>
+                    <AlertTriangle className="mr-1 h-4 w-4" />
+                    Retry Failed
+                  </Button>
+                )}
+                <Button variant="outline" onClick={() => onClose()}>
+                  <X className="mr-1 h-4 w-4" />
+                  Close
+                </Button>
+              </>
+            ) : (
+              // Selection mode actions
+              <>
+                <Button variant="outline" onClick={handleCancel}>
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={
+                    saving ||
+                    Object.keys(selectedPromotedPrograms).filter(
+                      (id) => selectedPromotedPrograms[id]
+                    ).length === 0
+                  }
+                >
+                  {saving ? "Starting Assignment..." : "Start Assignment"}
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>

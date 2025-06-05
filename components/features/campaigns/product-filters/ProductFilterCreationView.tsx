@@ -92,8 +92,10 @@ import { getFieldPlaceholder } from "@/services/ai/tools";
 import { generateFilterCoverageStats } from "@/services/ai/filterHandler";
 import FilterCoveragePanel from "./FilterCoveragePanel";
 import { AssignToProgramsPanel, mockPartners } from "./AssignToProgramsPanel";
-import { AssignmentManager, useAssignmentStatus } from "./AssignmentManager";
+import { AssignmentManager } from "./AssignmentManager";
 import { AssignmentItem } from "./BulkAssignmentProgress";
+import { useAssignmentWorkflow } from "./useAssignmentWorkflow";
+import { useToast } from "@/lib/hooks/use-toast";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -106,6 +108,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/molecules/alert-dialog/AlertDialog";
 import { ShinyBorder } from "@/components/ui/shiny-border";
+import { ShineBorder } from "@/components/ui/shine-border";
 import {
   Dialog,
   DialogContent,
@@ -170,24 +173,6 @@ const Switch = (props: any) => {
   );
 };
 
-// Mock useToast implementation
-const useToast = () => {
-  return {
-    toast: ({
-      title,
-      description,
-      variant,
-    }: {
-      title: string;
-      description: string;
-      variant?: string;
-    }) => {
-      console.log(`Toast: ${title} - ${description} (${variant || "default"})`);
-      alert(`${title}: ${description}`);
-    },
-  };
-};
-
 // Mock filterService implementation
 const filterService = {
   saveFilter: async (filterData: any) => {
@@ -224,6 +209,33 @@ export default function ProductFilterCreationView({
   const dispatch = useDispatch();
   const router = useRouter();
   const { toast } = useToast();
+
+  // Initialize assignment workflow
+  const {
+    bulkAssignmentStatus,
+    startBulkAssignment,
+    retryAssignment,
+    resetAssignment,
+  } = useAssignmentWorkflow({
+    onAssignmentComplete: (selectedIds, success) => {
+      console.log(
+        `🎯 Assignment completed for ${selectedIds.length} programs: ${success ? "Success" : "Failed"}`
+      );
+      if (success) {
+        toast({
+          title: "✅ Assignment Successful",
+          description: `Filter assigned to ${selectedIds.length} programs successfully.`,
+          className: "!bg-green-100 !border-green-300 !text-green-800",
+        });
+      } else {
+        toast({
+          title: "Assignment Failed",
+          description: `Failed to assign filter to ${selectedIds.length} programs. Please try again.`,
+          variant: "destructive",
+        });
+      }
+    },
+  });
 
   // Redux selectors for filter state
   const filterName = useSelector(selectFilterName);
@@ -414,14 +426,17 @@ export default function ProductFilterCreationView({
     // Close the dialog
     setCreateDialogOpen(false);
 
-    // Show success message
-    setSuccessMessage("Product filter created successfully!");
+    // Show success message with toast
+    toast({
+      title: "✅ Filter Created Successfully",
+      description: "Your product filter has been created and is ready to use.",
+      className: "!bg-green-100 !border-green-300 !text-green-800",
+    });
 
-    // Clear the success message after 3 seconds and redirect
+    // Redirect after a short delay
     setTimeout(() => {
-      setSuccessMessage(null);
       router.push("/campaigns/product-filters");
-    }, 3000);
+    }, 1500);
   };
 
   const handleBackClick = () => {
@@ -789,12 +804,15 @@ export default function ProductFilterCreationView({
       return;
     }
 
-    setSuccessMessage("Filter saved as draft successfully!");
+    toast({
+      title: "✅ Draft Saved",
+      description: "Your filter has been saved as a draft.",
+      className: "!bg-green-100 !border-green-300 !text-green-800",
+    });
 
     setTimeout(() => {
-      setSuccessMessage(null);
       router.push("/campaigns/product-filters");
-    }, 3000);
+    }, 1500);
   };
 
   const getPageTitle = () => {
@@ -1338,12 +1356,15 @@ export default function ProductFilterCreationView({
                                   partners={mockPartners}
                                   selectedProgramIds={selectedPrograms}
                                   collapsed={selectedProgramsCollapsed}
-                                  onEditClick={() =>
-                                    setIsAssignProgramsModalOpen(true)
-                                  }
+                                  onEditClick={() => {
+                                    resetAssignment();
+                                    setIsAssignProgramsModalOpen(true);
+                                  }}
                                   onToggleCollapse={
                                     toggleSelectedProgramsCollapsed
                                   }
+                                  bulkAssignmentStatus={bulkAssignmentStatus}
+                                  onRetryAssignment={retryAssignment}
                                 />
                               ) : (
                                 <div className="border rounded-md overflow-hidden hover:bg-gray-50 transition-colors cursor-pointer">
@@ -1834,7 +1855,7 @@ export default function ProductFilterCreationView({
                 onSelectionChange={() => {
                   // No longer needed since Redux handles count automatically
                 }}
-                onStartAssignment={handleStartAssignment}
+                onStartBulkAssignment={startBulkAssignment}
               />
             </div>
           </DialogContent>
