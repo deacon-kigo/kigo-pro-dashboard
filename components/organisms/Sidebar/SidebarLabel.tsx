@@ -117,7 +117,7 @@ export default function SidebarLabel({
   // Memoize class calculations to prevent recalculation on every render
   const serverClasses = useMemo(() => {
     const serverLinkClasses = cn(
-      "flex items-center py-2 text-sm font-medium rounded-lg group px-3 h-10",
+      "flex items-center py-2 text-sm font-medium rounded-lg group px-3 h-10 cursor-pointer",
       isActive ? activeClasses : inactiveClasses,
       !isActive ? hoverClasses : "",
       "transition-all duration-200",
@@ -133,7 +133,7 @@ export default function SidebarLabel({
   const clientClasses = useMemo(() => {
     // Combine all classes for the link
     const linkClasses = cn(
-      "flex items-center justify-between py-2 text-sm font-medium rounded-lg group w-full h-10",
+      "flex items-center justify-between py-2 text-sm font-medium rounded-lg group w-full h-10 cursor-pointer",
       isCollapsed ? "justify-center px-2" : "px-3",
       isActive ? activeClasses : inactiveClasses,
       !isActive ? hoverClasses : "",
@@ -197,10 +197,75 @@ export default function SidebarLabel({
     );
   }
 
-  // Handle the case when submenu is present
+  // Handle different cases for navigation
+  if (hasSubmenu) {
+    // Items with submenus need special handling
+    return (
+      <div className="w-full">
+        <div className={linkClasses}>
+          <div className="flex items-center">
+            <Icon className={iconClasses} />
+            {!isCollapsed && <span className={textClasses}>{title}</span>}
+            {!isCollapsed && hasNotification && (
+              <span className="bg-pastel-red text-red-600 text-xs rounded-full px-1.5 py-0.5 ml-2">
+                {notificationCount}
+              </span>
+            )}
+          </div>
+
+          {/* Add submenu toggle button if hasSubmenu is true */}
+          {!isCollapsed && hasSubmenu && (
+            <button
+              onClick={handleSubmenuToggle}
+              className="p-1 rounded-md cursor-pointer hover:bg-gray-100"
+              aria-label={`Toggle ${title} submenu`}
+            >
+              <ChevronDownIcon
+                className={`w-4 h-4 transition-transform ${
+                  isSubmenuOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+          )}
+        </div>
+
+        {/* Render submenu items */}
+        {!isCollapsed && hasSubmenu && isSubmenuOpen && submenuItems && (
+          <div className="pl-8 mt-1 relative">
+            {/* Vertical line to connect parent and children */}
+            <div
+              className="absolute top-0 bottom-0 w-px bg-gray-200"
+              style={{ left: "20px" }}
+              aria-hidden="true"
+            ></div>
+            <ul className="space-y-1">
+              {submenuItems.map((item, index) => (
+                <li key={`submenu-${index}`}>
+                  <Link
+                    href={item.href}
+                    className={cn(
+                      "flex items-center py-2 px-3 text-sm font-medium rounded-lg transition-all duration-200 w-full cursor-pointer",
+                      item.isActive
+                        ? activeClasses // Use same active classes as parent
+                        : inactiveClasses, // Use same inactive classes as parent
+                      !item.isActive ? hoverClasses : "" // Use same hover classes as parent
+                    )}
+                  >
+                    {item.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Items without submenus should be proper clickable links
   return (
     <div className="w-full">
-      <div className={linkClasses}>
+      <Link href={href} className={linkClasses} title={title} onClick={onClick}>
         <div className="flex items-center">
           <Icon className={iconClasses} />
           {!isCollapsed && <span className={textClasses}>{title}</span>}
@@ -210,52 +275,7 @@ export default function SidebarLabel({
             </span>
           )}
         </div>
-
-        {/* Add submenu toggle button if hasSubmenu is true */}
-        {!isCollapsed && hasSubmenu && (
-          <button
-            onClick={handleSubmenuToggle}
-            className="p-1 rounded-md"
-            aria-label={`Toggle ${title} submenu`}
-          >
-            <ChevronDownIcon
-              className={`w-4 h-4 transition-transform ${
-                isSubmenuOpen ? "rotate-180" : ""
-              }`}
-            />
-          </button>
-        )}
-      </div>
-
-      {/* Render submenu items */}
-      {!isCollapsed && hasSubmenu && isSubmenuOpen && submenuItems && (
-        <div className="pl-8 mt-1 relative">
-          {/* Vertical line to connect parent and children */}
-          <div
-            className="absolute top-0 bottom-0 w-px bg-gray-200"
-            style={{ left: "20px" }}
-            aria-hidden="true"
-          ></div>
-          <ul className="space-y-1">
-            {submenuItems.map((item, index) => (
-              <li key={`submenu-${index}`}>
-                <Link
-                  href={item.href}
-                  className={cn(
-                    "flex items-center py-2 px-3 text-sm font-medium rounded-lg transition-all duration-200 w-full",
-                    item.isActive
-                      ? activeClasses // Use same active classes as parent
-                      : inactiveClasses, // Use same inactive classes as parent
-                    !item.isActive ? hoverClasses : "" // Use same hover classes as parent
-                  )}
-                >
-                  {item.title}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      </Link>
     </div>
   );
 }

@@ -136,7 +136,7 @@ export default function Header() {
         return (
           <Button
             variant="primary"
-            href="/campaign-manager/ai-create"
+            href="/campaign-manager/ads-create"
             icon={<PlusIcon className="w-5 h-5" />}
             glow={{
               mode: "colorShift",
@@ -265,7 +265,7 @@ export default function Header() {
 
         <div className="ml-auto flex items-center gap-4">
           <button
-            className={`w-10 h-10 rounded-full flex items-center justify-center ${isDarkMode ? "hover:bg-gray-800/80" : "hover:bg-white/80"}`}
+            className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer ${isDarkMode ? "hover:bg-gray-800/80" : "hover:bg-white/80"}`}
           >
             <BellIcon
               className={`h-5 w-5 ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}
@@ -277,7 +277,7 @@ export default function Header() {
             )}
           </button>
           <button
-            className={`w-10 h-10 rounded-full flex items-center justify-center ${isDarkMode ? "hover:bg-gray-800/80" : "hover:bg-white/80"}`}
+            className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer ${isDarkMode ? "hover:bg-gray-800/80" : "hover:bg-white/80"}`}
           >
             <ChatBubbleLeftEllipsisIcon
               className={`h-5 w-5 ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}

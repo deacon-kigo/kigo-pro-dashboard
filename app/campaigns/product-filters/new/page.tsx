@@ -41,7 +41,7 @@ export default function NewProductFilterPage() {
     <Breadcrumb className="mb-4">
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink href="/campaigns">Campaigns</BreadcrumbLink>
+          <BreadcrumbLink href="/campaign-manager">Dashboard</BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>

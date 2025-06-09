@@ -128,13 +128,33 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         return true;
       }
 
-      // Special case for dashboard
+      // Special case for dashboard - now always campaign-manager
       if (
-        (path === "/" || path.includes("/dashboard")) &&
+        (path === "/" ||
+          path.includes("/dashboard") ||
+          path.includes("/campaign-manager")) &&
         (pathname === "/" ||
           pathname === "/demos/cvs-dashboard" ||
           pathname.includes("cvs-dashboard") ||
           pathname.includes("/campaign-manager"))
+      ) {
+        // Don't highlight dashboard when on campaign creation pages
+        if (
+          pathname.includes("/campaign-manager/ads-create") ||
+          pathname.includes("/campaign-manager/ai-create") ||
+          pathname.includes("/campaign-manager/campaign-create")
+        ) {
+          return false;
+        }
+        return true;
+      }
+
+      // Special case for campaigns - highlight when on campaign creation pages
+      if (
+        path === "/campaigns" &&
+        (pathname.includes("/campaign-manager/ads-create") ||
+          pathname.includes("/campaign-manager/ai-create") ||
+          pathname.includes("/campaign-manager/campaign-create"))
       ) {
         return true;
       }
@@ -212,17 +232,15 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
 
   // Memoize navigation items based on context and role
   const navigationItems = useMemo(() => {
-    // Determine dashboard URL based on context
-    const dashboardUrl = isCampaignManagerView ? "/campaign-manager" : "/";
+    // Always use campaign-manager as dashboard URL for consistency
+    const dashboardUrl = "/campaign-manager";
 
     // Check if we're in the publisher dashboard view
     const isPublisherDashboard = pathname.includes("/publisher-dashboard");
 
     // If in CVS context, show CVS-specific navigation
     if (isCVSContextBool) {
-      const cvsUrl = isCampaignManagerView
-        ? "/campaign-manager"
-        : "/demos/cvs-dashboard";
+      const cvsUrl = "/campaign-manager";
       const customersUrl = "/demos/cvs-token-management";
       const tokenManagementUrl = "/demos/cvs-token-catalog";
       const ticketsUrl = "/demos/cvs-tickets";
@@ -234,7 +252,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
               href={cvsUrl}
               icon={HomeIcon}
               title="Dashboard"
-              isActive={isLinkActive(cvsUrl)}
+              isActive={isLinkActive("/campaign-manager")}
               isCollapsed={sidebarCollapsed}
             />
           </li>
@@ -292,7 +310,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 href={dashboardUrl}
                 icon={HomeIcon}
                 title="Dashboard"
-                isActive={isLinkActive("/")}
+                isActive={isLinkActive("/campaign-manager")}
                 isCollapsed={sidebarCollapsed}
                 hasSubmenu={
                   isCampaignManagerView && dashboardSubmenuItems.length > 0
@@ -343,7 +361,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 href={dashboardUrl}
                 icon={HomeIcon}
                 title="Dashboard"
-                isActive={isLinkActive("/")}
+                isActive={isLinkActive("/campaign-manager")}
                 isCollapsed={sidebarCollapsed}
               />
             </li>
@@ -375,7 +393,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 href={dashboardUrl}
                 icon={HomeIcon}
                 title="Dashboard"
-                isActive={isLinkActive("/")}
+                isActive={isLinkActive("/campaign-manager")}
                 isCollapsed={sidebarCollapsed}
               />
             </li>

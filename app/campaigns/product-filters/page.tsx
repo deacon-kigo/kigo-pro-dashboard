@@ -14,24 +14,27 @@ import { ProductFiltersListView } from "@/components/features/campaigns/product-
 
 /**
  * Product Filters Page
- * 
+ *
  * Top-level page component for the product filters section
  */
 export default function ProductFiltersPage() {
   // Memoize the breadcrumb to prevent unnecessary recreations
-  const productFilterBreadcrumb = useMemo(() => (
-    <Breadcrumb className="mb-4">
-      <BreadcrumbList>
-        <BreadcrumbItem>
-          <BreadcrumbLink href="/campaigns">Campaigns</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <BreadcrumbPage>Product Filters</BreadcrumbPage>
-        </BreadcrumbItem>
-      </BreadcrumbList>
-    </Breadcrumb>
-  ), []);
+  const productFilterBreadcrumb = useMemo(
+    () => (
+      <Breadcrumb className="mb-4">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/campaign-manager">Dashboard</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Product Filters</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+    ),
+    []
+  );
 
   return (
     <AppLayout customBreadcrumb={productFilterBreadcrumb}>
