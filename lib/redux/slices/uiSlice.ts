@@ -92,11 +92,7 @@ export const uiSlice = createSlice({
   reducers: {
     setHydrated: (state, action: PayloadAction<boolean>) => {
       state.isHydrated = action.payload;
-
-      // Immediately update CSS variables when hydrated to ensure layout sync
-      if (action.payload && typeof document !== "undefined") {
-        updateCssVariables(state);
-      }
+      // No CSS variable manipulation - rely entirely on Redux state
     },
 
     loadSavedState: (state, action: PayloadAction<Partial<UIState>>) => {
@@ -108,9 +104,6 @@ export const uiSlice = createSlice({
           state.sidebarWidth = action.payload.sidebarCollapsed
             ? COLLAPSED_WIDTH
             : EXPANDED_WIDTH;
-
-          // Immediately apply CSS variables to prevent layout gaps
-          updateCssVariables(state);
         }
       }
     },
@@ -118,8 +111,7 @@ export const uiSlice = createSlice({
     setSidebarCollapsed: (state, action: PayloadAction<boolean>) => {
       state.sidebarCollapsed = action.payload;
       state.sidebarWidth = action.payload ? COLLAPSED_WIDTH : EXPANDED_WIDTH;
-
-      updateCssVariables(state);
+      // No CSS variable manipulation - rely entirely on Redux state
     },
 
     toggleSidebar: (state) => {
@@ -127,8 +119,7 @@ export const uiSlice = createSlice({
       state.sidebarWidth = state.sidebarCollapsed
         ? COLLAPSED_WIDTH
         : EXPANDED_WIDTH;
-
-      updateCssVariables(state);
+      // No CSS variable manipulation - rely entirely on Redux state
     },
 
     setChatOpen: (state, action: PayloadAction<boolean>) => {
@@ -154,8 +145,7 @@ export const uiSlice = createSlice({
       if (action.payload && !state.sidebarCollapsed) {
         state.sidebarCollapsed = true;
         state.sidebarWidth = COLLAPSED_WIDTH;
-
-        updateCssVariables(state);
+        // No CSS variable manipulation - rely entirely on Redux state
       }
     },
 
@@ -193,39 +183,8 @@ export const uiSlice = createSlice({
   },
 });
 
-// Helper function to update CSS variables based on state
-function updateCssVariables(state: UIState) {
-  if (typeof document !== "undefined") {
-    document.documentElement.style.setProperty(
-      "--sidebar-width",
-      state.sidebarWidth
-    );
-
-    document.documentElement.style.setProperty(
-      "--content-padding-left",
-      `calc(${state.sidebarWidth} + 1.5rem)`
-    );
-  }
-}
-
-// Initialize CSS variables with default state to prevent layout issues
-function initializeCssVariables() {
-  if (typeof document !== "undefined") {
-    const defaultWidth = DEFAULT_SIDEBAR_COLLAPSED
-      ? COLLAPSED_WIDTH
-      : EXPANDED_WIDTH;
-    document.documentElement.style.setProperty("--sidebar-width", defaultWidth);
-    document.documentElement.style.setProperty(
-      "--content-padding-left",
-      `calc(${defaultWidth} + 1.5rem)`
-    );
-  }
-}
-
-// Initialize CSS variables immediately when module loads
-if (typeof window !== "undefined") {
-  initializeCssVariables();
-}
+// Removed CSS variable manipulation functions
+// Layout is now handled entirely through Redux state and inline styles
 
 export const {
   setHydrated,

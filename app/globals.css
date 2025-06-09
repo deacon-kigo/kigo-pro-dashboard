@@ -25,17 +25,8 @@
   --shadow-md:
     0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 
-  /* Layout variables */
-  --sidebar-width: 225px;
-  --sidebar-collapsed-width: 70px;
-  --content-padding-left: calc(var(--sidebar-width) + 1.5rem);
-  --content-padding-left-collapsed: calc(
-    var(--sidebar-collapsed-width) + 1.5rem
-  );
-
-  /* Initial state - prevent flickering during rendering */
-  --initial-sidebar-width: var(--sidebar-collapsed-width);
-  --initial-content-padding: var(--content-padding-left-collapsed);
+  /* Layout is now handled entirely through Redux state and inline styles */
+  /* Removed sidebar CSS variables - using Redux state directly in components */
 
   /* CVS Colors */
   --cvs-blue: #2563eb;

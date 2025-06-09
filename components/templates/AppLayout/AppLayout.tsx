@@ -1,6 +1,6 @@
 "use client";
 
-import React, { ReactNode, useEffect, useState, useMemo } from "react";
+import React, { ReactNode, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import Header from "@/components/organisms/Header/Header";
 import Sidebar from "@/components/organisms/Sidebar/Sidebar";
@@ -31,38 +31,18 @@ interface AppLayoutProps {
 
 // A wrapper component that uses the context
 function AppLayoutContent({ children, customBreadcrumb }: AppLayoutProps) {
-  const { sidebarCollapsed, isHydrated } = useAppSelector((state) => state.ui);
+  const { sidebarWidth } = useAppSelector((state) => state.ui);
   const pathname = usePathname();
   const { isPanelOpen, panelContent, panelMinWidth, panelMaxWidth } =
     useResizablePanel();
 
-  // Add client-side detection to avoid hydration errors
-  const [isClient, setIsClient] = useState(false);
+  // Removed client-side detection - relying entirely on Redux state
 
-  // Ensure client-side rendering is detected
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  // Calculate content padding directly from Redux state to avoid CSS variable sync issues
-  const mainContentStyle = useMemo(() => {
-    if (!isClient || !isHydrated) {
-      // During SSR and before hydration, use collapsed sidebar spacing
-      return {
-        paddingLeft: "calc(70px + 1.5rem)", // collapsed sidebar width + padding
-        transition: "padding-left 300ms cubic-bezier(0.4, 0, 0.2, 1)",
-        willChange: "padding-left",
-      };
-    }
-
-    // After hydration, use actual Redux state
-    const sidebarWidth = sidebarCollapsed ? "70px" : "225px";
-    return {
-      paddingLeft: `calc(${sidebarWidth} + 1.5rem)`,
-      transition: "padding-left 300ms cubic-bezier(0.4, 0, 0.2, 1)",
-      willChange: "padding-left",
-    };
-  }, [isClient, isHydrated, sidebarCollapsed]);
+  // Simple inline style using Redux state directly
+  const mainContentStyle = {
+    paddingLeft: `calc(${sidebarWidth} + 1.5rem)`,
+    transition: "padding-left 300ms cubic-bezier(0.4, 0, 0.2, 1)",
+  };
 
   // Generate breadcrumb items based on current path
   const getBreadcrumbItems = () => {

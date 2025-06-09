@@ -3,12 +3,7 @@
 import React, { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "./hooks";
 import { loadUserProfileFromContext } from "./slices/userSlice";
-import {
-  setHydrated,
-  loadSavedState,
-  setIsMobileView,
-  setSidebarCollapsed,
-} from "./slices/uiSlice";
+import { setHydrated, loadSavedState, setIsMobileView } from "./slices/uiSlice";
 import { usePathname } from "next/navigation";
 
 /**
@@ -46,14 +41,12 @@ export default function AppStateProvider({
             sidebarCollapsed: storedSidebarState === "true",
           })
         );
-      } else {
-        // If no stored state, ensure CSS variables match current Redux state
-        dispatch(setSidebarCollapsed(sidebarCollapsed));
       }
+      // If no stored state, the default state from Redux is already correct
+      // and CSS variables were set during setHydrated(true)
     } catch (error) {
       console.warn("Error loading state from localStorage:", error);
-      // Fallback: ensure CSS variables are set
-      dispatch(setSidebarCollapsed(sidebarCollapsed));
+      // CSS variables were already set during setHydrated(true), so no additional action needed
     }
 
     // Setup responsive behavior

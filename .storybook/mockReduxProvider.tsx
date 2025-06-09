@@ -1,12 +1,12 @@
 /**
  * Redux Mock Provider for Storybook
- * 
+ *
  * This file provides utilities for mocking Redux state in Storybook stories.
  * It includes types for common state objects and a factory function for creating mock stores.
  */
-import React from 'react';
-import { Provider } from 'react-redux';
-import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import React from "react";
+import { Provider } from "react-redux";
+import { configureStore, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 // Define common types for mock state
 export interface MockUIState {
@@ -52,25 +52,25 @@ export interface MockState {
 export const createMockStore = (initialState: MockState) => {
   // Create UI slice with initial state
   const uiSlice = createSlice({
-    name: 'ui',
+    name: "ui",
     initialState: initialState.ui,
     reducers: {
       toggleSidebar: (state) => {
         state.sidebarCollapsed = !state.sidebarCollapsed;
-        state.sidebarWidth = state.sidebarCollapsed ? '70px' : '225px';
+        state.sidebarWidth = state.sidebarCollapsed ? "70px" : "225px";
       },
       setSidebarCollapsed: (state, action: PayloadAction<boolean>) => {
         state.sidebarCollapsed = action.payload;
-        state.sidebarWidth = action.payload ? '70px' : '225px';
-      }
-    }
+        state.sidebarWidth = action.payload ? "70px" : "225px";
+      },
+    },
   });
 
   // Create demo slice with initial state
   const demoSlice = createSlice({
-    name: 'demo',
+    name: "demo",
     initialState: initialState.demo,
-    reducers: {}
+    reducers: {},
   });
 
   // Create reducers object with required slices
@@ -82,20 +82,23 @@ export const createMockStore = (initialState: MockState) => {
   // Add user slice if provided
   if (initialState.user) {
     const userSlice = createSlice({
-      name: 'user',
+      name: "user",
       initialState: initialState.user,
-      reducers: {}
+      reducers: {},
     });
     reducers.user = userSlice.reducer;
   }
 
   // Add any additional slices
-  Object.keys(initialState).forEach(key => {
-    if (!['ui', 'demo', 'user'].includes(key) && initialState[key] !== undefined) {
+  Object.keys(initialState).forEach((key) => {
+    if (
+      !["ui", "demo", "user"].includes(key) &&
+      initialState[key] !== undefined
+    ) {
       const slice = createSlice({
         name: key,
         initialState: initialState[key],
-        reducers: {}
+        reducers: {},
       });
       reducers[key] = slice.reducer;
     }
@@ -103,7 +106,7 @@ export const createMockStore = (initialState: MockState) => {
 
   // Create and return the mock store
   return configureStore({
-    reducer: reducers
+    reducer: reducers,
   });
 };
 
@@ -113,32 +116,32 @@ export const createMockStore = (initialState: MockState) => {
 export const DEFAULT_MOCK_STATE: MockState = {
   ui: {
     sidebarCollapsed: false,
-    sidebarWidth: '225px',
+    sidebarWidth: "225px",
     isMobileView: false,
     chatOpen: false,
     spotlightOpen: false,
     demoSelectorOpen: false,
     demoSelectorPinned: false,
-    demoSelectorCollapsed: false
+    demoSelectorCollapsed: false,
   },
   demo: {
-    role: 'merchant',
-    clientId: 'deacons',
-    clientName: 'Deacon\'s Pizza',
-    themeMode: 'light',
-    scenario: 'default',
-    version: 'current',
+    role: "merchant",
+    clientId: "deacons",
+    clientName: "Deacon's Pizza",
+    themeMode: "light",
+    scenario: "default",
+    version: "current",
     instances: [],
-    currentInstanceIndex: -1
+    currentInstanceIndex: -1,
   },
   user: {
     notifications: [],
     profile: {
-      name: 'Demo User',
-      email: 'demo@kigo.com',
-      avatar: null
-    }
-  }
+      name: "Demo User",
+      email: "demo@kigo.com",
+      avatar: null,
+    },
+  },
 };
 
 /**
@@ -149,16 +152,11 @@ export const MockReduxProvider: React.FC<{
   mockState: MockState;
 }> = ({ children, mockState }) => {
   const store = createMockStore(mockState);
-  
-  // Set CSS variable for sidebar width if it exists in the mockState
-  if (typeof document !== 'undefined' && mockState.ui) {
-    document.documentElement.style.setProperty(
-      '--sidebar-width', 
-      mockState.ui.sidebarCollapsed ? '70px' : '225px'
-    );
-  }
-  
+
+  // CSS variables will be managed by Redux after hydration
+  // Remove direct manipulation to prevent conflicts
+
   return <Provider store={store}>{children}</Provider>;
 };
 
-export default MockReduxProvider; 
+export default MockReduxProvider;
