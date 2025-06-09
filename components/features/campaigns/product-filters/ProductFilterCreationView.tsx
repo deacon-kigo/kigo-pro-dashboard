@@ -429,7 +429,7 @@ export default function ProductFilterCreationView({
     // Show success message with toast
     toast({
       title: "✅ Filter Created Successfully",
-      description: "Your product filter has been created and is ready to use.",
+      description: "Your catalog filter has been created and is ready to use.",
       className: "!bg-green-100 !border-green-300 !text-green-800",
     });
 
@@ -816,9 +816,9 @@ export default function ProductFilterCreationView({
   };
 
   const getPageTitle = () => {
-    if (isViewMode) return "View Product Filter";
-    if (isEditMode) return "Edit Product Filter";
-    return "Create New Product Filter";
+    if (isViewMode) return "View Catalog Filter";
+    if (isEditMode) return "Edit Catalog Filter";
+    return "Create New Catalog Filter";
   };
 
   const backButton = (
@@ -1063,7 +1063,7 @@ export default function ProductFilterCreationView({
       <AlertDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Create Product Filter</AlertDialogTitle>
+            <AlertDialogTitle>Create Catalog Filter</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to create the filter "{filterName}"?
             </AlertDialogDescription>
@@ -1245,7 +1245,7 @@ export default function ProductFilterCreationView({
                       <div className="flex items-center">
                         <FunnelIcon className="h-5 w-5 mr-2 text-primary" />
                         <h3 className="font-medium">
-                          Product Filter Configuration
+                          Catalog Filter Configuration
                         </h3>
                       </div>
                       <div className="flex items-center gap-2">

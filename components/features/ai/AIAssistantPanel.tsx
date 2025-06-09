@@ -92,7 +92,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({
     }
 
     if (isProductFilterMode) {
-      return "Hi! I'm your AI filter assistant. I can help you create product filters by suggesting criteria based on what you're looking for. What kind of offers would you like to filter?";
+      return "Hi! I'm your AI filter assistant. I can help you create catalog filters by suggesting criteria based on what you're looking for. What kind of offers would you like to filter?";
     }
 
     if (isAdCampaignPath) {

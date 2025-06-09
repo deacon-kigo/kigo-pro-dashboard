@@ -30,7 +30,7 @@ export default function ProductFilterDetailsPage({
         <BreadcrumbSeparator />
         <BreadcrumbItem>
           <BreadcrumbLink href="/campaigns/product-filters">
-            Product Filters
+            Catalog Filters
           </BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />

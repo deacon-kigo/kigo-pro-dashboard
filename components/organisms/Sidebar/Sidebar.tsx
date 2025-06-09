@@ -319,7 +319,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
               <SidebarLabel
                 href="/campaigns/product-filters"
                 icon={AdjustmentsHorizontalIcon}
-                title="Product Filters"
+                title="Catalog Filters"
                 isActive={isLinkActive("/campaigns/product-filters")}
                 isCollapsed={sidebarCollapsed}
               />
@@ -396,7 +396,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
               <SidebarLabel
                 href="/campaigns/product-filters"
                 icon={AdjustmentsHorizontalIcon}
-                title="Product Filters"
+                title="Catalog Filters"
                 isActive={isLinkActive("/campaigns/product-filters")}
                 isCollapsed={sidebarCollapsed}
               />

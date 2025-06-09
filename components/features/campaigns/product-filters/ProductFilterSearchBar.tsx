@@ -35,7 +35,7 @@ export function ProductFilterSearchBar({
       </div>
       <Input
         type="text"
-        placeholder="Search product filters..."
+        placeholder="Search catalog filters..."
         value={searchQuery}
         onChange={handleInputChange}
         className="pl-10 pr-3 py-2 border border-gray-300 rounded-md w-full"

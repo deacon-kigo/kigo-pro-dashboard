@@ -730,7 +730,7 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
     () => (
       <div className="bg-white rounded-md border border-gray-200 p-6 flex justify-center items-center text-center overflow-hidden shadow-sm">
         <div>
-          <p className="text-muted-foreground">No expired product filters</p>
+          <p className="text-muted-foreground">No expired catalog filters</p>
         </div>
       </div>
     ),
@@ -741,7 +741,7 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
     () => (
       <div className="bg-white rounded-md border border-gray-200 p-6 flex justify-center items-center text-center overflow-hidden shadow-sm">
         <div>
-          <p className="text-muted-foreground">No draft product filters</p>
+          <p className="text-muted-foreground">No draft catalog filters</p>
         </div>
       </div>
     ),
@@ -776,8 +776,8 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Product Filters"
-        description="Manage product filters to control offer display in the TOP platform."
+        title="Catalog Filters"
+        description="Manage catalog filters to control offer display in the TOP platform."
         emoji="🏷️"
         actions={createFilterButton}
         variant="aurora"

@@ -79,8 +79,8 @@ export const AuroraVariant: Story = {
   render: () => (
     <div className="w-[800px]">
       <PageHeader
-        title="Product Filters"
-        description="Manage product filters to control offer display in the platform"
+        title="Catalog Filters"
+        description="Manage catalog filters to control offer display in the platform"
         emoji="🏷️"
         variant="aurora"
         actions={<ActionButtons />}
