@@ -23,21 +23,20 @@ export function useAssignmentWorkflow(
       const currentAttempt = attemptCount + 1;
       setAttemptCount(currentAttempt);
 
-      console.log("🚀 Starting bulk assignment:", {
-        selectedIds,
-        totalCount,
-        attempt: currentAttempt,
-      });
+      console.log(
+        "🚀 Starting bulk assignment (PATCH only - filter already created):",
+        {
+          selectedIds,
+          totalCount,
+          attempt: currentAttempt,
+        }
+      );
 
       setBulkAssignmentStatus("assigning");
       setCurrentAssignmentIds(selectedIds);
 
       try {
-        // Mock POST request to create filter
-        console.log("📤 POST /api/filters - Creating filter...");
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // Mock PATCH request to bulk assign
+        // Mock PATCH request to bulk assign (filter was already created via POST)
         console.log(
           "📤 PATCH /api/filters/bulk-assign - Assigning to programs..."
         );

@@ -221,18 +221,28 @@ export default function ProductFilterCreationView({
       console.log(
         `🎯 Assignment completed for ${selectedIds.length} programs: ${success ? "Success" : "Failed"}`
       );
+
+      // Re-enable form inputs
+      setIsFormSubmitting(false);
+
       if (success) {
         toast({
           title: "✅ Assignment Successful",
           description: `Filter assigned to ${selectedIds.length} programs successfully.`,
           className: "!bg-green-100 !border-green-300 !text-green-800",
         });
+
+        // Redirect after successful assignment
+        setTimeout(() => {
+          router.push("/campaigns/product-filters");
+        }, 2000);
       } else {
         toast({
           title: "Assignment Failed",
-          description: `Failed to assign filter to ${selectedIds.length} programs. Please try again.`,
+          description: `Failed to assign filter to ${selectedIds.length} programs. You can retry or continue.`,
           variant: "destructive",
         });
+        // Don't redirect on failure - let user retry or decide what to do
       }
     },
   });
@@ -253,13 +263,6 @@ export default function ProductFilterCreationView({
   const assignmentItems = useSelector(selectAssignmentItems);
   const isAssignmentProcessing = useSelector(selectIsAssignmentProcessing);
 
-  console.log("🎮 ProductFilterCreationView Redux state:", {
-    selectedPrograms,
-    selectedProgramCount,
-    assignmentItems: assignmentItems.length,
-    isAssignmentProcessing,
-  });
-
   // State variables
   const [isViewMode, setIsViewMode] = useState(mode === "view");
   const [isEditMode, setIsEditMode] = useState(mode === "edit");
@@ -277,6 +280,15 @@ export default function ProductFilterCreationView({
   const [isCreateLaunchModalOpen, setIsCreateLaunchModalOpen] = useState(false);
   const [isPublishFlow, setIsPublishFlow] = useState(false);
   const [isSubmitInProgress, setIsSubmitInProgress] = useState(false);
+
+  console.log("🎮 ProductFilterCreationView Redux state:", {
+    selectedPrograms,
+    selectedProgramCount,
+    assignmentItems: assignmentItems.length,
+    isAssignmentProcessing,
+    isFormSubmitting,
+    isSubmitInProgress,
+  });
   const [isPredefinedOpen, setIsPredefinedOpen] = useState(false);
   const [selectingSuggestion, setSelectingSuggestion] = useState(false);
   const [debugModeEnabled, setDebugModeEnabled] = useState(false);
@@ -422,21 +434,55 @@ export default function ProductFilterCreationView({
     setCreateDialogOpen(true);
   };
 
-  const handleConfirmedCreateFilter = () => {
+  const handleConfirmedCreateFilter = async () => {
     // Close the dialog
     setCreateDialogOpen(false);
 
-    // Show success message with toast
-    toast({
-      title: "✅ Filter Created Successfully",
-      description: "Your catalog filter has been created and is ready to use.",
-      className: "!bg-green-100 !border-green-300 !text-green-800",
-    });
+    try {
+      // 1. First, make the POST call to create the filter
+      console.log("📤 POST /api/filters - Creating filter...");
+      setIsSubmitInProgress(true);
+      console.log("🔒 Form disabled - isSubmitInProgress:", true);
 
-    // Redirect after a short delay
-    setTimeout(() => {
-      router.push("/campaigns/product-filters");
-    }, 1500);
+      // Simulate filter creation API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Show filter creation success
+      toast({
+        title: "✅ Filter Created Successfully",
+        description: "Your catalog filter has been created.",
+        className: "!bg-green-100 !border-green-300 !text-green-800",
+      });
+
+      // 2. If there are selected programs, proceed with assignment
+      if (selectedProgramCount > 0) {
+        console.log("🎯 Starting program assignment flow...");
+
+        // Disable form inputs during assignment
+        setIsFormSubmitting(true);
+
+        // Start the bulk assignment process (which includes the fail-then-success demo)
+        await startBulkAssignment(selectedPrograms, selectedProgramCount);
+
+        // Note: The assignment results will be handled by the workflow hook's onAssignmentComplete callback
+        // For now, we don't redirect immediately - let the assignment complete first
+      } else {
+        // No assignments, redirect immediately
+        setTimeout(() => {
+          router.push("/campaigns/product-filters");
+        }, 1500);
+      }
+    } catch (error) {
+      console.error("Error creating filter:", error);
+      toast({
+        title: "Failed to Create Filter",
+        description:
+          "There was an error creating your filter. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitInProgress(false);
+    }
   };
 
   const handleBackClick = () => {
@@ -897,11 +943,15 @@ export default function ProductFilterCreationView({
           disabled={
             !filterName.trim() ||
             !description.trim() ||
-            filterCriteria.length === 0
+            filterCriteria.length === 0 ||
+            isFormSubmitting ||
+            isSubmitInProgress
           }
           size="sm"
         >
-          Create Filter
+          {isSubmitInProgress || isFormSubmitting
+            ? "Creating..."
+            : "Create Filter"}
         </Button>
       </div>
     );
@@ -1301,7 +1351,11 @@ export default function ProductFilterCreationView({
                                         }
                                         className="mt-1"
                                         maxLength={50}
-                                        disabled={isViewMode}
+                                        disabled={
+                                          isViewMode ||
+                                          isFormSubmitting ||
+                                          isSubmitInProgress
+                                        }
                                       />
                                       <p className="mt-1.5 text-xs font-medium text-gray-600">
                                         Enter a unique, descriptive name for
@@ -1333,7 +1387,11 @@ export default function ProductFilterCreationView({
                                         className="mt-1"
                                         rows={3}
                                         maxLength={250}
-                                        disabled={isViewMode}
+                                        disabled={
+                                          isViewMode ||
+                                          isFormSubmitting ||
+                                          isSubmitInProgress
+                                        }
                                       />
                                       <p className="mt-1.5 text-xs font-medium text-gray-600">
                                         Provide a detailed description of what
@@ -1373,6 +1431,9 @@ export default function ProductFilterCreationView({
                                     className="w-full justify-between px-4 py-3 text-sm font-medium hover:bg-transparent"
                                     onClick={() =>
                                       setIsAssignProgramsModalOpen(true)
+                                    }
+                                    disabled={
+                                      isFormSubmitting || isSubmitInProgress
                                     }
                                   >
                                     <div className="flex items-center">
@@ -1460,7 +1521,11 @@ export default function ProductFilterCreationView({
                                             <Select
                                               value={criteriaType}
                                               onValueChange={setCriteriaType}
-                                              disabled={isViewMode}
+                                              disabled={
+                                                isViewMode ||
+                                                isFormSubmitting ||
+                                                isSubmitInProgress
+                                              }
                                             >
                                               <SelectTrigger className="h-8 w-full">
                                                 <SelectValue
@@ -1492,7 +1557,11 @@ export default function ProductFilterCreationView({
                                               onValueChange={
                                                 setCriteriaInclusion
                                               }
-                                              disabled={isViewMode}
+                                              disabled={
+                                                isViewMode ||
+                                                isFormSubmitting ||
+                                                isSubmitInProgress
+                                              }
                                             >
                                               <SelectTrigger className="h-8 w-full">
                                                 <SelectValue placeholder="inclusion" />
@@ -1525,7 +1594,11 @@ export default function ProductFilterCreationView({
                                                 placeholder="Select offer types"
                                                 className="h-8"
                                                 width="100%"
-                                                isDisabled={isViewMode}
+                                                isDisabled={
+                                                  isViewMode ||
+                                                  isFormSubmitting ||
+                                                  isSubmitInProgress
+                                                }
                                                 maxDisplayValues={2}
                                               />
                                             ) : (
@@ -1538,7 +1611,11 @@ export default function ProductFilterCreationView({
                                                   )
                                                 }
                                                 className="h-8 w-full"
-                                                disabled={isViewMode}
+                                                disabled={
+                                                  isViewMode ||
+                                                  isFormSubmitting ||
+                                                  isSubmitInProgress
+                                                }
                                               />
                                             )}
                                             <span className="mt-1 text-xs font-medium text-gray-600 px-1">
@@ -1561,7 +1638,11 @@ export default function ProductFilterCreationView({
                                             <Select
                                               value={criteriaAndOr}
                                               onValueChange={setCriteriaAndOr}
-                                              disabled={isViewMode}
+                                              disabled={
+                                                isViewMode ||
+                                                isFormSubmitting ||
+                                                isSubmitInProgress
+                                              }
                                             >
                                               <SelectTrigger className="h-8 w-full">
                                                 <SelectValue placeholder="operator" />
@@ -1593,7 +1674,9 @@ export default function ProductFilterCreationView({
                                                   (criteriaType === "OfferType"
                                                     ? criteriaMultiValues.length ===
                                                       0
-                                                    : !criteriaValue)
+                                                    : !criteriaValue) ||
+                                                  isFormSubmitting ||
+                                                  isSubmitInProgress
                                                 }
                                                 size="sm"
                                                 className="h-8 w-full sm:w-auto"
@@ -1687,6 +1770,10 @@ export default function ProductFilterCreationView({
                                                       }
                                                       className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                                       aria-label="Remove condition"
+                                                      disabled={
+                                                        isFormSubmitting ||
+                                                        isSubmitInProgress
+                                                      }
                                                     >
                                                       <XCircleIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
                                                     </button>
@@ -1772,6 +1859,10 @@ export default function ProductFilterCreationView({
                                                       }
                                                       className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                                       aria-label="Remove condition"
+                                                      disabled={
+                                                        isFormSubmitting ||
+                                                        isSubmitInProgress
+                                                      }
                                                     >
                                                       <XCircleIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
                                                     </button>

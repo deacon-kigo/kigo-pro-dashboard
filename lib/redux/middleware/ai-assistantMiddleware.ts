@@ -82,11 +82,11 @@ const handleOptionSelected = async (
   filterName?: string,
   filterDescription?: string
 ): Promise<AIResponse> => {
-  // For product filter context
+  // For catalog filter context
   if (optionId === "explain_criteria_types") {
     return {
       content: `
-There are two types of criteria for product filters:
+There are two types of criteria for catalog filters:
 
 **Required Criteria Types:**
 - **MerchantKeyword**: Keywords that identify merchants (e.g., "pizza", "coffee", "auto")
@@ -104,7 +104,7 @@ There are two types of criteria for product filters:
 - **OfferRedemptionType**: How offers are redeemed
 - **OfferType**: The type of offer (e.g., "coupon", "discount")
 
-All required criteria types must be included for a valid product filter.`,
+All required criteria types must be included for a valid catalog filter.`,
       responseOptions: [
         {
           text: "Let's start building a filter",
@@ -345,7 +345,7 @@ Would you like me to suggest specific values for your filter?`,
   } else if (optionId === "best_practices") {
     return {
       content: `
-# Best Practices for Product Filters
+# Best Practices for Catalog Filters
 
 1. **Clear naming**: Give your filter a descriptive name that clearly indicates its purpose
 
@@ -379,19 +379,19 @@ Would you like more specific guidance based on what you're trying to build?`,
       ],
     };
   } else if (optionId === "suggest_values") {
-    // Use the product filter criteria tool to generate suggestions
+    // Use the catalog filter criteria tool to generate suggestions
     try {
       const tool = createProductFilterCriteriaTool();
 
       // Suggest criteria for MerchantKeyword
       const merchantKeywordResult = await tool.invoke({
-        filterName: filterName || "Product Filter",
+        filterName: filterName || "Catalog Filter",
         filterType: "MerchantKeyword",
         description: filterDescription || "",
       });
 
       const merchantNameResult = await tool.invoke({
-        filterName: filterName || "Product Filter",
+        filterName: filterName || "Catalog Filter",
         filterType: "MerchantName",
         description: filterDescription || "",
       });
@@ -540,7 +540,7 @@ Would you like to use any of these suggestions?`,
   // Default response for unknown option IDs
   return {
     content:
-      "I'm not sure how to help with that specific request. Can you tell me more about what you're trying to do with your product filter?",
+      "I'm not sure how to help with that specific request. Can you tell me more about what you're trying to do with your catalog filter?",
   };
 };
 
@@ -740,7 +740,7 @@ const aiAssistantMiddleware: Middleware =
         store.dispatch(
           addMessage({
             type: "user",
-            content: "Generate product filters based on my requirements",
+            content: "Generate catalog filters based on my requirements",
           })
         );
 

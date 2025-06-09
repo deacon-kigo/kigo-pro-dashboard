@@ -78,9 +78,9 @@ function MyComponent(props) {
 export default withTracing(MyComponent);
 ```
 
-## Product Filter Integration
+## Catalog Filter Integration
 
-To trace your product filter creation:
+To trace your catalog filter creation:
 
 1. Import the tracing utilities in your filter component
 2. Wrap the filter creation function:

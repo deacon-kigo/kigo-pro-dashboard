@@ -54,7 +54,7 @@ export const useChat = (systemPrompt?: string) => {
   };
 };
 
-// Hook for generating product filter criteria
+// Hook for generating catalog filter criteria
 export const useProductFilterGenerator = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

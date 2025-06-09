@@ -1046,24 +1046,18 @@ export function AssignToProgramsPanel({
     }
 
     try {
-      // Clear any existing assignment state before starting new assignment
-      dispatch(clearAssignment());
+      console.log(
+        "📝 AssignToProgramsPanel: Saving selection (no assignment yet):",
+        selectedIds,
+        selectedIds.length
+      );
 
-      // Notify parent to start assignment process and show status indicator
-      if (onStartBulkAssignment) {
-        console.log(
-          "📤 AssignToProgramsPanel calling onStartBulkAssignment with:",
-          selectedIds,
-          selectedIds.length
-        );
-        onStartBulkAssignment(selectedIds, selectedIds.length);
-      }
-
-      // Close the panel immediately
+      // Just close the panel with the selected IDs - no assignment trigger
+      // The assignment will happen later when the filter is created
       onClose(selectedIds);
     } catch (error) {
-      console.error("Failed to prepare assignment:", error);
-      setSaveError("Failed to prepare assignment");
+      console.error("Failed to save selection:", error);
+      setSaveError("Failed to save selection");
     } finally {
       setSaving(false);
     }
@@ -1420,7 +1414,7 @@ export function AssignToProgramsPanel({
               onClick={handleSave}
               disabled={saving || selectedCount === 0}
             >
-              {saving ? "Starting Assignment..." : "Start Assignment"}
+              {saving ? "Saving Selection..." : "Save Selection"}
             </Button>
           </div>
         </div>

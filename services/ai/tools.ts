@@ -190,12 +190,12 @@ const filterAnalysisParser = StructuredOutputParser.fromZodSchema(
   FilterAnalysisOutputSchema
 );
 
-// Tool for generating product filter criteria
+// Tool for generating catalog filter criteria
 export const createProductFilterCriteriaTool = () => {
   return new DynamicTool({
     name: "product_filter_generator",
     description:
-      "Generates appropriate criteria for product filters based on filter name and type. Input must be a JSON string with keys: filterName (string), filterType (string), description (string, optional).",
+      "Generates appropriate criteria for catalog filters based on filter name and type. Input must be a JSON string with keys: filterName (string), filterType (string), description (string, optional).",
     func: async (
       input: string,
       runManager?: CallbackManagerForToolRun | undefined,
@@ -228,7 +228,7 @@ export const createProductFilterCriteriaTool = () => {
 
         // Use template with properly escaped curly braces
         const promptTemplate = ChatPromptTemplate.fromTemplate(`
-          Generate appropriate filter criteria for a product filter.
+          Generate appropriate filter criteria for a catalog filter.
           
           Filter Name: {filterName}
           Filter Type: {filterType}
@@ -249,7 +249,7 @@ export const createProductFilterCriteriaTool = () => {
 
         return JSON.stringify(response);
       } catch (error) {
-        console.error("Error in product filter generator tool:", error);
+        console.error("Error in catalog filter generator tool:", error);
         return JSON.stringify({
           error: "Failed to generate filter criteria",
           details: error instanceof Error ? error.message : String(error),
@@ -259,12 +259,12 @@ export const createProductFilterCriteriaTool = () => {
   });
 };
 
-// Tool for generating product filter names
+// Tool for generating catalog filter names
 export const createFilterNameSuggestionTool = () => {
   return new DynamicTool({
     name: "filter_name_suggester",
     description:
-      "Suggests appropriate names for product filters based on description or criteria. Input must be a JSON string with keys: description (string), criteria (array of {type: string, value: string}, optional).",
+      "Suggests appropriate names for catalog filters based on description or criteria. Input must be a JSON string with keys: description (string), criteria (array of {type: string, value: string}, optional).",
     func: async (
       input: string,
       runManager?: CallbackManagerForToolRun | undefined,
@@ -294,7 +294,7 @@ export const createFilterNameSuggestionTool = () => {
 
         // Use template with properly escaped curly braces
         const promptTemplate = ChatPromptTemplate.fromTemplate(`
-          Suggest 5 appropriate names for a product filter with the following details:
+          Suggest 5 appropriate names for a catalog filter with the following details:
           
           Description: {description}
           
@@ -325,12 +325,12 @@ export const createFilterNameSuggestionTool = () => {
   });
 };
 
-// Tool for analyzing product filter criteria
+// Tool for analyzing catalog filter criteria
 export const createFilterAnalysisTool = () => {
   return new DynamicTool({
     name: "filter_criteria_analyzer",
     description:
-      "Analyzes product filter criteria for completeness and effectiveness. Input must be a JSON string with keys: criteria (array of {type: string, value: string, rule: string}).",
+      "Analyzes catalog filter criteria for completeness and effectiveness. Input must be a JSON string with keys: criteria (array of {type: string, value: string, rule: string}).",
     func: async (
       input: string,
       runManager?: CallbackManagerForToolRun | undefined,
@@ -357,7 +357,7 @@ export const createFilterAnalysisTool = () => {
 
         // Use template with properly escaped curly braces
         const promptTemplate = ChatPromptTemplate.fromTemplate(`
-          Analyze the following product filter criteria for completeness and effectiveness:
+          Analyze the following catalog filter criteria for completeness and effectiveness:
           
           {criteriaString}
           
@@ -387,12 +387,12 @@ export const createFilterAnalysisTool = () => {
   });
 };
 
-// Tool for auto-generating complete product filters based on context
+// Tool for auto-generating complete catalog filters based on context
 export const createAutoFilterGeneratorTool = () => {
   return new DynamicTool({
     name: "auto_filter_generator",
     description:
-      "Automatically generates a complete product filter based on conversation context and existing criteria. Input must be a JSON string with keys: filterName (string, optional), filterDescription (string, optional), currentCriteria (array of existing criteria, optional), conversationHistory (array of message objects), expiryDate (string, optional).",
+      "Automatically generates a complete catalog filter based on conversation context and existing criteria. Input must be a JSON string with keys: filterName (string, optional), filterDescription (string, optional), currentCriteria (array of existing criteria, optional), conversationHistory (array of message objects), expiryDate (string, optional).",
     func: async (
       input: string,
       runManager?: CallbackManagerForToolRun | undefined,
@@ -466,7 +466,7 @@ Field Type Format Guidelines:
 
         // Use template with properly escaped curly braces
         const promptTemplate = ChatPromptTemplate.fromTemplate(`
-          You are a product filter generation specialist who can create appropriate filter criteria.
+          You are a catalog filter generation specialist who can create appropriate filter criteria.
           
           Current Context:
           Filter Name: {filterName}
@@ -526,7 +526,7 @@ export const createFilterConversationGuideTool = () => {
   return new DynamicTool({
     name: "filter_conversation_guide",
     description:
-      "Guides users through creating product filters with a conversational approach. Input must be a JSON string with keys: userMessage (string), conversationHistory (array of message objects), currentCriteria (array of existing criteria, optional), filterContext (object containing form state, optional).",
+      "Guides users through creating catalog filters with a conversational approach. Input must be a JSON string with keys: userMessage (string), conversationHistory (array of message objects), currentCriteria (array of existing criteria, optional), filterContext (object containing form state, optional).",
     func: async (
       input: string,
       runManager?: CallbackManagerForToolRun | undefined,
@@ -614,7 +614,7 @@ Field Type Format Guidelines:
 
         // Use template with properly escaped curly braces
         const promptTemplate = ChatPromptTemplate.fromTemplate(`
-          You are an AI assistant helping users create product filters in a conversational way.
+          You are an AI assistant helping users create catalog filters in a conversational way.
           
           Current Form State:
           {formStateString}
@@ -633,7 +633,7 @@ Field Type Format Guidelines:
           
           {fieldTypeGuidance}
           
-          Your task is to guide the user through creating a product filter by:
+          Your task is to guide the user through creating a catalog filter by:
           1. Identifying what the user wants to filter (e.g., restaurants, retail offers)
           2. Asking clarifying questions to gather missing required information
           3. Suggesting specific values based on the conversation
@@ -785,30 +785,44 @@ const CampaignConversationGuideSchema = z.object({
     "suggest_ad_content",
     "provide_info",
   ]),
-  targetingToAdd: z.object({
-    ageRange: z.tuple([z.number(), z.number()]).optional(),
-    gender: z.array(z.string()).optional(),
-    locations: z.array(z.string()).optional(),
-    campaignWeight: z.enum(["small", "medium", "large"]).optional(),
-  }).optional(),
-  adContentToAdd: z.object({
-    headlines: z.array(z.string()).optional(),
-    descriptions: z.array(z.string()).optional(),
-    mediaTypes: z.array(z.string()).optional(),
-  }).optional(),
-  budgetToAdd: z.object({
-    maxBudget: z.number().optional(),
-    estimatedReach: z.number().optional(),
-  }).optional(),
+  targetingToAdd: z
+    .object({
+      ageRange: z.tuple([z.number(), z.number()]).optional(),
+      gender: z.array(z.string()).optional(),
+      locations: z.array(z.string()).optional(),
+      campaignWeight: z.enum(["small", "medium", "large"]).optional(),
+    })
+    .optional(),
+  adContentToAdd: z
+    .object({
+      headlines: z.array(z.string()).optional(),
+      descriptions: z.array(z.string()).optional(),
+      mediaTypes: z.array(z.string()).optional(),
+    })
+    .optional(),
+  budgetToAdd: z
+    .object({
+      maxBudget: z.number().optional(),
+      estimatedReach: z.number().optional(),
+    })
+    .optional(),
   nextQuestion: z.string().optional(),
 });
 
 // Create parsers for campaign specific tools
-const adHeadlineParser = StructuredOutputParser.fromZodSchema(CampaignAdHeadlineSchema);
-const targetingParser = StructuredOutputParser.fromZodSchema(CampaignTargetingSchema);
+const adHeadlineParser = StructuredOutputParser.fromZodSchema(
+  CampaignAdHeadlineSchema
+);
+const targetingParser = StructuredOutputParser.fromZodSchema(
+  CampaignTargetingSchema
+);
 const budgetParser = StructuredOutputParser.fromZodSchema(CampaignBudgetSchema);
-const campaignAnalysisParser = StructuredOutputParser.fromZodSchema(CampaignAnalysisSchema);
-const campaignConversationGuideParser = StructuredOutputParser.fromZodSchema(CampaignConversationGuideSchema);
+const campaignAnalysisParser = StructuredOutputParser.fromZodSchema(
+  CampaignAnalysisSchema
+);
+const campaignConversationGuideParser = StructuredOutputParser.fromZodSchema(
+  CampaignConversationGuideSchema
+);
 
 // Tool for generating ad content suggestions
 export const createAdContentGeneratorTool = () => {
@@ -823,11 +837,7 @@ export const createAdContentGeneratorTool = () => {
     ): Promise<string> => {
       try {
         // Parse the JSON input string
-        const {
-          campaignGoal,
-          targetAudience,
-          productType,
-        } = JSON.parse(input);
+        const { campaignGoal, targetAudience, productType } = JSON.parse(input);
 
         const model = getDefaultModel({ temperature: 0.7 });
 
@@ -886,10 +896,7 @@ export const createTargetingRecommendationTool = () => {
     ): Promise<string> => {
       try {
         // Parse the JSON input string
-        const {
-          productType,
-          campaignGoal,
-        } = JSON.parse(input);
+        const { productType, campaignGoal } = JSON.parse(input);
 
         const model = getDefaultModel({ temperature: 0.4 });
 
@@ -951,11 +958,8 @@ export const createBudgetRecommendationTool = () => {
     ): Promise<string> => {
       try {
         // Parse the JSON input string
-        const {
-          audienceSize,
-          campaignDuration,
-          campaignGoal,
-        } = JSON.parse(input);
+        const { audienceSize, campaignDuration, campaignGoal } =
+          JSON.parse(input);
 
         const model = getDefaultModel({ temperature: 0.3 });
 
@@ -1030,7 +1034,8 @@ export const createCampaignAnalysisTool = () => {
           .join("\n");
 
         // Get format instructions from Zod schema parser
-        const formatInstructions = campaignAnalysisParser.getFormatInstructions();
+        const formatInstructions =
+          campaignAnalysisParser.getFormatInstructions();
 
         // Properly escape curly braces in the format instructions
         const escapedFormatInstructions = formatInstructions
@@ -1085,18 +1090,18 @@ export const createCampaignConversationGuideTool = () => {
     ): Promise<string> => {
       try {
         // Parse the JSON input string
-        const {
-          userMessage,
-          conversationHistory,
-          campaignContext,
-        } = JSON.parse(input);
+        const { userMessage, conversationHistory, campaignContext } =
+          JSON.parse(input);
 
         const model = getDefaultModel({ temperature: 0.5 });
 
         // Format conversation history for the prompt
         const historyString = Array.isArray(conversationHistory)
           ? conversationHistory
-              .map((msg: any) => `${msg.type === "user" ? "User" : "Assistant"}: ${msg.content}`)
+              .map(
+                (msg: any) =>
+                  `${msg.type === "user" ? "User" : "Assistant"}: ${msg.content}`
+              )
               .join("\n")
           : "No conversation history available.";
 
@@ -1108,7 +1113,8 @@ export const createCampaignConversationGuideTool = () => {
           : "No campaign context available.";
 
         // Get format instructions from Zod schema parser
-        const formatInstructions = campaignConversationGuideParser.getFormatInstructions();
+        const formatInstructions =
+          campaignConversationGuideParser.getFormatInstructions();
 
         // Properly escape curly braces in the format instructions
         const escapedFormatInstructions = formatInstructions
@@ -1140,7 +1146,9 @@ export const createCampaignConversationGuideTool = () => {
           Provide helpful, specific guidance for campaign creation.
         `);
 
-        const chain = promptTemplate.pipe(model).pipe(campaignConversationGuideParser);
+        const chain = promptTemplate
+          .pipe(model)
+          .pipe(campaignConversationGuideParser);
 
         const response = await chain.invoke({
           userMessage,
