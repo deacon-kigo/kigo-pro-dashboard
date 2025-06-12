@@ -16,14 +16,25 @@ export function NewsletterHero({ userLocation }: NewsletterHeroProps) {
 
   return (
     <section
-      className="relative"
+      className="relative overflow-hidden"
       style={{
         backgroundColor: "#141413",
         fontFamily: "Montserrat, Arial, sans-serif",
-        padding: "60px 40px 60px 40px",
+        minHeight: "500px",
+        display: "flex",
+        alignItems: "center",
+        marginBottom: "0",
       }}
     >
-      <div className="max-w-2xl relative z-10">
+      {/* Left Content */}
+      <div
+        style={{
+          flex: "1",
+          maxWidth: "500px",
+          padding: "60px 40px",
+          zIndex: 10,
+        }}
+      >
         <h1
           className="leading-tight"
           style={{
@@ -47,7 +58,7 @@ export function NewsletterHero({ userLocation }: NewsletterHeroProps) {
           style={{
             width: "60px",
             height: "0.5px",
-            backgroundColor: "#74726e",
+            backgroundColor: "#ff671b",
           }}
         ></div>
 
@@ -56,7 +67,7 @@ export function NewsletterHero({ userLocation }: NewsletterHeroProps) {
           style={{
             fontSize: "18px",
             fontWeight: "200",
-            color: "#74726e",
+            color: "#c0c0c0",
             lineHeight: "1.6",
             letterSpacing: "0.01em",
           }}
@@ -69,9 +80,9 @@ export function NewsletterHero({ userLocation }: NewsletterHeroProps) {
           className="inline-block"
           style={{
             backgroundColor: "#ff671b",
-            color: "#141413",
+            color: "#ffffff",
             padding: "16px 32px",
-            borderRadius: "2px",
+            borderRadius: "24px",
             fontSize: "16px",
             fontWeight: "300",
             letterSpacing: "0.02em",
@@ -92,12 +103,104 @@ export function NewsletterHero({ userLocation }: NewsletterHeroProps) {
         </div>
       </div>
 
-      {/* Minimalistic geometric background - email safe */}
+      {/* Right Illustration - Full Height with Geometric Overlay */}
       <div
-        className="absolute inset-0 overflow-hidden"
-        style={{ opacity: "0.04" }}
+        style={{
+          flex: "1",
+          height: "500px",
+          position: "relative",
+          overflow: "hidden",
+        }}
       >
-        {/* Subtle geometric lines */}
+        <img
+          src="/illustration/mastercard/purchase.png"
+          alt="Shopping illustration"
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "center",
+          }}
+        />
+
+        {/* Geometric overlay shapes for visual interest */}
+        <div
+          style={{
+            position: "absolute",
+            left: "0",
+            top: "0",
+            bottom: "0",
+            width: "80px",
+            background:
+              "linear-gradient(90deg, #141413 0%, rgba(20, 20, 19, 0.8) 40%, transparent 100%)",
+            zIndex: 2,
+          }}
+        ></div>
+
+        {/* Triangular accent shapes */}
+        <div
+          style={{
+            position: "absolute",
+            left: "60px",
+            top: "25%",
+            width: "0",
+            height: "0",
+            borderLeft: "25px solid rgba(255, 103, 27, 0.15)",
+            borderTop: "15px solid transparent",
+            borderBottom: "15px solid transparent",
+            zIndex: 3,
+          }}
+        ></div>
+
+        <div
+          style={{
+            position: "absolute",
+            left: "40px",
+            bottom: "30%",
+            width: "0",
+            height: "0",
+            borderLeft: "20px solid rgba(255, 103, 27, 0.1)",
+            borderTop: "12px solid transparent",
+            borderBottom: "12px solid transparent",
+            zIndex: 3,
+          }}
+        ></div>
+
+        {/* Subtle line accents */}
+        <div
+          style={{
+            position: "absolute",
+            left: "20px",
+            top: "15%",
+            width: "30px",
+            height: "1px",
+            backgroundColor: "rgba(255, 103, 27, 0.3)",
+            zIndex: 3,
+          }}
+        ></div>
+
+        <div
+          style={{
+            position: "absolute",
+            left: "10px",
+            bottom: "20%",
+            width: "40px",
+            height: "1px",
+            backgroundColor: "rgba(255, 255, 255, 0.2)",
+            zIndex: 3,
+          }}
+        ></div>
+      </div>
+
+      {/* Subtle background pattern */}
+      <div
+        className="absolute inset-0"
+        style={{
+          opacity: "0.02",
+          overflow: "hidden",
+          zIndex: 1,
+        }}
+      >
         <svg
           width="100%"
           height="100%"
@@ -107,72 +210,20 @@ export function NewsletterHero({ userLocation }: NewsletterHeroProps) {
           <defs>
             <pattern
               id="grid"
-              width="40"
-              height="40"
+              width="60"
+              height="60"
               patternUnits="userSpaceOnUse"
             >
               <path
-                d="M 40 0 L 0 0 0 40"
+                d="M 60 0 L 0 0 0 60"
                 fill="none"
                 stroke="#74726e"
-                strokeWidth="0.25"
+                strokeWidth="0.5"
               />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#grid)" />
         </svg>
-
-        {/* Floating geometric shapes */}
-        <div
-          style={{
-            position: "absolute",
-            right: "10%",
-            top: "20%",
-            width: "120px",
-            height: "120px",
-            border: "0.5px solid #74726e",
-            borderRadius: "50%",
-            opacity: "0.3",
-          }}
-        ></div>
-
-        <div
-          style={{
-            position: "absolute",
-            right: "15%",
-            bottom: "25%",
-            width: "60px",
-            height: "60px",
-            border: "0.5px solid #74726e",
-            transform: "rotate(45deg)",
-            opacity: "0.2",
-          }}
-        ></div>
-
-        <div
-          style={{
-            position: "absolute",
-            left: "5%",
-            top: "60%",
-            width: "80px",
-            height: "0.5px",
-            backgroundColor: "#74726e",
-            opacity: "0.4",
-          }}
-        ></div>
-
-        <div
-          style={{
-            position: "absolute",
-            right: "25%",
-            top: "70%",
-            width: "100px",
-            height: "0.5px",
-            backgroundColor: "#74726e",
-            transform: "rotate(30deg)",
-            opacity: "0.3",
-          }}
-        ></div>
       </div>
     </section>
   );

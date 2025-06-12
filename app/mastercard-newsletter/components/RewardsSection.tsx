@@ -64,12 +64,11 @@ export function RewardsSection() {
               key={reward.id}
               style={{
                 backgroundColor: "#ffffff",
-                borderRadius: "8px",
+                borderRadius: "6px",
                 padding: "40px 32px",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                border: "1px solid #f0f0f0",
                 fontFamily: "Montserrat, Arial, sans-serif",
                 textAlign: "center",
-                border: "1px solid #f0f0f0",
               }}
             >
               <div style={{ marginBottom: "24px" }}>
@@ -125,11 +124,22 @@ export function RewardsSection() {
           style={{
             marginTop: "60px",
             backgroundColor: "#f7f7f7",
-            borderRadius: "8px",
+            borderRadius: "6px",
             padding: "40px",
             textAlign: "center",
+            border: "1px solid #e3dfd7",
           }}
         >
+          {/* Subtle line accent */}
+          <div
+            style={{
+              width: "60px",
+              height: "1px",
+              backgroundColor: "#ff671b",
+              margin: "0 auto 24px auto",
+            }}
+          ></div>
+
           <h3
             style={{
               fontSize: "24px",
@@ -145,27 +155,70 @@ export function RewardsSection() {
             style={{
               fontSize: "16px",
               color: "#74726e",
-              marginBottom: "24px",
+              marginBottom: "32px",
               fontFamily: "Montserrat, Arial, sans-serif",
+              fontWeight: "200",
             }}
           >
             Make sure your Mastercard is enrolled in cash back rewards program
           </p>
+
+          {/* Primary button */}
           <button
             style={{
               backgroundColor: "#ff671b",
-              color: "white",
+              color: "#ffffff",
               padding: "16px 32px",
-              borderRadius: "4px",
+              borderRadius: "24px",
               border: "none",
               fontSize: "16px",
               fontWeight: "300",
               cursor: "pointer",
               fontFamily: "Montserrat, Arial, sans-serif",
+              marginBottom: "16px",
             }}
           >
             Enroll Now
           </button>
+
+          {/* Alternative text link */}
+          <div style={{ marginTop: "16px" }}>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                cursor: "pointer",
+                color: "#74726e",
+                fontSize: "14px",
+                fontWeight: "300",
+                fontFamily: "Montserrat, Arial, sans-serif",
+              }}
+            >
+              <span>View terms and conditions</span>
+              <div
+                style={{
+                  width: "16px",
+                  height: "1px",
+                  backgroundColor: "#74726e",
+                  position: "relative",
+                }}
+              >
+                <div
+                  style={{
+                    position: "absolute",
+                    right: "0",
+                    top: "-2px",
+                    width: "0",
+                    height: "0",
+                    borderLeft: "4px solid #74726e",
+                    borderTop: "2px solid transparent",
+                    borderBottom: "2px solid transparent",
+                  }}
+                ></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

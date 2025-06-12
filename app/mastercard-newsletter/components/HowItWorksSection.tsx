@@ -140,33 +140,81 @@ export function HowItWorksSection() {
           ))}
         </div>
 
-        <div style={{ marginTop: "60px", textAlign: "center" }}>
+        <div
+          style={{
+            marginTop: "60px",
+            textAlign: "center",
+            borderTop: "1px solid #e3dfd7",
+            paddingTop: "40px",
+          }}
+        >
           <p
             style={{
               fontSize: "16px",
               color: "#74726e",
-              marginBottom: "24px",
+              marginBottom: "32px",
               fontFamily: "Montserrat, Arial, sans-serif",
               fontWeight: "200",
             }}
           >
             Start earning cash back today with your Mastercard
           </p>
-          <button
+
+          {/* Alternative arrow-style CTA */}
+          <div
             style={{
-              backgroundColor: "#141413",
-              color: "white",
-              padding: "16px 32px",
-              borderRadius: "4px",
-              border: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "12px",
+              cursor: "pointer",
+              color: "#141413",
               fontSize: "16px",
               fontWeight: "300",
-              cursor: "pointer",
               fontFamily: "Montserrat, Arial, sans-serif",
+              marginBottom: "24px",
             }}
           >
-            Get Started
-          </button>
+            <span>Learn about enrollment</span>
+            <div
+              style={{
+                width: "32px",
+                height: "1px",
+                backgroundColor: "#ff671b",
+                position: "relative",
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  right: "0",
+                  top: "-3px",
+                  width: "0",
+                  height: "0",
+                  borderLeft: "6px solid #ff671b",
+                  borderTop: "3px solid transparent",
+                  borderBottom: "3px solid transparent",
+                }}
+              ></div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: "16px" }}>
+            <button
+              style={{
+                backgroundColor: "#ff671b",
+                color: "#ffffff",
+                padding: "16px 32px",
+                borderRadius: "24px",
+                border: "none",
+                fontSize: "16px",
+                fontWeight: "300",
+                cursor: "pointer",
+                fontFamily: "Montserrat, Arial, sans-serif",
+              }}
+            >
+              Get Started
+            </button>
+          </div>
         </div>
       </div>
     </section>

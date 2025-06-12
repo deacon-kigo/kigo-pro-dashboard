@@ -89,11 +89,10 @@ export function LocalOffersSection({ userLocation }: LocalOffersSectionProps) {
               key={offer.id}
               style={{
                 backgroundColor: "#ffffff",
-                borderRadius: "8px",
+                borderRadius: "6px",
                 padding: "32px",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                border: "1px solid #f0f0f0",
                 fontFamily: "Montserrat, Arial, sans-serif",
-                transition: "box-shadow 0.3s ease",
               }}
             >
               <div
@@ -127,7 +126,7 @@ export function LocalOffersSection({ userLocation }: LocalOffersSectionProps) {
                       style={{
                         fontSize: "12px",
                         padding: "4px 12px",
-                        borderRadius: "16px",
+                        borderRadius: "4px",
                         backgroundColor: "#f7f7f7",
                         color: "#74726e",
                         fontWeight: "400",
@@ -150,13 +149,14 @@ export function LocalOffersSection({ userLocation }: LocalOffersSectionProps) {
                 <div style={{ marginLeft: "24px" }}>
                   <div
                     style={{
-                      backgroundColor: "#ff671b",
-                      color: "white",
+                      backgroundColor: "#f7f7f7",
+                      color: "#ff671b",
                       fontSize: "14px",
-                      fontWeight: "300",
-                      padding: "8px 16px",
-                      borderRadius: "20px",
+                      fontWeight: "400",
+                      padding: "6px 12px",
+                      borderRadius: "4px",
                       whiteSpace: "nowrap",
+                      border: "1px solid #ff671b",
                     }}
                   >
                     {offer.cashBackRate} cash back
@@ -167,6 +167,16 @@ export function LocalOffersSection({ userLocation }: LocalOffersSectionProps) {
               <div
                 style={{ borderTop: "0.5px solid #f0f0f0", paddingTop: "24px" }}
               >
+                {/* Orange accent line for offer visibility */}
+                <div
+                  style={{
+                    width: "40px",
+                    height: "2px",
+                    backgroundColor: "#ff671b",
+                    marginBottom: "16px",
+                  }}
+                ></div>
+
                 <div
                   style={{
                     display: "flex",
@@ -197,10 +207,10 @@ export function LocalOffersSection({ userLocation }: LocalOffersSectionProps) {
                   </div>
                   <button
                     style={{
-                      backgroundColor: "#141413",
-                      color: "white",
+                      backgroundColor: "#ff671b",
+                      color: "#ffffff",
                       padding: "12px 24px",
-                      borderRadius: "4px",
+                      borderRadius: "20px",
                       border: "none",
                       fontSize: "14px",
                       fontWeight: "300",
@@ -232,6 +242,52 @@ export function LocalOffersSection({ userLocation }: LocalOffersSectionProps) {
           >
             Find More Local Offers in {userLocation.city}
           </button>
+        </div>
+
+        {/* Arrow-style CTA for variation */}
+        <div
+          style={{
+            marginTop: "60px",
+            textAlign: "center",
+            borderTop: "1px solid #f0f0f0",
+            paddingTop: "40px",
+          }}
+        >
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              cursor: "pointer",
+              color: "#141413",
+              fontSize: "16px",
+              fontWeight: "300",
+              fontFamily: "Montserrat, Arial, sans-serif",
+            }}
+          >
+            <span>Find more local offers in {userLocation.city}</span>
+            <div
+              style={{
+                width: "24px",
+                height: "1px",
+                backgroundColor: "#ff671b",
+                position: "relative",
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  right: "0",
+                  top: "-3px",
+                  width: "0",
+                  height: "0",
+                  borderLeft: "6px solid #ff671b",
+                  borderTop: "3px solid transparent",
+                  borderBottom: "3px solid transparent",
+                }}
+              ></div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
