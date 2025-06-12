@@ -15,7 +15,7 @@ interface LocalOffer {
   offer: string;
   description: string;
   validUntil: string;
-  cashBackRate: string;
+  offerTag: string;
 }
 
 export function LocalOffersSection({ userLocation }: LocalOffersSectionProps) {
@@ -29,7 +29,7 @@ export function LocalOffersSection({ userLocation }: LocalOffersSectionProps) {
       description:
         "Artisan coffee and fresh pastries in downtown " + userLocation.city,
       validUntil: "End of month",
-      cashBackRate: "5%",
+      offerTag: "Featured",
     },
     {
       id: "2",
@@ -38,7 +38,7 @@ export function LocalOffersSection({ userLocation }: LocalOffersSectionProps) {
       offer: "$10 off orders over $50",
       description: "Local plants and gardening supplies",
       validUntil: "This week only",
-      cashBackRate: "5%",
+      offerTag: "Popular",
     },
     {
       id: "3",
@@ -47,7 +47,7 @@ export function LocalOffersSection({ userLocation }: LocalOffersSectionProps) {
       offer: "Buy 2, Get 1 Free",
       description: "Independent bookstore supporting local authors",
       validUntil: "Next 2 weeks",
-      cashBackRate: "5%",
+      offerTag: "New",
     },
   ];
 
@@ -159,7 +159,7 @@ export function LocalOffersSection({ userLocation }: LocalOffersSectionProps) {
                       border: "1px solid #ff671b",
                     }}
                   >
-                    {offer.cashBackRate} cash back
+                    {offer.offerTag}
                   </div>
                 </div>
               </div>

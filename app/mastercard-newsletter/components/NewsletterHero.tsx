@@ -20,9 +20,9 @@ export function NewsletterHero({ userLocation }: NewsletterHeroProps) {
       style={{
         backgroundColor: "#141413",
         fontFamily: "Montserrat, Arial, sans-serif",
-        minHeight: "500px",
+        height: "500px",
         display: "flex",
-        alignItems: "center",
+        alignItems: "stretch",
         marginBottom: "0",
       }}
     >
@@ -31,8 +31,11 @@ export function NewsletterHero({ userLocation }: NewsletterHeroProps) {
         style={{
           flex: "1",
           maxWidth: "500px",
-          padding: "60px 40px",
+          padding: "40px 40px",
           zIndex: 10,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
         }}
       >
         <h1
@@ -86,9 +89,11 @@ export function NewsletterHero({ userLocation }: NewsletterHeroProps) {
             fontSize: "16px",
             fontWeight: "300",
             letterSpacing: "0.02em",
+            alignSelf: "flex-start",
+            flexShrink: 0,
           }}
         >
-          <span className="block">Earn 5% cash back</span>
+          <span className="block">Discover Local Offers</span>
           <span
             className="block"
             style={{
@@ -98,7 +103,7 @@ export function NewsletterHero({ userLocation }: NewsletterHeroProps) {
               opacity: "0.9",
             }}
           >
-            with your eligible Mastercard®
+            personalized for your area
           </span>
         </div>
       </div>
@@ -107,7 +112,7 @@ export function NewsletterHero({ userLocation }: NewsletterHeroProps) {
       <div
         style={{
           flex: "1",
-          height: "500px",
+          height: "100%",
           position: "relative",
           overflow: "hidden",
         }}
