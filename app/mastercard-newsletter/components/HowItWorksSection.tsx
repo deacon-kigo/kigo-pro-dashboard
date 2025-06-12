@@ -5,20 +5,20 @@ export function HowItWorksSection() {
       title: "Find offers",
       description: "Browse and search offers within the offers experience.",
       icon: (
-        <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-          <svg
-            className="w-6 h-6 text-orange-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
+        <div
+          style={{
+            width: "80px",
+            height: "80px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <img
+            src="/illustration/mastercard/search-discount.svg"
+            alt="Find offers"
+            style={{ width: "64px", height: "64px" }}
+          />
         </div>
       ),
     },
@@ -28,20 +28,20 @@ export function HowItWorksSection() {
       description:
         "These are high-value, local deals you can redeem at the point of sales for instant savings.",
       icon: (
-        <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-          <svg
-            className="w-6 h-6 text-orange-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
+        <div
+          style={{
+            width: "80px",
+            height: "80px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <img
+            src="/illustration/mastercard/save-money.svg"
+            alt="Save money"
+            style={{ width: "64px", height: "64px" }}
+          />
         </div>
       ),
     },
@@ -51,55 +51,123 @@ export function HowItWorksSection() {
       description:
         "Enroll your eligible Mastercard and swipe to earn cash back at participating businesses.",
       icon: (
-        <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-          <svg
-            className="w-6 h-6 text-orange-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
-            />
-          </svg>
+        <div
+          style={{
+            width: "80px",
+            height: "80px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <img
+            src="/illustration/mastercard/cashback.svg"
+            alt="Cash back"
+            style={{ width: "64px", height: "64px" }}
+          />
         </div>
       ),
     },
   ];
 
   return (
-    <section className="px-6 py-12 bg-white">
-      <div className="mb-10 text-center">
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-          How it works
-        </h2>
-        <div className="w-16 h-1 bg-orange-400 mx-auto"></div>
-      </div>
+    <section style={{ backgroundColor: "#f7f7f7", padding: "80px 40px" }}>
+      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+        <div style={{ marginBottom: "60px", textAlign: "center" }}>
+          <h2
+            style={{
+              fontSize: "32px",
+              fontWeight: "300",
+              color: "#141413",
+              marginBottom: "16px",
+              fontFamily: "Montserrat, Arial, sans-serif",
+              letterSpacing: "-0.01em",
+            }}
+          >
+            How it works
+          </h2>
+          <div
+            style={{
+              width: "60px",
+              height: "0.5px",
+              backgroundColor: "#ff671b",
+              margin: "0 auto",
+            }}
+          ></div>
+        </div>
 
-      <div className="grid gap-8 md:grid-cols-3 max-w-4xl mx-auto">
-        {steps.map((step) => (
-          <div key={step.id} className="text-center">
-            <div className="mb-4 flex justify-center">{step.icon}</div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">
-              {step.title}
-            </h3>
-            <p className="text-gray-600 text-sm leading-relaxed">
-              {step.description}
-            </p>
-          </div>
-        ))}
-      </div>
+        <div
+          style={{
+            display: "grid",
+            gap: "60px",
+            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+          }}
+        >
+          {steps.map((step) => (
+            <div key={step.id} style={{ textAlign: "center" }}>
+              <div
+                style={{
+                  marginBottom: "24px",
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+              >
+                {step.icon}
+              </div>
+              <h3
+                style={{
+                  fontSize: "20px",
+                  fontWeight: "300",
+                  color: "#141413",
+                  marginBottom: "16px",
+                  fontFamily: "Montserrat, Arial, sans-serif",
+                }}
+              >
+                {step.title}
+              </h3>
+              <p
+                style={{
+                  fontSize: "14px",
+                  color: "#74726e",
+                  lineHeight: "1.6",
+                  fontFamily: "Montserrat, Arial, sans-serif",
+                  fontWeight: "200",
+                }}
+              >
+                {step.description}
+              </p>
+            </div>
+          ))}
+        </div>
 
-      <div className="mt-10 text-center">
-        <p className="text-sm text-gray-500 mb-4">
-          Start earning cash back today with your Mastercard
-        </p>
-        <button className="bg-black text-white px-6 py-3 rounded font-semibold hover:bg-gray-800 transition-colors">
-          Get Started
-        </button>
+        <div style={{ marginTop: "60px", textAlign: "center" }}>
+          <p
+            style={{
+              fontSize: "16px",
+              color: "#74726e",
+              marginBottom: "24px",
+              fontFamily: "Montserrat, Arial, sans-serif",
+              fontWeight: "200",
+            }}
+          >
+            Start earning cash back today with your Mastercard
+          </p>
+          <button
+            style={{
+              backgroundColor: "#141413",
+              color: "white",
+              padding: "16px 32px",
+              borderRadius: "4px",
+              border: "none",
+              fontSize: "16px",
+              fontWeight: "300",
+              cursor: "pointer",
+              fontFamily: "Montserrat, Arial, sans-serif",
+            }}
+          >
+            Get Started
+          </button>
+        </div>
       </div>
     </section>
   );
