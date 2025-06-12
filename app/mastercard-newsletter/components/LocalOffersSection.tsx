@@ -226,24 +226,6 @@ export function LocalOffersSection({ userLocation }: LocalOffersSectionProps) {
           ))}
         </div>
 
-        <div style={{ marginTop: "60px", textAlign: "center" }}>
-          <button
-            style={{
-              backgroundColor: "#ff671b",
-              color: "white",
-              padding: "16px 32px",
-              borderRadius: "4px",
-              border: "none",
-              fontSize: "16px",
-              fontWeight: "300",
-              cursor: "pointer",
-              fontFamily: "Montserrat, Arial, sans-serif",
-            }}
-          >
-            Find More Local Offers in {userLocation.city}
-          </button>
-        </div>
-
         {/* Arrow-style CTA for variation */}
         <div
           style={{
