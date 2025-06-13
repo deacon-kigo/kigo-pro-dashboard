@@ -558,9 +558,10 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                 options={merchantOptions}
                 value={currentAd.merchantId}
                 onChange={handleMerchantChange}
-                placeholder="Search or select merchant"
+                placeholder="Type to search merchants..."
                 searchPlaceholder="Type to search merchants..."
                 emptyText="No merchants found"
+                searchFirst={true}
                 className="h-8 border-slate-300 hover:border-blue-400 focus:border-blue-500 shadow-sm text-xs"
               />
             </div>
@@ -580,6 +581,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                   placeholder="Select an offer"
                   searchPlaceholder="Search offers..."
                   emptyText="No offers found for this merchant"
+                  maxDisplayItems={10}
                   className="h-8 border-slate-300 hover:border-green-400 focus:border-green-500 shadow-sm text-xs"
                 />
               ) : (

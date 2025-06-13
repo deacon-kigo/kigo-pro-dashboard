@@ -27,6 +27,8 @@ interface ComboboxProps {
   className?: string;
   popoverClassName?: string;
   searchPlaceholder?: string;
+  searchFirst?: boolean;
+  maxDisplayItems?: number; // Limit the number of items displayed
 }
 
 export function Combobox({
@@ -38,10 +40,13 @@ export function Combobox({
   className,
   popoverClassName,
   searchPlaceholder = "Search...",
+  searchFirst = false,
+  maxDisplayItems,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
   const triggerRef = React.useRef<HTMLButtonElement>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
   const [triggerWidth, setTriggerWidth] = React.useState<number>(0);
 
   // Update trigger width when opened
@@ -51,17 +56,46 @@ export function Combobox({
     }
   }, [open]);
 
-  // Filter options based on search query
-  const filteredOptions = React.useMemo(() => {
-    if (!searchQuery.trim()) return options;
+  // For searchFirst mode, only open when there's a search query
+  React.useEffect(() => {
+    if (searchFirst) {
+      if (searchQuery.trim().length > 0) {
+        setOpen(true);
+      } else {
+        setOpen(false);
+      }
+    }
+  }, [searchQuery, searchFirst]);
 
-    const lowerSearchQuery = searchQuery.toLowerCase();
-    return options.filter(
-      (option) =>
-        option.label.toLowerCase().includes(lowerSearchQuery) ||
-        option.value.toLowerCase().includes(lowerSearchQuery)
-    );
-  }, [options, searchQuery]);
+  // Filter options based on search query and limit display
+  const { filteredOptions, hasMoreItems, totalCount } = React.useMemo(() => {
+    let result = options;
+
+    // Apply search filter if there's a search query
+    if (searchQuery.trim()) {
+      const lowerSearchQuery = searchQuery.toLowerCase();
+      result = options.filter(
+        (option) =>
+          option.label.toLowerCase().includes(lowerSearchQuery) ||
+          option.value.toLowerCase().includes(lowerSearchQuery)
+      );
+    }
+
+    const totalCount = result.length;
+    let hasMoreItems = false;
+
+    // Apply display limit if specified
+    if (maxDisplayItems && result.length > maxDisplayItems) {
+      result = result.slice(0, maxDisplayItems);
+      hasMoreItems = true;
+    }
+
+    return {
+      filteredOptions: result,
+      hasMoreItems,
+      totalCount,
+    };
+  }, [options, searchQuery, maxDisplayItems]);
 
   // Find the selected option label
   const selectedOption = React.useMemo(() => {
@@ -91,7 +125,7 @@ export function Combobox({
 
   // Handle key down events
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!open && (e.key === "ArrowDown" || e.key === "Enter")) {
+    if (!searchFirst && !open && (e.key === "ArrowDown" || e.key === "Enter")) {
       e.preventDefault();
       setOpen(true);
     }
@@ -103,10 +137,132 @@ export function Combobox({
     if (option) {
       onChange(option.value);
       setOpen(false);
-      setSearchQuery("");
+      if (searchFirst) {
+        setSearchQuery(""); // Clear search in searchFirst mode
+      } else {
+        setSearchQuery("");
+      }
     }
   };
 
+  // Handle trigger click - different behavior for searchFirst mode
+  const handleTriggerClick = () => {
+    if (searchFirst) {
+      // In searchFirst mode, focus the hidden input to allow typing
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    } else {
+      // Original behavior - open dropdown immediately
+      setOpen(true);
+    }
+  };
+
+  // Handle input change for searchFirst mode
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // Handle input focus for searchFirst mode
+  const handleInputFocus = () => {
+    if (searchFirst && searchQuery.trim().length > 0) {
+      setOpen(true);
+    }
+  };
+
+  // Handle input blur for searchFirst mode
+  const handleInputBlur = (e: React.FocusEvent) => {
+    if (searchFirst) {
+      // Check if the focus is moving to the popover content
+      const relatedTarget = e.relatedTarget as HTMLElement;
+      if (
+        relatedTarget &&
+        relatedTarget.closest("[data-radix-popover-content]")
+      ) {
+        return; // Don't close if focus is moving to popover content
+      }
+      // Delay closing to allow for selection
+      setTimeout(() => {
+        setOpen(false);
+      }, 200);
+    }
+  };
+
+  if (searchFirst) {
+    return (
+      <div className="relative">
+        <input
+          ref={inputRef}
+          type="text"
+          value={searchQuery}
+          onChange={handleInputChange}
+          onFocus={handleInputFocus}
+          onBlur={handleInputBlur}
+          placeholder={selectedOption ? selectedOption.label : placeholder}
+          className={cn(
+            "w-full px-3 py-2 pr-8 text-sm border border-gray-300 rounded-md bg-white",
+            "focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none",
+            "placeholder:text-gray-500",
+            className
+          )}
+        />
+        <ChevronsUpDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 shrink-0 opacity-50 pointer-events-none" />
+
+        {open && (
+          <div
+            className={cn(
+              "absolute z-50 mt-1 w-full p-0 border border-gray-300 rounded-md bg-white shadow-md",
+              popoverClassName
+            )}
+            onMouseDown={(e) => e.preventDefault()} // Prevent blur when clicking in dropdown
+          >
+            <Command
+              shouldFilter={false}
+              value={value}
+              onValueChange={handleSelect}
+            >
+              <CommandList>
+                <CommandEmpty className="py-3 text-gray-600">
+                  {emptyText}
+                </CommandEmpty>
+                <CommandGroup>
+                  {filteredOptions.map((option) => (
+                    <div
+                      key={option.value}
+                      onClick={() => handleSelect(option.value)}
+                      className="cursor-pointer"
+                    >
+                      <CommandItem
+                        value={option.value}
+                        onSelect={() => handleSelect(option.value)}
+                        className="hover:bg-gray-100 aria-selected:bg-gray-200 aria-selected:text-gray-900 text-gray-800"
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4 text-blue-600",
+                            value === option.value ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {highlightMatch(option.label)}
+                      </CommandItem>
+                    </div>
+                  ))}
+                  {hasMoreItems && (
+                    <div className="px-3 py-2 text-xs text-gray-500 border-t bg-gray-50">
+                      Showing {filteredOptions.length} of {totalCount} items
+                      {!searchQuery && " • Type to search for more"}
+                    </div>
+                  )}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Original implementation for backward compatibility
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -116,7 +272,7 @@ export function Combobox({
           role="combobox"
           aria-expanded={open}
           onKeyDown={handleKeyDown}
-          onClick={() => setOpen(true)}
+          onClick={handleTriggerClick}
           className={cn(
             "w-full justify-between text-sm font-normal bg-white text-gray-800",
             !value && "text-gray-600",
@@ -176,6 +332,12 @@ export function Combobox({
                   </CommandItem>
                 </div>
               ))}
+              {hasMoreItems && (
+                <div className="px-3 py-2 text-xs text-gray-500 border-t bg-gray-50">
+                  Showing {filteredOptions.length} of {totalCount} items
+                  {!searchQuery && " • Type to search for more"}
+                </div>
+              )}
             </CommandGroup>
           </CommandList>
         </Command>
