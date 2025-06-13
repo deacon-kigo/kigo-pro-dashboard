@@ -5,10 +5,12 @@ import { CampaignCompletionChecklist } from "./CampaignCompletionChecklist";
 
 interface CampaignAnalyticsPanelLiteProps {
   className?: string;
+  currentAdData?: any;
 }
 
 export function CampaignAnalyticsPanelLite({
   className,
+  currentAdData,
 }: CampaignAnalyticsPanelLiteProps) {
   return (
     <div className={`flex flex-col w-full h-full ${className}`}>
@@ -39,9 +41,12 @@ export function CampaignAnalyticsPanelLite({
         </div>
       </div>
 
-      {/* Content - Just the checklist */}
+      {/* Content - Just the enhanced checklist */}
       <div className="flex-1 overflow-y-auto p-3">
-        <CampaignCompletionChecklist className="h-full" />
+        <CampaignCompletionChecklist
+          className="h-full"
+          currentAdData={currentAdData}
+        />
       </div>
     </div>
   );

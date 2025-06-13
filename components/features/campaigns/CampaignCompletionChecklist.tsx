@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/lib/redux/store";
 import {
@@ -11,6 +11,7 @@ import {
 import { Badge } from "@/components/atoms/Badge";
 import { Button } from "@/components/atoms/Button";
 import PromotionWidget from "@/components/features/campaigns/PromotionWidget";
+import { AdPreviewModal } from "./AdPreviewModal";
 import {
   ChevronRight,
   Plus,
@@ -19,6 +20,8 @@ import {
   AlertCircle,
   X,
   ChevronDown,
+  Eye,
+  MoreHorizontal,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -30,11 +33,13 @@ import {
 interface CampaignCompletionChecklistProps {
   className?: string;
   onStartNewAd?: () => void;
+  currentAdData?: any;
 }
 
 export function CampaignCompletionChecklist({
   className = "",
   onStartNewAd,
+  currentAdData,
 }: CampaignCompletionChecklistProps) {
   // Get campaign state from Redux
   const { formData, stepValidation, currentStep } = useSelector(
@@ -45,6 +50,18 @@ export function CampaignCompletionChecklist({
   // Local state for expanded ad details
   const [adsExpanded, setAdsExpanded] = useState(false);
   const [expandedAdId, setExpandedAdId] = useState<string | null>(null);
+
+  // Modal state for ad preview
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [selectedAdForPreview, setSelectedAdForPreview] = useState<any>(null);
+
+  // Debug modal state changes
+  useEffect(() => {
+    console.log("Modal state changed:", {
+      previewModalOpen,
+      selectedAdForPreview,
+    });
+  }, [previewModalOpen, selectedAdForPreview]);
 
   // Calculate completion status
   const completedSteps = Object.values(stepValidation).filter(
@@ -165,18 +182,176 @@ export function CampaignCompletionChecklist({
     setExpandedAdId(expandedAdId === adId ? null : adId);
   };
 
+  // Handle opening ad preview modal
+  const handleAdPreview = (ad: any, event?: React.MouseEvent) => {
+    console.log("handleAdPreview called with ad:", ad);
+    console.log("Ad is valid:", !!ad);
+    console.log("Ad keys:", ad ? Object.keys(ad) : "no ad");
+
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    if (!ad) {
+      console.error("No ad provided to handleAdPreview");
+      return;
+    }
+
+    setSelectedAdForPreview(ad);
+    setPreviewModalOpen(true);
+    console.log("Modal state set to true, selected ad:", ad);
+  };
+
+  // Handle closing ad preview modal
+  const handleClosePreview = () => {
+    setPreviewModalOpen(false);
+    setSelectedAdForPreview(null);
+  };
+
+  // Handle edit from modal
+  const handleEditFromModal = () => {
+    goToAdCreationStep();
+  };
+
   return (
     <div
       className={`bg-white rounded-lg border border-gray-200 p-3 ${className}`}
     >
       <div className="flex items-center justify-between mb-3">
         <h4 className="text-sm font-medium">Completion Checklist</h4>
-        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-          {completedSteps} of {totalSteps} steps
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+            {completedSteps} of {totalSteps} steps
+          </span>
+        </div>
+      </div>
+
+      {/* Prominent test button */}
+      <div className="mb-3">
+        <button
+          onClick={() => {
+            console.log("GLOBAL TEST BUTTON CLICKED!");
+            alert("Global test works! Ads count: " + formData.ads.length);
+            if (formData.ads.length > 0) {
+              console.log("Testing with first ad:", formData.ads[0]);
+              handleAdPreview(formData.ads[0]);
+            }
+          }}
+          className="w-full bg-green-500 hover:bg-green-600 text-white px-3 py-2 text-sm rounded font-medium"
+        >
+          🧪 TEST MODAL (Ads: {formData.ads.length})
+        </button>
       </div>
 
       <div className="space-y-3">
+        {/* Live Preview for Current Ad Being Created */}
+        {currentAdData?.isValid && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 mb-3">
+            <div className="flex items-center mb-2">
+              <div className="h-4 w-4 rounded-full bg-blue-600 flex items-center justify-center mr-2">
+                <svg
+                  className="h-2.5 w-2.5 text-white"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <circle cx="12" cy="12" r="3" fill="currentColor" />
+                </svg>
+              </div>
+              <h5 className="text-xs font-medium text-blue-800">
+                Live Preview
+              </h5>
+              <Badge variant="outline" className="text-[9px] ml-auto bg-white">
+                {currentAdData.mediaTypes?.length || 0} formats
+              </Badge>
+            </div>
+
+            {/* Compact Ad Preview Card */}
+            <div
+              className="bg-white rounded border p-2 hover:bg-slate-50 cursor-pointer transition-colors group"
+              onClick={() => {
+                console.log("Live Preview clicked!");
+                console.log("Current ad data:", currentAdData);
+                // Create a mock ad object from currentAdData for the modal
+                const mockAd = {
+                  id: "live-preview",
+                  merchantName: currentAdData.merchantName,
+                  offerId: currentAdData.offerId,
+                  mediaType: currentAdData.mediaTypes || [],
+                  mediaAssets: currentAdData.mediaAssets || [],
+                };
+                handleAdPreview(mockAd);
+              }}
+            >
+              <div className="flex gap-2">
+                {/* Preview Thumbnail */}
+                <div className="w-16 h-12 bg-slate-100 rounded overflow-hidden flex-shrink-0">
+                  <div
+                    className="transform scale-[0.4] origin-top-left"
+                    style={{ width: "250%", height: "250%" }}
+                  >
+                    <PromotionWidget
+                      merchantLogo={
+                        currentAdData.offers?.find(
+                          (o: any) => o.id === currentAdData.offerId
+                        )?.logoUrl || ""
+                      }
+                      merchantName={currentAdData.merchantName}
+                      promotionText={
+                        currentAdData.offers?.find(
+                          (o: any) => o.id === currentAdData.offerId
+                        )?.name || ""
+                      }
+                      featured={true}
+                      bannerImage={currentAdData.previewImageUrl || undefined}
+                      mediaType={
+                        currentAdData.mediaTypes?.[0] || "display_banner"
+                      }
+                    />
+                  </div>
+                </div>
+
+                {/* Ad Details */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <h6 className="text-xs font-medium text-slate-900 truncate">
+                      {currentAdData.merchantName}
+                    </h6>
+                    <Eye className="h-3 w-3 text-slate-400 group-hover:text-blue-600 transition-colors" />
+                  </div>
+                  <p className="text-[10px] text-slate-600 truncate mt-0.5">
+                    {currentAdData.offers?.find(
+                      (o: any) => o.id === currentAdData.offerId
+                    )?.name || ""}
+                  </p>
+
+                  {/* Media Type Indicators */}
+                  <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+                    {currentAdData.mediaTypes
+                      ?.slice(0, 3)
+                      .map((typeId: string) => (
+                        <Badge
+                          key={typeId}
+                          variant="outline"
+                          className="text-[8px] h-3 px-1"
+                        >
+                          {currentAdData.mediaTypeDefinitions?.find(
+                            (t: any) => t.id === typeId
+                          )?.label || typeId}
+                        </Badge>
+                      ))}
+                    {currentAdData.mediaTypes?.length > 3 && (
+                      <Badge variant="outline" className="text-[8px] h-3 px-1">
+                        +{currentAdData.mediaTypes.length - 3}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Campaign Information Step */}
         <div className="flex flex-col">
           <div className="flex items-center">
@@ -342,34 +517,68 @@ export function CampaignCompletionChecklist({
                         key={ad.id}
                         className="border rounded bg-white overflow-hidden"
                       >
-                        <div
-                          className="p-2 flex items-center justify-between cursor-pointer"
-                          onClick={() => toggleAdExpand(ad.id)}
-                        >
-                          <div className="flex items-center">
+                        <div className="p-2 flex items-center justify-between">
+                          {/* Simple test button first */}
+                          <button
+                            onClick={() => {
+                              console.log("TEST BUTTON CLICKED!");
+                              alert("Test button works!");
+                              handleAdPreview(ad);
+                            }}
+                            className="bg-red-500 text-white px-2 py-1 text-xs rounded mr-2"
+                          >
+                            TEST
+                          </button>
+
+                          <div
+                            className="flex items-center flex-1 cursor-pointer hover:bg-slate-50 rounded p-1 -m-1 border border-red-200"
+                            onClick={(e) => {
+                              console.log("Ad preview clicked, ad data:", ad);
+                              console.log(
+                                "Ad structure:",
+                                JSON.stringify(ad, null, 2)
+                              );
+                              handleAdPreview(ad, e);
+                            }}
+                            style={{
+                              minHeight: "30px",
+                              backgroundColor: "rgba(255,0,0,0.1)",
+                            }}
+                          >
                             <div className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center font-medium text-xs mr-2">
                               {index + 1}
                             </div>
                             <span className="text-xs font-medium">
                               {truncateText(ad.merchantName, 15)}
                             </span>
+                            <Eye className="h-3 w-3 text-slate-400 ml-2" />
                           </div>
-                          <div className="flex items-center">
+                          <div className="flex items-center gap-1">
                             <Badge
                               variant={
                                 ad.mediaAssets.length > 0
                                   ? "success"
                                   : "destructive"
                               }
-                              className="text-[10px] h-5 mr-1"
+                              className="text-[10px] h-5"
                             >
                               {ad.mediaAssets.length} Assets
                             </Badge>
-                            <ChevronRight
-                              className={`h-3.5 w-3.5 transition-transform ${
-                                expandedAdId === ad.id ? "rotate-90" : ""
-                              }`}
-                            />
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleAdExpand(ad.id);
+                              }}
+                              className="h-6 w-6 p-0"
+                            >
+                              <ChevronRight
+                                className={`h-3.5 w-3.5 transition-transform ${
+                                  expandedAdId === ad.id ? "rotate-90" : ""
+                                }`}
+                              />
+                            </Button>
                           </div>
                         </div>
 
@@ -406,29 +615,79 @@ export function CampaignCompletionChecklist({
                               </div>
                             </div>
 
-                            {/* Add Promotion Widget Preview */}
+                            {/* Compact Ad Preview */}
                             <div className="my-2 pt-2 border-t">
-                              <p className="text-[10px] font-medium mb-1">
+                              <p className="text-[10px] font-medium mb-2">
                                 Preview:
                               </p>
-                              <div className="w-full max-w-[140px] mx-auto">
-                                <PromotionWidget
-                                  merchantLogo={getMerchantLogo(ad.offerId)}
-                                  merchantName={ad.merchantName}
-                                  promotionText={getPromotionText(ad.offerId)}
-                                  featured={true}
-                                  bannerImage={
-                                    ad.mediaAssets.length > 0
-                                      ? ad.mediaAssets[0].previewUrl
-                                      : undefined
-                                  }
-                                  mediaType={
-                                    ad.mediaType.length > 0
-                                      ? ad.mediaType[0]
-                                      : undefined
-                                  }
-                                  className="transform scale-90 origin-top-left"
-                                />
+                              <div
+                                className="bg-slate-50 rounded border p-2 hover:bg-slate-100 transition-colors cursor-pointer group"
+                                onClick={() => handleAdPreview(ad)}
+                              >
+                                <div className="flex gap-2">
+                                  {/* Preview Thumbnail */}
+                                  <div className="w-14 h-10 bg-white rounded overflow-hidden flex-shrink-0 border">
+                                    <div
+                                      className="transform scale-[0.35] origin-top-left"
+                                      style={{ width: "285%", height: "285%" }}
+                                    >
+                                      <PromotionWidget
+                                        merchantLogo={getMerchantLogo(
+                                          ad.offerId
+                                        )}
+                                        merchantName={ad.merchantName}
+                                        promotionText={getPromotionText(
+                                          ad.offerId
+                                        )}
+                                        featured={true}
+                                        bannerImage={
+                                          ad.mediaAssets.length > 0
+                                            ? ad.mediaAssets[0].previewUrl
+                                            : undefined
+                                        }
+                                        mediaType={ad.mediaType[0]}
+                                      />
+                                    </div>
+                                  </div>
+
+                                  {/* Ad Summary */}
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between mb-1">
+                                      <div className="flex items-center gap-1 flex-wrap">
+                                        {ad.mediaType
+                                          .slice(0, 2)
+                                          .map((type) => (
+                                            <Badge
+                                              key={type}
+                                              variant="outline"
+                                              className="text-[8px] h-3 px-1"
+                                            >
+                                              {getMediaTypeLabel(type)}
+                                            </Badge>
+                                          ))}
+                                        {ad.mediaType.length > 2 && (
+                                          <Badge
+                                            variant="outline"
+                                            className="text-[8px] h-3 px-1"
+                                          >
+                                            +{ad.mediaType.length - 2}
+                                          </Badge>
+                                        )}
+                                      </div>
+                                      <Eye className="h-3 w-3 text-slate-400 group-hover:text-blue-600 transition-colors" />
+                                    </div>
+                                    <div className="flex items-center text-[9px] text-slate-600">
+                                      <span>
+                                        {ad.mediaAssets.length} assets
+                                      </span>
+                                      {ad.mediaAssets.length > 0 && (
+                                        <span className="ml-2 text-green-600">
+                                          ✓ Ready
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
                               </div>
                             </div>
 
@@ -646,6 +905,17 @@ export function CampaignCompletionChecklist({
           </div>
         </div>
       </div>
+
+      {/* Ad Preview Modal */}
+      <AdPreviewModal
+        isOpen={previewModalOpen}
+        onClose={handleClosePreview}
+        ad={selectedAdForPreview}
+        onEdit={handleEditFromModal}
+        getMerchantLogo={getMerchantLogo}
+        getPromotionText={getPromotionText}
+        getMediaTypeLabel={getMediaTypeLabel}
+      />
     </div>
   );
 }

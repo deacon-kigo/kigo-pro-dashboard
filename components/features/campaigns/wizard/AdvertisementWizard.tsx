@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
@@ -49,6 +49,9 @@ const AdvertisementWizard: React.FC = () => {
     (state: RootState) => state.campaign
   );
 
+  // State to track current ad data for live preview
+  const [currentAdData, setCurrentAdData] = useState<any>(null);
+
   // Reset campaign form on initial load
   useEffect(() => {
     dispatch(resetCampaign());
@@ -58,6 +61,11 @@ const AdvertisementWizard: React.FC = () => {
   useEffect(() => {
     dispatch(setCampaignContext(formData));
   }, [dispatch, formData]);
+
+  // Handle current ad data change from AdCreationStep
+  const handleCurrentAdChange = useCallback((adData: any) => {
+    setCurrentAdData(adData);
+  }, []);
 
   // Navigation handlers
   const handleStepChange = useCallback(
@@ -173,6 +181,7 @@ const AdvertisementWizard: React.FC = () => {
             setStepValidation={(isValid) =>
               dispatch(setStepValidation({ step: "ad-creation", isValid }))
             }
+            onCurrentAdChange={handleCurrentAdChange}
           />
         );
       case "targeting-distribution-budget":
@@ -306,11 +315,14 @@ const AdvertisementWizard: React.FC = () => {
             </Card>
           </div>
 
-          {/* Right Column - Campaign Progress Checklist */}
+          {/* Right Column - Campaign Progress Checklist with Live Preview */}
           <div className="w-[37.5%] h-full flex flex-col">
             <Card className="h-full p-0 flex flex-col overflow-hidden shadow-md">
               <div className="flex-1 overflow-hidden">
-                <CampaignAnalyticsPanelLite className="h-full flex-1" />
+                <CampaignAnalyticsPanelLite
+                  className="h-full flex-1"
+                  currentAdData={currentAdData}
+                />
               </div>
             </Card>
           </div>
