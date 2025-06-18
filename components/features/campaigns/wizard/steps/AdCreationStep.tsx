@@ -497,7 +497,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                 searchPlaceholder="Type to search merchants..."
                 emptyText="No merchants found"
                 searchFirst={true}
-                className="h-8 border-slate-300 hover:border-blue-400 focus:border-blue-500 shadow-sm text-xs"
+                className="w-full h-8 border-slate-300 hover:border-blue-400 focus:border-blue-500 shadow-sm text-xs text-text-dark placeholder:text-text-muted"
               />
             </div>
 
@@ -517,7 +517,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                   searchPlaceholder="Search offers..."
                   emptyText="No offers found"
                   maxDisplayItems={10}
-                  className="h-8 border-slate-300 hover:border-blue-400 focus:border-blue-500 shadow-sm text-xs"
+                  className="w-full h-8 border-slate-300 hover:border-blue-400 focus:border-blue-500 shadow-sm text-xs text-text-dark placeholder:text-text-muted"
                 />
               ) : (
                 <Button
@@ -536,52 +536,26 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
             <Label className="text-xs mb-1 block font-medium text-slate-600">
               Media Types* (Select multiple)
             </Label>
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-1.5 items-start">
               {mediaTypes.map((type) => (
                 <div
                   key={type.id}
-                  className={`p-1.5 border rounded cursor-pointer transition-colors relative ${
+                  className={`p-3 border-2 rounded-lg cursor-pointer transition-all duration-200 h-[72px] flex flex-col ${
                     currentAd.mediaTypes.includes(type.id)
-                      ? "border-blue-500 bg-blue-50 shadow-sm"
-                      : "border-slate-200 hover:border-slate-300"
+                      ? "border-primary"
+                      : "border-input hover:border-primary/50 hover:bg-accent"
                   }`}
                   onClick={() => handleMediaTypeChange(type.id)}
                 >
-                  {/* Checkbox indicator */}
-                  <div className="absolute top-1 right-1">
-                    <div
-                      className={`w-3 h-3 rounded-sm border flex items-center justify-center ${
-                        currentAd.mediaTypes.includes(type.id)
-                          ? "bg-blue-600 border-blue-600"
-                          : "border-slate-300 bg-white"
-                      }`}
-                    >
-                      {currentAd.mediaTypes.includes(type.id) && (
-                        <Check className="h-2 w-2 text-white" />
-                      )}
-                    </div>
-                  </div>
-                  <div className="text-xs font-medium mb-0.5 text-slate-700 pr-4">
+                  <div className="text-sm font-medium mb-1 flex-shrink-0 text-foreground">
                     {type.label}
                   </div>
-                  <div className="text-[10px] text-slate-500">
+                  <div className="text-xs text-muted-foreground">
                     {type.dimensions}
                   </div>
                 </div>
               ))}
             </div>
-            {currentAd.mediaTypes.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1">
-                {currentAd.mediaTypes.map((typeId) => {
-                  const type = mediaTypes.find((t) => t.id === typeId);
-                  return (
-                    <Badge key={typeId} variant="outline" className="text-xs">
-                      {type?.label}
-                    </Badge>
-                  );
-                })}
-              </div>
-            )}
           </div>
 
           {/* Upload Sections - Per Media Type */}

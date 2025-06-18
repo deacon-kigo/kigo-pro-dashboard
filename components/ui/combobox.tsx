@@ -202,7 +202,7 @@ export function Combobox({
           className={cn(
             "w-full px-3 py-2 pr-8 text-sm border border-gray-300 rounded-md bg-white",
             "focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none",
-            "placeholder:text-gray-500",
+            "placeholder:text-text-muted text-text-dark",
             className
           )}
         />
@@ -222,7 +222,7 @@ export function Combobox({
               onValueChange={handleSelect}
             >
               <CommandList>
-                <CommandEmpty className="py-3 text-gray-600">
+                <CommandEmpty className="py-6 px-4 text-center text-text-muted text-sm">
                   {emptyText}
                 </CommandEmpty>
                 <CommandGroup>
@@ -235,7 +235,7 @@ export function Combobox({
                       <CommandItem
                         value={option.value}
                         onSelect={() => handleSelect(option.value)}
-                        className="hover:bg-gray-100 aria-selected:bg-gray-200 aria-selected:text-gray-900 text-gray-800"
+                        className="hover:bg-gray-100 aria-selected:bg-gray-200 aria-selected:text-text-dark text-text-dark"
                       >
                         <Check
                           className={cn(
@@ -248,7 +248,7 @@ export function Combobox({
                     </div>
                   ))}
                   {hasMoreItems && (
-                    <div className="px-3 py-2 text-xs text-gray-500 border-t bg-gray-50">
+                    <div className="px-3 py-2 text-xs text-text-muted border-t bg-gray-50">
                       Showing {filteredOptions.length} of {totalCount} items
                       {!searchQuery && " • Type to search for more"}
                     </div>
@@ -274,8 +274,8 @@ export function Combobox({
           onKeyDown={handleKeyDown}
           onClick={handleTriggerClick}
           className={cn(
-            "w-full justify-between text-sm font-normal bg-white text-gray-800",
-            !value && "text-gray-600",
+            "w-full justify-between text-sm font-normal bg-white text-text-dark",
+            !value && "text-text-muted",
             className
           )}
         >
@@ -303,11 +303,11 @@ export function Combobox({
             placeholder={searchPlaceholder}
             value={searchQuery}
             onValueChange={setSearchQuery}
-            className="h-9 text-gray-800 font-normal"
+            className="h-9 text-text-dark font-normal"
             autoFocus
           />
           <CommandList>
-            <CommandEmpty className="py-3 text-gray-600">
+            <CommandEmpty className="py-6 px-4 text-center text-text-muted text-sm">
               {emptyText}
             </CommandEmpty>
             <CommandGroup>
@@ -320,7 +320,7 @@ export function Combobox({
                   <CommandItem
                     value={option.value}
                     onSelect={() => handleSelect(option.value)}
-                    className="hover:bg-gray-100 aria-selected:bg-gray-200 aria-selected:text-gray-900 text-gray-800"
+                    className="hover:bg-gray-100 aria-selected:bg-gray-200 aria-selected:text-text-dark text-text-dark"
                   >
                     <Check
                       className={cn(
@@ -333,7 +333,7 @@ export function Combobox({
                 </div>
               ))}
               {hasMoreItems && (
-                <div className="px-3 py-2 text-xs text-gray-500 border-t bg-gray-50">
+                <div className="px-3 py-2 text-xs text-text-muted border-t bg-gray-50">
                   Showing {filteredOptions.length} of {totalCount} items
                   {!searchQuery && " • Type to search for more"}
                 </div>
