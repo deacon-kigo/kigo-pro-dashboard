@@ -235,6 +235,9 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
   // Other state
   const [isDragging, setIsDragging] = useState(false);
   const [draggedMediaType, setDraggedMediaType] = useState<string | null>(null);
+  const [uploadErrors, setUploadErrors] = useState<{ [key: string]: string }>(
+    {}
+  );
 
   // Derived state - computed during render, no complex dependencies
   const availableOffers = useMemo(
@@ -284,8 +287,26 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
       );
     });
 
+    // Set "Media file is required" errors for missing assets
+    const newErrors = { ...uploadErrors };
+    requiredMediaTypes.forEach((type) => {
+      const hasAsset =
+        currentAd.mediaAssetsByType[type] &&
+        currentAd.mediaAssetsByType[type].length > 0;
+      if (!hasAsset && !newErrors[type]) {
+        newErrors[type] = "Media file is required.";
+      } else if (hasAsset && newErrors[type] === "Media file is required.") {
+        delete newErrors[type];
+      }
+    });
+
+    // Only update errors if they've actually changed
+    if (JSON.stringify(newErrors) !== JSON.stringify(uploadErrors)) {
+      setTimeout(() => setUploadErrors(newErrors), 0);
+    }
+
     return missingAssets.length === 0;
-  }, [currentAd]);
+  }, [currentAd, uploadErrors]);
 
   // Preview data - derived state (show preview even if not fully valid)
   const previewData = useMemo(() => {
@@ -373,25 +394,65 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
     });
   };
 
+  // File validation function
+  const validateFile = (file: File, mediaType: string): string | null => {
+    // Check file size (10MB limit)
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    if (file.size > maxSize) {
+      return "File must be under 10MB.";
+    }
+
+    // Check file type (JPG or PNG only)
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+    if (!allowedTypes.includes(file.type)) {
+      return "File must be a JPG or PNG.";
+    }
+
+    return null; // No errors
+  };
+
   // Handle file upload for specific media type (only one asset per type)
   const handleFileUpload = (file: File, mediaType: string) => {
-    const newAsset: MediaAsset = {
-      id: uuidv4(),
-      name: file.name,
-      type: file.type,
-      size: file.size,
-      url: URL.createObjectURL(file),
-      previewUrl: URL.createObjectURL(file),
-    };
+    // Clear any existing errors for this media type
+    const newErrors = { ...uploadErrors };
+    delete newErrors[mediaType];
+    setUploadErrors(newErrors);
 
-    const newMediaAssetsByType = { ...currentAd.mediaAssetsByType };
-    // Replace existing asset with new one (only one asset per media type)
-    newMediaAssetsByType[mediaType] = [newAsset];
+    // Validate the file
+    const validationError = validateFile(file, mediaType);
+    if (validationError) {
+      setUploadErrors({
+        ...newErrors,
+        [mediaType]: validationError,
+      });
+      return;
+    }
 
-    setCurrentAd({
-      ...currentAd,
-      mediaAssetsByType: newMediaAssetsByType,
-    });
+    try {
+      const newAsset: MediaAsset = {
+        id: uuidv4(),
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        url: URL.createObjectURL(file),
+        previewUrl: URL.createObjectURL(file),
+      };
+
+      const newMediaAssetsByType = { ...currentAd.mediaAssetsByType };
+      // Replace existing asset with new one (only one asset per media type)
+      newMediaAssetsByType[mediaType] = [newAsset];
+
+      setCurrentAd({
+        ...currentAd,
+        mediaAssetsByType: newMediaAssetsByType,
+      });
+    } catch (error) {
+      setUploadErrors({
+        ...newErrors,
+        [mediaType]:
+          "Sorry, something went wrong on our end. Please try again.",
+      });
+    }
   };
 
   // Handle remove media for specific media type
@@ -402,6 +463,11 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
         (asset) => asset.id !== assetId
       );
     }
+
+    // Clear upload errors for this media type when removing
+    const newErrors = { ...uploadErrors };
+    delete newErrors[mediaType];
+    setUploadErrors(newErrors);
 
     setCurrentAd({
       ...currentAd,
@@ -571,149 +637,188 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                 </Label>
 
                 <div className="space-y-3">
-                  {currentAd.mediaTypes.map((mediaTypeId) => {
-                    const mediaType = mediaTypes.find(
-                      (mt) => mt.id === mediaTypeId
-                    );
-                    if (!mediaType) return null;
+                  {mediaTypes
+                    .filter((mediaType) =>
+                      currentAd.mediaTypes.includes(mediaType.id)
+                    )
+                    .map((mediaType) => {
+                      const mediaTypeId = mediaType.id;
 
-                    const assets =
-                      currentAd.mediaAssetsByType[mediaTypeId] || [];
-                    const requiresAsset = mediaType.requiresAsset;
+                      const assets =
+                        currentAd.mediaAssetsByType[mediaTypeId] || [];
+                      const requiresAsset = mediaType.requiresAsset;
 
-                    return (
-                      <div
-                        key={mediaTypeId}
-                        className="border border-slate-200 rounded-lg p-3"
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center">
-                            <h4 className="text-xs font-medium text-slate-700">
-                              {mediaType.label}
-                            </h4>
-                            <Badge
-                              variant="outline"
-                              className="text-[10px] ml-2"
-                            >
-                              {mediaType.dimensions}
-                            </Badge>
-                          </div>
-                          {requiresAsset && (
-                            <Badge
-                              variant={
-                                assets.length > 0 ? "default" : "destructive"
-                              }
-                              className="text-[10px]"
-                            >
-                              {assets.length > 0
-                                ? "Asset uploaded"
-                                : "Required"}
-                            </Badge>
-                          )}
-                        </div>
-
-                        {requiresAsset ? (
-                          <div>
-                            {assets.length === 0 ? (
-                              /* Upload Section - Only visible when no asset exists */
-                              <div
-                                className={`border-2 border-dashed rounded p-3 transition-colors ${
-                                  isDragging && draggedMediaType === mediaTypeId
-                                    ? "border-blue-400 bg-blue-50"
-                                    : "border-slate-300 hover:border-slate-400"
-                                }`}
-                                onDragOver={(e) => {
-                                  e.preventDefault();
-                                  setIsDragging(true);
-                                  setDraggedMediaType(mediaTypeId);
-                                }}
-                                onDragLeave={() => {
-                                  setIsDragging(false);
-                                  setDraggedMediaType(null);
-                                }}
-                                onDrop={(e) => handleFileDrop(e, mediaTypeId)}
+                      return (
+                        <div
+                          key={mediaTypeId}
+                          className="border border-slate-200 rounded-lg p-3"
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center">
+                              <h4 className="text-xs font-medium text-slate-700">
+                                {mediaType.label}
+                              </h4>
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] ml-2"
                               >
-                                <div className="flex flex-col items-center justify-center text-center">
-                                  <ImagePlus className="h-4 w-4 text-slate-400 mb-1.5" />
-                                  <p className="text-xs font-medium mb-0.5 text-slate-600">
-                                    Upload Asset for {mediaType.label}
-                                  </p>
-                                  <p className="text-xs text-slate-500 mb-2">
-                                    Drag file here or browse
-                                  </p>
-                                  <input
-                                    type="file"
-                                    id={`fileUpload-${mediaTypeId}`}
-                                    className="hidden"
-                                    accept="image/*"
-                                    onChange={(e) =>
-                                      handleFileSelect(e, mediaTypeId)
-                                    }
-                                  />
-                                  <Button
-                                    size="sm"
-                                    className="h-6 text-xs px-3"
-                                    onClick={() =>
-                                      document
-                                        .getElementById(
-                                          `fileUpload-${mediaTypeId}`
-                                        )
-                                        ?.click()
-                                    }
-                                  >
-                                    <Upload className="h-2.5 w-2.5 mr-1" />
-                                    Browse File
-                                  </Button>
-                                </div>
-                              </div>
-                            ) : (
-                              /* Asset Display - Only show the single asset with delete option */
-                              <div className="flex items-center justify-between py-2 px-3 bg-slate-50 rounded border">
-                                <div className="flex items-center">
-                                  <div className="h-10 w-10 bg-slate-100 rounded overflow-hidden mr-3">
-                                    <img
-                                      src={assets[0].previewUrl}
-                                      alt={assets[0].name}
-                                      className="h-full w-full object-cover"
-                                    />
-                                  </div>
-                                  <div>
-                                    <p className="text-xs font-medium text-slate-700">
-                                      {assets[0].name}
-                                    </p>
-                                    <p className="text-[10px] text-slate-500">
-                                      {formatFileSize(assets[0].size)}
-                                    </p>
-                                  </div>
-                                </div>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() =>
-                                    handleRemoveMedia(mediaTypeId, assets[0].id)
-                                  }
-                                  className="h-7 w-7 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
-                                  title="Remove asset"
-                                >
-                                  <Trash className="h-3 w-3" />
-                                </Button>
-                              </div>
+                                {mediaType.dimensions}
+                              </Badge>
+                            </div>
+                            {requiresAsset && (
+                              <Badge
+                                variant={
+                                  assets.length > 0 ? "default" : "destructive"
+                                }
+                                className="text-[10px]"
+                              >
+                                {assets.length > 0
+                                  ? "Asset uploaded"
+                                  : "Required"}
+                              </Badge>
                             )}
                           </div>
-                        ) : (
-                          <div className="flex items-center justify-center bg-slate-50 border rounded p-2">
-                            <div className="flex items-center text-sm">
-                              <CheckCircle className="h-3 w-3 text-green-500 mr-1.5" />
-                              <span className="text-xs text-slate-600">
-                                Native format uses the merchant logo - no upload
-                                required
-                              </span>
+
+                          {requiresAsset ? (
+                            <div>
+                              {assets.length === 0 ? (
+                                /* Upload Section - Only visible when no asset exists */
+                                <div>
+                                  <div
+                                    className={`border-2 border-dashed rounded p-3 transition-colors ${
+                                      uploadErrors[mediaTypeId]
+                                        ? "border-red-300 bg-red-50"
+                                        : isDragging &&
+                                            draggedMediaType === mediaTypeId
+                                          ? "border-blue-400 bg-blue-50"
+                                          : "border-slate-300 hover:border-slate-400"
+                                    }`}
+                                    onDragOver={(e) => {
+                                      e.preventDefault();
+                                      setIsDragging(true);
+                                      setDraggedMediaType(mediaTypeId);
+                                    }}
+                                    onDragLeave={() => {
+                                      setIsDragging(false);
+                                      setDraggedMediaType(null);
+                                    }}
+                                    onDrop={(e) =>
+                                      handleFileDrop(e, mediaTypeId)
+                                    }
+                                  >
+                                    <div className="flex flex-col items-center justify-center text-center">
+                                      <ImagePlus
+                                        className={`h-4 w-4 mb-1.5 ${
+                                          uploadErrors[mediaTypeId]
+                                            ? "text-red-400"
+                                            : "text-slate-400"
+                                        }`}
+                                      />
+                                      <p
+                                        className={`text-xs font-medium mb-0.5 ${
+                                          uploadErrors[mediaTypeId]
+                                            ? "text-red-600"
+                                            : "text-slate-600"
+                                        }`}
+                                      >
+                                        {uploadErrors[mediaTypeId]
+                                          ? "File upload"
+                                          : `Upload Asset for ${mediaType.label}`}
+                                      </p>
+                                      <p
+                                        className={`text-xs mb-2 ${
+                                          uploadErrors[mediaTypeId]
+                                            ? "text-red-500"
+                                            : "text-slate-500"
+                                        }`}
+                                      >
+                                        JPG or PNG (max file size: 10MB)
+                                      </p>
+                                      <input
+                                        type="file"
+                                        id={`fileUpload-${mediaTypeId}`}
+                                        className="hidden"
+                                        accept="image/*"
+                                        onChange={(e) =>
+                                          handleFileSelect(e, mediaTypeId)
+                                        }
+                                      />
+                                      <Button
+                                        size="sm"
+                                        className="h-6 text-xs px-3"
+                                        onClick={() =>
+                                          document
+                                            .getElementById(
+                                              `fileUpload-${mediaTypeId}`
+                                            )
+                                            ?.click()
+                                        }
+                                      >
+                                        <Upload className="h-2.5 w-2.5 mr-1" />
+                                        Choose file
+                                      </Button>
+                                    </div>
+                                  </div>
+                                  {/* Error message display */}
+                                  {uploadErrors[mediaTypeId] && (
+                                    <div className="mt-2">
+                                      <p className="text-xs text-red-600">
+                                        {uploadErrors[mediaTypeId]}
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                /* Asset Display - Only show the single asset with delete option */
+                                <div className="flex items-center justify-between py-2 px-3 bg-slate-50 rounded border">
+                                  <div className="flex items-center">
+                                    <div className="h-10 w-10 bg-slate-100 rounded overflow-hidden mr-3">
+                                      <img
+                                        src={assets[0].previewUrl}
+                                        alt={assets[0].name}
+                                        className="h-full w-full object-cover"
+                                      />
+                                    </div>
+                                    <div>
+                                      <p className="text-xs font-medium text-slate-700">
+                                        {assets[0].name}
+                                      </p>
+                                      <p className="text-[10px] text-slate-500">
+                                        {formatFileSize(assets[0].size)}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() =>
+                                      handleRemoveMedia(
+                                        mediaTypeId,
+                                        assets[0].id
+                                      )
+                                    }
+                                    className="h-7 w-7 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
+                                    title="Remove asset"
+                                  >
+                                    <Trash className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              )}
                             </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                          ) : (
+                            <div className="flex items-center justify-center bg-slate-50 border rounded p-2">
+                              <div className="flex items-center text-sm">
+                                <CheckCircle className="h-3 w-3 text-green-500 mr-1.5" />
+                                <span className="text-xs text-slate-600">
+                                  Native format uses the merchant logo - no
+                                  upload required
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
             )}
