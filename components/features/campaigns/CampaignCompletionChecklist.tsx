@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/lib/redux/store";
 import {
@@ -52,13 +52,38 @@ export function CampaignCompletionChecklist({
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
   const [selectedAdForPreview, setSelectedAdForPreview] = useState<any>(null);
 
-  // Debug modal state changes
+  // Memoize the mock ad data to prevent infinite loops
+  const mockAdData = useMemo(() => {
+    if (!currentAdData?.isValid) return null;
+
+    const allAssets = Object.values(
+      currentAdData.mediaAssetsByType || {}
+    ).flat();
+    return {
+      id: "live-preview",
+      merchantName: currentAdData.merchantName,
+      offerId: currentAdData.offerId,
+      mediaType: currentAdData.mediaTypes || [],
+      mediaAssets: allAssets,
+      mediaAssetsByType: currentAdData.mediaAssetsByType || {},
+    };
+  }, [
+    currentAdData?.isValid,
+    currentAdData?.merchantName,
+    currentAdData?.offerId,
+    currentAdData?.mediaTypes,
+    currentAdData?.mediaAssetsByType,
+  ]);
+
+  // Debug modal state changes (but only log when modal actually opens/closes)
   useEffect(() => {
-    console.log("Modal state changed:", {
-      previewModalOpen,
-      selectedAdForPreview,
-    });
-  }, [previewModalOpen, selectedAdForPreview]);
+    if (previewModalOpen || selectedAdForPreview) {
+      console.log("Modal state changed:", {
+        previewModalOpen,
+        selectedAdForPreview: !!selectedAdForPreview,
+      });
+    }
+  }, [previewModalOpen, selectedAdForPreview?.id]); // Only depend on the ID to prevent object comparison issues
 
   // Calculate completion status
   const completedSteps = Object.values(stepValidation).filter(
@@ -75,15 +100,16 @@ export function CampaignCompletionChecklist({
   };
 
   // Navigate to specific step
-  const goToStep = (stepIndex: number) => {
-    dispatch(setCurrentStep(stepIndex));
-  };
+  const goToStep = useCallback(
+    (stepIndex: number) => {
+      dispatch(setCurrentStep(stepIndex));
+    },
+    [dispatch]
+  );
 
   // Handle opening ad preview modal
-  const handleAdPreview = (ad: any, event?: React.MouseEvent) => {
-    console.log("handleAdPreview called with ad:", ad);
-    console.log("Ad is valid:", !!ad);
-    console.log("Ad keys:", ad ? Object.keys(ad) : "no ad");
+  const handleAdPreview = useCallback((ad: any, event?: React.MouseEvent) => {
+    console.log("handleAdPreview called with ad:", ad?.id);
 
     if (event) {
       event.preventDefault();
@@ -97,19 +123,29 @@ export function CampaignCompletionChecklist({
 
     setSelectedAdForPreview(ad);
     setPreviewModalOpen(true);
-    console.log("Modal state set to true, selected ad:", ad);
-  };
+  }, []);
 
   // Handle closing ad preview modal
-  const handleClosePreview = () => {
+  const handleClosePreview = useCallback(() => {
     setPreviewModalOpen(false);
     setSelectedAdForPreview(null);
-  };
+  }, []);
 
   // Handle edit from modal
-  const handleEditFromModal = () => {
+  const handleEditFromModal = useCallback(() => {
     goToStep(1); // Go to ad creation step
-  };
+  }, [goToStep]);
+
+  // Handle live preview click
+  const handleLivePreviewClick = useCallback(
+    (mediaType: string) => {
+      console.log("Live Preview clicked for media type:", mediaType);
+      if (mockAdData) {
+        handleAdPreview(mockAdData);
+      }
+    },
+    [mockAdData, handleAdPreview]
+  );
 
   // Get media type label
   const getMediaTypeLabel = (typeId: string): string => {
@@ -247,61 +283,82 @@ export function CampaignCompletionChecklist({
               </Badge>
             </div>
 
-            <div
-              className="bg-white rounded border p-2 hover:bg-slate-50 cursor-pointer transition-colors group"
-              onClick={() => {
-                console.log("Live Preview clicked!");
-                console.log("Current ad data:", currentAdData);
-                const mockAd = {
-                  id: "live-preview",
-                  merchantName: currentAdData.merchantName,
-                  offerId: currentAdData.offerId,
-                  mediaType: currentAdData.mediaTypes || [],
-                  mediaAssets: currentAdData.mediaAssets || [],
-                };
-                handleAdPreview(mockAd);
-              }}
-            >
-              <div className="flex gap-2">
-                <div className="w-12 h-8 bg-slate-100 rounded overflow-hidden flex-shrink-0">
+            {/* Preview Grid for Multiple Media Types */}
+            <div className="space-y-2">
+              {currentAdData.mediaTypes?.map((mediaType: string) => {
+                const mediaTypeAssets =
+                  currentAdData.mediaAssetsByType?.[mediaType] || [];
+                const firstAsset = mediaTypeAssets[0];
+                const mediaTypeDef = currentAdData.mediaTypeDefinitions?.find(
+                  (mt: any) => mt.id === mediaType
+                );
+
+                return (
                   <div
-                    className="transform scale-[0.3] origin-top-left"
-                    style={{ width: "333%", height: "333%" }}
+                    key={mediaType}
+                    className="bg-white rounded border p-2 hover:bg-slate-50 cursor-pointer transition-colors group"
+                    onClick={() => handleLivePreviewClick(mediaType)}
                   >
-                    <PromotionWidget
-                      merchantLogo={
-                        currentAdData.offers?.find(
-                          (o: any) => o.id === currentAdData.offerId
-                        )?.logoUrl || ""
-                      }
-                      merchantName={currentAdData.merchantName}
-                      promotionText={
-                        currentAdData.offers?.find(
-                          (o: any) => o.id === currentAdData.offerId
-                        )?.name || ""
-                      }
-                      featured={true}
-                      bannerImage={currentAdData.previewImageUrl || undefined}
-                      mediaType={
-                        currentAdData.mediaTypes?.[0] || "display_banner"
-                      }
-                    />
+                    <div className="flex gap-2">
+                      <div className="w-12 h-8 bg-slate-100 rounded overflow-hidden flex-shrink-0">
+                        <div
+                          className="transform scale-[0.3] origin-top-left"
+                          style={{ width: "333%", height: "333%" }}
+                        >
+                          <PromotionWidget
+                            merchantLogo={
+                              currentAdData.offers?.find(
+                                (o: any) => o.id === currentAdData.offerId
+                              )?.logoUrl || ""
+                            }
+                            merchantName={currentAdData.merchantName}
+                            promotionText={
+                              currentAdData.offers?.find(
+                                (o: any) => o.id === currentAdData.offerId
+                              )?.name || ""
+                            }
+                            featured={true}
+                            bannerImage={firstAsset?.previewUrl || undefined}
+                            mediaType={mediaType}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <h6 className="text-xs font-medium text-slate-900 truncate">
+                              {mediaTypeDef?.label || mediaType}
+                            </h6>
+                            <Badge variant="outline" className="text-[10px]">
+                              {mediaTypeDef?.dimensions || "Auto"}
+                            </Badge>
+                          </div>
+                          <Eye className="h-3 w-3 text-slate-400 group-hover:text-blue-600 transition-colors" />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <p className="text-[10px] text-slate-600 truncate">
+                            {currentAdData.offers?.find(
+                              (o: any) => o.id === currentAdData.offerId
+                            )?.name || ""}
+                          </p>
+                          <Badge
+                            variant={
+                              mediaTypeAssets.length > 0
+                                ? "default"
+                                : "destructive"
+                            }
+                            className="text-[8px] h-3 px-1"
+                          >
+                            {mediaTypeAssets.length > 0
+                              ? `${mediaTypeAssets.length} asset${mediaTypeAssets.length > 1 ? "s" : ""}`
+                              : "No assets"}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <h6 className="text-xs font-medium text-slate-900 truncate">
-                      {currentAdData.merchantName}
-                    </h6>
-                    <Eye className="h-3 w-3 text-slate-400 group-hover:text-blue-600 transition-colors" />
-                  </div>
-                  <p className="text-[10px] text-slate-600 truncate">
-                    {currentAdData.offers?.find(
-                      (o: any) => o.id === currentAdData.offerId
-                    )?.name || ""}
-                  </p>
-                </div>
-              </div>
+                );
+              })}
             </div>
           </div>
         </div>

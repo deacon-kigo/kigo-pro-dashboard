@@ -89,7 +89,10 @@ export function AdPreviewModal({
               <div>
                 <span className="text-slate-600">Media Assets:</span>
                 <span className="font-medium ml-2">
-                  {ad.mediaAssets?.length || 0} uploaded
+                  {ad.mediaAssetsByType
+                    ? Object.values(ad.mediaAssetsByType).flat().length
+                    : ad.mediaAssets?.length || 0}{" "}
+                  uploaded
                 </span>
               </div>
               <div className="col-span-2">
@@ -116,79 +119,98 @@ export function AdPreviewModal({
             </div>
 
             <div className="grid gap-6">
-              {ad.mediaType?.map((mediaType: string) => (
-                <div key={mediaType} className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary" className="text-sm">
-                        {getMediaTypeLabel?.(mediaType) || mediaType}
-                      </Badge>
-                      <span className="text-xs text-slate-500">
-                        {/* Add dimensions if available */}
-                        {mediaType === "display_banner" && "970x250"}
-                        {mediaType === "double_decker" && "600x320"}
-                        {mediaType === "native" && "Auto-adapting"}
-                      </span>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-1 text-xs"
-                    >
-                      <Download className="h-3 w-3" />
-                      Export
-                    </Button>
-                  </div>
+              {ad.mediaType?.map((mediaType: string) => {
+                // Get assets for this specific media type
+                const mediaTypeAssets = ad.mediaAssetsByType?.[mediaType] || [];
+                const firstAsset = mediaTypeAssets[0];
 
-                  {/* Full-size preview */}
-                  <div className="bg-white border rounded-lg p-6 flex justify-center">
-                    <div className="max-w-md">
-                      <PromotionWidget
-                        merchantLogo={getMerchantLogo?.(ad.offerId) || ""}
-                        merchantName={ad.merchantName}
-                        promotionText={getPromotionText?.(ad.offerId) || ""}
-                        featured={true}
-                        bannerImage={
-                          ad.mediaAssets?.length > 0
-                            ? ad.mediaAssets[0].previewUrl
-                            : undefined
-                        }
-                        mediaType={mediaType}
-                      />
+                return (
+                  <div key={mediaType} className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="text-sm">
+                          {getMediaTypeLabel?.(mediaType) || mediaType}
+                        </Badge>
+                        <span className="text-xs text-slate-500">
+                          {/* Add dimensions if available */}
+                          {mediaType === "display_banner" && "728x90"}
+                          {mediaType === "double_decker" && "728x180"}
+                          {mediaType === "native" && "Text Only"}
+                        </span>
+                        <Badge
+                          variant={
+                            mediaTypeAssets.length > 0
+                              ? "default"
+                              : "destructive"
+                          }
+                          className="text-xs"
+                        >
+                          {mediaTypeAssets.length > 0
+                            ? `${mediaTypeAssets.length} asset${mediaTypeAssets.length > 1 ? "s" : ""}`
+                            : "No assets"}
+                        </Badge>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-1 text-xs"
+                      >
+                        <Download className="h-3 w-3" />
+                        Export
+                      </Button>
                     </div>
+
+                    {/* Full-size preview */}
+                    <div className="bg-white border rounded-lg p-6 flex justify-center">
+                      <div className="max-w-md">
+                        <PromotionWidget
+                          merchantLogo={getMerchantLogo?.(ad.offerId) || ""}
+                          merchantName={ad.merchantName}
+                          promotionText={getPromotionText?.(ad.offerId) || ""}
+                          featured={true}
+                          bannerImage={firstAsset?.previewUrl || undefined}
+                          mediaType={mediaType}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Assets for this media type */}
+                    {mediaTypeAssets.length > 0 && (
+                      <div className="space-y-2">
+                        <h4 className="text-sm font-medium text-slate-700">
+                          Assets for{" "}
+                          {getMediaTypeLabel?.(mediaType) || mediaType}
+                        </h4>
+                        <div className="grid grid-cols-4 gap-3">
+                          {mediaTypeAssets.map((asset: any) => (
+                            <div key={asset.id} className="space-y-2">
+                              <div className="aspect-video bg-slate-100 rounded border overflow-hidden">
+                                {asset.type.startsWith("image/") && (
+                                  <img
+                                    src={asset.previewUrl}
+                                    alt={asset.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                )}
+                              </div>
+                              <div className="text-xs">
+                                <p className="font-medium truncate">
+                                  {asset.name}
+                                </p>
+                                <p className="text-slate-500">
+                                  {(asset.size / 1024).toFixed(1)} KB
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
-
-          {/* Media Assets */}
-          {ad.mediaAssets?.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="font-medium">Uploaded Assets</h3>
-              <div className="grid grid-cols-4 gap-3">
-                {ad.mediaAssets.map((asset: any) => (
-                  <div key={asset.id} className="space-y-2">
-                    <div className="aspect-video bg-slate-100 rounded border overflow-hidden">
-                      {asset.type.startsWith("image/") && (
-                        <img
-                          src={asset.previewUrl}
-                          alt={asset.name}
-                          className="w-full h-full object-cover"
-                        />
-                      )}
-                    </div>
-                    <div className="text-xs">
-                      <p className="font-medium truncate">{asset.name}</p>
-                      <p className="text-slate-500">
-                        {(asset.size / 1024).toFixed(1)} KB
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </DialogContent>
     </Dialog>
