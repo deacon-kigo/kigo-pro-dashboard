@@ -695,7 +695,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                 {editingAdId ? "Edit Campaign Asset" : "Create Campaign Asset"}
               </h3>
               {ads.length > 0 && !editingAdId && (
-                <Badge variant="outline" className="text-[10px] ml-2 bg-white">
+                <Badge variant="outline" className="text-xs ml-2 bg-white">
                   {ads.length} ad{ads.length !== 1 ? "s" : ""} created
                 </Badge>
               )}
@@ -782,7 +782,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                   }`}
                   onClick={() => handleMediaTypeChange(type.id)}
                 >
-                  <div className="text-sm font-medium mb-1 flex-shrink-0 text-foreground">
+                  <div className="text-xs font-medium mb-1 flex-shrink-0 text-foreground">
                     {type.label}
                   </div>
                   <div className="text-xs text-muted-foreground">
@@ -827,10 +827,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                               <h4 className="text-xs font-medium text-slate-700">
                                 {mediaType.label}
                               </h4>
-                              <Badge
-                                variant="outline"
-                                className="text-[10px] ml-2"
-                              >
+                              <Badge variant="outline" className="text-xs ml-2">
                                 {mediaType.dimensions}
                               </Badge>
                             </div>
@@ -839,7 +836,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                                 variant={
                                   assets.length > 0 ? "default" : "destructive"
                                 }
-                                className="text-[10px]"
+                                className="text-xs"
                               >
                                 {assets.length > 0
                                   ? "Asset uploaded"
@@ -952,7 +949,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                                       <p className="text-xs font-medium text-slate-700">
                                         {assets[0].name}
                                       </p>
-                                      <p className="text-[10px] text-slate-500">
+                                      <p className="text-xs text-slate-500">
                                         {formatFileSize(assets[0].size)}
                                       </p>
                                     </div>
@@ -976,7 +973,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                             </div>
                           ) : (
                             <div className="flex items-center justify-center bg-slate-50 border rounded p-2">
-                              <div className="flex items-center text-sm">
+                              <div className="flex items-center text-xs">
                                 <CheckCircle className="h-3 w-3 text-green-500 mr-1.5" />
                                 <span className="text-xs text-slate-600">
                                   Native format uses the merchant logo - no

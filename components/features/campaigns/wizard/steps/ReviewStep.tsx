@@ -285,8 +285,8 @@ const ReviewStep: React.FC<ReviewStepProps> = ({ formData }) => {
       {/* Target & Budget */}
       <SectionCard
         title="Target & Budget"
-        description="Target audience, distribution, and budget settings"
-        editLink={2} // Step index for targeting, distribution, budget
+        description="Target audience and budget settings"
+        editLink={2} // Step index for targeting & budget
       >
         <div className="space-y-4">
           {/* Targeting */}
@@ -341,41 +341,6 @@ const ReviewStep: React.FC<ReviewStepProps> = ({ formData }) => {
           </div>
 
           {/* Distribution */}
-          <div className="border-t pt-4 mt-4">
-            <h5 className="font-medium">Distribution</h5>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-              <div>
-                <h6 className="text-sm font-medium">Channels</h6>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {formData.distribution.channels.map((channel) => (
-                    <Badge key={channel} variant="outline" className="text-xs">
-                      {channel}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h6 className="text-sm font-medium">Programs</h6>
-                {formData.distribution.programs.length > 0 ? (
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {formData.distribution.programs.map((program) => (
-                      <Badge
-                        key={program}
-                        variant="outline"
-                        className="text-xs"
-                      >
-                        {program}
-                      </Badge>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    No programs selected
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
 
           {/* Budget */}
           <div className="border-t pt-4 mt-4">
@@ -397,6 +362,42 @@ const ReviewStep: React.FC<ReviewStepProps> = ({ formData }) => {
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+      </SectionCard>
+
+      {/* Distribution */}
+      <SectionCard
+        title="Distribution"
+        description="Distribution channels and partner programs"
+        editLink={3} // Step index for distribution
+      >
+        <div className="space-y-4">
+          <div>
+            <h6 className="text-sm font-medium">Channels</h6>
+            <div className="flex flex-wrap gap-1 mt-1">
+              {formData.distribution.channels.map((channel) => (
+                <Badge key={channel} variant="outline" className="text-xs">
+                  {channel}
+                </Badge>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h6 className="text-sm font-medium">Programs</h6>
+            {formData.distribution.programs.length > 0 ? (
+              <div className="flex flex-wrap gap-1 mt-1">
+                {formData.distribution.programs.map((program) => (
+                  <Badge key={program} variant="outline" className="text-xs">
+                    {program}
+                  </Badge>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No programs selected
+              </p>
+            )}
           </div>
         </div>
       </SectionCard>

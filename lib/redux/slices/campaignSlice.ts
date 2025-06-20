@@ -13,9 +13,14 @@ export const CAMPAIGN_STEPS = [
     description: "Create multiple ads for your campaign",
   },
   {
-    id: "targeting-distribution-budget",
+    id: "targeting-budget",
     title: "Target & Budget",
-    description: "Set audience targeting, distribution channels, and budget",
+    description: "Set audience targeting and campaign budget",
+  },
+  {
+    id: "distribution",
+    title: "Distribution",
+    description: "Select distribution channels and partner programs",
   },
   {
     id: "review",
@@ -127,7 +132,8 @@ const initialState: CampaignState = {
   stepValidation: {
     "basic-info": true,
     "ad-creation": true,
-    "targeting-distribution-budget": true,
+    "targeting-budget": true,
+    distribution: true,
     review: true,
   },
   isGenerating: false,

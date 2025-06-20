@@ -34,6 +34,7 @@ import {
   Layers,
   Clock,
   ArrowRight,
+  Share2,
 } from "lucide-react";
 
 interface CampaignCompletionChecklistProps {
@@ -244,7 +245,27 @@ export function CampaignCompletionChecklist({
     return textMap[offerId] || "Promotion";
   };
 
-  // Step configuration
+  // Helper function to format campaign duration
+  const formatCampaignDuration = () => {
+    const { startDate, endDate, noEndDate } = formData.targeting;
+    if (!startDate) return "Duration not set";
+
+    const start = new Date(startDate).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+
+    if (noEndDate) return `${start} - Ongoing`;
+    if (!endDate) return `${start} - End date TBD`;
+
+    const end = new Date(endDate).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+    return `${start} - ${end}`;
+  };
+
+  // Step configuration with enhanced data display
   const steps = [
     {
       id: "basic-info",
@@ -254,7 +275,9 @@ export function CampaignCompletionChecklist({
       isCompleted: stepValidation["basic-info"],
       isCurrent: currentStep === 0,
       data: formData.basicInfo,
-      summary: formData.basicInfo.name ? `${formData.basicInfo.name}` : null,
+      keyInfo: formData.basicInfo.name
+        ? { label: "Campaign Name", value: formData.basicInfo.name }
+        : null,
     },
     {
       id: "ad-creation",
@@ -264,32 +287,66 @@ export function CampaignCompletionChecklist({
       isCompleted: formData.ads.length > 0,
       isCurrent: currentStep === 1,
       data: formData.ads,
-      summary:
+      keyInfo:
         formData.ads.length > 0
-          ? `${formData.ads.length} assets created`
+          ? {
+              label: "Assets Created",
+              value: `${formData.ads.length} ad${formData.ads.length !== 1 ? "s" : ""}`,
+              detail: `${formData.ads.reduce((total, ad) => total + (ad.mediaAssets?.length || 0), 0)} media files`,
+            }
           : null,
     },
     {
-      id: "targeting-distribution-budget",
+      id: "targeting-budget",
       title: "Target & Budget",
       icon: Target,
       stepIndex: 2,
-      isCompleted: stepValidation["targeting-distribution-budget"],
+      isCompleted: stepValidation["targeting-budget"],
       isCurrent: currentStep === 2,
       data: { targeting: formData.targeting, budget: formData.budget },
-      summary: formData.budget.maxBudget
-        ? `$${formData.budget.maxBudget} budget`
-        : null,
+      keyInfo:
+        formData.budget.maxBudget > 0 || formData.targeting.startDate
+          ? {
+              label: "Campaign Setup",
+              value:
+                formData.budget.maxBudget > 0
+                  ? `$${formData.budget.maxBudget.toLocaleString()} budget`
+                  : "Budget not set",
+              detail: formatCampaignDuration(),
+            }
+          : null,
+    },
+    {
+      id: "distribution",
+      title: "Distribution",
+      icon: Share2,
+      stepIndex: 3,
+      isCompleted: stepValidation["distribution"],
+      isCurrent: currentStep === 3,
+      data: formData.distribution,
+      keyInfo:
+        formData.distribution.channels.length > 0
+          ? {
+              label: "Distribution Setup",
+              value: `${formData.distribution.channels.length} channel${formData.distribution.channels.length !== 1 ? "s" : ""}`,
+              detail:
+                formData.distribution.programCampaigns.length > 0
+                  ? `${formData.distribution.programCampaigns.length} program${formData.distribution.programCampaigns.length !== 1 ? "s" : ""}`
+                  : "No programs selected",
+            }
+          : null,
     },
     {
       id: "review",
       title: "Final Review",
       icon: CheckCircle,
-      stepIndex: 3,
+      stepIndex: 4,
       isCompleted: stepValidation["review"],
-      isCurrent: currentStep === 3,
+      isCurrent: currentStep === 4,
       data: null,
-      summary: stepValidation["review"] ? "Ready to launch" : null,
+      keyInfo: stepValidation["review"]
+        ? { label: "Status", value: "Ready to launch" }
+        : null,
     },
   ];
 
@@ -485,29 +542,28 @@ export function CampaignCompletionChecklist({
                         </Badge>
                       )}
                     </div>
-                    {step.summary && (
-                      <p className="text-xs text-slate-600 mt-0.5">
-                        {step.summary}
-                      </p>
+                    {step.keyInfo && (
+                      <div className="mt-1">
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-xs text-slate-500">
+                            {step.keyInfo.label}:
+                          </span>
+                          <span className="text-sm font-medium text-slate-800">
+                            {step.keyInfo.value}
+                          </span>
+                        </div>
+                        {step.keyInfo.detail && (
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            {step.keyInfo.detail}
+                          </p>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
 
                 {/* Action Button */}
                 <div className="flex items-center">
-                  {step.id === "ad-creation" && step.isCompleted && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // Show ads preview or management
-                      }}
-                      className="h-6 w-6 p-0 mr-2 hover:bg-blue-100"
-                    >
-                      <Eye className="h-3 w-3 text-blue-600" />
-                    </Button>
-                  )}
                   <ChevronRight className="h-4 w-4 text-slate-400" />
                 </div>
               </div>

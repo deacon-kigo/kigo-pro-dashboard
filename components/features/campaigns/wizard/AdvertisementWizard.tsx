@@ -37,7 +37,8 @@ import { v4 as uuidv4 } from "uuid";
 // Import step components
 import BasicInfoStep from "./steps/BasicInfoStep";
 import AdCreationStep from "./steps/AdCreationStep";
-import TargetDistributionBudgetStep from "./steps/TargetDistributionBudgetStep";
+import TargetingBudgetStep from "./steps/TargetingBudgetStep";
+import DistributionStep from "./steps/DistributionStep";
 import ReviewStep from "./steps/ReviewStep";
 
 const AdvertisementWizard: React.FC = () => {
@@ -215,17 +216,13 @@ const AdvertisementWizard: React.FC = () => {
             onAssetRemoveRef={assetRemoveRef}
           />
         );
-      case "targeting-distribution-budget":
+      case "targeting-budget":
         return (
-          <TargetDistributionBudgetStep
+          <TargetingBudgetStep
             targetingData={formData.targeting}
-            distributionData={formData.distribution}
             budgetData={formData.budget}
             updateTargeting={(targeting) =>
               dispatch(updateTargeting(targeting))
-            }
-            updateDistribution={(distribution) =>
-              dispatch(updateDistribution(distribution))
             }
             updateBudget={(budget) => dispatch(updateBudget(budget))}
             addLocation={(location) => dispatch(addLocation(location))}
@@ -233,11 +230,29 @@ const AdvertisementWizard: React.FC = () => {
             setStepValidation={(isValid) =>
               dispatch(
                 setStepValidation({
-                  step: "targeting-distribution-budget",
+                  step: "targeting-budget",
                   isValid,
                 })
               )
             }
+          />
+        );
+      case "distribution":
+        return (
+          <DistributionStep
+            formData={formData.distribution}
+            updateDistribution={(distribution) =>
+              dispatch(updateDistribution(distribution))
+            }
+            setStepValidation={(isValid) =>
+              dispatch(
+                setStepValidation({
+                  step: "distribution",
+                  isValid,
+                })
+              )
+            }
+            ads={formData.ads}
           />
         );
       case "review":
