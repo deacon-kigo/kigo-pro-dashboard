@@ -68,6 +68,7 @@ export interface MediaAsset {
 
 export interface CampaignAd {
   id: string;
+  name: string;
   merchantId: string;
   merchantName: string;
   offerId: string;

@@ -97,10 +97,10 @@ const CampaignAssetCard: React.FC<CampaignAssetCardProps> = ({
         {/* Ad Content - matches CampaignCompletionChecklist exactly */}
         <div className="flex-1 min-w-0 mr-3">
           <p className="text-sm font-medium text-slate-900 leading-tight">
-            {ad.merchantName}
+            {ad.name || ad.merchantName}
           </p>
           <p className="text-xs text-slate-600 mt-0.5 leading-tight">
-            {getOfferText(ad.offerId)}
+            {ad.merchantName} • {getOfferText(ad.offerId)}
           </p>
         </div>
 

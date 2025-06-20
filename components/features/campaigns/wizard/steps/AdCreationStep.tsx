@@ -4,6 +4,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { Label } from "@/components/atoms/Label";
 import { Button } from "@/components/atoms/Button";
 import { Badge } from "@/components/atoms/Badge";
+import { Input } from "@/components/atoms/Input";
 import Card from "@/components/atoms/Card/Card";
 import { CampaignAd, MediaAsset } from "@/lib/redux/slices/campaignSlice";
 import {
@@ -226,6 +227,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
   // State for current ad being created/edited
   const [currentAd, setCurrentAd] = useState<{
     id: string | null;
+    name: string;
     merchantId: string;
     merchantName: string;
     offerId: string;
@@ -233,6 +235,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
     mediaAssetsByType: { [key: string]: MediaAsset[] };
   }>({
     id: null,
+    name: "",
     merchantId: "",
     merchantName: "",
     offerId: "",
@@ -278,6 +281,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
   // Form validation - derived state
   const isCurrentAdValid = useMemo(() => {
     if (
+      !currentAd.name.trim() ||
       !currentAd.merchantId ||
       !currentAd.offerId ||
       currentAd.mediaTypes.length === 0
@@ -346,6 +350,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
       // Create preview data compatible with existing campaign asset components
       const previewAd: CampaignAd = {
         id: currentAd.id || "temp-preview",
+        name: currentAd.name,
         merchantId: currentAd.merchantId,
         merchantName: currentAd.merchantName,
         offerId: currentAd.offerId,
@@ -610,6 +615,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
 
     const newAd: CampaignAd = {
       id: currentAd.id || uuidv4(),
+      name: currentAd.name,
       merchantId: currentAd.merchantId,
       merchantName: currentAd.merchantName,
       offerId: currentAd.offerId,
@@ -631,6 +637,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
     // Reset form
     setCurrentAd({
       id: null,
+      name: "",
       merchantId: "",
       merchantName: "",
       offerId: "",
@@ -659,6 +666,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
 
     setCurrentAd({
       id: ad.id,
+      name: ad.name,
       merchantId: ad.merchantId,
       merchantName: ad.merchantName,
       offerId: ad.offerId,
@@ -672,6 +680,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
     setEditingAdId(null);
     setCurrentAd({
       id: null,
+      name: "",
       merchantId: "",
       merchantName: "",
       offerId: "",
@@ -722,6 +731,24 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
 
           {/* Form Controls - Stacked vertically */}
           <div className="space-y-2 mb-3">
+            <div>
+              <Label
+                htmlFor="adName"
+                className="text-xs mb-1 block font-medium text-slate-600"
+              >
+                Ad Name*
+              </Label>
+              <Input
+                id="adName"
+                value={currentAd.name}
+                onChange={(e) =>
+                  setCurrentAd({ ...currentAd, name: e.target.value })
+                }
+                placeholder="Enter ad name..."
+                className="w-full h-8 border-slate-300 hover:border-blue-400 focus:border-blue-500 shadow-sm text-xs text-text-dark placeholder:text-text-muted"
+              />
+            </div>
+
             <div>
               <Label
                 htmlFor="merchant"

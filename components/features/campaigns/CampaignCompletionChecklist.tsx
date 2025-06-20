@@ -73,6 +73,7 @@ export function CampaignCompletionChecklist({
     ).flat();
     return {
       id: "live-preview",
+      name: currentAdData.name,
       merchantName: currentAdData.merchantName,
       offerId: currentAdData.offerId,
       mediaType: currentAdData.mediaTypes || [],
@@ -81,6 +82,7 @@ export function CampaignCompletionChecklist({
     };
   }, [
     currentAdData?.isValid,
+    currentAdData?.name,
     currentAdData?.merchantName,
     currentAdData?.offerId,
     currentAdData?.mediaTypes,
@@ -417,7 +419,9 @@ export function CampaignCompletionChecklist({
                                 (o: any) => o.id === currentAdData.offerId
                               )?.logoUrl || ""
                             }
-                            merchantName={currentAdData.merchantName}
+                            merchantName={
+                              currentAdData.name || currentAdData.merchantName
+                            }
                             promotionText={
                               currentAdData.offers?.find(
                                 (o: any) => o.id === currentAdData.offerId
@@ -588,10 +592,10 @@ export function CampaignCompletionChecklist({
                           <div className="flex items-start justify-between">
                             <div className="flex-1 min-w-0 mr-3">
                               <p className="text-sm font-medium text-slate-900 leading-tight">
-                                {ad.merchantName}
+                                {ad.name || ad.merchantName}
                               </p>
                               <p className="text-xs text-slate-600 mt-0.5 leading-tight">
-                                {offerText}
+                                {ad.merchantName} • {offerText}
                               </p>
                             </div>
                             <div className="flex-shrink-0 flex items-center space-x-2">
