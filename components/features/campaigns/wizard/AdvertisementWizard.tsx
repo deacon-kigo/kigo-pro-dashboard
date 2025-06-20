@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useCallback, useState } from "react";
+import React, { useEffect, useCallback, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
@@ -52,6 +52,14 @@ const AdvertisementWizard: React.FC = () => {
   // State to track current ad data for live preview
   const [currentAdData, setCurrentAdData] = useState<any>(null);
 
+  // Refs to access asset management functions from AdCreationStep
+  const assetUploadRef = useRef<
+    ((mediaType: string, file: File) => void) | null
+  >(null);
+  const assetRemoveRef = useRef<
+    ((mediaType: string, assetId: string) => void) | null
+  >(null);
+
   // Reset campaign form on initial load
   useEffect(() => {
     dispatch(resetCampaign());
@@ -66,6 +74,27 @@ const AdvertisementWizard: React.FC = () => {
   const handleCurrentAdChange = useCallback((adData: any) => {
     setCurrentAdData(adData);
   }, []);
+
+  // Asset management callbacks for the preview modal
+  const handleAssetUploadForCurrentAd = useCallback(
+    (mediaType: string, file: File) => {
+      if (assetUploadRef.current) {
+        assetUploadRef.current(mediaType, file);
+      }
+    },
+    []
+  );
+
+  const handleAssetRemoveForCurrentAd = useCallback(
+    (mediaType: string, assetId: string) => {
+      if (assetRemoveRef.current) {
+        assetRemoveRef.current(mediaType, assetId);
+      } else {
+        console.warn("Asset remove function not available");
+      }
+    },
+    []
+  );
 
   // Navigation handlers
   const handleStepChange = useCallback(
@@ -182,6 +211,8 @@ const AdvertisementWizard: React.FC = () => {
               dispatch(setStepValidation({ step: "ad-creation", isValid }))
             }
             onCurrentAdChange={handleCurrentAdChange}
+            onAssetUploadRef={assetUploadRef}
+            onAssetRemoveRef={assetRemoveRef}
           />
         );
       case "targeting-distribution-budget":
@@ -322,6 +353,9 @@ const AdvertisementWizard: React.FC = () => {
                 <CampaignAnalyticsPanelLite
                   className="h-full flex-1"
                   currentAdData={currentAdData}
+                  allAdsData={formData.ads}
+                  onAssetUpload={handleAssetUploadForCurrentAd}
+                  onAssetRemove={handleAssetRemoveForCurrentAd}
                 />
               </div>
             </Card>

@@ -6,11 +6,17 @@ import { CampaignCompletionChecklist } from "./CampaignCompletionChecklist";
 interface CampaignAnalyticsPanelLiteProps {
   className?: string;
   currentAdData?: any;
+  allAdsData?: any[];
+  onAssetUpload?: (mediaType: string, file: File) => void;
+  onAssetRemove?: (mediaType: string, assetId: string) => void;
 }
 
 export function CampaignAnalyticsPanelLite({
   className,
   currentAdData,
+  allAdsData,
+  onAssetUpload,
+  onAssetRemove,
 }: CampaignAnalyticsPanelLiteProps) {
   return (
     <div className={`flex flex-col w-full h-full ${className}`}>
@@ -46,6 +52,9 @@ export function CampaignAnalyticsPanelLite({
         <CampaignCompletionChecklist
           className="h-full"
           currentAdData={currentAdData}
+          allAdsData={allAdsData}
+          onAssetUpload={onAssetUpload}
+          onAssetRemove={onAssetRemove}
         />
       </div>
     </div>

@@ -7,6 +7,7 @@ import {
   CAMPAIGN_STEPS,
   addAd,
   setCurrentStep,
+  updateAd,
 } from "@/lib/redux/slices/campaignSlice";
 import { Badge } from "@/components/atoms/Badge";
 import { Button } from "@/components/atoms/Button";
@@ -35,12 +36,18 @@ interface CampaignCompletionChecklistProps {
   className?: string;
   onStartNewAd?: () => void;
   currentAdData?: any;
+  allAdsData?: any[];
+  onAssetUpload?: (mediaType: string, file: File) => void;
+  onAssetRemove?: (mediaType: string, assetId: string) => void;
 }
 
 export function CampaignCompletionChecklist({
   className = "",
   onStartNewAd,
   currentAdData,
+  allAdsData,
+  onAssetUpload,
+  onAssetRemove,
 }: CampaignCompletionChecklistProps) {
   // Get campaign state from Redux
   const { formData, stepValidation, currentStep } = useSelector(
@@ -131,10 +138,25 @@ export function CampaignCompletionChecklist({
     setSelectedAdForPreview(null);
   }, []);
 
-  // Handle edit from modal
-  const handleEditFromModal = useCallback(() => {
-    goToStep(1); // Go to ad creation step
-  }, [goToStep]);
+  // Handle asset upload from modal - delegate to the real handlers
+  const handleAssetUpload = useCallback(
+    (mediaType: string, file: File) => {
+      if (onAssetUpload) {
+        onAssetUpload(mediaType, file);
+      }
+    },
+    [onAssetUpload]
+  );
+
+  // Handle asset removal from modal - delegate to the real handlers
+  const handleAssetRemove = useCallback(
+    (mediaType: string, assetId: string) => {
+      if (onAssetRemove) {
+        onAssetRemove(mediaType, assetId);
+      }
+    },
+    [onAssetRemove]
+  );
 
   // Handle live preview click
   const handleLivePreviewClick = useCallback(
@@ -540,10 +562,13 @@ export function CampaignCompletionChecklist({
         isOpen={previewModalOpen}
         onClose={handleClosePreview}
         ad={selectedAdForPreview}
-        onEdit={handleEditFromModal}
+        allAds={allAdsData || formData.ads}
+        offers={currentAdData?.offers || []}
         getMerchantLogo={getMerchantLogo}
         getPromotionText={getPromotionText}
         getMediaTypeLabel={getMediaTypeLabel}
+        onAssetUpload={handleAssetUpload}
+        onAssetRemove={handleAssetRemove}
       />
     </div>
   );

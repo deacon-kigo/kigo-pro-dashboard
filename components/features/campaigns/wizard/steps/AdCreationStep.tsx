@@ -38,6 +38,12 @@ interface AdCreationStepProps {
   removeMediaFromAd: (adId: string, mediaId: string) => void;
   setStepValidation: (isValid: boolean) => void;
   onCurrentAdChange?: (currentAd: any) => void;
+  onAssetUploadRef?: React.MutableRefObject<
+    ((mediaType: string, file: File) => void) | null
+  >;
+  onAssetRemoveRef?: React.MutableRefObject<
+    ((mediaType: string, assetId: string) => void) | null
+  >;
 }
 
 const AdCreationStep: React.FC<AdCreationStepProps> = ({
@@ -49,6 +55,8 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
   removeMediaFromAd,
   setStepValidation,
   onCurrentAdChange,
+  onAssetUploadRef,
+  onAssetRemoveRef,
 }) => {
   // Generate 50+ mock merchants for the dropdown (5 original + 50 new)
   const merchants = [
@@ -442,10 +450,12 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
       // Replace existing asset with new one (only one asset per media type)
       newMediaAssetsByType[mediaType] = [newAsset];
 
-      setCurrentAd({
+      const updatedAd = {
         ...currentAd,
         mediaAssetsByType: newMediaAssetsByType,
-      });
+      };
+
+      setCurrentAd(updatedAd);
     } catch (error) {
       setUploadErrors({
         ...newErrors,
@@ -523,6 +533,18 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
+
+  // Expose asset management functions via refs for external access (e.g., preview modal)
+  useEffect(() => {
+    if (onAssetUploadRef) {
+      onAssetUploadRef.current = (mediaType: string, file: File) => {
+        handleFileUpload(file, mediaType);
+      };
+    }
+    if (onAssetRemoveRef) {
+      onAssetRemoveRef.current = handleRemoveMedia;
+    }
+  }, [onAssetUploadRef, onAssetRemoveRef]);
 
   // Check if we have any media types that require assets
   const hasRequiredAssetTypes = currentAd.mediaTypes.some((type) => {
