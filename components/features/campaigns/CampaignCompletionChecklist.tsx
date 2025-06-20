@@ -499,41 +499,31 @@ export function CampaignCompletionChecklist({
                       return (
                         <div
                           key={ad.id}
-                          className="bg-white rounded-lg border border-slate-200 p-3 hover:bg-slate-50 cursor-pointer transition-colors shadow-sm"
+                          className="bg-white rounded-lg border border-slate-200 p-2.5 hover:bg-slate-50 cursor-pointer transition-colors shadow-sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleAdPreview(ad);
                           }}
                         >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-3">
-                              <div className="h-10 w-10 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
-                                <ImagePlus className="h-5 w-5 text-blue-600" />
-                              </div>
-                              <div className="flex-1">
-                                <p className="text-sm font-medium text-slate-900">
-                                  {ad.merchantName}
-                                </p>
-                                <p className="text-xs text-slate-600">
-                                  {offerText}
-                                </p>
-                                <div className="flex items-center gap-1 mt-1">
-                                  {ad.mediaType.map((type: string) => (
-                                    <Badge
-                                      key={type}
-                                      variant="outline"
-                                      className="text-[10px] px-1.5 py-0.5"
-                                    >
-                                      {getMediaTypeLabel(type)}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1 min-w-0 mr-3">
+                              <p className="text-sm font-medium text-slate-900 leading-tight">
+                                {ad.merchantName}
+                              </p>
+                              <p className="text-xs text-slate-600 mt-0.5 leading-tight">
+                                {offerText}
+                              </p>
                             </div>
-                            <div className="flex items-center space-x-2">
-                              <div className="text-xs text-slate-500">
-                                {ad.mediaAssets?.length || 0} asset
-                                {ad.mediaAssets?.length !== 1 ? "s" : ""}
+                            <div className="flex-shrink-0 flex items-center space-x-2">
+                              <div className="text-xs text-slate-500 text-right">
+                                <div>
+                                  {ad.mediaType.length} type
+                                  {ad.mediaType.length !== 1 ? "s" : ""}
+                                </div>
+                                <div>
+                                  {ad.mediaAssets?.length || 0} asset
+                                  {ad.mediaAssets?.length !== 1 ? "s" : ""}
+                                </div>
                               </div>
                               <ChevronRight className="h-4 w-4 text-slate-400" />
                             </div>
