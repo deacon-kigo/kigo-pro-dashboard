@@ -387,7 +387,7 @@ export function CampaignCompletionChecklist({
       )}
 
       {/* Progress Steps */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         {steps.map((step, index) => (
           <div key={step.id} className="relative">
             {/* Step Card */}
@@ -396,10 +396,10 @@ export function CampaignCompletionChecklist({
                 border rounded-lg p-3 transition-all duration-200 cursor-pointer relative
                 ${
                   step.isCurrent
-                    ? "border-blue-500 bg-white shadow-md ring-1 ring-blue-100"
+                    ? "border-blue-500 bg-blue-50/50 shadow-sm ring-1 ring-blue-100"
                     : step.isCompleted
-                      ? "border-green-200 bg-green-50 hover:bg-green-100"
-                      : "border-slate-200 bg-white hover:bg-slate-50"
+                      ? "border-blue-200 bg-white hover:bg-blue-50/30"
+                      : "border-slate-200 bg-white hover:bg-blue-50/20"
                 }
               `}
               onClick={() => goToStep(step.stepIndex)}
@@ -419,29 +419,18 @@ export function CampaignCompletionChecklist({
                         step.isCurrent
                           ? "bg-blue-600 shadow-sm"
                           : step.isCompleted
-                            ? "bg-green-600"
+                            ? "bg-blue-100"
                             : "bg-slate-200"
                       }
                     `}
-                    style={{
-                      backgroundColor: step.isCurrent
-                        ? "#2563eb"
-                        : step.isCompleted
-                          ? "#16a34a"
-                          : "#e2e8f0",
-                    }}
                   >
                     {step.isCompleted ? (
-                      <CheckCircle
-                        className="h-4 w-4"
-                        style={{ color: "#ffffff" }}
-                      />
+                      <CheckCircle className="h-4 w-4 text-blue-600" />
                     ) : (
                       <step.icon
-                        className="h-4 w-4"
-                        style={{
-                          color: step.isCurrent ? "#ffffff" : "#64748b",
-                        }}
+                        className={`h-4 w-4 ${
+                          step.isCurrent ? "text-white" : "text-slate-500"
+                        }`}
                       />
                     )}
                   </div>
@@ -458,6 +447,14 @@ export function CampaignCompletionChecklist({
                           className="text-xs bg-blue-50 text-blue-700 border-blue-200"
                         >
                           Current
+                        </Badge>
+                      )}
+                      {step.isCompleted && !step.isCurrent && (
+                        <Badge
+                          variant="outline"
+                          className="text-xs bg-blue-50 text-blue-700 border-blue-200"
+                        >
+                          Completed
                         </Badge>
                       )}
                     </div>
@@ -479,12 +476,12 @@ export function CampaignCompletionChecklist({
                         e.stopPropagation();
                         // Show ads preview or management
                       }}
-                      className="h-6 w-6 p-0 mr-2"
+                      className="h-6 w-6 p-0 mr-2 hover:bg-blue-100"
                     >
-                      <Eye className="h-3 w-3" />
+                      <Eye className="h-3 w-3 text-blue-600" />
                     </Button>
                   )}
-                  <ArrowRight className="h-4 w-4 text-slate-400" />
+                  <ChevronRight className="h-4 w-4 text-slate-400" />
                 </div>
               </div>
 
@@ -499,7 +496,7 @@ export function CampaignCompletionChecklist({
                       return (
                         <div
                           key={ad.id}
-                          className="bg-white rounded-lg border border-slate-200 p-2.5 hover:bg-slate-50 cursor-pointer transition-colors shadow-sm"
+                          className="bg-white rounded-lg border border-slate-200 p-2.5 hover:bg-blue-50/30 cursor-pointer transition-colors shadow-sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleAdPreview(ad);
@@ -536,9 +533,9 @@ export function CampaignCompletionChecklist({
               )}
             </div>
 
-            {/* Connector Line */}
+            {/* Connector Line - Fixed positioning to avoid overlaps */}
             {index < steps.length - 1 && (
-              <div className="absolute left-7 top-14 w-0.5 h-3 bg-slate-200"></div>
+              <div className="absolute left-7 top-[52px] w-0.5 h-3 bg-slate-200 -z-10"></div>
             )}
           </div>
         ))}
