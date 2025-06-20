@@ -685,36 +685,41 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
     <div className="space-y-3">
       {/* Create Asset Form */}
       <Card className="overflow-hidden border border-slate-200">
-        <div className="border-b border-slate-200 px-2 py-2 bg-blue-50">
+        <div className="">
+          {/* Header */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="h-4 w-4 rounded-sm flex items-center justify-center bg-blue-600 text-white mr-2">
-                <Plus className="h-2.5 w-2.5" />
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <h5 className="text-sm font-semibold text-slate-900">
+                  {editingAdId
+                    ? "Edit Campaign Asset"
+                    : "Create Campaign Asset"}
+                </h5>
+                {ads.length > 0 && !editingAdId && (
+                  <Badge
+                    variant="outline"
+                    className="text-xs bg-blue-50 text-blue-700 border-blue-200"
+                  >
+                    {ads.length} created
+                  </Badge>
+                )}
               </div>
-              <h3 className="text-xs font-medium text-blue-800">
-                {editingAdId ? "Edit Campaign Asset" : "Create Campaign Asset"}
-              </h3>
-              {ads.length > 0 && !editingAdId && (
-                <Badge variant="outline" className="text-xs ml-2 bg-white">
-                  {ads.length} ad{ads.length !== 1 ? "s" : ""} created
-                </Badge>
-              )}
             </div>
             {editingAdId && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleCancelEdit}
-                className="h-6 text-xs px-2 text-slate-600 hover:text-slate-800"
-              >
-                <X className="h-3 w-3 mr-1" />
-                Cancel
-              </Button>
+              <div className="flex items-center">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCancelEdit}
+                  className="h-6 text-xs px-2 text-slate-600 hover:text-slate-800"
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Cancel
+                </Button>
+              </div>
             )}
           </div>
-        </div>
 
-        <div className="p-3">
           {/* Form Controls - Stacked vertically */}
           <div className="space-y-2 mb-3">
             <div>
@@ -820,7 +825,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                       return (
                         <div
                           key={mediaTypeId}
-                          className="border border-slate-200 rounded-lg p-3"
+                          className="border border-slate-200 rounded-lg p-2"
                         >
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center">
@@ -851,7 +856,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                                 /* Upload Section - Only visible when no asset exists */
                                 <div>
                                   <div
-                                    className={`border-2 border-dashed rounded p-3 transition-colors ${
+                                    className={`border-2 border-dashed rounded p-2 transition-colors ${
                                       uploadErrors[mediaTypeId]
                                         ? "border-red-300 bg-red-50"
                                         : isDragging &&
@@ -936,7 +941,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                                 </div>
                               ) : (
                                 /* Asset Display - Only show the single asset with delete option */
-                                <div className="flex items-center justify-between py-2 px-3 bg-slate-50 rounded border">
+                                <div className="flex items-center justify-between p-2 bg-slate-50 rounded border">
                                   <div className="flex items-center">
                                     <div className="h-10 w-10 bg-slate-100 rounded overflow-hidden mr-3">
                                       <img

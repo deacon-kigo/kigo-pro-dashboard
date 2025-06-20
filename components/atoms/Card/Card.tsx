@@ -97,7 +97,7 @@ export default function Card({
             ? "h-full flex flex-col"
             : title || headerContent || cardIcon
               ? "px-5 py-4"
-              : "p-5 "
+              : "p-4 "
         }
       >
         {children}
