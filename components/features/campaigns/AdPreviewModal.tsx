@@ -42,9 +42,33 @@ export function AdPreviewModal({
   const [draggedMediaType, setDraggedMediaType] = useState<string | null>(null);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
 
-  // Determine which ads to show - either allAds or single ad
+  // Determine which ads to show
   const adsToShow = allAds && allAds.length > 0 ? allAds : ad ? [ad] : [];
-  const currentAd = adsToShow[currentAdIndex] || ad;
+  const currentAd = adsToShow[currentAdIndex] || {};
+
+  // Fix: Reconstruct mediaAssetsByType if it doesn't exist but mediaAssets does
+  const getMediaAssetsByType = (adData: any) => {
+    if (adData.mediaAssetsByType) {
+      return adData.mediaAssetsByType;
+    }
+
+    // Reconstruct from mediaAssets if available
+    if (adData.mediaAssets) {
+      const mediaAssetsByType: { [key: string]: any[] } = {};
+      adData.mediaAssets.forEach((asset: any) => {
+        const mediaType = asset.mediaType || "display_banner"; // fallback
+        if (!mediaAssetsByType[mediaType]) {
+          mediaAssetsByType[mediaType] = [];
+        }
+        mediaAssetsByType[mediaType].push(asset);
+      });
+      return mediaAssetsByType;
+    }
+
+    return {};
+  };
+
+  const currentAdMediaAssetsByType = getMediaAssetsByType(currentAd);
 
   // Reset to first ad when modal opens or ads change
   useEffect(() => {
@@ -112,7 +136,7 @@ export function AdPreviewModal({
 
   const exportAsset = (mediaType: string) => {
     // Export functionality - download the asset
-    const assets = currentAd.mediaAssetsByType?.[mediaType] || [];
+    const assets = currentAdMediaAssetsByType[mediaType] || [];
     if (assets.length > 0) {
       const asset = assets[0];
       const link = document.createElement("a");
@@ -215,8 +239,9 @@ export function AdPreviewModal({
                       {adsToShow.reduce((total, ad) => {
                         return (
                           total +
-                          (ad.mediaAssetsByType
-                            ? Object.values(ad.mediaAssetsByType).flat().length
+                          (getMediaAssetsByType(ad)
+                            ? Object.values(getMediaAssetsByType(ad)).flat()
+                                .length
                             : ad.mediaAssets?.length || 0)
                         );
                       }, 0)}{" "}
@@ -257,10 +282,7 @@ export function AdPreviewModal({
                       Total Assets
                     </Label>
                     <p className="font-medium">
-                      {currentAd.mediaAssetsByType
-                        ? Object.values(currentAd.mediaAssetsByType).flat()
-                            .length
-                        : currentAd.mediaAssets?.length || 0}{" "}
+                      {Object.values(currentAdMediaAssetsByType).flat().length}{" "}
                       uploaded
                     </p>
                   </div>
@@ -274,7 +296,7 @@ export function AdPreviewModal({
             .filter((mediaType) => currentAd.mediaType?.includes(mediaType.id))
             .map((mediaType) => {
               const mediaTypeAssets =
-                currentAd.mediaAssetsByType?.[mediaType.id] || [];
+                currentAdMediaAssetsByType[mediaType.id] || [];
               const firstAsset = mediaTypeAssets[0];
 
               return (

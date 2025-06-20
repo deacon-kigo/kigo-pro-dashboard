@@ -491,59 +491,56 @@ export function CampaignCompletionChecklist({
               {/* Step Details (for ads) */}
               {step.id === "ad-creation" && step.isCompleted && (
                 <div className="mt-3 pt-3 border-t border-slate-200">
-                  <div className="grid grid-cols-2 gap-2">
-                    {formData.ads.slice(0, 4).map((ad: any) => (
-                      <div
-                        key={ad.id}
-                        className="bg-white rounded border p-2 hover:bg-slate-50 cursor-pointer transition-colors"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAdPreview(ad);
-                        }}
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-6 bg-slate-100 rounded overflow-hidden flex-shrink-0">
-                            <div
-                              className="transform scale-[0.25] origin-top-left"
-                              style={{ width: "400%", height: "400%" }}
-                            >
-                              <PromotionWidget
-                                merchantLogo={getMerchantLogo(ad.offerId)}
-                                merchantName={ad.merchantName}
-                                promotionText={getPromotionText(ad.offerId)}
-                                featured={true}
-                                bannerImage={
-                                  ad.mediaAssets.length > 0
-                                    ? ad.mediaAssets[0].previewUrl
-                                    : undefined
-                                }
-                                mediaType={ad.mediaType[0]}
-                              />
+                  <div className="space-y-2">
+                    {formData.ads.map((ad: any) => {
+                      // Get offer details from the promotion text mapping since we don't have offer objects
+                      const offerText = getPromotionText(ad.offerId);
+
+                      return (
+                        <div
+                          key={ad.id}
+                          className="bg-white rounded-lg border border-slate-200 p-3 hover:bg-slate-50 cursor-pointer transition-colors shadow-sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAdPreview(ad);
+                          }}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                              <div className="h-10 w-10 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
+                                <ImagePlus className="h-5 w-5 text-blue-600" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-sm font-medium text-slate-900">
+                                  {ad.merchantName}
+                                </p>
+                                <p className="text-xs text-slate-600">
+                                  {offerText}
+                                </p>
+                                <div className="flex items-center gap-1 mt-1">
+                                  {ad.mediaType.map((type: string) => (
+                                    <Badge
+                                      key={type}
+                                      variant="outline"
+                                      className="text-[10px] px-1.5 py-0.5"
+                                    >
+                                      {getMediaTypeLabel(type)}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium truncate">
-                              {truncateText(ad.merchantName, 12)}
-                            </p>
-                            <div className="flex items-center gap-1 mt-0.5">
-                              <Badge
-                                variant="outline"
-                                className="text-[8px] h-3 px-1"
-                              >
-                                {ad.mediaType.length} types
-                              </Badge>
+                            <div className="flex items-center space-x-2">
+                              <div className="text-xs text-slate-500">
+                                {ad.mediaAssets?.length || 0} asset
+                                {ad.mediaAssets?.length !== 1 ? "s" : ""}
+                              </div>
+                              <ChevronRight className="h-4 w-4 text-slate-400" />
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                    {formData.ads.length > 4 && (
-                      <div className="bg-slate-100 rounded border p-2 flex items-center justify-center">
-                        <span className="text-xs text-slate-600">
-                          +{formData.ads.length - 4} more
-                        </span>
-                      </div>
-                    )}
+                      );
+                    })}
                   </div>
                 </div>
               )}

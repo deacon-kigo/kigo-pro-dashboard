@@ -58,6 +58,7 @@ export interface MediaAsset {
   url: string;
   previewUrl: string;
   dimensions?: { width: number; height: number };
+  mediaType?: string; // Add mediaType to track which media type this asset belongs to
 }
 
 export interface CampaignAd {

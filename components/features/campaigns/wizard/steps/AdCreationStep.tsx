@@ -240,6 +240,9 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
     mediaAssetsByType: {},
   });
 
+  // State for editing mode
+  const [editingAdId, setEditingAdId] = useState<string | null>(null);
+
   // Other state
   const [isDragging, setIsDragging] = useState(false);
   const [draggedMediaType, setDraggedMediaType] = useState<string | null>(null);
@@ -316,46 +319,94 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
     return missingAssets.length === 0;
   }, [currentAd, uploadErrors]);
 
-  // Preview data - derived state (show preview even if not fully valid)
+  // Preview data - show all ads plus current ad being created/edited
   const previewData = useMemo(() => {
-    // Show preview if we have basic info (merchant, offer, at least one media type)
+    // Start with existing ads
+    const allAds = [...ads];
+
+    // Add current ad if it has basic info (merchant, offer, at least one media type)
     const hasBasicInfo =
       currentAd.merchantId &&
       currentAd.offerId &&
       currentAd.mediaTypes.length > 0;
 
-    if (!hasBasicInfo) return null;
+    let currentAdPreview: CampaignAd | null = null;
 
-    // Find the first media type with assets for preview image
-    let previewImageUrl: string | null = null;
-    for (const mediaType of currentAd.mediaTypes) {
-      const assets = currentAd.mediaAssetsByType[mediaType];
-      if (assets && assets.length > 0) {
-        previewImageUrl = assets[0].previewUrl;
-        break;
+    if (hasBasicInfo) {
+      // Find the first media type with assets for preview image
+      let previewImageUrl: string | null = null;
+      for (const mediaType of currentAd.mediaTypes) {
+        const assets = currentAd.mediaAssetsByType[mediaType];
+        if (assets && assets.length > 0) {
+          previewImageUrl = assets[0].previewUrl;
+          break;
+        }
+      }
+
+      // Create preview data compatible with existing campaign asset components
+      const previewAd: CampaignAd = {
+        id: currentAd.id || "temp-preview",
+        merchantId: currentAd.merchantId,
+        merchantName: currentAd.merchantName,
+        offerId: currentAd.offerId,
+        mediaType: currentAd.mediaTypes, // Keep as array to match CampaignAd interface
+        mediaAssets: Object.values(currentAd.mediaAssetsByType).flat(),
+        costPerActivation: 0,
+        costPerRedemption: 0,
+      };
+
+      // Add preview-specific properties for the preview panel
+      currentAdPreview = {
+        ...previewAd,
+        mediaAssetsByType: currentAd.mediaAssetsByType,
+        isValid: isCurrentAdValid,
+        offers: availableOffers,
+        mediaTypeDefinitions: mediaTypes,
+        previewImageUrl,
+        isPreview: !editingAdId, // Mark as preview only if not editing existing ad
+        isEditing: !!editingAdId, // Mark if we're editing an existing ad
+      } as any; // Use any to allow extra properties for preview
+
+      // If editing, replace the ad being edited in the preview
+      if (editingAdId) {
+        const editIndex = allAds.findIndex((ad) => ad.id === editingAdId);
+        if (editIndex !== -1) {
+          // Replace the ad being edited with current form data for live preview
+          allAds[editIndex] = currentAdPreview as CampaignAd;
+        }
+      } else {
+        // Not editing, so add current form as preview
+        allAds.push(currentAdPreview as CampaignAd);
       }
     }
 
+    // Return in the format expected by CampaignCompletionChecklist and preview components
     return {
-      ...currentAd,
-      isValid: hasBasicInfo, // Show preview with basic info
+      // All ads (created + current preview)
+      ads: allAds,
+      // Current ad being worked on
+      currentAd: currentAdPreview,
+      // Total count for display
+      totalAds: allAds.length,
+      // Is there a valid preview to show
+      hasPreview: hasBasicInfo,
+      // Available offers for the current merchant
       offers: availableOffers,
       mediaTypeDefinitions: mediaTypes,
-      previewImageUrl,
     };
-  }, [currentAd, availableOffers]);
+  }, [ads, currentAd, availableOffers, isCurrentAdValid, editingAdId]);
 
-  // Update parent only when preview data actually changes and is valid
+  // Update parent only when preview data actually changes
   useEffect(() => {
-    if (previewData && onCurrentAdChange) {
+    if (onCurrentAdChange) {
       onCurrentAdChange(previewData);
     }
   }, [previewData, onCurrentAdChange]);
 
-  // Update step validation when current ad changes
+  // Update step validation based on total ads created
   useEffect(() => {
-    setStepValidation(isCurrentAdValid);
-  }, [isCurrentAdValid, setStepValidation]);
+    setStepValidation(ads.length > 0);
+  }, [ads.length, setStepValidation]);
 
   // Handle merchant selection
   const handleMerchantChange = (merchantId: string) => {
@@ -444,6 +495,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
         size: file.size,
         url: URL.createObjectURL(file),
         previewUrl: URL.createObjectURL(file),
+        mediaType: mediaType, // Add mediaType to track which media type this asset belongs to
       };
 
       const newMediaAssetsByType = { ...currentAd.mediaAssetsByType };
@@ -552,18 +604,113 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
     return mediaTypeDef?.requiresAsset;
   });
 
+  // Handle creating/confirming an ad
+  const handleCreateAd = () => {
+    if (!isCurrentAdValid) return;
+
+    const newAd: CampaignAd = {
+      id: currentAd.id || uuidv4(),
+      merchantId: currentAd.merchantId,
+      merchantName: currentAd.merchantName,
+      offerId: currentAd.offerId,
+      mediaType: currentAd.mediaTypes, // Use mediaType (array) as per interface
+      mediaAssets: Object.values(currentAd.mediaAssetsByType).flat(),
+      costPerActivation: 0, // Default values for required fields
+      costPerRedemption: 0,
+    };
+
+    if (editingAdId) {
+      // Update existing ad
+      updateAd(editingAdId, newAd);
+      setEditingAdId(null);
+    } else {
+      // Add new ad
+      addAd(newAd);
+    }
+
+    // Reset form
+    setCurrentAd({
+      id: null,
+      merchantId: "",
+      merchantName: "",
+      offerId: "",
+      mediaTypes: [],
+      mediaAssetsByType: {},
+    });
+
+    // Clear errors
+    setUploadErrors({});
+  };
+
+  // Handle editing an existing ad
+  const handleEditAd = (ad: CampaignAd) => {
+    setEditingAdId(ad.id);
+
+    // Reconstruct mediaAssetsByType from mediaAssets
+    const mediaAssetsByType: { [key: string]: MediaAsset[] } = {};
+    ad.mediaAssets?.forEach((asset) => {
+      // Use the mediaType property from the asset
+      const mediaType = asset.mediaType || "display_banner"; // fallback
+      if (!mediaAssetsByType[mediaType]) {
+        mediaAssetsByType[mediaType] = [];
+      }
+      mediaAssetsByType[mediaType].push(asset);
+    });
+
+    setCurrentAd({
+      id: ad.id,
+      merchantId: ad.merchantId,
+      merchantName: ad.merchantName,
+      offerId: ad.offerId,
+      mediaTypes: ad.mediaType, // Use mediaType from CampaignAd
+      mediaAssetsByType,
+    });
+  };
+
+  // Handle canceling edit
+  const handleCancelEdit = () => {
+    setEditingAdId(null);
+    setCurrentAd({
+      id: null,
+      merchantId: "",
+      merchantName: "",
+      offerId: "",
+      mediaTypes: [],
+      mediaAssetsByType: {},
+    });
+    setUploadErrors({});
+  };
+
   return (
     <div className="space-y-3">
       {/* Create Asset Form */}
       <Card className="overflow-hidden border border-slate-200">
         <div className="border-b border-slate-200 px-2 py-2 bg-blue-50">
-          <div className="flex items-center">
-            <div className="h-4 w-4 rounded-sm flex items-center justify-center bg-blue-600 text-white mr-2">
-              <Plus className="h-2.5 w-2.5" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="h-4 w-4 rounded-sm flex items-center justify-center bg-blue-600 text-white mr-2">
+                <Plus className="h-2.5 w-2.5" />
+              </div>
+              <h3 className="text-xs font-medium text-blue-800">
+                {editingAdId ? "Edit Campaign Asset" : "Create Campaign Asset"}
+              </h3>
+              {ads.length > 0 && !editingAdId && (
+                <Badge variant="outline" className="text-[10px] ml-2 bg-white">
+                  {ads.length} ad{ads.length !== 1 ? "s" : ""} created
+                </Badge>
+              )}
             </div>
-            <h3 className="text-xs font-medium text-blue-800">
-              Create Campaign Asset
-            </h3>
+            {editingAdId && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCancelEdit}
+                className="h-6 text-xs px-2 text-slate-600 hover:text-slate-800"
+              >
+                <X className="h-3 w-3 mr-1" />
+                Cancel
+              </Button>
+            )}
           </div>
         </div>
 
@@ -841,6 +988,46 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                         </div>
                       );
                     })}
+                </div>
+              </div>
+            )}
+
+          {/* Create/Update Ad Button */}
+          {currentAd.merchantId &&
+            currentAd.offerId &&
+            currentAd.mediaTypes.length > 0 && (
+              <div className="border-t border-slate-200 pt-3 mt-3">
+                <div className="flex justify-between items-center">
+                  <div className="text-xs text-slate-600">
+                    {isCurrentAdValid ? (
+                      <span className="flex items-center text-green-600">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Ready to {editingAdId ? "update" : "create"} ad
+                      </span>
+                    ) : (
+                      <span className="flex items-center text-amber-600">
+                        <AlertCircle className="h-3 w-3 mr-1" />
+                        Complete all required fields
+                      </span>
+                    )}
+                  </div>
+                  <Button
+                    onClick={handleCreateAd}
+                    disabled={!isCurrentAdValid}
+                    className="h-8 text-xs px-4"
+                  >
+                    {editingAdId ? (
+                      <>
+                        <Check className="h-3 w-3 mr-1" />
+                        Update Ad
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="h-3 w-3 mr-1" />
+                        Create Ad
+                      </>
+                    )}
+                  </Button>
                 </div>
               </div>
             )}
