@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/lib/redux/store";
 import {
@@ -8,6 +9,9 @@ import {
   addAd,
   setCurrentStep,
   updateAd,
+  addMediaToAd,
+  removeMediaFromAd,
+  MediaAsset,
 } from "@/lib/redux/slices/campaignSlice";
 import { Badge } from "@/components/atoms/Badge";
 import { Button } from "@/components/atoms/Button";
@@ -138,24 +142,47 @@ export function CampaignCompletionChecklist({
     setSelectedAdForPreview(null);
   }, []);
 
-  // Handle asset upload from modal - delegate to the real handlers
+  // Handle asset upload from modal - for specific ad editing
   const handleAssetUpload = useCallback(
     (mediaType: string, file: File) => {
-      if (onAssetUpload) {
+      if (selectedAdForPreview && selectedAdForPreview.id) {
+        // Create new media asset
+        const newAsset: MediaAsset = {
+          id: uuidv4(),
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          url: URL.createObjectURL(file),
+          previewUrl: URL.createObjectURL(file),
+          mediaType: mediaType,
+        };
+
+        // Add to specific ad in Redux store
+        dispatch(
+          addMediaToAd({ adId: selectedAdForPreview.id, media: newAsset })
+        );
+      } else if (onAssetUpload) {
+        // Fallback to parent handler for current ad being created
         onAssetUpload(mediaType, file);
       }
     },
-    [onAssetUpload]
+    [selectedAdForPreview, dispatch, onAssetUpload]
   );
 
-  // Handle asset removal from modal - delegate to the real handlers
+  // Handle asset removal from modal - for specific ad editing
   const handleAssetRemove = useCallback(
     (mediaType: string, assetId: string) => {
-      if (onAssetRemove) {
+      if (selectedAdForPreview && selectedAdForPreview.id) {
+        // Remove from specific ad in Redux store
+        dispatch(
+          removeMediaFromAd({ adId: selectedAdForPreview.id, mediaId: assetId })
+        );
+      } else if (onAssetRemove) {
+        // Fallback to parent handler for current ad being created
         onAssetRemove(mediaType, assetId);
       }
     },
-    [onAssetRemove]
+    [selectedAdForPreview, dispatch, onAssetRemove]
   );
 
   // Handle live preview click
@@ -545,14 +572,27 @@ export function CampaignCompletionChecklist({
       <AdPreviewModal
         isOpen={previewModalOpen}
         onClose={handleClosePreview}
-        ad={selectedAdForPreview}
-        allAds={allAdsData || formData.ads}
+        ad={
+          selectedAdForPreview
+            ? formData.ads.find((ad) => ad.id === selectedAdForPreview.id) ||
+              selectedAdForPreview
+            : undefined
+        }
+        allAds={
+          selectedAdForPreview
+            ? [
+                formData.ads.find((ad) => ad.id === selectedAdForPreview.id) ||
+                  selectedAdForPreview,
+              ]
+            : allAdsData || formData.ads
+        }
         offers={currentAdData?.offers || []}
         getMerchantLogo={getMerchantLogo}
         getPromotionText={getPromotionText}
         getMediaTypeLabel={getMediaTypeLabel}
         onAssetUpload={handleAssetUpload}
         onAssetRemove={handleAssetRemove}
+        allowEditing={true} // Always allow editing when viewing specific ads
       />
     </div>
   );

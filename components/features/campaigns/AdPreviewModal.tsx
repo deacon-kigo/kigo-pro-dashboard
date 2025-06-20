@@ -25,6 +25,7 @@ interface AdPreviewModalProps {
   getMediaTypeLabel?: (typeId: string) => string;
   onAssetUpload?: (mediaType: string, file: File) => void;
   onAssetRemove?: (mediaType: string, assetId: string) => void;
+  allowEditing?: boolean; // New prop to control editing mode
 }
 
 export function AdPreviewModal({
@@ -38,6 +39,7 @@ export function AdPreviewModal({
   getMediaTypeLabel,
   onAssetUpload,
   onAssetRemove,
+  allowEditing = true, // Default to allowing editing
 }: AdPreviewModalProps) {
   const [draggedMediaType, setDraggedMediaType] = useState<string | null>(null);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
@@ -382,7 +384,7 @@ export function AdPreviewModal({
                           <Label className="text-xs block font-medium text-slate-600">
                             Asset Management
                           </Label>
-                          {adsToShow.length > 1 && (
+                          {!allowEditing && (
                             <Badge
                               variant="outline"
                               className="text-[10px] text-blue-600"
@@ -429,7 +431,7 @@ export function AdPreviewModal({
                                   <Button
                                     size="sm"
                                     className="h-7 text-xs px-3"
-                                    disabled={adsToShow.length > 1}
+                                    disabled={!allowEditing}
                                     onClick={() =>
                                       document
                                         .getElementById(
@@ -439,7 +441,7 @@ export function AdPreviewModal({
                                     }
                                   >
                                     <Upload className="h-3 w-3 mr-1" />
-                                    {adsToShow.length > 1
+                                    {!allowEditing
                                       ? "View Only"
                                       : "Choose file"}
                                   </Button>
@@ -470,7 +472,7 @@ export function AdPreviewModal({
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      disabled={adsToShow.length > 1}
+                                      disabled={!allowEditing}
                                       onClick={() =>
                                         onAssetRemove(
                                           mediaType.id,
@@ -479,7 +481,7 @@ export function AdPreviewModal({
                                       }
                                       className="h-7 w-7 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 disabled:text-slate-400"
                                       title={
-                                        adsToShow.length > 1
+                                        !allowEditing
                                           ? "View only mode"
                                           : "Remove asset"
                                       }
@@ -503,7 +505,7 @@ export function AdPreviewModal({
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    disabled={adsToShow.length > 1}
+                                    disabled={!allowEditing}
                                     className="w-full h-7 text-xs border-dashed border-blue-300 text-blue-600 hover:bg-blue-50 disabled:text-slate-400 disabled:border-slate-300"
                                     onClick={() =>
                                       document
@@ -514,7 +516,7 @@ export function AdPreviewModal({
                                     }
                                   >
                                     <Upload className="h-3 w-3 mr-1" />
-                                    {adsToShow.length > 1
+                                    {!allowEditing
                                       ? "View Only"
                                       : "Replace Asset"}
                                   </Button>
