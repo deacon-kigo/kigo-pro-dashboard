@@ -85,10 +85,33 @@ const TargetingStep: React.FC<TargetingStepProps> = ({
   removeLocation,
   setStepValidation,
 }) => {
-  // Set this step as always valid when mounted
+  // Validate the step based on required fields
+  const [showErrors, setShowErrors] = React.useState(false);
+
   React.useEffect(() => {
-    setStepValidation(true);
-  }, [setStepValidation]);
+    const isValid =
+      formData.startDate !== null &&
+      (formData.noEndDate || formData.endDate !== null);
+
+    setStepValidation(isValid);
+
+    // Show errors if user has interacted and validation fails
+    if (
+      !isValid &&
+      (formData.startDate !== null ||
+        formData.endDate !== null ||
+        formData.noEndDate)
+    ) {
+      setShowErrors(true);
+    } else if (isValid) {
+      setShowErrors(false);
+    }
+  }, [
+    formData.startDate,
+    formData.endDate,
+    formData.noEndDate,
+    setStepValidation,
+  ]);
 
   // Handler for toggling no end date
   const handleNoEndDateChange = (checked: boolean) => {
@@ -119,11 +142,16 @@ const TargetingStep: React.FC<TargetingStepProps> = ({
                 placeholder="Select start date"
                 className="mt-1"
               />
+              {showErrors && !formData.startDate && (
+                <p className="text-xs text-red-600 mt-1">
+                  Start date is required
+                </p>
+              )}
             </div>
 
             {!formData.noEndDate && (
               <div>
-                <Label htmlFor="end-date">End Date*</Label>
+                <Label htmlFor="end-date">End Date</Label>
                 <DatePicker
                   id="end-date"
                   selected={formData.endDate}
@@ -132,6 +160,11 @@ const TargetingStep: React.FC<TargetingStepProps> = ({
                   className="mt-1"
                   disabled={formData.noEndDate}
                 />
+                {showErrors && !formData.noEndDate && !formData.endDate && (
+                  <p className="text-xs text-red-600 mt-1">
+                    End date is required (or check 'No end date')
+                  </p>
+                )}
               </div>
             )}
           </div>

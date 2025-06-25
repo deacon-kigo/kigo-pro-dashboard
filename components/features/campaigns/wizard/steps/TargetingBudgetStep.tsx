@@ -31,10 +31,8 @@ const TargetingBudgetStep: React.FC<TargetingBudgetStepProps> = ({
   removeLocation,
   setStepValidation,
 }) => {
-  // Set the step as valid when mounted
-  useEffect(() => {
-    setStepValidation(true);
-  }, [setStepValidation]);
+  // Validation will be handled by individual step components
+  // No need to override here
 
   return (
     <div className="space-y-8">
@@ -44,7 +42,7 @@ const TargetingBudgetStep: React.FC<TargetingBudgetStepProps> = ({
         updateTargeting={updateTargeting}
         addLocation={addLocation}
         removeLocation={removeLocation}
-        setStepValidation={() => {}}
+        setStepValidation={setStepValidation}
       />
 
       {/* Budget Section */}
