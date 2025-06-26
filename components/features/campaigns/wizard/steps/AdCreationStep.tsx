@@ -785,13 +785,15 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                   className="w-full h-8 border-slate-300 hover:border-blue-400 focus:border-blue-500 shadow-sm text-xs text-text-dark placeholder:text-text-muted"
                 />
               ) : (
-                <Button
-                  variant="outline"
-                  className="w-full h-8 text-slate-500 justify-start font-normal border-slate-200 text-xs"
-                  disabled
-                >
-                  Select a merchant first
-                </Button>
+                <div className="w-full [&>div]:flex [&>div]:w-full">
+                  <Button
+                    variant="outline"
+                    className="w-full h-8 text-slate-500 justify-start font-normal border-slate-200 text-xs"
+                    disabled
+                  >
+                    Select a merchant first
+                  </Button>
+                </div>
               )}
             </div>
           </div>
