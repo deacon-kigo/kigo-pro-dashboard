@@ -3,7 +3,7 @@
 import React from "react";
 import { CampaignCompletionChecklist } from "./CampaignCompletionChecklist";
 
-interface CampaignAnalyticsPanelLiteProps {
+interface AdCreationPanelLiteProps {
   className?: string;
   currentAdData?: any;
   allAdsData?: any[];
@@ -17,7 +17,7 @@ export function CampaignAnalyticsPanelLite({
   allAdsData,
   onAssetUpload,
   onAssetRemove,
-}: CampaignAnalyticsPanelLiteProps) {
+}: AdCreationPanelLiteProps) {
   return (
     <div className={`flex flex-col w-full h-full ${className}`}>
       {/* Header - Fixed at exactly 61px to match AI Assistant header */}
@@ -39,9 +39,9 @@ export function CampaignAnalyticsPanelLite({
             <line x1="6" y1="18" x2="6" y2="18"></line>
           </svg>
           <div>
-            <h3 className="font-medium">Campaign Progress</h3>
+            <h3 className="font-medium">Ad Creation Progress</h3>
             <p className="text-xs text-muted-foreground">
-              Track your campaign setup progress
+              Track your ad creation progress
             </p>
           </div>
         </div>

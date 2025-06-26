@@ -693,16 +693,14 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
   return (
     <div className="space-y-3">
       {/* Create Asset Form */}
-      <Card className="overflow-hidden border border-slate-200">
-        <div className="">
+      <Card className="overflow-hidden border border-slate-200 p-0">
+        <div className="p-3">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <h5 className="text-sm font-semibold text-slate-900">
-                  {editingAdId
-                    ? "Edit Campaign Asset"
-                    : "Create Campaign Asset"}
+                  {editingAdId ? "Edit Ad Asset" : "Create Ad Asset"}
                 </h5>
                 {ads.length > 0 && !editingAdId && (
                   <Badge

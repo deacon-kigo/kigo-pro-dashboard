@@ -1,31 +1,16 @@
 import { createSlice, PayloadAction, createAction } from "@reduxjs/toolkit";
 
-// Define the campaign steps
+// Define the ad creation steps
 export const CAMPAIGN_STEPS = [
   {
-    id: "basic-info",
-    title: "Campaign Information",
-    description: "Enter campaign name and description",
-  },
-  {
     id: "ad-creation",
-    title: "Ad Creation",
-    description: "Create multiple ads for your campaign",
-  },
-  {
-    id: "targeting-budget",
-    title: "Target & Budget",
-    description: "Set audience targeting and campaign budget",
-  },
-  {
-    id: "distribution",
-    title: "Distribution",
-    description: "Select distribution channels and partner programs",
+    title: "Ad Asset Creation",
+    description: "Select merchant, offer, upload assets and set duration",
   },
   {
     id: "review",
-    title: "Review & Publish",
-    description: "Review all campaign details before final submission",
+    title: "Review & Launch",
+    description: "Review your ad asset before launching",
   },
 ];
 

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import { RootState } from "@/lib/redux/store";
-import { AIAssistantPanel } from "@/components/features/ai";
+
 import Card from "@/components/atoms/Card/Card";
 import { Button } from "@/components/atoms/Button";
 import {
@@ -35,10 +35,7 @@ import PageHeader from "@/components/molecules/PageHeader/PageHeader";
 import { v4 as uuidv4 } from "uuid";
 
 // Import step components
-import BasicInfoStep from "./steps/BasicInfoStep";
 import AdCreationStep from "./steps/AdCreationStep";
-import TargetingBudgetStep from "./steps/TargetingBudgetStep";
-import DistributionStep from "./steps/DistributionStep";
 import ReviewStep from "./steps/ReviewStep";
 
 const AdvertisementWizard: React.FC = () => {
@@ -132,12 +129,6 @@ const AdvertisementWizard: React.FC = () => {
     alert("Advertisement campaign saved as draft");
   }, [formData]);
 
-  // Handle AI assistant suggestions
-  const handleOptionSelected = useCallback((optionId: string) => {
-    console.log("AI option selected:", optionId);
-    // TODO: Implement AI option handling
-  }, []);
-
   // Always enable navigation in presentational mode
   const isNextDisabled = false; // Allow navigation without validation
 
@@ -187,18 +178,6 @@ const AdvertisementWizard: React.FC = () => {
   // Render the appropriate step content
   const renderStepContent = () => {
     switch (CAMPAIGN_STEPS[currentStep].id) {
-      case "basic-info":
-        return (
-          <BasicInfoStep
-            formData={formData.basicInfo}
-            updateBasicInfo={(basicInfo) =>
-              dispatch(updateBasicInfo(basicInfo))
-            }
-            setStepValidation={(isValid) =>
-              dispatch(setStepValidation({ step: "basic-info", isValid }))
-            }
-          />
-        );
       case "ad-creation":
         return (
           <AdCreationStep
@@ -214,45 +193,6 @@ const AdvertisementWizard: React.FC = () => {
             onCurrentAdChange={handleCurrentAdChange}
             onAssetUploadRef={assetUploadRef}
             onAssetRemoveRef={assetRemoveRef}
-          />
-        );
-      case "targeting-budget":
-        return (
-          <TargetingBudgetStep
-            targetingData={formData.targeting}
-            budgetData={formData.budget}
-            updateTargeting={(targeting) =>
-              dispatch(updateTargeting(targeting))
-            }
-            updateBudget={(budget) => dispatch(updateBudget(budget))}
-            addLocation={(location) => dispatch(addLocation(location))}
-            removeLocation={(id) => dispatch(removeLocation(id))}
-            setStepValidation={(isValid) =>
-              dispatch(
-                setStepValidation({
-                  step: "targeting-budget",
-                  isValid,
-                })
-              )
-            }
-          />
-        );
-      case "distribution":
-        return (
-          <DistributionStep
-            formData={formData.distribution}
-            updateDistribution={(distribution) =>
-              dispatch(updateDistribution(distribution))
-            }
-            setStepValidation={(isValid) =>
-              dispatch(
-                setStepValidation({
-                  step: "distribution",
-                  isValid,
-                })
-              )
-            }
-            ads={formData.ads}
           />
         );
       case "review":
@@ -293,8 +233,8 @@ const AdvertisementWizard: React.FC = () => {
     <div className="min-h-screen flex flex-col">
       <div className="flex-shrink-0">
         <PageHeader
-          title="Create Advertisement Campaign"
-          description="Design and launch your advertisement campaign in a few steps."
+          title="Create Ads"
+          description="Design and launch your advertisement in a few steps."
           emoji="📊"
           actions={backButton}
           variant="aurora"
@@ -306,23 +246,8 @@ const AdvertisementWizard: React.FC = () => {
         style={{ height: "calc(100vh - 140px)" }}
       >
         <div className="flex gap-3 h-full">
-          {/* Left Column - AI Assistant Panel */}
-          <div className="w-1/4 h-full flex flex-col">
-            <Card className="p-0 h-full flex flex-col overflow-hidden shadow-md">
-              <div className="flex-1 flex flex-col overflow-hidden">
-                <AIAssistantPanel
-                  title="AI Campaign Assistant"
-                  description="I'll help you create an effective campaign"
-                  onOptionSelected={handleOptionSelected}
-                  className="h-full flex-1"
-                  initialMessage="Hello! I'm your AI Campaign Assistant. I can help you optimize your campaign for better performance. What would you like help with today?"
-                />
-              </div>
-            </Card>
-          </div>
-
-          {/* Middle Column - Campaign Form with Steps */}
-          <div className="w-[37.5%] h-full flex flex-col">
+          {/* Left Column - Ad Creation Form */}
+          <div className="w-3/5 h-full flex flex-col">
             <Card className="p-0 flex flex-col h-full overflow-hidden shadow-md">
               {/* Step indicator header */}
               <StepProgressHeader
@@ -342,7 +267,7 @@ const AdvertisementWizard: React.FC = () => {
                     exit="exit"
                     variants={contentVariants}
                     transition={{ duration: 0.3 }}
-                    className="px-4 py-5"
+                    className="p-3"
                   >
                     {renderStepContent()}
                   </motion.div>
@@ -361,8 +286,8 @@ const AdvertisementWizard: React.FC = () => {
             </Card>
           </div>
 
-          {/* Right Column - Campaign Progress Checklist with Live Preview */}
-          <div className="w-[37.5%] h-full flex flex-col">
+          {/* Right Column - Progress Checklist and Preview */}
+          <div className="w-2/5 h-full flex flex-col">
             <Card className="h-full p-0 flex flex-col overflow-hidden shadow-md">
               <div className="flex-1 overflow-hidden">
                 <CampaignAnalyticsPanelLite

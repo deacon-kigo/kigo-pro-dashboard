@@ -22,9 +22,7 @@ function LoadingFallback() {
     <div className="flex justify-center items-center h-screen">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
-        <p className="text-gray-700 text-lg">
-          Loading Advertisement Campaign Creation (AI)...
-        </p>
+        <p className="text-gray-700 text-lg">Loading Ads Creation (AI)...</p>
       </div>
     </div>
   );
@@ -74,7 +72,7 @@ export default function AdvertisementCampaignCreateAIPage() {
         <BreadcrumbSeparator />
         <BreadcrumbItem>
           <BreadcrumbLink href="/campaign-manager/ads-create">
-            Advertisement Campaign
+            Ads Creation
           </BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />

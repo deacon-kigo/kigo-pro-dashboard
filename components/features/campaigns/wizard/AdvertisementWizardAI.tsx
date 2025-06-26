@@ -347,7 +347,7 @@ const AdvertisementWizardAI: React.FC = () => {
                     exit="exit"
                     variants={contentVariants}
                     transition={{ duration: 0.3 }}
-                    className="px-4 py-5"
+                    className="p-3"
                   >
                     {renderStepContent()}
                   </motion.div>

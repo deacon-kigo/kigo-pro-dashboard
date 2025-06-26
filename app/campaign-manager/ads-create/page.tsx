@@ -22,9 +22,7 @@ function LoadingFallback() {
     <div className="flex justify-center items-center h-screen">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
-        <p className="text-gray-700 text-lg">
-          Loading Advertisement Campaign Creation...
-        </p>
+        <p className="text-gray-700 text-lg">Loading Ads Creation...</p>
       </div>
     </div>
   );
@@ -73,7 +71,7 @@ export default function AdvertisementCampaignCreatePage() {
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbPage>Advertisement Campaign Creation</BreadcrumbPage>
+          <BreadcrumbPage>Ads Creation</BreadcrumbPage>
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>
