@@ -5,6 +5,8 @@ import { Badge } from "@/components/atoms/Badge";
 import Card from "@/components/atoms/Card/Card";
 import { SparklesIcon } from "@heroicons/react/24/solid";
 import { MapPinIcon, Wallet, StarIcon } from "lucide-react";
+import { TallOfferCard } from "./TallOfferCard";
+import { MaterialUIProvider } from "./MaterialUIProvider";
 
 interface PromotionWidgetProps {
   merchantLogo: string;
@@ -35,7 +37,7 @@ const PromotionWidget: React.FC<PromotionWidgetProps> = ({
   const renderDoubleDecker = mediaType === "double_decker";
 
   return (
-    <>
+    <MaterialUIProvider>
       {/* Native and Display Banner Types - Keep using Card */}
       {(renderNative || renderDisplayBanner) && (
         <Card
@@ -170,77 +172,30 @@ const PromotionWidget: React.FC<PromotionWidgetProps> = ({
         </Card>
       )}
 
-      {/* Double Decker Type - Using div instead of Card */}
+      {/* Double Decker Type - Using TallOfferCard */}
       {renderDoubleDecker && (
-        <div
-          className={`relative flex flex-col w-full overflow-hidden rounded-xl shadow-sm ${className}`}
-          style={{
-            backgroundImage: `url(${bannerImage || "https://placehold.co/1200x600/4C7C29/fff?text=Food+Image"})`,
-            backgroundColor: "#4C7C29",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundBlendMode: "multiply",
-          }}
-        >
-          {/* Dark green gradient overlay for readability */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[rgba(45,87,44,0.1)] to-[rgba(45,87,44,0.85)] z-0"></div>
-
-          {/* Featured badge in top left */}
-          {featured && (
-            <div className="absolute top-3 left-3 z-10">
-              <Badge
-                variant="default"
-                className="flex items-center gap-1 px-2 py-0.5 bg-white/90 text-gray-800 border border-gray-100 w-[90px] justify-center"
-              >
-                <SparklesIcon className="h-3 w-3 text-violet-500" />
-                <span className="text-xs font-medium">Featured</span>
-              </Badge>
-            </div>
-          )}
-
-          {/* Brand Logo - Top Left, below the featured badge */}
-          <div className="absolute top-12 left-4 z-10">
-            <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center p-2 border-2 border-white shadow-md">
-              <img
-                src={merchantLogo}
-                alt={merchantName}
-                className="max-w-full max-h-full object-contain"
-              />
-            </div>
-          </div>
-
-          {/* The main content layout */}
-          <div className="flex flex-col w-full h-full z-1 relative">
-            {/* Top image area with proper spacing to match Panera example */}
-            <div className="h-64 w-full">
-              {/* Bottom text overlay with merchant name */}
-              <div className="absolute bottom-[90px] left-0 w-full p-4 text-white">
-                <h2 className="text-2xl font-bold drop-shadow-md">
-                  {merchantName}
-                </h2>
-              </div>
-            </div>
-
-            {/* Bottom content area with offer text and wallet icon */}
-            <div className="bg-white p-4 flex justify-between items-center">
-              {/* Offer text */}
-              <div className="flex-1 pr-4">
-                <h3 className="text-[28px] font-bold text-gray-900 leading-tight">
-                  {promotionText}
-                </h3>
-              </div>
-
-              {/* Wallet icon */}
-              <div className="flex-shrink-0">
-                <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center shadow-sm">
-                  <Wallet className="h-7 w-7 text-blue-700" />
-                </div>
-              </div>
-            </div>
-          </div>
+        <div className={`w-full ${className}`}>
+          <TallOfferCard
+            imageUrl={
+              bannerImage ||
+              "https://placehold.co/1200x600/4C7C29/fff?text=Food+Image"
+            }
+            title={promotionText}
+            subTitle={merchantName}
+            additionalInfo="Tap to add to wallet"
+            tags={featured ? ["featured"] : []}
+            onClick={() => console.log("Offer clicked")}
+            distanceFromUser={
+              distance ? parseFloat(distance.replace(" miles", "")) : undefined
+            }
+            onAddToWalletClick={(onSuccess) => {
+              console.log("Add to wallet clicked");
+              setTimeout(onSuccess, 1000); // Simulate async operation
+            }}
+          />
         </div>
       )}
-    </>
+    </MaterialUIProvider>
   );
 };
 

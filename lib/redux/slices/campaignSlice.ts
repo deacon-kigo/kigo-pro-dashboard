@@ -5,7 +5,7 @@ export const CAMPAIGN_STEPS = [
   {
     id: "ad-creation",
     title: "Ad Asset Creation",
-    description: "Select merchant, offer, upload assets and set duration",
+    description: "Select merchant, offer and upload assets",
   },
   {
     id: "review",

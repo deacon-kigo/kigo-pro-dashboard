@@ -267,27 +267,15 @@ export function CampaignCompletionChecklist({
     return `${start} - ${end}`;
   };
 
-  // Step configuration with enhanced data display
+  // Step configuration with enhanced data display - Updated for streamlined ad creation flow
   const steps = [
     {
-      id: "basic-info",
-      title: "Campaign Information",
-      icon: FileText,
-      stepIndex: 0,
-      isCompleted: stepValidation["basic-info"],
-      isCurrent: currentStep === 0,
-      data: formData.basicInfo,
-      keyInfo: formData.basicInfo.name
-        ? { label: "Campaign Name", value: formData.basicInfo.name }
-        : null,
-    },
-    {
       id: "ad-creation",
-      title: "Campaign Assets",
+      title: "Ad Asset Creation",
       icon: Layers,
-      stepIndex: 1,
+      stepIndex: 0,
       isCompleted: formData.ads.length > 0,
-      isCurrent: currentStep === 1,
+      isCurrent: currentStep === 0,
       data: formData.ads,
       keyInfo:
         formData.ads.length > 0
@@ -299,52 +287,12 @@ export function CampaignCompletionChecklist({
           : null,
     },
     {
-      id: "targeting-budget",
-      title: "Target & Budget",
-      icon: Target,
-      stepIndex: 2,
-      isCompleted: stepValidation["targeting-budget"],
-      isCurrent: currentStep === 2,
-      data: { targeting: formData.targeting, budget: formData.budget },
-      keyInfo:
-        formData.budget.maxBudget > 0 || formData.targeting.startDate
-          ? {
-              label: "Campaign Setup",
-              value:
-                formData.budget.maxBudget > 0
-                  ? `$${formData.budget.maxBudget.toLocaleString()} budget`
-                  : "Budget not set",
-              detail: formatCampaignDuration(),
-            }
-          : null,
-    },
-    {
-      id: "distribution",
-      title: "Distribution",
-      icon: Share2,
-      stepIndex: 3,
-      isCompleted: stepValidation["distribution"],
-      isCurrent: currentStep === 3,
-      data: formData.distribution,
-      keyInfo:
-        formData.distribution.channels.length > 0
-          ? {
-              label: "Distribution Setup",
-              value: `${formData.distribution.channels.length} channel${formData.distribution.channels.length !== 1 ? "s" : ""}`,
-              detail:
-                formData.distribution.programCampaigns.length > 0
-                  ? `${formData.distribution.programCampaigns.length} program${formData.distribution.programCampaigns.length !== 1 ? "s" : ""}`
-                  : "No programs selected",
-            }
-          : null,
-    },
-    {
       id: "review",
-      title: "Final Review",
+      title: "Review & Launch",
       icon: CheckCircle,
-      stepIndex: 4,
+      stepIndex: 1,
       isCompleted: stepValidation["review"],
-      isCurrent: currentStep === 4,
+      isCurrent: currentStep === 1,
       data: null,
       keyInfo: stepValidation["review"]
         ? { label: "Status", value: "Ready to launch" }
@@ -360,10 +308,10 @@ export function CampaignCompletionChecklist({
       <div className="flex items-center justify-between mb-4">
         <div>
           <h4 className="text-sm font-semibold text-slate-900">
-            Campaign Progress
+            Ad Creation Progress
           </h4>
           <p className="text-xs text-slate-600 mt-0.5">
-            Track your campaign setup progress
+            Track your ad creation progress
           </p>
         </div>
         <div className="flex items-center gap-2">

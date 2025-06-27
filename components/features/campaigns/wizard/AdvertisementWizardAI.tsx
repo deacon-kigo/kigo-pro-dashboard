@@ -36,6 +36,7 @@ import { v4 as uuidv4 } from "uuid";
 // Import step components
 import BasicInfoStep from "./steps/BasicInfoStep";
 import AdCreationStep from "./steps/AdCreationStep";
+import TargetingStep from "./steps/TargetingStep";
 import TargetingBudgetStep from "./steps/TargetingBudgetStep";
 import DistributionStep from "./steps/DistributionStep";
 import ReviewStep from "./steps/ReviewStep";
