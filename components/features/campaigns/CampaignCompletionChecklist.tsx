@@ -268,21 +268,22 @@ export function CampaignCompletionChecklist({
   };
 
   // Step configuration with enhanced data display - Updated for streamlined ad creation flow
+  const adsData = allAdsData || formData.ads;
   const steps = [
     {
       id: "ad-creation",
       title: "Ad Asset Creation",
       icon: Layers,
       stepIndex: 0,
-      isCompleted: formData.ads.length > 0,
+      isCompleted: adsData.length > 0,
       isCurrent: currentStep === 0,
-      data: formData.ads,
+      data: adsData,
       keyInfo:
-        formData.ads.length > 0
+        adsData.length > 0
           ? {
               label: "Assets Created",
-              value: `${formData.ads.length} ad${formData.ads.length !== 1 ? "s" : ""}`,
-              detail: `${formData.ads.reduce((total, ad) => total + (ad.mediaAssets?.length || 0), 0)} media files`,
+              value: `${adsData.length} ad${adsData.length !== 1 ? "s" : ""}`,
+              detail: `${adsData.reduce((total, ad) => total + (ad.mediaAssets?.length || 0), 0)} media files`,
             }
           : null,
     },
@@ -524,7 +525,7 @@ export function CampaignCompletionChecklist({
               {step.id === "ad-creation" && step.isCompleted && (
                 <div className="mt-3 pt-3 border-t border-slate-200">
                   <div className="space-y-2">
-                    {formData.ads.map((ad: any) => {
+                    {adsData.map((ad: any) => {
                       // Get offer details from the promotion text mapping since we don't have offer objects
                       const offerText = getPromotionText(ad.offerId);
 
@@ -582,17 +583,17 @@ export function CampaignCompletionChecklist({
         onClose={handleClosePreview}
         ad={
           selectedAdForPreview
-            ? formData.ads.find((ad) => ad.id === selectedAdForPreview.id) ||
+            ? adsData.find((ad) => ad.id === selectedAdForPreview.id) ||
               selectedAdForPreview
             : undefined
         }
         allAds={
           selectedAdForPreview
             ? [
-                formData.ads.find((ad) => ad.id === selectedAdForPreview.id) ||
+                adsData.find((ad) => ad.id === selectedAdForPreview.id) ||
                   selectedAdForPreview,
               ]
-            : allAdsData || formData.ads
+            : adsData
         }
         offers={currentAdData?.offers || []}
         getMerchantLogo={getMerchantLogo}

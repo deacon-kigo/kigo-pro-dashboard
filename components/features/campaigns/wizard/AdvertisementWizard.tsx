@@ -175,6 +175,14 @@ const AdvertisementWizard: React.FC = () => {
     [dispatch]
   );
 
+  // Handle automatic progression from ad creation step
+  const handleAutoProgress = useCallback(() => {
+    if (currentStep === 0) {
+      // Currently on ad-creation step
+      dispatch(setCurrentStep(1)); // Move to review step
+    }
+  }, [currentStep, dispatch]);
+
   // Render the appropriate step content
   const renderStepContent = () => {
     switch (CAMPAIGN_STEPS[currentStep].id) {
@@ -193,6 +201,7 @@ const AdvertisementWizard: React.FC = () => {
             onCurrentAdChange={handleCurrentAdChange}
             onAssetUploadRef={assetUploadRef}
             onAssetRemoveRef={assetRemoveRef}
+            onAutoProgress={handleAutoProgress}
           />
         );
       case "review":
@@ -293,7 +302,7 @@ const AdvertisementWizard: React.FC = () => {
                 <CampaignAnalyticsPanelLite
                   className="h-full flex-1"
                   currentAdData={currentAdData}
-                  allAdsData={formData.ads}
+                  allAdsData={currentAdData?.ads || []}
                   onAssetUpload={handleAssetUploadForCurrentAd}
                   onAssetRemove={handleAssetRemoveForCurrentAd}
                 />

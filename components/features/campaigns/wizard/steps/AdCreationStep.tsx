@@ -45,6 +45,7 @@ interface AdCreationStepProps {
   onAssetRemoveRef?: React.MutableRefObject<
     ((mediaType: string, assetId: string) => void) | null
   >;
+  onAutoProgress?: () => void;
 }
 
 const AdCreationStep: React.FC<AdCreationStepProps> = ({
@@ -58,6 +59,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
   onCurrentAdChange,
   onAssetUploadRef,
   onAssetRemoveRef,
+  onAutoProgress,
 }) => {
   // Generate 50+ mock merchants for the dropdown (5 original + 50 new)
   const merchants = [
@@ -323,96 +325,6 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
     return missingAssets.length === 0;
   }, [currentAd, uploadErrors]);
 
-  // Preview data - show all ads plus current ad being created/edited
-  const previewData = useMemo(() => {
-    // Start with existing ads
-    const allAds = [...ads];
-
-    // Add current ad if it has basic info (merchant, offer, at least one media type)
-    const hasBasicInfo =
-      currentAd.merchantId &&
-      currentAd.offerId &&
-      currentAd.mediaTypes.length > 0;
-
-    let currentAdPreview: CampaignAd | null = null;
-
-    if (hasBasicInfo) {
-      // Find the first media type with assets for preview image
-      let previewImageUrl: string | null = null;
-      for (const mediaType of currentAd.mediaTypes) {
-        const assets = currentAd.mediaAssetsByType[mediaType];
-        if (assets && assets.length > 0) {
-          previewImageUrl = assets[0].previewUrl;
-          break;
-        }
-      }
-
-      // Create preview data compatible with existing campaign asset components
-      const previewAd: CampaignAd = {
-        id: currentAd.id || "temp-preview",
-        name: currentAd.name,
-        merchantId: currentAd.merchantId,
-        merchantName: currentAd.merchantName,
-        offerId: currentAd.offerId,
-        mediaType: currentAd.mediaTypes, // Keep as array to match CampaignAd interface
-        mediaAssets: Object.values(currentAd.mediaAssetsByType).flat(),
-        costPerActivation: 0,
-        costPerRedemption: 0,
-      };
-
-      // Add preview-specific properties for the preview panel
-      currentAdPreview = {
-        ...previewAd,
-        mediaAssetsByType: currentAd.mediaAssetsByType,
-        isValid: isCurrentAdValid,
-        offers: availableOffers,
-        mediaTypeDefinitions: mediaTypes,
-        previewImageUrl,
-        isPreview: !editingAdId, // Mark as preview only if not editing existing ad
-        isEditing: !!editingAdId, // Mark if we're editing an existing ad
-      } as any; // Use any to allow extra properties for preview
-
-      // If editing, replace the ad being edited in the preview
-      if (editingAdId) {
-        const editIndex = allAds.findIndex((ad) => ad.id === editingAdId);
-        if (editIndex !== -1) {
-          // Replace the ad being edited with current form data for live preview
-          allAds[editIndex] = currentAdPreview as CampaignAd;
-        }
-      } else {
-        // Not editing, so add current form as preview
-        allAds.push(currentAdPreview as CampaignAd);
-      }
-    }
-
-    // Return in the format expected by CampaignCompletionChecklist and preview components
-    return {
-      // All ads (created + current preview)
-      ads: allAds,
-      // Current ad being worked on
-      currentAd: currentAdPreview,
-      // Total count for display
-      totalAds: allAds.length,
-      // Is there a valid preview to show
-      hasPreview: hasBasicInfo,
-      // Available offers for the current merchant
-      offers: availableOffers,
-      mediaTypeDefinitions: mediaTypes,
-    };
-  }, [ads, currentAd, availableOffers, isCurrentAdValid, editingAdId]);
-
-  // Update parent only when preview data actually changes
-  useEffect(() => {
-    if (onCurrentAdChange) {
-      onCurrentAdChange(previewData);
-    }
-  }, [previewData, onCurrentAdChange]);
-
-  // Update step validation based on total ads created
-  useEffect(() => {
-    setStepValidation(ads.length > 0);
-  }, [ads.length, setStepValidation]);
-
   // Handle merchant selection
   const handleMerchantChange = (merchantId: string) => {
     const merchant = merchants.find((m) => m.id === merchantId);
@@ -421,7 +333,12 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
       merchantId,
       merchantName: merchant ? merchant.name : "",
       offerId: "", // Reset offer when merchant changes
+      mediaTypes: [], // Clear media types when merchant changes
+      mediaAssetsByType: {}, // Clear all uploaded assets when merchant changes
     });
+
+    // Clear any upload errors
+    setUploadErrors({});
   };
 
   // Handle offer selection
@@ -429,7 +346,12 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
     setCurrentAd({
       ...currentAd,
       offerId,
+      mediaTypes: [], // Clear media types when offer changes
+      mediaAssetsByType: {}, // Clear all uploaded assets when offer changes
     });
+
+    // Clear any upload errors
+    setUploadErrors({});
   };
 
   // Handle media type selection (multiple selection)
@@ -444,6 +366,10 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
     // If deselecting a media type, remove its assets
     if (isSelected) {
       delete newMediaAssetsByType[mediaType];
+      // Clear upload errors for this media type
+      const newUploadErrors = { ...uploadErrors };
+      delete newUploadErrors[mediaType];
+      setUploadErrors(newUploadErrors);
     } else {
       // If selecting a new media type, initialize empty assets array
       if (!newMediaAssetsByType[mediaType]) {
@@ -690,6 +616,195 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
     setUploadErrors({});
   };
 
+  // Track if we've already auto-progressed to prevent multiple triggers
+  const [hasAutoProgressed, setHasAutoProgressed] = useState(false);
+
+  // Check if we're in edit mode (there's already an ad created)
+  const isEditMode = ads.length > 0;
+  const existingAd = isEditMode ? ads[0] : null;
+
+  // Initialize form with existing ad data if in edit mode
+  useEffect(() => {
+    if (isEditMode && existingAd && !currentAd.name) {
+      // Reconstruct mediaAssetsByType from existing ad
+      const mediaAssetsByType: { [key: string]: MediaAsset[] } = {};
+      existingAd.mediaAssets?.forEach((asset) => {
+        const mediaType = asset.mediaType || "display_banner";
+        if (!mediaAssetsByType[mediaType]) {
+          mediaAssetsByType[mediaType] = [];
+        }
+        mediaAssetsByType[mediaType].push(asset);
+      });
+
+      setCurrentAd({
+        id: existingAd.id,
+        name: existingAd.name,
+        merchantId: existingAd.merchantId,
+        merchantName: existingAd.merchantName,
+        offerId: existingAd.offerId,
+        mediaTypes: existingAd.mediaType,
+        mediaAssetsByType,
+      });
+    }
+  }, [isEditMode, existingAd, currentAd.name]);
+
+  // Handle automatic progression when ad is valid and user has completed essential fields
+  useEffect(() => {
+    // Only auto-progress on initial creation, not when editing
+    if (
+      onAutoProgress &&
+      isCurrentAdValid &&
+      !hasAutoProgressed &&
+      !isEditMode &&
+      currentAd.name.trim() &&
+      currentAd.merchantId &&
+      currentAd.offerId &&
+      currentAd.mediaTypes.length > 0
+    ) {
+      // Check if required assets are uploaded
+      const requiredMediaTypes = currentAd.mediaTypes.filter((type) => {
+        const mediaTypeDef = mediaTypes.find((mt) => mt.id === type);
+        return mediaTypeDef?.requiresAsset;
+      });
+
+      const hasAllRequiredAssets = requiredMediaTypes.every((type) => {
+        return (
+          currentAd.mediaAssetsByType[type] &&
+          currentAd.mediaAssetsByType[type].length > 0
+        );
+      });
+
+      // Only progress if all requirements are met
+      if (hasAllRequiredAssets) {
+        setHasAutoProgressed(true);
+
+        // Automatically create the ad
+        const newAd: CampaignAd = {
+          id: currentAd.id || uuidv4(),
+          name: currentAd.name,
+          merchantId: currentAd.merchantId,
+          merchantName: currentAd.merchantName,
+          offerId: currentAd.offerId,
+          mediaType: currentAd.mediaTypes,
+          mediaAssets: Object.values(currentAd.mediaAssetsByType).flat(),
+          costPerActivation: 0,
+          costPerRedemption: 0,
+        };
+
+        addAd(newAd);
+
+        // Trigger auto-progress after a short delay to let the ad creation complete
+        setTimeout(() => {
+          onAutoProgress();
+        }, 300);
+      }
+    }
+  }, [
+    isCurrentAdValid,
+    currentAd,
+    onAutoProgress,
+    mediaTypes,
+    hasAutoProgressed,
+    addAd,
+    isEditMode,
+  ]);
+
+  // Preview data - always show current form state for real-time sync
+  const previewData = useMemo(() => {
+    // Always use current form state as the source of truth for preview
+    const hasBasicInfo =
+      currentAd.merchantId &&
+      currentAd.offerId &&
+      currentAd.mediaTypes.length > 0;
+
+    let currentAdPreview: CampaignAd | null = null;
+
+    if (hasBasicInfo || currentAd.name) {
+      // Find the first media type with assets for preview image
+      let previewImageUrl: string | null = null;
+      for (const mediaType of currentAd.mediaTypes) {
+        const assets = currentAd.mediaAssetsByType[mediaType];
+        if (assets && assets.length > 0) {
+          previewImageUrl = assets[0].previewUrl;
+          break;
+        }
+      }
+
+      // Create preview data from current form state
+      const previewAd: CampaignAd = {
+        id:
+          currentAd.id ||
+          (isEditMode && existingAd ? existingAd.id : "temp-preview"),
+        name: currentAd.name,
+        merchantId: currentAd.merchantId,
+        merchantName: currentAd.merchantName,
+        offerId: currentAd.offerId,
+        mediaType: currentAd.mediaTypes,
+        mediaAssets: Object.values(currentAd.mediaAssetsByType).flat(),
+        costPerActivation: 0,
+        costPerRedemption: 0,
+      };
+
+      // Add preview-specific properties for the preview panel
+      currentAdPreview = {
+        ...previewAd,
+        mediaAssetsByType: currentAd.mediaAssetsByType,
+        isValid: isCurrentAdValid,
+        offers: availableOffers,
+        mediaTypeDefinitions: mediaTypes,
+        previewImageUrl,
+        isPreview: !isEditMode,
+        isEditing: isEditMode,
+      } as any;
+    }
+
+    // Return preview data that always reflects current form state
+    return {
+      // Show current form state in preview (single ad)
+      ads: currentAdPreview ? [currentAdPreview as CampaignAd] : [],
+      // Current ad being worked on
+      currentAd: currentAdPreview,
+      // Total count for display
+      totalAds: currentAdPreview ? 1 : 0,
+      // Is there a valid preview to show
+      hasPreview: hasBasicInfo || currentAd.name,
+      // Available offers for the current merchant
+      offers: availableOffers,
+      mediaTypeDefinitions: mediaTypes,
+    };
+  }, [currentAd, availableOffers, isCurrentAdValid, isEditMode, existingAd]);
+
+  // Update parent only when preview data actually changes
+  useEffect(() => {
+    if (onCurrentAdChange) {
+      onCurrentAdChange(previewData);
+    }
+  }, [previewData, onCurrentAdChange]);
+
+  // Update step validation based on total ads created or current ad validity in edit mode
+  useEffect(() => {
+    setStepValidation(ads.length > 0 || (isEditMode && isCurrentAdValid));
+  }, [ads.length, setStepValidation, isEditMode, isCurrentAdValid]);
+
+  // Handle manual ad update in edit mode
+  const handleUpdateAd = () => {
+    if (!isCurrentAdValid || !existingAd) return;
+
+    const updatedAd: CampaignAd = {
+      id: existingAd.id,
+      name: currentAd.name,
+      merchantId: currentAd.merchantId,
+      merchantName: currentAd.merchantName,
+      offerId: currentAd.offerId,
+      mediaType: currentAd.mediaTypes,
+      mediaAssets: Object.values(currentAd.mediaAssetsByType).flat(),
+      costPerActivation: existingAd.costPerActivation,
+      costPerRedemption: existingAd.costPerRedemption,
+    };
+
+    updateAd(existingAd.id, updatedAd);
+  };
+
   return (
     <div className="space-y-3">
       {/* Create Asset Form */}
@@ -700,31 +815,10 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <h5 className="text-sm font-semibold text-slate-900">
-                  {editingAdId ? "Edit Ad Asset" : "Create Ad Asset"}
+                  {isEditMode ? "Edit Your Ad" : "Create Your Ad"}
                 </h5>
-                {ads.length > 0 && !editingAdId && (
-                  <Badge
-                    variant="outline"
-                    className="text-xs bg-blue-50 text-blue-700 border-blue-200"
-                  >
-                    {ads.length} created
-                  </Badge>
-                )}
               </div>
             </div>
-            {editingAdId && (
-              <div className="flex items-center">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCancelEdit}
-                  className="h-6 text-xs px-2 text-slate-600 hover:text-slate-800"
-                >
-                  <X className="h-3 w-3 mr-1" />
-                  Cancel
-                </Button>
-              </div>
-            )}
           </div>
 
           {/* Form Controls - Stacked vertically */}
@@ -1021,43 +1115,54 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
               </div>
             )}
 
-          {/* Create/Update Ad Button */}
+          {/* Progress Status */}
           {currentAd.merchantId &&
             currentAd.offerId &&
             currentAd.mediaTypes.length > 0 && (
               <div className="border-t border-slate-200 pt-3 mt-3">
-                <div className="flex justify-between items-center">
-                  <div className="text-xs text-slate-600">
-                    {isCurrentAdValid ? (
-                      <span className="flex items-center text-green-600">
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        Ready to {editingAdId ? "update" : "create"} ad
-                      </span>
-                    ) : (
-                      <span className="flex items-center text-amber-600">
-                        <AlertCircle className="h-3 w-3 mr-1" />
-                        Complete all required fields
-                      </span>
-                    )}
+                {isEditMode ? (
+                  // Edit Mode - Show update button
+                  <div className="flex justify-between items-center">
+                    <div className="text-xs text-slate-600">
+                      {isCurrentAdValid ? (
+                        <span className="flex items-center text-green-600">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Ready to update ad
+                        </span>
+                      ) : (
+                        <span className="flex items-center text-amber-600">
+                          <AlertCircle className="h-3 w-3 mr-1" />
+                          Complete all required fields
+                        </span>
+                      )}
+                    </div>
+                    <Button
+                      onClick={handleUpdateAd}
+                      disabled={!isCurrentAdValid}
+                      className="h-8 text-xs px-4"
+                    >
+                      <Check className="h-3 w-3 mr-1" />
+                      Update Ad
+                    </Button>
                   </div>
-                  <Button
-                    onClick={handleCreateAd}
-                    disabled={!isCurrentAdValid}
-                    className="h-8 text-xs px-4"
-                  >
-                    {editingAdId ? (
-                      <>
-                        <Check className="h-3 w-3 mr-1" />
-                        Update Ad
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="h-3 w-3 mr-1" />
-                        Create Ad
-                      </>
-                    )}
-                  </Button>
-                </div>
+                ) : (
+                  // Create Mode - Show auto-progress status
+                  <div className="flex items-center justify-center">
+                    <div className="text-xs text-slate-600">
+                      {isCurrentAdValid ? (
+                        <span className="flex items-center text-green-600">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Ad complete - proceeding to review...
+                        </span>
+                      ) : (
+                        <span className="flex items-center text-amber-600">
+                          <AlertCircle className="h-3 w-3 mr-1" />
+                          Complete all required fields to continue
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
         </div>
