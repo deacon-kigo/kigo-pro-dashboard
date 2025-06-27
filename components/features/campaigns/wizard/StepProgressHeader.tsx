@@ -35,7 +35,7 @@ const StepProgressHeader: React.FC<StepProgressHeaderProps> = ({
           </svg>
           <div>
             <h3 className="font-medium">{CAMPAIGN_STEPS[currentStep].title}</h3>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {CAMPAIGN_STEPS[currentStep].description}
             </p>
           </div>

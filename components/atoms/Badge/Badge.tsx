@@ -40,7 +40,7 @@ const badgeVariants = cva(
       },
       size: {
         default: "px-2.5 py-0.5 text-xs",
-        sm: "px-2 py-0.5 text-[10px]",
+        sm: "px-2 py-0.5 text-xs",
         lg: "px-3 py-1 text-sm",
       },
       rounded: {
@@ -141,7 +141,7 @@ function Badge({
     let sizeClass = "px-2.5 py-0.5 text-xs"; // default
     switch (size) {
       case "sm":
-        sizeClass = "px-2 py-0.5 text-[10px]";
+        sizeClass = "px-2 py-0.5 text-xs";
         break;
       case "lg":
         sizeClass = "px-3 py-1 text-sm";

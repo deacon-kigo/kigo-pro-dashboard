@@ -221,7 +221,7 @@ const FilterCoveragePanel: React.FC<FilterCoveragePanelProps> = ({
               </h4>
               <Badge
                 variant="outline"
-                className="ml-2 bg-amber-200/50 border-amber-300 text-amber-800 text-[10px]"
+                className="ml-2 bg-amber-200/50 border-amber-300 text-amber-800 text-xs"
               >
                 {suggestions.length}
               </Badge>
@@ -317,7 +317,7 @@ const FilterCoveragePanel: React.FC<FilterCoveragePanelProps> = ({
             {suggestions.length > 0 && (
               <Badge
                 variant="outline"
-                className="ml-1.5 h-4 min-w-4 px-1 text-[10px] bg-amber-100 border-amber-300"
+                className="ml-1.5 h-5 min-w-5 px-1 text-xs bg-amber-100 border-amber-300"
               >
                 {suggestions.length}
               </Badge>

@@ -312,7 +312,7 @@ export function AdPreviewModal({
                         <h3 className="text-xs font-medium text-blue-800">
                           {mediaType.label}
                         </h3>
-                        <Badge variant="outline" className="text-[10px] ml-2">
+                        <Badge variant="outline" className="text-xs ml-2">
                           {mediaType.dimensions}
                         </Badge>
                       </div>
@@ -323,7 +323,7 @@ export function AdPreviewModal({
                               ? "default"
                               : "destructive"
                           }
-                          className="text-[10px]"
+                          className="text-xs"
                         >
                           {mediaTypeAssets.length > 0
                             ? "Asset uploaded"
@@ -387,7 +387,7 @@ export function AdPreviewModal({
                           {!allowEditing && (
                             <Badge
                               variant="outline"
-                              className="text-[10px] text-blue-600"
+                              className="text-xs text-blue-600"
                             >
                               View Only
                             </Badge>
@@ -463,7 +463,7 @@ export function AdPreviewModal({
                                       <p className="text-xs font-medium text-slate-700">
                                         {firstAsset.name}
                                       </p>
-                                      <p className="text-[10px] text-slate-500">
+                                      <p className="text-xs text-slate-500">
                                         {formatFileSize(firstAsset.size)}
                                       </p>
                                     </div>

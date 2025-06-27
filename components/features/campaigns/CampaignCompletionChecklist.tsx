@@ -27,6 +27,7 @@ import {
   Eye,
   MoreHorizontal,
   Clock,
+  ArrowRight,
 } from "lucide-react";
 
 interface CampaignCompletionChecklistProps {
@@ -230,38 +231,26 @@ export function CampaignCompletionChecklist({
     <div
       className={`bg-white rounded-lg border border-gray-200 p-4 ${className}`}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h4 className="text-sm font-semibold text-slate-900">
-            Ad Asset Creation
-          </h4>
-          <p className="text-xs text-slate-600 mt-0.5">
-            Create and manage your ad assets
-          </p>
-        </div>
-      </div>
-
       {/* Live Preview Section */}
       {currentAdData?.isValid && (
-        <div className="mb-4">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <div className="flex items-center justify-between mb-2">
+        <div className="mb-6">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-3">
               <div className="flex items-center">
                 <div className="h-5 w-5 rounded-full bg-blue-600 flex items-center justify-center mr-2">
                   <Clock className="h-3 w-3 text-white" />
                 </div>
-                <h5 className="text-xs font-medium text-blue-800">
+                <h5 className="text-sm font-medium text-blue-800">
                   Live Preview
                 </h5>
               </div>
-              <Badge variant="outline" className="text-xs bg-white">
+              <Badge variant="outline" className="text-sm bg-white">
                 {currentAdData.mediaTypes?.length || 0} formats
               </Badge>
             </div>
 
             {/* Preview Grid for Multiple Media Types */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               {currentAdData.mediaTypes?.map((mediaType: string) => {
                 const mediaTypeAssets =
                   currentAdData.mediaAssetsByType?.[mediaType] || [];
@@ -273,10 +262,10 @@ export function CampaignCompletionChecklist({
                 return (
                   <div
                     key={mediaType}
-                    className="bg-white rounded border p-2 hover:bg-slate-50 cursor-pointer transition-colors group"
+                    className="bg-white rounded border p-3 hover:bg-slate-50 cursor-pointer transition-colors group"
                     onClick={() => handleLivePreviewClick(mediaType)}
                   >
-                    <div className="flex gap-2">
+                    <div className="flex gap-3">
                       <div className="w-12 h-8 bg-slate-100 rounded overflow-hidden flex-shrink-0">
                         <div
                           className="transform scale-[0.3] origin-top-left"
@@ -303,19 +292,19 @@ export function CampaignCompletionChecklist({
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
-                            <h6 className="text-xs font-medium text-slate-900 truncate">
+                            <h6 className="text-sm font-medium text-slate-900 truncate">
                               {mediaTypeDef?.label || mediaType}
                             </h6>
-                            <Badge variant="outline" className="text-[10px]">
+                            <Badge variant="outline" className="text-sm">
                               {mediaTypeDef?.dimensions || "Auto"}
                             </Badge>
                           </div>
                           <Eye className="h-3 w-3 text-slate-400 group-hover:text-blue-600 transition-colors" />
                         </div>
                         <div className="flex items-center justify-between">
-                          <p className="text-[10px] text-slate-600 truncate">
+                          <p className="text-sm text-slate-600 truncate">
                             {currentAdData.offers?.find(
                               (o: any) => o.id === currentAdData.offerId
                             )?.name || ""}
@@ -326,7 +315,7 @@ export function CampaignCompletionChecklist({
                                 ? "default"
                                 : "destructive"
                             }
-                            className="text-[8px] h-3 px-1"
+                            className="text-sm h-5 px-2"
                           >
                             {mediaTypeAssets.length > 0
                               ? `${mediaTypeAssets.length} asset${mediaTypeAssets.length > 1 ? "s" : ""}`
@@ -343,51 +332,64 @@ export function CampaignCompletionChecklist({
         </div>
       )}
 
-      {/* Created Ads List */}
-      {adsData.length > 0 && (
-        <div className="space-y-2">
-          <h5 className="text-sm font-medium text-slate-900 mb-3">
-            Created Ads ({adsData.length})
-          </h5>
-          {adsData.map((ad: any) => {
-            // Get offer details from the promotion text mapping since we don't have offer objects
-            const offerText = getPromotionText(ad.offerId);
+      {/* Created Ads - Direct List without wrapper */}
+      {adsData.length > 0 ? (
+        adsData.map((ad: any) => {
+          // Get offer details from the promotion text mapping since we don't have offer objects
+          const offerText = getPromotionText(ad.offerId);
 
-            return (
-              <div
-                key={ad.id}
-                className="bg-white rounded-lg border border-slate-200 p-3 hover:bg-blue-50/30 cursor-pointer transition-colors shadow-sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleAdPreview(ad);
-                }}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0 mr-3">
-                    <p className="text-sm font-medium text-slate-900 leading-tight">
-                      {ad.name || ad.merchantName}
-                    </p>
-                    <p className="text-xs text-slate-600 mt-0.5 leading-tight">
-                      {ad.merchantName} • {offerText}
-                    </p>
-                  </div>
-                  <div className="flex-shrink-0 flex items-center space-x-2">
-                    <div className="text-xs text-slate-500 text-right">
-                      <div>
-                        {ad.mediaType.length} type
-                        {ad.mediaType.length !== 1 ? "s" : ""}
-                      </div>
-                      <div>
-                        {ad.mediaAssets?.length || 0} asset
-                        {ad.mediaAssets?.length !== 1 ? "s" : ""}
-                      </div>
+          return (
+            <div
+              key={ad.id}
+              className="bg-white rounded-lg border border-slate-200 p-4 hover:bg-blue-50/30 cursor-pointer transition-colors shadow-sm mb-3"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleAdPreview(ad);
+              }}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex-1 min-w-0 mr-4">
+                  <p className="text-sm font-medium text-slate-900 leading-relaxed">
+                    {ad.name || ad.merchantName}
+                  </p>
+                  <p className="text-sm text-slate-600 mt-1 leading-relaxed">
+                    {ad.merchantName} • {offerText}
+                  </p>
+                </div>
+                <div className="flex-shrink-0 flex items-center space-x-3">
+                  <div className="text-sm text-slate-500 text-right space-y-1">
+                    <div>
+                      {ad.mediaType.length} type
+                      {ad.mediaType.length !== 1 ? "s" : ""}
                     </div>
-                    <ChevronRight className="h-4 w-4 text-slate-400" />
+                    <div>
+                      {ad.mediaAssets?.length || 0} asset
+                      {ad.mediaAssets?.length !== 1 ? "s" : ""}
+                    </div>
                   </div>
+                  <ChevronRight className="h-4 w-4 text-slate-400" />
                 </div>
               </div>
-            );
-          })}
+            </div>
+          );
+        })
+      ) : (
+        /* Empty State */
+        <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+          <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-6">
+            <ImagePlus className="h-10 w-10 text-slate-400" />
+          </div>
+          <h3 className="text-lg font-medium text-slate-900 mb-3">
+            No ads created yet
+          </h3>
+          <p className="text-sm text-slate-600 mb-6 max-w-sm leading-relaxed">
+            Fill out the form on the left to create your first ad. Your preview
+            will appear here as you build it.
+          </p>
+          <div className="flex items-center text-sm text-slate-500">
+            <ArrowRight className="h-4 w-4 mr-2" />
+            Start by entering an ad name
+          </div>
         </div>
       )}
 

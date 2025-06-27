@@ -1731,7 +1731,7 @@ export default function ProductFilterCreationView({
                                         </div>
                                         <Badge
                                           variant="secondary"
-                                          className="text-[10px] bg-green-100"
+                                          className="text-xs bg-green-100"
                                         >
                                           {
                                             filterCriteria.filter(
@@ -1820,7 +1820,7 @@ export default function ProductFilterCreationView({
                                         </div>
                                         <Badge
                                           variant="secondary"
-                                          className="text-[10px] bg-red-100"
+                                          className="text-xs bg-red-100"
                                         >
                                           {
                                             filterCriteria.filter(
