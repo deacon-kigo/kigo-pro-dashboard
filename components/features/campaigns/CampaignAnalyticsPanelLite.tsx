@@ -39,9 +39,9 @@ export function CampaignAnalyticsPanelLite({
             <line x1="6" y1="18" x2="6" y2="18"></line>
           </svg>
           <div>
-            <h3 className="font-medium">Ad Creation Progress</h3>
+            <h3 className="font-medium">Ad Asset Creation</h3>
             <p className="text-xs text-muted-foreground">
-              Track your ad creation progress
+              Create and manage your ad assets
             </p>
           </div>
         </div>

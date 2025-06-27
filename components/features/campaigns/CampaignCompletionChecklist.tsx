@@ -5,9 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/lib/redux/store";
 import {
-  CAMPAIGN_STEPS,
   addAd,
-  setCurrentStep,
   updateAd,
   addMediaToAd,
   removeMediaFromAd,
@@ -28,13 +26,7 @@ import {
   ChevronDown,
   Eye,
   MoreHorizontal,
-  Target,
-  DollarSign,
-  FileText,
-  Layers,
   Clock,
-  ArrowRight,
-  Share2,
 } from "lucide-react";
 
 interface CampaignCompletionChecklistProps {
@@ -55,9 +47,7 @@ export function CampaignCompletionChecklist({
   onAssetRemove,
 }: CampaignCompletionChecklistProps) {
   // Get campaign state from Redux
-  const { formData, stepValidation, currentStep } = useSelector(
-    (state: RootState) => state.campaign
-  );
+  const { formData } = useSelector((state: RootState) => state.campaign);
   const dispatch = useDispatch();
 
   // Modal state for ad preview
@@ -99,12 +89,6 @@ export function CampaignCompletionChecklist({
     }
   }, [previewModalOpen, selectedAdForPreview?.id]); // Only depend on the ID to prevent object comparison issues
 
-  // Calculate completion status
-  const completedSteps = Object.values(stepValidation).filter(
-    (isValid) => isValid
-  ).length;
-  const totalSteps = CAMPAIGN_STEPS.length;
-
   // Helper to truncate long text
   const truncateText = (text: string, maxLength: number = 20) => {
     if (!text) return "";
@@ -112,14 +96,6 @@ export function CampaignCompletionChecklist({
       ? `${text.substring(0, maxLength)}...`
       : text;
   };
-
-  // Navigate to specific step
-  const goToStep = useCallback(
-    (stepIndex: number) => {
-      dispatch(setCurrentStep(stepIndex));
-    },
-    [dispatch]
-  );
 
   // Handle opening ad preview modal
   const handleAdPreview = useCallback((ad: any, event?: React.MouseEvent) => {
@@ -247,59 +223,8 @@ export function CampaignCompletionChecklist({
     return textMap[offerId] || "Promotion";
   };
 
-  // Helper function to format campaign duration
-  const formatCampaignDuration = () => {
-    const { startDate, endDate, noEndDate } = formData.targeting;
-    if (!startDate) return "Duration not set";
-
-    const start = new Date(startDate).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-
-    if (noEndDate) return `${start} - Ongoing`;
-    if (!endDate) return `${start} - End date TBD`;
-
-    const end = new Date(endDate).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-    return `${start} - ${end}`;
-  };
-
   // Step configuration with enhanced data display - Updated for streamlined ad creation flow
   const adsData = allAdsData || formData.ads;
-  const steps = [
-    {
-      id: "ad-creation",
-      title: "Ad Asset Creation",
-      icon: Layers,
-      stepIndex: 0,
-      isCompleted: adsData.length > 0,
-      isCurrent: currentStep === 0,
-      data: adsData,
-      keyInfo:
-        adsData.length > 0
-          ? {
-              label: "Assets Created",
-              value: `${adsData.length} ad${adsData.length !== 1 ? "s" : ""}`,
-              detail: `${adsData.reduce((total, ad) => total + (ad.mediaAssets?.length || 0), 0)} media files`,
-            }
-          : null,
-    },
-    {
-      id: "review",
-      title: "Review & Launch",
-      icon: CheckCircle,
-      stepIndex: 1,
-      isCompleted: stepValidation["review"],
-      isCurrent: currentStep === 1,
-      data: null,
-      keyInfo: stepValidation["review"]
-        ? { label: "Status", value: "Ready to launch" }
-        : null,
-    },
-  ];
 
   return (
     <div
@@ -309,16 +234,11 @@ export function CampaignCompletionChecklist({
       <div className="flex items-center justify-between mb-4">
         <div>
           <h4 className="text-sm font-semibold text-slate-900">
-            Ad Creation Progress
+            Ad Asset Creation
           </h4>
           <p className="text-xs text-slate-600 mt-0.5">
-            Track your ad creation progress
+            Create and manage your ad assets
           </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
-            {completedSteps} of {totalSteps} completed
-          </span>
         </div>
       </div>
 
@@ -423,159 +343,53 @@ export function CampaignCompletionChecklist({
         </div>
       )}
 
-      {/* Progress Steps */}
-      <div className="space-y-2">
-        {steps.map((step, index) => (
-          <div key={step.id} className="relative">
-            {/* Step Card */}
-            <div
-              className={`
-                border rounded-lg p-3 transition-all duration-200 cursor-pointer relative
-                ${
-                  step.isCurrent
-                    ? "border-blue-500 bg-blue-50/50 shadow-sm ring-1 ring-blue-100"
-                    : step.isCompleted
-                      ? "border-blue-200 bg-white hover:bg-blue-50/30"
-                      : "border-slate-200 bg-white hover:bg-blue-50/20"
-                }
-              `}
-              onClick={() => goToStep(step.stepIndex)}
-            >
-              {/* Current step accent bar */}
-              {step.isCurrent && (
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-l-lg"></div>
-              )}
+      {/* Created Ads List */}
+      {adsData.length > 0 && (
+        <div className="space-y-2">
+          <h5 className="text-sm font-medium text-slate-900 mb-3">
+            Created Ads ({adsData.length})
+          </h5>
+          {adsData.map((ad: any) => {
+            // Get offer details from the promotion text mapping since we don't have offer objects
+            const offerText = getPromotionText(ad.offerId);
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  {/* Step Icon */}
-                  <div
-                    className={`
-                      h-8 w-8 rounded-full flex items-center justify-center mr-3 transition-colors
-                      ${
-                        step.isCurrent
-                          ? "bg-blue-600 shadow-sm"
-                          : step.isCompleted
-                            ? "bg-blue-100"
-                            : "bg-slate-200"
-                      }
-                    `}
-                  >
-                    {step.isCompleted ? (
-                      <CheckCircle className="h-4 w-4 text-blue-600" />
-                    ) : (
-                      <step.icon
-                        className={`h-4 w-4 ${
-                          step.isCurrent ? "text-white" : "text-slate-500"
-                        }`}
-                      />
-                    )}
+            return (
+              <div
+                key={ad.id}
+                className="bg-white rounded-lg border border-slate-200 p-3 hover:bg-blue-50/30 cursor-pointer transition-colors shadow-sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAdPreview(ad);
+                }}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0 mr-3">
+                    <p className="text-sm font-medium text-slate-900 leading-tight">
+                      {ad.name || ad.merchantName}
+                    </p>
+                    <p className="text-xs text-slate-600 mt-0.5 leading-tight">
+                      {ad.merchantName} • {offerText}
+                    </p>
                   </div>
-
-                  {/* Step Content */}
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h5 className="text-sm font-medium text-slate-900">
-                        {step.title}
-                      </h5>
-                      {step.isCurrent && (
-                        <Badge
-                          variant="outline"
-                          className="text-xs bg-blue-50 text-blue-700 border-blue-200"
-                        >
-                          Current
-                        </Badge>
-                      )}
-                      {step.isCompleted && !step.isCurrent && (
-                        <Badge
-                          variant="outline"
-                          className="text-xs bg-blue-50 text-blue-700 border-blue-200"
-                        >
-                          Completed
-                        </Badge>
-                      )}
-                    </div>
-                    {step.keyInfo && (
-                      <div className="mt-1">
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-xs text-slate-500">
-                            {step.keyInfo.label}:
-                          </span>
-                          <span className="text-sm font-medium text-slate-800">
-                            {step.keyInfo.value}
-                          </span>
-                        </div>
-                        {step.keyInfo.detail && (
-                          <p className="text-xs text-slate-500 mt-0.5">
-                            {step.keyInfo.detail}
-                          </p>
-                        )}
+                  <div className="flex-shrink-0 flex items-center space-x-2">
+                    <div className="text-xs text-slate-500 text-right">
+                      <div>
+                        {ad.mediaType.length} type
+                        {ad.mediaType.length !== 1 ? "s" : ""}
                       </div>
-                    )}
+                      <div>
+                        {ad.mediaAssets?.length || 0} asset
+                        {ad.mediaAssets?.length !== 1 ? "s" : ""}
+                      </div>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-slate-400" />
                   </div>
-                </div>
-
-                {/* Action Button */}
-                <div className="flex items-center">
-                  <ChevronRight className="h-4 w-4 text-slate-400" />
                 </div>
               </div>
-
-              {/* Step Details (for ads) */}
-              {step.id === "ad-creation" && step.isCompleted && (
-                <div className="mt-3 pt-3 border-t border-slate-200">
-                  <div className="space-y-2">
-                    {adsData.map((ad: any) => {
-                      // Get offer details from the promotion text mapping since we don't have offer objects
-                      const offerText = getPromotionText(ad.offerId);
-
-                      return (
-                        <div
-                          key={ad.id}
-                          className="bg-white rounded-lg border border-slate-200 p-2.5 hover:bg-blue-50/30 cursor-pointer transition-colors shadow-sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAdPreview(ad);
-                          }}
-                        >
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1 min-w-0 mr-3">
-                              <p className="text-sm font-medium text-slate-900 leading-tight">
-                                {ad.name || ad.merchantName}
-                              </p>
-                              <p className="text-xs text-slate-600 mt-0.5 leading-tight">
-                                {ad.merchantName} • {offerText}
-                              </p>
-                            </div>
-                            <div className="flex-shrink-0 flex items-center space-x-2">
-                              <div className="text-xs text-slate-500 text-right">
-                                <div>
-                                  {ad.mediaType.length} type
-                                  {ad.mediaType.length !== 1 ? "s" : ""}
-                                </div>
-                                <div>
-                                  {ad.mediaAssets?.length || 0} asset
-                                  {ad.mediaAssets?.length !== 1 ? "s" : ""}
-                                </div>
-                              </div>
-                              <ChevronRight className="h-4 w-4 text-slate-400" />
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Connector Line - Fixed positioning to avoid overlaps */}
-            {index < steps.length - 1 && (
-              <div className="absolute left-7 top-[52px] w-0.5 h-3 bg-slate-200 -z-10"></div>
-            )}
-          </div>
-        ))}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Ad Preview Modal */}
       <AdPreviewModal

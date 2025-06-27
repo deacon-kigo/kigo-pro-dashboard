@@ -45,7 +45,7 @@ interface AdCreationStepProps {
   onAssetRemoveRef?: React.MutableRefObject<
     ((mediaType: string, assetId: string) => void) | null
   >;
-  onAutoProgress?: () => void;
+  onCreateAd?: () => void;
 }
 
 const AdCreationStep: React.FC<AdCreationStepProps> = ({
@@ -59,7 +59,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
   onCurrentAdChange,
   onAssetUploadRef,
   onAssetRemoveRef,
-  onAutoProgress,
+  onCreateAd,
 }) => {
   // Generate 50+ mock merchants for the dropdown (5 original + 50 new)
   const merchants = [
@@ -616,9 +616,6 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
     setUploadErrors({});
   };
 
-  // Track if we've already auto-progressed to prevent multiple triggers
-  const [hasAutoProgressed, setHasAutoProgressed] = useState(false);
-
   // Check if we're in edit mode (there's already an ad created)
   const isEditMode = ads.length > 0;
   const existingAd = isEditMode ? ads[0] : null;
@@ -647,67 +644,6 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
       });
     }
   }, [isEditMode, existingAd, currentAd.name]);
-
-  // Handle automatic progression when ad is valid and user has completed essential fields
-  useEffect(() => {
-    // Only auto-progress on initial creation, not when editing
-    if (
-      onAutoProgress &&
-      isCurrentAdValid &&
-      !hasAutoProgressed &&
-      !isEditMode &&
-      currentAd.name.trim() &&
-      currentAd.merchantId &&
-      currentAd.offerId &&
-      currentAd.mediaTypes.length > 0
-    ) {
-      // Check if required assets are uploaded
-      const requiredMediaTypes = currentAd.mediaTypes.filter((type) => {
-        const mediaTypeDef = mediaTypes.find((mt) => mt.id === type);
-        return mediaTypeDef?.requiresAsset;
-      });
-
-      const hasAllRequiredAssets = requiredMediaTypes.every((type) => {
-        return (
-          currentAd.mediaAssetsByType[type] &&
-          currentAd.mediaAssetsByType[type].length > 0
-        );
-      });
-
-      // Only progress if all requirements are met
-      if (hasAllRequiredAssets) {
-        setHasAutoProgressed(true);
-
-        // Automatically create the ad
-        const newAd: CampaignAd = {
-          id: currentAd.id || uuidv4(),
-          name: currentAd.name,
-          merchantId: currentAd.merchantId,
-          merchantName: currentAd.merchantName,
-          offerId: currentAd.offerId,
-          mediaType: currentAd.mediaTypes,
-          mediaAssets: Object.values(currentAd.mediaAssetsByType).flat(),
-          costPerActivation: 0,
-          costPerRedemption: 0,
-        };
-
-        addAd(newAd);
-
-        // Trigger auto-progress after a short delay to let the ad creation complete
-        setTimeout(() => {
-          onAutoProgress();
-        }, 300);
-      }
-    }
-  }, [
-    isCurrentAdValid,
-    currentAd,
-    onAutoProgress,
-    mediaTypes,
-    hasAutoProgressed,
-    addAd,
-    isEditMode,
-  ]);
 
   // Preview data - always show current form state for real-time sync
   const previewData = useMemo(() => {
@@ -1146,21 +1082,32 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                     </Button>
                   </div>
                 ) : (
-                  // Create Mode - Show auto-progress status
-                  <div className="flex items-center justify-center">
+                  // Create Mode - Show create ad button
+                  <div className="flex justify-between items-center">
                     <div className="text-xs text-slate-600">
                       {isCurrentAdValid ? (
                         <span className="flex items-center text-green-600">
                           <CheckCircle className="h-3 w-3 mr-1" />
-                          Ad complete - proceeding to review...
+                          Ready to create ad
                         </span>
                       ) : (
                         <span className="flex items-center text-amber-600">
                           <AlertCircle className="h-3 w-3 mr-1" />
-                          Complete all required fields to continue
+                          Complete all required fields
                         </span>
                       )}
                     </div>
+                    <Button
+                      onClick={() => {
+                        handleCreateAd();
+                        onCreateAd?.();
+                      }}
+                      disabled={!isCurrentAdValid}
+                      className="h-8 text-xs px-4"
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      Create Ad
+                    </Button>
                   </div>
                 )}
               </div>

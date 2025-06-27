@@ -13,14 +13,6 @@ import {
   setCurrentStep,
   setStepValidation,
   resetCampaign,
-  updateBasicInfo,
-  updateTargeting,
-  updateBudget,
-  updateDistribution,
-  addLocation,
-  removeLocation,
-  setStartDate,
-  setEndDate,
   addAd,
   updateAd,
   removeAd,
@@ -28,7 +20,6 @@ import {
   removeMediaFromAd,
 } from "@/lib/redux/slices/campaignSlice";
 import StepProgressHeader from "./StepProgressHeader";
-import StepNavigationFooter from "./StepNavigationFooter";
 import { setCampaignContext } from "@/lib/redux/slices/ai-assistantSlice";
 import { CampaignAnalyticsPanelLite } from "../CampaignAnalyticsPanelLite";
 import PageHeader from "@/components/molecules/PageHeader/PageHeader";
@@ -36,7 +27,6 @@ import { v4 as uuidv4 } from "uuid";
 
 // Import step components
 import AdCreationStep from "./steps/AdCreationStep";
-import ReviewStep from "./steps/ReviewStep";
 
 const AdvertisementWizard: React.FC = () => {
   const router = useRouter();
@@ -102,35 +92,22 @@ const AdvertisementWizard: React.FC = () => {
     [dispatch]
   );
 
-  const handleNext = useCallback(() => {
-    if (currentStep < CAMPAIGN_STEPS.length - 1) {
-      dispatch(setCurrentStep(currentStep + 1));
-    } else {
-      // This is the final step - handle campaign creation
-      console.log("Create advertisement campaign with data:", formData);
-      // TODO: Implement actual campaign creation API call
-      setTimeout(() => {
-        // Simulate success
-        alert("Advertisement campaign created successfully!");
-        router.push("/campaign-manager");
-      }, 1000);
-    }
-  }, [currentStep, dispatch, formData, router]);
+  const handleCreateAd = useCallback(() => {
+    // Handle ad creation
+    console.log("Create advertisement with data:", formData);
+    // TODO: Implement actual ad creation API call
+    setTimeout(() => {
+      // Simulate success
+      alert("Advertisement created successfully!");
+      router.push("/campaign-manager");
+    }, 1000);
+  }, [formData, router]);
 
   const handlePrevious = useCallback(() => {
     if (currentStep > 0) {
       dispatch(setCurrentStep(currentStep - 1));
     }
   }, [currentStep, dispatch]);
-
-  const handleSaveDraft = useCallback(() => {
-    // TODO: Implement actual save draft functionality
-    console.log("Saving advertisement draft:", formData);
-    alert("Advertisement campaign saved as draft");
-  }, [formData]);
-
-  // Always enable navigation in presentational mode
-  const isNextDisabled = false; // Allow navigation without validation
 
   // Animation variants
   const contentVariants = {
@@ -175,14 +152,6 @@ const AdvertisementWizard: React.FC = () => {
     [dispatch]
   );
 
-  // Handle automatic progression from ad creation step
-  const handleAutoProgress = useCallback(() => {
-    if (currentStep === 0) {
-      // Currently on ad-creation step
-      dispatch(setCurrentStep(1)); // Move to review step
-    }
-  }, [currentStep, dispatch]);
-
   // Render the appropriate step content
   const renderStepContent = () => {
     switch (CAMPAIGN_STEPS[currentStep].id) {
@@ -201,11 +170,9 @@ const AdvertisementWizard: React.FC = () => {
             onCurrentAdChange={handleCurrentAdChange}
             onAssetUploadRef={assetUploadRef}
             onAssetRemoveRef={assetRemoveRef}
-            onAutoProgress={handleAutoProgress}
+            onCreateAd={handleCreateAd}
           />
         );
-      case "review":
-        return <ReviewStep formData={formData} />;
       default:
         return null;
     }
@@ -282,16 +249,6 @@ const AdvertisementWizard: React.FC = () => {
                   </motion.div>
                 </AnimatePresence>
               </div>
-
-              {/* Navigation footer */}
-              <StepNavigationFooter
-                currentStep={currentStep}
-                isNextDisabled={isNextDisabled}
-                onNext={handleNext}
-                onPrevious={handlePrevious}
-                onSaveDraft={handleSaveDraft}
-                className="flex-shrink-0"
-              />
             </Card>
           </div>
 

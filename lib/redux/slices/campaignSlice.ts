@@ -7,11 +7,6 @@ export const CAMPAIGN_STEPS = [
     title: "Ad Asset Creation",
     description: "Select merchant, offer and upload assets",
   },
-  {
-    id: "review",
-    title: "Review & Launch",
-    description: "Review your ad asset before launching",
-  },
 ];
 
 export interface CampaignBasicInfo {
