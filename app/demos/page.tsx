@@ -395,6 +395,216 @@ export default function DemosPage() {
               </div>
             </div>
           </div>
+
+          {/* AI Campaign Report Demo */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+            <div className="p-6">
+              <div className="flex items-center mb-4">
+                <div className="h-12 w-12 bg-purple-100 rounded-full overflow-hidden flex items-center justify-center mr-4">
+                  <ChartBarIcon className="h-7 w-7 text-purple-600" />
+                </div>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  AI Campaign Report
+                </h2>
+              </div>
+
+              <p className="text-gray-600 mb-6 h-20">
+                Comprehensive AI-powered campaign analytics with performance
+                forecasting, top performing segments analysis, and fraud
+                detection insights.
+              </p>
+
+              <div className="grid grid-cols-3 gap-2 mb-6">
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <SparklesIcon className="h-5 w-5 text-purple-500 mx-auto mb-1" />
+                  <span className="text-xs text-gray-600">AI Forecasting</span>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <ChartBarIcon className="h-5 w-5 text-blue-500 mx-auto mb-1" />
+                  <span className="text-xs text-gray-600">KPI Analytics</span>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <UserGroupIcon className="h-5 w-5 text-green-500 mx-auto mb-1" />
+                  <span className="text-xs text-gray-600">Segments</span>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <div className="space-x-1">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                    AI Analytics
+                  </span>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    Forecasting
+                  </span>
+                </div>
+
+                <Link
+                  href="/demos/ai-campaign-report"
+                  className="inline-flex items-center px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  View Demo
+                  <ArrowRightIcon className="ml-1.5 h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Basket Analysis Heatmap Demo */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+            <div className="p-6">
+              <div className="flex items-center mb-4">
+                <div className="h-12 w-12 bg-green-100 rounded-full overflow-hidden flex items-center justify-center mr-4">
+                  <svg
+                    className="h-7 w-7 text-green-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                    />
+                  </svg>
+                </div>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Basket Analysis Heatmap
+                </h2>
+              </div>
+
+              <p className="text-gray-600 mb-6 h-20">
+                Interactive product correlation heatmap showing which items are
+                most frequently bought together with strategic recommendations
+                for bundling and placement.
+              </p>
+
+              <div className="grid grid-cols-3 gap-2 mb-6">
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <svg
+                    className="h-5 w-5 text-green-500 mx-auto mb-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"
+                    />
+                  </svg>
+                  <span className="text-xs text-gray-600">Heatmap</span>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <ShoppingCartIcon className="h-5 w-5 text-blue-500 mx-auto mb-1" />
+                  <span className="text-xs text-gray-600">Co-Purchase</span>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <SparklesIcon className="h-5 w-5 text-yellow-500 mx-auto mb-1" />
+                  <span className="text-xs text-gray-600">Insights</span>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <div className="space-x-1">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Analytics
+                  </span>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                    Recommendations
+                  </span>
+                </div>
+
+                <Link
+                  href="/demos/basket-analysis-heatmap"
+                  className="inline-flex items-center px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  View Demo
+                  <ArrowRightIcon className="ml-1.5 h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Optimal Offer Engine Demo */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+            <div className="p-6">
+              <div className="flex items-center mb-4">
+                <div className="h-12 w-12 bg-blue-100 rounded-full overflow-hidden flex items-center justify-center mr-4">
+                  <svg
+                    className="h-7 w-7 text-blue-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
+                  </svg>
+                </div>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Optimal Offer Engine
+                </h2>
+              </div>
+
+              <p className="text-gray-600 mb-6 h-20">
+                AI-powered campaign recommendation engine that analyzes your
+                goals and audience to suggest the optimal offer type with
+                confidence scoring and ROI predictions.
+              </p>
+
+              <div className="grid grid-cols-3 gap-2 mb-6">
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <SparklesIcon className="h-5 w-5 text-blue-500 mx-auto mb-1" />
+                  <span className="text-xs text-gray-600">AI Engine</span>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <CurrencyDollarIcon className="h-5 w-5 text-green-500 mx-auto mb-1" />
+                  <span className="text-xs text-gray-600">ROI Prediction</span>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <svg
+                    className="h-5 w-5 text-purple-500 mx-auto mb-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                    />
+                  </svg>
+                  <span className="text-xs text-gray-600">Confidence</span>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <div className="space-x-1">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    AI Optimization
+                  </span>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                    Campaign Tool
+                  </span>
+                </div>
+
+                <Link
+                  href="/demos/optimal-offer-engine"
+                  className="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  View Demo
+                  <ArrowRightIcon className="ml-1.5 h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="mt-16 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
