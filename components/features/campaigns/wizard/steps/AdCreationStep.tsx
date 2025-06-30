@@ -818,32 +818,36 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
             </div>
           </div>
 
-          {/* Media Type Options - Updated for multiple selection */}
-          <div>
-            <Label className="text-sm mb-4 block font-medium text-slate-600">
-              Media Types* (Select multiple)
-            </Label>
-            <div className="grid grid-cols-3 gap-4 items-start">
-              {mediaTypes.map((type) => (
-                <div
-                  key={type.id}
-                  className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 h-[88px] flex flex-col ${
-                    currentAd.mediaTypes.includes(type.id)
-                      ? "border-primary"
-                      : "border-input hover:border-primary/50 hover:bg-accent"
-                  }`}
-                  onClick={() => handleMediaTypeChange(type.id)}
-                >
-                  <div className="text-sm font-medium mb-2 flex-shrink-0 text-foreground">
-                    {type.label}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    {type.dimensions}
-                  </div>
+          {/* Media Type Options - Conditionally rendered when ad name, merchant, and offer are filled */}
+          {currentAd.name.trim() &&
+            currentAd.merchantId &&
+            currentAd.offerId && (
+              <div>
+                <Label className="text-sm mb-4 block font-medium text-slate-600">
+                  Media Types* (Select multiple)
+                </Label>
+                <div className="grid grid-cols-3 gap-4 items-start">
+                  {mediaTypes.map((type) => (
+                    <div
+                      key={type.id}
+                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 h-[88px] flex flex-col ${
+                        currentAd.mediaTypes.includes(type.id)
+                          ? "border-primary"
+                          : "border-input hover:border-primary/50 hover:bg-accent"
+                      }`}
+                      onClick={() => handleMediaTypeChange(type.id)}
+                    >
+                      <div className="text-sm font-medium mb-2 flex-shrink-0 text-foreground">
+                        {type.label}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {type.dimensions}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
+            )}
 
           {/* Upload Sections - Per Media Type */}
           {currentAd.merchantId &&

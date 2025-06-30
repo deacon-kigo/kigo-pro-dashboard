@@ -3,15 +3,12 @@
 import React, { useEffect, useCallback, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { RootState } from "@/lib/redux/store";
 
 import Card from "@/components/atoms/Card/Card";
 import { Button } from "@/components/atoms/Button";
 import {
-  CAMPAIGN_STEPS,
-  setCurrentStep,
-  setStepValidation,
   resetCampaign,
   addAd,
   updateAd,
@@ -19,11 +16,9 @@ import {
   addMediaToAd,
   removeMediaFromAd,
 } from "@/lib/redux/slices/campaignSlice";
-import StepProgressHeader from "./StepProgressHeader";
 import { setCampaignContext } from "@/lib/redux/slices/ai-assistantSlice";
 import { CampaignAnalyticsPanelLite } from "../CampaignAnalyticsPanelLite";
 import PageHeader from "@/components/molecules/PageHeader/PageHeader";
-import { v4 as uuidv4 } from "uuid";
 
 // Import step components
 import AdCreationStep from "./steps/AdCreationStep";
@@ -33,7 +28,7 @@ const AdvertisementWizard: React.FC = () => {
   const dispatch = useDispatch();
 
   // Get campaign state from Redux
-  const { currentStep, formData, stepValidation, isGenerating } = useSelector(
+  const { formData, isGenerating } = useSelector(
     (state: RootState) => state.campaign
   );
 
@@ -84,14 +79,6 @@ const AdvertisementWizard: React.FC = () => {
     []
   );
 
-  // Navigation handlers
-  const handleStepChange = useCallback(
-    (step: number) => {
-      dispatch(setCurrentStep(step));
-    },
-    [dispatch]
-  );
-
   const handleCreateAd = useCallback(() => {
     // Handle ad creation
     console.log("Create advertisement with data:", formData);
@@ -102,19 +89,6 @@ const AdvertisementWizard: React.FC = () => {
       router.push("/campaign-manager");
     }, 1000);
   }, [formData, router]);
-
-  const handlePrevious = useCallback(() => {
-    if (currentStep > 0) {
-      dispatch(setCurrentStep(currentStep - 1));
-    }
-  }, [currentStep, dispatch]);
-
-  // Animation variants
-  const contentVariants = {
-    initial: { opacity: 0, x: 20 },
-    animate: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -20 },
-  };
 
   // Handle ad-related actions
   const handleAddAd = useCallback(
@@ -152,32 +126,6 @@ const AdvertisementWizard: React.FC = () => {
     [dispatch]
   );
 
-  // Render the appropriate step content
-  const renderStepContent = () => {
-    switch (CAMPAIGN_STEPS[currentStep].id) {
-      case "ad-creation":
-        return (
-          <AdCreationStep
-            ads={formData.ads}
-            addAd={handleAddAd}
-            updateAd={handleUpdateAd}
-            removeAd={handleRemoveAd}
-            addMediaToAd={handleAddMediaToAd}
-            removeMediaFromAd={handleRemoveMediaFromAd}
-            setStepValidation={(isValid) =>
-              dispatch(setStepValidation({ step: "ad-creation", isValid }))
-            }
-            onCurrentAdChange={handleCurrentAdChange}
-            onAssetUploadRef={assetUploadRef}
-            onAssetRemoveRef={assetRemoveRef}
-            onCreateAd={handleCreateAd}
-          />
-        );
-      default:
-        return null;
-    }
-  };
-
   // Create back button
   const backButton = (
     <Button
@@ -210,7 +158,7 @@ const AdvertisementWizard: React.FC = () => {
       <div className="flex-shrink-0">
         <PageHeader
           title="Create Ads"
-          description="Design and launch your advertisement in a few steps."
+          description="Design and launch your advertisement."
           emoji="📊"
           actions={backButton}
           variant="aurora"
@@ -225,29 +173,23 @@ const AdvertisementWizard: React.FC = () => {
           {/* Left Column - Ad Creation Form */}
           <div className="w-3/5 h-full flex flex-col">
             <Card className="p-0 flex flex-col h-full overflow-hidden shadow-md">
-              {/* Step indicator header */}
-              <StepProgressHeader
-                currentStep={currentStep}
-                stepValidation={stepValidation}
-                onStepClick={handleStepChange}
-                className="flex-shrink-0"
-              />
-
-              {/* Step content with animation - Make sure it's scrollable */}
+              {/* Ad Creation Form - Direct render without steps */}
               <div className="flex-1 overflow-auto">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={CAMPAIGN_STEPS[currentStep].id}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    variants={contentVariants}
-                    transition={{ duration: 0.3 }}
-                    className="p-3"
-                  >
-                    {renderStepContent()}
-                  </motion.div>
-                </AnimatePresence>
+                <div className="p-3">
+                  <AdCreationStep
+                    ads={formData.ads}
+                    addAd={handleAddAd}
+                    updateAd={handleUpdateAd}
+                    removeAd={handleRemoveAd}
+                    addMediaToAd={handleAddMediaToAd}
+                    removeMediaFromAd={handleRemoveMediaFromAd}
+                    setStepValidation={() => {}} // No-op since we removed steps
+                    onCurrentAdChange={handleCurrentAdChange}
+                    onAssetUploadRef={assetUploadRef}
+                    onAssetRemoveRef={assetRemoveRef}
+                    onCreateAd={handleCreateAd}
+                  />
+                </div>
               </div>
             </Card>
           </div>
