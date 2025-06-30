@@ -6,7 +6,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   HomeIcon,
-  RocketLaunchIcon,
+  MegaphoneIcon,
   ChartBarIcon,
   UserGroupIcon,
   Cog6ToothIcon,
@@ -190,45 +190,16 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     [pathname, isCVSContextBool]
   );
 
-  // Memoize campaign submenu items to prevent recreation on each render
-  const campaignSubmenuItems = useMemo((): SubmenuItem[] => {
-    // Check if we're in the publisher dashboard view
-    const isPublisherDashboard = pathname.includes("/publisher-dashboard");
-
+  // Memoize ad manager submenu items to prevent recreation on each render
+  const adManagerSubmenuItems = useMemo((): SubmenuItem[] => {
     return [
       {
-        href: "/campaigns",
-        title: isPublisherDashboard ? "All Program Campaigns" : "All Campaigns",
-        isActive: pathname === "/campaigns",
-      },
-      {
-        href: "/campaigns/active",
-        title: isPublisherDashboard
-          ? "Active Program Campaigns"
-          : "Active Campaigns",
-        isActive: pathname === "/campaigns/active",
+        href: "/campaign-manager/ads-create",
+        title: "Create Ads",
+        isActive: pathname.includes("/campaign-manager/ads-create"),
       },
     ];
   }, [pathname]);
-
-  // Memoize dashboard submenu items (when in campaign manager view)
-  const dashboardSubmenuItems = useMemo((): SubmenuItem[] => {
-    // Only show the submenu when in campaign manager view
-    if (!isCampaignManagerView) return [];
-
-    return [
-      {
-        href: "/campaign-manager",
-        title: "Main Dashboard",
-        isActive: pathname === "/campaign-manager",
-      },
-      {
-        href: "/campaign-manager/publisher-dashboard",
-        title: "Publisher / Advertiser Campaigns",
-        isActive: pathname === "/campaign-manager/publisher-dashboard",
-      },
-    ];
-  }, [pathname, isCampaignManagerView]);
 
   // Memoize navigation items based on context and role
   const navigationItems = useMemo(() => {
@@ -312,23 +283,19 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 title="Dashboard"
                 isActive={isLinkActive("/campaign-manager")}
                 isCollapsed={sidebarCollapsed}
-                hasSubmenu={
-                  isCampaignManagerView && dashboardSubmenuItems.length > 0
-                }
-                submenuItems={dashboardSubmenuItems}
-                isSubmenuOpen={openSubmenus.dashboard}
-                onToggleSubmenu={() => toggleSubmenu("dashboard")}
               />
             </li>
             <li className="nav-item px-3 py-1">
               <SidebarLabel
                 href="/campaigns"
-                icon={RocketLaunchIcon}
-                title={isPublisherDashboard ? "Program Campaigns" : "Campaigns"}
+                icon={MegaphoneIcon}
+                title={
+                  isPublisherDashboard ? "Program Ads Manager" : "Ads Manager"
+                }
                 isActive={isLinkActive("/campaigns")}
                 isCollapsed={sidebarCollapsed}
                 hasSubmenu={true}
-                submenuItems={campaignSubmenuItems}
+                submenuItems={adManagerSubmenuItems}
                 isSubmenuOpen={openSubmenus.campaigns}
                 onToggleSubmenu={() => toggleSubmenu("campaigns")}
               />
@@ -400,12 +367,14 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
             <li className="nav-item px-3 py-1">
               <SidebarLabel
                 href="/campaigns"
-                icon={RocketLaunchIcon}
-                title={isPublisherDashboard ? "Program Campaigns" : "Campaigns"}
+                icon={MegaphoneIcon}
+                title={
+                  isPublisherDashboard ? "Program Ads Manager" : "Ads Manager"
+                }
                 isActive={isLinkActive("/campaigns")}
                 isCollapsed={sidebarCollapsed}
                 hasSubmenu={true}
-                submenuItems={campaignSubmenuItems}
+                submenuItems={adManagerSubmenuItems}
                 isSubmenuOpen={openSubmenus.campaigns}
                 onToggleSubmenu={() => toggleSubmenu("campaigns")}
               />
@@ -443,16 +412,14 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         return null;
     }
   }, [
-    isCampaignManagerView,
     isCVSContextBool,
     role,
     sidebarCollapsed,
     isLinkActive,
-    campaignSubmenuItems,
+    adManagerSubmenuItems,
     openSubmenus.campaigns,
     openSubmenus.dashboard,
     toggleSubmenu,
-    dashboardSubmenuItems,
   ]);
 
   // Memoize the role title

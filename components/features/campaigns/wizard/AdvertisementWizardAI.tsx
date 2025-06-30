@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { RootState } from "@/lib/redux/store";
 import { AIAssistantPanel } from "@/components/features/ai";
 import Card from "@/components/atoms/Card/Card";
+import { Button } from "@/components/atoms/Button";
 import {
   CAMPAIGN_STEPS,
   setCurrentStep,
@@ -264,9 +265,11 @@ const AdvertisementWizardAI: React.FC = () => {
 
   // Create back button
   const backButton = (
-    <button
+    <Button
+      variant="outline"
+      size="sm"
       onClick={() => router.push("/campaign-manager")}
-      className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+      className="flex items-center gap-1"
     >
       <svg
         width="16"
@@ -283,8 +286,8 @@ const AdvertisementWizardAI: React.FC = () => {
           strokeLinejoin="round"
         />
       </svg>
-      Back to Campaign Manager
-    </button>
+      Back to Ads Manager
+    </Button>
   );
 
   // Get analytics values
@@ -294,7 +297,7 @@ const AdvertisementWizardAI: React.FC = () => {
     <div className="space-y-6 h-full flex flex-col">
       <div className="flex-shrink-0">
         <PageHeader
-          title="Create Advertisement Campaign (AI)"
+          title="Create Ads (AI)"
           description="Design and launch your advertisement campaign in a few steps."
           emoji="📊"
           actions={backButton}

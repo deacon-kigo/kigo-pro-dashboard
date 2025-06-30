@@ -181,10 +181,10 @@ const AdvertisementWizard: React.FC = () => {
   // Create back button
   const backButton = (
     <Button
-      variant="secondary"
+      variant="outline"
       size="sm"
       onClick={() => router.push("/campaign-manager")}
-      className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+      className="flex items-center gap-1"
     >
       <svg
         width="16"
@@ -201,7 +201,7 @@ const AdvertisementWizard: React.FC = () => {
           strokeLinejoin="round"
         />
       </svg>
-      Back to Campaign Manager
+      Back to Ads Manager
     </Button>
   );
 

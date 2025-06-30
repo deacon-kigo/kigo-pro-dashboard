@@ -298,14 +298,14 @@ export default function AdvertisementCampaignCreationContent() {
       className="flex items-center gap-1"
     >
       <ArrowLeftIcon className="h-4 w-4" />
-      Back to Campaigns
+      Back to Ads Manager
     </Button>
   );
 
   return (
     <div className="space-y-2 h-full flex flex-col">
       <PageHeader
-        title="Create Advertisement Campaign"
+        title="Create Ads"
         description="Design and configure your advertisement campaign in one place."
         emoji="📊"
         actions={backButton}
