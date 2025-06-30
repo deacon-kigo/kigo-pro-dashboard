@@ -180,7 +180,7 @@ export function AdPreviewModal({
                   onClick={() => setCurrentAdIndex(index)}
                   className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
                     index === currentAdIndex
-                      ? "border-blue-500 text-blue-600 bg-blue-50"
+                      ? "border-slate-600 text-slate-900 bg-slate-50"
                       : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
@@ -193,34 +193,33 @@ export function AdPreviewModal({
 
         <div className="space-y-4">
           {/* Campaign Summary Card */}
-          <Card className="border border-slate-200">
-            <div className="border-b border-slate-200 px-3 py-2 bg-slate-50">
-              <div className="flex items-center">
-                <div className="h-4 w-4 rounded-sm flex items-center justify-center bg-slate-600 text-white mr-2">
-                  <Plus className="h-2.5 w-2.5" />
-                </div>
-                <h3 className="text-xs font-medium text-slate-700">
-                  {adsToShow.length > 1 ? "Campaign Summary" : "Ad Summary"}
-                </h3>
-              </div>
-            </div>
+          <Card className="border border-slate-200 p-0">
             <div className="p-3">
+              <h3 className="text-base font-semibold text-slate-900 mb-3">
+                {adsToShow.length > 1 ? "Campaign Summary" : "Ad Summary"}
+              </h3>
               {adsToShow.length > 1 ? (
                 /* Multiple ads - show aggregated data */
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs text-slate-600">Total Ads</Label>
-                    <p className="font-medium">{adsToShow.length}</p>
+                    <Label className="text-sm text-slate-600 font-medium">
+                      Total Ads
+                    </Label>
+                    <p className="text-sm font-medium text-slate-900 mt-1">
+                      {adsToShow.length}
+                    </p>
                   </div>
                   <div>
-                    <Label className="text-xs text-slate-600">Merchants</Label>
-                    <p className="font-medium">
+                    <Label className="text-sm text-slate-600 font-medium">
+                      Merchants
+                    </Label>
+                    <p className="text-sm font-medium text-slate-900 mt-1">
                       {new Set(adsToShow.map((ad) => ad.merchantName)).size}{" "}
                       unique
                     </p>
                   </div>
                   <div>
-                    <Label className="text-xs text-slate-600">
+                    <Label className="text-sm text-slate-600 font-medium">
                       Media Types
                     </Label>
                     <div className="flex flex-wrap gap-1 mt-1">
@@ -234,10 +233,10 @@ export function AdPreviewModal({
                     </div>
                   </div>
                   <div>
-                    <Label className="text-xs text-slate-600">
+                    <Label className="text-sm text-slate-600 font-medium">
                       Total Assets
                     </Label>
-                    <p className="font-medium">
+                    <p className="text-sm font-medium text-slate-900 mt-1">
                       {adsToShow.reduce((total, ad) => {
                         return (
                           total +
@@ -253,14 +252,20 @@ export function AdPreviewModal({
                 </div>
               ) : (
                 /* Single ad - show specific data */
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs text-slate-600">Merchant</Label>
-                    <p className="font-medium">{currentAd.merchantName}</p>
+                    <Label className="text-sm text-slate-600 font-medium">
+                      Merchant
+                    </Label>
+                    <p className="text-sm font-medium text-slate-900 mt-1">
+                      {currentAd.merchantName}
+                    </p>
                   </div>
                   <div>
-                    <Label className="text-xs text-slate-600">Offer</Label>
-                    <p className="font-medium">
+                    <Label className="text-sm text-slate-600 font-medium">
+                      Offer
+                    </Label>
+                    <p className="text-sm font-medium text-slate-900 mt-1">
                       {offers?.find((offer) => offer.id === currentAd.offerId)
                         ?.name ||
                         getPromotionText?.(currentAd.offerId) ||
@@ -268,7 +273,7 @@ export function AdPreviewModal({
                     </p>
                   </div>
                   <div>
-                    <Label className="text-xs text-slate-600">
+                    <Label className="text-sm text-slate-600 font-medium">
                       Media Types
                     </Label>
                     <div className="flex flex-wrap gap-1 mt-1">
@@ -280,10 +285,10 @@ export function AdPreviewModal({
                     </div>
                   </div>
                   <div>
-                    <Label className="text-xs text-slate-600">
+                    <Label className="text-sm text-slate-600 font-medium">
                       Total Assets
                     </Label>
-                    <p className="font-medium">
+                    <p className="text-sm font-medium text-slate-900 mt-1">
                       {Object.values(currentAdMediaAssetsByType).flat().length}{" "}
                       uploaded
                     </p>
@@ -302,58 +307,63 @@ export function AdPreviewModal({
               const firstAsset = mediaTypeAssets[0];
 
               return (
-                <Card key={mediaType.id} className="border border-slate-200">
-                  <div className="border-b border-slate-200 px-3 py-2 bg-blue-50">
-                    <div className="flex items-center justify-between">
+                <Card
+                  key={mediaType.id}
+                  className="border border-slate-200 p-0"
+                >
+                  <div className="p-3">
+                    <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center">
-                        <div className="h-4 w-4 rounded-sm flex items-center justify-center bg-blue-600 text-white mr-2">
-                          <ImagePlus className="h-2.5 w-2.5" />
-                        </div>
-                        <h3 className="text-xs font-medium text-blue-800">
+                        <h3 className="text-base font-semibold text-slate-900">
                           {mediaType.label}
                         </h3>
                         <Badge variant="outline" className="text-xs ml-2">
                           {mediaType.dimensions}
                         </Badge>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          variant={
-                            mediaTypeAssets.length > 0
-                              ? "default"
-                              : "destructive"
-                          }
-                          className="text-xs"
-                        >
-                          {mediaTypeAssets.length > 0
-                            ? "Asset uploaded"
-                            : "No asset"}
-                        </Badge>
-                        {mediaTypeAssets.length > 0 && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => exportAsset(mediaType.id)}
-                            className="h-6 text-xs px-2"
-                          >
-                            <Download className="h-2.5 w-2.5 mr-1" />
-                            Export
-                          </Button>
-                        )}
-                      </div>
+                      <Badge
+                        variant={
+                          mediaTypeAssets.length > 0 ? "default" : "destructive"
+                        }
+                        className="text-xs"
+                      >
+                        {mediaTypeAssets.length > 0
+                          ? "Asset uploaded"
+                          : "No asset"}
+                      </Badge>
                     </div>
-                  </div>
 
-                  <div className="p-3">
-                    <div className="grid grid-cols-2 gap-4 h-full">
-                      {/* Left: Preview */}
-                      <div className="flex flex-col">
-                        <Label className="text-xs mb-2 block font-medium text-slate-600">
+                    <div
+                      className={`grid gap-4 ${
+                        mediaType.id === "display_banner"
+                          ? "grid-cols-3"
+                          : "grid-cols-2"
+                      }`}
+                    >
+                      {/* Preview Section */}
+                      <div
+                        className={`flex flex-col ${
+                          mediaType.id === "display_banner" ? "col-span-2" : ""
+                        }`}
+                      >
+                        <Label className="text-sm mb-2 block font-medium text-slate-600">
                           Preview
                         </Label>
-                        <div className="bg-slate-50 border rounded-lg p-4 flex justify-center min-h-[200px] items-center flex-1">
+                        <div
+                          className={`bg-slate-50 border rounded-lg p-3 flex justify-center items-center flex-1 ${
+                            mediaType.id === "display_banner"
+                              ? "min-h-[200px]"
+                              : "min-h-[180px]"
+                          }`}
+                        >
                           {mediaTypeAssets.length > 0 ? (
-                            <div className="max-w-full">
+                            <div
+                              className={
+                                mediaType.id === "display_banner"
+                                  ? "w-full"
+                                  : "max-w-full"
+                              }
+                            >
                               <PromotionWidget
                                 merchantLogo={
                                   getMerchantLogo?.(currentAd.offerId) || ""
@@ -371,23 +381,23 @@ export function AdPreviewModal({
                             </div>
                           ) : (
                             <div className="text-center text-slate-500">
-                              <ImagePlus className="h-8 w-8 mx-auto mb-2 text-slate-400" />
-                              <p className="text-sm">No asset uploaded</p>
+                              <ImagePlus className="h-6 w-6 mx-auto mb-2 text-slate-400" />
+                              <p className="text-xs">No asset uploaded</p>
                             </div>
                           )}
                         </div>
                       </div>
 
-                      {/* Right: Asset Management */}
+                      {/* Asset Management Section */}
                       <div className="flex flex-col">
                         <div className="flex items-center justify-between mb-2">
-                          <Label className="text-xs block font-medium text-slate-600">
+                          <Label className="text-sm block font-medium text-slate-600">
                             Asset Management
                           </Label>
                           {!allowEditing && (
                             <Badge
                               variant="outline"
-                              className="text-xs text-blue-600"
+                              className="text-xs text-slate-600"
                             >
                               View Only
                             </Badge>
@@ -399,9 +409,9 @@ export function AdPreviewModal({
                             {mediaTypeAssets.length === 0 ? (
                               /* Upload Section */
                               <div
-                                className={`border-2 border-dashed rounded p-4 transition-colors flex-1 flex items-center justify-center ${
+                                className={`border-2 border-dashed rounded-lg p-4 transition-colors flex-1 flex items-center justify-center ${
                                   draggedMediaType === mediaType.id
-                                    ? "border-blue-400 bg-blue-50"
+                                    ? "border-slate-400 bg-slate-50"
                                     : "border-slate-300 hover:border-slate-400"
                                 }`}
                                 onDragOver={(e) => {
@@ -413,11 +423,11 @@ export function AdPreviewModal({
                               >
                                 <div className="flex flex-col items-center justify-center text-center w-full">
                                   <ImagePlus className="h-6 w-6 text-slate-400 mb-2" />
-                                  <p className="text-sm font-medium mb-1 text-slate-600">
+                                  <p className="text-sm font-medium mb-2 text-slate-600">
                                     Upload Asset
                                   </p>
                                   <p className="text-xs text-slate-500 mb-3">
-                                    JPG or PNG (max file size: 10MB)
+                                    JPG or PNG (max 10MB)
                                   </p>
                                   <input
                                     type="file"
@@ -430,7 +440,7 @@ export function AdPreviewModal({
                                   />
                                   <Button
                                     size="sm"
-                                    className="h-7 text-xs px-3"
+                                    className="h-7 text-sm px-3"
                                     disabled={!allowEditing}
                                     onClick={() =>
                                       document
@@ -449,10 +459,10 @@ export function AdPreviewModal({
                               </div>
                             ) : (
                               /* Asset Display with Replace Option */
-                              <div className="space-y-3 flex-1 flex flex-col">
+                              <div className="space-y-2 flex-1 flex flex-col">
                                 <div className="flex items-center justify-between py-2 px-3 bg-slate-50 rounded border">
                                   <div className="flex items-center">
-                                    <div className="h-10 w-10 bg-slate-100 rounded overflow-hidden mr-3">
+                                    <div className="h-10 w-10 bg-slate-100 rounded overflow-hidden mr-2">
                                       <img
                                         src={firstAsset.previewUrl}
                                         alt={firstAsset.name}
@@ -460,7 +470,7 @@ export function AdPreviewModal({
                                       />
                                     </div>
                                     <div>
-                                      <p className="text-xs font-medium text-slate-700">
+                                      <p className="text-sm font-medium text-slate-700">
                                         {firstAsset.name}
                                       </p>
                                       <p className="text-xs text-slate-500">
@@ -479,7 +489,7 @@ export function AdPreviewModal({
                                           firstAsset.id
                                         )
                                       }
-                                      className="h-7 w-7 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 disabled:text-slate-400"
+                                      className="h-6 w-6 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 disabled:text-slate-400"
                                       title={
                                         !allowEditing
                                           ? "View only mode"
@@ -492,7 +502,7 @@ export function AdPreviewModal({
                                 </div>
 
                                 {/* Replace Asset Option */}
-                                <div className="border-t border-slate-200 pt-3 mt-auto">
+                                <div className="border-t border-slate-200 pt-2 mt-auto">
                                   <input
                                     type="file"
                                     id={`fileReplace-${mediaType.id}`}
@@ -506,7 +516,7 @@ export function AdPreviewModal({
                                     variant="outline"
                                     size="sm"
                                     disabled={!allowEditing}
-                                    className="w-full h-7 text-xs border-dashed border-blue-300 text-blue-600 hover:bg-blue-50 disabled:text-slate-400 disabled:border-slate-300"
+                                    className="w-full h-7 text-sm border-dashed border-slate-300 text-slate-600 hover:bg-slate-50 disabled:text-slate-400 disabled:border-slate-300"
                                     onClick={() =>
                                       document
                                         .getElementById(
@@ -528,7 +538,7 @@ export function AdPreviewModal({
                           <div className="flex items-center justify-center bg-slate-50 border rounded p-4 flex-1">
                             <div className="flex items-center text-sm">
                               <Plus className="h-4 w-4 text-green-500 mr-2" />
-                              <span className="text-xs text-slate-600">
+                              <span className="text-sm text-slate-600">
                                 Native format uses merchant logo - no upload
                                 required
                               </span>

@@ -762,7 +762,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                   setCurrentAd({ ...currentAd, name: e.target.value })
                 }
                 placeholder="Enter ad name..."
-                className="w-full h-8 border-slate-300 hover:border-blue-400 focus:border-blue-500 shadow-sm text-xs text-text-dark placeholder:text-text-muted"
+                className="w-full"
               />
             </div>
 
@@ -781,7 +781,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                 searchPlaceholder="Type to search merchants..."
                 emptyText="No merchants found"
                 searchFirst={true}
-                className="w-full h-8 border-slate-300 hover:border-blue-400 focus:border-blue-500 shadow-sm text-xs text-text-dark placeholder:text-text-muted"
+                className="w-full"
               />
             </div>
 
@@ -801,13 +801,14 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                   searchPlaceholder="Search offers..."
                   emptyText="No offers found"
                   maxDisplayItems={10}
-                  className="w-full h-8 border-slate-300 hover:border-blue-400 focus:border-blue-500 shadow-sm text-xs text-text-dark placeholder:text-text-muted"
+                  searchFirst={true}
+                  className="w-full"
                 />
               ) : (
                 <div className="w-full [&>div]:flex [&>div]:w-full">
                   <Button
                     variant="outline"
-                    className="w-full h-8 text-slate-500 justify-start font-normal border-slate-200 text-xs"
+                    className="w-full text-muted-foreground justify-start font-normal"
                     disabled
                   >
                     Select a merchant first

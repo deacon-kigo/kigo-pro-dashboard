@@ -23,11 +23,11 @@ const CustomWalletIcon = ({
         width: 48,
         height: 48,
         borderRadius: "50%",
-        border: "2px solid white",
+        border: "2px solid #E6E7FF",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "transparent",
+        backgroundColor: "rgba(0, 0, 0, 0.3)",
         "& svg path": {
           fill: "white",
         },
@@ -48,7 +48,7 @@ const CustomWalletIcon = ({
   );
 };
 
-type TallOfferCardProps = {
+type DisplayBannerCardProps = {
   imageUrl: string;
   title: string;
   subTitle: string;
@@ -61,7 +61,7 @@ type TallOfferCardProps = {
   customIconUrl?: string;
 };
 
-export const TallOfferCard = ({
+export const DisplayBannerCard = ({
   imageUrl,
   title,
   subTitle,
@@ -72,7 +72,7 @@ export const TallOfferCard = ({
   distanceFromUser,
   onAddToWalletClick,
   customIconUrl,
-}: TallOfferCardProps) => {
+}: DisplayBannerCardProps) => {
   const [loading, setLoading] = useState(false);
 
   const handleAddToWallet = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -99,8 +99,8 @@ export const TallOfferCard = ({
       borderRadius: "20px",
       height: "100%",
       width: "100%",
-      minHeight: "200px",
-      maxHeight: "200px",
+      minHeight: "150px",
+      maxHeight: "150px",
       background: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${imageUrl})`,
       backgroundSize: "cover",
       backgroundPosition: "center",
@@ -121,16 +121,16 @@ export const TallOfferCard = ({
       position: "relative",
     },
     logoContainer: {
-      paddingTop: isMobile ? "20px" : "25px",
-      marginBottom: 2,
+      paddingTop: isMobile ? "15px" : "20px",
+      marginBottom: 1,
     },
     logoBox: {
-      width: isMobile ? "50px" : "60px",
-      height: isMobile ? "50px" : "60px",
+      width: isMobile ? "45px" : "50px",
+      height: isMobile ? "45px" : "50px",
       borderRadius: "50%",
       backgroundColor: "white",
       overflow: "hidden",
-      padding: "10px",
+      padding: "8px",
     },
     logoImage: {
       width: "100%",
@@ -141,7 +141,7 @@ export const TallOfferCard = ({
       display: "flex",
       flexDirection: "column",
       flexGrow: 1,
-      maxWidth: isMobile ? "250px" : "70%",
+      maxWidth: isMobile ? "200px" : "70%",
     },
     title: {
       textAlign: "left",
@@ -152,21 +152,21 @@ export const TallOfferCard = ({
     },
     chipContainer: {
       position: "absolute",
-      top: 15,
-      left: 15,
+      top: 10,
+      left: 10,
     },
     addToWalletButton: {
       position: "absolute",
       bottom: 15,
       right: 15,
-      border: "2px solid white",
+      border: "2px solid #E6E7FF",
       borderRadius: "50%",
       width: "48px",
       height: "48px",
       boxSizing: "border-box",
       zIndex: 2,
       cursor: isAddedToWallet ? "default" : "pointer",
-      backgroundColor: "transparent",
+      backgroundColor: "rgba(0, 0, 0, 0.3)",
     },
     addToWalletButtonIcon: {
       display: "flex",
@@ -182,7 +182,7 @@ export const TallOfferCard = ({
       onClick={onClick}
       disabled={loading}
       sx={styles.container}
-      data-testid="tall-offer-card-double-decker"
+      data-testid="display-banner-card"
     >
       <Box sx={styles.contentWrapper}>
         {/* Featured chip at top left */}
@@ -222,27 +222,28 @@ export const TallOfferCard = ({
         {/* Text content */}
         <Box sx={styles.textContainer}>
           <Typography
+            variant="body2"
+            color="white"
+            sx={{
+              ...styles.title,
+              fontWeight: "bold",
+              fontSize: isMobile ? "13px" : "14px",
+              lineHeight: 1.2,
+            }}
+          >
+            {subTitle}
+          </Typography>
+          <Typography
             variant="h6"
             color="white"
             sx={{
               ...styles.description,
-              fontWeight: "bold",
               fontSize: isMobile ? "16px" : "18px",
-              lineHeight: 1.2,
-            }}
-          >
-            {title}
-          </Typography>
-          <Typography
-            variant="body1"
-            color="white"
-            sx={{
-              ...styles.title,
-              fontSize: isMobile ? "14px" : "16px",
+              fontWeight: "bold",
               mt: 0.5,
             }}
           >
-            {subTitle}
+            {truncateText(title, isMobile ? 35 : 50)}
           </Typography>
           {distanceFromUser !== undefined &&
             distanceFromUser !== null &&
@@ -251,7 +252,7 @@ export const TallOfferCard = ({
                 variant="body2"
                 color="white"
                 sx={{
-                  fontSize: "12px",
+                  fontSize: "11px",
                   mt: 0.5,
                 }}
               >

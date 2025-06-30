@@ -265,12 +265,12 @@ export function CampaignCompletionChecklist({
                     className="bg-white rounded border p-3 hover:bg-slate-50 cursor-pointer transition-colors group"
                     onClick={() => handleLivePreviewClick(mediaType)}
                   >
-                    <div className="flex gap-3">
-                      <div className="w-12 h-8 bg-slate-100 rounded overflow-hidden flex-shrink-0">
-                        <div
-                          className="transform scale-[0.3] origin-top-left"
-                          style={{ width: "333%", height: "333%" }}
-                        >
+                    <div className="flex flex-col gap-3">
+                      <div
+                        className="w-full bg-slate-50 rounded overflow-hidden border border-slate-200"
+                        style={{ minWidth: "400px", maxWidth: "600px" }}
+                      >
+                        <div className="w-full">
                           <PromotionWidget
                             merchantLogo={
                               currentAdData.offers?.find(

@@ -137,11 +137,7 @@ export function Combobox({
     if (option) {
       onChange(option.value);
       setOpen(false);
-      if (searchFirst) {
-        setSearchQuery(""); // Clear search in searchFirst mode
-      } else {
-        setSearchQuery("");
-      }
+      setSearchQuery(""); // Clear search query to show selected value
     }
   };
 
@@ -160,11 +156,27 @@ export function Combobox({
 
   // Handle input change for searchFirst mode
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
+    const newValue = e.target.value;
+    setSearchQuery(newValue);
+
+    // If user is typing and we have a selected value, clear it to enable search
+    if (
+      newValue &&
+      value &&
+      selectedOption &&
+      newValue !== selectedOption.label
+    ) {
+      onChange("");
+    }
   };
 
   // Handle input focus for searchFirst mode
   const handleInputFocus = () => {
+    // If there's a selected value, select all text for easy replacement
+    if (selectedOption && !searchQuery && inputRef.current) {
+      inputRef.current.select();
+    }
+
     if (searchFirst && searchQuery.trim().length > 0) {
       setOpen(true);
     }
@@ -194,15 +206,13 @@ export function Combobox({
         <input
           ref={inputRef}
           type="text"
-          value={searchQuery}
+          value={searchQuery || (selectedOption ? selectedOption.label : "")}
           onChange={handleInputChange}
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
-          placeholder={selectedOption ? selectedOption.label : placeholder}
+          placeholder={placeholder}
           className={cn(
-            "w-full px-3 py-2 pr-8 text-sm border border-gray-300 rounded-md bg-white",
-            "focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none",
-            "placeholder:text-text-muted text-text-dark",
+            "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-8 text-base text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
             className
           )}
         />
@@ -211,7 +221,7 @@ export function Combobox({
         {open && (
           <div
             className={cn(
-              "absolute z-50 mt-1 w-full p-0 border border-gray-300 rounded-md bg-white shadow-md",
+              "absolute z-50 mt-1 w-full p-0 border border-input rounded-md bg-background shadow-md",
               popoverClassName
             )}
             onMouseDown={(e) => e.preventDefault()} // Prevent blur when clicking in dropdown
@@ -222,7 +232,7 @@ export function Combobox({
               onValueChange={handleSelect}
             >
               <CommandList>
-                <CommandEmpty className="py-6 px-4 text-center text-text-muted text-sm">
+                <CommandEmpty className="py-6 px-4 text-center text-muted-foreground text-sm">
                   {emptyText}
                 </CommandEmpty>
                 <CommandGroup>
@@ -235,11 +245,11 @@ export function Combobox({
                       <CommandItem
                         value={option.value}
                         onSelect={() => handleSelect(option.value)}
-                        className="hover:bg-gray-100 aria-selected:bg-gray-200 aria-selected:text-text-dark text-text-dark"
+                        className="hover:bg-accent hover:text-accent-foreground aria-selected:bg-accent aria-selected:text-accent-foreground"
                       >
                         <Check
                           className={cn(
-                            "mr-2 h-4 w-4 text-blue-600",
+                            "mr-2 h-4 w-4 text-primary",
                             value === option.value ? "opacity-100" : "opacity-0"
                           )}
                         />
@@ -248,7 +258,7 @@ export function Combobox({
                     </div>
                   ))}
                   {hasMoreItems && (
-                    <div className="px-3 py-2 text-xs text-text-muted border-t bg-gray-50">
+                    <div className="px-3 py-2 text-xs text-muted-foreground border-t bg-muted">
                       Showing {filteredOptions.length} of {totalCount} items
                       {!searchQuery && " • Type to search for more"}
                     </div>
@@ -274,8 +284,8 @@ export function Combobox({
           onKeyDown={handleKeyDown}
           onClick={handleTriggerClick}
           className={cn(
-            "w-full justify-between text-sm font-normal bg-white text-text-dark",
-            !value && "text-text-muted",
+            "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-base text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm font-normal",
+            !value && "text-muted-foreground",
             className
           )}
         >
@@ -284,7 +294,7 @@ export function Combobox({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className={cn("p-0 border-gray-300 shadow-md", popoverClassName)}
+        className={cn("p-0 border-input shadow-md", popoverClassName)}
         align="start"
         style={{
           width:
@@ -303,11 +313,11 @@ export function Combobox({
             placeholder={searchPlaceholder}
             value={searchQuery}
             onValueChange={setSearchQuery}
-            className="h-9 text-text-dark font-normal"
+            className="h-9 font-normal"
             autoFocus
           />
           <CommandList>
-            <CommandEmpty className="py-6 px-4 text-center text-text-muted text-sm">
+            <CommandEmpty className="py-6 px-4 text-center text-muted-foreground text-sm">
               {emptyText}
             </CommandEmpty>
             <CommandGroup>
@@ -320,11 +330,11 @@ export function Combobox({
                   <CommandItem
                     value={option.value}
                     onSelect={() => handleSelect(option.value)}
-                    className="hover:bg-gray-100 aria-selected:bg-gray-200 aria-selected:text-text-dark text-text-dark"
+                    className="hover:bg-accent hover:text-accent-foreground aria-selected:bg-accent aria-selected:text-accent-foreground"
                   >
                     <Check
                       className={cn(
-                        "mr-2 h-4 w-4 text-blue-600",
+                        "mr-2 h-4 w-4 text-primary",
                         value === option.value ? "opacity-100" : "opacity-0"
                       )}
                     />
@@ -333,7 +343,7 @@ export function Combobox({
                 </div>
               ))}
               {hasMoreItems && (
-                <div className="px-3 py-2 text-xs text-text-muted border-t bg-gray-50">
+                <div className="px-3 py-2 text-xs text-muted-foreground border-t bg-muted">
                   Showing {filteredOptions.length} of {totalCount} items
                   {!searchQuery && " • Type to search for more"}
                 </div>
