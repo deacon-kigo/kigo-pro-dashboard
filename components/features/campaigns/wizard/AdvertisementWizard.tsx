@@ -186,17 +186,8 @@ const AdvertisementWizard: React.FC = () => {
                     strokeLinejoin="round"
                     className="h-5 w-5 mr-2 text-primary"
                   >
-                    <rect
-                      x="3"
-                      y="4"
-                      width="18"
-                      height="18"
-                      rx="2"
-                      ry="2"
-                    ></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                    <path d="m3 11 18-5v12L3 14v-3z"></path>
+                    <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"></path>
                   </svg>
                   <div>
                     <h3 className="font-medium">Ad Details</h3>

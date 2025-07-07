@@ -235,6 +235,16 @@ export function Combobox({
     handleSelect(optionValue);
   };
 
+  // Handle selection for non-searchFirst mode - directly call onChange
+  const handleRegularSelect = (optionValue: string) => {
+    const option = options.find((opt) => opt.value === optionValue);
+    if (option) {
+      onChange(option.value);
+      setOpen(false);
+      setSearchQuery(""); // Clear search query to show selected value
+    }
+  };
+
   if (searchFirst) {
     return (
       <>
@@ -356,7 +366,7 @@ export function Combobox({
         <Command
           shouldFilter={false}
           value={value}
-          onValueChange={handleSelect}
+          onValueChange={handleRegularSelect}
         >
           <CommandInput
             placeholder={searchPlaceholder}
@@ -373,12 +383,12 @@ export function Combobox({
               {filteredOptions.map((option) => (
                 <div
                   key={option.value}
-                  onClick={() => handleSelect(option.value)}
+                  onClick={() => handleRegularSelect(option.value)}
                   className="cursor-pointer"
                 >
                   <CommandItem
                     value={option.value}
-                    onSelect={() => handleSelect(option.value)}
+                    onSelect={() => handleRegularSelect(option.value)}
                     className="hover:bg-accent hover:text-accent-foreground aria-selected:bg-accent aria-selected:text-accent-foreground"
                   >
                     <Check
