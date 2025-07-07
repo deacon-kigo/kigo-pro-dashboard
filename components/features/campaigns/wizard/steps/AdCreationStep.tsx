@@ -328,11 +328,15 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
   // Handle merchant selection
   const handleMerchantChange = (merchantId: string) => {
     const merchant = merchants.find((m) => m.id === merchantId);
+    const availableOffers = offers.filter(
+      (offer) => offer.merchantId === merchantId
+    );
+
     setCurrentAd({
       ...currentAd,
       merchantId,
       merchantName: merchant ? merchant.name : "",
-      offerId: "", // Reset offer when merchant changes
+      offerId: availableOffers.length > 0 ? availableOffers[0].id : "", // Auto-select first offer
       mediaTypes: [], // Clear media types when merchant changes
       mediaAssetsByType: {}, // Clear all uploaded assets when merchant changes
     });
@@ -801,7 +805,6 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                   searchPlaceholder="Search offers..."
                   emptyText="No offers found"
                   maxDisplayItems={10}
-                  searchFirst={true}
                   className="w-full"
                 />
               ) : (

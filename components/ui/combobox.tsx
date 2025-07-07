@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -48,11 +49,24 @@ export function Combobox({
   const triggerRef = React.useRef<HTMLButtonElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [triggerWidth, setTriggerWidth] = React.useState<number>(0);
+  const [dropdownPosition, setDropdownPosition] = React.useState<{
+    top: number;
+    left: number;
+    width: number;
+  } | null>(null);
 
-  // Update trigger width when opened
+  // Track user interaction to prevent auto-selection
+  const [userInteracted, setUserInteracted] = React.useState(false);
+
+  // Update trigger width and position when opened
   React.useEffect(() => {
-    if (open && triggerRef.current) {
-      setTriggerWidth(triggerRef.current.offsetWidth);
+    if (open && inputRef.current) {
+      const rect = inputRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY + 4, // 4px gap
+        left: rect.left + window.scrollX,
+        width: rect.width,
+      });
     }
   }, [open]);
 
@@ -61,6 +75,8 @@ export function Combobox({
     if (searchFirst) {
       if (searchQuery.trim().length > 0) {
         setOpen(true);
+        // Reset user interaction when opening dropdown
+        setUserInteracted(false);
       } else {
         setOpen(false);
       }
@@ -131,14 +147,26 @@ export function Combobox({
     }
   };
 
-  // Handle selection directly
+  // Handle selection directly - only allow when user has interacted
   const handleSelect = (optionValue: string) => {
+    // Only proceed with selection if user has actually interacted
+    if (!userInteracted) {
+      return;
+    }
+
     const option = options.find((opt) => opt.value === optionValue);
     if (option) {
       onChange(option.value);
       setOpen(false);
       setSearchQuery(""); // Clear search query to show selected value
+      setUserInteracted(false); // Reset interaction flag
     }
+  };
+
+  // Handle Command component's onValueChange (which fires on auto-focus)
+  const handleCommandValueChange = (optionValue: string) => {
+    // This gets called on auto-focus, but we only want to select on user interaction
+    // The actual selection happens in handleSelect when user clicks/presses Enter
   };
 
   // Handle trigger click - different behavior for searchFirst mode
@@ -196,79 +224,100 @@ export function Combobox({
       // Delay closing to allow for selection
       setTimeout(() => {
         setOpen(false);
+        setUserInteracted(false); // Reset interaction flag
       }, 200);
     }
   };
 
+  // Handle user clicks on options
+  const handleOptionClick = (optionValue: string) => {
+    setUserInteracted(true); // Mark that user has interacted
+    handleSelect(optionValue);
+  };
+
   if (searchFirst) {
     return (
-      <div className="relative">
-        <input
-          ref={inputRef}
-          type="text"
-          value={searchQuery || (selectedOption ? selectedOption.label : "")}
-          onChange={handleInputChange}
-          onFocus={handleInputFocus}
-          onBlur={handleInputBlur}
-          placeholder={placeholder}
-          className={cn(
-            "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-8 text-base text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-            className
-          )}
-        />
-        <ChevronsUpDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 shrink-0 opacity-50 pointer-events-none" />
-
-        {open && (
-          <div
+      <>
+        <div className="relative">
+          <input
+            ref={inputRef}
+            type="text"
+            value={searchQuery || (selectedOption ? selectedOption.label : "")}
+            onChange={handleInputChange}
+            onFocus={handleInputFocus}
+            onBlur={handleInputBlur}
+            placeholder={placeholder}
             className={cn(
-              "absolute z-50 mt-1 w-full p-0 border border-input rounded-md bg-background shadow-md",
-              popoverClassName
+              "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pr-8 text-base text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+              className
             )}
-            onMouseDown={(e) => e.preventDefault()} // Prevent blur when clicking in dropdown
-          >
-            <Command
-              shouldFilter={false}
-              value={value}
-              onValueChange={handleSelect}
+          />
+          <ChevronsUpDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 shrink-0 opacity-50 pointer-events-none" />
+        </div>
+
+        {open &&
+          dropdownPosition &&
+          typeof window !== "undefined" &&
+          createPortal(
+            <div
+              className={cn(
+                "fixed z-[9999] p-0 border border-input rounded-md bg-background shadow-lg",
+                popoverClassName
+              )}
+              style={{
+                top: dropdownPosition.top,
+                left: dropdownPosition.left,
+                width: dropdownPosition.width,
+                maxHeight: "300px",
+              }}
+              onMouseDown={(e) => e.preventDefault()} // Prevent blur when clicking in dropdown
             >
-              <CommandList>
-                <CommandEmpty className="py-6 px-4 text-center text-muted-foreground text-sm">
-                  {emptyText}
-                </CommandEmpty>
-                <CommandGroup>
-                  {filteredOptions.map((option) => (
-                    <div
-                      key={option.value}
-                      onClick={() => handleSelect(option.value)}
-                      className="cursor-pointer"
-                    >
-                      <CommandItem
-                        value={option.value}
-                        onSelect={() => handleSelect(option.value)}
-                        className="hover:bg-accent hover:text-accent-foreground aria-selected:bg-accent aria-selected:text-accent-foreground"
+              <Command
+                shouldFilter={false}
+                value={value}
+                onValueChange={handleCommandValueChange}
+              >
+                <CommandList>
+                  <CommandEmpty className="py-6 px-4 text-center text-muted-foreground text-sm">
+                    {emptyText}
+                  </CommandEmpty>
+                  <CommandGroup>
+                    {filteredOptions.map((option) => (
+                      <div
+                        key={option.value}
+                        onClick={() => handleOptionClick(option.value)}
+                        className="cursor-pointer"
                       >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4 text-primary",
-                            value === option.value ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        {highlightMatch(option.label)}
-                      </CommandItem>
-                    </div>
-                  ))}
-                  {hasMoreItems && (
-                    <div className="px-3 py-2 text-xs text-muted-foreground border-t bg-muted">
-                      Showing {filteredOptions.length} of {totalCount} items
-                      {!searchQuery && " • Type to search for more"}
-                    </div>
-                  )}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </div>
-        )}
-      </div>
+                        <CommandItem
+                          value={option.value}
+                          onSelect={() => handleOptionClick(option.value)}
+                          className="hover:bg-accent hover:text-accent-foreground aria-selected:bg-accent aria-selected:text-accent-foreground"
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4 text-primary",
+                              value === option.value
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
+                          />
+                          {highlightMatch(option.label)}
+                        </CommandItem>
+                      </div>
+                    ))}
+                    {hasMoreItems && (
+                      <div className="px-3 py-2 text-xs text-muted-foreground border-t bg-muted">
+                        Showing {filteredOptions.length} of {totalCount} items
+                        {!searchQuery && " • Type to search for more"}
+                      </div>
+                    )}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </div>,
+            document.body
+          )}
+      </>
     );
   }
 
