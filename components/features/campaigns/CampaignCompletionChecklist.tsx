@@ -14,17 +14,15 @@ import {
 import { Badge } from "@/components/atoms/Badge";
 import { Button } from "@/components/atoms/Button";
 import PromotionWidget from "@/components/features/campaigns/PromotionWidget";
-import { AdPreviewModal } from "./AdPreviewModal";
+
 import { AnimatedList, AnimatedListItem } from "@/components/ui/animated-list";
 import {
-  ChevronRight,
   Plus,
   ImagePlus,
   CheckCircle,
   AlertCircle,
   X,
   ChevronDown,
-  Eye,
   MoreHorizontal,
   Clock,
   ArrowRight,
@@ -51,10 +49,6 @@ export function CampaignCompletionChecklist({
   const { formData } = useSelector((state: RootState) => state.campaign);
   const dispatch = useDispatch();
 
-  // Modal state for ad preview
-  const [previewModalOpen, setPreviewModalOpen] = useState(false);
-  const [selectedAdForPreview, setSelectedAdForPreview] = useState<any>(null);
-
   // Memoize the mock ad data to prevent infinite loops
   const mockAdData = useMemo(() => {
     if (!currentAdData?.isValid) return null;
@@ -80,16 +74,6 @@ export function CampaignCompletionChecklist({
     currentAdData?.mediaAssetsByType,
   ]);
 
-  // Debug modal state changes (but only log when modal actually opens/closes)
-  useEffect(() => {
-    if (previewModalOpen || selectedAdForPreview) {
-      console.log("Modal state changed:", {
-        previewModalOpen,
-        selectedAdForPreview: !!selectedAdForPreview,
-      });
-    }
-  }, [previewModalOpen, selectedAdForPreview?.id]); // Only depend on the ID to prevent object comparison issues
-
   // Helper to truncate long text
   const truncateText = (text: string, maxLength: number = 20) => {
     if (!text) return "";
@@ -97,84 +81,6 @@ export function CampaignCompletionChecklist({
       ? `${text.substring(0, maxLength)}...`
       : text;
   };
-
-  // Handle opening ad preview modal
-  const handleAdPreview = useCallback((ad: any, event?: React.MouseEvent) => {
-    console.log("handleAdPreview called with ad:", ad?.id);
-
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-
-    if (!ad) {
-      console.error("No ad provided to handleAdPreview");
-      return;
-    }
-
-    setSelectedAdForPreview(ad);
-    setPreviewModalOpen(true);
-  }, []);
-
-  // Handle closing ad preview modal
-  const handleClosePreview = useCallback(() => {
-    setPreviewModalOpen(false);
-    setSelectedAdForPreview(null);
-  }, []);
-
-  // Handle asset upload from modal - for specific ad editing
-  const handleAssetUpload = useCallback(
-    (mediaType: string, file: File) => {
-      if (selectedAdForPreview && selectedAdForPreview.id) {
-        // Create new media asset
-        const newAsset: MediaAsset = {
-          id: uuidv4(),
-          name: file.name,
-          type: file.type,
-          size: file.size,
-          url: URL.createObjectURL(file),
-          previewUrl: URL.createObjectURL(file),
-          mediaType: mediaType,
-        };
-
-        // Add to specific ad in Redux store
-        dispatch(
-          addMediaToAd({ adId: selectedAdForPreview.id, media: newAsset })
-        );
-      } else if (onAssetUpload) {
-        // Fallback to parent handler for current ad being created
-        onAssetUpload(mediaType, file);
-      }
-    },
-    [selectedAdForPreview, dispatch, onAssetUpload]
-  );
-
-  // Handle asset removal from modal - for specific ad editing
-  const handleAssetRemove = useCallback(
-    (mediaType: string, assetId: string) => {
-      if (selectedAdForPreview && selectedAdForPreview.id) {
-        // Remove from specific ad in Redux store
-        dispatch(
-          removeMediaFromAd({ adId: selectedAdForPreview.id, mediaId: assetId })
-        );
-      } else if (onAssetRemove) {
-        // Fallback to parent handler for current ad being created
-        onAssetRemove(mediaType, assetId);
-      }
-    },
-    [selectedAdForPreview, dispatch, onAssetRemove]
-  );
-
-  // Handle live preview click
-  const handleLivePreviewClick = useCallback(
-    (mediaType: string) => {
-      console.log("Live Preview clicked for media type:", mediaType);
-      if (mockAdData) {
-        handleAdPreview(mockAdData);
-      }
-    },
-    [mockAdData, handleAdPreview]
-  );
 
   // Get media type label
   const getMediaTypeLabel = (typeId: string): string => {
@@ -260,11 +166,7 @@ export function CampaignCompletionChecklist({
                 );
 
                 return (
-                  <div
-                    key={mediaType}
-                    className="bg-white rounded border p-3 hover:bg-slate-50 cursor-pointer transition-colors group"
-                    onClick={() => handleLivePreviewClick(mediaType)}
-                  >
+                  <div key={mediaType} className="bg-white rounded border p-3">
                     <div className="flex flex-col gap-3">
                       <div
                         className="w-full bg-slate-50 rounded overflow-hidden border border-slate-200"
@@ -301,7 +203,6 @@ export function CampaignCompletionChecklist({
                               {mediaTypeDef?.dimensions || "Auto"}
                             </Badge>
                           </div>
-                          <Eye className="h-3 w-3 text-slate-400 group-hover:text-blue-600 transition-colors" />
                         </div>
                         <div className="flex items-center justify-between">
                           <p className="text-sm text-slate-600 truncate">
@@ -341,11 +242,7 @@ export function CampaignCompletionChecklist({
           return (
             <div
               key={ad.id}
-              className="bg-white rounded-lg border border-slate-200 p-4 hover:bg-blue-50/30 cursor-pointer transition-colors shadow-sm mb-3"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleAdPreview(ad);
-              }}
+              className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm mb-3"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0 mr-4">
@@ -367,7 +264,6 @@ export function CampaignCompletionChecklist({
                       {ad.mediaAssets?.length !== 1 ? "s" : ""}
                     </div>
                   </div>
-                  <ChevronRight className="h-4 w-4 text-slate-400" />
                 </div>
               </div>
             </div>
@@ -392,33 +288,6 @@ export function CampaignCompletionChecklist({
           </div>
         </div>
       )}
-
-      {/* Ad Preview Modal */}
-      <AdPreviewModal
-        isOpen={previewModalOpen}
-        onClose={handleClosePreview}
-        ad={
-          selectedAdForPreview
-            ? adsData.find((ad) => ad.id === selectedAdForPreview.id) ||
-              selectedAdForPreview
-            : undefined
-        }
-        allAds={
-          selectedAdForPreview
-            ? [
-                adsData.find((ad) => ad.id === selectedAdForPreview.id) ||
-                  selectedAdForPreview,
-              ]
-            : adsData
-        }
-        offers={currentAdData?.offers || []}
-        getMerchantLogo={getMerchantLogo}
-        getPromotionText={getPromotionText}
-        getMediaTypeLabel={getMediaTypeLabel}
-        onAssetUpload={handleAssetUpload}
-        onAssetRemove={handleAssetRemove}
-        allowEditing={true} // Always allow editing when viewing specific ads
-      />
     </div>
   );
 }
