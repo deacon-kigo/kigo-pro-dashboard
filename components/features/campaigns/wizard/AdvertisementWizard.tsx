@@ -55,8 +55,26 @@ const AdvertisementWizard: React.FC = () => {
 
   // Handle current ad data change from AdCreationStep
   const handleCurrentAdChange = useCallback((adData: any) => {
+    console.log("Current ad data:", adData);
     setCurrentAdData(adData);
   }, []);
+
+  // Check if current ad is valid for creation
+  const isCurrentAdValid =
+    currentAdData?.currentAd &&
+    currentAdData.currentAd.merchantId &&
+    currentAdData.currentAd.offerId &&
+    currentAdData.currentAd.mediaType?.length > 0;
+
+  console.log("Button validation:", {
+    currentAdData,
+    hasCurrentAd: !!currentAdData?.currentAd,
+    merchantId: currentAdData?.currentAd?.merchantId,
+    offerId: currentAdData?.currentAd?.offerId,
+    mediaType: currentAdData?.currentAd?.mediaType,
+    mediaTypeLength: currentAdData?.currentAd?.mediaType?.length,
+    isValid: isCurrentAdValid,
+  });
 
   // Asset management callbacks for the preview modal
   const handleAssetUploadForCurrentAd = useCallback(
@@ -196,6 +214,28 @@ const AdvertisementWizard: React.FC = () => {
                     </p>
                   </div>
                 </div>
+
+                {/* Create Ad Button - positioned like Create Filter button */}
+                <Button
+                  onClick={handleCreateAd}
+                  disabled={!isCurrentAdValid}
+                  className="flex items-center gap-1"
+                  size="sm"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-4 w-4"
+                  >
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                  Create Ad
+                </Button>
               </div>
 
               {/* Ad Creation Form - Direct render without steps */}

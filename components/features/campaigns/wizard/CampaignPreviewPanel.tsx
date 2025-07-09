@@ -32,14 +32,14 @@ export function CampaignPreviewPanel({ className }: CampaignPreviewPanelProps) {
   );
 
   // Get validation status for each step
-  const getStepStatus = (stepId: string): boolean => {
+  const getStepStatus = (stepId: string) => {
     switch (stepId) {
       case "basic-info":
-        return !!(formData.basicInfo.name && formData.basicInfo.description);
+        return formData.basicInfo.name && formData.basicInfo.description;
       case "ad-creation":
         return formData.ads.length > 0;
       case "targeting-distribution-budget":
-        return !!(formData.targeting.ageRange && formData.budget.maxBudget > 0);
+        return formData.targeting.ageRange && formData.budget.amount > 0;
       case "review":
         return true;
       default:
@@ -103,9 +103,9 @@ export function CampaignPreviewPanel({ className }: CampaignPreviewPanelProps) {
   // Calculate campaign summary stats
   const campaignStats = {
     totalAds: formData.ads.length,
-    totalBudget: formData.budget.maxBudget || 0,
-    estimatedReach: formData.budget.maxBudget
-      ? Math.floor(formData.budget.maxBudget * 100)
+    totalBudget: formData.budget.amount || 0,
+    estimatedReach: formData.budget.amount
+      ? Math.floor(formData.budget.amount * 100)
       : 0,
     completionPercentage: Math.round(
       (CAMPAIGN_STEPS.filter((step) => getStepStatus(step.id)).length /
@@ -239,136 +239,44 @@ export function CampaignPreviewPanel({ className }: CampaignPreviewPanelProps) {
                 {formData.ads.map((ad, index) => {
                   const offerDetails = getOfferDetails(ad.offerId);
 
-                  // Define media types for consistent ordering
-                  const mediaTypes = [
-                    {
-                      id: "display_banner",
-                      label: "Display Banner",
-                      dimensions: "728x90",
-                      requiresAsset: true,
-                    },
-                    {
-                      id: "double_decker",
-                      label: "Double Decker",
-                      dimensions: "728x180",
-                      requiresAsset: true,
-                    },
-                    {
-                      id: "native",
-                      label: "Native",
-                      dimensions: "Text Only",
-                      requiresAsset: false,
-                    },
-                  ];
-
-                  // Get media assets by type
-                  const getMediaAssetsByType = (adData: any) => {
-                    if (adData.mediaAssetsByType) {
-                      return adData.mediaAssetsByType;
-                    }
-
-                    // Reconstruct from mediaAssets if available
-                    if (adData.mediaAssets) {
-                      const mediaAssetsByType: { [key: string]: any[] } = {};
-                      adData.mediaAssets.forEach((asset: any) => {
-                        const mediaType = asset.mediaType || "display_banner";
-                        if (!mediaAssetsByType[mediaType]) {
-                          mediaAssetsByType[mediaType] = [];
-                        }
-                        mediaAssetsByType[mediaType].push(asset);
-                      });
-                      return mediaAssetsByType;
-                    }
-
-                    return {};
-                  };
-
-                  const mediaAssetsByType = getMediaAssetsByType(ad);
-
                   return (
                     <div key={ad.id} className="bg-white border rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center justify-between mb-2">
                         <div className="text-xs font-medium text-slate-600">
                           Ad #{index + 1} - {ad.merchantName}
                         </div>
-                        <div className="flex flex-wrap gap-1">
-                          {ad.mediaType?.map((type: string) => (
-                            <Badge
-                              key={type}
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              {mediaTypes.find((mt) => mt.id === type)?.label ||
-                                type}
-                            </Badge>
-                          ))}
-                        </div>
+                        <Badge variant="outline" className="text-xs">
+                          {Array.isArray(ad.mediaType)
+                            ? ad.mediaType[0]
+                            : ad.mediaType}
+                        </Badge>
                       </div>
 
-                      {/* Media Type Previews */}
-                      <div className="space-y-3">
-                        {mediaTypes
-                          .filter((mediaType) =>
-                            ad.mediaType?.includes(mediaType.id)
-                          )
-                          .map((mediaType) => {
-                            const mediaTypeAssets =
-                              mediaAssetsByType[mediaType.id] || [];
-                            const firstAsset = mediaTypeAssets[0];
-
-                            return (
-                              <div key={mediaType.id} className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center">
-                                    <h5 className="text-xs font-medium text-slate-700">
-                                      {mediaType.label}
-                                    </h5>
-                                    <Badge
-                                      variant="outline"
-                                      className="text-xs ml-2"
-                                    >
-                                      {mediaType.dimensions}
-                                    </Badge>
-                                  </div>
-                                  <Badge
-                                    variant={
-                                      mediaTypeAssets.length > 0
-                                        ? "default"
-                                        : "secondary"
-                                    }
-                                    className="text-xs"
-                                  >
-                                    {mediaTypeAssets.length > 0
-                                      ? "Asset uploaded"
-                                      : mediaType.requiresAsset
-                                        ? "No asset"
-                                        : "No upload required"}
-                                  </Badge>
-                                </div>
-
-                                {/* Live Promotion Widget Preview */}
-                                <div className="bg-slate-50 p-2 rounded border">
-                                  <PromotionWidget
-                                    merchantLogo={offerDetails.logo}
-                                    merchantName={ad.merchantName}
-                                    promotionText={offerDetails.name}
-                                    featured={true}
-                                    bannerImage={
-                                      firstAsset?.previewUrl || undefined
-                                    }
-                                    mediaType={mediaType.id}
-                                    distance="5.6 miles"
-                                    additionalOffers={1}
-                                    className="transform scale-90 origin-center"
-                                  />
-                                </div>
-                              </div>
-                            );
-                          })}
+                      {/* Live Promotion Widget Preview */}
+                      <div className="bg-slate-50 p-2 rounded border">
+                        <PromotionWidget
+                          merchantLogo={offerDetails.logo}
+                          merchantName={ad.merchantName}
+                          promotionText={offerDetails.name}
+                          featured={true}
+                          bannerImage={
+                            ad.mediaAssets.length > 0
+                              ? ad.mediaAssets[0].previewUrl
+                              : undefined
+                          }
+                          mediaType={
+                            Array.isArray(ad.mediaType)
+                              ? ad.mediaType[0]
+                              : ad.mediaType
+                          }
+                          distance="5.6 miles"
+                          additionalOffers={1}
+                          className="transform scale-90 origin-center"
+                        />
                       </div>
 
                       {/* Preview metadata */}
-                      <div className="mt-3 pt-2 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+                      <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
                         <span className="flex items-center">
                           <MapPin className="h-3 w-3 mr-1" />
                           Target: {formData.targeting.ageRange || "All ages"}

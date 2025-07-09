@@ -1047,68 +1047,6 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                 </div>
               </div>
             )}
-
-          {/* Progress Status */}
-          {currentAd.merchantId &&
-            currentAd.offerId &&
-            currentAd.mediaTypes.length > 0 && (
-              <div className="border-t border-slate-200 pt-6 mt-6">
-                {isEditMode ? (
-                  // Edit Mode - Show update button
-                  <div className="flex justify-between items-center">
-                    <div className="text-sm text-slate-600">
-                      {isCurrentAdValid ? (
-                        <span className="flex items-center text-green-600">
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          Ready to update ad
-                        </span>
-                      ) : (
-                        <span className="flex items-center text-amber-600">
-                          <AlertCircle className="h-3 w-3 mr-1" />
-                          Complete all required fields
-                        </span>
-                      )}
-                    </div>
-                    <Button
-                      onClick={handleUpdateAd}
-                      disabled={!isCurrentAdValid}
-                      className="h-10 text-sm px-6"
-                    >
-                      <Check className="h-4 w-4 mr-2" />
-                      Update Ad
-                    </Button>
-                  </div>
-                ) : (
-                  // Create Mode - Show create ad button
-                  <div className="flex justify-between items-center">
-                    <div className="text-sm text-slate-600">
-                      {isCurrentAdValid ? (
-                        <span className="flex items-center text-green-600">
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          Ready to create ad
-                        </span>
-                      ) : (
-                        <span className="flex items-center text-amber-600">
-                          <AlertCircle className="h-3 w-3 mr-1" />
-                          Complete all required fields
-                        </span>
-                      )}
-                    </div>
-                    <Button
-                      onClick={() => {
-                        handleCreateAd();
-                        onCreateAd?.();
-                      }}
-                      disabled={!isCurrentAdValid}
-                      className="h-10 text-sm px-6"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Preview Ad
-                    </Button>
-                  </div>
-                )}
-              </div>
-            )}
         </div>
       </Card>
     </div>

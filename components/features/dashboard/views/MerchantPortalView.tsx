@@ -393,7 +393,7 @@ export default function MerchantPortalView() {
 
       {/* Power BI iframe simulator - everything inside this div represents embedded content */}
       <div
-        className="mt-4 flex-1 bg-white rounded-lg p-4 overflow-auto"
+        className="mt-4 flex-1 bg-white rounded-lg p-4 overflow-x-hidden overflow-y-auto"
         style={{
           border: "1px solid #E2E8F0",
           boxSizing: "border-box",
