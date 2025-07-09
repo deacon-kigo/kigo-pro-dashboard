@@ -55,7 +55,6 @@ const AdvertisementWizard: React.FC = () => {
 
   // Handle current ad data change from AdCreationStep
   const handleCurrentAdChange = useCallback((adData: any) => {
-    console.log("Current ad data:", adData);
     setCurrentAdData(adData);
   }, []);
 
@@ -65,16 +64,6 @@ const AdvertisementWizard: React.FC = () => {
     currentAdData.currentAd.merchantId &&
     currentAdData.currentAd.offerId &&
     currentAdData.currentAd.mediaType?.length > 0;
-
-  console.log("Button validation:", {
-    currentAdData,
-    hasCurrentAd: !!currentAdData?.currentAd,
-    merchantId: currentAdData?.currentAd?.merchantId,
-    offerId: currentAdData?.currentAd?.offerId,
-    mediaType: currentAdData?.currentAd?.mediaType,
-    mediaTypeLength: currentAdData?.currentAd?.mediaType?.length,
-    isValid: isCurrentAdValid,
-  });
 
   // Asset management callbacks for the preview modal
   const handleAssetUploadForCurrentAd = useCallback(
