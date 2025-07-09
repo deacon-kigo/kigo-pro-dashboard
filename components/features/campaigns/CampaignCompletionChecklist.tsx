@@ -238,88 +238,118 @@ export function CampaignCompletionChecklist({
   // Step configuration with enhanced data display - Updated for streamlined ad creation flow
   const adsData = allAdsData || formData.ads;
 
+  const hasValidPreviewData =
+    currentAdData &&
+    currentAdData.currentAd &&
+    currentAdData.currentAd.mediaType &&
+    currentAdData.currentAd.mediaType.length > 0;
+
   return (
     <div
       className={`bg-white rounded-lg border border-gray-200 p-4 w-full max-w-full overflow-x-hidden overflow-y-auto h-full ${className}`}
     >
-      {/* Media Type Previews Only */}
-      {currentAdData &&
-        currentAdData.currentAd &&
-        currentAdData.currentAd.mediaType &&
-        currentAdData.currentAd.mediaType.length > 0 && (
-          <div className="space-y-4 w-full">
-            {mediaTypes
-              .filter((mediaType) =>
-                currentAdData.currentAd.mediaType.includes(mediaType.id)
-              )
-              .map((mediaType) => {
-                const mediaTypeAssets =
-                  currentAdData.currentAd.mediaAssetsByType?.[mediaType.id] ||
-                  [];
-                const firstAsset = mediaTypeAssets[0];
+      {hasValidPreviewData ? (
+        /* Media Type Previews */
+        <div className="space-y-4 w-full">
+          {mediaTypes
+            .filter((mediaType) =>
+              currentAdData.currentAd.mediaType.includes(mediaType.id)
+            )
+            .map((mediaType) => {
+              const mediaTypeAssets =
+                currentAdData.currentAd.mediaAssetsByType?.[mediaType.id] || [];
+              const firstAsset = mediaTypeAssets[0];
 
-                return (
-                  <div key={mediaType.id} className="space-y-2 w-full">
-                    {/* Media Type Label */}
-                    <div className="flex items-center justify-between">
-                      <Label className="text-sm font-medium text-gray-700">
-                        {mediaType.label}
-                      </Label>
-                      <Badge variant="outline" className="text-sm">
-                        {mediaType.dimensions}
-                      </Badge>
-                    </div>
-
-                    {/* Preview Component */}
-                    <div className="border border-gray-200 rounded-md p-3 bg-gray-50 w-full overflow-hidden">
-                      <div className="w-full overflow-hidden">
-                        <div
-                          className="max-w-full"
-                          style={{
-                            transform: "scale(0.9)",
-                            transformOrigin: "top left",
-                          }}
-                        >
-                          <PromotionWidget
-                            merchantLogo={getMerchantLogo(
-                              currentAdData.currentAd.offerId
-                            )}
-                            merchantName={currentAdData.currentAd.merchantName}
-                            promotionText={getPromotionText(
-                              currentAdData.currentAd.offerId
-                            )}
-                            featured={true}
-                            bannerImage={firstAsset?.previewUrl || undefined}
-                            mediaType={mediaType.id}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Asset Status */}
-                    {mediaType.requiresAsset && (
-                      <div className="text-sm text-gray-600 flex items-center mt-2">
-                        {mediaTypeAssets.length > 0 ? (
-                          <>
-                            <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                            <span className="font-medium">Asset uploaded:</span>
-                            <span className="ml-1 truncate">
-                              {firstAsset.name}
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <AlertCircle className="h-4 w-4 text-amber-500 mr-2 flex-shrink-0" />
-                            <span>No asset uploaded</span>
-                          </>
-                        )}
-                      </div>
-                    )}
+              return (
+                <div key={mediaType.id} className="space-y-2 w-full">
+                  {/* Media Type Label */}
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium text-gray-700">
+                      {mediaType.label}
+                    </Label>
+                    <Badge variant="outline" className="text-sm">
+                      {mediaType.dimensions}
+                    </Badge>
                   </div>
-                );
-              })}
+
+                  {/* Preview Component */}
+                  <div className="border border-gray-200 rounded-md p-3 bg-gray-50 w-full overflow-hidden">
+                    <div className="w-full overflow-hidden">
+                      <div
+                        className="max-w-full"
+                        style={{
+                          transform: "scale(0.9)",
+                          transformOrigin: "top left",
+                        }}
+                      >
+                        <PromotionWidget
+                          merchantLogo={getMerchantLogo(
+                            currentAdData.currentAd.offerId
+                          )}
+                          merchantName={currentAdData.currentAd.merchantName}
+                          promotionText={getPromotionText(
+                            currentAdData.currentAd.offerId
+                          )}
+                          featured={true}
+                          bannerImage={firstAsset?.previewUrl || undefined}
+                          mediaType={mediaType.id}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Asset Status */}
+                  {mediaType.requiresAsset && (
+                    <div className="text-sm text-gray-600 flex items-center mt-2">
+                      {mediaTypeAssets.length > 0 ? (
+                        <>
+                          <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                          <span className="font-medium">Asset uploaded:</span>
+                          <span className="ml-1 truncate">
+                            {firstAsset.name}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <AlertCircle className="h-4 w-4 text-amber-500 mr-2 flex-shrink-0" />
+                          <span>No asset uploaded</span>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+        </div>
+      ) : (
+        /* Empty State */
+        <div className="flex flex-col items-center justify-center h-full text-center py-12">
+          <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-muted rounded-full">
+            <Eye className="w-8 h-8 text-muted-foreground" />
           </div>
-        )}
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No Preview Available
+          </h3>
+          <p className="text-sm text-muted-foreground mb-4 max-w-sm">
+            Complete the ad details on the left to see a live preview of your
+            advertisement assets and formats.
+          </p>
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <div className="flex items-center">
+              <div className="w-2 h-2 bg-muted-foreground rounded-full mr-2"></div>
+              Select a merchant and offer
+            </div>
+            <div className="flex items-center">
+              <div className="w-2 h-2 bg-muted-foreground rounded-full mr-2"></div>
+              Choose media types
+            </div>
+            <div className="flex items-center">
+              <div className="w-2 h-2 bg-muted-foreground rounded-full mr-2"></div>
+              Upload assets (optional)
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
