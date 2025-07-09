@@ -324,8 +324,20 @@ export function CampaignCompletionChecklist({
       ) : (
         /* Empty State */
         <div className="flex flex-col items-center justify-center h-full text-center py-12">
-          <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-muted rounded-full">
-            <Eye className="w-8 h-8 text-muted-foreground" />
+          <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-8 h-8 text-primary"
+            >
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
           </div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             No Preview Available
