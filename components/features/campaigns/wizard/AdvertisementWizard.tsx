@@ -190,9 +190,9 @@ const AdvertisementWizard: React.FC = () => {
     <div className="min-h-screen flex flex-col">
       <div className="flex-shrink-0">
         <PageHeader
-          title="Create Ads"
-          description="Design and launch your advertisement."
-          emoji="📊"
+          title="Create Ad"
+          description="Create promotional campaigns to drive customer engagement and sales."
+          emoji="🎯"
           actions={backButton}
           variant="aurora"
         />

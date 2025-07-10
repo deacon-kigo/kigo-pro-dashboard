@@ -320,9 +320,9 @@ const AdvertisementWizardAI: React.FC = () => {
     <div className="space-y-6 h-full flex flex-col">
       <div className="flex-shrink-0">
         <PageHeader
-          title="Create Ads (AI)"
-          description="Design and launch your advertisement campaign in a few steps."
-          emoji="📊"
+          title="Create Ad (AI)"
+          description="Create promotional campaigns with AI assistance to drive customer engagement and sales."
+          emoji="🤖"
           actions={backButton}
           variant="aurora"
         />

@@ -305,7 +305,7 @@ export default function AdvertisementCampaignCreationContent() {
   return (
     <div className="space-y-2 h-full flex flex-col">
       <PageHeader
-        title="Create Ads"
+        title="Create Ad"
         description="Design and configure your advertisement campaign in one place."
         emoji="📊"
         actions={backButton}

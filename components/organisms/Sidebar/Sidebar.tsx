@@ -19,6 +19,7 @@ import {
   ArrowRightOnRectangleIcon,
   ChevronDownIcon,
   AdjustmentsHorizontalIcon,
+  PlusIcon,
 } from "@heroicons/react/24/outline";
 import { useDemoState } from "@/lib/redux/hooks";
 import { toggleSidebar, setSidebarCollapsed } from "@/lib/redux/slices/uiSlice";
@@ -195,7 +196,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     return [
       {
         href: "/campaign-manager/ads-create",
-        title: "Create Ads",
+        title: "Create Ad",
         isActive: pathname.includes("/campaign-manager/ads-create"),
       },
     ];
