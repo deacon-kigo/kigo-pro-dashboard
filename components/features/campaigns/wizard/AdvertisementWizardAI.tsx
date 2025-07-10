@@ -1,13 +1,33 @@
 "use client";
 
-import React, { useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 import { RootState } from "@/lib/redux/store";
-import { AIAssistantPanel } from "@/components/features/ai";
+import {
+  addAd,
+  updateAd,
+  removeAd,
+  addMediaToAd,
+  removeMediaFromAd,
+} from "@/lib/redux/slices/campaignSlice";
 import Card from "@/components/atoms/Card/Card";
 import { Button } from "@/components/atoms/Button";
+import { PageHeader } from "@/components/molecules/PageHeader";
+import AdCreationStep from "./steps/AdCreationStep";
+import { CampaignAnalyticsPanelLite } from "../CampaignAnalyticsPanelLite";
+import { AIAssistantPanel } from "@/components/features/ai";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/molecules/alert-dialog/AlertDialog";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   CAMPAIGN_STEPS,
   setCurrentStep,
@@ -21,23 +41,15 @@ import {
   removeLocation,
   setStartDate,
   setEndDate,
-  addAd,
-  updateAd,
-  removeAd,
-  addMediaToAd,
-  removeMediaFromAd,
 } from "@/lib/redux/slices/campaignSlice";
 import StepProgressHeader from "./StepProgressHeader";
 import StepNavigationFooter from "./StepNavigationFooter";
 import { setCampaignContext } from "@/lib/redux/slices/ai-assistantSlice";
 import { CampaignAnalyticsPanel } from "../CampaignAnalyticsPanel";
-import PageHeader from "@/components/molecules/PageHeader/PageHeader";
 import { v4 as uuidv4 } from "uuid";
 
 // Import step components
 import BasicInfoStep from "./steps/BasicInfoStep";
-import AdCreationStep from "./steps/AdCreationStep";
-import TargetingStep from "./steps/TargetingStep";
 import TargetingBudgetStep from "./steps/TargetingBudgetStep";
 import DistributionStep from "./steps/DistributionStep";
 import ReviewStep from "./steps/ReviewStep";
@@ -50,6 +62,9 @@ const AdvertisementWizardAI: React.FC = () => {
   const { currentStep, formData, stepValidation, isGenerating } = useSelector(
     (state: RootState) => state.campaign
   );
+
+  // State for confirmation dialog
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   // Reset campaign form on initial load
   useEffect(() => {
@@ -73,16 +88,24 @@ const AdvertisementWizardAI: React.FC = () => {
     if (currentStep < CAMPAIGN_STEPS.length - 1) {
       dispatch(setCurrentStep(currentStep + 1));
     } else {
-      // This is the final step - handle campaign creation
-      console.log("Create advertisement campaign with data:", formData);
-      // TODO: Implement actual campaign creation API call
-      setTimeout(() => {
-        // Simulate success
-        alert("Advertisement campaign created successfully!");
-        router.push("/campaign-manager");
-      }, 1000);
+      // This is the final step - show confirmation dialog
+      setCreateDialogOpen(true);
     }
-  }, [currentStep, dispatch, formData, router]);
+  }, [currentStep, dispatch]);
+
+  const handleConfirmedCreateCampaign = useCallback(() => {
+    // Close the dialog
+    setCreateDialogOpen(false);
+
+    // Handle campaign creation
+    console.log("Create advertisement campaign with data:", formData);
+    // TODO: Implement actual campaign creation API call
+    setTimeout(() => {
+      // Simulate success and redirect to ads manager
+      alert("Advertisement campaign created successfully!");
+      router.push("/campaigns");
+    }, 1000);
+  }, [formData, router]);
 
   const handlePrevious = useCallback(() => {
     if (currentStep > 0) {
@@ -268,7 +291,7 @@ const AdvertisementWizardAI: React.FC = () => {
     <Button
       variant="outline"
       size="sm"
-      onClick={() => router.push("/campaign-manager")}
+      onClick={() => router.push("/campaigns")}
       className="flex items-center gap-1"
     >
       <svg
@@ -384,6 +407,27 @@ const AdvertisementWizardAI: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Campaign Creation</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to create this advertisement campaign? This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setCreateDialogOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmedCreateCampaign}>
+              Create Campaign
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

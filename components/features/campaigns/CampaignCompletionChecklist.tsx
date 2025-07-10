@@ -262,11 +262,28 @@ export function CampaignCompletionChecklist({
 
               return (
                 <div key={mediaType.id} className="space-y-2 w-full">
-                  {/* Media Type Label */}
+                  {/* Media Type Label with Asset Status */}
                   <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium text-gray-700">
-                      {mediaType.label}
-                    </Label>
+                    <div className="flex items-center gap-2">
+                      <Label className="text-sm font-medium text-gray-700">
+                        {mediaType.label}
+                      </Label>
+                      {mediaType.requiresAsset && (
+                        <div className="text-sm text-gray-600 flex items-center">
+                          {mediaTypeAssets.length > 0 ? (
+                            <>
+                              <CheckCircle className="h-3 w-3 text-green-500 mr-1 flex-shrink-0" />
+                              <span className="text-xs">Asset uploaded</span>
+                            </>
+                          ) : (
+                            <>
+                              <AlertCircle className="h-3 w-3 text-amber-500 mr-1 flex-shrink-0" />
+                              <span className="text-xs">No asset uploaded</span>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
                     <Badge variant="outline" className="text-sm">
                       {mediaType.dimensions}
                     </Badge>
@@ -275,13 +292,7 @@ export function CampaignCompletionChecklist({
                   {/* Preview Component */}
                   <div className="border border-gray-200 rounded-md p-3 bg-gray-50 w-full overflow-hidden">
                     <div className="w-full overflow-hidden">
-                      <div
-                        className="max-w-full"
-                        style={{
-                          transform: "scale(0.9)",
-                          transformOrigin: "top left",
-                        }}
-                      >
+                      <div className="w-full">
                         <PromotionWidget
                           merchantLogo={getMerchantLogo(
                             currentAdData.currentAd.offerId
@@ -297,26 +308,6 @@ export function CampaignCompletionChecklist({
                       </div>
                     </div>
                   </div>
-
-                  {/* Asset Status */}
-                  {mediaType.requiresAsset && (
-                    <div className="text-sm text-gray-600 flex items-center mt-2">
-                      {mediaTypeAssets.length > 0 ? (
-                        <>
-                          <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                          <span className="font-medium">Asset uploaded:</span>
-                          <span className="ml-1 truncate">
-                            {firstAsset.name}
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          <AlertCircle className="h-4 w-4 text-amber-500 mr-2 flex-shrink-0" />
-                          <span>No asset uploaded</span>
-                        </>
-                      )}
-                    </div>
-                  )}
                 </div>
               );
             })}

@@ -175,9 +175,9 @@ export default function AdvertisementCampaignCreationContent() {
         return;
       }
 
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setValidationMessage("Image size should be less than 5MB");
+      // Validate file size (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        setValidationMessage("Image size should be less than 2MB");
         setTimeout(() => setValidationMessage(null), 5000);
         return;
       }
@@ -294,7 +294,7 @@ export default function AdvertisementCampaignCreationContent() {
   const backButton = (
     <Button
       variant="outline"
-      onClick={() => router.push("/campaign-manager")}
+      onClick={() => router.push("/campaigns")}
       className="flex items-center gap-1"
     >
       <ArrowLeftIcon className="h-4 w-4" />

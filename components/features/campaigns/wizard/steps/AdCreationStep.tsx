@@ -390,19 +390,18 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
 
   // File validation function
   const validateFile = (file: File, mediaType: string): string | null => {
-    // Check file size (10MB limit)
-    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    // Check file type (only allow images)
+    if (!file.type.startsWith("image/")) {
+      return "Only image files are allowed.";
+    }
+
+    // Check file size (2MB limit)
+    const maxSize = 2 * 1024 * 1024; // 2MB in bytes
     if (file.size > maxSize) {
-      return "File must be under 10MB.";
+      return "File must be under 2MB.";
     }
 
-    // Check file type (JPG or PNG only)
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
-    if (!allowedTypes.includes(file.type)) {
-      return "File must be a JPG or PNG.";
-    }
-
-    return null; // No errors
+    return null; // Valid file
   };
 
   // Handle file upload for specific media type (only one asset per type)
@@ -957,7 +956,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                                             : "text-slate-500"
                                         }`}
                                       >
-                                        JPG or PNG (max file size: 10MB)
+                                        JPG or PNG (max file size: 2MB)
                                       </p>
                                       <input
                                         type="file"
@@ -994,7 +993,7 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                                   )}
                                 </div>
                               ) : (
-                                /* Asset Display - Only show the single asset with delete option */
+                                /* Asset Display - Only show the single asset with replace option */
                                 <div className="flex items-center justify-between p-3 bg-slate-50 rounded border">
                                   <div className="flex items-center">
                                     <div className="h-12 w-12 bg-slate-100 rounded overflow-hidden mr-3">
@@ -1013,20 +1012,32 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
                                       </p>
                                     </div>
                                   </div>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() =>
-                                      handleRemoveMedia(
-                                        mediaTypeId,
-                                        assets[0].id
-                                      )
-                                    }
-                                    className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
-                                    title="Remove asset"
-                                  >
-                                    <Trash className="h-4 w-4" />
-                                  </Button>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="file"
+                                      id={`replaceUpload-${mediaTypeId}`}
+                                      className="hidden"
+                                      accept="image/*"
+                                      onChange={(e) =>
+                                        handleFileSelect(e, mediaTypeId)
+                                      }
+                                    />
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() =>
+                                        document
+                                          .getElementById(
+                                            `replaceUpload-${mediaTypeId}`
+                                          )
+                                          ?.click()
+                                      }
+                                      className="h-8 w-8 p-0 text-blue-500 hover:text-blue-600 hover:bg-blue-50"
+                                      title="Replace asset"
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                  </div>
                                 </div>
                               )}
                             </div>

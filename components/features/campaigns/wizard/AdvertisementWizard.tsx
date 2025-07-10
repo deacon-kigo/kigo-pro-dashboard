@@ -19,6 +19,16 @@ import {
 import { setCampaignContext } from "@/lib/redux/slices/ai-assistantSlice";
 import { CampaignAnalyticsPanelLite } from "../CampaignAnalyticsPanelLite";
 import PageHeader from "@/components/molecules/PageHeader/PageHeader";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/molecules/alert-dialog/AlertDialog";
 
 // Import step components
 import AdCreationStep from "./steps/AdCreationStep";
@@ -27,15 +37,16 @@ const AdvertisementWizard: React.FC = () => {
   const router = useRouter();
   const dispatch = useDispatch();
 
-  // Get campaign state from Redux
-  const { formData, isGenerating } = useSelector(
-    (state: RootState) => state.campaign
-  );
+  // Redux selectors
+  const { formData } = useSelector((state: RootState) => state.campaign);
 
-  // State to track current ad data for live preview
+  // State for current ad data and validation
   const [currentAdData, setCurrentAdData] = useState<any>(null);
 
-  // Refs to access asset management functions from AdCreationStep
+  // State for confirmation dialog
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+
+  // Refs for asset management
   const assetUploadRef = useRef<
     ((mediaType: string, file: File) => void) | null
   >(null);
@@ -53,7 +64,7 @@ const AdvertisementWizard: React.FC = () => {
     dispatch(setCampaignContext(formData));
   }, [dispatch, formData]);
 
-  // Handle current ad data change from AdCreationStep
+  // Handle current ad change from step component
   const handleCurrentAdChange = useCallback((adData: any) => {
     setCurrentAdData(adData);
   }, []);
@@ -87,13 +98,28 @@ const AdvertisementWizard: React.FC = () => {
   );
 
   const handleCreateAd = useCallback(() => {
+    // Validate the ad before showing confirmation
+    if (!isCurrentAdValid) {
+      console.warn("Ad is not valid for creation");
+      return;
+    }
+
+    // Show confirmation dialog
+    setCreateDialogOpen(true);
+  }, [isCurrentAdValid]);
+
+  const handleConfirmedCreateAd = useCallback(() => {
+    // Close the dialog
+    setCreateDialogOpen(false);
+
     // Handle ad creation
     console.log("Create advertisement with data:", formData);
+
     // TODO: Implement actual ad creation API call
     setTimeout(() => {
-      // Simulate success
+      // Simulate success and redirect to ads manager
       alert("Advertisement created successfully!");
-      router.push("/campaign-manager");
+      router.push("/campaigns");
     }, 1000);
   }, [formData, router]);
 
@@ -138,7 +164,7 @@ const AdvertisementWizard: React.FC = () => {
     <Button
       variant="outline"
       size="sm"
-      onClick={() => router.push("/campaign-manager")}
+      onClick={() => router.push("/campaigns")}
       className="flex items-center gap-1"
     >
       <svg
@@ -211,18 +237,6 @@ const AdvertisementWizard: React.FC = () => {
                   className="flex items-center gap-1"
                   size="sm"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-4 w-4"
-                  >
-                    <path d="M12 5v14M5 12h14" />
-                  </svg>
                   Create Ad
                 </Button>
               </div>
@@ -264,6 +278,27 @@ const AdvertisementWizard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Advertisement Creation</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to create this advertisement? This action
+              cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setCreateDialogOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmedCreateAd}>
+              Create Ad
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -71,13 +71,11 @@ export default function AdvertisementCampaignCreateAIPage() {
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbLink href="/campaign-manager/ads-create">
-            Ads Creation
-          </BreadcrumbLink>
+          <BreadcrumbLink href="/campaigns">Ads Manager</BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbPage>AI Version</BreadcrumbPage>
+          <BreadcrumbPage>Ad Creation</BreadcrumbPage>
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>
