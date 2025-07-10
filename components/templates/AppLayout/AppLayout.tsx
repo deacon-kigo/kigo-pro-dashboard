@@ -6,6 +6,7 @@ import Header from "@/components/organisms/Header/Header";
 import Sidebar from "@/components/organisms/Sidebar/Sidebar";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { AIChat } from "@/components/features/ai";
+import { CopilotChatSidebar } from "@/components/copilot/CopilotChatSidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -149,6 +150,7 @@ function AppLayoutContent({ children, customBreadcrumb }: AppLayoutProps) {
         </main>
       </div>
       <AIChat />
+      <CopilotChatSidebar />
     </div>
   );
 }

@@ -18,7 +18,7 @@ import {
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/molecules/PageHeader";
 import { AdTable, SelectedRows } from "./AdTable";
-import { Ad, formatDate } from "./adColumns";
+import { Ad, formatDate, formatDateTime, formatChannels } from "./adColumns";
 import { AdSearchBar, SearchField } from "./AdSearchBar";
 import { useDispatch } from "react-redux";
 import { clearAllDropdowns } from "@/lib/redux/slices/uiSlice";
@@ -75,7 +75,7 @@ const BulkActions = memo(function BulkActions({
   );
 });
 
-// Filter function for searching ads - updated to match simplified structure
+// Filter function for searching ads - includes all searchable fields
 const filterDataBySearch = (data: Ad[], searchQuery: string): Ad[] => {
   if (!searchQuery.trim()) return data;
 
@@ -86,7 +86,8 @@ const filterDataBySearch = (data: Ad[], searchQuery: string): Ad[] => {
       ad.merchantName.toLowerCase().includes(lowerQuery) ||
       ad.offerName.toLowerCase().includes(lowerQuery) ||
       ad.status.toLowerCase().includes(lowerQuery) ||
-      ad.createdBy.toLowerCase().includes(lowerQuery)
+      ad.createdBy.toLowerCase().includes(lowerQuery) ||
+      ad.channels.some((channel) => channel.toLowerCase().includes(lowerQuery))
     );
   });
 };
@@ -237,75 +238,103 @@ export default function AdManagerListView() {
     setSelectedAds({});
   }, [selectedAds]);
 
-  // Simplified sample data matching our actual ad structure
+  // Sample data for Kigo Pro promotional offer campaigns
   const ads = useMemo<Ad[]>(
     () => [
       {
         id: "1",
-        name: "Summer Collection Sale",
+        name: "CVS Summer Vitamins Promotion",
         status: "Active" as const,
-        merchantName: "Fashion Store",
-        offerName: "Summer Collection 50% Off",
+        merchantName: "CVS Pharmacy",
+        offerName: "30% off select vitamins",
+        numberOfAssets: 4,
+        startDateTime: "2024-06-01T09:00:00Z",
+        endDateTime: "2024-08-31T23:59:59Z",
+        channels: ["TOP", "Local+", "Signals"],
         createdBy: "admin",
         createdDate: "2024-05-15",
         lastModified: "2024-06-01",
       },
       {
         id: "2",
-        name: "Back to School Special",
+        name: "Best Buy Laptop Sale Campaign",
         status: "Published" as const,
-        merchantName: "Widget Co",
-        offerName: "Student Discount Program",
+        merchantName: "Best Buy Co.",
+        offerName: "15% off laptops",
+        numberOfAssets: 3,
+        startDateTime: "2024-08-15T08:00:00Z",
+        endDateTime: "2024-09-30T20:00:00Z",
+        channels: ["TOP", "Local+"],
         createdBy: "marketing",
         createdDate: "2024-07-01",
         lastModified: "2024-07-15",
       },
       {
         id: "3",
-        name: "New Customer Welcome",
+        name: "Chipotle Welcome Offer",
         status: "Draft" as const,
-        merchantName: "Example LLC",
-        offerName: "Welcome Bonus 20% Off",
+        merchantName: "Chipotle Mexican Grill",
+        offerName: "Free guacamole with entrée",
+        numberOfAssets: 2,
+        startDateTime: "2024-08-01T00:00:00Z",
+        endDateTime: "2024-12-31T23:59:59Z",
+        channels: ["TOP"],
         createdBy: "admin",
         createdDate: "2024-07-20",
         lastModified: "2024-07-20",
       },
       {
         id: "4",
-        name: "Holiday Season Flash Sale",
+        name: "Walmart Holiday Promotion",
         status: "Published" as const,
-        merchantName: "Best Store",
-        offerName: "Holiday Mega Sale",
+        merchantName: "Walmart Inc.",
+        offerName: "$10 off $50 purchase",
+        numberOfAssets: 6,
+        startDateTime: "2024-11-25T06:00:00Z",
+        endDateTime: "2024-12-26T06:00:00Z",
+        channels: ["TOP", "Local+", "Signals", "Catalog"],
         createdBy: "admin",
         createdDate: "2024-06-01",
         lastModified: "2024-10-15",
       },
       {
         id: "5",
-        name: "Spring Collection Launch",
+        name: "T-Mobile Bill Credit Campaign",
         status: "Ended" as const,
-        merchantName: "Fashion Outlet",
-        offerName: "New Spring Arrivals",
+        merchantName: "T-Mobile USA",
+        offerName: "$10 off monthly bill",
+        numberOfAssets: 3,
+        startDateTime: "2024-03-01T00:00:00Z",
+        endDateTime: "2024-05-31T23:59:59Z",
+        channels: ["TOP", "Signals"],
         createdBy: "marketing",
         createdDate: "2024-02-01",
         lastModified: "2024-04-15",
       },
       {
         id: "6",
-        name: "Loyalty Program Rewards",
+        name: "Starbucks Loyalty Rewards",
         status: "Active" as const,
-        merchantName: "Premium Brands",
-        offerName: "VIP Member Exclusive Deals",
+        merchantName: "Starbucks Corporation",
+        offerName: "Buy 2 Get 1 Free beverages",
+        numberOfAssets: 5,
+        startDateTime: "2024-01-01T00:00:00Z",
+        endDateTime: "2024-12-31T23:59:59Z",
+        channels: ["TOP", "Local+", "Catalog"],
         createdBy: "admin",
         createdDate: "2023-12-15",
         lastModified: "2024-06-01",
       },
       {
         id: "7",
-        name: "Weekend Flash Sale",
+        name: "Target Home Decor Special",
         status: "Paused" as const,
-        merchantName: "Discount Depot",
-        offerName: "Weekend Special 30% Off",
+        merchantName: "Target Corporation",
+        offerName: "15% off home decor",
+        numberOfAssets: 4,
+        startDateTime: "2024-07-01T00:00:00Z",
+        endDateTime: "2024-07-31T23:59:59Z",
+        channels: ["TOP", "Local+"],
         createdBy: "marketing",
         createdDate: "2024-05-01",
         lastModified: "2024-05-20",
@@ -314,26 +343,38 @@ export default function AdManagerListView() {
     []
   );
 
-  // Filter ads by status and search query
+  // Sort ads by start date and time in descending order (per spec requirement)
+  const sortAdsByStartDate = useCallback((adsToSort: Ad[]) => {
+    return [...adsToSort].sort((a, b) => {
+      const dateA = new Date(a.startDateTime);
+      const dateB = new Date(b.startDateTime);
+      return dateB.getTime() - dateA.getTime(); // Descending order
+    });
+  }, []);
+
+  // Filter ads by status and search query, then sort by start date
   const filteredActiveAds = useMemo(() => {
     const activeAds = ads.filter((ad) => ad.status === "Active");
-    return filterDataBySearch(activeAds, searchQuery);
-  }, [ads, searchQuery]);
+    const searchFiltered = filterDataBySearch(activeAds, searchQuery);
+    return sortAdsByStartDate(searchFiltered);
+  }, [ads, searchQuery, sortAdsByStartDate]);
 
   const filteredPausedAds = useMemo(() => {
     const pausedAds = ads.filter((ad) => ad.status === "Paused");
-    return filterDataBySearch(pausedAds, searchQuery);
-  }, [ads, searchQuery]);
+    const searchFiltered = filterDataBySearch(pausedAds, searchQuery);
+    return sortAdsByStartDate(searchFiltered);
+  }, [ads, searchQuery, sortAdsByStartDate]);
 
   const filteredDraftAds = useMemo(() => {
     const draftAds = ads.filter((ad) => ad.status === "Draft");
-    return filterDataBySearch(draftAds, searchQuery);
-  }, [ads, searchQuery]);
+    const searchFiltered = filterDataBySearch(draftAds, searchQuery);
+    return sortAdsByStartDate(searchFiltered);
+  }, [ads, searchQuery, sortAdsByStartDate]);
 
-  const filteredAllAds = useMemo(
-    () => filterDataBySearch(ads, searchQuery),
-    [ads, searchQuery]
-  );
+  const filteredAllAds = useMemo(() => {
+    const searchFiltered = filterDataBySearch(ads, searchQuery);
+    return sortAdsByStartDate(searchFiltered);
+  }, [ads, searchQuery, sortAdsByStartDate]);
 
   // Memoize UI elements that don't need to be recreated on every render
   const createAdButton = useMemo(
@@ -378,7 +419,7 @@ export default function AdManagerListView() {
     <div className="space-y-6">
       <PageHeader
         title="Ads Manager"
-        description="Create, manage, and optimize your advertising campaigns across multiple channels."
+        description="Create, manage, and optimize your advertising campaigns across multiple channels and platforms."
         emoji="📢"
         actions={createAdButton}
         variant="aurora"

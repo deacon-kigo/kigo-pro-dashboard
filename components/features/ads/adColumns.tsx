@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo, useCallback, useState, useEffect } from "react";
+import React, { memo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/atoms/Button";
 import {
@@ -8,8 +8,6 @@ import {
   PencilIcon,
   ChevronUpIcon,
   ChevronDownIcon,
-  PlayIcon,
-  PauseIcon,
   TrashIcon,
   DocumentDuplicateIcon,
 } from "@heroicons/react/24/outline";
@@ -23,25 +21,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRouter } from "next/navigation";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/molecules/alert-dialog/AlertDialog";
 
 // Simplified Ad data structure - only include what we actually have
 export type Ad = {
   id: string;
-  name: string; // Ad Name
+  name: string; // Ad Name (max 50 characters)
   status: "Published" | "Active" | "Paused" | "Draft" | "Ended";
-  merchantName: string; // Acts as Ad Set
-  offerName: string; // Ad Creative/Offer
+  merchantName: string; // Merchant
+  offerName: string; // Offer
+  numberOfAssets: number; // Number of Assets
+  startDateTime: string; // Start day and time (US format, UTC)
+  endDateTime: string; // End day and time (US format, UTC)
+  totalBudgetCap?: number; // Total Budget Cap in USD (v2)
+  reach?: number; // Reach (v2)
+  channels: string[]; // Channels / Offer Catalog
   createdBy: string;
   createdDate: string;
   lastModified: string;
@@ -59,6 +52,36 @@ export const formatDate = (dateString: string): string => {
   } catch {
     return dateString;
   }
+};
+
+// Utility function to format date and time in US format with UTC
+export const formatDateTime = (dateTimeString: string): string => {
+  try {
+    const date = new Date(dateTimeString);
+    return date.toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      timeZone: "UTC",
+      timeZoneName: "short",
+    });
+  } catch {
+    return dateTimeString;
+  }
+};
+
+// Utility function to format channels with truncation
+export const formatChannels = (
+  channels: string[],
+  maxLength: number = 30
+): string => {
+  const channelsText = channels.join(", ");
+  if (channelsText.length <= maxLength) {
+    return channelsText;
+  }
+  return channelsText.substring(0, maxLength - 3) + "...";
 };
 
 // Get delivery status based on ad status
@@ -116,45 +139,7 @@ export const adColumns: ColumnDef<Ad>[] = [
     enableSorting: false,
     enableHiding: false,
   },
-  {
-    id: "onOff",
-    header: () => <div className="text-left font-medium">On/Off</div>,
-    cell: ({ row }) => {
-      const status = row.original.status;
-      const isActive = status === "Active";
-      const isPaused = status === "Paused";
-      const canToggle = isActive || isPaused;
 
-      return (
-        <div className="flex items-center">
-          {canToggle ? (
-            <div className="flex items-center">
-              <div
-                className={`w-8 h-5 rounded-full p-1 cursor-pointer transition-colors ${
-                  isActive ? "bg-blue-600" : "bg-gray-300"
-                }`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  console.log(`Toggling ad ${row.original.id}`);
-                }}
-              >
-                <div
-                  className={`w-3 h-3 rounded-full bg-white transition-transform ${
-                    isActive ? "translate-x-3" : "translate-x-0"
-                  }`}
-                />
-              </div>
-            </div>
-          ) : (
-            <div className="w-8 h-5 rounded-full bg-gray-200 p-1">
-              <div className="w-3 h-3 rounded-full bg-gray-400" />
-            </div>
-          )}
-        </div>
-      );
-    },
-    enableSorting: false,
-  },
   {
     accessorKey: "name",
     header: ({ column }) => {
@@ -164,7 +149,7 @@ export const adColumns: ColumnDef<Ad>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
         >
-          Ad name
+          Ad Name
           <SortIcon sorted={column.getIsSorted()} />
         </Button>
       );
@@ -179,7 +164,27 @@ export const adColumns: ColumnDef<Ad>[] = [
     ),
   },
   {
-    accessorKey: "merchantName",
+    id: "merchantAndOffer",
+    header: () => (
+      <div className="text-left font-medium">Merchant and Offer</div>
+    ),
+    cell: ({ row }) => (
+      <div className="text-left max-w-[200px]">
+        <div className="font-medium truncate" title={row.original.merchantName}>
+          {row.original.merchantName}
+        </div>
+        <div
+          className="text-sm text-gray-500 truncate"
+          title={row.original.offerName}
+        >
+          {row.original.offerName}
+        </div>
+      </div>
+    ),
+    enableSorting: false,
+  },
+  {
+    accessorKey: "numberOfAssets",
     header: ({ column }) => {
       return (
         <Button
@@ -187,19 +192,44 @@ export const adColumns: ColumnDef<Ad>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
         >
-          Ad set
+          Assets
           <SortIcon sorted={column.getIsSorted()} />
         </Button>
       );
     },
     cell: ({ row }) => (
-      <div
-        className="text-left max-w-[150px] truncate"
-        title={row.getValue("merchantName")}
-      >
-        {row.getValue("merchantName")}
+      <div className="text-left">{row.getValue("numberOfAssets")}</div>
+    ),
+  },
+  {
+    id: "schedule",
+    header: () => <div className="text-left font-medium">Start/End Time</div>,
+    cell: ({ row }) => (
+      <div className="text-left max-w-[180px]">
+        <div className="text-sm">
+          <span className="text-gray-600">Start:</span>{" "}
+          {formatDateTime(row.original.startDateTime)}
+        </div>
+        <div className="text-sm">
+          <span className="text-gray-600">End:</span>{" "}
+          {formatDateTime(row.original.endDateTime)}
+        </div>
       </div>
     ),
+    enableSorting: false,
+  },
+  {
+    accessorKey: "channels",
+    header: () => <div className="text-left font-medium">Channels</div>,
+    cell: ({ row }) => (
+      <div
+        className="text-left max-w-[150px] truncate"
+        title={row.original.channels.join(", ")}
+      >
+        {formatChannels(row.original.channels)}
+      </div>
+    ),
+    enableSorting: false,
   },
   {
     id: "delivery",
@@ -231,53 +261,12 @@ export const adColumns: ColumnDef<Ad>[] = [
     },
     enableSorting: false,
   },
-  {
-    accessorKey: "offerName",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
-        >
-          Creative
-          <SortIcon sorted={column.getIsSorted()} />
-        </Button>
-      );
-    },
-    cell: ({ row }) => (
-      <div
-        className="text-left max-w-[150px] truncate"
-        title={row.getValue("offerName")}
-      >
-        {row.getValue("offerName")}
-      </div>
-    ),
-  },
+
   {
     id: "actions",
     header: () => <div className="text-right font-medium">Actions</div>,
     cell: ({ row }) => {
       const ad = row.original;
-      const router = useRouter();
-      const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-
-      const handleViewDetails = () => {
-        console.log("Viewing ad details:", ad.id);
-      };
-
-      const handleEditAd = () => {
-        console.log("Editing ad:", ad.id);
-      };
-
-      const handleDuplicateAd = () => {
-        console.log("Duplicating ad:", ad.id);
-      };
-
-      const handleConfirmedDelete = () => {
-        console.log("Deleting ad:", ad.id);
-        setDeleteDialogOpen(false);
-      };
 
       return (
         <div className="flex items-center justify-end">
@@ -290,21 +279,27 @@ export const adColumns: ColumnDef<Ad>[] = [
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={handleViewDetails}>
+              <DropdownMenuItem
+                onClick={() => console.log("Viewing ad details:", ad.id)}
+              >
                 <EyeIcon className="mr-2 h-4 w-4" />
                 View Details
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleEditAd}>
+              <DropdownMenuItem
+                onClick={() => console.log("Editing ad:", ad.id)}
+              >
                 <PencilIcon className="mr-2 h-4 w-4" />
                 Edit Ad
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleDuplicateAd}>
+              <DropdownMenuItem
+                onClick={() => console.log("Duplicating ad:", ad.id)}
+              >
                 <DocumentDuplicateIcon className="mr-2 h-4 w-4" />
                 Duplicate Ad
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                onClick={() => setDeleteDialogOpen(true)}
+                onClick={() => console.log("Deleting ad:", ad.id)}
                 className="text-red-600"
               >
                 <TrashIcon className="mr-2 h-4 w-4" />
@@ -312,27 +307,6 @@ export const adColumns: ColumnDef<Ad>[] = [
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
-          <AlertDialog
-            open={deleteDialogOpen}
-            onOpenChange={setDeleteDialogOpen}
-          >
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will permanently delete the ad "{ad.name}". This action
-                  cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleConfirmedDelete}>
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
         </div>
       );
     },
