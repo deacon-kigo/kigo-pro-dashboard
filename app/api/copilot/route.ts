@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { OpenAI } from "openai";
+import { BaseMessage, HumanMessage, AIMessage } from "@langchain/core/messages";
 import { createSupervisorWorkflow } from "@/services/agents/supervisor";
 import { adCreationAgent } from "@/services/agents/ad-creation";
 import {
@@ -7,13 +8,35 @@ import {
   logAgentInteraction,
 } from "@/lib/copilot-kit/langsmith-config";
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Initialize OpenAI client only when needed and API key is available
+let openai: OpenAI | null = null;
+
+const getOpenAIClient = () => {
+  if (!openai && process.env.OPENAI_API_KEY) {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  return openai;
+};
 
 // Initialize LangGraph workflow
 const supervisorWorkflow = createSupervisorWorkflow();
+
+/**
+ * Convert CopilotKit messages to LangChain BaseMessage format
+ */
+const convertToBaseMessages = (messages: any[]): BaseMessage[] => {
+  return messages.map((msg) => {
+    if (msg.role === "user") {
+      return new HumanMessage(msg.content);
+    } else if (msg.role === "assistant") {
+      return new AIMessage(msg.content);
+    } else {
+      return new HumanMessage(msg.content);
+    }
+  });
+};
 
 /**
  * CopilotKit API Route Handler
@@ -42,7 +65,7 @@ export async function POST(request: NextRequest) {
     // Process the request through LangGraph if messages exist
     if (messages && messages.length > 0) {
       const agentState = {
-        messages,
+        messages: convertToBaseMessages(messages),
         userIntent: "",
         context: {
           currentPage: context?.currentPage || "/",
