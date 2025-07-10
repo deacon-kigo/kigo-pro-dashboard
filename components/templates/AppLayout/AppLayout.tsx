@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import Header from "@/components/organisms/Header/Header";
 import Sidebar from "@/components/organisms/Sidebar/Sidebar";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { AIChat } from "@/components/features/ai";
+
 import { CopilotChatSidebar } from "@/components/copilot/CopilotChatSidebar";
 import {
   Breadcrumb,
@@ -108,7 +108,7 @@ function AppLayoutContent({ children, customBreadcrumb }: AppLayoutProps) {
             </div>
           </main>
         </div>
-        <AIChat />
+        <CopilotChatSidebar />
       </div>
     );
   }
@@ -149,7 +149,6 @@ function AppLayoutContent({ children, customBreadcrumb }: AppLayoutProps) {
           </ResizablePanelGroup>
         </main>
       </div>
-      <AIChat />
       <CopilotChatSidebar />
     </div>
   );

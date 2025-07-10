@@ -7,6 +7,7 @@ import {
   ChatBubbleLeftIcon,
   SparklesIcon,
 } from "@heroicons/react/24/outline";
+import { Button } from "@/components/atoms/Button";
 import { useCopilotReduxBridge } from "../../lib/copilot-kit/redux-bridge";
 import { useSelector } from "react-redux";
 import { RootState } from "../../lib/redux/store";
@@ -36,17 +37,9 @@ export function CopilotChatSidebar() {
   useEffect(() => {
     if (isOpen) {
       setIsAnimating(true);
-      // Add class to body to adjust main content
-      document.body.classList.add("copilot-chat-open");
     } else {
       setIsAnimating(false);
-      document.body.classList.remove("copilot-chat-open");
     }
-
-    // Cleanup on unmount
-    return () => {
-      document.body.classList.remove("copilot-chat-open");
-    };
   }, [isOpen]);
 
   // Don't render if feature is disabled
@@ -89,12 +82,14 @@ Always be helpful, professional, and focused on driving business success. Ask cl
   return (
     <>
       {/* Chat Toggle Button */}
-      <button
+      <Button
         onClick={handleToggle}
         className={`fixed bottom-6 right-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white p-4 rounded-full shadow-lg transition-all duration-300 z-50 group ${
           isOpen ? "scale-90" : "scale-100 hover:scale-110"
         }`}
         aria-label={isOpen ? "Close AI Assistant" : "Open AI Assistant"}
+        variant="ghost"
+        size="sm"
       >
         {isOpen ? (
           <XMarkIcon className="h-6 w-6" />
@@ -112,7 +107,7 @@ Always be helpful, professional, and focused on driving business success. Ask cl
             <div className="absolute top-1/2 left-full transform -translate-y-1/2 border-4 border-transparent border-l-gray-900"></div>
           </div>
         )}
-      </button>
+      </Button>
 
       {/* Overlay */}
       {isOpen && (
@@ -124,47 +119,32 @@ Always be helpful, professional, and focused on driving business success. Ask cl
 
       {/* Full-height Sidebar */}
       <div
-        className={`fixed right-0 top-0 h-full w-96 bg-white shadow-2xl border-l border-gray-200 z-50 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed right-0 top-0 h-full w-80 bg-white shadow-2xl border-l border-gray-200 z-40 transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
               <SparklesIcon className="h-5 w-5 text-white" />
             </div>
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
-                Kigo Pro Assistant
+                AI Assistant
               </h2>
-              <p className="text-sm text-gray-600">Business Success Manager</p>
             </div>
           </div>
 
-          <button
+          <Button
             onClick={handleToggle}
+            variant="ghost"
+            size="sm"
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             aria-label="Close AI Assistant"
           >
             <XMarkIcon className="h-5 w-5 text-gray-500" />
-          </button>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="p-4 border-b border-gray-100 bg-gray-50">
-          <div className="text-sm text-gray-600 mb-2">Quick Actions:</div>
-          <div className="flex flex-wrap gap-2">
-            <button className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs hover:bg-blue-200 transition-colors">
-              Create Campaign
-            </button>
-            <button className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs hover:bg-purple-200 transition-colors">
-              Optimize Performance
-            </button>
-            <button className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs hover:bg-green-200 transition-colors">
-              View Analytics
-            </button>
-          </div>
+          </Button>
         </div>
 
         {/* Chat Interface */}
@@ -173,13 +153,7 @@ Always be helpful, professional, and focused on driving business success. Ask cl
             <CopilotSidebar
               instructions={getPersonalizedInstructions()}
               defaultOpen={true}
-              className="h-full"
               clickOutsideToClose={false}
-              style={{
-                height: "100%",
-                border: "none",
-                borderRadius: "0",
-              }}
             />
           )}
         </div>
@@ -201,20 +175,6 @@ Always be helpful, professional, and focused on driving business success. Ask cl
           </div>
         </div>
       </div>
-
-      {/* Global styles for body adjustment */}
-      <style jsx global>{`
-        .copilot-chat-open {
-          margin-right: 384px; /* 24rem = 384px */
-          transition: margin-right 0.3s ease-in-out;
-        }
-
-        @media (max-width: 768px) {
-          .copilot-chat-open {
-            margin-right: 0;
-          }
-        }
-      `}</style>
     </>
   );
 }
