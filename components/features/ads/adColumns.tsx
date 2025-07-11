@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo } from "react";
+import React, { memo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/atoms/Button";
 import {
@@ -10,6 +10,9 @@ import {
   ChevronDownIcon,
   TrashIcon,
   DocumentDuplicateIcon,
+  PlayIcon,
+  PauseIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -21,6 +24,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useRouter } from "next/navigation";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/molecules/alert-dialog/AlertDialog";
 
 // Simplified Ad data structure - only include what we actually have
 export type Ad = {
@@ -74,9 +88,12 @@ export const formatDateTime = (dateTimeString: string): string => {
 
 // Utility function to format channels with truncation
 export const formatChannels = (
-  channels: string[],
+  channels: string[] = [],
   maxLength: number = 30
 ): string => {
+  if (!channels || channels.length === 0) {
+    return "No channels";
+  }
   const channelsText = channels.join(", ");
   if (channelsText.length <= maxLength) {
     return channelsText;
@@ -116,7 +133,9 @@ const SortIcon = memo(function SortIcon({
   return <ArrowUpDown className="ml-2 h-4 w-4" />;
 });
 
-export const adColumns: ColumnDef<Ad>[] = [
+export const createAdColumns = (
+  onViewDetails?: (ad: Ad) => void
+): ColumnDef<Ad>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -224,7 +243,11 @@ export const adColumns: ColumnDef<Ad>[] = [
     cell: ({ row }) => (
       <div
         className="text-left max-w-[150px] truncate"
-        title={row.original.channels.join(", ")}
+        title={
+          row.original.channels && row.original.channels.length > 0
+            ? row.original.channels.join(", ")
+            : "No channels"
+        }
       >
         {formatChannels(row.original.channels)}
       </div>
@@ -264,52 +287,212 @@ export const adColumns: ColumnDef<Ad>[] = [
 
   {
     id: "actions",
-    header: () => <div className="text-right font-medium">Actions</div>,
+    header: () => <div className="text-center">Actions</div>,
     cell: ({ row }) => {
       const ad = row.original;
+      const router = useRouter();
+
+      // State for dialogs - following filter management pattern
+      const [statusChangeDialog, setStatusChangeDialog] = useState({
+        isOpen: false,
+        newStatus: "",
+        ad: null as Ad | null,
+      });
+      const [detailModalOpen, setDetailModalOpen] = useState(false);
+      const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+      // Handler functions - following filter management pattern
+      function handleViewDetails() {
+        if (onViewDetails) {
+          onViewDetails(ad);
+        } else {
+          setDetailModalOpen(true);
+        }
+      }
+
+      function handleEditAd() {
+        console.log("Edit ad:", ad.id);
+        // TODO: Navigate to edit interface
+        // router.push(`/campaign-manager/ads/${ad.id}/edit`);
+      }
+
+      function handleStatusChange(newStatus: string) {
+        setStatusChangeDialog({
+          isOpen: true,
+          newStatus,
+          ad,
+        });
+      }
+
+      function handleConfirmedStatusChange() {
+        const { ad: dialogAd, newStatus } = statusChangeDialog;
+        if (dialogAd) {
+          console.log(
+            `Changing status of ad ${dialogAd.id} from ${dialogAd.status} to ${newStatus}`
+          );
+          // TODO: Implement actual status change logic
+        }
+        setStatusChangeDialog({ isOpen: false, newStatus: "", ad: null });
+      }
+
+      function handleConfirmedDelete() {
+        console.log("Deleting ad:", ad.id);
+        // TODO: Implement actual delete logic
+        setDeleteDialogOpen(false);
+      }
 
       return (
-        <div className="flex items-center justify-end">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => console.log("Viewing ad details:", ad.id)}
-              >
-                <EyeIcon className="mr-2 h-4 w-4" />
-                View Details
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => console.log("Editing ad:", ad.id)}
-              >
-                <PencilIcon className="mr-2 h-4 w-4" />
-                Edit Ad
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => console.log("Duplicating ad:", ad.id)}
-              >
-                <DocumentDuplicateIcon className="mr-2 h-4 w-4" />
-                Duplicate Ad
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => console.log("Deleting ad:", ad.id)}
-                className="text-red-600"
-              >
-                <TrashIcon className="mr-2 h-4 w-4" />
-                Delete Ad
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        <>
+          <div className="flex justify-center">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+
+                {/* View/Edit Actions */}
+                <DropdownMenuItem onClick={handleViewDetails}>
+                  <EyeIcon className="mr-2 h-4 w-4" />
+                  View Ad
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleEditAd}>
+                  <PencilIcon className="mr-2 h-4 w-4" />
+                  Edit Ad
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+
+                {/* Status Change Actions */}
+                {ad.status !== "Active" && (
+                  <DropdownMenuItem
+                    onClick={() => handleStatusChange("Active")}
+                  >
+                    <PlayIcon className="mr-2 h-4 w-4" />
+                    Activate
+                  </DropdownMenuItem>
+                )}
+                {ad.status === "Active" && (
+                  <DropdownMenuItem
+                    onClick={() => handleStatusChange("Paused")}
+                  >
+                    <PauseIcon className="mr-2 h-4 w-4" />
+                    Pause
+                  </DropdownMenuItem>
+                )}
+                {(ad.status === "Draft" || ad.status === "Paused") && (
+                  <DropdownMenuItem
+                    onClick={() => handleStatusChange("Published")}
+                  >
+                    <DocumentDuplicateIcon className="mr-2 h-4 w-4" />
+                    Publish
+                  </DropdownMenuItem>
+                )}
+                {ad.status !== "Ended" && (
+                  <DropdownMenuItem onClick={() => handleStatusChange("Ended")}>
+                    <XMarkIcon className="mr-2 h-4 w-4" />
+                    End Campaign
+                  </DropdownMenuItem>
+                )}
+
+                <DropdownMenuSeparator />
+
+                {/* Delete Action */}
+                <DropdownMenuItem
+                  onClick={() => setDeleteDialogOpen(true)}
+                  className="text-red-600 focus:text-red-600"
+                >
+                  <TrashIcon className="mr-2 h-4 w-4" />
+                  Delete Ad
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* Status Change Confirmation Dialog */}
+          <AlertDialog
+            open={statusChangeDialog.isOpen}
+            onOpenChange={(open) =>
+              setStatusChangeDialog((prev) => ({ ...prev, isOpen: open }))
+            }
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Confirm Status Change</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to change the status of "{ad.name}" to{" "}
+                  {statusChangeDialog.newStatus}?
+                  {statusChangeDialog.newStatus === "Ended" && (
+                    <div className="mt-2 text-red-600 font-medium">
+                      This action cannot be undone.
+                    </div>
+                  )}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleConfirmedStatusChange}
+                  className={
+                    statusChangeDialog.newStatus === "Ended"
+                      ? "bg-red-600 hover:bg-red-700"
+                      : ""
+                  }
+                >
+                  {statusChangeDialog.newStatus === "Ended"
+                    ? "End Ad"
+                    : `Change to ${statusChangeDialog.newStatus}`}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          {/* Delete Confirmation Dialog */}
+          <AlertDialog
+            open={deleteDialogOpen}
+            onOpenChange={setDeleteDialogOpen}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Ad</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete "{ad.name}"? This action
+                  cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleConfirmedDelete}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  Delete Ad
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          {/* TODO: Add Ad Detail Modal */}
+          {detailModalOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4">
+                <h2 className="text-xl font-bold mb-4">{ad.name}</h2>
+                <p className="text-gray-600 mb-4">
+                  Ad details will be shown here.
+                </p>
+                <Button onClick={() => setDetailModalOpen(false)}>Close</Button>
+              </div>
+            </div>
+          )}
+        </>
       );
     },
     enableSorting: false,
   },
 ];
+
+// Default export for backward compatibility
+export const adColumns = createAdColumns();

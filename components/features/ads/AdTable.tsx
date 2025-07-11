@@ -3,7 +3,7 @@
 import React, { memo, useMemo, useState, useCallback } from "react";
 import { DataTable } from "@/components/organisms/DataTable";
 import { ColumnDef, CellContext } from "@tanstack/react-table";
-import { Ad, adColumns, formatDate } from "./adColumns";
+import { Ad, createAdColumns, formatDate } from "./adColumns";
 import { Pagination } from "@/components/atoms/Pagination";
 import {
   Select,
@@ -28,6 +28,8 @@ interface AdTableProps {
   onPageSizeChange?: (value: string) => void;
   onRowSelectionChange?: (selectedRows: SelectedRows) => void;
   rowSelection?: SelectedRows;
+  selectedRowId?: string | null; // For row highlighting
+  onViewDetails?: (ad: Ad) => void; // Callback for view details
 }
 
 /**
@@ -47,6 +49,8 @@ export const AdTable = memo(function AdTable({
   onPageSizeChange: externalPageSizeChange,
   onRowSelectionChange,
   rowSelection = {}, // Default to empty object if not provided
+  selectedRowId,
+  onViewDetails,
 }: AdTableProps) {
   // Use internal state only if external state is not provided
   const [internalCurrentPage, setInternalCurrentPage] = useState(1);
@@ -100,11 +104,11 @@ export const AdTable = memo(function AdTable({
 
   // Calculate pagination - memoize derived values
   const paginationValues = useMemo(() => {
-    const totalItems = data.length;
+    const totalItems = (data || []).length;
     const totalPages = Math.ceil(totalItems / pageSize);
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = Math.min(startIndex + pageSize, totalItems);
-    const currentPageData = data.slice(startIndex, endIndex);
+    const currentPageData = (data || []).slice(startIndex, endIndex);
 
     return {
       totalItems,
@@ -118,68 +122,17 @@ export const AdTable = memo(function AdTable({
   const { totalItems, startIndex, endIndex, currentPageData } =
     paginationValues;
 
-  // Create highlighted columns for search - memoize this expensive operation
-  const highlightedColumns = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return adColumns;
-    }
-
-    return adColumns.map((col) => {
-      if (typeof col.accessorKey === "string") {
-        const accessorKey = col.accessorKey;
-        const originalCell = col.cell;
-
-        // Handle text fields that need highlighting
-        if (["name", "merchantName", "offerName"].includes(accessorKey)) {
-          return {
-            ...col,
-            cell: (props: CellContext<Ad, unknown>) => {
-              const value = props.row.getValue(accessorKey) as string;
-              if (!value) {
-                return typeof originalCell === "function" ? (
-                  originalCell(props)
-                ) : (
-                  <div className="text-left">-</div>
-                );
-              }
-              const lowerValue = value.toLowerCase();
-              const lowerQuery = searchQuery.toLowerCase();
-              if (!lowerValue.includes(lowerQuery)) {
-                return typeof originalCell === "function" ? (
-                  originalCell(props)
-                ) : (
-                  <div className="text-left">{value}</div>
-                );
-              }
-              // Highlight the matched text
-              const startIndex = lowerValue.indexOf(lowerQuery);
-              const endIndex = startIndex + lowerQuery.length;
-              return (
-                <div className="text-left">
-                  {value.substring(0, startIndex)}
-                  <span className="bg-yellow-200 font-medium">
-                    {value.substring(startIndex, endIndex)}
-                  </span>
-                  {value.substring(endIndex)}
-                </div>
-              );
-            },
-          };
-        }
-      }
-      return col;
-    });
-  }, [searchQuery]);
-
-  // We need this type assertion for compatibility with the DataTable component
-  const columns = highlightedColumns as unknown as ColumnDef<
-    unknown,
-    unknown
-  >[];
+  // Use static columns - no need to recreate on every render
+  const columns = useMemo(() => {
+    const adColumns = createAdColumns(onViewDetails);
+    return (adColumns || []) as unknown as ColumnDef<unknown, unknown>[];
+  }, [onViewDetails]);
 
   // Memoize the selection count for display
   const selectionCount = useMemo(
-    () => Object.keys(rowSelection).filter((key) => rowSelection[key]).length,
+    () =>
+      Object.keys(rowSelection || {}).filter((key) => (rowSelection || {})[key])
+        .length,
     [rowSelection]
   );
 
@@ -200,7 +153,7 @@ export const AdTable = memo(function AdTable({
   const customPagination = useMemo(
     () => (
       <div className="flex items-center justify-between w-full">
-        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+        <div className="flex items-center space-x-2 text-base text-muted-foreground">
           <div>
             {totalItems === 0 ? (
               <span>No ads</span>
@@ -232,7 +185,7 @@ export const AdTable = memo(function AdTable({
 
         <div className="flex items-center space-x-2">
           {selectionCount > 0 && (
-            <div className="mr-4 text-sm">{selectionCount} selected</div>
+            <div className="mr-4 text-base">{selectionCount} selected</div>
           )}
           {paginationElement}
         </div>
