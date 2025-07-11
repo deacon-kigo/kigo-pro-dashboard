@@ -1011,99 +1011,107 @@ export default function AdManagerListView() {
         variant="aurora"
       />
 
-      {/* Page-level Navigation Breadcrumb */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg px-4 py-3 shadow-sm">
-        <div className="flex items-center space-x-2">
-          <div className="flex items-center text-blue-600">
-            <svg
-              className="w-4 h-4 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-              />
-            </svg>
-            <span className="text-sm font-medium">Navigation:</span>
-          </div>
-          {getBreadcrumb.map((crumb, index) => (
-            <div key={index} className="flex items-center">
-              {index > 0 && <span className="mx-2 text-blue-400">→</span>}
-              <span
-                className={
-                  index === getBreadcrumb.length - 1
-                    ? "font-semibold text-blue-900 bg-blue-100 px-2 py-1 rounded-md text-sm"
-                    : "text-blue-700 hover:text-blue-900 cursor-pointer text-sm hover:underline"
-                }
-              >
-                {crumb}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Level Navigation Tabs */}
+      {/* Combined Navigation and Tabs Bar */}
       <Tabs
         value={currentLevel}
         className="w-full"
         onValueChange={(value) => handleLevelChange(value as NavigationLevel)}
       >
         <div className="space-y-4 mb-4">
-          <div className="flex items-center space-x-4">
-            <TabsList>
-              <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
-              <TabsTrigger value="adsets" disabled={!selectedCampaign}>
-                Ad Sets
-              </TabsTrigger>
-              <TabsTrigger value="ads" disabled={!selectedAdSet}>
-                Ads
-              </TabsTrigger>
-            </TabsList>
-
-            <div className="flex-grow">
+          <div className="flex items-center justify-between space-x-4">
+            {/* Left: Search Bar */}
+            <div className="flex-shrink-0 w-80">
               <AdSearchBar onSearch={handleSearch} />
             </div>
 
-            {selectedCount > 0 && (
-              <div className="flex items-center border-l border-r px-4 h-9 border-gray-200">
-                <BulkActions
-                  selectedCount={selectedCount}
-                  onActivate={() => {
-                    // TODO: Implement bulk activate functionality
-                    const selectedIds = Object.keys(selectedAds || {}).filter(
-                      (id) => (selectedAds || {})[id]
-                    );
-                    // Bulk activate logic here
-                  }}
-                  onPause={() => {
-                    // TODO: Implement bulk pause functionality
-                    const selectedIds = Object.keys(selectedAds || {}).filter(
-                      (id) => (selectedAds || {})[id]
-                    );
-                    // Bulk pause logic here
-                  }}
-                  onDuplicate={() => {
-                    // TODO: Implement bulk duplicate functionality
-                    const selectedIds = Object.keys(selectedAds || {}).filter(
-                      (id) => (selectedAds || {})[id]
-                    );
-                    // Bulk duplicate logic here
-                  }}
-                  onDelete={() => {
-                    // TODO: Implement bulk delete functionality
-                    const selectedIds = Object.keys(selectedAds || {}).filter(
-                      (id) => (selectedAds || {})[id]
-                    );
-                    // Bulk delete logic here
-                  }}
-                />
+            {/* Center: Navigation Breadcrumb */}
+            <div className="flex-grow flex justify-center">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg px-4 py-2 shadow-sm">
+                <div className="flex items-center space-x-2">
+                  <div className="flex items-center text-blue-600">
+                    <svg
+                      className="w-4 h-4 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                      />
+                    </svg>
+                    <span className="text-sm font-medium">Navigation:</span>
+                  </div>
+                  {getBreadcrumb.map((crumb, index) => (
+                    <div key={index} className="flex items-center">
+                      {index > 0 && (
+                        <span className="mx-2 text-blue-400">→</span>
+                      )}
+                      <span
+                        className={
+                          index === getBreadcrumb.length - 1
+                            ? "font-semibold text-blue-900 bg-blue-100 px-2 py-1 rounded-md text-sm"
+                            : "text-blue-700 hover:text-blue-900 cursor-pointer text-sm hover:underline"
+                        }
+                      >
+                        {crumb}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            )}
+            </div>
+
+            {/* Right: Campaign Tabs */}
+            <div className="flex items-center space-x-4">
+              <TabsList>
+                <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
+                <TabsTrigger value="adsets" disabled={!selectedCampaign}>
+                  Ad Sets
+                </TabsTrigger>
+                <TabsTrigger value="ads" disabled={!selectedAdSet}>
+                  Ads
+                </TabsTrigger>
+              </TabsList>
+
+              {selectedCount > 0 && (
+                <div className="flex items-center border-l border-r px-4 h-9 border-gray-200">
+                  <BulkActions
+                    selectedCount={selectedCount}
+                    onActivate={() => {
+                      // TODO: Implement bulk activate functionality
+                      const selectedIds = Object.keys(selectedAds || {}).filter(
+                        (id) => (selectedAds || {})[id]
+                      );
+                      // Bulk activate logic here
+                    }}
+                    onPause={() => {
+                      // TODO: Implement bulk pause functionality
+                      const selectedIds = Object.keys(selectedAds || {}).filter(
+                        (id) => (selectedAds || {})[id]
+                      );
+                      // Bulk pause logic here
+                    }}
+                    onDuplicate={() => {
+                      // TODO: Implement bulk duplicate functionality
+                      const selectedIds = Object.keys(selectedAds || {}).filter(
+                        (id) => (selectedAds || {})[id]
+                      );
+                      // Bulk duplicate logic here
+                    }}
+                    onDelete={() => {
+                      // TODO: Implement bulk delete functionality
+                      const selectedIds = Object.keys(selectedAds || {}).filter(
+                        (id) => (selectedAds || {})[id]
+                      );
+                      // Bulk delete logic here
+                    }}
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Advanced Filters - only show for ads level */}
