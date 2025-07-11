@@ -880,19 +880,71 @@ export default function AdManagerListView() {
     setSelectedAds({});
   }, []);
 
-  // Get current data based on level
+  // Get current data based on level with filtering and search
   const getCurrentData = useMemo(() => {
+    let data: any[] = [];
+
     switch (currentLevel) {
       case "campaigns":
-        return mockCampaigns || [];
+        data = mockCampaigns || [];
+        break;
       case "adsets":
-        return selectedCampaign ? selectedCampaign.adSets || [] : [];
+        data = selectedCampaign ? selectedCampaign.adSets || [] : [];
+        break;
       case "ads":
-        return selectedAdSet ? selectedAdSet.ads || [] : [];
+        data = selectedAdSet ? selectedAdSet.ads || [] : [];
+        break;
       default:
-        return [];
+        data = [];
     }
-  }, [currentLevel, selectedCampaign, selectedAdSet]);
+
+    // Apply search query filtering
+    if (searchQuery && searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      data = data.filter((item: any) => {
+        if (currentLevel === "campaigns") {
+          return item.name?.toLowerCase().includes(query);
+        } else if (currentLevel === "adsets") {
+          return (
+            item.name?.toLowerCase().includes(query) ||
+            item.targetAudience?.toLowerCase().includes(query)
+          );
+        } else if (currentLevel === "ads") {
+          return (
+            item.name?.toLowerCase().includes(query) ||
+            item.merchantName?.toLowerCase().includes(query) ||
+            item.offerName?.toLowerCase().includes(query)
+          );
+        }
+        return false;
+      });
+    }
+
+    // Apply advanced filters (only for ads level)
+    if (currentLevel === "ads" && data.length > 0) {
+      const { adNames, merchants, offers } = advancedFilters;
+
+      if (adNames.length > 0) {
+        data = data.filter((ad: Ad) => adNames.includes(ad.name));
+      }
+
+      if (merchants.length > 0) {
+        data = data.filter((ad: Ad) => merchants.includes(ad.merchantName));
+      }
+
+      if (offers.length > 0) {
+        data = data.filter((ad: Ad) => offers.includes(ad.offerName));
+      }
+    }
+
+    return data;
+  }, [
+    currentLevel,
+    selectedCampaign,
+    selectedAdSet,
+    searchQuery,
+    advancedFilters,
+  ]);
 
   // Handle search
   const handleSearch = useCallback((query: string) => {
@@ -959,22 +1011,40 @@ export default function AdManagerListView() {
         variant="aurora"
       />
 
-      {/* Navigation Breadcrumb */}
-      <div className="flex items-center space-x-2 text-base text-gray-600">
-        {getBreadcrumb.map((crumb, index) => (
-          <div key={index} className="flex items-center">
-            {index > 0 && <span className="mx-2">→</span>}
-            <span
-              className={
-                index === getBreadcrumb.length - 1
-                  ? "font-medium text-gray-900"
-                  : "hover:text-gray-900 cursor-pointer"
-              }
+      {/* Page-level Navigation Breadcrumb */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg px-4 py-3 shadow-sm">
+        <div className="flex items-center space-x-2">
+          <div className="flex items-center text-blue-600">
+            <svg
+              className="w-4 h-4 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              {crumb}
-            </span>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+              />
+            </svg>
+            <span className="text-sm font-medium">Navigation:</span>
           </div>
-        ))}
+          {getBreadcrumb.map((crumb, index) => (
+            <div key={index} className="flex items-center">
+              {index > 0 && <span className="mx-2 text-blue-400">→</span>}
+              <span
+                className={
+                  index === getBreadcrumb.length - 1
+                    ? "font-semibold text-blue-900 bg-blue-100 px-2 py-1 rounded-md text-sm"
+                    : "text-blue-700 hover:text-blue-900 cursor-pointer text-sm hover:underline"
+                }
+              >
+                {crumb}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Level Navigation Tabs */}
