@@ -1064,7 +1064,7 @@ export default function AdManagerListView() {
               </div>
             </div>
 
-            {/* Right: Campaign Tabs */}
+            {/* Right: Campaign Tabs + Advanced Filters */}
             <div className="flex items-center space-x-4">
               <TabsList>
                 <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
@@ -1075,6 +1075,15 @@ export default function AdManagerListView() {
                   Ads
                 </TabsTrigger>
               </TabsList>
+
+              {/* Advanced Filters - inline for ads level */}
+              {currentLevel === "ads" && (
+                <AdvancedFilters
+                  ads={getCurrentData as Ad[]}
+                  onFiltersChange={(filters) => setAdvancedFilters(filters)}
+                  initialFilters={advancedFilters}
+                />
+              )}
 
               {selectedCount > 0 && (
                 <div className="flex items-center border-l border-r px-4 h-9 border-gray-200">
@@ -1113,17 +1122,6 @@ export default function AdManagerListView() {
               )}
             </div>
           </div>
-
-          {/* Advanced Filters - only show for ads level */}
-          {currentLevel === "ads" && (
-            <div className="flex justify-start">
-              <AdvancedFilters
-                ads={getCurrentData as Ad[]}
-                onFiltersChange={(filters) => setAdvancedFilters(filters)}
-                initialFilters={advancedFilters}
-              />
-            </div>
-          )}
         </div>
 
         {/* Campaigns Level */}
