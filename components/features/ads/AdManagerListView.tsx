@@ -15,7 +15,16 @@ import {
   DocumentDuplicateIcon,
   PlayIcon,
   PauseIcon,
+  ChevronDownIcon,
 } from "@heroicons/react/24/outline";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Tabs,
   TabsContent,
@@ -974,38 +983,93 @@ export default function AdManagerListView() {
     [selectedAds]
   );
 
-  // Memoize create button
+  // Memoize create dropdown button
   const createButton = useMemo(() => {
-    const buttonText =
-      currentLevel === "campaigns"
-        ? "Create Campaign"
-        : currentLevel === "adsets"
-          ? "Create Ad Set"
-          : "Create Ad";
+    const handleCreateCampaign = () => {
+      console.log("Creating new campaign...");
+      // TODO: Navigate to campaign creation page
+      // router.push('/campaign-manager/campaigns/create');
+    };
 
-    const handleCreate = () => {
-      // TODO: Navigate to appropriate creation page based on current level
-      if (currentLevel === "campaigns") {
-        // router.push('/campaign-manager/campaigns/create');
-      } else if (currentLevel === "adsets") {
-        // router.push('/campaign-manager/adsets/create');
-      } else {
-        // router.push('/campaign-manager/ads/create');
-      }
+    const handleCreateAdSet = () => {
+      console.log("Creating new ad set...");
+      // TODO: Navigate to ad set creation page
+      // router.push('/campaign-manager/adsets/create');
+    };
+
+    const handleCreateAd = () => {
+      console.log("Creating new ad...");
+      // TODO: Navigate to ad creation page
+      // router.push('/campaign-manager/ads/create');
+    };
+
+    const handleCreateGroup = () => {
+      console.log("Creating campaign group...");
+      // TODO: Navigate to campaign group creation
     };
 
     return (
-      <Button onClick={handleCreate} className="flex items-center gap-1">
-        <PlusIcon className="h-4 w-4" />
-        {buttonText}
-      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button className="flex items-center gap-1">
+            <PlusIcon className="h-4 w-4" />
+            Create
+            <ChevronDownIcon className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuLabel>Create New</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={handleCreateCampaign}
+            className="flex items-center gap-2"
+          >
+            <PlusIcon className="h-4 w-4" />
+            Campaign
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={handleCreateAdSet}
+            className="flex items-center gap-2"
+            disabled={!selectedCampaign}
+          >
+            <PlusIcon className="h-4 w-4" />
+            Ad Set
+            {!selectedCampaign && (
+              <span className="text-xs text-gray-400 ml-auto">
+                (Select campaign first)
+              </span>
+            )}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={handleCreateAd}
+            className="flex items-center gap-2"
+            disabled={!selectedAdSet}
+          >
+            <PlusIcon className="h-4 w-4" />
+            Ad
+            {!selectedAdSet && (
+              <span className="text-xs text-gray-400 ml-auto">
+                (Select ad set first)
+              </span>
+            )}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={handleCreateGroup}
+            className="flex items-center gap-2"
+          >
+            <PlusIcon className="h-4 w-4" />
+            Campaign Group
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     );
-  }, [currentLevel]);
+  }, [selectedCampaign, selectedAdSet]);
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Create Ads"
+        title="Ads Manager"
         description="Create, manage, and optimize your advertising campaigns across multiple channels and platforms."
         actions={createButton}
         variant="aurora"
