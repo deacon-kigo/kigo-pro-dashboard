@@ -32,6 +32,7 @@ import {
   TabsTrigger,
 } from "@/components/atoms/Tabs";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { PageHeader } from "@/components/molecules/PageHeader";
 import { AdTable, SelectedRows } from "./AdTable";
 import { Ad, formatDate, formatDateTime, formatChannels } from "./adColumns";
@@ -70,6 +71,41 @@ interface ModalState {
 
 // Type for navigation levels
 type NavigationLevel = "campaigns" | "adsets" | "ads";
+
+// Constants to prevent object recreation on every render
+const EMPTY_SELECTED_ADS: SelectedRows = {};
+const EMPTY_ARRAY: any[] = [];
+
+// Modal state constants to prevent object recreation
+const CLOSED_MODAL_STATE: ModalState = {
+  statusChange: {
+    isOpen: false,
+    ad: null,
+    newStatus: "",
+  },
+  adDetail: {
+    isOpen: false,
+    ad: null,
+  },
+};
+
+// Status color function moved outside component to prevent recreation
+const getStatusColor = (status: CampaignStatus) => {
+  switch (status) {
+    case "Active":
+      return "bg-green-100 text-green-800";
+    case "Paused":
+      return "bg-yellow-100 text-yellow-800";
+    case "Published":
+      return "bg-blue-100 text-blue-800";
+    case "Draft":
+      return "bg-gray-100 text-gray-800";
+    case "Ended":
+      return "bg-red-100 text-red-800";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
+};
 
 // Bulk actions component
 const BulkActions = memo(function BulkActions({
@@ -120,12 +156,10 @@ const BulkActions = memo(function BulkActions({
 // Campaign Table Component
 const CampaignTable = memo(function CampaignTable({
   data,
-  searchQuery,
   onCampaignSelect,
   className,
 }: {
   data: Campaign[];
-  searchQuery: string;
   onCampaignSelect: (campaign: Campaign) => void;
   className?: string;
 }) {
@@ -166,23 +200,6 @@ const CampaignTable = memo(function CampaignTable({
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {(data || []).map((campaign) => {
-              const getStatusColor = (status: CampaignStatus) => {
-                switch (status) {
-                  case "Active":
-                    return "bg-green-100 text-green-800";
-                  case "Paused":
-                    return "bg-yellow-100 text-yellow-800";
-                  case "Published":
-                    return "bg-blue-100 text-blue-800";
-                  case "Draft":
-                    return "bg-gray-100 text-gray-800";
-                  case "Ended":
-                    return "bg-red-100 text-red-800";
-                  default:
-                    return "bg-gray-100 text-gray-800";
-                }
-              };
-
               const clicks = campaign.clicks || 0;
               const conversions = campaign.conversions || 0;
               const conversionRate =
@@ -309,12 +326,10 @@ const CampaignTable = memo(function CampaignTable({
 // Ad Set Table Component
 const AdSetTable = memo(function AdSetTable({
   data,
-  searchQuery,
   onAdSetSelect,
   className,
 }: {
   data: AdSet[];
-  searchQuery: string;
   onAdSetSelect: (adSet: AdSet) => void;
   className?: string;
 }) {
@@ -795,6 +810,98 @@ const mockCampaigns: Campaign[] = [
   },
 ];
 
+// Custom dropdown without ShadCN to avoid re-rendering issues
+const CreateButtonCustom = memo(function CreateButtonCustom() {
+  const [isOpen, setIsOpen] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({
+    top: 0,
+    right: 0,
+  });
+
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + 8,
+        right: window.innerWidth - rect.right,
+      });
+    }
+  }, [isOpen]);
+
+  return (
+    <>
+      <Button
+        ref={buttonRef}
+        className="flex items-center gap-1"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <PlusIcon className="h-4 w-4" />
+        Create
+        <ChevronDownIcon className="h-4 w-4" />
+      </Button>
+
+      {isOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-[9998]"
+            onClick={() => setIsOpen(false)}
+          />
+          <div
+            className="fixed w-48 bg-white rounded-md shadow-lg border z-[9999]"
+            style={{
+              top: dropdownPosition.top,
+              right: dropdownPosition.right,
+            }}
+          >
+            <div className="py-1">
+              <div className="px-4 py-2 text-sm font-medium text-gray-700 border-b">
+                Create New
+              </div>
+              <Link
+                href="/campaigns/create"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                onClick={() => setIsOpen(false)}
+              >
+                <PlusIcon className="h-4 w-4 mr-2" />
+                Campaign
+              </Link>
+              <button
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                onClick={() => {
+                  console.log("Create Ad Set clicked");
+                  setIsOpen(false);
+                }}
+              >
+                <PlusIcon className="h-4 w-4 mr-2" />
+                Ad Set
+              </button>
+              <Link
+                href="/campaign-manager/ads-create"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                onClick={() => setIsOpen(false)}
+              >
+                <PlusIcon className="h-4 w-4 mr-2" />
+                Ad
+              </Link>
+            </div>
+          </div>
+        </>
+      )}
+    </>
+  );
+});
+
+// Simple static create button - no dropdown, no re-renders
+const CreateButtonSimple = (
+  <Link href="/campaign-manager/ads-create">
+    <Button className="flex items-center gap-1">
+      <PlusIcon className="h-4 w-4" />
+      Create Ad
+    </Button>
+  </Link>
+);
+
 /**
  * AdManagerListView Component
  *
@@ -802,13 +909,12 @@ const mockCampaigns: Campaign[] = [
  * with navigation tabs similar to Facebook's Ad Manager
  */
 export default function AdManagerListView() {
-  const router = useRouter();
   const dispatch = useDispatch();
   const [searchQuery, setSearchQuery] = useState("");
   const [currentLevel, setCurrentLevel] =
     useState<NavigationLevel>("campaigns");
   const [selectedAds, setSelectedAds] = useState<SelectedRows>({});
-  const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
+  const [selectedRowId] = useState<string | null>(null);
 
   // Navigation state - tracks which campaign/ad set is selected
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(
@@ -816,15 +922,17 @@ export default function AdManagerListView() {
   );
   const [selectedAdSet, setSelectedAdSet] = useState<AdSet | null>(null);
 
-  // Advanced filters state
-  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilterState>({
-    adNames: [],
-    merchants: [],
-    offers: [],
-  });
+  // Advanced filters state - use useState with function to prevent object recreation
+  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilterState>(
+    () => ({
+      adNames: [],
+      merchants: [],
+      offers: [],
+    })
+  );
 
-  // Modal states
-  const [modalState, setModalState] = useState<ModalState>({
+  // Modal states - use useState with function to prevent object recreation
+  const [modalState, setModalState] = useState<ModalState>(() => ({
     statusChange: {
       isOpen: false,
       ad: null,
@@ -834,11 +942,7 @@ export default function AdManagerListView() {
       isOpen: false,
       ad: null,
     },
-  });
-
-  // Ref to hold current modal state for stable callbacks
-  const modalStateRef = useRef(modalState);
-  modalStateRef.current = modalState;
+  }));
 
   // Clear dropdowns when component unmounts to prevent memory leaks
   useEffect(() => {
@@ -847,21 +951,21 @@ export default function AdManagerListView() {
     };
   }, [dispatch]);
 
-  // Level-specific pagination state
+  // Level-specific pagination state - use useState with function to prevent object recreation
   const [paginationState, setPaginationState] = useState<
     Record<NavigationLevel, PaginationState>
-  >({
+  >(() => ({
     campaigns: { currentPage: 1, pageSize: 10 },
     adsets: { currentPage: 1, pageSize: 10 },
     ads: { currentPage: 1, pageSize: 10 },
-  });
+  }));
 
   // Handle level change with useCallback
   const handleLevelChange = useCallback(
     (level: NavigationLevel) => {
       setCurrentLevel(level);
       // Clear selections when changing levels
-      setSelectedAds({});
+      setSelectedAds(EMPTY_SELECTED_ADS);
       // Reset to campaigns level if going back
       if (level === "campaigns") {
         setSelectedCampaign(null);
@@ -879,85 +983,160 @@ export default function AdManagerListView() {
   const handleCampaignSelect = useCallback((campaign: Campaign) => {
     setSelectedCampaign(campaign);
     setCurrentLevel("adsets");
-    setSelectedAds({});
+    setSelectedAds(EMPTY_SELECTED_ADS);
   }, []);
 
   // Handle ad set selection
   const handleAdSetSelect = useCallback((adSet: AdSet) => {
     setSelectedAdSet(adSet);
     setCurrentLevel("ads");
-    setSelectedAds({});
+    setSelectedAds(EMPTY_SELECTED_ADS);
   }, []);
 
-  // Get current data based on level with filtering and search
-  const getCurrentData = useMemo(() => {
-    let data: any[] = [];
-
+  // Get base data without filtering
+  const baseData = useMemo(() => {
     switch (currentLevel) {
       case "campaigns":
-        data = mockCampaigns || [];
-        break;
+        return mockCampaigns || [];
       case "adsets":
-        data = selectedCampaign ? selectedCampaign.adSets || [] : [];
-        break;
+        return selectedCampaign ? selectedCampaign.adSets || [] : [];
       case "ads":
-        data = selectedAdSet ? selectedAdSet.ads || [] : [];
-        break;
+        return selectedAdSet ? selectedAdSet.ads || [] : [];
       default:
-        data = [];
+        return [];
+    }
+  }, [currentLevel, selectedCampaign, selectedAdSet]);
+
+  // Apply search filtering
+  const searchFilteredData = useMemo(() => {
+    if (!searchQuery || !searchQuery.trim()) {
+      return baseData;
     }
 
-    // Apply search query filtering
-    if (searchQuery && searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      data = data.filter((item: any) => {
-        if (currentLevel === "campaigns") {
-          return item.name?.toLowerCase().includes(query);
-        } else if (currentLevel === "adsets") {
-          return (
-            item.name?.toLowerCase().includes(query) ||
-            item.targetAudience?.toLowerCase().includes(query)
-          );
-        } else if (currentLevel === "ads") {
-          return (
-            item.name?.toLowerCase().includes(query) ||
-            item.merchantName?.toLowerCase().includes(query) ||
-            item.offerName?.toLowerCase().includes(query)
-          );
-        }
-        return false;
-      });
+    const query = searchQuery.toLowerCase();
+    return baseData.filter((item: any) => {
+      if (currentLevel === "campaigns") {
+        return item.name?.toLowerCase().includes(query);
+      } else if (currentLevel === "adsets") {
+        return (
+          item.name?.toLowerCase().includes(query) ||
+          item.targetAudience?.toLowerCase().includes(query)
+        );
+      } else if (currentLevel === "ads") {
+        return (
+          item.name?.toLowerCase().includes(query) ||
+          item.merchantName?.toLowerCase().includes(query) ||
+          item.offerName?.toLowerCase().includes(query)
+        );
+      }
+      return false;
+    });
+  }, [baseData, searchQuery, currentLevel]);
+
+  // Apply advanced filters (only for ads level)
+  const getCurrentData = useMemo(() => {
+    if (currentLevel !== "ads" || searchFilteredData.length === 0) {
+      return searchFilteredData;
     }
 
-    // Apply advanced filters (only for ads level)
-    if (currentLevel === "ads" && data.length > 0) {
-      const { adNames, merchants, offers } = advancedFilters;
+    let data = searchFilteredData as Ad[];
+    const { adNames, merchants, offers } = advancedFilters;
 
-      if (adNames.length > 0) {
-        data = data.filter((ad: Ad) => adNames.includes(ad.name));
-      }
+    if (adNames.length > 0) {
+      data = data.filter((ad) => adNames.includes(ad.name));
+    }
 
-      if (merchants.length > 0) {
-        data = data.filter((ad: Ad) => merchants.includes(ad.merchantName));
-      }
+    if (merchants.length > 0) {
+      data = data.filter((ad) => merchants.includes(ad.merchantName));
+    }
 
-      if (offers.length > 0) {
-        data = data.filter((ad: Ad) => offers.includes(ad.offerName));
-      }
+    if (offers.length > 0) {
+      data = data.filter((ad) => offers.includes(ad.offerName));
     }
 
     return data;
-  }, [
-    currentLevel,
-    selectedCampaign,
-    selectedAdSet,
-    searchQuery,
-    advancedFilters,
-  ]);
+  }, [searchFilteredData, advancedFilters, currentLevel]);
 
   // Handle search
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
+  }, []);
+
+  // Handle advanced filters change
+  const handleAdvancedFiltersChange = useCallback(
+    (filters: AdvancedFilterState) => {
+      setAdvancedFilters(filters);
+    },
+    []
+  );
+
+  // Handle pagination changes
+  const handlePageChange = useCallback((page: number) => {
+    setPaginationState((prev) => ({
+      ...prev,
+      ads: { ...prev.ads, currentPage: page },
+    }));
+  }, []);
+
+  const handlePageSizeChange = useCallback((size: string) => {
+    setPaginationState((prev) => ({
+      ...prev,
+      ads: { ...prev.ads, pageSize: parseInt(size) },
+    }));
+  }, []);
+
+  // Handle modal state changes
+  const handleViewDetails = useCallback((ad: Ad) => {
+    setModalState({
+      ...CLOSED_MODAL_STATE,
+      adDetail: {
+        isOpen: true,
+        ad,
+      },
+    });
+  }, []);
+
+  // Handle modal close
+  const handleModalClose = useCallback(() => {
+    setModalState(CLOSED_MODAL_STATE);
+  }, []);
+
+  // Handle bulk actions
+  const handleBulkActivate = useCallback(() => {
+    // TODO: Implement bulk activate functionality
+    console.log(
+      "Bulk activate:",
+      Object.keys(selectedAds || {}).filter((id) => selectedAds[id])
+    );
+  }, [selectedAds]);
+
+  const handleBulkPause = useCallback(() => {
+    // TODO: Implement bulk pause functionality
+    console.log(
+      "Bulk pause:",
+      Object.keys(selectedAds || {}).filter((id) => selectedAds[id])
+    );
+  }, [selectedAds]);
+
+  const handleBulkDuplicate = useCallback(() => {
+    // TODO: Implement bulk duplicate functionality
+    console.log(
+      "Bulk duplicate:",
+      Object.keys(selectedAds || {}).filter((id) => selectedAds[id])
+    );
+  }, [selectedAds]);
+
+  const handleBulkDelete = useCallback(() => {
+    // TODO: Implement bulk delete functionality
+    console.log(
+      "Bulk delete:",
+      Object.keys(selectedAds || {}).filter((id) => selectedAds[id])
+    );
+  }, [selectedAds]);
+
+  // Handle row selection change
+  const handleRowSelectionChange = useCallback((selection: SelectedRows) => {
+    setSelectedAds(selection);
   }, []);
 
   // Create navigation breadcrumb
@@ -983,95 +1162,15 @@ export default function AdManagerListView() {
     [selectedAds]
   );
 
-  // Memoize create dropdown button
-  const createButton = useMemo(() => {
-    const handleCreateCampaign = () => {
-      console.log("Creating new campaign...");
-      // TODO: Navigate to campaign creation page
-      // router.push('/campaign-manager/campaigns/create');
-    };
-
-    const handleCreateAdSet = () => {
-      console.log("Creating new ad set...");
-      // TODO: Navigate to ad set creation page
-      // router.push('/campaign-manager/adsets/create');
-    };
-
-    const handleCreateAd = () => {
-      console.log("Creating new ad...");
-      // TODO: Navigate to ad creation page
-      // router.push('/campaign-manager/ads/create');
-    };
-
-    const handleCreateGroup = () => {
-      console.log("Creating campaign group...");
-      // TODO: Navigate to campaign group creation
-    };
-
-    return (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button className="flex items-center gap-1">
-            <PlusIcon className="h-4 w-4" />
-            Create
-            <ChevronDownIcon className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuLabel>Create New</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={handleCreateCampaign}
-            className="flex items-center gap-2"
-          >
-            <PlusIcon className="h-4 w-4" />
-            Campaign
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={handleCreateAdSet}
-            className="flex items-center gap-2"
-            disabled={!selectedCampaign}
-          >
-            <PlusIcon className="h-4 w-4" />
-            Ad Set
-            {!selectedCampaign && (
-              <span className="text-xs text-gray-400 ml-auto">
-                (Select campaign first)
-              </span>
-            )}
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={handleCreateAd}
-            className="flex items-center gap-2"
-            disabled={!selectedAdSet}
-          >
-            <PlusIcon className="h-4 w-4" />
-            Ad
-            {!selectedAdSet && (
-              <span className="text-xs text-gray-400 ml-auto">
-                (Select ad set first)
-              </span>
-            )}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={handleCreateGroup}
-            className="flex items-center gap-2"
-          >
-            <PlusIcon className="h-4 w-4" />
-            Campaign Group
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    );
-  }, [selectedCampaign, selectedAdSet]);
+  // Use custom dropdown (switch to this after testing simple button)
+  const headerActions = useMemo(() => <CreateButtonCustom />, []);
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Ads Manager"
         description="Create, manage, and optimize your advertising campaigns across multiple channels and platforms."
-        actions={createButton}
+        actions={headerActions}
         variant="aurora"
       />
 
@@ -1144,7 +1243,7 @@ export default function AdManagerListView() {
               {currentLevel === "ads" && (
                 <AdvancedFilters
                   ads={getCurrentData as Ad[]}
-                  onFiltersChange={(filters) => setAdvancedFilters(filters)}
+                  onFiltersChange={handleAdvancedFiltersChange}
                   initialFilters={advancedFilters}
                 />
               )}
@@ -1153,34 +1252,10 @@ export default function AdManagerListView() {
                 <div className="flex items-center border-l border-r px-4 h-9 border-gray-200">
                   <BulkActions
                     selectedCount={selectedCount}
-                    onActivate={() => {
-                      // TODO: Implement bulk activate functionality
-                      const selectedIds = Object.keys(selectedAds || {}).filter(
-                        (id) => (selectedAds || {})[id]
-                      );
-                      // Bulk activate logic here
-                    }}
-                    onPause={() => {
-                      // TODO: Implement bulk pause functionality
-                      const selectedIds = Object.keys(selectedAds || {}).filter(
-                        (id) => (selectedAds || {})[id]
-                      );
-                      // Bulk pause logic here
-                    }}
-                    onDuplicate={() => {
-                      // TODO: Implement bulk duplicate functionality
-                      const selectedIds = Object.keys(selectedAds || {}).filter(
-                        (id) => (selectedAds || {})[id]
-                      );
-                      // Bulk duplicate logic here
-                    }}
-                    onDelete={() => {
-                      // TODO: Implement bulk delete functionality
-                      const selectedIds = Object.keys(selectedAds || {}).filter(
-                        (id) => (selectedAds || {})[id]
-                      );
-                      // Bulk delete logic here
-                    }}
+                    onActivate={handleBulkActivate}
+                    onPause={handleBulkPause}
+                    onDuplicate={handleBulkDuplicate}
+                    onDelete={handleBulkDelete}
                   />
                 </div>
               )}
@@ -1192,7 +1267,6 @@ export default function AdManagerListView() {
         <TabsContent value="campaigns" className="mt-4">
           <CampaignTable
             data={getCurrentData as Campaign[]}
-            searchQuery={searchQuery}
             onCampaignSelect={handleCampaignSelect}
             className="border-rounded"
           />
@@ -1202,7 +1276,6 @@ export default function AdManagerListView() {
         <TabsContent value="adsets" className="mt-4">
           <AdSetTable
             data={getCurrentData as AdSet[]}
-            searchQuery={searchQuery}
             onAdSetSelect={handleAdSetSelect}
             className="border-rounded"
           />
@@ -1216,27 +1289,12 @@ export default function AdManagerListView() {
             className="border-rounded"
             currentPage={paginationState.ads.currentPage}
             pageSize={paginationState.ads.pageSize}
-            onPageChange={(page) =>
-              setPaginationState((prev) => ({
-                ...prev,
-                ads: { ...prev.ads, currentPage: page },
-              }))
-            }
-            onPageSizeChange={(size) =>
-              setPaginationState((prev) => ({
-                ...prev,
-                ads: { ...prev.ads, pageSize: parseInt(size) },
-              }))
-            }
-            onRowSelectionChange={setSelectedAds}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            onRowSelectionChange={handleRowSelectionChange}
             rowSelection={selectedAds}
             selectedRowId={selectedRowId}
-            onViewDetails={(ad) =>
-              setModalState((prev) => ({
-                ...prev,
-                adDetail: { isOpen: true, ad },
-              }))
-            }
+            onViewDetails={handleViewDetails}
           />
         </TabsContent>
       </Tabs>
@@ -1244,35 +1302,15 @@ export default function AdManagerListView() {
       {/* Modals */}
       <StatusChangeDialog
         isOpen={modalState.statusChange.isOpen}
-        onClose={() =>
-          setModalState((prev) => ({
-            ...prev,
-            statusChange: { ...prev.statusChange, isOpen: false },
-          }))
-        }
-        onConfirm={() => {
-          // TODO: Implement actual status change logic
-          const { ad, newStatus } = modalState.statusChange;
-          if (ad) {
-            // Update ad status in state/backend
-          }
-          setModalState((prev) => ({
-            ...prev,
-            statusChange: { ...prev.statusChange, isOpen: false },
-          }));
-        }}
+        onClose={handleModalClose}
+        onConfirm={handleModalClose}
         ad={modalState.statusChange.ad}
         newStatus={modalState.statusChange.newStatus}
       />
 
       <AdDetailModal
         isOpen={modalState.adDetail.isOpen}
-        onClose={() =>
-          setModalState((prev) => ({
-            ...prev,
-            adDetail: { ...prev.adDetail, isOpen: false },
-          }))
-        }
+        onClose={handleModalClose}
         ad={modalState.adDetail.ad}
       />
     </div>
