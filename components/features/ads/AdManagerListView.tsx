@@ -16,6 +16,8 @@ import {
   PlayIcon,
   PauseIcon,
   ChevronDownIcon,
+  EyeIcon,
+  PencilIcon,
 } from "@heroicons/react/24/outline";
 import {
   DropdownMenu,
@@ -42,6 +44,19 @@ import { StatusChangeDialog } from "./StatusChangeDialog";
 import { AdDetailModal } from "./AdDetailModal";
 import { useDispatch } from "react-redux";
 import { clearAllDropdowns } from "@/lib/redux/slices/uiSlice";
+import { DataTable } from "@/components/organisms/DataTable";
+import { ColumnDef } from "@tanstack/react-table";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { Pagination } from "@/components/atoms/Pagination";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/atoms/Select";
+import { cn } from "@/lib/utils";
 
 // Type for pagination state
 interface PaginationState {
@@ -107,6 +122,377 @@ const getStatusColor = (status: CampaignStatus) => {
   }
 };
 
+// Sort icon component
+const SortIcon = memo(function SortIcon({
+  sorted,
+}: {
+  sorted: false | "asc" | "desc";
+}) {
+  if (sorted === "asc") {
+    return <ChevronDownIcon className="ml-2 h-4 w-4" />;
+  } else if (sorted === "desc") {
+    return <ChevronDownIcon className="ml-2 h-4 w-4 rotate-180" />;
+  }
+  return <ArrowUpDown className="ml-2 h-4 w-4" />;
+});
+
+// Campaign columns definition
+const createCampaignColumns = (
+  onCampaignSelect: (campaign: Campaign) => void
+): ColumnDef<Campaign>[] => [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "name",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
+        >
+          Campaign Name
+          <SortIcon sorted={column.getIsSorted()} />
+        </Button>
+      );
+    },
+    cell: ({ row }) => (
+      <div className="text-left max-w-[200px]">
+        <div className="font-medium truncate" title={row.getValue("name")}>
+          {row.getValue("name") || "Unnamed Campaign"}
+        </div>
+        <div className="text-sm text-gray-500">
+          {new Date(row.original.createdDate || new Date()).toLocaleDateString(
+            "en-US",
+            {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            }
+          )}{" "}
+          -{" "}
+          {new Date(row.original.lastModified || new Date()).toLocaleDateString(
+            "en-US",
+            {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            }
+          )}
+        </div>
+      </div>
+    ),
+  },
+  {
+    accessorKey: "status",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
+        >
+          Status
+          <SortIcon sorted={column.getIsSorted()} />
+        </Button>
+      );
+    },
+    cell: ({ row }) => (
+      <span
+        className={`inline-flex px-2 py-1 text-sm font-semibold rounded-full ${getStatusColor(row.getValue("status") || "Draft")}`}
+      >
+        {row.getValue("status") || "Draft"}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "budget",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
+        >
+          Budget
+          <SortIcon sorted={column.getIsSorted()} />
+        </Button>
+      );
+    },
+    cell: ({ row }) => (
+      <div className="text-left">
+        <div className="font-medium">
+          ${((row.getValue("budget") as number) || 0).toLocaleString()}
+        </div>
+        <div className="text-sm text-gray-500">
+          Spent: ${(row.original.spent || 0).toLocaleString()}
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: "market",
+    header: () => <div className="text-left font-medium">Market</div>,
+    cell: () => (
+      <div className="text-left">
+        <div className="text-sm">Northeast</div>
+        <div className="text-sm text-gray-500">Multi-state</div>
+      </div>
+    ),
+    enableSorting: false,
+  },
+  {
+    id: "adSets",
+    header: () => <div className="text-left font-medium">Ad Sets</div>,
+    cell: ({ row }) => (
+      <div className="text-left">
+        <div className="font-medium">{(row.original.adSets || []).length}</div>
+        <div className="text-sm text-gray-500">
+          {
+            (row.original.adSets || []).filter((as) => as.status === "Active")
+              .length
+          }{" "}
+          active
+        </div>
+      </div>
+    ),
+    enableSorting: false,
+  },
+  {
+    id: "performance",
+    header: () => <div className="text-left font-medium">Performance</div>,
+    cell: ({ row }) => {
+      const clicks = row.original.clicks || 0;
+      const conversions = row.original.conversions || 0;
+      const conversionRate =
+        clicks > 0 ? ((conversions / clicks) * 100).toFixed(1) : "0.0";
+      const performanceIndicator =
+        conversions > 50 ? "↗" : conversions > 20 ? "→" : "↘";
+      const performanceText =
+        conversions > 50
+          ? `+${conversionRate}%`
+          : conversions > 20
+            ? `${conversionRate}%`
+            : `-${conversionRate}%`;
+
+      return (
+        <div className="text-left">
+          <div className="flex items-center">
+            <span className="mr-1">{performanceIndicator}</span>
+            <span
+              className={
+                conversions > 50
+                  ? "text-green-600"
+                  : conversions > 20
+                    ? "text-gray-600"
+                    : "text-red-600"
+              }
+            >
+              {performanceText}
+            </span>
+          </div>
+          <div className="text-sm text-gray-500">{conversions} conversions</div>
+        </div>
+      );
+    },
+    enableSorting: false,
+  },
+  {
+    id: "actions",
+    header: () => <div className="text-center">Actions</div>,
+    cell: ({ row }) => (
+      <div className="flex justify-center">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => onCampaignSelect(row.original)}>
+              <EyeIcon className="mr-2 h-4 w-4" />
+              View Ad Sets
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <PencilIcon className="mr-2 h-4 w-4" />
+              Edit Campaign
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    ),
+    enableSorting: false,
+  },
+];
+
+// Ad Set columns definition
+const createAdSetColumns = (
+  onAdSetSelect: (adSet: AdSet) => void
+): ColumnDef<AdSet>[] => [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "name",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
+        >
+          Ad Set Name
+          <SortIcon sorted={column.getIsSorted()} />
+        </Button>
+      );
+    },
+    cell: ({ row }) => (
+      <div
+        className="font-medium text-left max-w-[200px] truncate"
+        title={row.getValue("name")}
+      >
+        {row.getValue("name") || "Unnamed Ad Set"}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "status",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
+        >
+          Status
+          <SortIcon sorted={column.getIsSorted()} />
+        </Button>
+      );
+    },
+    cell: ({ row }) => (
+      <span
+        className={`inline-flex px-2 py-1 text-sm font-semibold rounded-full ${getStatusColor(row.getValue("status") || "Draft")}`}
+      >
+        {row.getValue("status") || "Draft"}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "budget",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
+        >
+          Budget
+          <SortIcon sorted={column.getIsSorted()} />
+        </Button>
+      );
+    },
+    cell: ({ row }) => (
+      <div className="text-left font-medium">
+        ${((row.getValue("budget") as number) || 0).toLocaleString()}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "targetAudience",
+    header: () => <div className="text-left font-medium">Target Audience</div>,
+    cell: ({ row }) => (
+      <div
+        className="text-left max-w-[200px] truncate"
+        title={row.getValue("targetAudience")}
+      >
+        {row.getValue("targetAudience") || "Not specified"}
+      </div>
+    ),
+    enableSorting: false,
+  },
+  {
+    id: "ads",
+    header: () => <div className="text-left font-medium">Ads</div>,
+    cell: ({ row }) => (
+      <div className="text-left font-medium">
+        {(row.original.ads || []).length}
+      </div>
+    ),
+    enableSorting: false,
+  },
+  {
+    id: "actions",
+    header: () => <div className="text-center">Actions</div>,
+    cell: ({ row }) => (
+      <div className="flex justify-center">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => onAdSetSelect(row.original)}>
+              <EyeIcon className="mr-2 h-4 w-4" />
+              View Ads
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <PencilIcon className="mr-2 h-4 w-4" />
+              Edit Ad Set
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    ),
+    enableSorting: false,
+  },
+];
+
 // Bulk actions component
 const BulkActions = memo(function BulkActions({
   selectedCount,
@@ -153,259 +539,354 @@ const BulkActions = memo(function BulkActions({
   );
 });
 
-// Campaign Table Component
+// Campaign Table Component using DataTable
 const CampaignTable = memo(function CampaignTable({
   data,
   onCampaignSelect,
   className,
+  rowSelection = {},
+  onRowSelectionChange,
+  currentPage = 1,
+  pageSize = 10,
+  onPageChange,
+  onPageSizeChange,
 }: {
   data: Campaign[];
   onCampaignSelect: (campaign: Campaign) => void;
   className?: string;
+  rowSelection?: SelectedRows;
+  onRowSelectionChange?: (selection: SelectedRows) => void;
+  currentPage?: number;
+  pageSize?: number;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (value: string) => void;
 }) {
-  return (
-    <div className={className}>
-      <div className="bg-white rounded-md border border-gray-200 overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3"
-                  />
-                  Campaign Name
-                </div>
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
-                Budget
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
-                Market
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
-                Ad Sets
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
-                Performance
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {(data || []).map((campaign) => {
-              const clicks = campaign.clicks || 0;
-              const conversions = campaign.conversions || 0;
-              const conversionRate =
-                clicks > 0 ? ((conversions / clicks) * 100).toFixed(1) : "0.0";
-              const performanceIndicator =
-                conversions > 50 ? "↗" : conversions > 20 ? "→" : "↘";
-              const performanceText =
-                conversions > 50
-                  ? `+${conversionRate}%`
-                  : conversions > 20
-                    ? `${conversionRate}%`
-                    : `-${conversionRate}%`;
+  // Use internal state only if external state is not provided
+  const [internalCurrentPage, setInternalCurrentPage] = useState(1);
+  const [internalPageSize, setInternalPageSize] = useState(10);
 
-              return (
-                <tr key={campaign.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3"
-                      />
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {campaign.name || "Unnamed Campaign"}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {new Date(
-                            campaign.createdDate || new Date()
-                          ).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}{" "}
-                          -{" "}
-                          {new Date(
-                            campaign.lastModified || new Date()
-                          ).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`inline-flex px-2 py-1 text-sm font-semibold rounded-full ${getStatusColor(campaign.status || "Draft")}`}
-                    >
-                      {campaign.status || "Draft"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <div className="font-medium">
-                      ${(campaign.budget || 0).toLocaleString()}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      Spent: ${(campaign.spent || 0).toLocaleString()}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <div className="text-sm">Northeast</div>
-                    <div className="text-sm text-gray-500">Multi-state</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <div className="font-medium">
-                      {(campaign.adSets || []).length}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {
-                        (campaign.adSets || []).filter(
-                          (as) => as.status === "Active"
-                        ).length
-                      }{" "}
-                      active
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <div className="flex items-center">
-                      <span className="mr-1">{performanceIndicator}</span>
-                      <span
-                        className={
-                          conversions > 50
-                            ? "text-green-600"
-                            : conversions > 20
-                              ? "text-gray-600"
-                              : "text-red-600"
-                        }
-                      >
-                        {performanceText}
-                      </span>
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {conversions} conversions
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onCampaignSelect(campaign)}
-                        className="text-blue-600 hover:text-blue-800"
-                      >
-                        View Ad Sets
-                      </Button>
-                      <div className="relative">
-                        <Button variant="ghost" size="sm" className="p-1">
-                          •••
-                        </Button>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+  // Determine which state to use (external or internal)
+  const actualCurrentPage = onPageChange ? currentPage : internalCurrentPage;
+  const actualPageSize = onPageSizeChange ? pageSize : internalPageSize;
+
+  // Handle pagination changes
+  const handlePageChange = useCallback(
+    (page: number) => {
+      if (onPageChange) {
+        onPageChange(page);
+      } else {
+        setInternalCurrentPage(page);
+      }
+    },
+    [onPageChange]
+  );
+
+  const handlePageSizeChange = useCallback(
+    (value: string) => {
+      if (onPageSizeChange) {
+        onPageSizeChange(value);
+      } else {
+        const newPageSize = parseInt(value, 10);
+        setInternalPageSize(newPageSize);
+        setInternalCurrentPage(1);
+      }
+    },
+    [onPageSizeChange]
+  );
+
+  const handleRowSelectionChange = useCallback(
+    (selection: SelectedRows) => {
+      if (onRowSelectionChange) {
+        onRowSelectionChange(selection);
+      }
+    },
+    [onRowSelectionChange]
+  );
+
+  // Calculate pagination
+  const paginationValues = useMemo(() => {
+    const totalItems = (data || []).length;
+    const startIndex = (actualCurrentPage - 1) * actualPageSize;
+    const endIndex = Math.min(startIndex + actualPageSize, totalItems);
+    const currentPageData = (data || []).slice(startIndex, endIndex);
+
+    return {
+      totalItems,
+      startIndex,
+      endIndex,
+      currentPageData,
+    };
+  }, [data, actualCurrentPage, actualPageSize]);
+
+  const { totalItems, startIndex, endIndex, currentPageData } =
+    paginationValues;
+
+  // Create columns
+  const columns = useMemo(() => {
+    const campaignColumns = createCampaignColumns(onCampaignSelect);
+    return (campaignColumns || []) as unknown as ColumnDef<unknown, unknown>[];
+  }, [onCampaignSelect]);
+
+  // Selection count
+  const selectionCount = useMemo(
+    () =>
+      Object.keys(rowSelection || {}).filter((key) => (rowSelection || {})[key])
+        .length,
+    [rowSelection]
+  );
+
+  // Pagination component
+  const paginationElement = useMemo(
+    () => (
+      <Pagination
+        totalItems={totalItems}
+        pageSize={actualPageSize}
+        currentPage={actualCurrentPage}
+        onPageChange={handlePageChange}
+      />
+    ),
+    [totalItems, actualPageSize, actualCurrentPage, handlePageChange]
+  );
+
+  // Custom pagination UI
+  const customPagination = useMemo(
+    () => (
+      <div className="flex items-center justify-between w-full">
+        <div className="flex items-center space-x-2 text-base text-muted-foreground">
+          <div>
+            {totalItems === 0 ? (
+              <span>No campaigns</span>
+            ) : (
+              <span>
+                Showing {startIndex + 1}-{endIndex} of {totalItems} campaigns
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center ml-4">
+            <span className="mr-2">Campaigns per page:</span>
+            <Select
+              value={actualPageSize.toString()}
+              onValueChange={handlePageSizeChange}
+            >
+              <SelectTrigger className="h-8 w-20">
+                <SelectValue>{actualPageSize}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="5">5</SelectItem>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          {selectionCount > 0 && (
+            <div className="mr-4 text-base">{selectionCount} selected</div>
+          )}
+          {paginationElement}
+        </div>
       </div>
+    ),
+    [
+      totalItems,
+      startIndex,
+      endIndex,
+      actualPageSize,
+      handlePageSizeChange,
+      selectionCount,
+      paginationElement,
+    ]
+  );
+
+  return (
+    <div className={cn("space-y-4", className)}>
+      <DataTable
+        columns={columns}
+        data={currentPageData as unknown[]}
+        disablePagination={false}
+        rowSelection={rowSelection}
+        onRowSelectionChange={handleRowSelectionChange}
+        customPagination={customPagination}
+      />
     </div>
   );
 });
 
-// Ad Set Table Component
+// Ad Set Table Component using DataTable
 const AdSetTable = memo(function AdSetTable({
   data,
   onAdSetSelect,
   className,
+  rowSelection = {},
+  onRowSelectionChange,
+  currentPage = 1,
+  pageSize = 10,
+  onPageChange,
+  onPageSizeChange,
 }: {
   data: AdSet[];
   onAdSetSelect: (adSet: AdSet) => void;
   className?: string;
+  rowSelection?: SelectedRows;
+  onRowSelectionChange?: (selection: SelectedRows) => void;
+  currentPage?: number;
+  pageSize?: number;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (value: string) => void;
 }) {
-  return (
-    <div className={className}>
-      <div className="bg-white rounded-md border border-gray-200 overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
-                Ad Set Name
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
-                Budget
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
-                Target Audience
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
-                Ads
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {(data || []).map((adSet) => (
-              <tr key={adSet.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">
-                    {adSet.name || "Unnamed Ad Set"}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`inline-flex px-2 py-1 text-sm font-semibold rounded-full ${
-                      (adSet.status || "Draft") === "Active"
-                        ? "bg-green-100 text-green-800"
-                        : (adSet.status || "Draft") === "Paused"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
-                    {adSet.status || "Draft"}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  ${(adSet.budget || 0).toLocaleString()}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {adSet.targetAudience || "Not specified"}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {(adSet.ads || []).length}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      console.log("Button clicked for ad set:", adSet.name);
-                      onAdSetSelect(adSet);
-                    }}
-                  >
-                    View Ads
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+  // Use internal state only if external state is not provided
+  const [internalCurrentPage, setInternalCurrentPage] = useState(1);
+  const [internalPageSize, setInternalPageSize] = useState(10);
+
+  // Determine which state to use (external or internal)
+  const actualCurrentPage = onPageChange ? currentPage : internalCurrentPage;
+  const actualPageSize = onPageSizeChange ? pageSize : internalPageSize;
+
+  // Handle pagination changes
+  const handlePageChange = useCallback(
+    (page: number) => {
+      if (onPageChange) {
+        onPageChange(page);
+      } else {
+        setInternalCurrentPage(page);
+      }
+    },
+    [onPageChange]
+  );
+
+  const handlePageSizeChange = useCallback(
+    (value: string) => {
+      if (onPageSizeChange) {
+        onPageSizeChange(value);
+      } else {
+        const newPageSize = parseInt(value, 10);
+        setInternalPageSize(newPageSize);
+        setInternalCurrentPage(1);
+      }
+    },
+    [onPageSizeChange]
+  );
+
+  const handleRowSelectionChange = useCallback(
+    (selection: SelectedRows) => {
+      if (onRowSelectionChange) {
+        onRowSelectionChange(selection);
+      }
+    },
+    [onRowSelectionChange]
+  );
+
+  // Calculate pagination
+  const paginationValues = useMemo(() => {
+    const totalItems = (data || []).length;
+    const startIndex = (actualCurrentPage - 1) * actualPageSize;
+    const endIndex = Math.min(startIndex + actualPageSize, totalItems);
+    const currentPageData = (data || []).slice(startIndex, endIndex);
+
+    return {
+      totalItems,
+      startIndex,
+      endIndex,
+      currentPageData,
+    };
+  }, [data, actualCurrentPage, actualPageSize]);
+
+  const { totalItems, startIndex, endIndex, currentPageData } =
+    paginationValues;
+
+  // Create columns
+  const columns = useMemo(() => {
+    const adSetColumns = createAdSetColumns(onAdSetSelect);
+    return (adSetColumns || []) as unknown as ColumnDef<unknown, unknown>[];
+  }, [onAdSetSelect]);
+
+  // Selection count
+  const selectionCount = useMemo(
+    () =>
+      Object.keys(rowSelection || {}).filter((key) => (rowSelection || {})[key])
+        .length,
+    [rowSelection]
+  );
+
+  // Pagination component
+  const paginationElement = useMemo(
+    () => (
+      <Pagination
+        totalItems={totalItems}
+        pageSize={actualPageSize}
+        currentPage={actualCurrentPage}
+        onPageChange={handlePageChange}
+      />
+    ),
+    [totalItems, actualPageSize, actualCurrentPage, handlePageChange]
+  );
+
+  // Custom pagination UI
+  const customPagination = useMemo(
+    () => (
+      <div className="flex items-center justify-between w-full">
+        <div className="flex items-center space-x-2 text-base text-muted-foreground">
+          <div>
+            {totalItems === 0 ? (
+              <span>No ad sets</span>
+            ) : (
+              <span>
+                Showing {startIndex + 1}-{endIndex} of {totalItems} ad sets
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center ml-4">
+            <span className="mr-2">Ad sets per page:</span>
+            <Select
+              value={actualPageSize.toString()}
+              onValueChange={handlePageSizeChange}
+            >
+              <SelectTrigger className="h-8 w-20">
+                <SelectValue>{actualPageSize}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="5">5</SelectItem>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          {selectionCount > 0 && (
+            <div className="mr-4 text-base">{selectionCount} selected</div>
+          )}
+          {paginationElement}
+        </div>
       </div>
+    ),
+    [
+      totalItems,
+      startIndex,
+      endIndex,
+      actualPageSize,
+      handlePageSizeChange,
+      selectionCount,
+      paginationElement,
+    ]
+  );
+
+  return (
+    <div className={cn("space-y-4", className)}>
+      <DataTable
+        columns={columns}
+        data={currentPageData as unknown[]}
+        disablePagination={false}
+        rowSelection={rowSelection}
+        onRowSelectionChange={handleRowSelectionChange}
+        customPagination={customPagination}
+      />
     </div>
   );
 });
@@ -1269,6 +1750,12 @@ export default function AdManagerListView() {
             data={getCurrentData as Campaign[]}
             onCampaignSelect={handleCampaignSelect}
             className="border-rounded"
+            rowSelection={selectedAds}
+            onRowSelectionChange={handleRowSelectionChange}
+            currentPage={paginationState.campaigns.currentPage}
+            pageSize={paginationState.campaigns.pageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
           />
         </TabsContent>
 
@@ -1278,6 +1765,12 @@ export default function AdManagerListView() {
             data={getCurrentData as AdSet[]}
             onAdSetSelect={handleAdSetSelect}
             className="border-rounded"
+            rowSelection={selectedAds}
+            onRowSelectionChange={handleRowSelectionChange}
+            currentPage={paginationState.adsets.currentPage}
+            pageSize={paginationState.adsets.pageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
           />
         </TabsContent>
 
