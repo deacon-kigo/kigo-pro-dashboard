@@ -6,13 +6,18 @@ import { useRouter } from "next/navigation";
 /**
  * Root page that redirects to Campaign Manager
  * Making /campaign-manager the default landing page for the prototype
+ *
+ * Note: /campaigns route is handled separately and should not be redirected
  */
 export default function RootPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to campaign manager as the default page
-    router.replace("/campaign-manager");
+    // Only redirect from root path - other paths like /campaigns should be accessible
+    if (window.location.pathname === "/") {
+      // Redirect to campaign manager as the default page
+      router.replace("/campaign-manager");
+    }
   }, [router]);
 
   // Show loading while redirecting

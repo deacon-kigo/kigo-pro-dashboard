@@ -28,7 +28,7 @@ import { buildDemoUrl, isPathActive } from "@/lib/utils";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
 // Import SidebarLabel component with standard path
-import SidebarLabel, { SubmenuItem } from "./SidebarLabel";
+import SidebarLabel from "./SidebarLabel";
 // Import Dialog components for the confirmation
 import {
   Dialog,
@@ -94,20 +94,6 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     dispatch(toggleSidebar());
   }, [dispatch]);
 
-  // Add state for open submenus
-  const [openSubmenus, setOpenSubmenus] = useState<{ [key: string]: boolean }>({
-    campaigns: false,
-    dashboard: false,
-  });
-
-  // Add a function to toggle submenu state - memoize the handler
-  const toggleSubmenu = useCallback((key: string) => {
-    setOpenSubmenus((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  }, []);
-
   // Memoize the isLinkActive function to prevent unnecessary recalculations
   const isLinkActive = useCallback(
     (path: string): boolean => {
@@ -127,6 +113,27 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
           pathname.includes("cvs-token-management"))
       ) {
         return true;
+      }
+
+      // Special case for product filters - CHECK THIS FIRST before general campaigns check
+      if (
+        path.includes("/campaigns/product-filters") &&
+        pathname.includes("/campaigns/product-filters")
+      ) {
+        return true;
+      }
+
+      // Special case for campaigns - ensure /campaigns route is accessible
+      // But exclude product filters (already handled above)
+      if (path === "/campaigns") {
+        if (pathname.includes("/campaigns/product-filters")) {
+          return false; // Don't highlight campaigns when on product filters
+        }
+        return (
+          pathname === "/campaigns" ||
+          (pathname.startsWith("/campaigns/") &&
+            !pathname.includes("/campaigns/product-filters"))
+        );
       }
 
       // Special case for dashboard - now always campaign-manager
@@ -160,22 +167,6 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         return true;
       }
 
-      // Special case for campaigns - don't highlight when on product filters
-      if (
-        path === "/campaigns" &&
-        pathname.includes("/campaigns/product-filters")
-      ) {
-        return false;
-      }
-
-      // Special case for product filters
-      if (
-        path.includes("/campaigns/product-filters") &&
-        pathname.includes("/campaigns/product-filters")
-      ) {
-        return true;
-      }
-
       // Special cases for other CVS pages
       if (isCVSContextBool) {
         if (path.includes("customers") && pathname.includes("customers"))
@@ -190,17 +181,6 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     },
     [pathname, isCVSContextBool]
   );
-
-  // Memoize ad manager submenu items to prevent recreation on each render
-  const adManagerSubmenuItems = useMemo((): SubmenuItem[] => {
-    return [
-      {
-        href: "/campaign-manager/ads-create",
-        title: "Create Ad",
-        isActive: pathname.includes("/campaign-manager/ads-create"),
-      },
-    ];
-  }, [pathname]);
 
   // Memoize navigation items based on context and role
   const navigationItems = useMemo(() => {
@@ -295,10 +275,6 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 }
                 isActive={isLinkActive("/campaigns")}
                 isCollapsed={sidebarCollapsed}
-                hasSubmenu={true}
-                submenuItems={adManagerSubmenuItems}
-                isSubmenuOpen={openSubmenus.campaigns}
-                onToggleSubmenu={() => toggleSubmenu("campaigns")}
               />
             </li>
             <li className="nav-item px-3 py-1">
@@ -374,10 +350,6 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 }
                 isActive={isLinkActive("/campaigns")}
                 isCollapsed={sidebarCollapsed}
-                hasSubmenu={true}
-                submenuItems={adManagerSubmenuItems}
-                isSubmenuOpen={openSubmenus.campaigns}
-                onToggleSubmenu={() => toggleSubmenu("campaigns")}
               />
             </li>
             <li className="nav-item px-3 py-1">
@@ -412,16 +384,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
       default:
         return null;
     }
-  }, [
-    isCVSContextBool,
-    role,
-    sidebarCollapsed,
-    isLinkActive,
-    adManagerSubmenuItems,
-    openSubmenus.campaigns,
-    openSubmenus.dashboard,
-    toggleSubmenu,
-  ]);
+  }, [isCVSContextBool, role, sidebarCollapsed, isLinkActive, pathname]);
 
   // Memoize the role title
   const roleTitle = useMemo(() => {

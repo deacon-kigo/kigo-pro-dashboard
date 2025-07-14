@@ -199,11 +199,17 @@ export default function SidebarLabel({
 
   // Handle different cases for navigation
   if (hasSubmenu) {
-    // Items with submenus need special handling
+    // Items with submenus - main item should be clickable, with separate toggle
     return (
       <div className="w-full">
-        <div className={linkClasses}>
-          <div className="flex items-center">
+        <div className="flex items-center">
+          {/* Main clickable link area */}
+          <Link
+            href={href}
+            className={cn(linkClasses, "flex-1 flex items-center")}
+            title={title}
+            onClick={onClick}
+          >
             <Icon className={iconClasses} />
             {!isCollapsed && <span className={textClasses}>{title}</span>}
             {!isCollapsed && hasNotification && (
@@ -211,13 +217,13 @@ export default function SidebarLabel({
                 {notificationCount}
               </span>
             )}
-          </div>
+          </Link>
 
-          {/* Add submenu toggle button if hasSubmenu is true */}
-          {!isCollapsed && hasSubmenu && (
+          {/* Submenu toggle button */}
+          {!isCollapsed && (
             <button
               onClick={handleSubmenuToggle}
-              className="p-1 rounded-md cursor-pointer hover:bg-gray-100"
+              className="p-1 rounded-md cursor-pointer hover:bg-gray-100 ml-2"
               aria-label={`Toggle ${title} submenu`}
             >
               <ChevronDownIcon
@@ -230,7 +236,7 @@ export default function SidebarLabel({
         </div>
 
         {/* Render submenu items */}
-        {!isCollapsed && hasSubmenu && isSubmenuOpen && submenuItems && (
+        {!isCollapsed && isSubmenuOpen && submenuItems && (
           <div className="pl-8 mt-1 relative">
             {/* Vertical line to connect parent and children */}
             <div
@@ -245,10 +251,8 @@ export default function SidebarLabel({
                     href={item.href}
                     className={cn(
                       "flex items-center py-2 px-3 text-sm font-medium rounded-lg transition-all duration-200 w-full cursor-pointer",
-                      item.isActive
-                        ? activeClasses // Use same active classes as parent
-                        : inactiveClasses, // Use same inactive classes as parent
-                      !item.isActive ? hoverClasses : "" // Use same hover classes as parent
+                      item.isActive ? activeClasses : inactiveClasses,
+                      !item.isActive ? hoverClasses : ""
                     )}
                   >
                     {item.title}

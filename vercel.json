@@ -11,6 +11,16 @@
       }
     }
   ],
+  "routes": [
+    {
+      "src": "/campaigns",
+      "dest": "/campaigns"
+    },
+    {
+      "src": "/campaigns/(.*)",
+      "dest": "/campaigns/$1"
+    }
+  ],
   "git": {
     "deploymentEnabled": {
       "main": true
