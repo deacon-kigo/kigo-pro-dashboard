@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo, useState } from "react";
+import React, { memo, useState, useRef, useEffect, useCallback } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/atoms/Button";
 import {
@@ -16,14 +16,6 @@ import {
 } from "@heroicons/react/24/outline";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 import {
   AlertDialog,
@@ -131,6 +123,187 @@ const SortIcon = memo(function SortIcon({
     return <ChevronDownIcon className="ml-2 h-4 w-4" />;
   }
   return <ArrowUpDown className="ml-2 h-4 w-4" />;
+});
+
+// Custom Ad Action Dropdown Component to prevent re-rendering issues
+const AdActionDropdown = memo(function AdActionDropdown({
+  ad,
+  onViewDetails,
+  onEditAd,
+  onStatusChange,
+  onDelete,
+}: {
+  ad: Ad;
+  onViewDetails: () => void;
+  onEditAd: () => void;
+  onStatusChange: (status: string) => void;
+  onDelete: () => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({
+    top: 0,
+    left: 0,
+  });
+
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const dropdownWidth = 192; // w-48 = 192px
+      const dropdownHeight = 280; // Approximate height for all action items
+      const viewport = {
+        width: window.innerWidth,
+        height: window.innerHeight,
+      };
+      const padding = 16;
+
+      // Calculate horizontal position (prefer centering on button)
+      let left = rect.left - 48;
+      if (left + dropdownWidth > viewport.width - padding) {
+        left = rect.right - dropdownWidth;
+      }
+      if (left < padding) {
+        left = padding;
+      }
+
+      // Calculate vertical position
+      let top = rect.bottom + 8;
+      if (top + dropdownHeight > viewport.height - padding) {
+        top = rect.top - dropdownHeight - 8;
+      }
+      if (top < padding) {
+        top = padding;
+      }
+
+      setDropdownPosition({ top, left });
+    }
+  }, [isOpen]);
+
+  const handleViewClick = useCallback(() => {
+    onViewDetails();
+    setIsOpen(false);
+  }, [onViewDetails]);
+
+  const handleEditClick = useCallback(() => {
+    onEditAd();
+    setIsOpen(false);
+  }, [onEditAd]);
+
+  const handleStatusClick = useCallback(
+    (status: string) => {
+      onStatusChange(status);
+      setIsOpen(false);
+    },
+    [onStatusChange]
+  );
+
+  const handleDeleteClick = useCallback(() => {
+    onDelete();
+    setIsOpen(false);
+  }, [onDelete]);
+
+  return (
+    <>
+      <Button
+        ref={buttonRef}
+        variant="ghost"
+        className="h-8 w-8 p-0"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <span className="sr-only">Open menu</span>
+        <MoreHorizontal className="h-4 w-4" />
+      </Button>
+
+      {isOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-[9998]"
+            onClick={() => setIsOpen(false)}
+          />
+          <div
+            className="fixed w-48 bg-white rounded-md shadow-lg border z-[9999]"
+            style={{
+              top: dropdownPosition.top,
+              left: dropdownPosition.left,
+            }}
+          >
+            <div className="py-1">
+              <div className="px-4 py-2 text-sm font-medium text-gray-700 border-b">
+                Actions
+              </div>
+
+              {/* View/Edit Actions */}
+              <button
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                onClick={handleViewClick}
+              >
+                <EyeIcon className="mr-2 h-4 w-4" />
+                View Ad
+              </button>
+              <button
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                onClick={handleEditClick}
+              >
+                <PencilIcon className="mr-2 h-4 w-4" />
+                Edit Ad
+              </button>
+
+              <div className="border-t my-1"></div>
+
+              {/* Status Change Actions */}
+              {ad.status !== "Active" && (
+                <button
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                  onClick={() => handleStatusClick("Active")}
+                >
+                  <PlayIcon className="mr-2 h-4 w-4" />
+                  Activate
+                </button>
+              )}
+              {ad.status === "Active" && (
+                <button
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                  onClick={() => handleStatusClick("Paused")}
+                >
+                  <PauseIcon className="mr-2 h-4 w-4" />
+                  Pause
+                </button>
+              )}
+              {(ad.status === "Draft" || ad.status === "Paused") && (
+                <button
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                  onClick={() => handleStatusClick("Published")}
+                >
+                  <DocumentDuplicateIcon className="mr-2 h-4 w-4" />
+                  Publish
+                </button>
+              )}
+              {ad.status !== "Ended" && (
+                <button
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                  onClick={() => handleStatusClick("Ended")}
+                >
+                  <XMarkIcon className="mr-2 h-4 w-4" />
+                  End Campaign
+                </button>
+              )}
+
+              <div className="border-t my-1"></div>
+
+              {/* Delete Action */}
+              <button
+                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"
+                onClick={handleDeleteClick}
+              >
+                <TrashIcon className="mr-2 h-4 w-4" />
+                Delete Ad
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </>
+  );
 });
 
 export const createAdColumns = (
@@ -344,72 +517,13 @@ export const createAdColumns = (
       return (
         <>
           <div className="flex justify-center">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                  <span className="sr-only">Open menu</span>
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-
-                {/* View/Edit Actions */}
-                <DropdownMenuItem onClick={handleViewDetails}>
-                  <EyeIcon className="mr-2 h-4 w-4" />
-                  View Ad
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleEditAd}>
-                  <PencilIcon className="mr-2 h-4 w-4" />
-                  Edit Ad
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-
-                {/* Status Change Actions */}
-                {ad.status !== "Active" && (
-                  <DropdownMenuItem
-                    onClick={() => handleStatusChange("Active")}
-                  >
-                    <PlayIcon className="mr-2 h-4 w-4" />
-                    Activate
-                  </DropdownMenuItem>
-                )}
-                {ad.status === "Active" && (
-                  <DropdownMenuItem
-                    onClick={() => handleStatusChange("Paused")}
-                  >
-                    <PauseIcon className="mr-2 h-4 w-4" />
-                    Pause
-                  </DropdownMenuItem>
-                )}
-                {(ad.status === "Draft" || ad.status === "Paused") && (
-                  <DropdownMenuItem
-                    onClick={() => handleStatusChange("Published")}
-                  >
-                    <DocumentDuplicateIcon className="mr-2 h-4 w-4" />
-                    Publish
-                  </DropdownMenuItem>
-                )}
-                {ad.status !== "Ended" && (
-                  <DropdownMenuItem onClick={() => handleStatusChange("Ended")}>
-                    <XMarkIcon className="mr-2 h-4 w-4" />
-                    End Campaign
-                  </DropdownMenuItem>
-                )}
-
-                <DropdownMenuSeparator />
-
-                {/* Delete Action */}
-                <DropdownMenuItem
-                  onClick={() => setDeleteDialogOpen(true)}
-                  className="text-red-600 focus:text-red-600"
-                >
-                  <TrashIcon className="mr-2 h-4 w-4" />
-                  Delete Ad
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <AdActionDropdown
+              ad={ad}
+              onViewDetails={handleViewDetails}
+              onEditAd={handleEditAd}
+              onStatusChange={handleStatusChange}
+              onDelete={() => setDeleteDialogOpen(true)}
+            />
           </div>
 
           {/* Status Change Confirmation Dialog */}

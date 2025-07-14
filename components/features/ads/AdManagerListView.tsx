@@ -19,14 +19,7 @@ import {
   EyeIcon,
   PencilIcon,
 } from "@heroicons/react/24/outline";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import {
   Tabs,
   TabsContent,
@@ -263,7 +256,7 @@ const createCampaignColumns = (
   },
   {
     id: "adSets",
-    header: () => <div className="text-left font-medium">Ad Sets</div>,
+    header: () => <div className="text-left font-medium">Ads Groups</div>,
     cell: ({ row }) => (
       <div className="text-left">
         <div className="font-medium">{(row.original.adSets || []).length}</div>
@@ -322,26 +315,12 @@ const createCampaignColumns = (
     header: () => <div className="text-center">Actions</div>,
     cell: ({ row }) => (
       <div className="flex justify-center">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => onCampaignSelect(row.original)}>
-              <EyeIcon className="mr-2 h-4 w-4" />
-              View Ad Sets
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <PencilIcon className="mr-2 h-4 w-4" />
-              Edit Campaign
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <ActionDropdown
+          onViewClick={() => onCampaignSelect(row.original)}
+          onEditClick={() => console.log("Edit campaign", row.original.id)}
+          viewLabel="View Ads Groups"
+          editLabel="Edit Campaign"
+        />
       </div>
     ),
     enableSorting: false,
@@ -383,7 +362,7 @@ const createAdSetColumns = (
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
         >
-          Ad Set Name
+          Ads Group Name
           <SortIcon sorted={column.getIsSorted()} />
         </Button>
       );
@@ -393,7 +372,7 @@ const createAdSetColumns = (
         className="font-medium text-left max-w-[200px] truncate"
         title={row.getValue("name")}
       >
-        {row.getValue("name") || "Unnamed Ad Set"}
+        {row.getValue("name") || "Unnamed Ads Group"}
       </div>
     ),
   },
@@ -467,26 +446,12 @@ const createAdSetColumns = (
     header: () => <div className="text-center">Actions</div>,
     cell: ({ row }) => (
       <div className="flex justify-center">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => onAdSetSelect(row.original)}>
-              <EyeIcon className="mr-2 h-4 w-4" />
-              View Ads
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <PencilIcon className="mr-2 h-4 w-4" />
-              Edit Ad Set
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <ActionDropdown
+          onViewClick={() => onAdSetSelect(row.original)}
+          onEditClick={() => console.log("Edit ads group", row.original.id)}
+          viewLabel="View Ads"
+          editLabel="Edit Ads Group"
+        />
       </div>
     ),
     enableSorting: false,
@@ -831,16 +796,16 @@ const AdSetTable = memo(function AdSetTable({
         <div className="flex items-center space-x-2 text-base text-muted-foreground">
           <div>
             {totalItems === 0 ? (
-              <span>No ad sets</span>
+              <span>No ads groups</span>
             ) : (
               <span>
-                Showing {startIndex + 1}-{endIndex} of {totalItems} ad sets
+                Showing {startIndex + 1}-{endIndex} of {totalItems} ads groups
               </span>
             )}
           </div>
 
           <div className="flex items-center ml-4">
-            <span className="mr-2">Ad sets per page:</span>
+            <span className="mr-2">Ads groups per page:</span>
             <Select
               value={actualPageSize.toString()}
               onValueChange={handlePageSizeChange}
@@ -1297,16 +1262,39 @@ const CreateButtonCustom = memo(function CreateButtonCustom() {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({
     top: 0,
-    right: 0,
+    left: 0,
   });
 
   useEffect(() => {
     if (isOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      setDropdownPosition({
-        top: rect.bottom + 8,
-        right: window.innerWidth - rect.right,
-      });
+      const dropdownWidth = 192; // w-48 = 192px
+      const dropdownHeight = 150; // Approximate height
+      const viewport = {
+        width: window.innerWidth,
+        height: window.innerHeight,
+      };
+      const padding = 16;
+
+      // Calculate horizontal position (align to right edge of button)
+      let left = rect.right - dropdownWidth;
+      if (left < padding) {
+        left = rect.left; // Align to left edge if not enough space
+      }
+      if (left + dropdownWidth > viewport.width - padding) {
+        left = viewport.width - dropdownWidth - padding;
+      }
+
+      // Calculate vertical position
+      let top = rect.bottom + 8;
+      if (top + dropdownHeight > viewport.height - padding) {
+        top = rect.top - dropdownHeight - 8;
+      }
+      if (top < padding) {
+        top = padding;
+      }
+
+      setDropdownPosition({ top, left });
     }
   }, [isOpen]);
 
@@ -1317,7 +1305,6 @@ const CreateButtonCustom = memo(function CreateButtonCustom() {
         className="flex items-center gap-1"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <PlusIcon className="h-4 w-4" />
         Create
         <ChevronDownIcon className="h-4 w-4" />
       </Button>
@@ -1332,7 +1319,7 @@ const CreateButtonCustom = memo(function CreateButtonCustom() {
             className="fixed w-48 bg-white rounded-md shadow-lg border z-[9999]"
             style={{
               top: dropdownPosition.top,
-              right: dropdownPosition.right,
+              left: dropdownPosition.left,
             }}
           >
             <div className="py-1">
@@ -1341,30 +1328,140 @@ const CreateButtonCustom = memo(function CreateButtonCustom() {
               </div>
               <Link
                 href="/campaigns/create"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 onClick={() => setIsOpen(false)}
               >
-                <PlusIcon className="h-4 w-4 mr-2" />
                 Campaign
               </Link>
               <button
-                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 onClick={() => {
-                  console.log("Create Ad Set clicked");
+                  console.log("Create Ads Group clicked");
                   setIsOpen(false);
                 }}
               >
-                <PlusIcon className="h-4 w-4 mr-2" />
-                Ad Set
+                Ads Group
               </button>
               <Link
                 href="/campaign-manager/ads-create"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 onClick={() => setIsOpen(false)}
               >
-                <PlusIcon className="h-4 w-4 mr-2" />
                 Ad
               </Link>
+            </div>
+          </div>
+        </>
+      )}
+    </>
+  );
+});
+
+// Custom action dropdown component to prevent re-rendering issues
+const ActionDropdown = memo(function ActionDropdown({
+  onViewClick,
+  onEditClick,
+  viewLabel,
+  editLabel,
+}: {
+  onViewClick: () => void;
+  onEditClick: () => void;
+  viewLabel: string;
+  editLabel: string;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({
+    top: 0,
+    left: 0,
+  });
+
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const dropdownWidth = 192; // w-48 = 192px
+      const dropdownHeight = 200; // Approximate height
+      const viewport = {
+        width: window.innerWidth,
+        height: window.innerHeight,
+      };
+      const padding = 16;
+
+      // Calculate horizontal position (prefer centering on button)
+      let left = rect.left - 48;
+      if (left + dropdownWidth > viewport.width - padding) {
+        left = rect.right - dropdownWidth;
+      }
+      if (left < padding) {
+        left = padding;
+      }
+
+      // Calculate vertical position
+      let top = rect.bottom + 8;
+      if (top + dropdownHeight > viewport.height - padding) {
+        top = rect.top - dropdownHeight - 8;
+      }
+      if (top < padding) {
+        top = padding;
+      }
+
+      setDropdownPosition({ top, left });
+    }
+  }, [isOpen]);
+
+  const handleViewClick = useCallback(() => {
+    onViewClick();
+    setIsOpen(false);
+  }, [onViewClick]);
+
+  const handleEditClick = useCallback(() => {
+    onEditClick();
+    setIsOpen(false);
+  }, [onEditClick]);
+
+  return (
+    <>
+      <Button
+        ref={buttonRef}
+        variant="ghost"
+        className="h-8 w-8 p-0"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <span className="sr-only">Open menu</span>
+        <MoreHorizontal className="h-4 w-4" />
+      </Button>
+
+      {isOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-[9998]"
+            onClick={() => setIsOpen(false)}
+          />
+          <div
+            className="fixed w-48 bg-white rounded-md shadow-lg border z-[9999]"
+            style={{
+              top: dropdownPosition.top,
+              left: dropdownPosition.left,
+            }}
+          >
+            <div className="py-1">
+              <div className="px-4 py-2 text-sm font-medium text-gray-700 border-b">
+                Actions
+              </div>
+              <button
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                onClick={handleViewClick}
+              >
+                <EyeIcon className="mr-2 h-4 w-4" />
+                {viewLabel}
+              </button>
+              <button
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                onClick={handleEditClick}
+              >
+                <PencilIcon className="mr-2 h-4 w-4" />
+                {editLabel}
+              </button>
             </div>
           </div>
         </>
@@ -1386,7 +1483,7 @@ const CreateButtonSimple = (
 /**
  * AdManagerListView Component
  *
- * Displays a hierarchical view of campaigns, ad sets, and ads
+ * Displays a hierarchical view of campaigns, ads groups, and ads
  * with navigation tabs similar to Facebook's Ad Manager
  */
 export default function AdManagerListView() {
@@ -1713,7 +1810,7 @@ export default function AdManagerListView() {
               <TabsList>
                 <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
                 <TabsTrigger value="adsets" disabled={!selectedCampaign}>
-                  Ad Sets
+                  Ads Groups
                 </TabsTrigger>
                 <TabsTrigger value="ads" disabled={!selectedAdSet}>
                   Ads
@@ -1759,7 +1856,7 @@ export default function AdManagerListView() {
           />
         </TabsContent>
 
-        {/* Ad Sets Level */}
+        {/* Ads Groups Level */}
         <TabsContent value="adsets" className="mt-4">
           <AdSetTable
             data={getCurrentData as AdSet[]}

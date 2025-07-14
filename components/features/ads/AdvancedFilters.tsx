@@ -1,25 +1,57 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, {
+  useState,
+  useMemo,
+  useCallback,
+  useRef,
+  useEffect,
+  memo,
+} from "react";
 import { Button } from "@/components/atoms/Button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/atoms/Label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
 import { Check, ChevronDown, X, Filter, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Ad } from "./adColumns";
+
+// Utility function to calculate smart positioning within viewport
+function calculateSmartPosition(
+  buttonRect: DOMRect,
+  dropdownWidth: number,
+  dropdownHeight: number
+) {
+  const viewport = {
+    width: window.innerWidth,
+    height: window.innerHeight,
+  };
+  const padding = 16;
+
+  // Calculate horizontal position
+  let left = buttonRect.left;
+  if (left + dropdownWidth > viewport.width - padding) {
+    // If dropdown would overflow right, align to right edge of button
+    left = buttonRect.right - dropdownWidth;
+  }
+  if (left < padding) {
+    // If dropdown would overflow left, align to left edge with padding
+    left = padding;
+  }
+
+  // Calculate vertical position
+  let top = buttonRect.bottom + 8;
+  if (top + dropdownHeight > viewport.height - padding) {
+    // If dropdown would overflow bottom, position above button
+    top = buttonRect.top - dropdownHeight - 8;
+  }
+  if (top < padding) {
+    // If still overflowing top, position at top with padding
+    top = padding;
+  }
+
+  return { top, left };
+}
 
 interface AdvancedFiltersProps {
   ads: Ad[];
@@ -43,7 +75,8 @@ interface FilterSelectorProps {
   placeholder: string;
 }
 
-function FilterSelector({
+// Custom Filter Selector Component
+const FilterSelector = memo(function FilterSelector({
   label,
   options,
   selectedValues,
@@ -52,6 +85,32 @@ function FilterSelector({
 }: FilterSelectorProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({
+    top: 0,
+    left: 0,
+    width: 0,
+  });
+
+  useEffect(() => {
+    if (open && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const dropdownWidth = Math.max(rect.width, 320);
+      const dropdownHeight = 240; // Approximate height for filter options
+
+      const position = calculateSmartPosition(
+        rect,
+        dropdownWidth,
+        dropdownHeight
+      );
+
+      setDropdownPosition({
+        top: position.top,
+        left: position.left,
+        width: dropdownWidth,
+      });
+    }
+  }, [open]);
 
   const filteredOptions = useMemo(() => {
     return options.filter((option) =>
@@ -80,52 +139,78 @@ function FilterSelector({
   return (
     <div className="space-y-2">
       <Label className="text-sm font-medium">{label}</Label>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className="w-full justify-between text-left font-normal"
+
+      {/* Custom Dropdown Button */}
+      <Button
+        ref={buttonRef}
+        variant="outline"
+        role="combobox"
+        aria-expanded={open}
+        className="w-full justify-between text-left font-normal"
+        onClick={() => setOpen(!open)}
+      >
+        <span className="truncate">
+          {selectedValues.length > 0
+            ? `${selectedValues.length} selected`
+            : placeholder}
+        </span>
+        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+      </Button>
+
+      {/* Custom Dropdown Content */}
+      {open && (
+        <>
+          <div
+            className="fixed inset-0 z-[9998]"
+            onClick={() => setOpen(false)}
+          />
+          <div
+            className="fixed bg-white rounded-md shadow-lg border z-[9999] p-0"
+            style={{
+              top: dropdownPosition.top,
+              left: dropdownPosition.left,
+              width: dropdownPosition.width,
+            }}
           >
-            <span className="truncate">
-              {selectedValues.length > 0
-                ? `${selectedValues.length} selected`
-                : placeholder}
-            </span>
-            <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-80 p-0" align="start">
-          <Command>
-            <CommandInput
-              placeholder={`Search ${label.toLowerCase()}...`}
-              value={search}
-              onValueChange={setSearch}
-            />
-            <CommandEmpty>No {label.toLowerCase()} found.</CommandEmpty>
-            <CommandGroup className="max-h-48 overflow-y-auto">
-              {filteredOptions.map((option) => (
-                <CommandItem
-                  key={option}
-                  onSelect={() => handleSelect(option)}
-                  className="cursor-pointer"
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      selectedValues.includes(option)
-                        ? "opacity-100"
-                        : "opacity-0"
-                    )}
-                  />
-                  <span className="truncate">{option}</span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </Command>
-        </PopoverContent>
-      </Popover>
+            {/* Search Input */}
+            <div className="p-3 border-b">
+              <Input
+                placeholder={`Search ${label.toLowerCase()}...`}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full"
+              />
+            </div>
+
+            {/* Options List */}
+            <div className="max-h-48 overflow-y-auto p-1">
+              {filteredOptions.length === 0 ? (
+                <div className="py-6 text-center text-sm text-gray-500">
+                  No {label.toLowerCase()} found.
+                </div>
+              ) : (
+                filteredOptions.map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => handleSelect(option)}
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex items-center rounded-sm cursor-pointer"
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        selectedValues.includes(option)
+                          ? "opacity-100"
+                          : "opacity-0"
+                      )}
+                    />
+                    <span className="truncate">{option}</span>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Selected Values */}
       {selectedValues.length > 0 && (
@@ -149,15 +234,40 @@ function FilterSelector({
       )}
     </div>
   );
-}
+});
 
-export function AdvancedFilters({
+// Custom Advanced Filters Component
+export const AdvancedFilters = memo(function AdvancedFilters({
   ads,
   onFiltersChange,
   initialFilters = { adNames: [], merchants: [], offers: [] },
 }: AdvancedFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [filters, setFilters] = useState(initialFilters);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({
+    top: 0,
+    left: 0,
+  });
+
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const dropdownWidth = 384; // w-96 = 384px
+      const dropdownHeight = 400; // Approximate height for all filter sections
+
+      const position = calculateSmartPosition(
+        rect,
+        dropdownWidth,
+        dropdownHeight
+      );
+
+      setDropdownPosition({
+        top: position.top,
+        left: position.left,
+      });
+    }
+  }, [isOpen]);
 
   // Extract unique options from ads data
   const uniqueOptions = useMemo(() => {
@@ -191,84 +301,99 @@ export function AdvancedFilters({
 
   return (
     <div className="space-y-2">
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            className={cn(
-              "flex items-center gap-2",
-              hasActiveFilters && "border-blue-500 bg-blue-50"
-            )}
+      {/* Main Filter Button */}
+      <Button
+        ref={buttonRef}
+        variant="outline"
+        className={cn(
+          "flex items-center gap-2",
+          hasActiveFilters && "border-blue-500 bg-blue-50"
+        )}
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <Filter className="h-4 w-4" />
+        Advanced Filters
+        {totalActiveFilters > 0 && (
+          <Badge variant="secondary" className="text-sm px-1.5 py-0.5">
+            {totalActiveFilters}
+          </Badge>
+        )}
+        <ChevronDown className="h-4 w-4" />
+      </Button>
+
+      {/* Custom Dropdown Content */}
+      {isOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-[9998]"
+            onClick={() => setIsOpen(false)}
+          />
+          <div
+            className="fixed w-96 bg-white rounded-md shadow-lg border z-[9999] p-4"
+            style={{
+              top: dropdownPosition.top,
+              left: dropdownPosition.left,
+            }}
           >
-            <Filter className="h-4 w-4" />
-            Advanced Filters
-            {totalActiveFilters > 0 && (
-              <Badge variant="secondary" className="text-sm px-1.5 py-0.5">
-                {totalActiveFilters}
-              </Badge>
-            )}
-            <ChevronDown className="h-4 w-4" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-96 p-4" align="start">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="font-medium text-base">Filter Ads</h4>
-              {hasActiveFilters && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium text-base">Filter Ads</h4>
+                {hasActiveFilters && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearAllFilters}
+                    className="h-8 text-sm"
+                  >
+                    <RefreshCw className="h-3 w-3 mr-1" />
+                    Clear All
+                  </Button>
+                )}
+              </div>
+
+              <FilterSelector
+                label="Ad Names"
+                options={uniqueOptions.adNames}
+                selectedValues={filters.adNames}
+                onSelectionChange={(values) =>
+                  handleFilterChange("adNames", values)
+                }
+                placeholder="Select ad names..."
+              />
+
+              <FilterSelector
+                label="Merchants"
+                options={uniqueOptions.merchants}
+                selectedValues={filters.merchants}
+                onSelectionChange={(values) =>
+                  handleFilterChange("merchants", values)
+                }
+                placeholder="Select merchants..."
+              />
+
+              <FilterSelector
+                label="Offers"
+                options={uniqueOptions.offers}
+                selectedValues={filters.offers}
+                onSelectionChange={(values) =>
+                  handleFilterChange("offers", values)
+                }
+                placeholder="Select offers..."
+              />
+
+              <div className="flex justify-end pt-2 border-t">
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
-                  onClick={clearAllFilters}
-                  className="h-8 text-sm"
+                  onClick={() => setIsOpen(false)}
                 >
-                  <RefreshCw className="h-3 w-3 mr-1" />
-                  Clear All
+                  Done
                 </Button>
-              )}
-            </div>
-
-            <FilterSelector
-              label="Ad Names"
-              options={uniqueOptions.adNames}
-              selectedValues={filters.adNames}
-              onSelectionChange={(values) =>
-                handleFilterChange("adNames", values)
-              }
-              placeholder="Select ad names..."
-            />
-
-            <FilterSelector
-              label="Merchants"
-              options={uniqueOptions.merchants}
-              selectedValues={filters.merchants}
-              onSelectionChange={(values) =>
-                handleFilterChange("merchants", values)
-              }
-              placeholder="Select merchants..."
-            />
-
-            <FilterSelector
-              label="Offers"
-              options={uniqueOptions.offers}
-              selectedValues={filters.offers}
-              onSelectionChange={(values) =>
-                handleFilterChange("offers", values)
-              }
-              placeholder="Select offers..."
-            />
-
-            <div className="flex justify-end pt-2 border-t">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsOpen(false)}
-              >
-                Done
-              </Button>
+              </div>
             </div>
           </div>
-        </PopoverContent>
-      </Popover>
+        </>
+      )}
 
       {/* Active Filters Summary */}
       {hasActiveFilters && (
@@ -329,4 +454,4 @@ export function AdvancedFilters({
       )}
     </div>
   );
-}
+});
