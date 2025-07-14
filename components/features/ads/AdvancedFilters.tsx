@@ -306,13 +306,12 @@ export const AdvancedFilters = memo(function AdvancedFilters({
         ref={buttonRef}
         variant="outline"
         className={cn(
-          "flex items-center gap-2",
+          "flex items-center gap-1",
           hasActiveFilters && "border-blue-500 bg-blue-50"
         )}
         onClick={() => setIsOpen(!isOpen)}
       >
         <Filter className="h-4 w-4" />
-        Advanced Filters
         {totalActiveFilters > 0 && (
           <Badge variant="secondary" className="text-sm px-1.5 py-0.5">
             {totalActiveFilters}

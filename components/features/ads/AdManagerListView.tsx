@@ -18,6 +18,11 @@ import {
   ChevronDownIcon,
   EyeIcon,
   PencilIcon,
+  MegaphoneIcon,
+  RectangleGroupIcon,
+  PhotoIcon,
+  FolderIcon,
+  FunnelIcon,
 } from "@heroicons/react/24/outline";
 
 import {
@@ -30,14 +35,14 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PageHeader } from "@/components/molecules/PageHeader";
 import { AdTable, SelectedRows } from "./AdTable";
+import { MultiSelectCombobox } from "@/components/ui/multi-select-combobox";
+import { DataTable } from "@/components/organisms/DataTable";
 import { Ad, formatDate, formatDateTime, formatChannels } from "./adColumns";
 import { AdSearchBar, SearchField } from "./AdSearchBar";
-import { AdvancedFilters } from "./AdvancedFilters";
 import { StatusChangeDialog } from "./StatusChangeDialog";
 import { AdDetailModal } from "./AdDetailModal";
 import { useDispatch } from "react-redux";
 import { clearAllDropdowns } from "@/lib/redux/slices/uiSlice";
-import { DataTable } from "@/components/organisms/DataTable";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
@@ -50,18 +55,12 @@ import {
   SelectValue,
 } from "@/components/atoms/Select";
 import { cn } from "@/lib/utils";
+import { ReactSelectMulti } from "@/components/ui/react-select-multi";
 
 // Type for pagination state
 interface PaginationState {
   currentPage: number;
   pageSize: number;
-}
-
-// Type for advanced filters
-interface AdvancedFilterState {
-  adNames: string[];
-  merchants: string[];
-  offers: string[];
 }
 
 // Modal state interface
@@ -892,7 +891,14 @@ interface AdSet {
   ads: Ad[];
 }
 
-// Mock data with Kigo context - restaurants, local businesses, real use cases
+// Type for campaign filters
+interface CampaignFilters {
+  adNames: string[];
+  merchants: string[];
+  offers: string[];
+}
+
+// Mock data with Kigo context - loyalty/cashback platform, focused on ad-specific data
 const mockCampaigns: Campaign[] = [
   {
     id: "campaign-1",
@@ -924,13 +930,33 @@ const mockCampaigns: Campaign[] = [
           {
             id: "ad-1",
             name: "Tony's Pizza Family Special",
+            merchantId: "m1",
             merchantName: "Tony's Authentic Pizza",
-            offerName: "20% off family meals",
+            offerId: "o1",
+            offerName: "20% off family meals (up to $15)",
             status: "Active",
-            numberOfAssets: 4,
-            channels: ["TOP", "Local+"],
-            startDateTime: "2024-06-01T09:00:00Z",
-            endDateTime: "2024-08-31T23:59:00Z",
+            mediaType: ["Display Banner", "Native"],
+            mediaAssets: [
+              {
+                id: "asset-1",
+                name: "tonys-pizza-banner.jpg",
+                type: "image",
+                size: 245000,
+                url: "/assets/tonys-pizza-banner.jpg",
+                previewUrl: "/assets/tonys-pizza-banner-thumb.jpg",
+                dimensions: { width: 728, height: 90 },
+                mediaType: "display_banner",
+              },
+              {
+                id: "asset-2",
+                name: "tonys-pizza-copy.txt",
+                type: "text",
+                size: 1024,
+                url: "/assets/tonys-pizza-copy.txt",
+                previewUrl: "/assets/tonys-pizza-copy.txt",
+                mediaType: "native",
+              },
+            ],
             createdDate: "2024-06-01",
             lastModified: "2024-06-15",
             createdBy: "Sarah Johnson",
@@ -938,16 +964,96 @@ const mockCampaigns: Campaign[] = [
           {
             id: "ad-2",
             name: "Deacon's Weekend Bundle",
+            merchantId: "m2",
             merchantName: "Deacon's Pizza House",
+            offerId: "o2",
             offerName: "Buy 2 pizzas, get free breadsticks",
             status: "Active",
-            numberOfAssets: 3,
-            channels: ["TOP", "Local+", "Signals"],
-            startDateTime: "2024-06-15T10:00:00Z",
-            endDateTime: "2024-08-31T23:59:00Z",
+            mediaType: ["Display Banner", "Social Media"],
+            mediaAssets: [
+              {
+                id: "asset-3",
+                name: "deacons-weekend-banner.jpg",
+                type: "image",
+                size: 198000,
+                url: "/assets/deacons-weekend-banner.jpg",
+                previewUrl: "/assets/deacons-weekend-banner-thumb.jpg",
+                dimensions: { width: 728, height: 90 },
+                mediaType: "display_banner",
+              },
+              {
+                id: "asset-4",
+                name: "deacons-social.jpg",
+                type: "image",
+                size: 156000,
+                url: "/assets/deacons-social.jpg",
+                previewUrl: "/assets/deacons-social-thumb.jpg",
+                dimensions: { width: 1200, height: 628 },
+                mediaType: "social",
+              },
+            ],
             createdDate: "2024-06-10",
             lastModified: "2024-06-20",
             createdBy: "Mike Chen",
+          },
+          {
+            id: "ad-3",
+            name: "Frank's Slice Deal",
+            merchantId: "m3",
+            merchantName: "Frank's Famous Pizza",
+            offerId: "o3",
+            offerName: "Two slices + drink for $8.99",
+            status: "Published",
+            mediaType: ["Video"],
+            mediaAssets: [
+              {
+                id: "asset-5",
+                name: "franks-pizza-video.mp4",
+                type: "video",
+                size: 5200000,
+                url: "/assets/franks-pizza-video.mp4",
+                previewUrl: "/assets/franks-pizza-video-thumb.jpg",
+                dimensions: { width: 1920, height: 1080 },
+                mediaType: "video",
+              },
+            ],
+            createdDate: "2024-06-12",
+            lastModified: "2024-06-18",
+            createdBy: "Alex Rodriguez",
+          },
+          {
+            id: "ad-4",
+            name: "Luigi's Lunch Rush",
+            merchantId: "m4",
+            merchantName: "Luigi's Pizzeria",
+            offerId: "o4",
+            offerName: "15% off orders over $25 (weekdays 11-2pm)",
+            status: "Paused",
+            mediaType: ["Double Decker", "Native"],
+            mediaAssets: [
+              {
+                id: "asset-6",
+                name: "luigis-double-decker.jpg",
+                type: "image",
+                size: 367000,
+                url: "/assets/luigis-double-decker.jpg",
+                previewUrl: "/assets/luigis-double-decker-thumb.jpg",
+                dimensions: { width: 728, height: 180 },
+                mediaType: "double_decker",
+              },
+              {
+                id: "asset-7",
+                name: "luigis-native-copy.txt",
+                type: "text",
+                size: 892,
+                url: "/assets/luigis-native-copy.txt",
+                previewUrl: "/assets/luigis-native-copy.txt",
+                mediaType: "native",
+              },
+            ],
+            createdDate: "2024-06-08",
+            lastModified: "2024-06-22",
+            createdBy: "Jennifer Park",
           },
         ],
       },
@@ -967,15 +1073,26 @@ const mockCampaigns: Campaign[] = [
         lastModified: "2024-06-18",
         ads: [
           {
-            id: "ad-3",
+            id: "ad-5",
             name: "Mama Mia's Lunch Express",
+            merchantId: "m5",
             merchantName: "Mama Mia's Italian Kitchen",
-            offerName: "15% off lunch orders",
+            offerId: "o5",
+            offerName: "15% off lunch orders (weekdays only)",
             status: "Paused",
-            numberOfAssets: 5,
-            channels: ["TOP", "Local+"],
-            startDateTime: "2024-06-05T08:00:00Z",
-            endDateTime: "2024-09-05T20:00:00Z",
+            mediaType: ["Double Decker"],
+            mediaAssets: [
+              {
+                id: "asset-8",
+                name: "mama-mias-double-decker.jpg",
+                type: "image",
+                size: 324000,
+                url: "/assets/mama-mias-double-decker.jpg",
+                previewUrl: "/assets/mama-mias-double-decker-thumb.jpg",
+                dimensions: { width: 728, height: 180 },
+                mediaType: "double_decker",
+              },
+            ],
             createdDate: "2024-06-03",
             lastModified: "2024-06-18",
             createdBy: "Lisa Park",
@@ -1014,10 +1131,35 @@ const mockCampaigns: Campaign[] = [
           {
             id: "ad-4",
             name: "Java Joe's Morning Special",
+            merchantId: "merchant-jj",
             merchantName: "Java Joe's Coffee House",
+            offerId: "offer-jj-01",
             offerName: "Free pastry with coffee purchase",
             status: "Active",
-            numberOfAssets: 6,
+            mediaType: ["Display Banner", "Native"],
+            mediaAssets: [
+              {
+                id: "asset-1",
+                name: "Morning Banner",
+                type: "image",
+                size: 245600,
+                url: "/images/java-joe-banner.jpg",
+                previewUrl: "/images/java-joe-banner-thumb.jpg",
+                dimensions: { width: 728, height: 90 },
+                mediaType: "Display Banner",
+              },
+              {
+                id: "asset-2",
+                name: "Native Ad Image",
+                type: "image",
+                size: 156800,
+                url: "/images/java-joe-native.jpg",
+                previewUrl: "/images/java-joe-native-thumb.jpg",
+                dimensions: { width: 400, height: 300 },
+                mediaType: "Native",
+              },
+            ],
+            numberOfAssets: 2,
             channels: ["TOP", "Local+"],
             startDateTime: "2024-07-15T06:00:00Z",
             endDateTime: "2024-09-30T10:00:00Z",
@@ -1028,10 +1170,35 @@ const mockCampaigns: Campaign[] = [
           {
             id: "ad-5",
             name: "Brew & Bite Breakfast Deal",
+            merchantId: "merchant-bb",
             merchantName: "Brew & Bite Cafe",
+            offerId: "offer-bb-01",
             offerName: "$2 off breakfast sandwiches",
             status: "Published",
-            numberOfAssets: 4,
+            mediaType: ["Display Banner", "Video", "Social"],
+            mediaAssets: [
+              {
+                id: "asset-3",
+                name: "Breakfast Banner",
+                type: "image",
+                size: 198400,
+                url: "/images/brew-bite-banner.jpg",
+                previewUrl: "/images/brew-bite-banner-thumb.jpg",
+                dimensions: { width: 300, height: 250 },
+                mediaType: "Display Banner",
+              },
+              {
+                id: "asset-4",
+                name: "Breakfast Video",
+                type: "video",
+                size: 5242880,
+                url: "/videos/brew-bite-video.mp4",
+                previewUrl: "/images/brew-bite-video-thumb.jpg",
+                dimensions: { width: 1920, height: 1080 },
+                mediaType: "Video",
+              },
+            ],
+            numberOfAssets: 2,
             channels: ["TOP", "Local+", "Signals"],
             startDateTime: "2024-07-20T06:00:00Z",
             endDateTime: "2024-09-25T11:00:00Z",
@@ -1059,9 +1226,24 @@ const mockCampaigns: Campaign[] = [
           {
             id: "ad-6",
             name: "Sunny Side Brunch Special",
+            merchantId: "merchant-ss",
             merchantName: "Sunny Side Breakfast Bar",
+            offerId: "offer-ss-01",
             offerName: "Buy brunch, get mimosa half-price",
             status: "Draft",
+            mediaType: ["Display Banner"],
+            mediaAssets: [
+              {
+                id: "asset-6",
+                name: "sunny-side-banner.jpg",
+                type: "image",
+                size: 180000,
+                url: "/assets/sunny-side-banner.jpg",
+                previewUrl: "/assets/sunny-side-banner-thumb.jpg",
+                dimensions: { width: 728, height: 90 },
+                mediaType: "display_banner",
+              },
+            ],
             numberOfAssets: 2,
             channels: ["TOP"],
             startDateTime: "2024-08-25T09:00:00Z",
@@ -1104,9 +1286,24 @@ const mockCampaigns: Campaign[] = [
           {
             id: "ad-7",
             name: "Starbucks Loyalty Rewards",
+            merchantId: "merchant-sb",
             merchantName: "Starbucks Corporation",
+            offerId: "offer-sb-01",
             offerName: "Buy 2 Get 1 Free beverages",
             status: "Active",
+            mediaType: ["Display Banner", "Video"],
+            mediaAssets: [
+              {
+                id: "asset-7",
+                name: "starbucks-loyalty-banner.jpg",
+                type: "image",
+                size: 340000,
+                url: "/assets/starbucks-loyalty-banner.jpg",
+                previewUrl: "/assets/starbucks-loyalty-banner-thumb.jpg",
+                dimensions: { width: 728, height: 90 },
+                mediaType: "display_banner",
+              },
+            ],
             numberOfAssets: 5,
             channels: ["TOP", "Local+", "Catalog"],
             startDateTime: "2024-01-01T00:00:00Z",
@@ -1118,9 +1315,23 @@ const mockCampaigns: Campaign[] = [
           {
             id: "ad-8",
             name: "Starbucks Holiday Blend Promo",
+            merchantId: "merchant-sb",
             merchantName: "Starbucks Corporation",
+            offerId: "offer-sb-02",
             offerName: "20% off holiday blends",
             status: "Ended",
+            mediaType: ["Native", "Social"],
+            mediaAssets: [
+              {
+                id: "asset-8",
+                name: "starbucks-holiday-native.jpg",
+                type: "image",
+                size: 280000,
+                url: "/assets/starbucks-holiday-native.jpg",
+                previewUrl: "/assets/starbucks-holiday-native-thumb.jpg",
+                mediaType: "native",
+              },
+            ],
             numberOfAssets: 3,
             channels: ["TOP", "Local+"],
             startDateTime: "2024-05-01T06:00:00Z",
@@ -1149,9 +1360,24 @@ const mockCampaigns: Campaign[] = [
           {
             id: "ad-9",
             name: "Chipotle Welcome Offer",
+            merchantId: "merchant-chipotle",
             merchantName: "Chipotle Mexican Grill",
+            offerId: "offer-chipotle-01",
             offerName: "Free guacamole with entrée",
             status: "Draft",
+            mediaType: ["Display Banner"],
+            mediaAssets: [
+              {
+                id: "asset-9",
+                name: "chipotle-welcome-banner.jpg",
+                type: "image",
+                size: 220000,
+                url: "/assets/chipotle-welcome-banner.jpg",
+                previewUrl: "/assets/chipotle-welcome-banner-thumb.jpg",
+                dimensions: { width: 728, height: 90 },
+                mediaType: "display_banner",
+              },
+            ],
             numberOfAssets: 2,
             channels: ["TOP"],
             startDateTime: "2024-08-01T00:00:00Z",
@@ -1194,9 +1420,24 @@ const mockCampaigns: Campaign[] = [
           {
             id: "ad-10",
             name: "Walmart Holiday Promotion",
+            merchantId: "merchant-walmart",
             merchantName: "Walmart Inc.",
+            offerId: "offer-walmart-01",
             offerName: "$10 off $50 purchase",
             status: "Draft",
+            mediaType: ["Display Banner", "Video"],
+            mediaAssets: [
+              {
+                id: "asset-10",
+                name: "walmart-holiday-banner.jpg",
+                type: "image",
+                size: 350000,
+                url: "/assets/walmart-holiday-banner.jpg",
+                previewUrl: "/assets/walmart-holiday-banner-thumb.jpg",
+                dimensions: { width: 728, height: 90 },
+                mediaType: "display_banner",
+              },
+            ],
             numberOfAssets: 6,
             channels: ["TOP", "Local+", "Signals", "Catalog"],
             startDateTime: "2024-11-25T06:00:00Z",
@@ -1225,9 +1466,24 @@ const mockCampaigns: Campaign[] = [
           {
             id: "ad-11",
             name: "Target Home Decor Special",
+            merchantId: "merchant-target",
             merchantName: "Target Corporation",
+            offerId: "offer-target-01",
             offerName: "15% off home decor",
             status: "Draft",
+            mediaType: ["Display Banner"],
+            mediaAssets: [
+              {
+                id: "asset-11",
+                name: "target-home-decor-banner.jpg",
+                type: "image",
+                size: 280000,
+                url: "/assets/target-home-decor-banner.jpg",
+                previewUrl: "/assets/target-home-decor-banner-thumb.jpg",
+                dimensions: { width: 728, height: 90 },
+                mediaType: "display_banner",
+              },
+            ],
             numberOfAssets: 4,
             channels: ["TOP", "Local+"],
             startDateTime: "2024-11-01T00:00:00Z",
@@ -1239,9 +1495,24 @@ const mockCampaigns: Campaign[] = [
           {
             id: "ad-12",
             name: "Target Holiday Lighting Sale",
+            merchantId: "merchant-target",
             merchantName: "Target Corporation",
+            offerId: "offer-target-02",
             offerName: "25% off holiday lighting",
             status: "Draft",
+            mediaType: ["Display Banner", "Social Media"],
+            mediaAssets: [
+              {
+                id: "asset-12",
+                name: "target-lighting-banner.jpg",
+                type: "image",
+                size: 260000,
+                url: "/assets/target-lighting-banner.jpg",
+                previewUrl: "/assets/target-lighting-banner-thumb.jpg",
+                dimensions: { width: 728, height: 90 },
+                mediaType: "display_banner",
+              },
+            ],
             numberOfAssets: 3,
             channels: ["TOP", "Local+"],
             startDateTime: "2024-11-15T00:00:00Z",
@@ -1323,30 +1594,33 @@ const CreateButtonCustom = memo(function CreateButtonCustom() {
             }}
           >
             <div className="py-1">
-              <div className="px-4 py-2 text-sm font-medium text-gray-700 border-b">
+              <div className="px-5 py-3 text-sm font-medium text-gray-700 border-b">
                 Create New
               </div>
               <Link
                 href="/campaigns/create"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                className="flex items-center px-5 py-3 text-sm text-gray-700 hover:bg-gray-100"
                 onClick={() => setIsOpen(false)}
               >
+                <FolderIcon className="mr-3 h-4 w-4" />
                 Campaign
               </Link>
               <button
-                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                className="w-full text-left px-5 py-3 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
                 onClick={() => {
                   console.log("Create Ads Group clicked");
                   setIsOpen(false);
                 }}
               >
+                <RectangleGroupIcon className="mr-3 h-4 w-4" />
                 Ads Group
               </button>
               <Link
                 href="/campaign-manager/ads-create"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                className="flex items-center px-5 py-3 text-sm text-gray-700 hover:bg-gray-100"
                 onClick={() => setIsOpen(false)}
               >
+                <PhotoIcon className="mr-3 h-4 w-4" />
                 Ad
               </Link>
             </div>
@@ -1480,6 +1754,196 @@ const CreateButtonSimple = (
   </Link>
 );
 
+// Campaign Filter Component
+const CampaignFilterDropdown = memo(function CampaignFilterDropdown({
+  campaigns,
+  filters,
+  onFiltersChange,
+  onClearFilters,
+}: {
+  campaigns: Campaign[];
+  filters: CampaignFilters;
+  onFiltersChange: (filters: CampaignFilters) => void;
+  onClearFilters: () => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({
+    top: 0,
+    left: 0,
+  });
+
+  // Extract unique filter options from ALL ADS (attribute level filtering)
+  const filterOptions = useMemo(() => {
+    const allAds = campaigns.flatMap((campaign) =>
+      campaign.adSets.flatMap((adSet) => adSet.ads)
+    );
+
+    const adNames = [...new Set(allAds.map((ad) => ad.name))]
+      .sort()
+      .map((name) => ({ label: name, value: name }));
+    const merchants = [...new Set(allAds.map((ad) => ad.merchantName))]
+      .sort()
+      .map((name) => ({ label: name, value: name }));
+    const offers = [...new Set(allAds.map((ad) => ad.offerName))]
+      .sort()
+      .map((name) => ({ label: name, value: name }));
+
+    return { adNames, merchants, offers };
+  }, [campaigns]);
+
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY + 8,
+        left: rect.left + window.scrollX,
+      });
+    }
+  }, [isOpen]);
+
+  const hasActiveFilters =
+    filters.adNames.length > 0 ||
+    filters.merchants.length > 0 ||
+    filters.offers.length > 0;
+
+  const handleFilterChange = (
+    type: keyof CampaignFilters,
+    values: string[]
+  ) => {
+    onFiltersChange({
+      ...filters,
+      [type]: values,
+    });
+  };
+
+  const activeFilterCount =
+    filters.adNames.length + filters.merchants.length + filters.offers.length;
+
+  return (
+    <>
+      <Button
+        ref={buttonRef}
+        variant={hasActiveFilters ? "primary" : "outline"}
+        size="sm"
+        onClick={() => setIsOpen(!isOpen)}
+        className={cn(
+          "relative transition-all duration-200",
+          hasActiveFilters &&
+            "bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+        )}
+      >
+        <FunnelIcon className="h-4 w-4 mr-2" />
+        Filters
+        {activeFilterCount > 0 && (
+          <span className="ml-2 bg-white/20 text-white text-xs px-1.5 py-0.5 rounded-full font-medium">
+            {activeFilterCount}
+          </span>
+        )}
+        <ChevronDownIcon
+          className={cn(
+            "h-4 w-4 ml-2 transition-transform duration-200",
+            isOpen && "rotate-180"
+          )}
+        />
+      </Button>
+
+      {isOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setIsOpen(false)}
+          />
+          <div
+            className="fixed bg-white rounded-lg shadow-lg border border-gray-200 z-50 w-96"
+            style={{
+              top: dropdownPosition.top,
+              left: dropdownPosition.left,
+            }}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Filter Ads
+              </h3>
+              {hasActiveFilters && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onClearFilters}
+                  className="text-gray-600 hover:text-gray-900 px-2"
+                >
+                  Clear All
+                </Button>
+              )}
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6 max-h-96 overflow-y-auto">
+              {/* Ad Name Filter */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-700">
+                  Ad Name
+                </label>
+                <ReactSelectMulti
+                  placeholder="Select ad names..."
+                  options={filterOptions.adNames}
+                  values={filters.adNames}
+                  onChange={(values) => handleFilterChange("adNames", values)}
+                  width="100%"
+                  maxDisplayValues={2}
+                />
+              </div>
+
+              {/* Merchant Filter */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-700">
+                  Merchant
+                </label>
+                <ReactSelectMulti
+                  placeholder="Select merchants..."
+                  options={filterOptions.merchants}
+                  values={filters.merchants}
+                  onChange={(values) => handleFilterChange("merchants", values)}
+                  width="100%"
+                  maxDisplayValues={2}
+                />
+              </div>
+
+              {/* Offer Filter */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-700">
+                  Offer
+                </label>
+                <ReactSelectMulti
+                  placeholder="Select offers..."
+                  options={filterOptions.offers}
+                  values={filters.offers}
+                  onChange={(values) => handleFilterChange("offers", values)}
+                  width="100%"
+                  maxDisplayValues={2}
+                />
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex justify-end px-6 py-4 border-t border-gray-200 bg-gray-50">
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setIsOpen(false)}
+                className="px-6 py-2"
+              >
+                Done
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
+    </>
+  );
+});
+
 /**
  * AdManagerListView Component
  *
@@ -1500,14 +1964,12 @@ export default function AdManagerListView() {
   );
   const [selectedAdSet, setSelectedAdSet] = useState<AdSet | null>(null);
 
-  // Advanced filters state - use useState with function to prevent object recreation
-  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilterState>(
-    () => ({
-      adNames: [],
-      merchants: [],
-      offers: [],
-    })
-  );
+  // Campaign filter state
+  const [campaignFilters, setCampaignFilters] = useState<CampaignFilters>({
+    adNames: [],
+    merchants: [],
+    offers: [],
+  });
 
   // Modal states - use useState with function to prevent object recreation
   const [modalState, setModalState] = useState<ModalState>(() => ({
@@ -1571,19 +2033,139 @@ export default function AdManagerListView() {
     setSelectedAds(EMPTY_SELECTED_ADS);
   }, []);
 
-  // Get base data without filtering
+  // Get base data with ad-level filtering
   const baseData = useMemo(() => {
+    const hasActiveFilters = Object.values(campaignFilters).some(
+      (arr) => arr.length > 0
+    );
+
     switch (currentLevel) {
       case "campaigns":
-        return mockCampaigns || [];
+        let campaigns = mockCampaigns || [];
+
+        // Apply ad-level filters (filter campaigns by their nested ads)
+        if (hasActiveFilters) {
+          campaigns = campaigns.filter((campaign) => {
+            // Get all ads in this campaign
+            const campaignAds = campaign.adSets.flatMap((adSet) => adSet.ads);
+
+            // Check if campaign contains ads matching filter criteria
+            return campaignAds.some((ad) => {
+              let matches = true;
+
+              // Filter by ad names
+              if (campaignFilters.adNames.length > 0) {
+                matches = matches && campaignFilters.adNames.includes(ad.name);
+              }
+
+              // Filter by merchants
+              if (campaignFilters.merchants.length > 0) {
+                matches =
+                  matches &&
+                  campaignFilters.merchants.includes(ad.merchantName);
+              }
+
+              // Filter by offers
+              if (campaignFilters.offers.length > 0) {
+                matches =
+                  matches && campaignFilters.offers.includes(ad.offerName);
+              }
+
+              return matches;
+            });
+          });
+        }
+
+        return campaigns;
+
       case "adsets":
-        return selectedCampaign ? selectedCampaign.adSets || [] : [];
+        if (!selectedCampaign) return [];
+        let adSets = selectedCampaign.adSets || [];
+
+        // Apply ad-level filters (filter adsets by their nested ads)
+        if (hasActiveFilters) {
+          adSets = adSets.filter((adSet) => {
+            // Check if adset contains ads matching filter criteria
+            return adSet.ads.some((ad) => {
+              let matches = true;
+
+              // Filter by ad names
+              if (campaignFilters.adNames.length > 0) {
+                matches = matches && campaignFilters.adNames.includes(ad.name);
+              }
+
+              // Filter by merchants
+              if (campaignFilters.merchants.length > 0) {
+                matches =
+                  matches &&
+                  campaignFilters.merchants.includes(ad.merchantName);
+              }
+
+              // Filter by offers
+              if (campaignFilters.offers.length > 0) {
+                matches =
+                  matches && campaignFilters.offers.includes(ad.offerName);
+              }
+
+              return matches;
+            });
+          });
+        }
+
+        return adSets;
+
       case "ads":
-        return selectedAdSet ? selectedAdSet.ads || [] : [];
+        // For ads level - filter individual ads directly by their attributes
+        let ads: Ad[] = [];
+
+        if (selectedAdSet) {
+          // If we're viewing a specific adset, get ads from that adset
+          ads = selectedAdSet.ads || [];
+        } else {
+          // If no specific adset selected, get all ads from all campaigns
+          ads = (mockCampaigns || []).flatMap((campaign) =>
+            campaign.adSets.flatMap((adSet) => adSet.ads)
+          );
+        }
+
+        // Apply ad-level filters directly to individual ads
+        if (hasActiveFilters) {
+          ads = ads.filter((ad) => {
+            let matches = true;
+
+            // Filter by ad names
+            if (campaignFilters.adNames.length > 0) {
+              matches = matches && campaignFilters.adNames.includes(ad.name);
+            }
+
+            // Filter by merchants
+            if (campaignFilters.merchants.length > 0) {
+              matches =
+                matches && campaignFilters.merchants.includes(ad.merchantName);
+            }
+
+            // Filter by offers
+            if (campaignFilters.offers.length > 0) {
+              matches =
+                matches && campaignFilters.offers.includes(ad.offerName);
+            }
+
+            return matches;
+          });
+        }
+
+        return ads;
+
       default:
         return [];
     }
-  }, [currentLevel, selectedCampaign, selectedAdSet]);
+  }, [
+    currentLevel,
+    selectedCampaign,
+    selectedAdSet,
+    campaignFilters,
+    mockCampaigns,
+  ]);
 
   // Apply search filtering
   const searchFilteredData = useMemo(() => {
@@ -1611,42 +2193,54 @@ export default function AdManagerListView() {
     });
   }, [baseData, searchQuery, currentLevel]);
 
-  // Apply advanced filters (only for ads level)
+  // Get current data with sorting by start date/time in descending order
   const getCurrentData = useMemo(() => {
-    if (currentLevel !== "ads" || searchFilteredData.length === 0) {
-      return searchFilteredData;
+    if (currentLevel === "ads") {
+      // Sort ads by start date/time in descending order (most recent first)
+      return [...searchFilteredData].sort((a: any, b: any) => {
+        const dateA = new Date(a.startDateTime || a.createdDate || 0);
+        const dateB = new Date(b.startDateTime || b.createdDate || 0);
+        return dateB.getTime() - dateA.getTime();
+      });
     }
-
-    let data = searchFilteredData as Ad[];
-    const { adNames, merchants, offers } = advancedFilters;
-
-    if (adNames.length > 0) {
-      data = data.filter((ad) => adNames.includes(ad.name));
-    }
-
-    if (merchants.length > 0) {
-      data = data.filter((ad) => merchants.includes(ad.merchantName));
-    }
-
-    if (offers.length > 0) {
-      data = data.filter((ad) => offers.includes(ad.offerName));
-    }
-
-    return data;
-  }, [searchFilteredData, advancedFilters, currentLevel]);
+    return searchFilteredData;
+  }, [searchFilteredData, currentLevel]);
 
   // Handle search
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
   }, []);
 
-  // Handle advanced filters change
-  const handleAdvancedFiltersChange = useCallback(
-    (filters: AdvancedFilterState) => {
-      setAdvancedFilters(filters);
+  // Handle campaign filter changes
+  const handleCampaignFiltersChange = useCallback(
+    (filters: CampaignFilters) => {
+      setCampaignFilters(filters);
+      // Reset to page 1 when filters change
+      setPaginationState((prev) => ({
+        ...prev,
+        campaigns: { ...prev.campaigns, currentPage: 1 },
+      }));
+      // Clear selections when filtering
+      setSelectedAds(EMPTY_SELECTED_ADS);
     },
     []
   );
+
+  // Handle clear all filters
+  const handleClearCampaignFilters = useCallback(() => {
+    setCampaignFilters({
+      adNames: [],
+      merchants: [],
+      offers: [],
+    });
+    // Reset to page 1 when clearing filters
+    setPaginationState((prev) => ({
+      ...prev,
+      campaigns: { ...prev.campaigns, currentPage: 1 },
+    }));
+    // Clear selections when clearing filters
+    setSelectedAds(EMPTY_SELECTED_ADS);
+  }, []);
 
   // Handle pagination changes
   const handlePageChange = useCallback((page: number) => {
@@ -1717,21 +2311,6 @@ export default function AdManagerListView() {
     setSelectedAds(selection);
   }, []);
 
-  // Create navigation breadcrumb
-  const getBreadcrumb = useMemo(() => {
-    const breadcrumbs = ["Campaigns"];
-
-    if (selectedCampaign) {
-      breadcrumbs.push(selectedCampaign.name);
-    }
-
-    if (selectedAdSet) {
-      breadcrumbs.push(selectedAdSet.name);
-    }
-
-    return breadcrumbs;
-  }, [selectedCampaign, selectedAdSet]);
-
   // Get the selected count
   const selectedCount = useMemo(
     () =>
@@ -1743,102 +2322,138 @@ export default function AdManagerListView() {
   // Use custom dropdown (switch to this after testing simple button)
   const headerActions = useMemo(() => <CreateButtonCustom />, []);
 
+  // Create simple breadcrumb
+  const getBreadcrumb = useMemo(() => {
+    const breadcrumbs = [
+      { label: "Campaigns", level: "campaigns" as NavigationLevel },
+    ];
+
+    if (selectedCampaign) {
+      breadcrumbs.push({
+        label: selectedCampaign.name,
+        level: "adsets" as NavigationLevel,
+      });
+    }
+
+    if (selectedAdSet) {
+      breadcrumbs.push({
+        label: selectedAdSet.name,
+        level: "ads" as NavigationLevel,
+      });
+    }
+
+    return breadcrumbs;
+  }, [selectedCampaign, selectedAdSet]);
+
+  // Create dynamic page header and search context
+  const getContextProps = useMemo(() => {
+    let title = "Ads Manager";
+    let description =
+      "Create, manage, and optimize your advertising campaigns across multiple channels and platforms.";
+    let searchPlaceholder = "Search campaigns...";
+
+    if (currentLevel === "ads") {
+      title = "Ads Manager";
+      description =
+        "Create, manage, and optimize your advertising campaigns across multiple channels and platforms.";
+      searchPlaceholder = "Search ads...";
+    } else if (currentLevel === "adsets") {
+      title = "Ads Manager";
+      description =
+        "Create, manage, and optimize your advertising campaigns across multiple channels and platforms.";
+      searchPlaceholder = "Search ads groups...";
+    }
+
+    return { title, description, searchPlaceholder };
+  }, [currentLevel]);
+
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Ads Manager"
-        description="Create, manage, and optimize your advertising campaigns across multiple channels and platforms."
+        title={getContextProps.title}
+        description={getContextProps.description}
         actions={headerActions}
         variant="aurora"
       />
 
-      {/* Combined Navigation and Tabs Bar */}
+      {/* Tab-styled Breadcrumb Navigation */}
+      {getBreadcrumb.length > 1 && (
+        <div className="flex justify-start mb-4">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg px-4 py-2 shadow-sm">
+            <div className="flex items-center space-x-2">
+              <div className="flex items-center text-blue-600">
+                <svg
+                  className="w-4 h-4 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                  />
+                </svg>
+                <span className="text-sm font-medium">Navigation:</span>
+              </div>
+              {getBreadcrumb.map((crumb, index) => (
+                <div key={index} className="flex items-center">
+                  {index > 0 && <span className="mx-2 text-blue-400">→</span>}
+                  <button
+                    onClick={() => handleLevelChange(crumb.level)}
+                    className={
+                      index === getBreadcrumb.length - 1
+                        ? "font-semibold text-blue-900 bg-blue-100 px-2 py-1 rounded-md text-sm cursor-default"
+                        : "text-blue-700 hover:text-blue-900 cursor-pointer text-sm hover:underline"
+                    }
+                  >
+                    {crumb.label}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Aligned with Catalog Filter Pattern */}
       <Tabs
         value={currentLevel}
         className="w-full"
         onValueChange={(value) => handleLevelChange(value as NavigationLevel)}
       >
-        <div className="space-y-4 mb-4">
-          <div className="flex items-center justify-between space-x-4">
-            {/* Left: Search Bar */}
-            <div className="flex-shrink-0 w-80">
-              <AdSearchBar onSearch={handleSearch} />
-            </div>
-
-            {/* Center: Navigation Breadcrumb */}
-            <div className="flex-grow flex justify-center">
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg px-4 py-2 shadow-sm">
-                <div className="flex items-center space-x-2">
-                  <div className="flex items-center text-blue-600">
-                    <svg
-                      className="w-4 h-4 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                      />
-                    </svg>
-                    <span className="text-sm font-medium">Navigation:</span>
-                  </div>
-                  {getBreadcrumb.map((crumb, index) => (
-                    <div key={index} className="flex items-center">
-                      {index > 0 && (
-                        <span className="mx-2 text-blue-400">→</span>
-                      )}
-                      <span
-                        className={
-                          index === getBreadcrumb.length - 1
-                            ? "font-semibold text-blue-900 bg-blue-100 px-2 py-1 rounded-md text-sm"
-                            : "text-blue-700 hover:text-blue-900 cursor-pointer text-sm hover:underline"
-                        }
-                      >
-                        {crumb}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Right: Campaign Tabs + Advanced Filters */}
-            <div className="flex items-center space-x-4">
-              <TabsList>
-                <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
-                <TabsTrigger value="adsets" disabled={!selectedCampaign}>
-                  Ads Groups
-                </TabsTrigger>
-                <TabsTrigger value="ads" disabled={!selectedAdSet}>
-                  Ads
-                </TabsTrigger>
-              </TabsList>
-
-              {/* Advanced Filters - inline for ads level */}
-              {currentLevel === "ads" && (
-                <AdvancedFilters
-                  ads={getCurrentData as Ad[]}
-                  onFiltersChange={handleAdvancedFiltersChange}
-                  initialFilters={advancedFilters}
-                />
-              )}
-
-              {selectedCount > 0 && (
-                <div className="flex items-center border-l border-r px-4 h-9 border-gray-200">
-                  <BulkActions
-                    selectedCount={selectedCount}
-                    onActivate={handleBulkActivate}
-                    onPause={handleBulkPause}
-                    onDuplicate={handleBulkDuplicate}
-                    onDelete={handleBulkDelete}
-                  />
-                </div>
-              )}
-            </div>
+        <div className="flex items-center space-x-4 mb-4">
+          {/* Left: Search Bar - Flex Grow like Catalog */}
+          <div className="flex-grow">
+            <AdSearchBar
+              onSearch={handleSearch}
+              placeholder={getContextProps.searchPlaceholder}
+            />
           </div>
+
+          {/* Center: Campaign Filter Button */}
+          {currentLevel === "campaigns" && (
+            <div className="flex items-center">
+              <CampaignFilterDropdown
+                campaigns={mockCampaigns}
+                filters={campaignFilters}
+                onFiltersChange={handleCampaignFiltersChange}
+                onClearFilters={handleClearCampaignFilters}
+              />
+            </div>
+          )}
+
+          {/* Right: Tabs like Catalog */}
+          <TabsList>
+            <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
+            <TabsTrigger value="adsets" disabled={!selectedCampaign}>
+              Ads Groups
+            </TabsTrigger>
+            <TabsTrigger value="ads" disabled={!selectedAdSet}>
+              Ads
+            </TabsTrigger>
+          </TabsList>
         </div>
 
         {/* Campaigns Level */}

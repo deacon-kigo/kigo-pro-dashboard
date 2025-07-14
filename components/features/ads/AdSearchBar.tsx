@@ -8,13 +8,18 @@ export type SearchField = "name" | "merchantName" | "offerName" | "status";
 
 interface AdSearchBarProps {
   onSearch: (query: string, field: SearchField) => void;
+  placeholder?: string;
 }
 
 /**
  * Search component for ads table
  * Allows global searching across all fields
  */
-export function AdSearchBar({ onSearch }: AdSearchBarProps) {
+
+export function AdSearchBar({
+  onSearch,
+  placeholder = "Search...",
+}: AdSearchBarProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,7 +37,7 @@ export function AdSearchBar({ onSearch }: AdSearchBarProps) {
       </div>
       <Input
         type="text"
-        placeholder="Search ads..."
+        placeholder={placeholder}
         value={searchQuery}
         onChange={handleInputChange}
         className="pl-10 pr-3 py-2 border border-gray-300 rounded-md w-full"

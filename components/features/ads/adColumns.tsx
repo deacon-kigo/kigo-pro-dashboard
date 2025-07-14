@@ -15,7 +15,6 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useRouter } from "next/navigation";
 import {
   AlertDialog,
@@ -27,20 +26,37 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/molecules/alert-dialog/AlertDialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
-// Simplified Ad data structure - only include what we actually have
+// Simplified Ad data structure - matches actual CampaignAd interface from campaignSlice
 export type Ad = {
   id: string;
   name: string; // Ad Name (max 50 characters)
   status: "Published" | "Active" | "Paused" | "Draft" | "Ended";
-  merchantName: string; // Merchant
-  offerName: string; // Offer
-  numberOfAssets: number; // Number of Assets
-  startDateTime: string; // Start day and time (US format, UTC)
-  endDateTime: string; // End day and time (US format, UTC)
-  totalBudgetCap?: number; // Total Budget Cap in USD (v2)
-  reach?: number; // Reach (v2)
-  channels: string[]; // Channels / Offer Catalog
+  merchantId: string; // Merchant ID
+  merchantName: string; // Merchant display name
+  offerId: string; // Offer ID
+  offerName: string; // Offer display name (for UI display)
+  mediaType: string[]; // Media formats used (Display Banner, Double Decker, Native, Video, Social)
+  mediaAssets: {
+    id: string;
+    name: string;
+    type: string;
+    size: number;
+    url: string;
+    previewUrl: string;
+    dimensions?: { width: number; height: number };
+    mediaType?: string;
+  }[];
+  numberOfAssets?: number; // Number of media assets
+  channels?: string[]; // Delivery channels
+  startDateTime?: string; // Start date and time
+  endDateTime?: string; // End date and time
   createdBy: string;
   createdDate: string;
   lastModified: string;
@@ -128,15 +144,11 @@ const SortIcon = memo(function SortIcon({
 // Custom Ad Action Dropdown Component to prevent re-rendering issues
 const AdActionDropdown = memo(function AdActionDropdown({
   ad,
-  onViewDetails,
   onEditAd,
-  onStatusChange,
   onDelete,
 }: {
   ad: Ad;
-  onViewDetails: () => void;
   onEditAd: () => void;
-  onStatusChange: (status: string) => void;
   onDelete: () => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -150,7 +162,7 @@ const AdActionDropdown = memo(function AdActionDropdown({
     if (isOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       const dropdownWidth = 192; // w-48 = 192px
-      const dropdownHeight = 280; // Approximate height for all action items
+      const dropdownHeight = 120; // Reduced height for fewer actions
       const viewport = {
         width: window.innerWidth,
         height: window.innerHeight,
@@ -179,23 +191,10 @@ const AdActionDropdown = memo(function AdActionDropdown({
     }
   }, [isOpen]);
 
-  const handleViewClick = useCallback(() => {
-    onViewDetails();
-    setIsOpen(false);
-  }, [onViewDetails]);
-
   const handleEditClick = useCallback(() => {
     onEditAd();
     setIsOpen(false);
   }, [onEditAd]);
-
-  const handleStatusClick = useCallback(
-    (status: string) => {
-      onStatusChange(status);
-      setIsOpen(false);
-    },
-    [onStatusChange]
-  );
 
   const handleDeleteClick = useCallback(() => {
     onDelete();
@@ -232,14 +231,7 @@ const AdActionDropdown = memo(function AdActionDropdown({
                 Actions
               </div>
 
-              {/* View/Edit Actions */}
-              <button
-                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                onClick={handleViewClick}
-              >
-                <EyeIcon className="mr-2 h-4 w-4" />
-                View Ad
-              </button>
+              {/* Edit Action */}
               <button
                 className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
                 onClick={handleEditClick}
@@ -248,55 +240,13 @@ const AdActionDropdown = memo(function AdActionDropdown({
                 Edit Ad
               </button>
 
-              <div className="border-t my-1"></div>
-
-              {/* Status Change Actions */}
-              {ad.status !== "Active" && (
-                <button
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                  onClick={() => handleStatusClick("Active")}
-                >
-                  <PlayIcon className="mr-2 h-4 w-4" />
-                  Activate
-                </button>
-              )}
-              {ad.status === "Active" && (
-                <button
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                  onClick={() => handleStatusClick("Paused")}
-                >
-                  <PauseIcon className="mr-2 h-4 w-4" />
-                  Pause
-                </button>
-              )}
-              {(ad.status === "Draft" || ad.status === "Paused") && (
-                <button
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                  onClick={() => handleStatusClick("Published")}
-                >
-                  <DocumentDuplicateIcon className="mr-2 h-4 w-4" />
-                  Publish
-                </button>
-              )}
-              {ad.status !== "Ended" && (
-                <button
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                  onClick={() => handleStatusClick("Ended")}
-                >
-                  <XMarkIcon className="mr-2 h-4 w-4" />
-                  End Campaign
-                </button>
-              )}
-
-              <div className="border-t my-1"></div>
-
               {/* Delete Action */}
               <button
                 className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"
                 onClick={handleDeleteClick}
               >
                 <TrashIcon className="mr-2 h-4 w-4" />
-                Delete Ad
+                Destroy Ad
               </button>
             </div>
           </div>
@@ -306,32 +256,7 @@ const AdActionDropdown = memo(function AdActionDropdown({
   );
 });
 
-export const createAdColumns = (
-  onViewDetails?: (ad: Ad) => void
-): ColumnDef<Ad>[] => [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-
+export const createAdColumns = (): ColumnDef<Ad>[] => [
   {
     accessorKey: "name",
     header: ({ column }) => {
@@ -376,88 +301,27 @@ export const createAdColumns = (
     enableSorting: false,
   },
   {
-    accessorKey: "numberOfAssets",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
-        >
-          Assets
-          <SortIcon sorted={column.getIsSorted()} />
-        </Button>
-      );
-    },
+    accessorKey: "mediaType",
+    header: () => <div className="text-left font-medium">Media Types</div>,
     cell: ({ row }) => (
-      <div className="text-left">{row.getValue("numberOfAssets")}</div>
-    ),
-  },
-  {
-    id: "schedule",
-    header: () => <div className="text-left font-medium">Start/End Time</div>,
-    cell: ({ row }) => (
-      <div className="text-left max-w-[180px]">
-        <div className="text-sm">
-          <span className="text-gray-600">Start:</span>{" "}
-          {formatDateTime(row.original.startDateTime)}
-        </div>
-        <div className="text-sm">
-          <span className="text-gray-600">End:</span>{" "}
-          {formatDateTime(row.original.endDateTime)}
-        </div>
+      <div className="text-left">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="text-sm font-medium text-blue-600 cursor-help">
+                {row.original.mediaType.length}{" "}
+                {row.original.mediaType.length === 1 ? "type" : "types"}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{row.original.mediaType.join(", ")}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
     ),
     enableSorting: false,
   },
-  {
-    accessorKey: "channels",
-    header: () => <div className="text-left font-medium">Channels</div>,
-    cell: ({ row }) => (
-      <div
-        className="text-left max-w-[150px] truncate"
-        title={
-          row.original.channels && row.original.channels.length > 0
-            ? row.original.channels.join(", ")
-            : "No channels"
-        }
-      >
-        {formatChannels(row.original.channels)}
-      </div>
-    ),
-    enableSorting: false,
-  },
-  {
-    id: "delivery",
-    header: () => <div className="text-left font-medium">Delivery</div>,
-    cell: ({ row }) => {
-      const status = row.original.status;
-      const delivery = getDeliveryStatus(status);
-
-      return (
-        <div className="flex items-center text-left">
-          <div className={`flex items-center ${delivery.color}`}>
-            <div
-              className={`w-2 h-2 rounded-full mr-2 ${
-                status === "Active"
-                  ? "bg-green-500"
-                  : status === "Published"
-                    ? "bg-blue-500"
-                    : status === "Paused"
-                      ? "bg-orange-500"
-                      : status === "Draft"
-                        ? "bg-gray-400"
-                        : "bg-red-500"
-              }`}
-            />
-            <span className="text-sm">{delivery.text}</span>
-          </div>
-        </div>
-      );
-    },
-    enableSorting: false,
-  },
-
   {
     id: "actions",
     header: () => <div className="text-center">Actions</div>,
@@ -465,47 +329,14 @@ export const createAdColumns = (
       const ad = row.original;
       const router = useRouter();
 
-      // State for dialogs - following filter management pattern
-      const [statusChangeDialog, setStatusChangeDialog] = useState({
-        isOpen: false,
-        newStatus: "",
-        ad: null as Ad | null,
-      });
-      const [detailModalOpen, setDetailModalOpen] = useState(false);
+      // State for dialogs
       const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-      // Handler functions - following filter management pattern
-      function handleViewDetails() {
-        if (onViewDetails) {
-          onViewDetails(ad);
-        } else {
-          setDetailModalOpen(true);
-        }
-      }
-
+      // Handler functions
       function handleEditAd() {
         console.log("Edit ad:", ad.id);
         // TODO: Navigate to edit interface
         // router.push(`/campaign-manager/ads/${ad.id}/edit`);
-      }
-
-      function handleStatusChange(newStatus: string) {
-        setStatusChangeDialog({
-          isOpen: true,
-          newStatus,
-          ad,
-        });
-      }
-
-      function handleConfirmedStatusChange() {
-        const { ad: dialogAd, newStatus } = statusChangeDialog;
-        if (dialogAd) {
-          console.log(
-            `Changing status of ad ${dialogAd.id} from ${dialogAd.status} to ${newStatus}`
-          );
-          // TODO: Implement actual status change logic
-        }
-        setStatusChangeDialog({ isOpen: false, newStatus: "", ad: null });
       }
 
       function handleConfirmedDelete() {
@@ -519,50 +350,10 @@ export const createAdColumns = (
           <div className="flex justify-center">
             <AdActionDropdown
               ad={ad}
-              onViewDetails={handleViewDetails}
               onEditAd={handleEditAd}
-              onStatusChange={handleStatusChange}
               onDelete={() => setDeleteDialogOpen(true)}
             />
           </div>
-
-          {/* Status Change Confirmation Dialog */}
-          <AlertDialog
-            open={statusChangeDialog.isOpen}
-            onOpenChange={(open) =>
-              setStatusChangeDialog((prev) => ({ ...prev, isOpen: open }))
-            }
-          >
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Confirm Status Change</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to change the status of "{ad.name}" to{" "}
-                  {statusChangeDialog.newStatus}?
-                  {statusChangeDialog.newStatus === "Ended" && (
-                    <div className="mt-2 text-red-600 font-medium">
-                      This action cannot be undone.
-                    </div>
-                  )}
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleConfirmedStatusChange}
-                  className={
-                    statusChangeDialog.newStatus === "Ended"
-                      ? "bg-red-600 hover:bg-red-700"
-                      : ""
-                  }
-                >
-                  {statusChangeDialog.newStatus === "Ended"
-                    ? "End Ad"
-                    : `Change to ${statusChangeDialog.newStatus}`}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
 
           {/* Delete Confirmation Dialog */}
           <AlertDialog
@@ -571,36 +362,20 @@ export const createAdColumns = (
           >
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Delete Ad</AlertDialogTitle>
+                <AlertDialogTitle>Destroy Ad</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you want to delete "{ad.name}"? This action
+                  Are you sure you want to destroy "{ad.name}"? This action
                   cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleConfirmedDelete}
-                  className="bg-red-600 hover:bg-red-700"
-                >
-                  Delete Ad
-                </AlertDialogAction>
+                <Button variant="destructive" onClick={handleConfirmedDelete}>
+                  Destroy Ad
+                </Button>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-
-          {/* TODO: Add Ad Detail Modal */}
-          {detailModalOpen && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4">
-                <h2 className="text-xl font-bold mb-4">{ad.name}</h2>
-                <p className="text-gray-600 mb-4">
-                  Ad details will be shown here.
-                </p>
-                <Button onClick={() => setDetailModalOpen(false)}>Close</Button>
-              </div>
-            </div>
-          )}
         </>
       );
     },
