@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useCallback, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { motion } from "framer-motion";
 import { RootState } from "@/lib/redux/store";
@@ -36,6 +36,7 @@ import AdCreationStep from "./steps/AdCreationStep";
 const AdvertisementWizard: React.FC = () => {
   const router = useRouter();
   const dispatch = useDispatch();
+  const searchParams = useSearchParams();
 
   // Redux selectors
   const { formData } = useSelector((state: RootState) => state.campaign);
@@ -46,6 +47,10 @@ const AdvertisementWizard: React.FC = () => {
   // State for confirmation dialog
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
+  // State to track if we're in edit mode
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingAdData, setEditingAdData] = useState<any>(null);
+
   // Refs for asset management
   const assetUploadRef = useRef<
     ((mediaType: string, file: File) => void) | null
@@ -54,10 +59,29 @@ const AdvertisementWizard: React.FC = () => {
     ((mediaType: string, assetId: string) => void) | null
   >(null);
 
-  // Reset campaign form on initial load
+  // Check for edit mode and pre-populate data
   useEffect(() => {
-    dispatch(resetCampaign());
-  }, [dispatch]);
+    const isEdit = searchParams.get("edit") === "true";
+    const editDataParam = searchParams.get("data");
+
+    if (isEdit && editDataParam) {
+      try {
+        const editData = JSON.parse(editDataParam);
+        setIsEditMode(true);
+        setEditingAdData(editData);
+
+        // Pre-populate the Redux store with the edit data
+        dispatch(resetCampaign());
+        dispatch(addAd(editData));
+      } catch (error) {
+        console.error("Error parsing edit data:", error);
+        dispatch(resetCampaign());
+      }
+    } else {
+      // Reset campaign form on initial load (non-edit mode)
+      dispatch(resetCampaign());
+    }
+  }, [dispatch, searchParams]);
 
   // Update AI context when form data changes
   useEffect(() => {
@@ -112,16 +136,25 @@ const AdvertisementWizard: React.FC = () => {
     // Close the dialog
     setCreateDialogOpen(false);
 
-    // Handle ad creation
-    console.log("Create advertisement with data:", formData);
-
-    // TODO: Implement actual ad creation API call
-    setTimeout(() => {
-      // Simulate success and redirect to ads manager
-      alert("Advertisement created successfully!");
-      router.push("/campaigns");
-    }, 1000);
-  }, [formData, router]);
+    // Handle ad creation or update
+    if (isEditMode) {
+      console.log("Update advertisement with data:", formData);
+      // TODO: Implement actual ad update API call
+      setTimeout(() => {
+        // Simulate success and redirect to ads manager
+        alert("Advertisement updated successfully!");
+        router.push("/campaigns");
+      }, 1000);
+    } else {
+      console.log("Create advertisement with data:", formData);
+      // TODO: Implement actual ad creation API call
+      setTimeout(() => {
+        // Simulate success and redirect to ads manager
+        alert("Advertisement created successfully!");
+        router.push("/campaigns");
+      }, 1000);
+    }
+  }, [formData, router, isEditMode]);
 
   // Handle ad-related actions
   const handleAddAd = useCallback(
@@ -190,8 +223,12 @@ const AdvertisementWizard: React.FC = () => {
     <div className="min-h-screen flex flex-col">
       <div className="flex-shrink-0">
         <PageHeader
-          title="Create Ad"
-          description="Create promotional campaigns to drive customer engagement and sales."
+          title={isEditMode ? "Edit Ad" : "Create Ad"}
+          description={
+            isEditMode
+              ? "Update your promotional campaign to drive customer engagement and sales."
+              : "Create promotional campaigns to drive customer engagement and sales."
+          }
           emoji="🎯"
           actions={backButton}
           variant="aurora"
@@ -237,7 +274,7 @@ const AdvertisementWizard: React.FC = () => {
                   className="flex items-center gap-1"
                   size="sm"
                 >
-                  Create Ad
+                  {isEditMode ? "Update Ad" : "Create Ad"}
                 </Button>
               </div>
 
@@ -283,10 +320,15 @@ const AdvertisementWizard: React.FC = () => {
       <AlertDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Advertisement Creation</AlertDialogTitle>
+            <AlertDialogTitle>
+              {isEditMode
+                ? "Confirm Advertisement Update"
+                : "Confirm Advertisement Creation"}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to create this advertisement? This action
-              cannot be undone.
+              {isEditMode
+                ? "Are you sure you want to update this advertisement? This will apply your changes to the existing campaign."
+                : "Are you sure you want to create this advertisement? This action cannot be undone."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -294,7 +336,7 @@ const AdvertisementWizard: React.FC = () => {
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmedCreateAd}>
-              Create Ad
+              {isEditMode ? "Update Ad" : "Create Ad"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
