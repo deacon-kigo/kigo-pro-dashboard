@@ -11,6 +11,8 @@ import { Button } from "@/components/atoms/Button";
 import { useCopilotReduxBridge } from "../../lib/copilot-kit/redux-bridge";
 import { useSelector } from "react-redux";
 import { RootState } from "../../lib/redux/store";
+import { useAppDispatch, useAppSelector } from "../../lib/redux/hooks";
+import { setChatOpen, toggleChat } from "../../lib/redux/slices/uiSlice";
 
 /**
  * CopilotKit Chat Sidebar Component
@@ -20,7 +22,8 @@ import { RootState } from "../../lib/redux/store";
  * for interacting with the Kigo Pro platform.
  */
 export function CopilotChatSidebar() {
-  const [isOpen, setIsOpen] = useState(false);
+  const dispatch = useAppDispatch();
+  const chatOpen = useAppSelector((state) => state.ui.chatOpen);
   const [isAnimating, setIsAnimating] = useState(false);
 
   // Check if the new AI system is enabled
@@ -35,12 +38,12 @@ export function CopilotChatSidebar() {
 
   // Handle animations
   useEffect(() => {
-    if (isOpen) {
+    if (chatOpen) {
       setIsAnimating(true);
     } else {
       setIsAnimating(false);
     }
-  }, [isOpen]);
+  }, [chatOpen]);
 
   // Don't render if feature is disabled
   if (!isEnabled) {
@@ -48,7 +51,7 @@ export function CopilotChatSidebar() {
   }
 
   const handleToggle = () => {
-    setIsOpen(!isOpen);
+    dispatch(toggleChat());
   };
 
   // Get personalized instructions based on current context
@@ -57,8 +60,8 @@ export function CopilotChatSidebar() {
 
     const contextualInstructions = `
 Current Context:
-- User Role: ${userState.role || "User"}
-- Demo Environment: ${demoState.currentDemo || "Default"}
+- User Role: ${demoState.role || "User"}
+- Demo Environment: ${demoState.clientName || "Default"}
 - Current Campaign Status: ${campaignState.currentStep < 5 ? "In Progress" : "Complete"}
 
 Your capabilities include:
@@ -85,13 +88,13 @@ Always be helpful, professional, and focused on driving business success. Ask cl
       <Button
         onClick={handleToggle}
         className={`fixed bottom-6 right-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white p-4 rounded-full shadow-lg transition-all duration-300 z-50 group ${
-          isOpen ? "scale-90" : "scale-100 hover:scale-110"
+          chatOpen ? "scale-90" : "scale-100 hover:scale-110"
         }`}
-        aria-label={isOpen ? "Close AI Assistant" : "Open AI Assistant"}
+        aria-label={chatOpen ? "Close AI Assistant" : "Open AI Assistant"}
         variant="ghost"
         size="sm"
       >
-        {isOpen ? (
+        {chatOpen ? (
           <XMarkIcon className="h-6 w-6" />
         ) : (
           <div className="relative">
@@ -101,7 +104,7 @@ Always be helpful, professional, and focused on driving business success. Ask cl
         )}
 
         {/* Tooltip */}
-        {!isOpen && (
+        {!chatOpen && (
           <div className="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 bg-gray-900 text-white px-3 py-1 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             AI Assistant
             <div className="absolute top-1/2 left-full transform -translate-y-1/2 border-4 border-transparent border-l-gray-900"></div>
@@ -110,7 +113,7 @@ Always be helpful, professional, and focused on driving business success. Ask cl
       </Button>
 
       {/* Overlay */}
-      {isOpen && (
+      {chatOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-20 backdrop-blur-sm z-40 transition-opacity duration-300"
           onClick={handleToggle}
@@ -120,7 +123,7 @@ Always be helpful, professional, and focused on driving business success. Ask cl
       {/* Full-height Sidebar */}
       <div
         className={`fixed right-0 top-0 h-full w-80 bg-white shadow-2xl border-l border-gray-200 z-40 transform transition-transform duration-300 ease-in-out ${
-          isOpen ? "translate-x-0" : "translate-x-full"
+          chatOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         {/* Header */}
@@ -166,9 +169,9 @@ Always be helpful, professional, and focused on driving business success. Ask cl
               <span>AI Assistant Online</span>
             </div>
             <div>
-              {demoState.currentDemo && (
+              {demoState.clientName && (
                 <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                  {demoState.currentDemo}
+                  {demoState.clientName}
                 </span>
               )}
             </div>
