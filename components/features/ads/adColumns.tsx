@@ -291,14 +291,19 @@ export const createAdColumns = (): ColumnDef<Ad>[] => [
     ),
     cell: ({ row }) => (
       <div className="text-left max-w-[200px]">
-        <div className="font-medium truncate" title={row.original.merchantName}>
-          {row.original.merchantName}
+        <div
+          className="font-medium truncate"
+          title={
+            (row.original && row.original.merchantName) || "Unknown Merchant"
+          }
+        >
+          {(row.original && row.original.merchantName) || "Unknown Merchant"}
         </div>
         <div
           className="text-sm text-gray-500 truncate"
-          title={row.original.offerName}
+          title={(row.original && row.original.offerName) || "No offer"}
         >
-          {row.original.offerName}
+          {(row.original && row.original.offerName) || "No offer"}
         </div>
       </div>
     ),
@@ -313,12 +318,16 @@ export const createAdColumns = (): ColumnDef<Ad>[] => [
           <Tooltip>
             <TooltipTrigger asChild>
               <span className="text-sm font-medium text-blue-600 cursor-help">
-                {row.original.mediaType.length}{" "}
-                {row.original.mediaType.length === 1 ? "type" : "types"}
+                {((row.original && row.original.mediaType) || []).length}{" "}
+                {((row.original && row.original.mediaType) || []).length === 1
+                  ? "type"
+                  : "types"}
               </span>
             </TooltipTrigger>
             <TooltipContent>
-              <p>{row.original.mediaType.join(", ")}</p>
+              <p>
+                {((row.original && row.original.mediaType) || []).join(", ")}
+              </p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -332,6 +341,15 @@ export const createAdColumns = (): ColumnDef<Ad>[] => [
     cell: ({ row }) => {
       const ad = row.original;
       const router = useRouter();
+
+      // Guard against undefined ad
+      if (!ad) {
+        return (
+          <div className="flex justify-center">
+            <span className="text-gray-400">No data</span>
+          </div>
+        );
+      }
 
       // State for dialogs
       const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);

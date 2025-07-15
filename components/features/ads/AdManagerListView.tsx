@@ -41,6 +41,7 @@ import { Ad, formatDate, formatDateTime, formatChannels } from "./adColumns";
 import { AdSearchBar, SearchField } from "./AdSearchBar";
 import { StatusChangeDialog } from "./StatusChangeDialog";
 import { AdDetailModal } from "./AdDetailModal";
+import { FloatingSelectionToolbar } from "./FloatingSelectionToolbar";
 import { useDispatch } from "react-redux";
 import { clearAllDropdowns } from "@/lib/redux/slices/uiSlice";
 import { ColumnDef } from "@tanstack/react-table";
@@ -262,11 +263,14 @@ const createCampaignColumns = (
     header: () => <div className="text-left font-medium">Ads Groups</div>,
     cell: ({ row }) => (
       <div className="text-left">
-        <div className="font-medium">{(row.original.adSets || []).length}</div>
+        <div className="font-medium">
+          {((row.original && row.original.adSets) || []).length}
+        </div>
         <div className="text-sm text-gray-500">
           {
-            (row.original.adSets || []).filter((as) => as.status === "Active")
-              .length
+            ((row.original && row.original.adSets) || []).filter(
+              (as) => as.status === "Active"
+            ).length
           }{" "}
           active
         </div>
@@ -441,7 +445,7 @@ const createAdSetColumns = (
     header: () => <div className="text-left font-medium">Ads</div>,
     cell: ({ row }) => (
       <div className="text-left font-medium">
-        {(row.original.ads || []).length}
+        {((row.original && row.original.ads) || []).length}
       </div>
     ),
     enableSorting: false,
@@ -463,52 +467,6 @@ const createAdSetColumns = (
     enableSorting: false,
   },
 ];
-
-// Bulk actions component
-const BulkActions = memo(function BulkActions({
-  selectedCount,
-  onActivate,
-  onPause,
-  onDuplicate,
-  onDelete,
-}: {
-  selectedCount: number;
-  onActivate: () => void;
-  onPause: () => void;
-  onDuplicate: () => void;
-  onDelete: () => void;
-}) {
-  return (
-    <div className="flex items-center gap-2">
-      <span className="text-base font-medium text-gray-700">
-        {selectedCount} selected
-      </span>
-      <div className="flex items-center gap-1">
-        <Button variant="outline" size="sm" onClick={onActivate}>
-          <PlayIcon className="h-4 w-4 mr-1" />
-          Activate
-        </Button>
-        <Button variant="outline" size="sm" onClick={onPause}>
-          <PauseIcon className="h-4 w-4 mr-1" />
-          Pause
-        </Button>
-        <Button variant="outline" size="sm" onClick={onDuplicate}>
-          <DocumentDuplicateIcon className="h-4 w-4 mr-1" />
-          Duplicate
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onDelete}
-          className="text-red-600 hover:text-red-700"
-        >
-          <TrashIcon className="h-4 w-4 mr-1" />
-          Delete
-        </Button>
-      </div>
-    </div>
-  );
-});
 
 // Campaign Table Component using DataTable
 const CampaignTable = memo(function CampaignTable({
@@ -1966,6 +1924,9 @@ export default function AdManagerListView() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentLevel, setCurrentLevel] =
     useState<NavigationLevel>("campaigns");
+  // State for selected rows - separate for each level
+  const [selectedCampaigns, setSelectedCampaigns] = useState<SelectedRows>({});
+  const [selectedAdSets, setSelectedAdSets] = useState<SelectedRows>({});
   const [selectedAds, setSelectedAds] = useState<SelectedRows>({});
   const [selectedRowId] = useState<string | null>(null);
 
@@ -2018,8 +1979,7 @@ export default function AdManagerListView() {
   const handleLevelChange = useCallback(
     (level: NavigationLevel) => {
       setCurrentLevel(level);
-      // Clear selections when changing levels
-      setSelectedAds(EMPTY_SELECTED_ADS);
+      // Note: Do NOT clear selections when changing levels - selections should persist across tabs
       // Clear any open dropdowns
       dispatch(clearAllDropdowns());
     },
@@ -2035,6 +1995,9 @@ export default function AdManagerListView() {
     }));
     // Switch to ads tab to show filtered results
     setCurrentLevel("ads");
+    // Clear selections when filtering to a specific campaign
+    setSelectedCampaigns(EMPTY_SELECTED_ADS);
+    setSelectedAdSets(EMPTY_SELECTED_ADS);
     setSelectedAds(EMPTY_SELECTED_ADS);
   }, []);
 
@@ -2047,6 +2010,9 @@ export default function AdManagerListView() {
     }));
     // Switch to ads tab to show filtered results
     setCurrentLevel("ads");
+    // Clear selections when filtering to a specific ad set
+    setSelectedCampaigns(EMPTY_SELECTED_ADS);
+    setSelectedAdSets(EMPTY_SELECTED_ADS);
     setSelectedAds(EMPTY_SELECTED_ADS);
   }, []);
 
@@ -2078,7 +2044,9 @@ export default function AdManagerListView() {
         if (hasActiveFilters) {
           campaigns = campaigns.filter((campaign) => {
             // Get all ads in this campaign
-            const campaignAds = campaign.adSets.flatMap((adSet) => adSet.ads);
+            const campaignAds = (campaign.adSets || []).flatMap(
+              (adSet) => adSet.ads || []
+            );
 
             // Check if campaign contains ads matching filter criteria
             return campaignAds.some((ad) => {
@@ -2112,7 +2080,7 @@ export default function AdManagerListView() {
       case "adsets":
         // Always show ALL ad sets from ALL campaigns
         let allAdSets = (mockCampaigns || []).flatMap((campaign) =>
-          campaign.adSets.map((adSet) => ({
+          (campaign.adSets || []).map((adSet) => ({
             ...adSet,
             campaignId: campaign.id,
             campaignName: campaign.name,
@@ -2122,7 +2090,7 @@ export default function AdManagerListView() {
         // Apply campaign filter dropdown filters
         if (hasActiveFilters) {
           allAdSets = allAdSets.filter((adSet) => {
-            const adSetAds = adSet.ads || [];
+            const adSetAds = (adSet && adSet.ads) || [];
 
             return adSetAds.some((ad) => {
               let matches = true;
@@ -2152,8 +2120,8 @@ export default function AdManagerListView() {
       case "ads":
         // Get ALL ads from ALL campaigns
         let allAds = (mockCampaigns || []).flatMap((campaign) =>
-          campaign.adSets.flatMap((adSet) =>
-            adSet.ads.map((ad) => ({
+          (campaign.adSets || []).flatMap((adSet) =>
+            (adSet.ads || []).map((ad) => ({
               ...ad,
               campaignId: campaign.id,
               campaignName: campaign.name,
@@ -2208,12 +2176,14 @@ export default function AdManagerListView() {
 
   // Apply search filtering
   const searchFilteredData = useMemo(() => {
+    const safeBaseData = baseData || [];
+
     if (!searchQuery || !searchQuery.trim()) {
-      return baseData;
+      return safeBaseData;
     }
 
     const query = searchQuery.toLowerCase();
-    return baseData.filter((item: any) => {
+    return safeBaseData.filter((item: any) => {
       if (currentLevel === "campaigns") {
         return item.name?.toLowerCase().includes(query);
       } else if (currentLevel === "adsets") {
@@ -2234,15 +2204,17 @@ export default function AdManagerListView() {
 
   // Get current data with sorting by start date/time in descending order
   const getCurrentData = useMemo(() => {
+    const safeData = searchFilteredData || [];
+
     if (currentLevel === "ads") {
       // Sort ads by start date/time in descending order (most recent first)
-      return [...searchFilteredData].sort((a: any, b: any) => {
+      return [...safeData].sort((a: any, b: any) => {
         const dateA = new Date(a.startDateTime || a.createdDate || 0);
         const dateB = new Date(b.startDateTime || b.createdDate || 0);
         return dateB.getTime() - dateA.getTime();
       });
     }
-    return searchFilteredData;
+    return safeData;
   }, [searchFilteredData, currentLevel]);
 
   // Handle search
@@ -2260,6 +2232,8 @@ export default function AdManagerListView() {
         campaigns: { ...prev.campaigns, currentPage: 1 },
       }));
       // Clear selections when filtering
+      setSelectedCampaigns(EMPTY_SELECTED_ADS);
+      setSelectedAdSets(EMPTY_SELECTED_ADS);
       setSelectedAds(EMPTY_SELECTED_ADS);
     },
     []
@@ -2278,6 +2252,8 @@ export default function AdManagerListView() {
       campaigns: { ...prev.campaigns, currentPage: 1 },
     }));
     // Clear selections when clearing filters
+    setSelectedCampaigns(EMPTY_SELECTED_ADS);
+    setSelectedAdSets(EMPTY_SELECTED_ADS);
     setSelectedAds(EMPTY_SELECTED_ADS);
   }, []);
 
@@ -2312,51 +2288,132 @@ export default function AdManagerListView() {
     setModalState(CLOSED_MODAL_STATE);
   }, []);
 
-  // Handle bulk actions
-  const handleBulkActivate = useCallback(() => {
-    // TODO: Implement bulk activate functionality
-    console.log(
-      "Bulk activate:",
-      Object.keys(selectedAds || {}).filter((id) => selectedAds[id])
-    );
-  }, [selectedAds]);
+  // Handle row selection change - route to appropriate state based on current level
+  const handleRowSelectionChange = useCallback(
+    (selection: SelectedRows) => {
+      switch (currentLevel) {
+        case "campaigns":
+          setSelectedCampaigns(selection);
+          break;
+        case "adsets":
+          setSelectedAdSets(selection);
+          break;
+        case "ads":
+          setSelectedAds(selection);
+          break;
+      }
+    },
+    [currentLevel]
+  );
 
-  const handleBulkPause = useCallback(() => {
-    // TODO: Implement bulk pause functionality
-    console.log(
-      "Bulk pause:",
-      Object.keys(selectedAds || {}).filter((id) => selectedAds[id])
-    );
-  }, [selectedAds]);
-
-  const handleBulkDuplicate = useCallback(() => {
-    // TODO: Implement bulk duplicate functionality
-    console.log(
-      "Bulk duplicate:",
-      Object.keys(selectedAds || {}).filter((id) => selectedAds[id])
-    );
-  }, [selectedAds]);
-
-  const handleBulkDelete = useCallback(() => {
-    // TODO: Implement bulk delete functionality
-    console.log(
-      "Bulk delete:",
-      Object.keys(selectedAds || {}).filter((id) => selectedAds[id])
-    );
-  }, [selectedAds]);
-
-  // Handle row selection change
-  const handleRowSelectionChange = useCallback((selection: SelectedRows) => {
-    setSelectedAds(selection);
+  // Bulk action handlers
+  const handleClearSelection = useCallback(() => {
+    setSelectedCampaigns(EMPTY_SELECTED_ADS);
+    setSelectedAdSets(EMPTY_SELECTED_ADS);
+    setSelectedAds(EMPTY_SELECTED_ADS);
   }, []);
 
-  // Get the selected count
-  const selectedCount = useMemo(
-    () =>
-      Object.keys(selectedAds || {}).filter((id) => (selectedAds || {})[id])
-        .length,
-    [selectedAds]
-  );
+  const handleBulkActivate = useCallback(() => {
+    const campaignIds = Object.keys(selectedCampaigns || {}).filter(
+      (id) => selectedCampaigns[id]
+    );
+    const adSetIds = Object.keys(selectedAdSets || {}).filter(
+      (id) => selectedAdSets[id]
+    );
+    const adIds = Object.keys(selectedAds || {}).filter(
+      (id) => selectedAds[id]
+    );
+
+    console.log("Bulk Activate:", {
+      campaigns: campaignIds,
+      adSets: adSetIds,
+      ads: adIds,
+    });
+    // TODO: Implement actual bulk activate logic
+    // Show success message and optionally clear selection
+    handleClearSelection();
+  }, [selectedCampaigns, selectedAdSets, selectedAds, handleClearSelection]);
+
+  const handleBulkPause = useCallback(() => {
+    const campaignIds = Object.keys(selectedCampaigns || {}).filter(
+      (id) => selectedCampaigns[id]
+    );
+    const adSetIds = Object.keys(selectedAdSets || {}).filter(
+      (id) => selectedAdSets[id]
+    );
+    const adIds = Object.keys(selectedAds || {}).filter(
+      (id) => selectedAds[id]
+    );
+
+    console.log("Bulk Pause:", {
+      campaigns: campaignIds,
+      adSets: adSetIds,
+      ads: adIds,
+    });
+    // TODO: Implement actual bulk pause logic
+    handleClearSelection();
+  }, [selectedCampaigns, selectedAdSets, selectedAds, handleClearSelection]);
+
+  const handleBulkDuplicate = useCallback(() => {
+    const campaignIds = Object.keys(selectedCampaigns || {}).filter(
+      (id) => selectedCampaigns[id]
+    );
+    const adSetIds = Object.keys(selectedAdSets || {}).filter(
+      (id) => selectedAdSets[id]
+    );
+    const adIds = Object.keys(selectedAds || {}).filter(
+      (id) => selectedAds[id]
+    );
+
+    console.log("Bulk Duplicate:", {
+      campaigns: campaignIds,
+      adSets: adSetIds,
+      ads: adIds,
+    });
+    // TODO: Implement actual bulk duplicate logic
+    handleClearSelection();
+  }, [selectedCampaigns, selectedAdSets, selectedAds, handleClearSelection]);
+
+  const handleBulkDelete = useCallback(() => {
+    const campaignIds = Object.keys(selectedCampaigns || {}).filter(
+      (id) => selectedCampaigns[id]
+    );
+    const adSetIds = Object.keys(selectedAdSets || {}).filter(
+      (id) => selectedAdSets[id]
+    );
+    const adIds = Object.keys(selectedAds || {}).filter(
+      (id) => selectedAds[id]
+    );
+
+    console.log("Bulk Delete:", {
+      campaigns: campaignIds,
+      adSets: adSetIds,
+      ads: adIds,
+    });
+    // TODO: Implement actual bulk delete logic
+    // Show confirmation dialog first
+    handleClearSelection();
+  }, [selectedCampaigns, selectedAdSets, selectedAds, handleClearSelection]);
+
+  // Get the total selected count across all levels
+  const selectedCounts = useMemo(() => {
+    const campaignCount = Object.keys(selectedCampaigns || {}).filter(
+      (id) => selectedCampaigns[id]
+    ).length;
+    const adSetCount = Object.keys(selectedAdSets || {}).filter(
+      (id) => selectedAdSets[id]
+    ).length;
+    const adCount = Object.keys(selectedAds || {}).filter(
+      (id) => selectedAds[id]
+    ).length;
+
+    return {
+      campaigns: campaignCount,
+      adSets: adSetCount,
+      ads: adCount,
+      total: campaignCount + adSetCount + adCount,
+    };
+  }, [selectedCampaigns, selectedAdSets, selectedAds]);
 
   // Use custom dropdown (switch to this after testing simple button)
   const headerActions = useMemo(() => <CreateButtonCustom />, []);
@@ -2500,7 +2557,7 @@ export default function AdManagerListView() {
             data={getCurrentData as Campaign[]}
             onCampaignSelect={handleCampaignSelect}
             className="border-rounded"
-            rowSelection={selectedAds}
+            rowSelection={selectedCampaigns}
             onRowSelectionChange={handleRowSelectionChange}
             currentPage={paginationState.campaigns.currentPage}
             pageSize={paginationState.campaigns.pageSize}
@@ -2515,7 +2572,7 @@ export default function AdManagerListView() {
             data={getCurrentData as AdSet[]}
             onAdSetSelect={handleAdSetSelect}
             className="border-rounded"
-            rowSelection={selectedAds}
+            rowSelection={selectedAdSets}
             onRowSelectionChange={handleRowSelectionChange}
             currentPage={paginationState.adsets.currentPage}
             pageSize={paginationState.adsets.pageSize}
@@ -2555,6 +2612,17 @@ export default function AdManagerListView() {
         isOpen={modalState.adDetail.isOpen}
         onClose={handleModalClose}
         ad={modalState.adDetail.ad}
+      />
+
+      {/* Floating Selection Toolbar */}
+      <FloatingSelectionToolbar
+        selectedCounts={selectedCounts}
+        currentLevel={currentLevel}
+        onClearSelection={handleClearSelection}
+        onBulkActivate={handleBulkActivate}
+        onBulkPause={handleBulkPause}
+        onBulkDuplicate={handleBulkDuplicate}
+        onBulkDelete={handleBulkDelete}
       />
     </div>
   );
