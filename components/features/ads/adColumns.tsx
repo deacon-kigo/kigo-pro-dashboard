@@ -339,8 +339,28 @@ export const createAdColumns = (): ColumnDef<Ad>[] => [
       // Handler functions
       function handleEditAd() {
         console.log("Edit ad:", ad.id);
-        // TODO: Navigate to edit interface
-        // router.push(`/campaign-manager/ads/${ad.id}/edit`);
+
+        // Serialize the ad data to pass to the edit screen
+        const editData = {
+          id: ad.id,
+          name: ad.name,
+          merchantId: ad.merchantId,
+          merchantName: ad.merchantName,
+          offerId: ad.offerId,
+          offerName: ad.offerName,
+          mediaType: ad.mediaType,
+          mediaAssets: ad.mediaAssets,
+          costPerActivation: 0, // Default value since not in Ad type
+          costPerRedemption: 0, // Default value since not in Ad type
+        };
+
+        // Navigate to ad creation screen with edit data
+        const editParams = new URLSearchParams({
+          edit: "true",
+          data: JSON.stringify(editData),
+        });
+
+        router.push(`/campaign-manager/ads-create?${editParams.toString()}`);
       }
 
       function handleConfirmedDelete() {
