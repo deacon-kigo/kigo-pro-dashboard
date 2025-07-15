@@ -35,8 +35,6 @@ function AppLayoutContent({ children, customBreadcrumb }: AppLayoutProps) {
   const { isPanelOpen, panelContent, panelMinWidth, panelMaxWidth } =
     useResizablePanel();
 
-  // Removed client-side detection - relying entirely on Redux state
-
   // Simple inline style using Redux state directly
   const mainContentStyle = {
     paddingLeft: `calc(${sidebarWidth} + 1.5rem)`,
