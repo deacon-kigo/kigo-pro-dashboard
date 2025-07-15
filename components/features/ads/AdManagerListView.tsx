@@ -170,9 +170,13 @@ const createCampaignColumns = (
     },
     cell: ({ row }) => (
       <div className="text-left max-w-[200px]">
-        <div className="font-medium truncate" title={row.getValue("name")}>
+        <button
+          className="font-medium truncate text-blue-600 hover:text-blue-800 hover:underline cursor-pointer text-left"
+          title={`Click to filter ads by: ${row.getValue("name")}`}
+          onClick={() => onCampaignSelect(row.original)}
+        >
           {row.getValue("name") || "Unnamed Campaign"}
-        </div>
+        </button>
         <div className="text-sm text-gray-500">
           {new Date(row.original.createdDate || new Date()).toLocaleDateString(
             "en-US",
@@ -315,10 +319,11 @@ const createCampaignColumns = (
     cell: ({ row }) => (
       <div className="flex justify-center">
         <ActionDropdown
-          onViewClick={() => onCampaignSelect(row.original)}
+          onViewClick={() => {}} // No-op since view is now handled by name click
           onEditClick={() => console.log("Edit campaign", row.original.id)}
-          viewLabel="View Ads Groups"
+          viewLabel="" // Hide view action
           editLabel="Edit Campaign"
+          hideViewAction={true} // Pass flag to hide view action
         />
       </div>
     ),
@@ -367,12 +372,13 @@ const createAdSetColumns = (
       );
     },
     cell: ({ row }) => (
-      <div
-        className="font-medium text-left max-w-[200px] truncate"
-        title={row.getValue("name")}
+      <button
+        className="font-medium text-left max-w-[200px] truncate text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+        title={`Click to filter ads by: ${row.getValue("name")}`}
+        onClick={() => onAdSetSelect(row.original)}
       >
         {row.getValue("name") || "Unnamed Ads Group"}
-      </div>
+      </button>
     ),
   },
   {
@@ -446,10 +452,11 @@ const createAdSetColumns = (
     cell: ({ row }) => (
       <div className="flex justify-center">
         <ActionDropdown
-          onViewClick={() => onAdSetSelect(row.original)}
+          onViewClick={() => {}} // No-op since view is now handled by name click
           onEditClick={() => console.log("Edit ads group", row.original.id)}
-          viewLabel="View Ads"
+          viewLabel="" // Hide view action
           editLabel="Edit Ads Group"
+          hideViewAction={true} // Pass flag to hide view action
         />
       </div>
     ),
@@ -1637,11 +1644,13 @@ const ActionDropdown = memo(function ActionDropdown({
   onEditClick,
   viewLabel,
   editLabel,
+  hideViewAction = false,
 }: {
   onViewClick: () => void;
   onEditClick: () => void;
   viewLabel: string;
   editLabel: string;
+  hideViewAction?: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -1722,13 +1731,15 @@ const ActionDropdown = memo(function ActionDropdown({
               <div className="px-4 py-2 text-sm font-medium text-gray-700 border-b">
                 Actions
               </div>
-              <button
-                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                onClick={handleViewClick}
-              >
-                <EyeIcon className="mr-2 h-4 w-4" />
-                {viewLabel}
-              </button>
+              {!hideViewAction && viewLabel && (
+                <button
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                  onClick={handleViewClick}
+                >
+                  <EyeIcon className="mr-2 h-4 w-4" />
+                  {viewLabel}
+                </button>
+              )}
               <button
                 className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
                 onClick={handleEditClick}
@@ -1958,13 +1969,16 @@ export default function AdManagerListView() {
   const [selectedAds, setSelectedAds] = useState<SelectedRows>({});
   const [selectedRowId] = useState<string | null>(null);
 
-  // Navigation state - tracks which campaign/ad set is selected
-  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(
-    null
-  );
-  const [selectedAdSet, setSelectedAdSet] = useState<AdSet | null>(null);
+  // Filter state - tracks which campaigns/ad sets are used to filter ads
+  const [activeFilters, setActiveFilters] = useState<{
+    campaignIds: string[];
+    adSetIds: string[];
+  }>({
+    campaignIds: [],
+    adSetIds: [],
+  });
 
-  // Campaign filter state
+  // Campaign filter state (for the filter dropdown)
   const [campaignFilters, setCampaignFilters] = useState<CampaignFilters>({
     adNames: [],
     merchants: [],
@@ -2006,34 +2020,50 @@ export default function AdManagerListView() {
       setCurrentLevel(level);
       // Clear selections when changing levels
       setSelectedAds(EMPTY_SELECTED_ADS);
-      // Reset to campaigns level if going back
-      if (level === "campaigns") {
-        setSelectedCampaign(null);
-        setSelectedAdSet(null);
-      } else if (level === "adsets") {
-        setSelectedAdSet(null);
-      }
       // Clear any open dropdowns
       dispatch(clearAllDropdowns());
     },
     [dispatch]
   );
 
-  // Handle campaign selection
+  // Handle campaign selection (now filters ads instead of navigation)
   const handleCampaignSelect = useCallback((campaign: Campaign) => {
-    setSelectedCampaign(campaign);
-    setCurrentLevel("adsets");
-    setSelectedAds(EMPTY_SELECTED_ADS);
-  }, []);
-
-  // Handle ad set selection
-  const handleAdSetSelect = useCallback((adSet: AdSet) => {
-    setSelectedAdSet(adSet);
+    setActiveFilters((prev) => ({
+      ...prev,
+      campaignIds: [campaign.id], // Single campaign filter
+      adSetIds: [], // Clear ad set filters when selecting campaign
+    }));
+    // Switch to ads tab to show filtered results
     setCurrentLevel("ads");
     setSelectedAds(EMPTY_SELECTED_ADS);
   }, []);
 
-  // Get base data with ad-level filtering
+  // Handle ad set selection (now filters ads instead of navigation)
+  const handleAdSetSelect = useCallback((adSet: AdSet) => {
+    setActiveFilters((prev) => ({
+      ...prev,
+      adSetIds: [adSet.id], // Single ad set filter
+      campaignIds: [], // Clear campaign filters when selecting ad set
+    }));
+    // Switch to ads tab to show filtered results
+    setCurrentLevel("ads");
+    setSelectedAds(EMPTY_SELECTED_ADS);
+  }, []);
+
+  // Clear all filters
+  const handleClearAllFilters = useCallback(() => {
+    setActiveFilters({
+      campaignIds: [],
+      adSetIds: [],
+    });
+    setCampaignFilters({
+      adNames: [],
+      merchants: [],
+      offers: [],
+    });
+  }, []);
+
+  // Get base data - always show full lists for each tab
   const baseData = useMemo(() => {
     const hasActiveFilters = Object.values(campaignFilters).some(
       (arr) => arr.length > 0
@@ -2041,9 +2071,10 @@ export default function AdManagerListView() {
 
     switch (currentLevel) {
       case "campaigns":
+        // Always show ALL campaigns
         let campaigns = mockCampaigns || [];
 
-        // Apply ad-level filters (filter campaigns by their nested ads)
+        // Apply campaign filter dropdown filters only
         if (hasActiveFilters) {
           campaigns = campaigns.filter((campaign) => {
             // Get all ads in this campaign
@@ -2079,29 +2110,33 @@ export default function AdManagerListView() {
         return campaigns;
 
       case "adsets":
-        if (!selectedCampaign) return [];
-        let adSets = selectedCampaign.adSets || [];
+        // Always show ALL ad sets from ALL campaigns
+        let allAdSets = (mockCampaigns || []).flatMap((campaign) =>
+          campaign.adSets.map((adSet) => ({
+            ...adSet,
+            campaignId: campaign.id,
+            campaignName: campaign.name,
+          }))
+        );
 
-        // Apply ad-level filters (filter adsets by their nested ads)
+        // Apply campaign filter dropdown filters
         if (hasActiveFilters) {
-          adSets = adSets.filter((adSet) => {
-            // Check if adset contains ads matching filter criteria
-            return adSet.ads.some((ad) => {
+          allAdSets = allAdSets.filter((adSet) => {
+            const adSetAds = adSet.ads || [];
+
+            return adSetAds.some((ad) => {
               let matches = true;
 
-              // Filter by ad names
               if (campaignFilters.adNames.length > 0) {
                 matches = matches && campaignFilters.adNames.includes(ad.name);
               }
 
-              // Filter by merchants
               if (campaignFilters.merchants.length > 0) {
                 matches =
                   matches &&
                   campaignFilters.merchants.includes(ad.merchantName);
               }
 
-              // Filter by offers
               if (campaignFilters.offers.length > 0) {
                 matches =
                   matches && campaignFilters.offers.includes(ad.offerName);
@@ -2112,39 +2147,49 @@ export default function AdManagerListView() {
           });
         }
 
-        return adSets;
+        return allAdSets;
 
       case "ads":
-        // For ads level - filter individual ads directly by their attributes
-        let ads: Ad[] = [];
+        // Get ALL ads from ALL campaigns
+        let allAds = (mockCampaigns || []).flatMap((campaign) =>
+          campaign.adSets.flatMap((adSet) =>
+            adSet.ads.map((ad) => ({
+              ...ad,
+              campaignId: campaign.id,
+              campaignName: campaign.name,
+              adSetId: adSet.id,
+              adSetName: adSet.name,
+            }))
+          )
+        );
 
-        if (selectedAdSet) {
-          // If we're viewing a specific adset, get ads from that adset
-          ads = selectedAdSet.ads || [];
-        } else {
-          // If no specific adset selected, get all ads from all campaigns
-          ads = (mockCampaigns || []).flatMap((campaign) =>
-            campaign.adSets.flatMap((adSet) => adSet.ads)
+        // Apply active campaign/ad set filters (from clicking names)
+        if (activeFilters.campaignIds.length > 0) {
+          allAds = allAds.filter((ad) =>
+            activeFilters.campaignIds.includes(ad.campaignId)
           );
         }
 
-        // Apply ad-level filters directly to individual ads
+        if (activeFilters.adSetIds.length > 0) {
+          allAds = allAds.filter((ad) =>
+            activeFilters.adSetIds.includes(ad.adSetId)
+          );
+        }
+
+        // Apply campaign filter dropdown filters
         if (hasActiveFilters) {
-          ads = ads.filter((ad) => {
+          allAds = allAds.filter((ad) => {
             let matches = true;
 
-            // Filter by ad names
             if (campaignFilters.adNames.length > 0) {
               matches = matches && campaignFilters.adNames.includes(ad.name);
             }
 
-            // Filter by merchants
             if (campaignFilters.merchants.length > 0) {
               matches =
                 matches && campaignFilters.merchants.includes(ad.merchantName);
             }
 
-            // Filter by offers
             if (campaignFilters.offers.length > 0) {
               matches =
                 matches && campaignFilters.offers.includes(ad.offerName);
@@ -2154,18 +2199,12 @@ export default function AdManagerListView() {
           });
         }
 
-        return ads;
+        return allAds;
 
       default:
         return [];
     }
-  }, [
-    currentLevel,
-    selectedCampaign,
-    selectedAdSet,
-    campaignFilters,
-    mockCampaigns,
-  ]);
+  }, [currentLevel, activeFilters, campaignFilters, mockCampaigns]);
 
   // Apply search filtering
   const searchFilteredData = useMemo(() => {
@@ -2322,28 +2361,32 @@ export default function AdManagerListView() {
   // Use custom dropdown (switch to this after testing simple button)
   const headerActions = useMemo(() => <CreateButtonCustom />, []);
 
-  // Create simple breadcrumb
-  const getBreadcrumb = useMemo(() => {
-    const breadcrumbs = [
-      { label: "Campaigns", level: "campaigns" as NavigationLevel },
-    ];
+  // Create active filter display
+  const getActiveFilterDisplay = useMemo(() => {
+    const filters: string[] = [];
 
-    if (selectedCampaign) {
-      breadcrumbs.push({
-        label: selectedCampaign.name,
-        level: "adsets" as NavigationLevel,
+    // Add campaign filters
+    if (activeFilters.campaignIds.length > 0) {
+      const campaignNames = activeFilters.campaignIds.map((id) => {
+        const campaign = mockCampaigns.find((c) => c.id === id);
+        return campaign?.name || id;
       });
+      filters.push(...campaignNames.map((name) => `Campaign: ${name}`));
     }
 
-    if (selectedAdSet) {
-      breadcrumbs.push({
-        label: selectedAdSet.name,
-        level: "ads" as NavigationLevel,
+    // Add ad set filters
+    if (activeFilters.adSetIds.length > 0) {
+      const adSetNames = activeFilters.adSetIds.map((id) => {
+        const adSet = mockCampaigns
+          .flatMap((c) => c.adSets)
+          .find((as) => as.id === id);
+        return adSet?.name || id;
       });
+      filters.push(...adSetNames.map((name) => `Ad Group: ${name}`));
     }
 
-    return breadcrumbs;
-  }, [selectedCampaign, selectedAdSet]);
+    return filters;
+  }, [activeFilters, mockCampaigns]);
 
   // Create dynamic page header and search context
   const getContextProps = useMemo(() => {
@@ -2376,8 +2419,8 @@ export default function AdManagerListView() {
         variant="aurora"
       />
 
-      {/* Tab-styled Breadcrumb Navigation */}
-      {getBreadcrumb.length > 1 && (
+      {/* Active Filter Display */}
+      {getActiveFilterDisplay.length > 0 && (
         <div className="flex justify-start mb-4">
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg px-4 py-2 shadow-sm">
             <div className="flex items-center space-x-2">
@@ -2392,26 +2435,25 @@ export default function AdManagerListView() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
                   />
                 </svg>
-                <span className="text-sm font-medium">Navigation:</span>
+                <span className="text-sm font-medium">Active Filters:</span>
               </div>
-              {getBreadcrumb.map((crumb, index) => (
+              {getActiveFilterDisplay.map((filter, index) => (
                 <div key={index} className="flex items-center">
-                  {index > 0 && <span className="mx-2 text-blue-400">→</span>}
-                  <button
-                    onClick={() => handleLevelChange(crumb.level)}
-                    className={
-                      index === getBreadcrumb.length - 1
-                        ? "font-semibold text-blue-900 bg-blue-100 px-2 py-1 rounded-md text-sm cursor-default"
-                        : "text-blue-700 hover:text-blue-900 cursor-pointer text-sm hover:underline"
-                    }
-                  >
-                    {crumb.label}
-                  </button>
+                  {index > 0 && <span className="mx-2 text-blue-400">•</span>}
+                  <span className="font-medium text-blue-900 bg-blue-100 px-2 py-1 rounded-md text-sm">
+                    {filter}
+                  </span>
                 </div>
               ))}
+              <button
+                onClick={handleClearAllFilters}
+                className="ml-2 text-blue-700 hover:text-blue-900 cursor-pointer text-sm hover:underline"
+              >
+                Clear All
+              </button>
             </div>
           </div>
         </div>
@@ -2447,12 +2489,8 @@ export default function AdManagerListView() {
           {/* Right: Tabs like Catalog */}
           <TabsList>
             <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
-            <TabsTrigger value="adsets" disabled={!selectedCampaign}>
-              Ads Groups
-            </TabsTrigger>
-            <TabsTrigger value="ads" disabled={!selectedAdSet}>
-              Ads
-            </TabsTrigger>
+            <TabsTrigger value="adsets">Ads Groups</TabsTrigger>
+            <TabsTrigger value="ads">Ads</TabsTrigger>
           </TabsList>
         </div>
 
