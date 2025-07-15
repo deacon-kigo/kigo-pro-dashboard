@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
+import "@copilotkit/react-ui/styles.css";
 import { Providers } from "@/lib/providers";
 import URLSyncProvider from "@/lib/providers/URLSyncProvider";
 import { Toaster } from "@/components/molecules/Toaster";
