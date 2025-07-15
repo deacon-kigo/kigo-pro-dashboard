@@ -242,11 +242,15 @@ const AdActionDropdown = memo(function AdActionDropdown({
 
               {/* Delete Action */}
               <button
-                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"
+                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 flex items-center"
                 onClick={handleDeleteClick}
+                style={{ color: "#dc2626" }}
               >
-                <TrashIcon className="mr-2 h-4 w-4" />
-                Destroy Ad
+                <TrashIcon
+                  className="mr-2 h-4 w-4"
+                  style={{ color: "#dc2626" }}
+                />
+                Delete Ad
               </button>
             </div>
           </div>
@@ -362,16 +366,16 @@ export const createAdColumns = (): ColumnDef<Ad>[] => [
           >
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Destroy Ad</AlertDialogTitle>
+                <AlertDialogTitle>Delete Ad</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you want to destroy "{ad.name}"? This action
+                  Are you sure you want to delete "{ad.name}"? This action
                   cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <Button variant="destructive" onClick={handleConfirmedDelete}>
-                  Destroy Ad
+                  Delete Ad
                 </Button>
               </AlertDialogFooter>
             </AlertDialogContent>
