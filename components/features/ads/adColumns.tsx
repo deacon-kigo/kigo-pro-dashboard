@@ -13,6 +13,10 @@ import {
   PlayIcon,
   PauseIcon,
   XMarkIcon,
+  // Media type icons
+  PhotoIcon,
+  RectangleStackIcon,
+  ShareIcon,
 } from "@heroicons/react/24/outline";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -32,6 +36,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 
 // Simplified Ad data structure - matches actual CampaignAd interface from campaignSlice
 export type Ad = {
@@ -42,7 +47,7 @@ export type Ad = {
   merchantName: string; // Merchant display name
   offerId: string; // Offer ID
   offerName: string; // Offer display name (for UI display)
-  mediaType: string[]; // Media formats used (Display Banner, Double Decker, Native, Video, Social)
+  mediaType: string[]; // Media formats used (Display Banner, Double Decker, Social Media)
   mediaAssets: {
     id: string;
     name: string;
@@ -61,6 +66,92 @@ export type Ad = {
   createdDate: string;
   lastModified: string;
 };
+
+// Media type configuration with appropriate icons
+const MEDIA_TYPE_CONFIG = {
+  "Display Banner": {
+    icon: PhotoIcon,
+    color: "bg-blue-100 text-blue-800 border-blue-200",
+    label: "Banner",
+  },
+  "Double Decker": {
+    icon: RectangleStackIcon,
+    color: "bg-purple-100 text-purple-800 border-purple-200",
+    label: "Double",
+  },
+  "Social Media": {
+    icon: ShareIcon,
+    color: "bg-orange-100 text-orange-800 border-orange-200",
+    label: "Social",
+  },
+};
+
+// Media Types Component with Icons
+const MediaTypesDisplay = memo(({ mediaTypes }: { mediaTypes: string[] }) => {
+  if (!mediaTypes || mediaTypes.length === 0) {
+    return <span className="text-gray-400">No media</span>;
+  }
+
+  // If there are many types, show first few + count
+  const maxVisible = 2;
+  const visibleTypes = mediaTypes.slice(0, maxVisible);
+  const remainingCount = mediaTypes.length - maxVisible;
+
+  return (
+    <div className="flex items-center gap-1 flex-wrap">
+      {visibleTypes.map((type, index) => {
+        const config =
+          MEDIA_TYPE_CONFIG[type as keyof typeof MEDIA_TYPE_CONFIG];
+        if (!config) return null;
+
+        const IconComponent = config.icon;
+
+        return (
+          <TooltipProvider key={index}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge
+                  variant="outline"
+                  className={`${config.color} flex items-center gap-1 text-xs px-2 py-1 cursor-help`}
+                >
+                  <IconComponent className="w-3 h-3" />
+                  <span className="hidden sm:inline">{config.label}</span>
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{type}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        );
+      })}
+
+      {remainingCount > 0 && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge
+                variant="outline"
+                className="bg-gray-100 text-gray-600 border-gray-200 text-xs px-2 py-1 cursor-help"
+              >
+                +{remainingCount}
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+              <div className="space-y-1">
+                {mediaTypes.slice(maxVisible).map((type, index) => (
+                  <p key={index}>{type}</p>
+                ))}
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+    </div>
+  );
+});
+
+MediaTypesDisplay.displayName = "MediaTypesDisplay";
 
 // Utility function to format date
 export const formatDate = (dateString: string): string => {
@@ -285,53 +376,60 @@ export const createAdColumns = (): ColumnDef<Ad>[] => [
     ),
   },
   {
-    id: "merchantAndOffer",
-    header: () => (
-      <div className="text-left font-medium">Merchant and Offer</div>
-    ),
+    accessorKey: "merchantName",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
+        >
+          Merchant
+          <SortIcon sorted={column.getIsSorted()} />
+        </Button>
+      );
+    },
     cell: ({ row }) => (
-      <div className="text-left max-w-[200px]">
-        <div
-          className="font-medium truncate"
-          title={
-            (row.original && row.original.merchantName) || "Unknown Merchant"
-          }
-        >
-          {(row.original && row.original.merchantName) || "Unknown Merchant"}
-        </div>
-        <div
-          className="text-sm text-gray-500 truncate"
-          title={(row.original && row.original.offerName) || "No offer"}
-        >
-          {(row.original && row.original.offerName) || "No offer"}
-        </div>
+      <div
+        className="font-medium text-left max-w-[150px] truncate"
+        title={
+          (row.original && row.original.merchantName) || "Unknown Merchant"
+        }
+      >
+        {(row.original && row.original.merchantName) || "Unknown Merchant"}
       </div>
     ),
-    enableSorting: false,
+  },
+  {
+    accessorKey: "offerName",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
+        >
+          Offer
+          <SortIcon sorted={column.getIsSorted()} />
+        </Button>
+      );
+    },
+    cell: ({ row }) => (
+      <div
+        className="text-left max-w-[200px] truncate"
+        title={(row.original && row.original.offerName) || "No offer"}
+      >
+        {(row.original && row.original.offerName) || "No offer"}
+      </div>
+    ),
   },
   {
     accessorKey: "mediaType",
     header: () => <div className="text-left font-medium">Media Types</div>,
     cell: ({ row }) => (
-      <div className="text-left">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="text-sm font-medium text-blue-600 cursor-help">
-                {((row.original && row.original.mediaType) || []).length}{" "}
-                {((row.original && row.original.mediaType) || []).length === 1
-                  ? "type"
-                  : "types"}
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>
-                {((row.original && row.original.mediaType) || []).join(", ")}
-              </p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </div>
+      <MediaTypesDisplay
+        mediaTypes={(row.original && row.original.mediaType) || []}
+      />
     ),
     enableSorting: false,
   },

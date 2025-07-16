@@ -900,7 +900,7 @@ const mockCampaigns: Campaign[] = [
             offerId: "o1",
             offerName: "20% off family meals (up to $15)",
             status: "Active",
-            mediaType: ["Display Banner", "Native"],
+            mediaType: ["Display Banner", "Social Media"],
             mediaAssets: [
               {
                 id: "asset-1",
@@ -919,7 +919,7 @@ const mockCampaigns: Campaign[] = [
                 size: 1024,
                 url: "/assets/tonys-pizza-copy.txt",
                 previewUrl: "/assets/tonys-pizza-copy.txt",
-                mediaType: "native",
+                mediaType: "social_media",
               },
             ],
             createdDate: "2024-06-01",
@@ -934,7 +934,7 @@ const mockCampaigns: Campaign[] = [
             offerId: "o2",
             offerName: "Buy 2 pizzas, get free breadsticks",
             status: "Active",
-            mediaType: ["Display Banner", "Social Media"],
+            mediaType: ["Display Banner", "Double Decker", "Social Media"],
             mediaAssets: [
               {
                 id: "asset-3",
@@ -969,7 +969,7 @@ const mockCampaigns: Campaign[] = [
             offerId: "o3",
             offerName: "Two slices + drink for $8.99",
             status: "Published",
-            mediaType: ["Video"],
+            mediaType: ["Double Decker"],
             mediaAssets: [
               {
                 id: "asset-5",
@@ -979,7 +979,7 @@ const mockCampaigns: Campaign[] = [
                 url: "/assets/franks-pizza-video.mp4",
                 previewUrl: "/assets/franks-pizza-video-thumb.jpg",
                 dimensions: { width: 1920, height: 1080 },
-                mediaType: "video",
+                mediaType: "double_decker",
               },
             ],
             createdDate: "2024-06-12",
@@ -994,7 +994,7 @@ const mockCampaigns: Campaign[] = [
             offerId: "o4",
             offerName: "15% off orders over $25 (weekdays 11-2pm)",
             status: "Paused",
-            mediaType: ["Double Decker", "Native"],
+            mediaType: ["Double Decker", "Social Media"],
             mediaAssets: [
               {
                 id: "asset-6",
@@ -1013,7 +1013,7 @@ const mockCampaigns: Campaign[] = [
                 size: 892,
                 url: "/assets/luigis-native-copy.txt",
                 previewUrl: "/assets/luigis-native-copy.txt",
-                mediaType: "native",
+                mediaType: "social_media",
               },
             ],
             createdDate: "2024-06-08",
@@ -1101,7 +1101,7 @@ const mockCampaigns: Campaign[] = [
             offerId: "offer-jj-01",
             offerName: "Free pastry with coffee purchase",
             status: "Active",
-            mediaType: ["Display Banner", "Native"],
+            mediaType: ["Display Banner", "Double Decker"],
             mediaAssets: [
               {
                 id: "asset-1",
@@ -1121,7 +1121,7 @@ const mockCampaigns: Campaign[] = [
                 url: "/images/java-joe-native.jpg",
                 previewUrl: "/images/java-joe-native-thumb.jpg",
                 dimensions: { width: 400, height: 300 },
-                mediaType: "Native",
+                mediaType: "double_decker",
               },
             ],
             numberOfAssets: 2,
@@ -1140,7 +1140,7 @@ const mockCampaigns: Campaign[] = [
             offerId: "offer-bb-01",
             offerName: "$2 off breakfast sandwiches",
             status: "Published",
-            mediaType: ["Display Banner", "Video", "Social"],
+            mediaType: ["Display Banner", "Double Decker", "Social Media"],
             mediaAssets: [
               {
                 id: "asset-3",
@@ -1160,7 +1160,7 @@ const mockCampaigns: Campaign[] = [
                 url: "/videos/brew-bite-video.mp4",
                 previewUrl: "/images/brew-bite-video-thumb.jpg",
                 dimensions: { width: 1920, height: 1080 },
-                mediaType: "Video",
+                mediaType: "double_decker",
               },
             ],
             numberOfAssets: 2,
@@ -1256,7 +1256,7 @@ const mockCampaigns: Campaign[] = [
             offerId: "offer-sb-01",
             offerName: "Buy 2 Get 1 Free beverages",
             status: "Active",
-            mediaType: ["Display Banner", "Video"],
+            mediaType: ["Display Banner", "Social Media"],
             mediaAssets: [
               {
                 id: "asset-7",
@@ -1285,7 +1285,7 @@ const mockCampaigns: Campaign[] = [
             offerId: "offer-sb-02",
             offerName: "20% off holiday blends",
             status: "Ended",
-            mediaType: ["Native", "Social"],
+            mediaType: ["Display Banner", "Social Media"],
             mediaAssets: [
               {
                 id: "asset-8",
@@ -1294,7 +1294,7 @@ const mockCampaigns: Campaign[] = [
                 size: 280000,
                 url: "/assets/starbucks-holiday-native.jpg",
                 previewUrl: "/assets/starbucks-holiday-native-thumb.jpg",
-                mediaType: "native",
+                mediaType: "social_media",
               },
             ],
             numberOfAssets: 3,
@@ -1390,7 +1390,7 @@ const mockCampaigns: Campaign[] = [
             offerId: "offer-walmart-01",
             offerName: "$10 off $50 purchase",
             status: "Draft",
-            mediaType: ["Display Banner", "Video"],
+            mediaType: ["Display Banner", "Double Decker", "Social Media"],
             mediaAssets: [
               {
                 id: "asset-10",
@@ -1465,7 +1465,7 @@ const mockCampaigns: Campaign[] = [
             offerId: "offer-target-02",
             offerName: "25% off holiday lighting",
             status: "Draft",
-            mediaType: ["Display Banner", "Social Media"],
+            mediaType: ["Display Banner", "Double Decker", "Social Media"],
             mediaAssets: [
               {
                 id: "asset-12",
@@ -1833,7 +1833,7 @@ const CampaignFilterDropdown = memo(function CampaignFilterDropdown({
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900">
-                Filter Ads
+                Filter Results
               </h3>
               {hasActiveFilters && (
                 <Button
@@ -2531,17 +2531,15 @@ export default function AdManagerListView() {
             />
           </div>
 
-          {/* Center: Campaign Filter Button */}
-          {currentLevel === "campaigns" && (
-            <div className="flex items-center">
-              <CampaignFilterDropdown
-                campaigns={mockCampaigns}
-                filters={campaignFilters}
-                onFiltersChange={handleCampaignFiltersChange}
-                onClearFilters={handleClearCampaignFilters}
-              />
-            </div>
-          )}
+          {/* Center: Universal Filter Button - Available on all levels */}
+          <div className="flex items-center">
+            <CampaignFilterDropdown
+              campaigns={mockCampaigns}
+              filters={campaignFilters}
+              onFiltersChange={handleCampaignFiltersChange}
+              onClearFilters={handleClearCampaignFilters}
+            />
+          </div>
 
           {/* Right: Tabs like Catalog */}
           <TabsList>
