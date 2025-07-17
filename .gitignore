@@ -48,3 +48,6 @@ next-env.d.ts
 
 # Documentation (dev use only)
 /docs/
+
+# LangGraph API
+.langgraph_api

@@ -49,12 +49,12 @@ export function createTracedFunction<T extends (...args: any[]) => any>(
     try {
       const result = fn(...args);
 
-      // Log to LangSmith
+      // Log to LangSmith with immediate completion
       if (langSmithClient) {
+        // Create and immediately end the run for proper trace completion
         langSmithClient
           .createRun({
             name,
-            sessionId,
             run_type: "chain",
             inputs: { args: args.length > 0 ? args : undefined },
             outputs: { result },
@@ -63,6 +63,13 @@ export function createTracedFunction<T extends (...args: any[]) => any>(
               ...langSmithConfig.metadata,
               ...metadata,
             },
+            end_time: Date.now(),
+          })
+          .then(() => {
+            // Force flush for serverless environments
+            if (process.env.LANGCHAIN_CALLBACKS_BACKGROUND === "false") {
+              setTimeout(() => {}, 0);
+            }
           })
           .catch((error) => {
             console.warn("LangSmith logging failed:", error);
@@ -76,7 +83,6 @@ export function createTracedFunction<T extends (...args: any[]) => any>(
         langSmithClient
           .createRun({
             name,
-            sessionId,
             run_type: "chain",
             inputs: { args: args.length > 0 ? args : undefined },
             error: error instanceof Error ? error.message : "Unknown error",
@@ -114,16 +120,22 @@ export function logAgentInteraction(
   langSmithClient
     .createRun({
       name: `${agentName}_interaction`,
-      sessionId,
       run_type: "chain",
       inputs: { input },
       outputs: { output },
       project_name: langSmithConfig.projectName,
+      end_time: Date.now(),
       extra: {
         ...langSmithConfig.metadata,
         agentName,
         ...metadata,
       },
+    })
+    .then(() => {
+      // Force flush for serverless environments
+      if (process.env.LANGCHAIN_CALLBACKS_BACKGROUND === "false") {
+        setTimeout(() => {}, 0);
+      }
     })
     .catch((error) => {
       console.warn(
