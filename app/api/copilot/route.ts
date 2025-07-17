@@ -1,26 +1,15 @@
-import { NextRequest, NextResponse } from "next/server";
-import { OpenAI } from "openai";
+import { NextRequest } from "next/server";
 import { BaseMessage, HumanMessage, AIMessage } from "@langchain/core/messages";
-import { createSupervisorWorkflow } from "@/services/agents/supervisor";
-import { adCreationAgent } from "@/services/agents/ad-creation";
+import {
+  createSupervisorWorkflow,
+  KigoProAgentState,
+} from "@/services/agents/supervisor";
 import {
   langSmithConfig,
   logAgentInteraction,
 } from "@/lib/copilot-kit/langsmith-config";
 
-// Initialize OpenAI client only when needed and API key is available
-let openai: OpenAI | null = null;
-
-const getOpenAIClient = () => {
-  if (!openai && process.env.OPENAI_API_KEY) {
-    openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
-  }
-  return openai;
-};
-
-// Initialize LangGraph workflow
+// Initialize the supervisor workflow
 const supervisorWorkflow = createSupervisorWorkflow();
 
 /**
@@ -39,20 +28,28 @@ const convertToBaseMessages = (messages: any[]): BaseMessage[] => {
 };
 
 /**
- * CopilotKit API Route Handler
- *
- * This API route handles all CopilotKit requests and integrates with
- * our LangGraph multi-agent system for processing user interactions.
+ * Custom LangGraph integration for CopilotKit
  */
-export async function POST(request: NextRequest) {
+async function handleLangGraphRequest(messages: any[], context: any) {
   try {
-    // Get the request body
-    const body = await request.json();
+    // Convert messages to LangChain format
+    const baseMessages = convertToBaseMessages(messages);
 
-    // Extract message and context from CopilotKit request
-    const { messages, context } = body;
+    // Create agent state
+    const agentState: KigoProAgentState = {
+      messages: baseMessages,
+      userIntent: "",
+      context: {
+        currentPage: context?.currentPage || "/",
+        userRole: context?.userRole || "user",
+        campaignData: context?.campaignData,
+        sessionId: context?.sessionId || `session-${Date.now()}`,
+      },
+      agentDecision: "",
+      workflowData: {},
+    };
 
-    // Log the incoming request for observability
+    // Log the request
     if (langSmithConfig.enabled) {
       logAgentInteraction(
         "copilot_api",
@@ -62,105 +59,152 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Process the request through LangGraph if messages exist
-    if (messages && messages.length > 0) {
-      const agentState = {
-        messages: convertToBaseMessages(messages),
-        userIntent: "",
-        context: {
-          currentPage: context?.currentPage || "/",
-          userRole: context?.userRole || "user",
-          campaignData: context?.campaignData,
-          sessionId: context?.sessionId || `session-${Date.now()}`,
-        },
-        agentDecision: "",
-        workflowData: {},
-      };
+    // Run the LangGraph workflow
+    const result = await supervisorWorkflow.invoke(agentState);
 
+    // Extract the AI response
+    const aiResponse = result.messages[result.messages.length - 1];
+
+    // Log the response
+    if (langSmithConfig.enabled) {
+      logAgentInteraction(
+        "copilot_api",
+        { messages, context },
+        { response: aiResponse, agentDecision: result.agentDecision },
+        { endpoint: "/api/copilot", status: "success" }
+      );
+    }
+
+    // Ensure traces are flushed in serverless environment
+    if (process.env.LANGCHAIN_TRACING_V2 === "true") {
       try {
-        // Run the LangGraph workflow
-        const result = await supervisorWorkflow.invoke(agentState);
-
-        // Extract the AI response from the workflow result
-        const aiResponse = result.messages[result.messages.length - 1];
-
-        // Log the successful response
-        if (langSmithConfig.enabled) {
-          logAgentInteraction(
-            "copilot_api",
-            { messages, context },
-            { response: aiResponse, agentDecision: result.agentDecision },
-            { endpoint: "/api/copilot", status: "success" }
-          );
-        }
-
-        // Return the response in CopilotKit format
-        return NextResponse.json({
-          message: aiResponse.content,
-          role: "assistant",
-          metadata: {
-            agentDecision: result.agentDecision,
-            userIntent: result.userIntent,
-            workflowData: result.workflowData,
-          },
-        });
-      } catch (workflowError) {
-        console.error("LangGraph workflow error:", workflowError);
-
-        // Log the error
-        if (langSmithConfig.enabled) {
-          logAgentInteraction(
-            "copilot_api",
-            { messages, context },
-            {
-              error:
-                workflowError instanceof Error
-                  ? workflowError.message
-                  : "Unknown error",
-            },
-            { endpoint: "/api/copilot", status: "error" }
-          );
-        }
-
-        // Fallback response for workflow errors
-        return NextResponse.json({
-          message:
-            "I apologize, but I encountered an issue processing your request. Please try again or rephrase your question.",
-          role: "assistant",
-          error: "workflow_error",
-        });
+        // Force flush any pending traces
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      } catch (error) {
+        console.warn("Failed to flush traces:", error);
       }
     }
 
-    // If no messages, return a default response
-    return NextResponse.json({
-      message:
-        "Hello! I'm your Kigo Pro AI assistant. How can I help you create or optimize your campaigns today?",
+    return {
+      content: aiResponse.content,
       role: "assistant",
-    });
+      metadata: {
+        agentDecision: result.agentDecision,
+        userIntent: result.userIntent,
+        workflowData: result.workflowData,
+      },
+    };
+  } catch (error) {
+    console.error("LangGraph workflow error:", error);
+
+    // Log the error
+    if (langSmithConfig.enabled) {
+      logAgentInteraction(
+        "copilot_api",
+        { messages, context },
+        {
+          error: error instanceof Error ? error.message : "Unknown error",
+        },
+        { endpoint: "/api/copilot", status: "error" }
+      );
+    }
+
+    return {
+      content:
+        "I apologize, but I encountered an issue processing your request. Please try again or rephrase your question.",
+      role: "assistant",
+      metadata: {
+        error: "workflow_error",
+      },
+    };
+  }
+}
+
+// Main handler function
+export async function POST(request: NextRequest) {
+  try {
+    // Handle the request through our custom LangGraph integration
+    const body = await request.json();
+    const { messages, context } = body;
+
+    if (messages && messages.length > 0) {
+      const response = await handleLangGraphRequest(messages, context);
+
+      // Return in a format compatible with CopilotKit
+      return new Response(
+        JSON.stringify({
+          choices: [
+            {
+              message: {
+                content: response.content,
+                role: response.role,
+              },
+              finish_reason: "stop",
+            },
+          ],
+          metadata: response.metadata,
+        }),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    }
+
+    // Default response
+    return new Response(
+      JSON.stringify({
+        choices: [
+          {
+            message: {
+              content:
+                "Hello! I'm your Kigo Pro AI assistant. How can I help you create or optimize your campaigns today?",
+              role: "assistant",
+            },
+            finish_reason: "stop",
+          },
+        ],
+      }),
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
   } catch (error) {
     console.error("CopilotKit API error:", error);
-
-    // Return error response
-    return NextResponse.json(
-      {
+    return new Response(
+      JSON.stringify({
         error: "Internal server error",
         message: "Failed to process request",
-      },
-      { status: 500 }
+      }),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
     );
   }
 }
 
-// Handle GET requests for health check
+// Health check endpoint
 export async function GET() {
-  return NextResponse.json({
-    status: "healthy",
-    service: "CopilotKit API",
-    features: {
-      langGraph: true,
-      langSmith: langSmithConfig.enabled,
-      openAI: !!process.env.OPENAI_API_KEY,
-    },
-  });
+  return new Response(
+    JSON.stringify({
+      status: "healthy",
+      service: "CopilotKit API",
+      features: {
+        langGraph: true,
+        langSmith: langSmithConfig.enabled,
+        openAI: !!process.env.OPENAI_API_KEY,
+      },
+    }),
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
 }

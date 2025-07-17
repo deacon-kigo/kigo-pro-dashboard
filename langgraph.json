@@ -1,0 +1,10 @@
+{
+  "dependencies": [
+    "./services/agents/supervisor.ts",
+    "./services/agents/ad-creation.ts"
+  ],
+  "graphs": {
+    "supervisor": "./services/agents/supervisor.ts:createSupervisorWorkflow"
+  },
+  "env": ".env.local"
+}

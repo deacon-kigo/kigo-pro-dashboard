@@ -307,7 +307,16 @@ export const createSupervisorWorkflow = () => {
   workflow.addEdge("general_assistant", END);
   workflow.addEdge("error_handler", END);
 
-  return workflow.compile();
+  // Compile workflow with LangSmith tracing configuration
+  const compiledWorkflow = workflow.compile();
+
+  // Configure tracing if enabled
+  if (process.env.LANGCHAIN_TRACING_V2 === "true") {
+    // LangSmith will automatically trace the workflow when environment variables are set
+    console.log("LangSmith tracing enabled for supervisor workflow");
+  }
+
+  return compiledWorkflow;
 };
 
 export default createSupervisorWorkflow;
