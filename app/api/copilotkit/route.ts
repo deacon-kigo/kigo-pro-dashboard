@@ -25,7 +25,7 @@ if (!process.env.OPENAI_API_KEY) {
   throw new Error("OPENAI_API_KEY environment variable is required");
 }
 
-// Initialize OpenAI with LangSmith tracing support
+// Initialize OpenAI client
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -33,15 +33,11 @@ const openai = new OpenAI({
 // Create service adapter
 const serviceAdapter = new OpenAIAdapter({ openai });
 
-// LangSmith will automatically trace if these env vars are set:
-// LANGCHAIN_TRACING_V2=true
-// LANGSMITH_API_KEY=your_key
-// LANGCHAIN_PROJECT=kigo-pro-design
-
-console.log("[CopilotKit] LangSmith tracing:", {
-  enabled: process.env.LANGCHAIN_TRACING_V2 === "true",
+console.log("[CopilotKit] Configuration:", {
+  langsmithTracing: process.env.LANGCHAIN_TRACING_V2 === "true",
   project: process.env.LANGCHAIN_PROJECT,
   hasApiKey: !!process.env.LANGSMITH_API_KEY,
+  manualTracingDisabled: true,
 });
 
 // Configure runtime with actions
