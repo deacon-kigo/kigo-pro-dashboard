@@ -28,6 +28,7 @@
     "@langchain/core": "^0.3.65",
     "@langchain/google-genai": "^0.2.5",
     "@langchain/langgraph": "^0.2.74",
+    "@langchain/langgraph-cli": "^0.0.50",
     "@langchain/openai": "^0.6.2",
     "@langchain/xai": "^0.0.2",
     "@mui/icons-material": "^7.1.2",
