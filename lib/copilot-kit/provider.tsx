@@ -70,8 +70,10 @@ function CopilotKitProviderContent({ children }: CopilotKitProviderProps) {
 
   return (
     <CopilotKit
-      runtimeUrl={process.env.NEXT_PUBLIC_COPILOT_RUNTIME_URL || "/api/copilot"}
-      agent="kigo-pro-agent"
+      runtimeUrl={
+        process.env.NEXT_PUBLIC_COPILOT_RUNTIME_URL || "/api/copilotkit"
+      }
+      showDevConsole={true}
     >
       {isEnabled ? (
         <CopilotSidebar
