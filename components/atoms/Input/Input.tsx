@@ -54,18 +54,20 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     },
     ref
   ) => {
-    // Get wrapper class based on variant
-    const wrapperClassName = inputWrapperVariants({ variant });
+    const handleSuggestionClick = (suggestion: SearchSuggestion) => {
+      if (onSuggestionClick) {
+        onSuggestionClick(suggestion);
+      }
+    };
 
-    // Handle search all results click
-    const handleSearchAllResults = () => {
+    const handleSearchAllClick = () => {
       if (onSearchAllResults) {
         onSearchAllResults();
       }
     };
 
     return (
-      <div className={wrapperClassName}>
+      <div className={inputWrapperVariants({ variant })}>
         {variant === "search" && (
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
             <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
@@ -76,8 +78,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           className={cn(
             // Apply padding only if it's a search variant to make room for the icon
             variant === "search" ? "pl-10" : "",
-            // Override the focus styling to use primary blue instead of default black
-            "focus-visible:ring-primary focus-visible:border-primary focus-visible:ring-offset-background",
+            // Override the focus styling to match merchant combobox exactly
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary focus-visible:ring-offset-2",
             className
           )}
           ref={ref}
@@ -98,86 +100,56 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                   : "bg-white border-gray-200"
               )}
             >
-              <div
-                className={cn(
-                  "p-3 border-b",
-                  isDarkMode ? "border-gray-700" : "border-gray-100"
-                )}
-              >
-                <p
-                  className={cn(
-                    "text-xs font-medium",
-                    isDarkMode ? "text-gray-400" : "text-text-muted"
-                  )}
-                >
-                  AI Suggestions
-                </p>
-              </div>
-              <ul>
+              {/* Suggestions List */}
+              <div className="max-h-64 overflow-y-auto">
                 {suggestions.map((suggestion, index) => (
-                  <li key={index}>
-                    <button
-                      className={cn(
-                        "w-full px-4 py-2.5 text-left flex items-center",
-                        isDarkMode ? "hover:bg-gray-700" : "hover:bg-gray-50"
-                      )}
-                      onClick={() => onSuggestionClick?.(suggestion)}
-                      type="button"
-                    >
-                      <span className="w-6 h-6 flex items-center justify-center text-lg mr-3">
-                        {suggestion.icon}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <p
-                          className={cn(
-                            "text-sm",
-                            isDarkMode ? "text-gray-200" : "text-text-dark"
-                          )}
-                        >
-                          {suggestion.text}
-                        </p>
-                        <p
-                          className={cn(
-                            "text-xs capitalize",
-                            isDarkMode ? "text-gray-400" : "text-text-muted"
-                          )}
-                        >
-                          {suggestion.type}
-                        </p>
-                      </div>
-                    </button>
-                  </li>
+                  <div
+                    key={index}
+                    className={cn(
+                      "px-4 py-3 cursor-pointer transition-colors flex items-center space-x-3",
+                      isDarkMode
+                        ? "hover:bg-gray-700 text-gray-200"
+                        : "hover:bg-gray-50 text-gray-800"
+                    )}
+                    onClick={() => handleSuggestionClick(suggestion)}
+                  >
+                    <div className="flex-shrink-0">
+                      <span className="text-lg">{suggestion.icon}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">
+                        {suggestion.text}
+                      </p>
+                      <p
+                        className={cn(
+                          "text-xs truncate",
+                          isDarkMode ? "text-gray-400" : "text-gray-500"
+                        )}
+                      >
+                        {suggestion.type}
+                      </p>
+                    </div>
+                  </div>
                 ))}
-              </ul>
-              <div
-                className={cn(
-                  "p-2 border-t",
-                  isDarkMode
-                    ? "bg-gray-900 border-gray-700"
-                    : "bg-gray-50 border-gray-100"
-                )}
-              >
-                <div className="flex items-center justify-between">
-                  <p
-                    className={cn(
-                      "text-xs",
-                      isDarkMode ? "text-gray-400" : "text-text-muted"
-                    )}
-                  >
-                    Powered by AI
-                  </p>
-                  <button
-                    className={cn(
-                      "text-xs font-medium",
-                      isDarkMode ? "text-blue-400" : "text-primary"
-                    )}
-                    onClick={handleSearchAllResults}
-                    type="button"
-                  >
-                    Search all results
-                  </button>
-                </div>
               </div>
+
+              {/* Search All Results Option */}
+              {onSearchAllResults && (
+                <div
+                  className={cn(
+                    "border-t px-4 py-3 cursor-pointer transition-colors",
+                    isDarkMode
+                      ? "border-gray-700 hover:bg-gray-700 text-gray-200"
+                      : "border-gray-200 hover:bg-gray-50 text-gray-800"
+                  )}
+                  onClick={handleSearchAllClick}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">See all results</span>
+                    <MagnifyingGlassIcon className="h-4 w-4" />
+                  </div>
+                </div>
+              )}
             </div>
           )}
       </div>
@@ -188,3 +160,37 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 Input.displayName = "Input";
 
 export { Input };
+
+// Legacy exports for backward compatibility
+export type { InputProps as KigoInputProps };
+export default Input;
+
+// Helper function to create search suggestions
+export const createSearchSuggestion = (
+  type: string,
+  text: string,
+  icon: string
+): SearchSuggestion => ({
+  type,
+  text,
+  icon,
+});
+
+// Common search suggestion types
+export const SEARCH_SUGGESTION_TYPES = {
+  MERCHANT: "Merchant",
+  CAMPAIGN: "Campaign",
+  PRODUCT: "Product",
+  CUSTOMER: "Customer",
+  LOCATION: "Location",
+} as const;
+
+// Common search suggestion icons (emoji)
+export const SEARCH_SUGGESTION_ICONS = {
+  MERCHANT: "🏪",
+  CAMPAIGN: "📢",
+  PRODUCT: "📦",
+  CUSTOMER: "👤",
+  LOCATION: "📍",
+  SEARCH: "🔍",
+} as const;

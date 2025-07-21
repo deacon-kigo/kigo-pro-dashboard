@@ -20,6 +20,7 @@ import {
   ChevronDownIcon,
   AdjustmentsHorizontalIcon,
   PlusIcon,
+  ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import { useDemoState } from "@/lib/redux/hooks";
 import { toggleSidebar, setSidebarCollapsed } from "@/lib/redux/slices/uiSlice";
@@ -40,6 +41,7 @@ import {
   DialogTrigger,
 } from "@/components/molecules/dialog";
 import { Button } from "@/components/atoms/Button";
+import FeedbackModal from "@/components/features/feedback/FeedbackModal";
 
 // Ensure window type declaration for Storybook
 declare global {
@@ -60,8 +62,9 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
   const { clientId } = useSelector((state: RootState) => state.demo);
   const { clientName } = useDemoState();
 
-  // State for sign out dialog and hydration
+  // State for sign out dialog, feedback modal, and hydration
   const [signOutDialogOpen, setSignOutDialogOpen] = useState(false);
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
 
   // Get pathname with fallback safely, only run once when needed
@@ -547,6 +550,19 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         </li>
         <li className="nav-item px-3 py-1">
           <SidebarLabel
+            href="#"
+            icon={ChatBubbleLeftRightIcon}
+            title="Feedback"
+            isActive={false}
+            isCollapsed={sidebarCollapsed}
+            onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+              e.preventDefault();
+              setFeedbackModalOpen(true);
+            }}
+          />
+        </li>
+        <li className="nav-item px-3 py-1">
+          <SidebarLabel
             href="/help"
             icon={QuestionMarkCircleIcon}
             title="Help & Support"
@@ -727,6 +743,12 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
           </div>
         </div>
       </div>
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isOpen={feedbackModalOpen}
+        onClose={() => setFeedbackModalOpen(false)}
+      />
     </aside>
   );
 };
