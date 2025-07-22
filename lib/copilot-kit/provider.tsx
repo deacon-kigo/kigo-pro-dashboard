@@ -5,7 +5,6 @@ import { CopilotSidebar } from "@copilotkit/react-ui";
 import { ReactNode, useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { setChatOpen } from "../redux/slices/uiSlice";
-import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
 
 interface CopilotKitProviderProps {
@@ -17,13 +16,7 @@ function CopilotKitProviderContent({ children }: CopilotKitProviderProps) {
   const chatOpen = useAppSelector((state) => state.ui.chatOpen);
   const [isMounted, setIsMounted] = useState(false);
   const [copilotOpen, setCopilotOpen] = useState(false);
-  const pathname = usePathname();
-
   const isEnabled = process.env.NEXT_PUBLIC_FEATURE_COPILOT_CHAT === "true";
-
-  // Disable CopilotKit on catalog filter pages to prevent interference with modals
-  const isOnCatalogFilterPage = pathname?.includes("/product-filters") || false;
-  const shouldEnableCopilot = isEnabled && !isOnCatalogFilterPage;
 
   // Prevent hydration mismatch by only rendering after client mount
   useEffect(() => {
@@ -81,7 +74,8 @@ function CopilotKitProviderContent({ children }: CopilotKitProviderProps) {
       }
       showDevConsole={true}
     >
-      {shouldEnableCopilot ? (
+      {children}
+      {isEnabled && (
         <CopilotSidebar
           key={`copilot-sidebar-${chatOpen}`}
           instructions="You are the Kigo Pro Business Success Manager, an AI assistant specialized in helping users create, manage, and optimize advertising campaigns for the Kigo loyalty media network. You can help with campaign creation, analytics, merchant management, and optimization strategies. You have access to the current page context and can help users navigate and understand the platform."
@@ -92,11 +86,7 @@ function CopilotKitProviderContent({ children }: CopilotKitProviderProps) {
             initial:
               "Hi! I'm your Kigo Pro assistant. How can I help you with your campaigns today?",
           }}
-        >
-          {children}
-        </CopilotSidebar>
-      ) : (
-        children
+        />
       )}
     </CopilotKit>
   );
