@@ -30,16 +30,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useResizablePanel } from "@/lib/context/ResizablePanelContext";
 import { AssignToProgramsPanel } from "./AssignToProgramsPanel";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/molecules/alert-dialog/AlertDialog";
+import { CatalogFilterDeleteDialog } from "./CatalogFilterDeleteDialog";
 
 // Define the shape of our data
 export type ProductFilter = {
@@ -56,6 +47,12 @@ export type ProductFilter = {
   criteriaMet: boolean;
   criteriaCount: number;
   mandatoryCriteriaCount: number;
+  linkedCampaigns?: Array<{
+    id: string;
+    name: string;
+    partnerName: string;
+    programName: string;
+  }>;
 };
 
 // Helper function to format dates in the required format
@@ -87,44 +84,6 @@ const SortIcon = ({ sorted }: { sorted?: "asc" | "desc" | false }) => {
     <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground opacity-50" />
   );
 };
-
-// Button that shows a dropdown with View Details option
-function ViewDetailsButton({
-  filterId,
-  isDraft,
-}: {
-  filterId: string;
-  isDraft: boolean;
-}) {
-  const router = useRouter();
-
-  // Handle navigation for different actions
-  const handleViewDetails = () => {
-    router.push(`/campaigns/product-filters/${filterId}`);
-  };
-
-  const handleEditFilter = () => {
-    router.push(`/campaigns/product-filters/${filterId}/edit`);
-  };
-
-  const handleManageCriteria = () => {
-    router.push(`/campaigns/product-filters/${filterId}/criteria`);
-  };
-
-  const handleCopyId = () => {
-    navigator.clipboard.writeText(filterId);
-  };
-
-  return (
-    <Button
-      variant="ghost"
-      className="px-3 py-1.5 h-auto text-blue-600 hover:text-blue-800 hover:bg-blue-50 font-medium text-sm"
-      onClick={handleViewDetails}
-    >
-      View Details
-    </Button>
-  );
-}
 
 export const productFilterColumns: ColumnDef<ProductFilter>[] = [
   {
@@ -265,11 +224,15 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
       };
 
       // Handler for delete confirmation
-      const handleConfirmedDelete = () => {
+      const handleConfirmedDelete = async () => {
         // Handle delete logic here
         console.log(`Deleting filter ${filterId}`);
         // In a real implementation, you would call an API and then refresh the table
-        setDeleteDialogOpen(false);
+
+        // Simulate API call
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // Note: Dialog will be closed by the CatalogFilterDeleteDialog component
       };
 
       // Add effect to close dropdown when clicking outside
@@ -280,7 +243,7 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
             const isClickInside = menu.contains(event.target as Node);
             const isButtonClick = (event.target as Element)
               .closest(`button`)
-              ?.textContent?.includes(isDraft ? "Edit Filter" : "View Details");
+              ?.textContent?.includes("View Details");
 
             if (!isClickInside && !isButtonClick) {
               menu.classList.add("hidden");
@@ -292,7 +255,7 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
         return () => {
           document.removeEventListener("mousedown", handleOutsideClick);
         };
-      }, [filterId, isDraft]);
+      }, [filterId]);
 
       return (
         <div className="flex">
@@ -310,7 +273,7 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
                 }
               }}
             >
-              {isDraft ? "Edit Filter" : "View Details"}
+              View Details
             </Button>
 
             {/* Custom dropdown menu for all filter types */}
@@ -356,27 +319,13 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
               </div>
             </div>
 
-            {/* Delete confirmation dialog */}
-            <AlertDialog
-              open={deleteDialogOpen}
-              onOpenChange={setDeleteDialogOpen}
-            >
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Filter</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete this filter: "
-                    {row.original.name}"? This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <Button variant="destructive" onClick={handleConfirmedDelete}>
-                    Delete
-                  </Button>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            {/* Enhanced delete confirmation dialog */}
+            <CatalogFilterDeleteDialog
+              isOpen={deleteDialogOpen}
+              onClose={() => setDeleteDialogOpen(false)}
+              onConfirmDelete={handleConfirmedDelete}
+              filter={row.original}
+            />
           </div>
         </div>
       );
