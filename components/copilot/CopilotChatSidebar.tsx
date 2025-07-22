@@ -13,7 +13,6 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../lib/redux/store";
 import { useAppDispatch, useAppSelector } from "../../lib/redux/hooks";
 import { setChatOpen, toggleChat } from "../../lib/redux/slices/uiSlice";
-import { usePathname } from "next/navigation";
 
 /**
  * CopilotKit Chat Sidebar Component
@@ -26,14 +25,9 @@ export function CopilotChatSidebar() {
   const dispatch = useAppDispatch();
   const chatOpen = useAppSelector((state) => state.ui.chatOpen);
   const [isAnimating, setIsAnimating] = useState(false);
-  const pathname = usePathname();
 
   // Check if the new AI system is enabled
   const isEnabled = process.env.NEXT_PUBLIC_FEATURE_COPILOT_CHAT === "true";
-
-  // Disable CopilotKit on catalog filter pages to prevent interference with modals
-  const isOnCatalogFilterPage = pathname?.includes("/product-filters") || false;
-  const shouldEnableCopilot = isEnabled && !isOnCatalogFilterPage;
 
   // Get current user context for personalization
   const demoState = useSelector((state: RootState) => state.demo);
@@ -51,8 +45,8 @@ export function CopilotChatSidebar() {
     }
   }, [chatOpen]);
 
-  // Don't render if feature is disabled or on catalog filter pages
-  if (!shouldEnableCopilot) {
+  // Don't render if feature is disabled
+  if (!isEnabled) {
     return null;
   }
 
