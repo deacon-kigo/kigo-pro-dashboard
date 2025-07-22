@@ -41,7 +41,6 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
   const [feedbackType, setFeedbackType] = useState<FeedbackType>("general");
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
-  const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -105,7 +104,6 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
         type: feedbackType,
         subject,
         description,
-        email,
         timestamp: new Date().toISOString(),
       });
 
@@ -131,7 +129,6 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
       setFeedbackType("general");
       setSubject("");
       setDescription("");
-      setEmail("");
       setError(null);
       onClose();
     }
@@ -243,23 +240,6 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
               disabled={isSubmitting}
               aria-describedby={error ? "feedback-error" : undefined}
               aria-invalid={!!error}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label
-              htmlFor="email"
-              className="text-sm font-medium text-gray-700"
-            >
-              Email (Optional)
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com - for follow-up if needed"
-              disabled={isSubmitting}
             />
           </div>
 
