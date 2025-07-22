@@ -21,16 +21,7 @@ import { ProductFilter, formatDate } from "./productFilterColumns";
 import { ProductFilterSearchBar, SearchField } from "./ProductFilterSearchBar";
 import { useDispatch } from "react-redux";
 import { clearAllDropdowns } from "@/lib/redux/slices/uiSlice";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/molecules/alert-dialog/AlertDialog";
+import { CatalogFilterBulkDeleteDialog } from "./CatalogFilterBulkDeleteDialog";
 
 // Type for pagination state
 interface PaginationState {
@@ -46,9 +37,13 @@ interface PaginationState {
 const BulkActions = memo(function BulkActions({
   selectedCount,
   onDelete,
+  selectedFilters,
+  allFilters,
 }: {
   selectedCount: number;
-  onDelete: () => void;
+  onDelete: (deletableFilterIds: string[]) => Promise<void>;
+  selectedFilters: Array<{ id: string; name: string }>;
+  allFilters: ProductFilter[];
 }) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
@@ -71,31 +66,14 @@ const BulkActions = memo(function BulkActions({
         </Button>
       </div>
 
-      {/* Delete confirmation dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Filters</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete the selected {selectedCount}{" "}
-              {selectedCount === 1 ? "filter" : "filters"}? This action cannot
-              be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <Button
-              variant="destructive"
-              onClick={() => {
-                onDelete();
-                setDeleteDialogOpen(false);
-              }}
-            >
-              Delete
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Enhanced bulk delete confirmation dialog */}
+      <CatalogFilterBulkDeleteDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirmDelete={onDelete}
+        selectedFilters={selectedFilters}
+        allFilters={allFilters}
+      />
     </>
   );
 });
@@ -217,15 +195,16 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
     setSelectedFilters({});
   }, [selectedFilters]);
 
-  const handleBulkDelete = useCallback(() => {
-    const selectedIds = Object.keys(selectedFilters).filter(
-      (id) => selectedFilters[id]
-    );
-    console.log("Deleting filters:", selectedIds);
+  const handleBulkDelete = useCallback(async (deletableFilterIds: string[]) => {
+    console.log("Deleting filters:", deletableFilterIds);
     // Implement actual deletion logic here
+
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
     // After action, clear selections
     setSelectedFilters({});
-  }, [selectedFilters]);
+  }, []);
 
   const handleBulkExtendExpiry = useCallback(() => {
     const selectedIds = Object.keys(selectedFilters).filter(
@@ -253,6 +232,20 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
         criteriaCount: 6,
         mandatoryCriteriaCount: 4,
         publisherSpecific: false,
+        linkedCampaigns: [
+          {
+            id: "pp1",
+            name: "Legal Research Promotion",
+            partnerName: "Augeo",
+            programName: "LexisNexis",
+          },
+          {
+            id: "pp4",
+            name: "Retirement Planning",
+            partnerName: "Augeo",
+            programName: "Fidelity Investments",
+          },
+        ],
       },
       {
         id: "2",
@@ -267,6 +260,14 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
         criteriaCount: 5,
         mandatoryCriteriaCount: 4,
         publisherSpecific: false,
+        linkedCampaigns: [
+          {
+            id: "pp6",
+            name: "Credit Card Rewards",
+            partnerName: "ampliFI",
+            programName: "Chase",
+          },
+        ],
       },
       {
         id: "3",
@@ -766,12 +767,26 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
     return activeTab === "active";
   }, [selectedFilters, activeTab, filters]);
 
-  // Get the selected count
+  // Get the selected count and filter data
   const selectedCount = useMemo(
     () =>
       Object.keys(selectedFilters).filter((id) => selectedFilters[id]).length,
     [selectedFilters]
   );
+
+  // Prepare selected filters data for bulk actions
+  const selectedFiltersData = useMemo(() => {
+    const selectedIds = Object.keys(selectedFilters).filter(
+      (id) => selectedFilters[id]
+    );
+    return selectedIds.map((id) => {
+      const filter = filters.find((f) => f.id === id);
+      return {
+        id,
+        name: filter?.name || "Unknown Filter",
+      };
+    });
+  }, [selectedFilters, filters]);
 
   return (
     <div className="space-y-6">
@@ -798,6 +813,8 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
               <BulkActions
                 selectedCount={selectedCount}
                 onDelete={handleBulkDelete}
+                selectedFilters={selectedFiltersData}
+                allFilters={filters}
               />
             </div>
           )}
