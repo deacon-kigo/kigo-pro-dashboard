@@ -297,6 +297,26 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
         mandatoryCriteriaCount: 4,
         publisherSpecific: true,
         publisherName: "T-Mobile",
+        linkedCampaigns: [
+          {
+            id: "pp8",
+            name: "Tuesday Flash Deals",
+            partnerName: "T-Mobile",
+            programName: "T-Mobile Tuesdays",
+          },
+          {
+            id: "pp9",
+            name: "Subscriber Exclusive Offers",
+            partnerName: "T-Mobile",
+            programName: "T-Mobile Tuesdays",
+          },
+          {
+            id: "pp10",
+            name: "Mobile Device Promotions",
+            partnerName: "Verizon",
+            programName: "Verizon Up",
+          },
+        ],
       },
       {
         id: "5",
@@ -312,6 +332,38 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
         mandatoryCriteriaCount: 4,
         publisherSpecific: true,
         publisherName: "Bank of America",
+        linkedCampaigns: [
+          {
+            id: "pp11",
+            name: "Cash Rewards Program",
+            partnerName: "Bank of America",
+            programName: "BankAmeriDeals",
+          },
+          {
+            id: "pp12",
+            name: "Premium Credit Card Benefits",
+            partnerName: "Bank of America",
+            programName: "BankAmeriDeals",
+          },
+          {
+            id: "pp13",
+            name: "Banking Customer Rewards",
+            partnerName: "Chase",
+            programName: "Chase Offers",
+          },
+          {
+            id: "pp14",
+            name: "Financial Services Promotion",
+            partnerName: "Wells Fargo",
+            programName: "Wells Fargo Rewards",
+          },
+          {
+            id: "pp15",
+            name: "Investment Account Bonus",
+            partnerName: "Fidelity",
+            programName: "Fidelity Rewards+",
+          },
+        ],
       },
       {
         id: "6",
@@ -354,6 +406,14 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
         criteriaCount: 9,
         mandatoryCriteriaCount: 4,
         publisherSpecific: false,
+        linkedCampaigns: [
+          {
+            id: "pp16",
+            name: "Quick Service Restaurant Deals",
+            partnerName: "McDonald's",
+            programName: "McDonald's App Rewards",
+          },
+        ],
       },
       {
         id: "9",
