@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo, useCallback, useState, useEffect } from "react";
+import React, { memo, useCallback, useState, useEffect, useRef } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/atoms/Button";
 import { Badge } from "@/components/atoms/Badge";
@@ -14,6 +14,7 @@ import {
   BuildingOfficeIcon,
   BriefcaseIcon,
   ArrowDownTrayIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
 import {
   ArrowUpDown,
@@ -331,6 +332,7 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
       const router = useRouter();
       const { openPanel, closePanel } = useResizablePanel();
       const { toast } = useToast();
+      const buttonRef = useRef<HTMLButtonElement>(null);
       // Add state for delete dialog
       const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
@@ -419,7 +421,7 @@ ${filterId},"${row.original.name}","${row.original.description}","${status}","${
             const isClickInside = menu.contains(event.target as Node);
             const isButtonClick = (event.target as Element)
               .closest(`button`)
-              ?.textContent?.includes("View Details");
+              ?.contains(buttonRef.current);
 
             if (!isClickInside && !isButtonClick) {
               menu.classList.add("hidden");
@@ -435,11 +437,12 @@ ${filterId},"${row.original.name}","${row.original.description}","${status}","${
 
       return (
         <div className="flex">
-          {/* Single action button that opens dropdown */}
+          {/* View Details action button matching consistent style */}
           <div className="relative">
             <Button
+              ref={buttonRef}
               variant="secondary"
-              className="h-auto px-3 py-1.5 font-medium"
+              className="h-8 px-3 py-1.5 font-medium"
               onClick={(e) => {
                 e.stopPropagation();
                 // Show dropdown menu for all filter types
@@ -455,7 +458,7 @@ ${filterId},"${row.original.name}","${row.original.description}","${status}","${
             {/* Custom dropdown menu for all filter types */}
             <div
               id={`filter-menu-${filterId}`}
-              className="hidden absolute top-full left-0 mt-1 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+              className="hidden absolute top-full left-1/2 transform -translate-x-1/2 mt-1 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
               tabIndex={-1}
             >
               <div className="py-1">
@@ -466,7 +469,7 @@ ${filterId},"${row.original.name}","${row.original.description}","${status}","${
 
                 {/* Download offer CSV option */}
                 <button
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
                   onClick={(e) => {
                     e.stopPropagation();
                     document
@@ -475,12 +478,13 @@ ${filterId},"${row.original.name}","${row.original.description}","${status}","${
                     handleDownloadCSV();
                   }}
                 >
+                  <ArrowDownTrayIcon className="mr-2 h-4 w-4" />
                   Download offer (CSV)
                 </button>
 
                 {/* Edit Filter option */}
                 <button
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
                   onClick={(e) => {
                     e.stopPropagation();
                     document
@@ -489,12 +493,13 @@ ${filterId},"${row.original.name}","${row.original.description}","${status}","${
                     handleEditFilter();
                   }}
                 >
+                  <PencilIcon className="mr-2 h-4 w-4" />
                   Edit Filter
                 </button>
 
                 {/* Delete option */}
                 <button
-                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 flex items-center"
                   onClick={(e) => {
                     e.stopPropagation();
                     document
@@ -503,7 +508,12 @@ ${filterId},"${row.original.name}","${row.original.description}","${status}","${
                     // Open the delete confirmation dialog
                     setDeleteDialogOpen(true);
                   }}
+                  style={{ color: "#dc2626" }}
                 >
+                  <TrashIcon
+                    className="mr-2 h-4 w-4"
+                    style={{ color: "#dc2626" }}
+                  />
                   Delete Filter
                 </button>
               </div>
