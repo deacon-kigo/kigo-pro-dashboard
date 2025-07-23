@@ -3,6 +3,7 @@
 import React, { memo, useCallback, useState, useEffect } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/atoms/Button";
+import { Badge } from "@/components/atoms/Badge";
 import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
@@ -10,8 +11,17 @@ import {
   PencilIcon,
   ChevronUpIcon,
   ChevronDownIcon,
+  BuildingOfficeIcon,
+  BriefcaseIcon,
+  ArrowDownTrayIcon,
 } from "@heroicons/react/24/outline";
-import { ArrowUpDown, MoreHorizontal, ChevronDown } from "lucide-react";
+import {
+  ArrowUpDown,
+  MoreHorizontal,
+  ChevronDown,
+  Building,
+  Briefcase,
+} from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -31,6 +41,7 @@ import { useRouter } from "next/navigation";
 import { useResizablePanel } from "@/lib/context/ResizablePanelContext";
 import { AssignToProgramsPanel } from "./AssignToProgramsPanel";
 import { CatalogFilterDeleteDialog } from "./CatalogFilterDeleteDialog";
+import { useToast } from "@/lib/hooks/use-toast";
 
 // Define the shape of our data
 export type ProductFilter = {
@@ -84,6 +95,125 @@ const SortIcon = ({ sorted }: { sorted?: "asc" | "desc" | false }) => {
     <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground opacity-50" />
   );
 };
+
+// LinkedCampaigns cell component with hover details
+const LinkedCampaignsCell = memo(function LinkedCampaignsCell({
+  campaigns,
+}: {
+  campaigns: Array<{
+    id: string;
+    name: string;
+    partnerName: string;
+    programName: string;
+  }>;
+}) {
+  if (!campaigns || campaigns.length === 0) {
+    return (
+      <div className="flex items-center text-gray-400">
+        <span className="text-sm">None</span>
+      </div>
+    );
+  }
+
+  // Group campaigns by partner for better organization
+  const campaignsByPartner = campaigns.reduce(
+    (acc, campaign) => {
+      if (!acc[campaign.partnerName]) {
+        acc[campaign.partnerName] = [];
+      }
+      acc[campaign.partnerName].push(campaign);
+      return acc;
+    },
+    {} as Record<string, typeof campaigns>
+  );
+
+  const totalCount = campaigns.length;
+  const partnerCount = Object.keys(campaignsByPartner).length;
+
+  return (
+    <TooltipProvider>
+      <Tooltip delayDuration={300}>
+        <TooltipTrigger asChild>
+          <div className="flex items-center gap-2 cursor-pointer hover:bg-blue-50 rounded-md p-1 transition-colors">
+            <Badge
+              variant="outline"
+              className="bg-blue-50 text-blue-700 border-blue-200 font-medium"
+            >
+              {totalCount} campaign{totalCount !== 1 ? "s" : ""}
+            </Badge>
+            <span className="text-xs text-gray-500">
+              ({partnerCount} partner{partnerCount !== 1 ? "s" : ""})
+            </span>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="left" className="max-w-md p-0 border-0">
+          <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-h-80 overflow-y-auto">
+            <div className="mb-3">
+              <h4 className="font-medium text-gray-900 flex items-center gap-2">
+                <BriefcaseIcon className="h-4 w-4 text-blue-600" />
+                Linked Promoted Campaigns
+              </h4>
+              <p className="text-xs text-gray-500 mt-1">
+                {totalCount} campaign{totalCount !== 1 ? "s" : ""} across{" "}
+                {partnerCount} partner{partnerCount !== 1 ? "s" : ""}
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {Object.entries(campaignsByPartner).map(
+                ([partnerName, partnerCampaigns]) => (
+                  <div key={partnerName} className="space-y-2">
+                    <div className="flex items-center gap-2 pb-1 border-b border-gray-100">
+                      <BuildingOfficeIcon className="h-3.5 w-3.5 text-gray-600" />
+                      <span className="text-sm font-medium text-gray-900">
+                        {partnerName}
+                      </span>
+                      <Badge variant="secondary" className="text-xs">
+                        {partnerCampaigns.length}
+                      </Badge>
+                    </div>
+
+                    <div className="pl-5 space-y-1.5">
+                      {partnerCampaigns.map((campaign) => (
+                        <div
+                          key={campaign.id}
+                          className="flex items-start justify-between"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium text-gray-900 truncate">
+                              {campaign.name}
+                            </div>
+                            <div className="text-xs text-gray-600 flex items-center gap-1">
+                              <Briefcase className="h-3 w-3" />
+                              {campaign.programName}
+                            </div>
+                          </div>
+                          <Badge
+                            variant="outline"
+                            className="bg-green-50 text-green-700 border-green-200 ml-2"
+                          >
+                            Active
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
+
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              <div className="text-xs text-gray-500 flex items-center gap-1">
+                <ExclamationTriangleIcon className="h-3.5 w-3.5 text-amber-500" />
+                This filter cannot be deleted while linked to campaigns
+              </div>
+            </div>
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+});
 
 export const productFilterColumns: ColumnDef<ProductFilter>[] = [
   {
@@ -184,6 +314,14 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
     },
   },
   {
+    accessorKey: "linkedCampaigns",
+    header: () => <div className="text-left font-medium">Linked Campaigns</div>,
+    cell: ({ row }) => {
+      const campaigns = row.original.linkedCampaigns || [];
+      return <LinkedCampaignsCell campaigns={campaigns} />;
+    },
+  },
+  {
     id: "actions",
     header: () => <div className="text-left font-medium">Actions</div>,
     cell: ({ row }) => {
@@ -192,6 +330,7 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
       const filterId = row.original.id;
       const router = useRouter();
       const { openPanel, closePanel } = useResizablePanel();
+      const { toast } = useToast();
       // Add state for delete dialog
       const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
@@ -221,6 +360,43 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
             onClose={closePanel}
           />
         );
+      };
+
+      // Handler for CSV download
+      const handleDownloadCSV = async () => {
+        try {
+          // Simulate CSV generation and download
+          const csvContent = `Filter ID,Filter Name,Description,Status,Created Date,Linked Campaigns
+${filterId},"${row.original.name}","${row.original.description}","${status}","${row.original.createdDate}","${(row.original.linkedCampaigns || []).length} campaigns"`;
+
+          const blob = new Blob([csvContent], {
+            type: "text/csv;charset=utf-8;",
+          });
+          const link = document.createElement("a");
+          const url = URL.createObjectURL(blob);
+          link.setAttribute("href", url);
+          link.setAttribute(
+            "download",
+            `catalog-filter-${row.original.name}-offers.csv`
+          );
+          link.style.visibility = "hidden";
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+
+          // Show success toast
+          toast({
+            title: "✅ Download Successful",
+            description: `Catalog filter offers have been downloaded as CSV.`,
+            className: "!bg-green-100 !border-green-300 !text-green-800",
+          });
+        } catch (error) {
+          toast({
+            title: "❌ Download Failed",
+            description: "Failed to download CSV. Please try again.",
+            className: "!bg-red-100 !border-red-300 !text-red-800",
+          });
+        }
       };
 
       // Handler for delete confirmation
@@ -287,6 +463,20 @@ export const productFilterColumns: ColumnDef<ProductFilter>[] = [
                   Filter Actions
                 </div>
                 <div className="h-px bg-gray-200"></div>
+
+                {/* Download offer CSV option */}
+                <button
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    document
+                      .getElementById(`filter-menu-${filterId}`)
+                      ?.classList.add("hidden");
+                    handleDownloadCSV();
+                  }}
+                >
+                  Download offer (CSV)
+                </button>
 
                 {/* Edit Filter option */}
                 <button
