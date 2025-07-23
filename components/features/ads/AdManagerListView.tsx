@@ -319,9 +319,9 @@ const createCampaignColumns = (
   },
   {
     id: "actions",
-    header: () => <div className="text-center">Actions</div>,
+    header: () => <div className="text-left font-medium">Actions</div>,
     cell: ({ row }) => (
-      <div className="flex justify-center">
+      <div className="flex">
         <ActionDropdown
           onViewClick={() => {}} // No-op since view is now handled by name click
           onEditClick={() => console.log("Edit campaign", row.original.id)}
@@ -452,7 +452,7 @@ const createAdSetColumns = (
   },
   {
     id: "actions",
-    header: () => <div className="text-center">Actions</div>,
+    header: () => <div className="text-left font-medium">Actions</div>,
     cell: ({ row }) => (
       <div className="flex justify-center">
         <ActionDropdown
@@ -1664,12 +1664,11 @@ const ActionDropdown = memo(function ActionDropdown({
     <>
       <Button
         ref={buttonRef}
-        variant="ghost"
-        className="h-8 w-8 p-0"
+        variant="secondary"
+        className="h-8 px-3 py-1.5 font-medium"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span className="sr-only">Open menu</span>
-        <MoreHorizontal className="h-4 w-4" />
+        View Details
       </Button>
 
       {isOpen && (

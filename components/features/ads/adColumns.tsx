@@ -296,12 +296,11 @@ const AdActionDropdown = memo(function AdActionDropdown({
     <>
       <Button
         ref={buttonRef}
-        variant="ghost"
-        className="h-8 w-8 p-0"
+        variant="secondary"
+        className="h-8 px-3 py-1.5 font-medium"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span className="sr-only">Open menu</span>
-        <MoreHorizontal className="h-4 w-4" />
+        View Details
       </Button>
 
       {isOpen && (
@@ -435,7 +434,7 @@ export const createAdColumns = (): ColumnDef<Ad>[] => [
   },
   {
     id: "actions",
-    header: () => <div className="text-center">Actions</div>,
+    header: () => <div className="text-left font-medium">Actions</div>,
     cell: ({ row }) => {
       const ad = row.original;
       const router = useRouter();
@@ -487,7 +486,7 @@ export const createAdColumns = (): ColumnDef<Ad>[] => [
 
       return (
         <>
-          <div className="flex justify-center">
+          <div className="flex">
             <AdActionDropdown
               ad={ad}
               onEditAd={handleEditAd}
