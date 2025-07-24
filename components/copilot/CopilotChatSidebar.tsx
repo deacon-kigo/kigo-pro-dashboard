@@ -13,6 +13,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../lib/redux/store";
 import { useAppDispatch, useAppSelector } from "../../lib/redux/hooks";
 import { setChatOpen, toggleChat } from "../../lib/redux/slices/uiSlice";
+import { useAgentNavigation } from "../../lib/hooks/useAgentNavigation";
 
 /**
  * CopilotKit Chat Sidebar Component
@@ -35,6 +36,9 @@ export function CopilotChatSidebar() {
 
   // Initialize Redux bridge
   const { campaignState } = useCopilotReduxBridge();
+
+  // Enable agent-driven navigation
+  useAgentNavigation();
 
   // Handle animations
   useEffect(() => {

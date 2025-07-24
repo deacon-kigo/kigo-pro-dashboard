@@ -146,14 +146,27 @@ async function analyzeUserIntent(
 ): Promise<string> {
   const input = userInput.toLowerCase();
 
-  // Intent patterns for different agent types
+  // Intent patterns for different agent types - more flexible matching
   const intentPatterns = {
     ad_creation: [
       "create ad",
+      "creating ad",
+      "creating an ad",
+      "create an ad",
       "new ad",
       "make ad",
+      "making ad",
+      "making an ad",
       "build ad",
+      "building ad",
+      "building an ad",
       "start ad",
+      "starting ad",
+      "help with ad",
+      "help creating",
+      "help with creating",
+      "need ad",
+      "want ad",
       "promotional ad",
       "advertising ad",
       "create campaign",
@@ -167,6 +180,8 @@ async function analyzeUserIntent(
       "upload media",
       "add image",
       "add media",
+      "ad creation",
+      "ad for",
     ],
     campaign_optimization: [
       "optimize campaign",
@@ -183,6 +198,8 @@ async function analyzeUserIntent(
       "target products",
       "filter criteria",
       "product selection",
+      "filters",
+      "filtering",
     ],
     analytics_query: [
       "show analytics",
@@ -191,6 +208,10 @@ async function analyzeUserIntent(
       "how is campaign doing",
       "analytics dashboard",
       "reports",
+      "analytics",
+      "data",
+      "metrics",
+      "performance",
     ],
     merchant_support: [
       "help with",
@@ -199,34 +220,54 @@ async function analyzeUserIntent(
       "guidance",
       "merchant setup",
       "account management",
+      "need help",
+      "assistance",
     ],
   };
 
-  // Check for intent matches
+  // Check for intent matches with improved logic
   for (const [intent, patterns] of Object.entries(intentPatterns)) {
     if (patterns.some((pattern) => input.includes(pattern))) {
+      console.log(
+        `[Supervisor] Intent detected: ${intent} for input: "${userInput}"`
+      );
       return intent;
     }
   }
 
   // Context-based intent detection
   if (context.currentPage?.includes("ads-create")) {
+    console.log(
+      `[Supervisor] Context-based intent: ad_creation (on ads-create page)`
+    );
     return "ad_creation";
   }
 
   if (context.currentPage?.includes("campaigns")) {
+    console.log(
+      `[Supervisor] Context-based intent: ad_creation (on campaigns page)`
+    );
     return "ad_creation";
   }
 
   if (context.currentPage?.includes("analytics")) {
+    console.log(
+      `[Supervisor] Context-based intent: analytics_query (on analytics page)`
+    );
     return "analytics_query";
   }
 
   if (context.currentPage?.includes("product-filters")) {
+    console.log(
+      `[Supervisor] Context-based intent: filter_management (on filters page)`
+    );
     return "filter_management";
   }
 
   // Default to general assistance
+  console.log(
+    `[Supervisor] No specific intent detected, using general_assistance for: "${userInput}"`
+  );
   return "general_assistance";
 }
 
