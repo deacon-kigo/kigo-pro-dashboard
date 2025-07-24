@@ -86,9 +86,8 @@ export const RESPONSE_TEMPLATES: Record<
   navigation_to_ad_creation: {
     id: "navigation_to_ad_creation",
     title: "Navigate to Ad Creation",
-    template: `I'd be happy to help you create an ad! Let me take you to the ad creation page where we can build your {{adType}} ad together step by step.
-
-I'll navigate you there and then show you some helpful suggestions for getting started with {{merchant}} ads.`,
+    template:
+      "I'd be happy to help you create an ad! Let me take you to the ad creation page where we can build your {{adType}} ad together step by step.\n\nI'll navigate you there and then show you some helpful suggestions for getting started with {{merchant}} ads.",
     actions: [
       {
         type: "navigation",
@@ -114,9 +113,8 @@ I'll navigate you there and then show you some helpful suggestions for getting s
   navigation_to_analytics: {
     id: "navigation_to_analytics",
     title: "Navigate to Analytics",
-    template: `Let me take you to the analytics dashboard where you can view {{metricType}} metrics and insights.
-
-You'll be able to see performance data for {{timeRange}} and export reports as needed.`,
+    template:
+      "Let me take you to the analytics dashboard where you can view {{metricType}} metrics and insights.\n\nYou'll be able to see performance data for {{timeRange}} and export reports as needed.",
     actions: [
       {
         type: "navigation",
@@ -141,17 +139,8 @@ You'll be able to see performance data for {{timeRange}} and export reports as n
   ad_creation_help: {
     id: "ad_creation_help",
     title: "Ad Creation Assistance",
-    template: `I'm here to help you create an amazing ad! To get started, I'll need:
-
-1. **Ad Name** - What would you like to call this ad?
-2. **Merchant** - Which business is this for? ({{availableMerchants}})
-3. **Offer** - What promotion or offer will you feature?
-4. **Media Type** - Will you use images, video, or both?
-5. **Costs** - Cost per activation and redemption
-
-{{currentProgress}}
-
-Just provide any of these details and I'll guide you through the rest!`,
+    template:
+      "I'm here to help you create an amazing ad! To get started, I'll need:\n\n1. **Ad Name** - What would you like to call this ad?\n2. **Merchant** - Which business is this for? ({{availableMerchants}})\n3. **Offer** - What promotion or offer will you feature?\n4. **Media Type** - Will you use images, video, or both?\n5. **Costs** - Cost per activation and redemption\n\n{{currentProgress}}\n\nJust provide any of these details and I'll guide you through the rest!",
     actions: [
       {
         type: "suggestion",
@@ -166,16 +155,8 @@ Just provide any of these details and I'll guide you through the rest!`,
   ad_preview: {
     id: "ad_preview",
     title: "Ad Preview",
-    template: `Perfect! Here's a preview of your {{adName}} ad:
-
-**Ad Name:** {{adName}}
-**Merchant:** {{merchant}}
-**Offer:** {{offer}}
-**Media Type:** {{mediaType}}
-**Cost per Activation:** ${{ costPerActivation }}
-**Cost per Redemption:** ${{ costPerRedemption }}
-
-Does this look good? {{approvalPrompt}}`,
+    template:
+      "Perfect! Here's a preview of your {{adName}} ad:\n\n**Ad Name:** {{adName}}\n**Merchant:** {{merchant}}\n**Offer:** {{offer}}\n**Media Type:** {{mediaType}}\n**Cost per Activation:** ${{costPerActivation}}\n**Cost per Redemption:** ${{costPerRedemption}}\n\nDoes this look good? {{approvalPrompt}}",
     actions: [
       {
         type: "approval",
@@ -194,11 +175,8 @@ Does this look good? {{approvalPrompt}}`,
   error_general: {
     id: "error_general",
     title: "General Error",
-    template: `I apologize, but I encountered an error while {{errorContext}}. 
-
-Error: {{errorMessage}}
-
-Please try again or let me know how I can help you differently.`,
+    template:
+      "I apologize, but I encountered an error while {{errorContext}}.\n\nError: {{errorMessage}}\n\nPlease try again or let me know how I can help you differently.",
     actions: [
       {
         type: "suggestion",
@@ -214,14 +192,8 @@ Please try again or let me know how I can help you differently.`,
   success_ad_created: {
     id: "success_ad_created",
     title: "Ad Creation Success",
-    template: `🎉 Excellent! I've successfully created your ad "{{adName}}" for {{merchant}}!
-
-Your ad has been added to your campaigns and is ready to go. You can now:
-• Preview how it will look to customers
-• Set up additional targeting options  
-• Launch it when you're ready
-
-{{nextStepsPrompt}}`,
+    template:
+      "🎉 Excellent! I've successfully created your ad \"{{adName}}\" for {{merchant}}!\n\nYour ad has been added to your campaigns and is ready to go. You can now:\n• Preview how it will look to customers\n• Set up additional targeting options\n• Launch it when you're ready\n\n{{nextStepsPrompt}}",
     actions: [
       {
         type: "suggestion",

@@ -153,13 +153,8 @@ const campaignAgent = createTracedFunction(
     // General campaign assistance using template
     const template = Templates.showAdHelp({
       availableMerchants: AVAILABLE_MERCHANTS.join(", "),
-      currentProgress: `What would you like to work on today? I can help you:
-
-• **Create new ads** - I'll guide you through the entire process
-• **Optimize campaigns** - Improve performance and targeting  
-• **Manage existing ads** - Edit or update your current ads
-
-If you'd like to create an ad, just let me know and I'll navigate you to the ad creation page!`,
+      currentProgress:
+        "What would you like to work on today? I can help you:\n\n• **Create new ads** - I'll guide you through the entire process\n• **Optimize campaigns** - Improve performance and targeting\n• **Manage existing ads** - Edit or update your current ads\n\nIf you'd like to create an ad, just let me know and I'll navigate you to the ad creation page!",
     });
 
     const response = templateToAIMessage(template);

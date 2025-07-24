@@ -6,9 +6,7 @@ import { ReactNode, useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useCopilotReadable } from "@copilotkit/react-core";
-import { useCopilotNavigation } from "../../lib/hooks/useCopilotNavigation";
-import { useHumanInTheLoop } from "../../lib/hooks/useHumanInTheLoop";
-import { useSuggestionPills } from "../../lib/hooks/useSuggestionPills";
+import { useCopilotActions } from "../hooks/useCopilotActions";
 import { useAppSelector } from "../redux/hooks";
 import { ApprovalWorkflowUI } from "../../components/ui/ApprovalWorkflowUI";
 
@@ -16,124 +14,108 @@ interface CopilotKitProviderProps {
   children: ReactNode;
 }
 
-// Enhanced Navigation Hook Component with Rich Context
+// Navigation Bridge - Registers all CopilotKit actions and provides context
 function NavigationBridge() {
   const pathname = usePathname();
   const uiState = useAppSelector((state) => state.ui);
   const campaignState = useAppSelector((state) => state.campaign);
-  const userState = useAppSelector((state) => state.user);
 
-  console.log("[NavigationBridge] 🚀 Enhanced context:", {
+  console.log("[NavigationBridge] 🚀 Current context:", {
     pathname,
-    uiState,
-    campaignState,
+    isLoading: uiState.isLoading,
+    hasAds: campaignState.formData?.ads?.length || 0,
   });
 
-  // Get available actions based on current page
-  const getAvailableActions = (currentPath: string) => {
-    switch (currentPath) {
-      case "/campaigns":
-        return [
-          "create_campaign",
-          "view_campaign",
-          "edit_campaign",
-          "navigate_to_ads",
-        ];
-      case "/campaign-manager/ads-create":
-        return ["save_ad", "preview_ad", "cancel_creation", "upload_media"];
-      case "/analytics":
-        return ["view_metrics", "export_data", "filter_data"];
-      case "/filters":
-        return ["create_filter", "edit_filter", "test_filter"];
-      default:
-        return ["navigate_to_page", "get_help"];
-    }
-  };
-
-  // Get contextual data based on current page
-  const getPageContext = (currentPath: string) => {
-    const baseContext = {
-      currentPage: currentPath,
-      userRole: "admin", // TODO: Get from actual user state
-      isLoading: uiState.isLoading,
-      activeModals: uiState.activeModal ? [uiState.activeModal.type] : [],
-      notifications: uiState.notifications || [],
-    };
-
-    switch (currentPath) {
-      case "/campaigns":
-        return {
-          ...baseContext,
-          pageType: "campaign_management",
-          availableAds: campaignState.formData?.ads || [],
-          canCreateCampaign: true,
-        };
-      case "/campaign-manager/ads-create":
-        return {
-          ...baseContext,
-          pageType: "ad_creation",
-          formData: campaignState.formData || {},
-          hasUnsavedChanges: !!(
-            campaignState.formData?.basicInfo?.name ||
-            campaignState.formData?.ads?.length
-          ),
-          supportedMediaTypes: ["image", "video"],
-        };
-      case "/analytics":
-        return {
-          ...baseContext,
-          pageType: "analytics_dashboard",
-          availableMetrics: ["impressions", "clicks", "conversions", "roi"],
-          dateRange: "30d", // TODO: Get from analytics state
-        };
-      default:
-        return baseContext;
-    }
-  };
+  // Register all CopilotKit actions
+  useCopilotActions();
 
   // Provide comprehensive context to CopilotKit
   useCopilotReadable({
     description:
       "Complete application state and user context for intelligent assistance",
     value: {
-      ...getPageContext(pathname),
+      currentPage: pathname,
+      userRole: "admin",
+      isLoading: uiState.isLoading,
+      notifications: uiState.notifications || [],
+      activeModal: uiState.activeModal,
+
+      // Campaign data
+      campaignData: {
+        currentStep: campaignState.currentStep,
+        ads: campaignState.formData?.ads || [],
+        budget: campaignState.formData?.budget,
+        basicInfo: campaignState.formData?.basicInfo,
+      },
+
+      // Available actions based on current page
       availableActions: getAvailableActions(pathname),
-      navigation: {
-        currentPath: pathname,
-        canNavigateBack: window?.history?.length > 1,
-        breadcrumbs: pathname.split("/").filter(Boolean),
-      },
-      capabilities: {
-        canCreateAds: true,
-        canManageCampaigns: true,
-        canViewAnalytics: true,
-        canManageFilters: true,
-      },
-    },
-  });
 
-  useCopilotNavigation(); // Enable navigation
-  useHumanInTheLoop(); // Enable approval workflows
-  const { suggestions, suggestionContext } = useSuggestionPills(); // Enable suggestions
-
-  // Provide suggestion context to CopilotKit
-  useCopilotReadable({
-    description: "Available context-aware suggestions for the user",
-    value: {
-      suggestions: suggestions.map((s) => ({
-        id: s.id,
-        title: s.title,
-        description: s.description,
-        category: s.category,
-        priority: s.priority,
-        icon: s.icon,
-        badge: s.badge,
-      })),
-      context: suggestionContext,
+      // Page-specific context
+      pageContext: getPageContext(pathname),
     },
   });
 
   return <ApprovalWorkflowUI />;
+}
+
+// Get available actions based on current page
+function getAvailableActions(currentPath: string) {
+  switch (currentPath) {
+    case "/":
+      return [
+        "navigateToAdCreation",
+        "navigateToAnalytics",
+        "navigateToFilters",
+      ];
+    case "/campaign-manager/ads-create":
+      return ["createAd", "getCurrentPageInfo"];
+    case "/analytics":
+      return ["getCurrentPageInfo"];
+    case "/campaigns/product-filters":
+      return ["getCurrentPageInfo"];
+    default:
+      return [
+        "navigateToAdCreation",
+        "navigateToAnalytics",
+        "getCurrentPageInfo",
+      ];
+  }
+}
+
+// Get contextual data based on current page
+function getPageContext(currentPath: string) {
+  switch (currentPath) {
+    case "/":
+      return {
+        pageType: "dashboard",
+        description: "Main dashboard with campaign overview",
+      };
+    case "/campaign-manager/ads-create":
+      return {
+        pageType: "ad_creation",
+        description:
+          "Ad creation form where users build new advertising campaigns",
+        supportedAdTypes: ["display", "video", "social"],
+        availableMerchants: ["McDonald's", "Starbucks", "Target", "CVS"],
+      };
+    case "/analytics":
+      return {
+        pageType: "analytics",
+        description: "Analytics dashboard with campaign performance metrics",
+        availableMetrics: ["impressions", "clicks", "conversions", "roi"],
+      };
+    case "/campaigns/product-filters":
+      return {
+        pageType: "filters",
+        description: "Product filters management for campaign targeting",
+      };
+    default:
+      return {
+        pageType: "unknown",
+        description: "Current page context",
+      };
+  }
 }
 
 function CopilotKitProviderContent({ children }: CopilotKitProviderProps) {
@@ -163,48 +145,34 @@ function CopilotKitProviderContent({ children }: CopilotKitProviderProps) {
 
       {isEnabled && (
         <CopilotSidebar
-          instructions={`You are the Kigo Pro Business Success Manager, an AI assistant specialized in helping users create, manage, and optimize advertising campaigns for the Kigo loyalty media network. 
+          instructions={`You are the Kigo Pro Business Success Manager, an AI assistant specialized in helping users create, manage, and optimize advertising campaigns for the Kigo loyalty media network.
 
 🎯 **Core Capabilities:**
-- **Smart Navigation**: Use 'navigateToPageAndPerform' for any destination/action requests
-- **Human-in-the-Loop**: Use 'startApprovalWorkflow' for decisions requiring user approval
-- **Context Suggestions**: Use 'showContextSuggestions' to offer relevant quick actions
-- **Intelligent Guidance**: Provide personalized recommendations based on context
+You have direct access to powerful actions that allow you to help users immediately:
 
-🚀 **Navigation Actions (ALWAYS USE THESE):**
-When users want to go somewhere or do something, IMMEDIATELY call the appropriate action:
-- Create/make/build an ad → CALL navigateToPageAndPerform with destination='/campaign-manager/ads-create' intent='create_ad'
-- View analytics/metrics → CALL navigateToPageAndPerform with destination='/analytics' intent='view_analytics'  
-- Manage campaigns → CALL navigateToPageAndPerform with destination='/campaigns' intent='manage_campaigns'
-- Edit filters → CALL navigateToPageAndPerform with destination='/filters' intent='edit_filters'
+🚀 **IMMEDIATE ACTIONS (Always Use These):**
+When users want to do something, IMMEDIATELY call the appropriate action:
 
-✋ **Approval Workflows:**
-For significant actions (budget changes, campaign launches, data exports), use:
-- startApprovalWorkflow with appropriate workflowType (campaign, filter, analytics, merchant, budget)
-- Guide users through step-by-step approval process
-- Explain what they're approving and why
+• "I want to create an ad" → CALL navigateToAdCreation
+• "Create catalog filter" → CALL navigateToFilters  
+• "Show me analytics" → CALL navigateToAnalytics
+• "Where am I?" → CALL getCurrentPageInfo
 
-💡 **Smart Suggestions (USE THESE FREQUENTLY):**
-- After navigation actions → CALL showPostResponseSuggestions with context='navigation'
-- After helping with ad creation → CALL showPostResponseSuggestions with context='ad_creation'  
-- After showing analytics → CALL showPostResponseSuggestions with context='analytics'
-- For general page help → CALL showContextSuggestions to show current page actions
-- Execute any suggestion → CALL executeSuggestion with the suggestion ID or title
+💡 **Advanced Actions:**
+• createAd - Actually create ads with all details (name, merchant, offer, costs)
+• requestApproval - Request user approval for important decisions
 
-🎨 **User Experience (DEMO-BANKING STYLE):**
-- When users request actions (like "create an ad") → IMMEDIATELY call the navigation action
-- After every navigation → IMMEDIATELY call showPostResponseSuggestions 
-- For complex actions → Use startApprovalWorkflow for human-in-the-loop confirmation
-- Always be proactive with action calling - don't just describe what you can do, DO IT
-- Use suggestion pills frequently to guide users to next steps
+🎨 **User Experience Guidelines:**
+- Always be proactive - when users request actions, DO THEM immediately
+- Use the actions to navigate and create things, don't just describe what you can do
+- Provide helpful context and guidance after taking actions
+- Be conversational and friendly while being highly functional
 
-**CRITICAL**: Don't just talk about actions - CALL THEM! Users expect interactive assistance, not descriptions.
-
-Remember: You have access to navigation, approval workflows, and suggestions. Use them actively to provide the engaging, interactive experience users expect!`}
+**CRITICAL**: Don't just talk about what you can do - actively USE the available actions to help users accomplish their goals immediately!`}
           labels={{
             title: "AI Assistant",
             initial:
-              "Hi! I'm your Kigo Pro assistant. I can see you're currently on the platform and I'm here to help with campaigns, analytics, and more. What would you like to work on?",
+              "Hi! I'm your Kigo Pro assistant. I can help you create ads, analyze campaigns, and manage filters. What would you like to work on?",
           }}
           defaultOpen={false}
           clickOutsideToClose={true}
