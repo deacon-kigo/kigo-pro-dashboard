@@ -9,6 +9,7 @@ import {
   highlightComponent,
 } from "../../lib/redux/slices/uiSlice";
 import { addAd } from "../../lib/redux/slices/campaignSlice";
+import { Templates, ResponseTemplate } from "../ai/response-templates";
 
 // Ad requirements interface
 interface AdRequirements {
@@ -21,31 +22,32 @@ interface AdRequirements {
   completeness: number;
 }
 
-// Mock data for merchants and offers
-const AVAILABLE_MERCHANTS = [
-  "Starbucks",
-  "McDonald's",
-  "Target",
-  "Best Buy",
-  "Nike",
-];
-const AVAILABLE_OFFERS = {
-  Starbucks: [
-    "20% off any drink",
-    "Buy one get one free",
-    "Free pastry with drink",
-  ],
-  "McDonald's": ["$1 off Big Mac", "Free fries with purchase", "20% off meal"],
-  Target: ["10% off electronics", "15% off clothing", "Free shipping"],
-  "Best Buy": ["$50 off laptops", "20% off accessories", "Extended warranty"],
-  Nike: ["25% off shoes", "Free shipping", "15% off athletic wear"],
+// Available merchants and offers
+const AVAILABLE_MERCHANTS = ["McDonald's", "Starbucks", "Target", "CVS"];
+const AVAILABLE_OFFERS: Record<string, string[]> = {
+  "McDonald's": ["Buy 1 Get 1 Free", "20% Off Meals", "$5 Off $20"],
+  Starbucks: ["Free Drink with Purchase", "BOGO Drinks", "25% Off"],
+  Target: ["15% Off Store-wide", "Buy 2 Get 1 Free", "$10 Off $50"],
+  CVS: ["ExtraBucks Rewards", "30% Off Beauty", "Free Delivery"],
 };
+
+// Helper function to convert template to AI message
+function templateToAIMessage(template: ResponseTemplate): AIMessage {
+  return new AIMessage({
+    content: template.template,
+    additional_kwargs: {
+      templateId: template.id,
+      actions: template.actions,
+      context: template.context,
+    },
+  });
+}
 
 /**
  * Campaign Agent
  *
- * Specialized agent for ad creation, campaign management, and optimization.
- * Enhanced to leverage CopilotKit SDK actions for navigation and UI control.
+ * Uses structured templates for consistent, professional responses
+ * with proper variable interpolation and action coordination.
  */
 const campaignAgent = createTracedFunction(
   "campaign_agent",
@@ -64,26 +66,29 @@ const campaignAgent = createTracedFunction(
       analysis.intent === "create_ad" &&
       context.currentPage !== "/campaign-manager/ads-create"
     ) {
-      const response = new AIMessage({
-        content: `I'd be happy to help you create an ad! Let me navigate you to the ad creation page where we can build your ad together step by step.
-
-I'll use the navigateToPageAndPerform action to take you there and provide guidance along the way.`,
+      // Use structured template for navigation
+      const template = Templates.navigateToAdCreation({
+        adType: "new",
+        merchant: "your business",
       });
+
+      const response = templateToAIMessage(template);
 
       return {
         messages: [...messages, response],
         workflowData: {
           ...state.workflowData,
-          suggestedAction: "navigateToPageAndPerform",
+          actionToCall: "navigateToPageAndPerform",
           actionParams: {
             destination: "/campaign-manager/ads-create",
             intent: "create_ad",
-            context: {
-              source: "campaign_agent",
-              userIntent: "ad_creation",
-            },
-            preActions: "showGuidance",
-            postActions: "highlightField",
+            context: template.actions?.[0]?.parameters?.context || "{}",
+            preActions: "",
+            postActions: "",
+          },
+          followUpAction: "showPostResponseSuggestions",
+          followUpParams: {
+            context: "ad_creation",
           },
         },
       };
@@ -94,56 +99,133 @@ I'll use the navigateToPageAndPerform action to take you there and provide guida
       const requirements = extractAdRequirements(userInput);
       const nextStep = determineNextConversationStep(requirements);
 
-      let responseContent = "";
+      let template: ResponseTemplate;
 
       switch (nextStep) {
         case "ask_for_name":
-          responseContent = generateQuestionResponse("adName", requirements);
-          break;
         case "ask_for_merchant":
-          responseContent = generateQuestionResponse("merchant", requirements);
-          break;
         case "ask_for_offer":
-          responseContent = generateQuestionResponse("offer", requirements);
-          break;
         case "ask_for_media_type":
-          responseContent = generateQuestionResponse("mediaType", requirements);
-          break;
         case "ask_for_costs":
-          responseContent = generateQuestionResponse("costs", requirements);
+        case "help":
+          template = Templates.showAdHelp({
+            availableMerchants: AVAILABLE_MERCHANTS.join(", "),
+            currentProgress: generateProgressMessage(requirements, nextStep),
+          });
           break;
+
         case "show_preview":
-          responseContent = generatePreviewResponse(requirements);
+          if (
+            requirements.adName &&
+            requirements.merchant &&
+            requirements.offer
+          ) {
+            template = Templates.showAdPreview({
+              adName: requirements.adName,
+              merchant: requirements.merchant,
+              offer: requirements.offer,
+              mediaType: requirements.mediaType?.join(", ") || "Image",
+              costPerActivation: requirements.costPerActivation || 0.5,
+              costPerRedemption: requirements.costPerRedemption || 2.0,
+            });
+          } else {
+            template = Templates.showAdHelp({
+              availableMerchants: AVAILABLE_MERCHANTS.join(", "),
+              currentProgress: "Let's complete the missing details:",
+            });
+          }
           break;
+
         case "create_ad":
           return await handleAdCreation(requirements, messages);
-        case "help":
+
         default:
-          responseContent = generateHelpResponse();
+          template = Templates.showAdHelp({
+            availableMerchants: AVAILABLE_MERCHANTS.join(", "),
+            currentProgress: "Let's start with the basics:",
+          });
       }
 
-      const response = new AIMessage({ content: responseContent });
+      const response = templateToAIMessage(template);
       return { messages: [...messages, response] };
     }
 
-    // General campaign assistance
-    const response = new AIMessage({
-      content: `I'm here to help with your campaigns and ads! I can assist you with:
+    // General campaign assistance using template
+    const template = Templates.showAdHelp({
+      availableMerchants: AVAILABLE_MERCHANTS.join(", "),
+      currentProgress: `What would you like to work on today? I can help you:
 
-• **Creating new ads** - I'll guide you through the entire process
-• **Optimizing campaigns** - Improve performance and targeting  
-• **Managing existing ads** - Edit or update your current ads
+• **Create new ads** - I'll guide you through the entire process
+• **Optimize campaigns** - Improve performance and targeting  
+• **Manage existing ads** - Edit or update your current ads
 
-What would you like to work on today? If you'd like to create an ad, just let me know and I'll navigate you to the ad creation page!`,
+If you'd like to create an ad, just let me know and I'll navigate you to the ad creation page!`,
     });
 
+    const response = templateToAIMessage(template);
     return {
       messages: [...messages, response],
     };
   }
 );
 
-// Helper functions (keeping the existing logic but simplified)
+// Helper function to generate progress message based on current step
+function generateProgressMessage(
+  requirements: AdRequirements,
+  nextStep: string
+): string {
+  const completed: string[] = [];
+  const remaining: string[] = [];
+
+  if (requirements.adName) completed.push("✅ Ad Name");
+  else remaining.push("📝 Ad Name");
+
+  if (requirements.merchant) completed.push("✅ Merchant");
+  else remaining.push("📝 Merchant");
+
+  if (requirements.offer) completed.push("✅ Offer");
+  else remaining.push("📝 Offer");
+
+  if (requirements.mediaType) completed.push("✅ Media Type");
+  else remaining.push("📝 Media Type");
+
+  if (requirements.costPerActivation && requirements.costPerRedemption) {
+    completed.push("✅ Costs");
+  } else {
+    remaining.push("📝 Costs");
+  }
+
+  let message = "";
+  if (completed.length > 0) {
+    message += `**Completed:** ${completed.join(", ")}\n\n`;
+  }
+  if (remaining.length > 0) {
+    message += `**Still needed:** ${remaining.join(", ")}\n\n`;
+  }
+
+  // Add specific guidance based on next step
+  switch (nextStep) {
+    case "ask_for_name":
+      message += "Let's start with naming your ad:";
+      break;
+    case "ask_for_merchant":
+      message += "Great! Now let's choose the merchant:";
+      break;
+    case "ask_for_offer":
+      message += "Perfect! What offer should we feature?";
+      break;
+    case "ask_for_media_type":
+      message += "Excellent! What type of media will you use?";
+      break;
+    case "ask_for_costs":
+      message += "Almost done! Let's set the costs:";
+      break;
+    default:
+      message += "Let's continue building your ad:";
+  }
+
+  return message;
+}
 
 function analyzeUserInputForAdCreation(input: string): {
   intent: string;
