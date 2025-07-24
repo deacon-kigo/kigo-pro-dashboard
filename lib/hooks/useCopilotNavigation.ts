@@ -6,7 +6,7 @@
  */
 
 import { useCallback } from "react";
-import { useCopilotAction } from "@copilotkit/react-core";
+import { useCopilotAction, useCopilotChat } from "@copilotkit/react-core";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import {
   setCurrentPage,
@@ -15,6 +15,9 @@ import {
   highlightComponent,
 } from "../redux/slices/uiSlice";
 import { useRouter } from "next/navigation";
+import React from "react";
+import { NavigationConfirmation } from "../../components/ui/NavigationConfirmation";
+import { PostResponseSuggestions } from "../../components/ui/PostResponseSuggestions";
 
 // Intent-based navigation interface
 interface NavigationIntent {
@@ -29,6 +32,7 @@ export function useCopilotNavigation() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const currentPage = useAppSelector((state) => state.ui.currentPage);
+  const { appendMessage } = useCopilotChat();
 
   // Intent-based navigation function
   const navigateWithIntent = useCallback(
@@ -129,15 +133,43 @@ export function useCopilotNavigation() {
   const getIntentMessage = (intent: string, destination: string) => {
     switch (intent) {
       case "create_ad":
-        return "I've navigated you to the ad creation page. Let's build your ad together!";
+        return "I'll help you build your ad step by step with AI-powered suggestions.";
       case "view_analytics":
-        return "Here's your analytics dashboard. What metrics would you like to explore?";
+        return "Let's explore your campaign performance and key metrics.";
       case "manage_campaigns":
-        return "Welcome to campaign management. How can I help you today?";
+        return "You can view, edit, and optimize your campaigns here.";
       case "edit_filters":
-        return "Let's work on your filters. What changes would you like to make?";
+        return "I'll help you create and manage product filters.";
       default:
-        return `I've brought you to ${destination.replace("/", "").replace("-", " ")}. What would you like to do here?`;
+        return `Navigate to ${destination.replace("/", "").replace("-", " ")} to continue.`;
+    }
+  };
+
+  // Get friendly page titles
+  const getPageTitle = (destination: string) => {
+    const titles: Record<string, string> = {
+      "/campaign-manager/ads-create": "Ad Creation Page",
+      "/analytics": "Analytics Dashboard",
+      "/campaigns": "Campaign Manager",
+      "/filters": "Product Filters",
+      "/dashboard": "Dashboard",
+    };
+    return titles[destination] || destination;
+  };
+
+  // Get navigation guidance
+  const getNavigationGuidance = (intent: string, destination: string) => {
+    switch (intent) {
+      case "create_ad":
+        return "I'll guide you through the ad creation process and suggest optimizations.";
+      case "view_analytics":
+        return "I can help you interpret data and find optimization opportunities.";
+      case "manage_campaigns":
+        return "I can help you manage and optimize your campaign performance.";
+      case "edit_filters":
+        return "I'll help you create precise targeting filters for your campaigns.";
+      default:
+        return "I'll provide contextual assistance on this page.";
     }
   };
 
@@ -190,7 +222,12 @@ export function useCopilotNavigation() {
       preActions = "",
       postActions = "",
     }) => {
-      await navigateWithIntent({
+      console.log("[CopilotNavigation] 🎯 Navigation requested:", {
+        destination,
+        intent,
+      });
+
+      const navIntent: NavigationIntent = {
         destination,
         intent,
         context,
@@ -200,9 +237,32 @@ export function useCopilotNavigation() {
         postActions: postActions
           ? postActions.split(",").map((s) => s.trim())
           : [],
-      });
+      };
 
-      return `Successfully navigated to ${destination} for ${intent}. ${getIntentMessage(intent, destination)}`;
+      // Create navigation confirmation handlers
+      const confirmNavigation = () => {
+        navigateWithIntent(navIntent);
+
+        // Show post-navigation suggestions
+        // TODO: Implement post-navigation suggestions in chat
+        console.log(
+          "[CopilotNavigation] ✅ Navigation completed, showing suggestions"
+        );
+      };
+
+      const cancelNavigation = () => {
+        dispatch(
+          addNotification({
+            message: "Navigation cancelled",
+            type: "info",
+          })
+        );
+      };
+
+      // For now, just navigate directly (TODO: Implement generative UI confirmation)
+      await navigateWithIntent(navIntent);
+
+      return `I'd like to take you to the ${getPageTitle(destination)}. ${getIntentMessage(intent, destination)}`;
     },
   });
 
@@ -213,6 +273,60 @@ export function useCopilotNavigation() {
     parameters: [],
     handler: async () => {
       return `You are currently on: ${currentPage || "unknown page"}. This page offers various features and actions you can perform. What would you like to do here?`;
+    },
+  });
+
+  // Register action for showing post-response suggestions
+  useCopilotAction({
+    name: "showPostResponseSuggestions",
+    description: "Show contextual suggestion pills after responding to user",
+    parameters: [
+      {
+        name: "context",
+        type: "string",
+        description:
+          "Context about what was just discussed (ad_creation, analytics, navigation, etc.)",
+        required: true,
+      },
+      {
+        name: "customSuggestions",
+        type: "string",
+        description: "Optional JSON array of custom suggestions",
+        required: false,
+      },
+    ],
+    handler: async ({ context, customSuggestions = "[]" }) => {
+      console.log(
+        "[CopilotNavigation] 💊 Showing post-response suggestions for:",
+        context
+      );
+
+      // Parse custom suggestions if provided
+      let suggestions = [];
+      try {
+        suggestions = JSON.parse(customSuggestions);
+      } catch (e) {
+        console.warn("Failed to parse custom suggestions");
+      }
+
+      // Generate context-appropriate suggestions
+      const contextMap: Record<string, string[]> = {
+        ad_creation: ["Upload creative assets", "Preview ad", "Set budget"],
+        analytics: ["Export data", "Create alert", "Schedule report"],
+        navigation: ["Get help", "Show tutorials", "Quick actions"],
+        campaign: [
+          "Optimize targeting",
+          "Duplicate campaign",
+          "View performance",
+        ],
+      };
+
+      const suggestionTexts =
+        suggestions.length > 0
+          ? suggestions.map((s: any) => s.title || s)
+          : contextMap[context] || ["Get help", "Show suggestions"];
+
+      return `Here are some quick actions you might want to try:\n\n${suggestionTexts.map((s) => `• ${s}`).join("\n")}\n\nJust tell me what you'd like to do!`;
     },
   });
 }

@@ -24,6 +24,7 @@ export interface ApprovalItem {
   title: string;
   description: string;
   data: Record<string, any>;
+  status: "pending" | "approved" | "rejected" | "modified";
   context?: Record<string, any>;
   riskLevel?: "low" | "medium" | "high";
   requiresExplanation?: boolean;
@@ -331,6 +332,100 @@ export function useHumanInTheLoop() {
     };
   };
 
+  // Helper methods for item actions
+  const approveItem = useCallback(
+    async (itemId: string) => {
+      if (!currentWorkflow) return;
+
+      const item = currentWorkflow.items.find((i) => i.id === itemId);
+      if (!item) return;
+
+      // Update item status
+      setCurrentWorkflow((prev) =>
+        prev
+          ? {
+              ...prev,
+              items: prev.items.map((i) =>
+                i.id === itemId ? { ...i, status: "approved" } : i
+              ),
+            }
+          : null
+      );
+
+      // Move to next item
+      if (currentItemIndex < currentWorkflow.items.length - 1) {
+        setCurrentItemIndex((prev) => prev + 1);
+      }
+
+      await currentWorkflow.onApprove(itemId, {
+        approved: true,
+        timestamp: new Date().toISOString(),
+      });
+    },
+    [currentWorkflow, currentItemIndex]
+  );
+
+  const rejectItem = useCallback(
+    async (itemId: string, explanation?: string) => {
+      if (!currentWorkflow) return;
+
+      setCurrentWorkflow((prev) =>
+        prev
+          ? {
+              ...prev,
+              items: prev.items.map((i) =>
+                i.id === itemId ? { ...i, status: "rejected" } : i
+              ),
+            }
+          : null
+      );
+
+      await currentWorkflow.onReject(itemId, {
+        approved: false,
+        explanation,
+        timestamp: new Date().toISOString(),
+      });
+    },
+    [currentWorkflow]
+  );
+
+  const modifyItem = useCallback(
+    async (itemId: string, modifications: Record<string, any>) => {
+      if (!currentWorkflow || !currentWorkflow.onModify) return;
+
+      setCurrentWorkflow((prev) =>
+        prev
+          ? {
+              ...prev,
+              items: prev.items.map((i) =>
+                i.id === itemId
+                  ? {
+                      ...i,
+                      status: "modified",
+                      data: { ...i.data, ...modifications },
+                    }
+                  : i
+              ),
+            }
+          : null
+      );
+
+      await currentWorkflow.onModify(itemId, modifications);
+    },
+    [currentWorkflow]
+  );
+
+  const cancelWorkflow = useCallback(
+    (workflowId: string) => {
+      setActiveWorkflows((prev) => prev.filter((w) => w.id !== workflowId));
+      if (currentWorkflow?.id === workflowId) {
+        setCurrentWorkflow(null);
+        setCurrentItemIndex(0);
+      }
+    },
+    [currentWorkflow]
+  );
+
   return {
     // State
     activeWorkflows,
@@ -342,6 +437,10 @@ export function useHumanInTheLoop() {
     handleItemApproval,
     handleItemModification,
     completeWorkflow,
+    approveItem,
+    rejectItem,
+    modifyItem,
+    cancelWorkflow,
 
     // Utils
     getCurrentApprovalContext,
