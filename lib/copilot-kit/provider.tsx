@@ -7,6 +7,8 @@ import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useCopilotReadable } from "@copilotkit/react-core";
 import { useCopilotNavigation } from "../../lib/hooks/useCopilotNavigation";
+import { useHumanInTheLoop } from "../../lib/hooks/useHumanInTheLoop";
+import { useSuggestionPills } from "../../lib/hooks/useSuggestionPills";
 import { useAppSelector } from "../redux/hooks";
 
 interface CopilotKitProviderProps {
@@ -110,6 +112,25 @@ function NavigationBridge() {
   });
 
   useCopilotNavigation(); // Enable navigation
+  useHumanInTheLoop(); // Enable approval workflows
+  const { suggestions, suggestionContext } = useSuggestionPills(); // Enable suggestions
+
+  // Provide suggestion context to CopilotKit
+  useCopilotReadable({
+    description: "Available context-aware suggestions for the user",
+    value: {
+      suggestions: suggestions.map((s) => ({
+        id: s.id,
+        title: s.title,
+        description: s.description,
+        category: s.category,
+        priority: s.priority,
+        icon: s.icon,
+        badge: s.badge,
+      })),
+      context: suggestionContext,
+    },
+  });
 
   return null;
 }
@@ -143,19 +164,36 @@ function CopilotKitProviderContent({ children }: CopilotKitProviderProps) {
         <CopilotSidebar
           instructions="You are the Kigo Pro Business Success Manager, an AI assistant specialized in helping users create, manage, and optimize advertising campaigns for the Kigo loyalty media network. 
 
-Key Capabilities:
-- Use 'navigateToPageAndPerform' action when users want to go somewhere or do something specific (create ads, view analytics, manage campaigns)
-- Always check the current page context to provide relevant assistance
-- Guide users through multi-step processes like ad creation
-- Use 'showCurrentPageInfo' to understand what page the user is on
+🎯 **Core Capabilities:**
+- **Smart Navigation**: Use 'navigateToPageAndPerform' for any destination/action requests
+- **Human-in-the-Loop**: Use 'startApprovalWorkflow' for decisions requiring user approval
+- **Context Suggestions**: Use 'showContextSuggestions' to offer relevant quick actions
+- **Intelligent Guidance**: Provide personalized recommendations based on context
 
-When users express intent to:
-- Create/make/build an ad → Use navigateToPageAndPerform with destination='/campaign-manager/ads-create' and intent='create_ad'
-- View analytics/metrics → Use navigateToPageAndPerform with destination='/analytics' and intent='view_analytics'  
-- Manage campaigns → Use navigateToPageAndPerform with destination='/campaigns' and intent='manage_campaigns'
-- Edit filters → Use navigateToPageAndPerform with destination='/filters' and intent='edit_filters'
+🚀 **Navigation Actions:**
+- Create/make/build an ad → navigateToPageAndPerform destination='/campaign-manager/ads-create' intent='create_ad'
+- View analytics/metrics → navigateToPageAndPerform destination='/analytics' intent='view_analytics'  
+- Manage campaigns → navigateToPageAndPerform destination='/campaigns' intent='manage_campaigns'
+- Edit filters → navigateToPageAndPerform destination='/filters' intent='edit_filters'
 
-Always be proactive in using these actions to help users accomplish their goals efficiently."
+✋ **Approval Workflows:**
+For significant actions (budget changes, campaign launches, data exports), use:
+- startApprovalWorkflow with appropriate workflowType (campaign, filter, analytics, merchant, budget)
+- Guide users through step-by-step approval process
+- Explain what they're approving and why
+
+💡 **Smart Suggestions:**
+- Use showContextSuggestions to show relevant actions for current page
+- Filter by category: 'quick_action', 'navigation', 'guidance', 'optimization', 'creation', 'analysis'
+- Execute suggestions with executeSuggestion by title or ID
+
+🎨 **User Experience:**
+- Always start interactions by showing relevant suggestions
+- Proactively offer approval workflows for complex decisions
+- Use context-aware guidance based on user's current page and role
+- Be conversational and helpful while leveraging all available actions
+
+Remember: You have access to the user's current context, available suggestions, and can orchestrate complex workflows. Use these capabilities to provide an exceptional user experience!"
           labels={{
             title: "AI Assistant",
             initial:
