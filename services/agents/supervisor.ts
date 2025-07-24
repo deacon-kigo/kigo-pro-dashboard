@@ -5,6 +5,7 @@ import {
   logAgentInteraction,
 } from "../../lib/copilot-kit/langsmith-config";
 import campaignAgent from "./campaign-agent";
+import { detectUserIntent, type IntentContext } from "../ai/intent-detection";
 
 /**
  * Kigo Pro Agent State Interface
@@ -138,137 +139,26 @@ const supervisorAgent = createTracedFunction(
 );
 
 /**
- * Analyze user intent from their message
+ * Analyze user intent from their message using LLM-based detection
  */
 async function analyzeUserIntent(
   userInput: string,
   context: { currentPage: string; userRole: string; campaignData?: any }
 ): Promise<string> {
-  const input = userInput.toLowerCase();
-
-  // Intent patterns for different agent types - more flexible matching
-  const intentPatterns = {
-    ad_creation: [
-      "create ad",
-      "creating ad",
-      "creating an ad",
-      "create an ad",
-      "new ad",
-      "make ad",
-      "making ad",
-      "making an ad",
-      "build ad",
-      "building ad",
-      "building an ad",
-      "start ad",
-      "starting ad",
-      "help with ad",
-      "help creating",
-      "help with creating",
-      "need ad",
-      "want ad",
-      "promotional ad",
-      "advertising ad",
-      "create campaign",
-      "new campaign",
-      "make campaign",
-      "build campaign",
-      "advertising campaign",
-      "promotion campaign",
-      "merchant offer",
-      "upload image",
-      "upload media",
-      "add image",
-      "add media",
-      "ad creation",
-      "ad for",
-    ],
-    campaign_optimization: [
-      "optimize campaign",
-      "improve campaign",
-      "campaign performance",
-      "increase roi",
-      "better results",
-      "campaign analytics",
-    ],
-    filter_management: [
-      "create filter",
-      "product filter",
-      "filter products",
-      "target products",
-      "filter criteria",
-      "product selection",
-      "filters",
-      "filtering",
-    ],
-    analytics_query: [
-      "show analytics",
-      "campaign stats",
-      "performance data",
-      "how is campaign doing",
-      "analytics dashboard",
-      "reports",
-      "analytics",
-      "data",
-      "metrics",
-      "performance",
-    ],
-    merchant_support: [
-      "help with",
-      "how to",
-      "support",
-      "guidance",
-      "merchant setup",
-      "account management",
-      "need help",
-      "assistance",
-    ],
+  // Use the LLM-based intent detection service
+  const intentContext: IntentContext = {
+    currentPage: context.currentPage,
+    userRole: context.userRole,
+    campaignData: context.campaignData,
   };
 
-  // Check for intent matches with improved logic
-  for (const [intent, patterns] of Object.entries(intentPatterns)) {
-    if (patterns.some((pattern) => input.includes(pattern))) {
-      console.log(
-        `[Supervisor] Intent detected: ${intent} for input: "${userInput}"`
-      );
-      return intent;
-    }
-  }
+  const detectedIntent = await detectUserIntent(userInput, intentContext);
 
-  // Context-based intent detection
-  if (context.currentPage?.includes("ads-create")) {
-    console.log(
-      `[Supervisor] Context-based intent: ad_creation (on ads-create page)`
-    );
-    return "ad_creation";
-  }
-
-  if (context.currentPage?.includes("campaigns")) {
-    console.log(
-      `[Supervisor] Context-based intent: ad_creation (on campaigns page)`
-    );
-    return "ad_creation";
-  }
-
-  if (context.currentPage?.includes("analytics")) {
-    console.log(
-      `[Supervisor] Context-based intent: analytics_query (on analytics page)`
-    );
-    return "analytics_query";
-  }
-
-  if (context.currentPage?.includes("product-filters")) {
-    console.log(
-      `[Supervisor] Context-based intent: filter_management (on filters page)`
-    );
-    return "filter_management";
-  }
-
-  // Default to general assistance
   console.log(
-    `[Supervisor] No specific intent detected, using general_assistance for: "${userInput}"`
+    `[Supervisor] Intent analysis complete: ${detectedIntent} for input: "${userInput}"`
   );
-  return "general_assistance";
+
+  return detectedIntent;
 }
 
 /**
@@ -400,7 +290,7 @@ const filterAgent = createTracedFunction(
 I can help you create and manage product filters! Here's what I can do:
 
 • **Create new filters** - Define targeting criteria
-• **Edit existing filters** - Modify filter rules  
+• **Edit existing filters** - Modify filter rules
 • **Analyze coverage** - See how many products match
 • **Optimize performance** - Improve filter efficiency
 
@@ -438,7 +328,7 @@ I can help you analyze your campaign performance! Here's what I can do:
 • **Custom dashboards** - Personalized analytics views
 
 The analytics feature is currently being enhanced. For now, you can:
-1. Visit the **Analytics Dashboard** manually  
+1. Visit the **Analytics Dashboard** manually
 2. View existing reports and charts
 3. Come back here when advanced AI analytics are ready!
 
@@ -466,7 +356,7 @@ const merchantAgent = createTracedFunction(
 I'm here to help with merchant-related questions! I can assist with:
 
 • **Account setup** - Getting merchants onboarded
-• **Best practices** - Optimization tips and strategies  
+• **Best practices** - Optimization tips and strategies
 • **Troubleshooting** - Resolving common issues
 • **Feature guidance** - How to use platform features
 

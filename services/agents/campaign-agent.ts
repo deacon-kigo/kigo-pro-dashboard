@@ -1,559 +1,339 @@
-import { AIMessage } from "@langchain/core/messages";
-import {
-  createTracedFunction,
-  logAgentInteraction,
-} from "../../lib/copilot-kit/langsmith-config";
+import { BaseMessage, AIMessage } from "@langchain/core/messages";
+import { createTracedFunction } from "../../lib/copilot-kit/langsmith-config";
 import { KigoProAgentState } from "./supervisor";
 import { store } from "../../lib/redux/store";
-import { addAd, updateBasicInfo } from "../../lib/redux/slices/campaignSlice";
 import {
-  setCurrentPage,
-  addNotification,
-  highlightComponent,
+  addAd,
   setLoading,
+  addNotification,
+  setCurrentPage,
+  highlightComponent,
 } from "../../lib/redux/slices/uiSlice";
+
+// Ad requirements interface
+interface AdRequirements {
+  adName?: string;
+  merchant?: string;
+  offer?: string;
+  mediaType?: string[];
+  costPerActivation?: number;
+  costPerRedemption?: number;
+  completeness: number;
+}
+
+// Mock data for merchants and offers
+const AVAILABLE_MERCHANTS = [
+  "Starbucks",
+  "McDonald's",
+  "Target",
+  "Best Buy",
+  "Nike",
+];
+const AVAILABLE_OFFERS = {
+  Starbucks: [
+    "20% off any drink",
+    "Buy one get one free",
+    "Free pastry with drink",
+  ],
+  "McDonald's": ["$1 off Big Mac", "Free fries with purchase", "20% off meal"],
+  Target: ["10% off electronics", "15% off clothing", "Free shipping"],
+  "Best Buy": ["$50 off laptops", "20% off accessories", "Extended warranty"],
+  Nike: ["25% off shoes", "Free shipping", "15% off athletic wear"],
+};
 
 /**
  * Campaign Agent
  *
- * Specialized agent for ad creation through conversational interface.
- * Handles requirements capture, image uploads, form pre-filling, and navigation.
- */
-
-interface AdRequirements {
-  adName?: string;
-  merchantId?: string;
-  merchantName?: string;
-  offerId?: string;
-  offerName?: string;
-  mediaTypes?: string[];
-  mediaAssets?: Array<{
-    id: string;
-    name: string;
-    type: string;
-    size: number;
-    url: string;
-    mediaType: string;
-  }>;
-  costPerActivation?: number;
-  costPerRedemption?: number;
-  collectionStatus?: "complete" | "partial" | "started";
-}
-
-// Mock data for merchants and offers (would come from API in real app)
-const MOCK_MERCHANTS = [
-  { id: "m1", name: "Starbucks Coffee", dba: "Starbucks" },
-  { id: "m2", name: "McDonald's Corporation", dba: "McDonald's" },
-  { id: "m3", name: "Target Corporation", dba: "Target" },
-  { id: "m4", name: "Best Buy Co., Inc.", dba: "Best Buy" },
-  { id: "m5", name: "Nike, Inc.", dba: "Nike" },
-];
-
-const MOCK_OFFERS = {
-  m1: [
-    {
-      id: "mcm_o1_2023",
-      name: "Buy one get one free coffee",
-      shortText: "BOGO Coffee",
-    },
-    { id: "mcm_o2_2023", name: "$5 off orders $20+", shortText: "$5 off $20+" },
-  ],
-  m2: [
-    {
-      id: "mcm_o3_2023",
-      name: "Free fries with any burger",
-      shortText: "Free Fries",
-    },
-    {
-      id: "mcm_o4_2023",
-      name: "20% off Happy Meals",
-      shortText: "20% off Happy Meals",
-    },
-  ],
-  m3: [
-    {
-      id: "mcm_o5_2023",
-      name: "15% off clothing",
-      shortText: "15% off Clothing",
-    },
-    {
-      id: "mcm_o6_2023",
-      name: "Free shipping on $35+",
-      shortText: "Free Shipping",
-    },
-  ],
-  m4: [
-    {
-      id: "mcm_o7_2023",
-      name: "$100 off laptops",
-      shortText: "$100 off Laptops",
-    },
-    {
-      id: "mcm_o8_2023",
-      name: "Extended warranty included",
-      shortText: "Extended Warranty",
-    },
-  ],
-  m5: [
-    {
-      id: "mcm_o9_2023",
-      name: "Buy 2 get 1 free shoes",
-      shortText: "B2G1 Shoes",
-    },
-    {
-      id: "mcm_o10_2023",
-      name: "Free Nike+ membership",
-      shortText: "Free Nike+",
-    },
-  ],
-};
-
-const MEDIA_TYPES = [
-  {
-    id: "display_banner",
-    label: "Display Banner",
-    dimensions: "728x90",
-    requiresAsset: true,
-  },
-  {
-    id: "double_decker",
-    label: "Double Decker",
-    dimensions: "728x180",
-    requiresAsset: true,
-  },
-  {
-    id: "native",
-    label: "Native (Text Only)",
-    dimensions: "Text Only",
-    requiresAsset: false,
-  },
-];
-
-/**
- * Main Campaign Agent Function
+ * Specialized agent for ad creation, campaign management, and optimization.
+ * Enhanced to leverage CopilotKit SDK actions for navigation and UI control.
  */
 const campaignAgent = createTracedFunction(
   "campaign_agent",
   async (state: KigoProAgentState): Promise<Partial<KigoProAgentState>> => {
-    const { messages, workflowData, context } = state;
+    const { messages, context } = state;
+
+    // Get the latest user message
     const latestMessage = messages[messages.length - 1];
     const userInput = latestMessage.content as string;
 
-    try {
-      // Extract or initialize ad requirements from workflow data
-      const adRequirements: AdRequirements = workflowData.adRequirements || {
-        collectionStatus: "started",
-      };
+    // Analyze user input for ad creation intent
+    const analysis = analyzeUserInputForAdCreation(userInput);
 
-      // Analyze what information we need to collect
-      const analysisResult = await analyzeUserInputForAdCreation(
-        userInput,
-        adRequirements
-      );
+    // Check if user wants to create an ad and is not on the ad creation page
+    if (
+      analysis.intent === "create_ad" &&
+      context.currentPage !== "/campaign-manager/ads-create"
+    ) {
+      const response = new AIMessage({
+        content: `I'd be happy to help you create an ad! Let me navigate you to the ad creation page where we can build your ad together step by step.
 
-      // Update requirements based on analysis
-      const updatedRequirements = {
-        ...adRequirements,
-        ...analysisResult.extractedData,
-      };
-
-      // Determine next step in the conversation
-      const conversationFlow =
-        determineNextConversationStep(updatedRequirements);
-
-      let response: AIMessage;
-
-      if (conversationFlow.action === "ask_questions") {
-        response = await generateQuestionResponse(
-          conversationFlow.questions || [],
-          updatedRequirements
-        );
-      } else if (conversationFlow.action === "show_preview") {
-        response = await generatePreviewResponse(updatedRequirements);
-      } else if (conversationFlow.action === "create_ad") {
-        response = await handleAdCreation(updatedRequirements);
-      } else {
-        response = await generateHelpResponse();
-      }
-
-      // Log interaction for observability
-      logAgentInteraction(
-        "campaign_agent",
-        { userInput, currentRequirements: adRequirements },
-        {
-          response: response.content,
-          updatedRequirements,
-          nextAction: conversationFlow.action,
-        },
-        {
-          step: conversationFlow.action,
-          completeness: calculateCompleteness(updatedRequirements),
-        }
-      );
+I'll use the navigateToPageAndPerform action to take you there and provide guidance along the way.`,
+      });
 
       return {
         messages: [...messages, response],
         workflowData: {
-          ...workflowData,
-          adRequirements: updatedRequirements,
-          conversationFlow,
-        },
-      };
-    } catch (error) {
-      console.error("Campaign agent error:", error);
-
-      const errorResponse = new AIMessage({
-        content: `I apologize, but I encountered an error while processing your ad creation request. Let me help you start over.
-
-What type of ad would you like to create? I can help you with:
-• Display Banner ads
-• Double Decker ads  
-• Native text ads
-
-Just tell me what you have in mind!`,
-      });
-
-      return {
-        messages: [...messages, errorResponse],
-        workflowData: {
-          ...workflowData,
-          error: error instanceof Error ? error.message : "Unknown error",
+          ...state.workflowData,
+          suggestedAction: "navigateToPageAndPerform",
+          actionParams: {
+            destination: "/campaign-manager/ads-create",
+            intent: "create_ad",
+            context: {
+              source: "campaign_agent",
+              userIntent: "ad_creation",
+            },
+            preActions: "showGuidance",
+            postActions: "highlightField",
+          },
         },
       };
     }
+
+    // If already on ad creation page, help with the form
+    if (context.currentPage === "/campaign-manager/ads-create") {
+      const requirements = extractAdRequirements(userInput);
+      const nextStep = determineNextConversationStep(requirements);
+
+      let responseContent = "";
+
+      switch (nextStep) {
+        case "ask_for_name":
+          responseContent = generateQuestionResponse("adName", requirements);
+          break;
+        case "ask_for_merchant":
+          responseContent = generateQuestionResponse("merchant", requirements);
+          break;
+        case "ask_for_offer":
+          responseContent = generateQuestionResponse("offer", requirements);
+          break;
+        case "ask_for_media_type":
+          responseContent = generateQuestionResponse("mediaType", requirements);
+          break;
+        case "ask_for_costs":
+          responseContent = generateQuestionResponse("costs", requirements);
+          break;
+        case "show_preview":
+          responseContent = generatePreviewResponse(requirements);
+          break;
+        case "create_ad":
+          return await handleAdCreation(requirements, messages);
+        case "help":
+        default:
+          responseContent = generateHelpResponse();
+      }
+
+      const response = new AIMessage({ content: responseContent });
+      return { messages: [...messages, response] };
+    }
+
+    // General campaign assistance
+    const response = new AIMessage({
+      content: `I'm here to help with your campaigns and ads! I can assist you with:
+
+• **Creating new ads** - I'll guide you through the entire process
+• **Optimizing campaigns** - Improve performance and targeting  
+• **Managing existing ads** - Edit or update your current ads
+
+What would you like to work on today? If you'd like to create an ad, just let me know and I'll navigate you to the ad creation page!`,
+    });
+
+    return {
+      messages: [...messages, response],
+    };
   }
 );
 
-/**
- * Analyze user input to extract ad creation information
- */
-async function analyzeUserInputForAdCreation(
-  userInput: string,
-  currentRequirements: AdRequirements
-): Promise<{ extractedData: Partial<AdRequirements>; confidence: number }> {
-  const input = userInput.toLowerCase();
-  const extractedData: Partial<AdRequirements> = {};
+// Helper functions (keeping the existing logic but simplified)
+
+function analyzeUserInputForAdCreation(input: string): {
+  intent: string;
+  confidence: number;
+} {
+  const createAdKeywords = [
+    "create ad",
+    "new ad",
+    "make ad",
+    "build ad",
+    "add ad",
+    "creating an ad",
+  ];
+  const normalizedInput = input.toLowerCase();
+
+  for (const keyword of createAdKeywords) {
+    if (normalizedInput.includes(keyword)) {
+      return { intent: "create_ad", confidence: 0.9 };
+    }
+  }
+
+  return { intent: "general", confidence: 0.5 };
+}
+
+function extractAdRequirements(input: string): AdRequirements {
+  const requirements: AdRequirements = { completeness: 0 };
 
   // Extract ad name
-  const adNamePatterns = [
-    /(?:ad|campaign) (?:name|called|named) (?:is |would be )?["""]?([^"""]+)["""]?/i,
-    /(?:call|name) (?:it|this|the ad) ["""]?([^"""]+)["""]?/i,
-    /["""]([^"""]+)["""] (?:ad|campaign)/i,
-  ];
+  const nameMatch = input.match(
+    /(?:ad (?:name|called)|name.*ad).*?["\']([^"\']+)["\']|(?:call it|name it)\s+([a-zA-Z\s]+)/i
+  );
+  if (nameMatch) {
+    requirements.adName = nameMatch[1] || nameMatch[2];
+  }
 
-  for (const pattern of adNamePatterns) {
-    const match = userInput.match(pattern);
-    if (match && match[1]) {
-      extractedData.adName = match[1].trim();
+  // Extract merchant
+  for (const merchant of AVAILABLE_MERCHANTS) {
+    if (input.toLowerCase().includes(merchant.toLowerCase())) {
+      requirements.merchant = merchant;
       break;
     }
   }
 
-  // Extract merchant information
-  const mentionedMerchants = MOCK_MERCHANTS.filter(
-    (merchant) =>
-      input.includes(merchant.name.toLowerCase()) ||
-      input.includes(merchant.dba.toLowerCase())
+  // Calculate completeness
+  let fields = 0;
+  if (requirements.adName) fields++;
+  if (requirements.merchant) fields++;
+  if (requirements.offer) fields++;
+  if (requirements.mediaType) fields++;
+
+  requirements.completeness = (fields / 4) * 100;
+
+  return requirements;
+}
+
+function determineNextConversationStep(requirements: AdRequirements): string {
+  if (!requirements.adName) return "ask_for_name";
+  if (!requirements.merchant) return "ask_for_merchant";
+  if (!requirements.offer) return "ask_for_offer";
+  if (!requirements.mediaType) return "ask_for_media_type";
+  if (!requirements.costPerActivation || !requirements.costPerRedemption)
+    return "ask_for_costs";
+
+  if (requirements.completeness >= 80) return "show_preview";
+  return "help";
+}
+
+function generateQuestionResponse(
+  field: string,
+  requirements: AdRequirements
+): string {
+  switch (field) {
+    case "adName":
+      return "Great! Let's start creating your ad. What would you like to name this ad?";
+
+    case "merchant":
+      return `Perfect! Now, which merchant is this ad for? Please choose from: ${AVAILABLE_MERCHANTS.join(", ")}.`;
+
+    case "offer":
+      if (requirements.merchant && AVAILABLE_OFFERS[requirements.merchant]) {
+        return `Excellent choice with ${requirements.merchant}! What offer would you like to promote? Here are some options: ${AVAILABLE_OFFERS[requirements.merchant].join(", ")}.`;
+      }
+      return "What offer or promotion would you like this ad to feature?";
+
+    case "mediaType":
+      return "What type of media would you like to use for this ad? Options include: Image, Video, or both.";
+
+    case "costs":
+      return "Finally, let's set the costs. What would you like the cost per activation and cost per redemption to be?";
+
+    default:
+      return "I need a bit more information to help you create this ad.";
+  }
+}
+
+function generatePreviewResponse(requirements: AdRequirements): string {
+  return `Perfect! Here's a preview of your ad:
+
+**Ad Name:** ${requirements.adName}
+**Merchant:** ${requirements.merchant}
+**Offer:** ${requirements.offer || "To be determined"}
+**Media Type:** ${requirements.mediaType?.join(", ") || "Image"}
+**Cost per Activation:** $${requirements.costPerActivation || "0.50"}
+**Cost per Redemption:** $${requirements.costPerRedemption || "2.00"}
+
+Does this look good? Say "create it" to proceed with creating the ad!`;
+}
+
+async function handleAdCreation(
+  requirements: AdRequirements,
+  messages: BaseMessage[]
+): Promise<Partial<KigoProAgentState>> {
+  // Dispatch Redux actions to create the ad
+  store.dispatch(
+    setLoading({ isLoading: true, message: "Creating your ad..." })
   );
 
-  if (mentionedMerchants.length === 1) {
-    extractedData.merchantId = mentionedMerchants[0].id;
-    extractedData.merchantName = mentionedMerchants[0].dba;
-  }
-
-  // Extract media type preferences
-  if (input.includes("banner") && !input.includes("double")) {
-    extractedData.mediaTypes = ["display_banner"];
-  } else if (
-    input.includes("double decker") ||
-    input.includes("double-decker")
-  ) {
-    extractedData.mediaTypes = ["double_decker"];
-  } else if (input.includes("text") || input.includes("native")) {
-    extractedData.mediaTypes = ["native"];
-  } else if (input.includes("image") || input.includes("visual")) {
-    extractedData.mediaTypes = ["display_banner", "double_decker"];
-  }
-
-  // Extract budget/cost information
-  const budgetMatch = userInput.match(/\$?(\d+(?:\.\d{2})?)/);
-  if (budgetMatch) {
-    const amount = parseFloat(budgetMatch[1]);
-    if (input.includes("activation") || input.includes("click")) {
-      extractedData.costPerActivation = amount;
-    } else if (input.includes("redemption") || input.includes("conversion")) {
-      extractedData.costPerRedemption = amount;
-    }
-  }
-
-  return {
-    extractedData,
-    confidence: Object.keys(extractedData).length > 0 ? 0.8 : 0.3,
-  };
-}
-
-/**
- * Determine what questions to ask next
- */
-function determineNextConversationStep(requirements: AdRequirements): {
-  action: "ask_questions" | "show_preview" | "create_ad" | "help";
-  questions?: string[];
-  missingFields?: string[];
-} {
-  const missingFields: string[] = [];
-
-  if (!requirements.adName) missingFields.push("adName");
-  if (!requirements.merchantId) missingFields.push("merchantId");
-  if (!requirements.offerId) missingFields.push("offerId");
-  if (!requirements.mediaTypes || requirements.mediaTypes.length === 0)
-    missingFields.push("mediaTypes");
-  if (!requirements.costPerActivation) missingFields.push("costPerActivation");
-  if (!requirements.costPerRedemption) missingFields.push("costPerRedemption");
-
-  // Check if media assets are needed
-  const needsAssets =
-    requirements.mediaTypes?.some(
-      (type) => MEDIA_TYPES.find((mt) => mt.id === type)?.requiresAsset
-    ) || false;
-
-  if (
-    needsAssets &&
-    (!requirements.mediaAssets || requirements.mediaAssets.length === 0)
-  ) {
-    missingFields.push("mediaAssets");
-  }
-
-  if (missingFields.length === 0) {
-    return { action: "show_preview" };
-  }
-
-  if (missingFields.length <= 2) {
-    return {
-      action: "ask_questions",
-      questions: generateQuestionsForFields(missingFields),
-      missingFields,
-    };
-  }
-
-  return {
-    action: "ask_questions",
-    questions: generateQuestionsForFields(missingFields.slice(0, 2)),
-    missingFields,
-  };
-}
-
-/**
- * Generate specific questions for missing fields
- */
-function generateQuestionsForFields(fields: string[]): string[] {
-  const questionMap: Record<string, string> = {
-    adName: "What would you like to name this ad?",
-    merchantId: `Which merchant is this ad for? I can help with: ${MOCK_MERCHANTS.map((m) => m.dba).join(", ")}`,
-    offerId: "Which specific offer would you like to promote?",
-    mediaTypes:
-      "What type of ad format would you prefer?\n• **Display Banner** (728x90) - Standard banner with image\n• **Double Decker** (728x180) - Larger banner with more space\n• **Native** - Text-only ad that blends with content",
-    costPerActivation:
-      "What would you like to pay per click/activation? (e.g., $2.50)",
-    costPerRedemption:
-      "What would you like to pay per redemption/conversion? (e.g., $5.00)",
-    mediaAssets:
-      "I'll need you to upload an image for your banner ad. Please upload your creative asset when you're ready.",
-  };
-
-  return fields.map((field) => questionMap[field] || `Please provide ${field}`);
-}
-
-/**
- * Generate response with questions
- */
-async function generateQuestionResponse(
-  questions: string[],
-  requirements: AdRequirements
-): Promise<AIMessage> {
-  const progress = calculateCompleteness(requirements);
-  const progressBar =
-    "▓".repeat(Math.floor(progress * 10)) +
-    "░".repeat(10 - Math.floor(progress * 10));
-
-  let content = `🎯 **Creating Your Ad** (${Math.round(progress * 100)}% complete)\n${progressBar}\n\n`;
-
-  if (questions.length === 1) {
-    content += questions[0];
-  } else {
-    content += "I need a few more details:\n\n";
-    questions.forEach((question, index) => {
-      content += `${index + 1}. ${question}\n`;
-    });
-  }
-
-  // Add context about current requirements
-  if (requirements.adName) {
-    content += `\n📝 **Ad Name:** ${requirements.adName}`;
-  }
-  if (requirements.merchantName) {
-    content += `\n🏪 **Merchant:** ${requirements.merchantName}`;
-  }
-  if (requirements.mediaTypes && requirements.mediaTypes.length > 0) {
-    content += `\n🎨 **Format:** ${requirements.mediaTypes
-      .map((type) => MEDIA_TYPES.find((mt) => mt.id === type)?.label)
-      .join(", ")}`;
-  }
-
-  return new AIMessage({ content });
-}
-
-/**
- * Generate preview response when all requirements are collected
- */
-async function generatePreviewResponse(
-  requirements: AdRequirements
-): Promise<AIMessage> {
-  const merchant = MOCK_MERCHANTS.find((m) => m.id === requirements.merchantId);
-  const offers =
-    MOCK_OFFERS[requirements.merchantId as keyof typeof MOCK_OFFERS] || [];
-  const offer = offers.find((o) => o.id === requirements.offerId);
-
-  const content = `🎉 **Perfect! Your ad is ready to create:**
-
-📱 **Ad Details:**
-• **Name:** ${requirements.adName}
-• **Merchant:** ${merchant?.dba}
-• **Offer:** ${offer?.name || "Selected offer"}
-• **Format:** ${requirements.mediaTypes
-    ?.map((type) => MEDIA_TYPES.find((mt) => mt.id === type)?.label)
-    .join(", ")}
-• **Cost per Activation:** $${requirements.costPerActivation}
-• **Cost per Redemption:** $${requirements.costPerRedemption}
-
-🚀 **Next Steps:**
-Would you like me to:
-1. **Create this ad now** - I'll navigate you to the ad creation page and fill everything out
-2. **Make changes** - Modify any details before creating
-3. **Start over** - Begin with a different ad
-
-Just let me know what you'd prefer!`;
-
-  return new AIMessage({ content });
-}
-
-/**
- * Handle the actual ad creation process
- */
-async function handleAdCreation(
-  requirements: AdRequirements
-): Promise<AIMessage> {
   try {
-    // Dispatch loading state
-    store.dispatch(
-      setLoading({ isLoading: true, message: "Creating your ad..." })
-    );
-
-    // Create the ad object
+    // Create new ad object
     const newAd = {
       id: `ad_${Date.now()}`,
-      name: requirements.adName!,
-      merchantId: requirements.merchantId!,
-      merchantName: requirements.merchantName!,
-      offerId: requirements.offerId!,
-      mediaType: requirements.mediaTypes!,
-      mediaAssets: (requirements.mediaAssets || []).map((asset) => ({
-        ...asset,
-        previewUrl: asset.url, // Add missing previewUrl field
-      })),
-      costPerActivation: requirements.costPerActivation!,
-      costPerRedemption: requirements.costPerRedemption!,
+      name: requirements.adName || "New Ad",
+      merchantId: "default",
+      merchantName: requirements.merchant || "Unknown",
+      offerId: "default",
+      mediaType: requirements.mediaType || ["image"],
+      mediaAssets: [],
+      costPerActivation: requirements.costPerActivation || 0.5,
+      costPerRedemption: requirements.costPerRedemption || 2.0,
     };
 
-    // Add to Redux store
+    // Add the ad to store
     store.dispatch(addAd(newAd));
 
     // Show success notification
     store.dispatch(
       addNotification({
-        message: `Ad "${requirements.adName}" created successfully!`,
+        message: `Successfully created ad "${newAd.name}" for ${newAd.merchantName}!`,
         type: "success",
       })
     );
 
-    // Navigate to ad creation page with pre-filled form
-    setTimeout(() => {
-      store.dispatch(setCurrentPage("/ads/create"));
-      store.dispatch(highlightComponent("ad-form"));
-      store.dispatch(setLoading({ isLoading: false, message: "" }));
-    }, 1500);
+    // Highlight the new ad (if there's a component to highlight)
+    store.dispatch(highlightComponent("ad-list"));
 
-    return new AIMessage({
-      content: `🎉 **Success!** 
+    const response = new AIMessage({
+      content: `🎉 Excellent! I've successfully created your ad "${requirements.adName}" for ${requirements.merchant}!
 
-I've created your ad "${requirements.adName}" and I'm taking you to the ad creation page where everything will be pre-filled for you.
+Your ad has been added to your campaigns and is ready to go. You can now:
+• Preview how it will look to customers
+• Set up additional targeting options  
+• Launch it when you're ready
 
-You'll be able to review all the details and make any final adjustments before publishing.
-
-*Navigating to ad creation page...*`,
+Is there anything else you'd like to do with this ad or would you like to create another one?`,
     });
+
+    return {
+      messages: [...messages, response],
+    };
   } catch (error) {
-    store.dispatch(setLoading({ isLoading: false, message: "" }));
-    console.error("Error creating ad:", error);
+    store.dispatch(
+      addNotification({
+        message: "Failed to create ad. Please try again.",
+        type: "error",
+      })
+    );
 
-    return new AIMessage({
-      content: `❌ I encountered an error while creating your ad. Please try again or let me know if you'd like to start over.`,
+    const errorResponse = new AIMessage({
+      content:
+        "I encountered an error while creating your ad. Please try again or let me know if you need assistance.",
     });
+
+    return {
+      messages: [...messages, errorResponse],
+    };
+  } finally {
+    store.dispatch(setLoading({ isLoading: false }));
   }
 }
 
-/**
- * Generate help response
- */
-async function generateHelpResponse(): Promise<AIMessage> {
-  return new AIMessage({
-    content: `👋 **I'm here to help you create ads!**
+function generateHelpResponse(): string {
+  return `I'm here to help you create an amazing ad! To get started, I'll need:
 
-I can guide you through creating:
-• **Display Banner ads** (728x90 with images)
-• **Double Decker ads** (728x180 with images)  
-• **Native ads** (text-only)
+1. **Ad Name** - What would you like to call this ad?
+2. **Merchant** - Which business is this for? (${AVAILABLE_MERCHANTS.join(", ")})
+3. **Offer** - What promotion or offer will you feature?
+4. **Media Type** - Will you use images, video, or both?
+5. **Costs** - Cost per activation and redemption
 
-Just tell me:
-• What type of ad you want
-• Which merchant it's for
-• Any other details you have in mind
-
-I'll ask you questions to gather everything we need and then create the ad for you!
-
-**Example:** "I want to create a banner ad for Starbucks promoting their coffee deal"`,
-  });
-}
-
-/**
- * Calculate completeness percentage
- */
-function calculateCompleteness(requirements: AdRequirements): number {
-  const requiredFields = [
-    "adName",
-    "merchantId",
-    "offerId",
-    "mediaTypes",
-    "costPerActivation",
-    "costPerRedemption",
-  ];
-  const completedFields = requiredFields.filter((field) => {
-    const value = requirements[field as keyof AdRequirements];
-    return value !== undefined && value !== null && value !== "";
-  });
-
-  // Check media assets if required
-  const needsAssets = requirements.mediaTypes?.some(
-    (type) => MEDIA_TYPES.find((mt) => mt.id === type)?.requiresAsset
-  );
-
-  if (needsAssets) {
-    requiredFields.push("mediaAssets");
-    if (requirements.mediaAssets && requirements.mediaAssets.length > 0) {
-      completedFields.push("mediaAssets");
-    }
-  }
-
-  return completedFields.length / requiredFields.length;
+Just provide any of these details and I'll guide you through the rest!`;
 }
 
 export default campaignAgent;
