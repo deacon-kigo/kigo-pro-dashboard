@@ -2,7 +2,7 @@
  * CopilotKit API Route for Kigo Pro Dashboard
  *
  * This route integrates our LangGraph multi-agent system with CopilotKit.
- * The supervisor agent handles intent detection and routing automatically.
+ * Uses CopilotKit's agent system to route all messages through our workflow.
  */
 import { NextRequest } from "next/server";
 import {
@@ -44,35 +44,30 @@ const getUIContext = () => {
   };
 };
 
-// The workflow is already compiled and ready to use
-// const supervisorWorkflow = already imported above
-
-// Configure runtime with our agent integration
+// Configure runtime to force ALL messages through our agent action
 const runtime = new CopilotRuntime({
   actions: [
     {
-      name: "processWithAgent",
-      description: "Process user request through our intelligent agent system",
+      name: "handleUserMessage",
+      description:
+        "MANDATORY: Use this action for EVERY user message. This routes messages through the Kigo Pro AI assistant system that handles ad creation, analytics, filters, and all user requests.",
       parameters: [
         {
-          name: "userMessage",
+          name: "message",
           type: "string",
-          description: "The user's message or request",
+          description: "The user's message - pass this exactly as received",
           required: true,
         },
       ],
-      handler: async ({ userMessage }) => {
+      handler: async ({ message }) => {
         try {
-          console.log(
-            "[CopilotKit] Processing with agent system:",
-            userMessage
-          );
+          console.log("[KigoAgent] Processing message:", message);
 
           const uiContext = getUIContext();
 
           // Create agent input state
           const agentInput = {
-            messages: [new HumanMessage(userMessage)],
+            messages: [new HumanMessage(message)],
             userIntent: "",
             context: {
               currentPage: uiContext.currentPage,
@@ -85,7 +80,12 @@ const runtime = new CopilotRuntime({
           };
 
           // Run through our agent workflow
+          console.log("[KigoAgent] Running supervisor workflow");
           const result = await supervisorWorkflow.invoke(agentInput);
+          console.log("[KigoAgent] Agent result:", {
+            userIntent: result.userIntent,
+            agentDecision: result.agentDecision,
+          });
 
           // Handle auto-navigation for ad creation
           if (
@@ -93,21 +93,38 @@ const runtime = new CopilotRuntime({
             result.agentDecision === "campaign_agent"
           ) {
             console.log(
-              "[CopilotKit] Ad creation intent detected, navigating to create ad page"
+              "[KigoAgent] ✅ Ad creation detected! Setting navigation..."
             );
-            setTimeout(() => {
-              store.dispatch(setCurrentPage("/campaign-manager/ads-create"));
-            }, 500);
+            console.log(
+              "[KigoAgent] Dispatching setCurrentPage('/campaign-manager/ads-create')"
+            );
+
+            // Dispatch immediately (no setTimeout)
+            store.dispatch(setCurrentPage("/campaign-manager/ads-create"));
+
+            // Log Redux state after dispatch
+            const newState = store.getState();
+            console.log("[KigoAgent] Redux state after dispatch:", {
+              currentPage: newState.ui.currentPage,
+              chatOpen: newState.ui.chatOpen,
+            });
+          } else {
+            console.log(
+              "[KigoAgent] ❌ No navigation triggered. Intent:",
+              result.userIntent,
+              "Decision:",
+              result.agentDecision
+            );
           }
 
-          // Return the agent's response
-          const lastMessage = result.messages[result.messages.length - 1];
+          // Return agent response
+          const lastAgentMessage = result.messages[result.messages.length - 1];
           return (
-            lastMessage?.content || "I'm here to help with your campaigns!"
+            lastAgentMessage?.content || "I'm here to help with your campaigns!"
           );
         } catch (error) {
-          console.error("[CopilotKit] Agent processing error:", error);
-          return "I apologize, but I encountered an error. Please try again or let me know how I can help with your campaigns.";
+          console.error("[KigoAgent] Error:", error);
+          return "I apologize for the error. How can I help you with your campaigns?";
         }
       },
     },
@@ -116,7 +133,7 @@ const runtime = new CopilotRuntime({
 
 // Export POST handler
 export const POST = async (req: NextRequest) => {
-  console.log("[CopilotKit] Processing request to /api/copilotkit");
+  console.log("[CopilotKit] Kigo agent action available");
 
   const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({
     runtime,
