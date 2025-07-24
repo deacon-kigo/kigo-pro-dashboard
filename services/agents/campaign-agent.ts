@@ -3,12 +3,12 @@ import { createTracedFunction } from "../../lib/copilot-kit/langsmith-config";
 import { KigoProAgentState } from "./supervisor";
 import { store } from "../../lib/redux/store";
 import {
-  addAd,
   setLoading,
   addNotification,
   setCurrentPage,
   highlightComponent,
 } from "../../lib/redux/slices/uiSlice";
+import { addAd } from "../../lib/redux/slices/campaignSlice";
 
 // Ad requirements interface
 interface AdRequirements {
