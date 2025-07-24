@@ -345,6 +345,105 @@ Error: ${error || "Unknown error occurred"}`,
 );
 
 /**
+ * Filter Agent (Stub Implementation)
+ * TODO: Implement full filter management functionality
+ */
+const filterAgent = createTracedFunction(
+  "filter_agent",
+  async (state: KigoProAgentState): Promise<Partial<KigoProAgentState>> => {
+    const { messages } = state;
+
+    const response = new AIMessage({
+      content: `🎯 **Product Filter Management**
+
+I can help you create and manage product filters! Here's what I can do:
+
+• **Create new filters** - Define targeting criteria
+• **Edit existing filters** - Modify filter rules  
+• **Analyze coverage** - See how many products match
+• **Optimize performance** - Improve filter efficiency
+
+The filter management feature is currently being enhanced. For now, you can:
+1. Visit the **Product Filters** page manually
+2. Create filters using the existing form interface
+3. Come back here when the feature is ready!
+
+What specific filtering task would you like help with?`,
+    });
+
+    return {
+      messages: [...messages, response],
+    };
+  }
+);
+
+/**
+ * Analytics Agent (Stub Implementation)
+ * TODO: Implement full analytics and reporting functionality
+ */
+const analyticsAgent = createTracedFunction(
+  "analytics_agent",
+  async (state: KigoProAgentState): Promise<Partial<KigoProAgentState>> => {
+    const { messages } = state;
+
+    const response = new AIMessage({
+      content: `📊 **Campaign Analytics & Insights**
+
+I can help you analyze your campaign performance! Here's what I can do:
+
+• **Performance reports** - ROI, conversions, click-through rates
+• **Trend analysis** - Track performance over time
+• **Optimization suggestions** - Improve campaign results
+• **Custom dashboards** - Personalized analytics views
+
+The analytics feature is currently being enhanced. For now, you can:
+1. Visit the **Analytics Dashboard** manually  
+2. View existing reports and charts
+3. Come back here when advanced AI analytics are ready!
+
+What specific metrics would you like to analyze?`,
+    });
+
+    return {
+      messages: [...messages, response],
+    };
+  }
+);
+
+/**
+ * Merchant Agent (Stub Implementation)
+ * TODO: Implement full merchant support and guidance functionality
+ */
+const merchantAgent = createTracedFunction(
+  "merchant_agent",
+  async (state: KigoProAgentState): Promise<Partial<KigoProAgentState>> => {
+    const { messages } = state;
+
+    const response = new AIMessage({
+      content: `🏪 **Merchant Support & Guidance**
+
+I'm here to help with merchant-related questions! I can assist with:
+
+• **Account setup** - Getting merchants onboarded
+• **Best practices** - Optimization tips and strategies  
+• **Troubleshooting** - Resolving common issues
+• **Feature guidance** - How to use platform features
+
+The merchant support feature is currently being enhanced. For now, you can:
+1. Check the **Help Documentation**
+2. Contact support directly for urgent issues
+3. Come back here when AI-powered support is ready!
+
+What merchant-related question can I help you with?`,
+    });
+
+    return {
+      messages: [...messages, response],
+    };
+  }
+);
+
+/**
  * Create and export the supervisor workflow
  */
 export const createSupervisorWorkflow = () => {
@@ -354,11 +453,17 @@ export const createSupervisorWorkflow = () => {
     .addNode("campaign_agent", campaignAgent)
     .addNode("general_assistant", generalAssistant)
     .addNode("error_handler", errorHandler)
+    .addNode("filter_agent", filterAgent)
+    .addNode("analytics_agent", analyticsAgent)
+    .addNode("merchant_agent", merchantAgent)
     .addEdge(START, "supervisor")
     .addConditionalEdges("supervisor", routeToAgent)
     .addEdge("campaign_agent", END)
     .addEdge("general_assistant", END)
-    .addEdge("error_handler", END);
+    .addEdge("error_handler", END)
+    .addEdge("filter_agent", END)
+    .addEdge("analytics_agent", END)
+    .addEdge("merchant_agent", END);
 
   // Compile workflow with LangSmith tracing configuration
   const compiledWorkflow = workflow.compile();
