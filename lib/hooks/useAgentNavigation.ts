@@ -14,6 +14,22 @@ export function useAgentNavigation() {
   const currentPage = useAppSelector((state) => state.ui.currentPage);
   const previousPage = useRef<string>("");
 
+  console.log("[Agent Navigation] 🔧 Hook called! Current setup:", {
+    currentPage,
+    previousPage: previousPage.current,
+    hasRouter: !!router,
+  });
+
+  // Log initial hook setup
+  useEffect(() => {
+    console.log(
+      "[Agent Navigation] 🚀 Hook initialized! Chat sidebar is loaded and hook is active."
+    );
+    return () => {
+      console.log("[Agent Navigation] 🔄 Hook unmounted.");
+    };
+  }, []);
+
   // Log every state change for debugging
   console.log(
     "[Agent Navigation] Hook render - currentPage:",

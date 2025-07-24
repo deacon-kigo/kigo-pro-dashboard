@@ -12,25 +12,16 @@ import {
 } from "@copilotkit/runtime";
 import OpenAI from "openai";
 import { store } from "@/lib/redux/store";
-import supervisorWorkflow from "@/services/agents/supervisor";
-import { setCurrentPage } from "@/lib/redux/slices/uiSlice";
+import { createSupervisorWorkflow } from "@/services/agents/supervisor";
 import { HumanMessage } from "@langchain/core/messages";
 
-// Initialize OpenAI client with error handling
-if (!process.env.OPENAI_API_KEY) {
-  throw new Error("OPENAI_API_KEY environment variable is required");
-}
-
+// Initialize OpenAI
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-console.log("[CopilotKit] Configuration:", {
-  langsmithTracing: process.env.LANGCHAIN_TRACING_V2 === "true",
-  project: process.env.LANGCHAIN_PROJECT,
-  hasApiKey: !!process.env.LANGSMITH_API_KEY,
-  agentWorkflowEnabled: true,
-});
+// Create workflow instance
+const supervisorWorkflow = createSupervisorWorkflow();
 
 // Helper function to get current UI context for agents
 const getUIContext = () => {
@@ -44,28 +35,31 @@ const getUIContext = () => {
   };
 };
 
-// Configure runtime to force ALL messages through our agent action
+// Configure runtime with enhanced actions
 const runtime = new CopilotRuntime({
   actions: [
     {
       name: "handleUserMessage",
       description:
-        "MANDATORY: Use this action for EVERY user message. This routes messages through the Kigo Pro AI assistant system that handles ad creation, analytics, filters, and all user requests.",
+        "Process user messages through the Kigo Pro AI assistant system and determine the appropriate response and actions.",
       parameters: [
         {
           name: "message",
           type: "string",
-          description: "The user's message - pass this exactly as received",
+          description: "The exact user message to process",
           required: true,
         },
       ],
       handler: async ({ message }) => {
+        console.log("[CopilotKit] 🚀 PROCESSING MESSAGE:", message);
+
         try {
-          console.log("[KigoAgent] Processing message:", message);
-
           const uiContext = getUIContext();
+          console.log("[CopilotKit] Server Redux state:", {
+            currentPage: uiContext.currentPage,
+            hasOtherData: !!uiContext.campaignForm,
+          });
 
-          // Create agent input state
           const agentInput = {
             messages: [new HumanMessage(message)],
             userIntent: "",
@@ -79,52 +73,27 @@ const runtime = new CopilotRuntime({
             workflowData: {},
           };
 
-          // Run through our agent workflow
-          console.log("[KigoAgent] Running supervisor workflow");
+          console.log(
+            "[CopilotKit] Using currentPage:",
+            agentInput.context.currentPage
+          );
           const result = await supervisorWorkflow.invoke(agentInput);
-          console.log("[KigoAgent] Agent result:", {
+          console.log("[CopilotKit] Agent result:", {
             userIntent: result.userIntent,
             agentDecision: result.agentDecision,
           });
 
-          // Handle auto-navigation for ad creation
-          if (
-            result.userIntent === "ad_creation" ||
-            result.agentDecision === "campaign_agent"
-          ) {
-            console.log(
-              "[KigoAgent] ✅ Ad creation detected! Setting navigation..."
-            );
-            console.log(
-              "[KigoAgent] Dispatching setCurrentPage('/campaign-manager/ads-create')"
-            );
-
-            // Dispatch immediately (no setTimeout)
-            store.dispatch(setCurrentPage("/campaign-manager/ads-create"));
-
-            // Log Redux state after dispatch
-            const newState = store.getState();
-            console.log("[KigoAgent] Redux state after dispatch:", {
-              currentPage: newState.ui.currentPage,
-              chatOpen: newState.ui.chatOpen,
-            });
-          } else {
-            console.log(
-              "[KigoAgent] ❌ No navigation triggered. Intent:",
-              result.userIntent,
-              "Decision:",
-              result.agentDecision
-            );
-          }
-
-          // Return agent response
+          // Just return the agent response - let CopilotKit handle action calling
           const lastAgentMessage = result.messages[result.messages.length - 1];
-          return (
-            lastAgentMessage?.content || "I'm here to help with your campaigns!"
-          );
+          const response =
+            lastAgentMessage?.content ||
+            "I'm here to help with your campaigns!";
+
+          console.log("[CopilotKit] ✅ Returning agent response:", response);
+          return response;
         } catch (error) {
-          console.error("[KigoAgent] Error:", error);
-          return "I apologize for the error. How can I help you with your campaigns?";
+          console.error("[CopilotKit] Error:", error);
+          return "I apologize, but I encountered an error. Please try again or let me know how I can help with your campaigns.";
         }
       },
     },
@@ -133,7 +102,9 @@ const runtime = new CopilotRuntime({
 
 // Export POST handler
 export const POST = async (req: NextRequest) => {
-  console.log("[CopilotKit] Kigo agent action available");
+  console.log(
+    "[CopilotKit] Enhanced Kigo agent with CopilotKit SDK actions available"
+  );
 
   const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({
     runtime,
