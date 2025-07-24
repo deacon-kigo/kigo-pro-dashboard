@@ -1,9 +1,10 @@
-import { StateGraph, START, END } from "@langchain/langgraph";
+import { StateGraph, START, END, Annotation } from "@langchain/langgraph";
 import { BaseMessage, HumanMessage, AIMessage } from "@langchain/core/messages";
 import {
   createTracedFunction,
   logAgentInteraction,
 } from "../../lib/copilot-kit/langsmith-config";
+import campaignAgent from "./campaign-agent";
 
 /**
  * Kigo Pro Agent State Interface
@@ -26,31 +27,96 @@ export interface KigoProAgentState {
 }
 
 /**
+ * Define state schema using LangGraph Annotation
+ *
+ * This schema supports both Studio and production input formats:
+ * - Studio: Simple { messages: BaseMessage[] }
+ * - Production: Full KigoProAgentState with context
+ */
+const KigoProStateAnnotation = Annotation.Root({
+  messages: Annotation<BaseMessage[]>({
+    reducer: (x: BaseMessage[], y: BaseMessage[]) => x.concat(y),
+    default: () => [],
+  }),
+  userIntent: Annotation<string>({
+    reducer: (x: string, y: string) => y ?? x,
+    default: () => "",
+  }),
+  context: Annotation<{
+    currentPage: string;
+    userRole: string;
+    campaignData?: any;
+    sessionId: string;
+  }>({
+    reducer: (x: any, y: any) => ({ ...x, ...y }),
+    default: () => ({
+      currentPage: "studio",
+      userRole: "admin",
+      sessionId: `session_${Date.now()}`,
+    }),
+  }),
+  agentDecision: Annotation<string>({
+    reducer: (x: string, y: string) => y ?? x,
+    default: () => "",
+  }),
+  workflowData: Annotation<any>({
+    reducer: (x: any, y: any) => ({ ...x, ...y }),
+    default: () => ({}),
+  }),
+  error: Annotation<string>({
+    reducer: (x: string, y: string) => y ?? x,
+    default: () => "",
+  }),
+});
+
+/**
  * Supervisor Agent
  *
  * The supervisor agent analyzes user input and routes to appropriate
  * specialist agents based on intent and context.
+ *
+ * Supports both:
+ * - Studio input: { messages: BaseMessage[] }
+ * - Production input: Full KigoProAgentState
  */
 const supervisorAgent = createTracedFunction(
   "supervisor_agent",
-  async (state: KigoProAgentState): Promise<Partial<KigoProAgentState>> => {
-    const { messages, context } = state;
-
+  async (
+    state: Partial<KigoProAgentState>
+  ): Promise<Partial<KigoProAgentState>> => {
     try {
+      // Handle both Studio and production input formats
+      const { messages = [], context } = state;
+
+      // Ensure we have complete context (auto-create for Studio)
+      const fullContext = {
+        currentPage: context?.currentPage || "studio",
+        userRole: context?.userRole || "admin",
+        sessionId: context?.sessionId || `session_${Date.now()}`,
+        campaignData: context?.campaignData,
+      };
+
       // Get the latest user message
+      if (messages.length === 0) {
+        return {
+          agentDecision: "general_assistant",
+          context: fullContext,
+        };
+      }
+
       const latestMessage = messages[messages.length - 1];
       const userInput = latestMessage.content as string;
 
       // Analyze user intent
-      const intent = await analyzeUserIntent(userInput, context);
+      const intent = await analyzeUserIntent(userInput, fullContext);
 
       // Determine routing decision
-      const decision = determineAgentRouting(intent, context);
+      const decision = determineAgentRouting(intent, fullContext);
 
       // Log interaction to LangSmith
       logAgentInteraction(
         "supervisor",
-        { userInput, context },
+        { userInput, context: fullContext },
         { intent, decision },
         { routing: decision }
       );
@@ -58,6 +124,7 @@ const supervisorAgent = createTracedFunction(
       return {
         userIntent: intent,
         agentDecision: decision,
+        context: fullContext,
         workflowData: extractWorkflowData(userInput, intent),
       };
     } catch (error) {
@@ -81,16 +148,25 @@ async function analyzeUserIntent(
 
   // Intent patterns for different agent types
   const intentPatterns = {
-    campaign_creation: [
-      "create campaign",
-      "new campaign",
+    ad_creation: [
       "create ad",
       "new ad",
+      "make ad",
+      "build ad",
+      "start ad",
+      "promotional ad",
+      "advertising ad",
+      "create campaign",
+      "new campaign",
       "make campaign",
       "build campaign",
-      "start campaign",
-      "promotional campaign",
       "advertising campaign",
+      "promotion campaign",
+      "merchant offer",
+      "upload image",
+      "upload media",
+      "add image",
+      "add media",
     ],
     campaign_optimization: [
       "optimize campaign",
@@ -135,7 +211,11 @@ async function analyzeUserIntent(
 
   // Context-based intent detection
   if (context.currentPage?.includes("ads-create")) {
-    return "campaign_creation";
+    return "ad_creation";
+  }
+
+  if (context.currentPage?.includes("campaigns")) {
+    return "ad_creation";
   }
 
   if (context.currentPage?.includes("analytics")) {
@@ -158,9 +238,10 @@ function determineAgentRouting(
   context: { currentPage: string; userRole: string; campaignData?: any }
 ): string {
   switch (intent) {
+    case "ad_creation":
     case "campaign_creation":
     case "campaign_optimization":
-      return "ad_creation_agent";
+      return "campaign_agent";
 
     case "filter_management":
       return "filter_agent";
@@ -267,45 +348,17 @@ Error: ${error || "Unknown error occurred"}`,
  * Create and export the supervisor workflow
  */
 export const createSupervisorWorkflow = () => {
-  const workflow = new StateGraph<KigoProAgentState>({
-    channels: {
-      messages: {
-        value: (x: BaseMessage[], y: BaseMessage[]) => x.concat(y),
-        default: () => [],
-      },
-      userIntent: {
-        value: (x: string, y: string) => y ?? x,
-        default: () => "",
-      },
-      context: {
-        value: (x: any, y: any) => ({ ...x, ...y }),
-        default: () => ({}),
-      },
-      agentDecision: {
-        value: (x: string, y: string) => y ?? x,
-        default: () => "",
-      },
-      workflowData: {
-        value: (x: any, y: any) => ({ ...x, ...y }),
-        default: () => ({}),
-      },
-      error: {
-        value: (x: string, y: string) => y ?? x,
-        default: () => "",
-      },
-    },
-  });
-
-  // Add nodes
-  workflow.addNode("supervisor", supervisorAgent);
-  workflow.addNode("general_assistant", generalAssistant);
-  workflow.addNode("error_handler", errorHandler);
-
-  // Add edges
-  workflow.addEdge(START, "supervisor");
-  workflow.addConditionalEdges("supervisor", routeToAgent);
-  workflow.addEdge("general_assistant", END);
-  workflow.addEdge("error_handler", END);
+  // Use our custom state annotation
+  const workflow = new StateGraph(KigoProStateAnnotation)
+    .addNode("supervisor", supervisorAgent)
+    .addNode("campaign_agent", campaignAgent)
+    .addNode("general_assistant", generalAssistant)
+    .addNode("error_handler", errorHandler)
+    .addEdge(START, "supervisor")
+    .addConditionalEdges("supervisor", routeToAgent)
+    .addEdge("campaign_agent", END)
+    .addEdge("general_assistant", END)
+    .addEdge("error_handler", END);
 
   // Compile workflow with LangSmith tracing configuration
   const compiledWorkflow = workflow.compile();
@@ -319,4 +372,5 @@ export const createSupervisorWorkflow = () => {
   return compiledWorkflow;
 };
 
-export default createSupervisorWorkflow;
+// Export the compiled workflow as default for LangGraph Studio
+export default createSupervisorWorkflow();

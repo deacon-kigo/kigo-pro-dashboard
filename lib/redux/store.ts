@@ -12,10 +12,12 @@ import productFilterReducer from "./slices/productFilterSlice";
 import campaignReducer from "./slices/campaignSlice";
 import assignmentReducer from "./slices/assignmentSlice";
 import programSelectionReducer from "./slices/programSelectionSlice";
+import agentReducer from "./slices/agentSlice";
 import { useDispatch } from "react-redux";
 import { ActionWithType } from "../../types/redux";
 import aiAssistantMiddleware from "./middleware/ai-assistantMiddleware";
 import campaignAssistantMiddleware from "./middleware/campaign-assistantMiddleware";
+import { agentWorkflowMiddleware } from "./middleware/agent-workflow-middleware";
 import { ProductFilterState } from "./slices/productFilterSlice";
 
 // Simple flag to disable all middleware logging if needed
@@ -65,6 +67,7 @@ export function makeStore() {
       campaign: campaignReducer,
       assignment: assignmentReducer,
       programSelection: programSelectionReducer,
+      agent: agentReducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
@@ -88,7 +91,8 @@ export function makeStore() {
       }).concat(
         demoActionLoggerMiddleware,
         aiAssistantMiddleware as any,
-        campaignAssistantMiddleware as any
+        campaignAssistantMiddleware as any,
+        agentWorkflowMiddleware
       ),
     // Enable Redux DevTools in development
     devTools: process.env.NODE_ENV !== "production",
