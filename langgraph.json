@@ -1,10 +1,7 @@
 {
-  "dependencies": [
-    "./services/agents/supervisor.ts",
-    "./services/agents/ad-creation.ts"
-  ],
+  "dependencies": ["."],
   "graphs": {
-    "supervisor": "./services/agents/supervisor.ts:createSupervisorWorkflow"
+    "kigo_supervisor": "./services/agents/supervisor.ts"
   },
   "env": ".env.local"
 }

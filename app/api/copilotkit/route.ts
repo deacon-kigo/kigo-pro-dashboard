@@ -1,16 +1,14 @@
 /**
  * CopilotKit API Route for Kigo Pro Dashboard
  *
- * This route provides AI assistant functionality with local actions.
- * Inspired by CopilotKit examples with improvements for:
- * - Better error handling
- * - Environment validation
- * - LangSmith observability integration
- * - Structured logging
+ * This route provides a clean interface between CopilotKit and our agent workflows.
+ * Business logic is handled by LangGraph agents that dispatch Redux actions directly.
  *
- * Future considerations:
- * - Migrate to langGraphPlatformEndpoint for complex agent workflows
- * - Implement remote agent endpoints
+ * Architecture:
+ * - CopilotKit handles UI interaction and streaming
+ * - Agent workflows handle business logic and state updates
+ * - Redux serves as the single source of truth
+ * - Agents can manipulate UI through Redux actions
  */
 import { NextRequest } from "next/server";
 import {
@@ -19,33 +17,46 @@ import {
   copilotRuntimeNextJSAppRouterEndpoint,
 } from "@copilotkit/runtime";
 import OpenAI from "openai";
+import { store } from "@/lib/redux/store";
+import { agentActions } from "@/lib/redux/actions/agent-actions";
 
 // Initialize OpenAI client with error handling
 if (!process.env.OPENAI_API_KEY) {
   throw new Error("OPENAI_API_KEY environment variable is required");
 }
 
-// Initialize OpenAI client
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Create service adapter
 const serviceAdapter = new OpenAIAdapter({ openai });
 
 console.log("[CopilotKit] Configuration:", {
   langsmithTracing: process.env.LANGCHAIN_TRACING_V2 === "true",
   project: process.env.LANGCHAIN_PROJECT,
   hasApiKey: !!process.env.LANGSMITH_API_KEY,
-  manualTracingDisabled: true,
+  agentWorkflowEnabled: true,
 });
 
-// Configure runtime with actions
+// Helper function to get current UI context for agents
+const getUIContext = () => {
+  const state = store.getState();
+  return {
+    currentPage: state.ui?.currentPage || "unknown",
+    activeFilters: state.productFilter || {},
+    campaignForm: state.campaign?.formData || {},
+    visibleComponents: state.ui?.visibleComponents || [],
+    userContext: state.user || {},
+  };
+};
+
+// Configure runtime with clean agent-triggering actions
 const runtime = new CopilotRuntime({
   actions: [
     {
       name: "createCampaign",
-      description: "Create a new advertising campaign",
+      description:
+        "Create a new advertising campaign with intelligent form filling and navigation",
       parameters: [
         {
           name: "campaignName",
@@ -67,23 +78,26 @@ const runtime = new CopilotRuntime({
         },
       ],
       handler: async ({ campaignName, budget, targetAudience }) => {
-        const inputs = { campaignName, budget, targetAudience };
+        console.log("[CopilotKit] Triggering campaign agent workflow");
 
-        // TODO: Call internal API route /api/agents/campaign
-        // For now, simple mock implementation
-        console.log("[CopilotKit] Creating campaign:", inputs);
+        // Dispatch to agent workflow - no business logic here!
+        store.dispatch(
+          agentActions.triggerWorkflow({
+            agentType: "campaign",
+            action: "createCampaign",
+            userInput: { campaignName, budget, targetAudience },
+            uiContext: getUIContext(),
+          })
+        );
 
-        const result = `✅ Campaign "${campaignName}" created with $${budget} budget${targetAudience ? ` targeting ${targetAudience}` : ""}`;
-
-        // Log to LangSmith
-        // CopilotKit will automatically log this action
-
-        return result;
+        // Agent will handle the actual logic and UI updates
+        return `🤖 Campaign agent is processing your request for "${campaignName}"...`;
       },
     },
     {
       name: "getAnalytics",
-      description: "Get analytics and performance data for campaigns",
+      description:
+        "Get analytics and performance data with smart visualization and navigation",
       parameters: [
         {
           name: "campaignId",
@@ -98,31 +112,38 @@ const runtime = new CopilotRuntime({
             "Date range for analytics (e.g., 'last 7 days', 'this month')",
           required: false,
         },
+        {
+          name: "visualizationType",
+          type: "string",
+          description: "How to display the data: 'chart', 'table', 'dashboard'",
+          required: false,
+        },
       ],
-      handler: async ({ campaignId, dateRange }) => {
-        const inputs = { campaignId, dateRange };
+      handler: async ({ campaignId, dateRange, visualizationType }) => {
+        console.log("[CopilotKit] Triggering analytics agent workflow");
 
-        // TODO: Call internal API route /api/agents/analytics
-        console.log("[CopilotKit] Getting analytics:", inputs);
+        store.dispatch(
+          agentActions.triggerWorkflow({
+            agentType: "analytics",
+            action: "getAnalytics",
+            userInput: { campaignId, dateRange, visualizationType },
+            uiContext: getUIContext(),
+          })
+        );
 
-        const period = dateRange || "last 7 days";
-        const campaign = campaignId || "all campaigns";
-        const result = `📊 Analytics for ${campaign} (${period}): 15K impressions, 750 clicks, 3.2% CTR, $0.85 CPC`;
-
-        // Log to LangSmith
-        // CopilotKit will automatically log this action
-
-        return result;
+        return `📊 Analytics agent is gathering data and preparing visualizations...`;
       },
     },
     {
       name: "manageFilters",
-      description: "Manage product filters and targeting options",
+      description:
+        "Intelligently manage product filters with UI updates and smart suggestions",
       parameters: [
         {
           name: "action",
           type: "string",
-          description: "Action to perform: 'list', 'add', 'remove', 'update'",
+          description:
+            "Action to perform: 'list', 'add', 'remove', 'update', 'optimize'",
           required: true,
         },
         {
@@ -140,33 +161,63 @@ const runtime = new CopilotRuntime({
         },
       ],
       handler: async ({ action, filterType, filterValue }) => {
-        const inputs = { action, filterType, filterValue };
+        console.log("[CopilotKit] Triggering filter agent workflow");
 
-        // TODO: Call internal API route /api/agents/filters
-        console.log("[CopilotKit] Managing filters:", inputs);
+        store.dispatch(
+          agentActions.triggerWorkflow({
+            agentType: "filter",
+            action: "manageFilters",
+            userInput: { action, filterType, filterValue },
+            uiContext: getUIContext(),
+          })
+        );
 
-        let result: string;
-        if (action === "list") {
-          result = `🎯 Current filters: Electronics (category), $50-500 (price), Samsung, Apple (brands)`;
-        } else {
-          result = `✅ Filter ${action} completed: ${filterType} = ${filterValue}`;
-        }
+        return `🎯 Filter agent is optimizing your targeting options...`;
+      },
+    },
+    {
+      name: "navigateAndAssist",
+      description:
+        "Navigate the user to different pages and provide contextual assistance",
+      parameters: [
+        {
+          name: "destination",
+          type: "string",
+          description:
+            "Where to navigate: 'campaigns', 'analytics', 'filters', 'dashboard'",
+          required: true,
+        },
+        {
+          name: "assistanceType",
+          type: "string",
+          description:
+            "Type of help needed: 'setup', 'optimization', 'analysis', 'troubleshooting'",
+          required: false,
+        },
+      ],
+      handler: async ({ destination, assistanceType }) => {
+        console.log(
+          "[CopilotKit] Triggering navigation and assistance workflow"
+        );
 
-        // Log to LangSmith
-        // CopilotKit will automatically log this action
+        store.dispatch(
+          agentActions.triggerWorkflow({
+            agentType: "supervisor",
+            action: "navigateAndAssist",
+            userInput: { destination, assistanceType },
+            uiContext: getUIContext(),
+          })
+        );
 
-        return result;
+        return `🧭 Taking you to ${destination} and setting up assistance...`;
       },
     },
   ],
 });
 
-// Export POST handler
+// Export POST handler - clean and simple
 export const POST = async (req: NextRequest) => {
   console.log("[CopilotKit] Processing request to /api/copilotkit");
-
-  // Log request to LangSmith if enabled
-  // CopilotKit will automatically log this request
 
   const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({
     runtime,

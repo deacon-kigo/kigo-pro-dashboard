@@ -31,6 +31,23 @@ export interface UIState {
 
   // Product filter dropdown states
   openDropdowns: Record<string, boolean>;
+
+  // Agent navigation and UI control
+  currentPage: string;
+  visibleComponents: string[];
+  highlightedComponents: string[];
+  notifications: Array<{
+    id: string;
+    message: string;
+    type: "success" | "error" | "info" | "warning";
+    timestamp: number;
+  }>;
+  activeModal: {
+    type: string;
+    data?: any;
+  } | null;
+  isLoading: boolean;
+  loadingMessage: string;
 }
 
 const initialState: UIState = {
@@ -44,6 +61,14 @@ const initialState: UIState = {
   demoSelectorCollapsed: false,
   isHydrated: false,
   openDropdowns: {},
+  // Agent control properties
+  currentPage: "/",
+  visibleComponents: [],
+  highlightedComponents: [],
+  notifications: [],
+  activeModal: null,
+  isLoading: false,
+  loadingMessage: "",
 };
 
 // Theme definitions - composable and extensible
@@ -180,6 +205,91 @@ export const uiSlice = createSlice({
     clearAllDropdowns: (state) => {
       state.openDropdowns = {};
     },
+
+    // Agent control actions
+    setCurrentPage: (state, action: PayloadAction<string>) => {
+      state.currentPage = action.payload;
+    },
+
+    setVisibleComponents: (state, action: PayloadAction<string[]>) => {
+      state.visibleComponents = action.payload;
+    },
+
+    addVisibleComponent: (state, action: PayloadAction<string>) => {
+      if (!state.visibleComponents.includes(action.payload)) {
+        state.visibleComponents.push(action.payload);
+      }
+    },
+
+    removeVisibleComponent: (state, action: PayloadAction<string>) => {
+      state.visibleComponents = state.visibleComponents.filter(
+        (id) => id !== action.payload
+      );
+    },
+
+    highlightComponent: (state, action: PayloadAction<string>) => {
+      if (!state.highlightedComponents.includes(action.payload)) {
+        state.highlightedComponents.push(action.payload);
+      }
+    },
+
+    unhighlightComponent: (state, action: PayloadAction<string>) => {
+      state.highlightedComponents = state.highlightedComponents.filter(
+        (id) => id !== action.payload
+      );
+    },
+
+    clearHighlights: (state) => {
+      state.highlightedComponents = [];
+    },
+
+    addNotification: (
+      state,
+      action: PayloadAction<{
+        message: string;
+        type: "success" | "error" | "info" | "warning";
+      }>
+    ) => {
+      const notification = {
+        id: `notification_${Date.now()}`,
+        message: action.payload.message,
+        type: action.payload.type,
+        timestamp: Date.now(),
+      };
+      state.notifications.push(notification);
+    },
+
+    removeNotification: (state, action: PayloadAction<string>) => {
+      state.notifications = state.notifications.filter(
+        (notif) => notif.id !== action.payload
+      );
+    },
+
+    clearNotifications: (state) => {
+      state.notifications = [];
+    },
+
+    setActiveModal: (
+      state,
+      action: PayloadAction<{
+        type: string;
+        data?: any;
+      } | null>
+    ) => {
+      state.activeModal = action.payload;
+    },
+
+    closeModal: (state) => {
+      state.activeModal = null;
+    },
+
+    setLoading: (
+      state,
+      action: PayloadAction<{ isLoading: boolean; message?: string }>
+    ) => {
+      state.isLoading = action.payload.isLoading;
+      state.loadingMessage = action.payload.message || "";
+    },
   },
 });
 
@@ -202,6 +312,20 @@ export const {
   setDemoSelectorCollapsed,
   setDropdownOpen,
   clearAllDropdowns,
+  // Agent control actions
+  setCurrentPage,
+  setVisibleComponents,
+  addVisibleComponent,
+  removeVisibleComponent,
+  highlightComponent,
+  unhighlightComponent,
+  clearHighlights,
+  addNotification,
+  removeNotification,
+  clearNotifications,
+  setActiveModal,
+  closeModal,
+  setLoading,
 } = uiSlice.actions;
 
 export default uiSlice.reducer;
