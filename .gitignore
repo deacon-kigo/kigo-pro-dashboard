@@ -46,8 +46,8 @@ next-env.d.ts
 # Local Netlify folder
 .netlify
 
-# Documentation (dev use only)
-/docs/
+# Documentation is now included in repo
+# /docs/
 
 # LangGraph API
 .langgraph_api
