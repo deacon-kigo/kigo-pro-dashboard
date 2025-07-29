@@ -380,8 +380,19 @@ def create_supervisor_workflow():
     # Set entry point
     workflow.set_entry_point("supervisor")
     
-    # Add conditional edges from supervisor
-    workflow.add_conditional_edges("supervisor", route_to_agent)
+    # Add conditional edges from supervisor with explicit mapping
+    workflow.add_conditional_edges(
+        "supervisor", 
+        route_to_agent,
+        {
+            "campaign_agent": "campaign_agent",
+            "general_assistant": "general_assistant", 
+            "error_handler": "error_handler",
+            "filter_agent": "filter_agent",
+            "analytics_agent": "analytics_agent",
+            "merchant_agent": "merchant_agent",
+        }
+    )
     
     # All agents end the workflow
     workflow.add_edge("campaign_agent", END)
