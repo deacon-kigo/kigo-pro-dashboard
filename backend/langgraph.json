@@ -1,0 +1,7 @@
+{
+  "dependencies": [".", "python-dotenv"],
+  "graphs": {
+    "supervisor": "./app/agents/supervisor.py:create_supervisor_workflow"
+  },
+  "env": ".env"
+}
