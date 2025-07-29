@@ -6,7 +6,7 @@ This supervisor analyzes user intent and routes to appropriate specialist agents
 """
 
 from typing import TypedDict, Annotated, List, Any, Optional
-from langgraph import StateGraph, START, END
+from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 import asyncio
