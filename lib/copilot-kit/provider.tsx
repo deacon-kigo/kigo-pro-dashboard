@@ -27,8 +27,8 @@ function NavigationBridge() {
   });
 
   // Register all CopilotKit actions
-  // TEMPORARILY DISABLED: Force everything through LangGraph
-  // useCopilotActions();
+  // Re-enabled for Python backend testing
+  useCopilotActions();
 
   // Provide comprehensive context to CopilotKit
   useCopilotReadable({
