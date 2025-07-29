@@ -8,9 +8,19 @@ This supervisor analyzes user intent and routes to appropriate specialist agents
 from typing import TypedDict, Annotated, List, Any, Optional
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage
+from langchain_openai import ChatOpenAI
 import asyncio
 import os
+import re
+from datetime import datetime
+
+# Initialize OpenAI model
+llm = ChatOpenAI(
+    model="gpt-4-turbo",
+    temperature=0.7,
+    max_tokens=1000,
+)
 
 # State definition
 class KigoProAgentState(TypedDict):
@@ -23,28 +33,54 @@ class KigoProAgentState(TypedDict):
 
 async def detect_user_intent(user_input: str, context: dict) -> str:
     """
-    Simple intent detection - this would connect to your existing service
-    For now, using keyword-based detection
+    AI-powered intent detection using OpenAI LLM
     """
-    user_input_lower = user_input.lower()
+    current_page = context.get("currentPage", "/")
     
-    # Campaign/Ad creation intents
-    if any(word in user_input_lower for word in ["create ad", "new ad", "campaign", "advertisement"]):
-        return "ad_creation"
-    
-    # Analytics intents  
-    if any(word in user_input_lower for word in ["analytics", "performance", "metrics", "report", "stats"]):
-        return "analytics_query"
-    
-    # Filter management intents
-    if any(word in user_input_lower for word in ["filter", "targeting", "audience", "segment"]):
-        return "filter_management"
-    
-    # Merchant support intents
-    if any(word in user_input_lower for word in ["merchant", "business", "account", "setup"]):
-        return "merchant_support"
-    
-    return "general_assistance"
+    intent_prompt = f"""You are an intent classifier for the Kigo Pro advertising platform. 
+Analyze the user's message and classify it into one of these categories:
+
+**Available Intents:**
+- ad_creation: User wants to create a new ad or advertising campaign
+- analytics_query: User wants to see performance data, metrics, or reports  
+- filter_management: User wants to create/manage product filters or targeting
+- merchant_support: User needs help with merchant account or business setup
+- general_assistance: General questions or help requests
+
+**Context:**
+- Current page: {current_page}
+- User message: "{user_input}"
+
+Respond with ONLY the intent category name (e.g., "ad_creation"). No explanation needed."""
+
+    try:
+        response = await llm.ainvoke([
+            SystemMessage(content=intent_prompt),
+            HumanMessage(content=user_input)
+        ])
+        
+        intent = response.content.strip().lower()
+        
+        # Validate intent
+        valid_intents = ["ad_creation", "analytics_query", "filter_management", "merchant_support", "general_assistance"]
+        if intent in valid_intents:
+            return intent
+        else:
+            return "general_assistance"
+            
+    except Exception as e:
+        print(f"Intent detection error: {e}")
+        # Fallback to keyword detection
+        user_input_lower = user_input.lower()
+        if any(word in user_input_lower for word in ["create ad", "new ad", "campaign", "advertisement"]):
+            return "ad_creation"
+        elif any(word in user_input_lower for word in ["analytics", "performance", "metrics", "report", "stats"]):
+            return "analytics_query"
+        elif any(word in user_input_lower for word in ["filter", "targeting", "audience", "segment"]):
+            return "filter_management"
+        elif any(word in user_input_lower for word in ["merchant", "business", "account", "setup"]):
+            return "merchant_support"
+        return "general_assistance"
 
 def extract_workflow_data(user_input: str, intent: str) -> dict:
     """Extract relevant data from user input based on intent"""

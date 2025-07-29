@@ -11,8 +11,6 @@ import {
   copilotRuntimeNextJSAppRouterEndpoint,
 } from "@copilotkit/runtime";
 import OpenAI from "openai";
-import { HumanMessage } from "@langchain/core/messages";
-import { createSupervisorWorkflow } from "../../../services/agents/supervisor";
 
 // Initialize OpenAI
 const openai = new OpenAI({
@@ -50,56 +48,56 @@ async function executeQueuedActions(actions: any[]) {
 }
 
 // Configure runtime to route all messages through LangGraph
+// Function to call Python LangGraph backend
+async function callPythonBackend(message: string, context: any) {
+  try {
+    const appContext = extractAppContext(context);
+
+    console.log("[CopilotKit] 🐍 Calling Python LangGraph backend:", {
+      message,
+      contextKeys: Object.keys(appContext),
+    });
+
+    const response = await fetch("http://localhost:8000/api/copilotkit/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message,
+        context: appContext,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Backend responded with ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log("[CopilotKit] ✅ Python backend response:", result);
+
+    return result.message || "I'm not sure how to respond to that.";
+  } catch (error) {
+    console.error("[CopilotKit] ❌ Error calling Python backend:", error);
+    return "I encountered an error processing your request. Please try again or contact support.";
+  }
+}
+
 const runtime = new CopilotRuntime({
   actions: [
     {
       name: "handleUserMessage",
-      description: "Process all user messages through LangGraph system",
+      description: "Process all user messages through Python LangGraph backend",
       parameters: [
         { name: "message", type: "string", required: true },
         { name: "context", type: "object", required: false },
       ],
       handler: async ({ message, context }) => {
-        console.log("[CopilotKit] 🎯 Routing message to LangGraph:", message);
-
-        try {
-          // 1. Extract app context from request
-          const appContext = extractAppContext(context);
-          console.log("[CopilotKit] 📊 App context:", appContext);
-
-          // 2. Initialize LangGraph workflow
-          const workflow = createSupervisorWorkflow();
-
-          // 3. Invoke with complete context
-          const result = await workflow.invoke({
-            messages: [new HumanMessage(message)],
-            context: appContext,
-          });
-
-          console.log("[CopilotKit] 🤖 LangGraph result:", {
-            agentDecision: result.agentDecision,
-            userIntent: result.userIntent,
-            hasPendingActions: !!result.workflowData?.pendingActions,
-          });
-
-          // 4. Execute any requested actions (Phase 2)
-          if (result.workflowData?.pendingActions) {
-            console.log(
-              "[CopilotKit] 🔧 Executing actions:",
-              result.workflowData.pendingActions
-            );
-            await executeQueuedActions(result.workflowData.pendingActions);
-          }
-
-          // 5. Return the agent's response
-          const response = result.messages[result.messages.length - 1].content;
-          console.log("[CopilotKit] 💬 Returning response:", response);
-
-          return response;
-        } catch (error) {
-          console.error("[CopilotKit] ❌ Error in LangGraph workflow:", error);
-          return "I encountered an error processing your request. Please try again or contact support.";
-        }
+        console.log(
+          "[CopilotKit] 🎯 Routing message to Python backend:",
+          message
+        );
+        return await callPythonBackend(message, context || {});
       },
     },
   ],
