@@ -73,9 +73,12 @@ async def handle_copilotkit_chat(request: CopilotKitRequest):
             "sessionId": request.context.get("sessionId", f"session_{os.urandom(8).hex()}"),
         }
 
-        # Invoke LangGraph supervisor workflow
+        # Import HumanMessage for proper message format
+        from langchain_core.messages import HumanMessage
+        
+        # Invoke LangGraph supervisor workflow with proper message format
         result = await supervisor_workflow.ainvoke({
-            "messages": [{"role": "human", "content": request.message}],
+            "messages": [HumanMessage(content=request.message)],
             "context": app_context
         })
 
