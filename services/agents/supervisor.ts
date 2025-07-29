@@ -1,4 +1,10 @@
-import { StateGraph, START, END, Annotation } from "@langchain/langgraph";
+import {
+  StateGraph,
+  START,
+  END,
+  Annotation,
+  MessagesAnnotation,
+} from "@langchain/langgraph";
 import { BaseMessage, HumanMessage, AIMessage } from "@langchain/core/messages";
 import {
   createTracedFunction,
@@ -11,7 +17,7 @@ import { detectUserIntent, type IntentContext } from "../ai/intent-detection";
  * Kigo Pro Agent State Interface
  *
  * This interface defines the state structure that flows through our
- * LangGraph multi-agent system.
+ * LangGraph multi-agent system. Extends MessagesAnnotation for Studio chat mode.
  */
 export interface KigoProAgentState {
   messages: BaseMessage[];
@@ -28,17 +34,16 @@ export interface KigoProAgentState {
 }
 
 /**
- * Define state schema using LangGraph Annotation
+ * Define state schema for LangGraph Studio chat mode compatibility
  *
- * This schema supports both Studio and production input formats:
- * - Studio: Simple { messages: BaseMessage[] }
- * - Production: Full KigoProAgentState with context
+ * CRITICAL: Studio chat mode requires an EXPLICIT messages field definition
+ * Using MessagesAnnotation.spec directly for maximum compatibility
  */
 const KigoProStateAnnotation = Annotation.Root({
-  messages: Annotation<BaseMessage[]>({
-    reducer: (x: BaseMessage[], y: BaseMessage[]) => x.concat(y),
-    default: () => [],
-  }),
+  // EXPLICIT messages field for Studio chat mode - this is the key!
+  messages: MessagesAnnotation.spec.messages,
+
+  // Add our custom fields
   userIntent: Annotation<string>({
     reducer: (x: string, y: string) => y ?? x,
     default: () => "",
@@ -409,4 +414,58 @@ export const createSupervisorWorkflow = () => {
 };
 
 // Export the compiled workflow as default for LangGraph Studio
-export default createSupervisorWorkflow();
+const compiledWorkflow = createSupervisorWorkflow();
+
+// Export serialized versions for LangGraph Studio
+export const serializedSupervisorWorkflow = compiledWorkflow.getGraph();
+export const serializedStateSchema = KigoProStateAnnotation;
+
+// Log serialized data for Studio import
+console.log("🎯 LangGraph Studio Schema (EXPLICIT Messages + Custom Fields):");
+console.log(
+  JSON.stringify(
+    {
+      state: {
+        messages: {
+          type: "array",
+          reducer: "messagesStateReducer",
+          default: [],
+          description: "EXPLICIT messages field for Studio chat mode",
+        },
+        userIntent: {
+          type: "string",
+          reducer: "latest",
+          default: "",
+        },
+        context: {
+          type: "object",
+          reducer: "merge",
+          default: {
+            currentPage: "studio",
+            userRole: "admin",
+            sessionId: "session_123",
+          },
+        },
+        agentDecision: {
+          type: "string",
+          reducer: "latest",
+          default: "",
+        },
+        workflowData: {
+          type: "object",
+          reducer: "merge",
+          default: {},
+        },
+        error: {
+          type: "string",
+          reducer: "latest",
+          default: "",
+        },
+      },
+    },
+    null,
+    2
+  )
+);
+
+export default compiledWorkflow;

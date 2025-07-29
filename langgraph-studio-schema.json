@@ -1,0 +1,57 @@
+{
+  "state": {
+    "messages": {
+      "type": "array",
+      "reducer": "concat",
+      "default": []
+    },
+    "userIntent": {
+      "type": "string",
+      "reducer": "latest",
+      "default": ""
+    },
+    "context": {
+      "type": "object",
+      "reducer": "merge",
+      "default": {
+        "currentPage": "studio",
+        "userRole": "admin",
+        "sessionId": "session_123"
+      }
+    },
+    "agentDecision": {
+      "type": "string",
+      "reducer": "latest",
+      "default": ""
+    },
+    "workflowData": {
+      "type": "object",
+      "reducer": "merge",
+      "default": {}
+    },
+    "error": {
+      "type": "string",
+      "reducer": "latest",
+      "default": ""
+    }
+  },
+  "nodes": [
+    "supervisor",
+    "campaign_agent",
+    "general_assistant",
+    "error_handler",
+    "filter_agent",
+    "analytics_agent",
+    "merchant_agent"
+  ],
+  "edges": {
+    "START": "supervisor",
+    "supervisor": "conditional",
+    "campaign_agent": "END",
+    "general_assistant": "END",
+    "error_handler": "END",
+    "filter_agent": "END",
+    "analytics_agent": "END",
+    "merchant_agent": "END"
+  }
+}

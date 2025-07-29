@@ -1,8 +1,7 @@
 {
   "dependencies": ["langchain", "@langchain/langgraph", "@langchain/openai"],
   "graphs": {
-    "kigo_supervisor": "./services/agents/supervisor.ts",
-    "kigo_studio_test": "./services/agents/studio-test.ts"
+    "supervisor": "./services/agents/supervisor.ts:default"
   },
   "env": ".env.local"
 }
