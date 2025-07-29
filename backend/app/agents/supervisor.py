@@ -15,12 +15,14 @@ import os
 import re
 from datetime import datetime
 
-# Initialize OpenAI model
-llm = ChatOpenAI(
-    model="gpt-4-turbo",
-    temperature=0.7,
-    max_tokens=1000,
-)
+# Lazy initialization of OpenAI model
+def get_llm():
+    """Get ChatOpenAI instance with proper environment loading"""
+    return ChatOpenAI(
+        model="gpt-4-turbo",
+        temperature=0.7,
+        max_tokens=1000,
+    )
 
 # State definition
 class KigoProAgentState(TypedDict):
@@ -54,6 +56,7 @@ Analyze the user's message and classify it into one of these categories:
 Respond with ONLY the intent category name (e.g., "ad_creation"). No explanation needed."""
 
     try:
+        llm = get_llm()
         response = await llm.ainvoke([
             SystemMessage(content=intent_prompt),
             HumanMessage(content=user_input)
@@ -192,50 +195,97 @@ def route_to_agent(state: KigoProAgentState) -> str:
 async def general_assistant(state: KigoProAgentState) -> KigoProAgentState:
     """General Assistant Agent (fallback)"""
     messages = state["messages"]
+    context = state.get("context", {})
+    current_page = context.get("currentPage", "/")
     
-    response = AIMessage(content="""I'm here to help you with the Kigo Pro platform! I can assist you with:
+    try:
+        # Use LLM for intelligent general assistance
+        system_prompt = f"""You are the Kigo Pro Business Success Manager, an AI assistant for the Kigo advertising platform.
 
-• Creating and optimizing advertising campaigns
-• Managing product filters and targeting  
-• Analyzing campaign performance and analytics
-• Merchant account setup and support
+Current context:
+- User is on page: {current_page}
+- Platform capabilities: ad creation, analytics, filters, merchant support
 
-What would you like to work on today?""")
+Provide helpful guidance about what you can help with on the Kigo Pro platform. Be concise and actionable."""
+
+        latest_message = messages[-1] if messages else None
+        user_input = latest_message.content if latest_message else "How can I help?"
+
+        llm = get_llm()
+        response = await llm.ainvoke([
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=user_input)
+        ])
+
+        ai_response = AIMessage(content=response.content)
+        
+    except Exception as e:
+        print(f"General assistant error: {e}")
+        # Fallback response if LLM fails
+        ai_response = AIMessage(content="I'm here to help you with the Kigo Pro platform! How can I assist you today?")
     
     return {
         **state,
-        "messages": messages + [response],
+        "messages": messages + [ai_response],
     }
 
 async def campaign_agent(state: KigoProAgentState) -> KigoProAgentState:
     """Campaign Agent - handles ad creation and campaign management"""
     messages = state["messages"]
     intent = state.get("user_intent", "")
+    context = state.get("context", {})
+    current_page = context.get("currentPage", "/")
     
-    if intent == "ad_creation":
-        response = AIMessage(content="""🚀 **Let's create an ad!** I'll help you gather the requirements:
+    try:
+        # Create intelligent campaign assistance using LLM
+        if intent == "ad_creation":
+            system_prompt = f"""You are a Kigo Pro Campaign Specialist helping create advertising campaigns.
 
-1. **Ad name** - What should we call this ad?
-2. **Target merchant** - Which business is this for?
-3. **Offer details** - What's the promotion or offer?
-4. **Media type** - Image, video, or text ad?
-5. **Cost structure** - Cost per activation/redemption
+Current context:
+- User is on page: {current_page}
+- Intent: Ad creation
+- Available ad types: display, video, social media
+- Available merchants: McDonald's, Starbucks, Target, CVS (examples)
 
-What's the name for your new ad?""")
-    else:
-        response = AIMessage(content="""📢 **Campaign Management**
+Guide the user through ad creation step by step. Ask for:
+1. Ad name and type
+2. Target merchant 
+3. Offer/promotion details
+4. Media requirements
+5. Budget/cost structure
 
-I can help you with:
-• Creating new advertising campaigns
-• Optimizing existing campaigns  
-• Managing ad targeting and audiences
-• Setting up cost structures and budgets
+Be helpful, specific, and action-oriented. Keep responses concise but comprehensive."""
+        else:
+            system_prompt = f"""You are a Kigo Pro Campaign Specialist for general campaign management.
 
-What specific campaign task would you like help with?""")
+Current context:
+- User is on page: {current_page}
+- Platform capabilities: campaign creation, optimization, analytics, targeting
+
+Help with campaign management tasks. Be specific about what you can do and ask clarifying questions."""
+
+        latest_message = messages[-1] if messages else None
+        user_input = latest_message.content if latest_message else "I need help with campaigns"
+
+        llm = get_llm()
+        response = await llm.ainvoke([
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=user_input)
+        ])
+
+        ai_response = AIMessage(content=response.content)
+        
+    except Exception as e:
+        print(f"Campaign agent error: {e}")
+        # Fallback response
+        if intent == "ad_creation":
+            ai_response = AIMessage(content="Let's create an ad! What type of ad would you like to create?")
+        else:
+            ai_response = AIMessage(content="I can help you with campaign management. What would you like to work on?")
     
     return {
         **state,
-        "messages": messages + [response],
+        "messages": messages + [ai_response],
     }
 
 async def error_handler(state: KigoProAgentState) -> KigoProAgentState:
