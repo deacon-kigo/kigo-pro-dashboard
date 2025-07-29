@@ -84,10 +84,21 @@ async def handle_copilotkit_chat(request: CopilotKitRequest):
 
         # Extract AI response from LangGraph result
         ai_message = None
+        print(f"[DEBUG] LangGraph result keys: {list(result.keys())}")
+        print(f"[DEBUG] Messages in result: {result.get('messages', [])}")
+        
         if result.get("messages"):
-            for msg in reversed(result["messages"]):
-                if hasattr(msg, '_getType') and msg._getType() == "ai":
+            for i, msg in enumerate(reversed(result["messages"])):
+                print(f"[DEBUG] Message {i}: type={type(msg)}, hasattr _getType={hasattr(msg, '_getType')}")
+                if hasattr(msg, '_getType'):
+                    print(f"[DEBUG] Message {i} _getType: {msg._getType()}")
+                if hasattr(msg, 'content'):
+                    print(f"[DEBUG] Message {i} content: {msg.content}")
+                    
+                # Check if it's an AIMessage using type checking
+                if msg.__class__.__name__ == "AIMessage":
                     ai_message = msg.content
+                    print(f"[DEBUG] Found AIMessage with content: {msg.content}")
                     break
                 elif isinstance(msg, dict) and msg.get("role") == "assistant":
                     ai_message = msg.get("content")
