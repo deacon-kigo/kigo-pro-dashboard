@@ -4,50 +4,9 @@
  * This route integrates our LangGraph multi-agent system with CopilotKit.
  * Routes ALL user messages through LangGraph supervisor for proper orchestration.
  */
+import { CopilotRuntime, OpenAIAdapter } from "@copilotkit/runtime";
 import { NextRequest } from "next/server";
-import {
-  CopilotRuntime,
-  OpenAIAdapter,
-  copilotRuntimeNextJSAppRouterEndpoint,
-} from "@copilotkit/runtime";
-import OpenAI from "openai";
 
-// Initialize OpenAI
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-// Helper function to extract app context from request
-function extractAppContext(context: any = {}) {
-  return {
-    // UI Context
-    currentPage: context?.currentPage || "/",
-    activeModal: context?.activeModal || null,
-    isLoading: context?.isLoading || false,
-
-    // Campaign Context
-    campaignData: context?.campaignData || {},
-    currentStep: context?.currentStep || 0,
-    ads: context?.ads || [],
-
-    // User Context
-    userRole: context?.userRole || "user",
-    permissions: context?.permissions || [],
-
-    // Session Context
-    sessionId: context?.sessionId || `session_${Date.now()}`,
-    timestamp: new Date().toISOString(),
-  };
-}
-
-// Placeholder for action execution (Phase 2)
-async function executeQueuedActions(actions: any[]) {
-  console.log("[ActionExecutor] Actions to execute:", actions);
-  // TODO: Implement in Phase 2
-  return [];
-}
-
-// Configure runtime to route all messages through LangGraph
 // Function to call Python LangGraph backend
 async function callPythonBackend(message: string, context: any) {
   try {
@@ -76,11 +35,93 @@ async function callPythonBackend(message: string, context: any) {
     const result = await response.json();
     console.log("[CopilotKit] ✅ Python backend response:", result);
 
-    return result.message || "I'm not sure how to respond to that.";
+    return result;
   } catch (error) {
     console.error("[CopilotKit] ❌ Error calling Python backend:", error);
-    return "I encountered an error processing your request. Please try again or contact support.";
+    return {
+      message:
+        "I encountered an error processing your request. Please try again or contact support.",
+      actions: [],
+    };
   }
+}
+
+// Function to execute actions returned by Python backend
+async function executeActionsFromLangGraph(actions: any[], runtime: any) {
+  if (!actions || actions.length === 0) {
+    return [];
+  }
+
+  console.log("[CopilotKit] 🎯 Executing actions from LangGraph:", actions);
+
+  const actionResults = [];
+
+  for (const action of actions) {
+    try {
+      console.log(
+        `[CopilotKit] 📝 Executing action: ${action.action_name}`,
+        action.parameters
+      );
+
+      // Map Python action names to CopilotKit action names
+      const actionMap = {
+        navigateToAdCreation: "navigateToAdCreation",
+        navigateToAnalytics: "navigateToAnalytics",
+        createAd: "createAd",
+        requestApproval: "requestApproval",
+        // Add more mappings as needed
+      };
+
+      const copilotActionName =
+        actionMap[action.action_name] || action.action_name;
+
+      // Create a mock handler event to execute the action
+      const mockEvent = {
+        name: copilotActionName,
+        parameters: action.parameters || {},
+      };
+
+      // For now, we'll just log the action and return a success result
+      // The actual action execution will happen when the frontend receives this
+      actionResults.push({
+        actionName: action.action_name,
+        success: true,
+        result: `Action ${action.action_name} queued for execution`,
+        parameters: action.parameters,
+      });
+    } catch (error) {
+      console.error(
+        `[CopilotKit] ❌ Failed to execute action ${action.action_name}:`,
+        error
+      );
+
+      actionResults.push({
+        actionName: action.action_name,
+        success: false,
+        error: error.message,
+      });
+    }
+  }
+
+  return actionResults;
+}
+
+// Extract application context from CopilotKit context
+function extractAppContext(context: any) {
+  return {
+    currentPage: context?.currentPage || "/",
+    userRole: context?.userRole || "user",
+    isLoading: context?.isLoading || false,
+    notifications: context?.notifications || [],
+    activeModal: context?.activeModal,
+    campaignData: {
+      currentStep: context?.campaignData?.currentStep || 0,
+      ads: context?.campaignData?.ads || [],
+      budget: context?.campaignData?.budget,
+      basicInfo: context?.campaignData?.basicInfo,
+    },
+    sessionId: context?.sessionId || `session_${Date.now()}`,
+  };
 }
 
 const runtime = new CopilotRuntime({
@@ -97,21 +138,87 @@ const runtime = new CopilotRuntime({
           "[CopilotKit] 🎯 Routing message to Python backend:",
           message
         );
-        return await callPythonBackend(message, context || {});
+
+        // Call Python LangGraph backend
+        const backendResult = await callPythonBackend(message, context || {});
+
+        // Execute any actions returned by LangGraph
+        if (backendResult.actions && backendResult.actions.length > 0) {
+          console.log(
+            "[CopilotKit] 🚀 Found actions to execute:",
+            backendResult.actions
+          );
+          const actionResults = await executeActionsFromLangGraph(
+            backendResult.actions,
+            runtime
+          );
+          console.log(
+            "[CopilotKit] ✅ Action execution results:",
+            actionResults
+          );
+
+          // Store action results for potential use by frontend
+          global.lastActionResults = actionResults;
+        }
+
+        return backendResult.message || "I'm not sure how to respond to that.";
+      },
+    },
+
+    // CopilotKit Action: Navigate to Ad Creation
+    {
+      name: "navigateToAdCreation",
+      description: "Navigate user to the ad creation page",
+      parameters: [
+        {
+          name: "adType",
+          type: "string",
+          required: false,
+          description: "Type of ad to create",
+        },
+      ],
+      handler: async ({ adType = "display" }) => {
+        console.log("[CopilotKit] 🎯 Navigation action called:", { adType });
+        // This will be handled by frontend action registration
+        return `Navigating to ad creation page for ${adType} ads...`;
+      },
+    },
+
+    // CopilotKit Action: Navigate to Analytics
+    {
+      name: "navigateToAnalytics",
+      description: "Navigate user to the analytics dashboard",
+      parameters: [],
+      handler: async () => {
+        console.log("[CopilotKit] 📊 Analytics navigation action called");
+        // This will be handled by frontend action registration
+        return "Navigating to analytics dashboard...";
+      },
+    },
+
+    // CopilotKit Action: Create Ad
+    {
+      name: "createAd",
+      description: "Create a new advertising campaign ad",
+      parameters: [
+        { name: "adName", type: "string", required: true },
+        { name: "merchant", type: "string", required: true },
+        { name: "offer", type: "string", required: true },
+        { name: "mediaType", type: "string", required: false },
+        { name: "costPerActivation", type: "number", required: false },
+        { name: "costPerRedemption", type: "number", required: false },
+      ],
+      handler: async (params) => {
+        console.log("[CopilotKit] 📝 Create ad action called:", params);
+        // This will be handled by frontend action registration
+        return `Creating ad "${params.adName}" for ${params.merchant}...`;
       },
     },
   ],
 });
 
-// Export POST handler
-export const POST = async (req: NextRequest) => {
-  console.log("[CopilotKit] 🚀 LangGraph-integrated Kigo agent starting");
-
-  const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({
-    runtime,
-    serviceAdapter: new OpenAIAdapter({ openai }),
-    endpoint: "/api/copilotkit",
-  });
-
-  return handleRequest(req);
-};
+export const { GET, POST } = runtime.streamingEndpoints({
+  runtime,
+  serviceAdapter: new OpenAIAdapter(),
+  endpoint: "/api/copilotkit",
+});
