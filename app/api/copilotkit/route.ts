@@ -4,7 +4,11 @@
  * This route integrates our LangGraph multi-agent system with CopilotKit.
  * Routes ALL user messages through LangGraph supervisor for proper orchestration.
  */
-import { CopilotRuntime, OpenAIAdapter } from "@copilotkit/runtime";
+import {
+  CopilotRuntime,
+  OpenAIAdapter,
+  copilotRuntimeNextJSAppRouterEndpoint,
+} from "@copilotkit/runtime";
 import { NextRequest } from "next/server";
 
 // Function to call Python LangGraph backend
@@ -217,8 +221,12 @@ const runtime = new CopilotRuntime({
   ],
 });
 
-export const { GET, POST } = runtime.streamingEndpoints({
-  runtime,
-  serviceAdapter: new OpenAIAdapter(),
-  endpoint: "/api/copilotkit",
-});
+export async function POST(req: NextRequest) {
+  const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({
+    runtime,
+    serviceAdapter: new OpenAIAdapter(),
+    endpoint: "/api/copilotkit",
+  });
+
+  return handleRequest(req);
+}
