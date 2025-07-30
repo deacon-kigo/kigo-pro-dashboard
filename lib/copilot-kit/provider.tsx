@@ -8,7 +8,15 @@ import { usePathname } from "next/navigation";
 import { useCopilotReadable } from "@copilotkit/react-core";
 import { useCopilotActions } from "../hooks/useCopilotActions";
 import { useAppSelector } from "../redux/hooks";
-import { ApprovalWorkflowUI } from "../../components/ui/ApprovalWorkflowUI";
+
+// Dynamic imports for components
+const ApprovalWorkflowUI = dynamic(
+  () => import("../../components/ui/ApprovalWorkflowUI"),
+  {
+    loading: () => <div>Loading...</div>,
+    ssr: false,
+  }
+);
 
 interface CopilotKitProviderProps {
   children: ReactNode;
@@ -26,8 +34,7 @@ function NavigationBridge() {
     hasAds: campaignState.formData?.ads?.length || 0,
   });
 
-  // Register all CopilotKit actions
-  // Re-enabled for Python backend testing
+  // Register all CopilotKit actions - these can be called by LangGraph
   useCopilotActions();
 
   // Provide comprehensive context to CopilotKit
@@ -113,7 +120,7 @@ function getPageContext(currentPath: string) {
       };
     default:
       return {
-        pageType: "unknown",
+        pageType: "general",
         description: "Current page context",
       };
   }
@@ -146,52 +153,56 @@ function CopilotKitProviderContent({ children }: CopilotKitProviderProps) {
 
       {isEnabled && (
         <CopilotSidebar
-          instructions={`You are the Kigo Pro Business Success Manager, an AI assistant specialized in helping users create, manage, and optimize advertising campaigns for the Kigo loyalty media network.
+          instructions={`You are the Kigo Pro Business Success Manager, an AI assistant powered by LangGraph multi-agent system.
 
-🎯 **Core Capabilities:**
-You are powered by an advanced multi-agent system that can understand user intent and take intelligent actions to help accomplish goals.
+🧠 **Your Capabilities:**
+• Multi-agent orchestration with specialist agents (Campaign, Analytics, Filter, etc.)
+• Intelligent intent detection and contextual routing
+• Complex workflow management with conversation memory
+• UI action execution through CopilotKit integration
+• Human-in-the-loop breakpoints for critical decisions
 
-🚀 **How You Work:**
-When users send messages, you route them through our intelligent agent system using the handleUserMessage action. This system:
+🎯 **How You Work:**
+• All messages are processed through our Python LangGraph backend
+• The supervisor agent analyzes intent and routes to specialist agents
+• Specialist agents can call CopilotKit actions to control the UI
+• Each agent maintains full context awareness of the application state
 
-• Analyzes user intent and context
-• Routes to specialist agents (Campaign, Analytics, Filter, etc.)
-• Takes appropriate actions automatically
-• Provides contextual responses and guidance
+🚀 **Available Actions You Can Execute:**
+• navigateToAdCreation - Take users to ad creation page with smart defaults
+• navigateToAnalytics - Navigate to analytics dashboard for data insights  
+• createAd - Create complete advertising campaigns with user requirements
+• requestApproval - Show human-in-the-loop approval workflows
+• getCurrentPageInfo - Get detailed information about user's current page
 
 💡 **Your Expertise Areas:**
-• **Ad Creation**: Help users create compelling ads with AI-generated copy, targeting, and optimization
-• **Campaign Management**: Assist with campaign setup, budgeting, and performance optimization  
-• **Analytics & Insights**: Provide data-driven insights and performance analysis
-• **Filter Management**: Help create and optimize product/audience filters
-• **Merchant Support**: Guide merchants through platform features and best practices
+• **Campaign Agent**: Ad creation, targeting, budget optimization, creative assistance
+• **Analytics Agent**: Performance analysis, ROI insights, trend identification, optimization recommendations
+• **Filter Agent**: Product targeting, audience segmentation, demographic filtering
+• **General Assistant**: Platform navigation, feature explanations, workflow guidance
 
-🎨 **User Experience Guidelines:**
-- Always process user requests through the handleUserMessage action
-- Be proactive and helpful - understand what users want and help them accomplish it
-- Provide clear guidance and next steps
-- Use your multi-agent system to take complex actions automatically
-- Be conversational and friendly while being highly functional
+🎨 **Interaction Patterns:**
+• Proactively identify user needs and suggest appropriate actions
+• Navigate users to relevant pages when they express specific intents
+• Provide step-by-step guidance through complex workflows
+• Offer contextual help based on current page and user activity
+• Use specialist agents for domain-specific expertise
 
-**CRITICAL**: For ALL user messages, use the handleUserMessage action to route through our intelligent agent system!`}
+**Remember**: You're orchestrating through LangGraph - leverage the full multi-agent system for intelligent, contextual responses and actions!`}
           labels={{
             title: "AI Assistant",
             initial:
-              "Hi! I'm your Kigo Pro assistant. I can help you create ads, analyze campaigns, and manage filters. What would you like to work on?",
+              "Hi! I'm your Kigo Pro assistant powered by our multi-agent system. I can help with campaigns, analytics, filters, and more. What would you like to work on?",
           }}
-          defaultOpen={false}
-          clickOutsideToClose={true}
+          defaultOpen={true}
         />
       )}
     </CopilotKit>
   );
 }
 
-// Export as dynamic component to prevent SSR
-export const CopilotKitProvider = dynamic(
-  () => Promise.resolve(CopilotKitProviderContent),
-  {
-    ssr: false,
-    loading: () => <div>{/* Loading placeholder */}</div>,
-  }
-);
+export default function CopilotKitProvider({
+  children,
+}: CopilotKitProviderProps) {
+  return <CopilotKitProviderContent>{children}</CopilotKitProviderContent>;
+}

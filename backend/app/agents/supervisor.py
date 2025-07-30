@@ -235,58 +235,106 @@ async def campaign_agent(state: KigoProAgentState) -> KigoProAgentState:
     intent = state.get("user_intent", "")
     context = state.get("context", {})
     current_page = context.get("currentPage", "/")
-    
+
     try:
-        # Create intelligent campaign assistance using LLM
-        if intent == "ad_creation":
+        llm = get_llm()
+        
+        # Determine if agent should call actions based on intent and context
+        should_navigate_to_ads = (
+            intent == "ad_creation" and 
+            current_page != "/campaign-manager/ads-create"
+        )
+        
+        if should_navigate_to_ads:
+            # Agent decides to navigate user to ad creation page
+            system_prompt = f"""You are a Kigo Pro Campaign Specialist who helps users create ads.
+
+            The user wants to create an ad, and you need to take them to the ad creation page first.
+            Current context: User is on {current_page}
+            
+            Provide a helpful response explaining that you're taking them to the ad creation page."""
+            
+            latest_message = messages[-1] if messages else None
+            user_input = latest_message.content if latest_message else "I want to create an ad"
+
+            response = await llm.ainvoke([
+                SystemMessage(content=system_prompt),
+                HumanMessage(content=user_input)
+            ])
+
+            # Agent calls CopilotKit action
+            ai_response = AIMessage(content=response.content)
+            
+            return {
+                **state,
+                "messages": messages + [ai_response],
+                "workflow_data": {
+                    "pending_actions": [
+                        {
+                            "action_name": "navigateToAdCreation",
+                            "parameters": {"adType": "display"},
+                        }
+                    ]
+                }
+            }
+        
+        else:
+            # Normal campaign assistance without navigation
             system_prompt = f"""You are a Kigo Pro Campaign Specialist helping create advertising campaigns.
 
-Current context:
-- User is on page: {current_page}
-- Intent: Ad creation
-- Available ad types: display, video, social media
-- Available merchants: McDonald's, Starbucks, Target, CVS (examples)
+            Current context:
+            - User is on page: {current_page}
+            - Intent: {intent}
+            - Available ad types: display, video, social media
+            - Available merchants: McDonald's, Starbucks, Target, CVS (examples)
 
-Guide the user through ad creation step by step. Ask for:
-1. Ad name and type
-2. Target merchant 
-3. Offer/promotion details
-4. Media requirements
-5. Budget/cost structure
+            Guide the user through ad creation step by step. Ask for:
+            1. Ad name and type
+            2. Target merchant
+            3. Offer/promotion details
+            4. Media requirements
+            5. Budget/cost structure
 
-Be helpful, specific, and action-oriented. Keep responses concise but comprehensive."""
-        else:
-            system_prompt = f"""You are a Kigo Pro Campaign Specialist for general campaign management.
+            Be helpful, specific, and action-oriented. Keep responses concise but comprehensive."""
 
-Current context:
-- User is on page: {current_page}
-- Platform capabilities: campaign creation, optimization, analytics, targeting
+            latest_message = messages[-1] if messages else None
+            user_input = latest_message.content if latest_message else "I need help with campaigns"
 
-Help with campaign management tasks. Be specific about what you can do and ask clarifying questions."""
+            response = await llm.ainvoke([
+                SystemMessage(content=system_prompt),
+                HumanMessage(content=user_input)
+            ])
 
-        latest_message = messages[-1] if messages else None
-        user_input = latest_message.content if latest_message else "I need help with campaigns"
+            ai_response = AIMessage(content=response.content)
 
-        llm = get_llm()
-        response = await llm.ainvoke([
-            SystemMessage(content=system_prompt),
-            HumanMessage(content=user_input)
-        ])
+            return {
+                **state,
+                "messages": messages + [ai_response],
+            }
 
-        ai_response = AIMessage(content=response.content)
-        
     except Exception as e:
         print(f"Campaign agent error: {e}")
         # Fallback response
         if intent == "ad_creation":
-            ai_response = AIMessage(content="Let's create an ad! What type of ad would you like to create?")
+            ai_response = AIMessage(content="Let me help you create an ad! I'll take you to our ad creation page where we can get started.")
+            return {
+                **state,
+                "messages": messages + [ai_response],
+                "workflow_data": {
+                    "pending_actions": [
+                        {
+                            "action_name": "navigateToAdCreation",
+                            "parameters": {"adType": "display"},
+                        }
+                    ]
+                }
+            }
         else:
             ai_response = AIMessage(content="I can help you with campaign management. What would you like to work on?")
-    
-    return {
-        **state,
-        "messages": messages + [ai_response],
-    }
+            return {
+                **state,
+                "messages": messages + [ai_response],
+            }
 
 async def error_handler(state: KigoProAgentState) -> KigoProAgentState:
     """Error Handler Agent"""
@@ -323,24 +371,101 @@ What specific filtering task would you like help with?""")
     }
 
 async def analytics_agent(state: KigoProAgentState) -> KigoProAgentState:
-    """Analytics Agent - handles performance analytics and reporting"""
+    """Analytics Agent - handles performance data and insights"""
     messages = state["messages"]
-    
-    response = AIMessage(content="""📊 **Campaign Analytics & Insights**
+    intent = state.get("user_intent", "")
+    context = state.get("context", {})
+    current_page = context.get("currentPage", "/")
 
-I can help you analyze your campaign performance! Here's what I can do:
+    try:
+        llm = get_llm()
+        
+        # Determine if agent should navigate to analytics page
+        should_navigate_to_analytics = (
+            intent == "analytics_query" and 
+            current_page != "/analytics"
+        )
+        
+        if should_navigate_to_analytics:
+            # Agent decides to navigate user to analytics page
+            system_prompt = f"""You are a Kigo Pro Analytics Specialist.
 
-• **Performance reports** - ROI, conversions, click-through rates
-• **Trend analysis** - Track performance over time
-• **Optimization suggestions** - Improve campaign results  
-• **Custom dashboards** - Personalized analytics views
+            The user wants to see analytics, and you need to take them to the analytics page first.
+            Current context: User is on {current_page}
+            
+            Provide a helpful response explaining that you're taking them to the analytics dashboard."""
+            
+            latest_message = messages[-1] if messages else None
+            user_input = latest_message.content if latest_message else "Show me analytics"
 
-What specific metrics would you like to analyze?""")
-    
-    return {
-        **state,
-        "messages": messages + [response],
-    }
+            response = await llm.ainvoke([
+                SystemMessage(content=system_prompt),
+                HumanMessage(content=user_input)
+            ])
+
+            ai_response = AIMessage(content=response.content)
+            
+            return {
+                **state,
+                "messages": messages + [ai_response],
+                "workflow_data": {
+                    "pending_actions": [
+                        {
+                            "action_name": "navigateToAnalytics",
+                            "parameters": {},
+                        }
+                    ]
+                }
+            }
+        
+        else:
+            # Normal analytics assistance
+            system_prompt = f"""You are a Kigo Pro Analytics Specialist for campaign performance analysis.
+
+            Current context:
+            - User is on page: {current_page}
+            - Platform capabilities: performance reports, ROI analysis, trend analysis, optimization suggestions
+
+            Help with analytics tasks. Provide insights about campaign performance metrics, ROI, conversions, and optimization opportunities."""
+
+            latest_message = messages[-1] if messages else None
+            user_input = latest_message.content if latest_message else "I need analytics help"
+
+            response = await llm.ainvoke([
+                SystemMessage(content=system_prompt),
+                HumanMessage(content=user_input)
+            ])
+
+            ai_response = AIMessage(content=response.content)
+
+            return {
+                **state,
+                "messages": messages + [ai_response],
+            }
+
+    except Exception as e:
+        print(f"Analytics agent error: {e}")
+        # Fallback response
+        if intent == "analytics_query":
+            ai_response = AIMessage(content="Let me show you your campaign analytics! I'll take you to the analytics dashboard.")
+            return {
+                **state,
+                "messages": messages + [ai_response],
+                "workflow_data": {
+                    "pending_actions": [
+                        {
+                            "action_name": "navigateToAnalytics",
+                            "parameters": {},
+                        }
+                    ]
+                }
+            }
+        else:
+            ai_response = AIMessage(content="I can help you analyze your campaign performance. What metrics would you like to see?")
+            return {
+                **state,
+                "messages": messages + [ai_response],
+            }
 
 async def merchant_agent(state: KigoProAgentState) -> KigoProAgentState:
     """Merchant Agent - handles merchant support and guidance"""
