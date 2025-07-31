@@ -20,6 +20,7 @@
     "@copilotkit/react-textarea": "^1.9.3",
     "@copilotkit/react-ui": "^1.9.3",
     "@copilotkit/runtime": "^1.9.3",
+    "@copilotkit/runtime-client-gql": "^1.9.3",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@headlessui/react": "^2.2.0",

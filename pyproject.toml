@@ -1,0 +1,20 @@
+[project]
+name="kigo-pro-backend"
+version="0.1.0"
+description="Kigo Pro LangGraph Backend"
+dependencies = [
+    "langgraph",
+    "langchain",
+    "langchain-openai", 
+    "fastapi",
+    "uvicorn",
+    "pydantic",
+    "httpx",
+]
+
+[tool.setuptools.package-data]
+"*" = ["**/*"]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
