@@ -32,6 +32,10 @@ class KigoProAgentState(TypedDict):
     agent_decision: str
     workflow_data: dict
     error: Optional[str]
+    # Human-in-the-loop fields
+    pending_action: Optional[dict]  # Action waiting for approval
+    approval_status: Optional[str]  # "pending", "approved", "rejected"
+    requires_approval: Optional[bool]  # Flag to trigger interrupt
 
 async def detect_user_intent(user_input: str, context: dict) -> str:
     """
@@ -94,6 +98,57 @@ Respond with ONLY the intent category name (e.g., "ad_creation"). No explanation
             print(f"Fallback intent detection error: {fallback_error}")
         return "general_assistance"
 
+def approval_node(state: KigoProAgentState) -> KigoProAgentState:
+    """Node that handles human approval for actions - triggers interrupt"""
+    print(f"[Approval] Action pending approval: {state.get('pending_action', {}).get('description', 'Unknown action')}")
+    
+    # This node will cause LangGraph to interrupt and wait for user input
+    # When resumed, approval_status should be set to "approved" or "rejected"
+    return {
+        **state,
+        "approval_status": "pending"
+    }
+
+def execute_approved_action(state: KigoProAgentState) -> KigoProAgentState:
+    """Execute the action after approval"""
+    approval_status = state.get("approval_status")
+    pending_action = state.get("pending_action")
+    
+    print(f"[Execute] Approval status: {approval_status}")
+    
+    if approval_status == "approved" and pending_action:
+        print(f"[Execute] Executing approved action: {pending_action['action_name']}")
+        
+        # Return the action for CopilotKit to execute
+        workflow_data = state.get("workflow_data", {})
+        workflow_data["actions"] = [pending_action]
+        workflow_data["approved"] = True
+        
+        return {
+            **state,
+            "workflow_data": workflow_data,
+            "requires_approval": False,
+            "pending_action": None
+        }
+    elif approval_status == "rejected":
+        print("[Execute] Action rejected by user")
+        
+        # Continue conversation without executing action
+        rejection_message = AIMessage(
+            content="No problem! I won't navigate you to the ad creation page. How else can I help you with your advertising needs?"
+        )
+        
+        return {
+            **state,
+            "messages": state["messages"] + [rejection_message],
+            "requires_approval": False,
+            "pending_action": None,
+            "approval_status": None
+        }
+    
+    # Should not reach here, but handle gracefully
+    return state
+
 def extract_workflow_data(user_input: str, intent: str) -> dict:
     """Extract relevant data from user input based on intent"""
     import re
@@ -146,7 +201,7 @@ def determine_agent_routing(intent: str, context: dict) -> str:
     
     return routing_map.get(intent, "general_assistant")
 
-async def supervisor_agent(state: KigoProAgentState) -> KigoProAgentState:
+def supervisor_agent(state: KigoProAgentState) -> KigoProAgentState:
     """
     Supervisor Agent - analyzes user input and routes to appropriate specialist agents
     """
@@ -183,8 +238,18 @@ async def supervisor_agent(state: KigoProAgentState) -> KigoProAgentState:
         else:
             user_input = str(latest_message)
         
-        # Analyze user intent
-        intent = await detect_user_intent(user_input, full_context)
+        # Analyze user intent (sync version for now)
+        user_lower = user_input.lower()
+        if any(word in user_lower for word in ["create ad", "new ad", "campaign", "advertisement", "create an ad"]):
+            intent = "ad_creation"
+        elif any(word in user_lower for word in ["analytics", "performance", "metrics", "report", "stats"]):
+            intent = "analytics_query"
+        elif any(word in user_lower for word in ["filter", "targeting", "audience", "segment"]):
+            intent = "filter_management"
+        elif any(word in user_lower for word in ["merchant", "business", "account", "setup"]):
+            intent = "merchant_support"
+        else:
+            intent = "general_assistance"
         
         # Determine routing decision
         decision = determine_agent_routing(intent, full_context)
@@ -251,112 +316,52 @@ Provide helpful guidance about what you can help with on the Kigo Pro platform. 
         "messages": messages + [ai_response],
     }
 
-async def campaign_agent(state: KigoProAgentState) -> KigoProAgentState:
+def campaign_agent(state: KigoProAgentState) -> KigoProAgentState:
     """Campaign Agent - handles ad creation and campaign management"""
     messages = state["messages"]
     intent = state.get("user_intent", "")
     context = state.get("context", {})
     current_page = context.get("currentPage", "/")
 
-    try:
-        llm = get_llm()
+    # Simple sync version for testing
+    from langchain_core.messages import AIMessage
+    
+    # Determine if agent should call actions based on intent and context
+    should_navigate_to_ads = (
+        intent == "ad_creation" and 
+        current_page != "/campaign-manager/ads-create"
+    )
+    
+    if should_navigate_to_ads:
+        # Propose navigation action with human approval
+        proposed_action = {
+            "action_name": "navigateToAdCreation",
+            "parameters": {"adType": "display"},
+            "description": "Navigate to the ad creation page to start building your campaign"
+        }
         
-        # Determine if agent should call actions based on intent and context
-        should_navigate_to_ads = (
-            intent == "ad_creation" and 
-            current_page != "/campaign-manager/ads-create"
+        ai_response = AIMessage(
+            content="I can help you create an ad! I'd like to take you to our ad creation page where you can build your campaign step by step with guided forms for ad details, targeting, and budget. Should I navigate you there now?"
         )
         
-        if should_navigate_to_ads:
-            # Agent decides to navigate user to ad creation page
-            system_prompt = f"""You are a Kigo Pro Campaign Specialist who helps users create ads.
-
-            The user wants to create an ad, and you need to take them to the ad creation page first.
-            Current context: User is on {current_page}
-            
-            Provide a helpful response explaining that you're taking them to the ad creation page."""
-            
-            latest_message = messages[-1] if messages else None
-            user_input = latest_message.content if latest_message else "I want to create an ad"
-
-            response = await llm.ainvoke([
-                SystemMessage(content=system_prompt),
-                HumanMessage(content=user_input)
-            ])
-
-            # Agent calls CopilotKit action
-            ai_response = AIMessage(content=response.content)
-            
-            return {
-                **state,
-                "messages": messages + [ai_response],
-                "workflow_data": {
-                    "pending_actions": [
-                        {
-                            "action_name": "navigateToAdCreation",
-                            "parameters": {"adType": "display"},
-                        }
-                    ]
-                }
-            }
+        return {
+            **state,
+            "messages": messages + [ai_response],
+            "pending_action": proposed_action,
+            "requires_approval": True,
+            "approval_status": "pending"
+        }
+    
+    else:
+        # Simple response for now
+        ai_response = AIMessage(
+            content="I'm your Kigo Pro Campaign Specialist! To create an ad, I'll help you with: 1) Ad name and type, 2) Target merchant, 3) Offer details, 4) Media requirements, 5) Budget. What would you like to start with?"
+        )
         
-        else:
-            # Normal campaign assistance without navigation
-            system_prompt = f"""You are a Kigo Pro Campaign Specialist helping create advertising campaigns.
-
-            Current context:
-            - User is on page: {current_page}
-            - Intent: {intent}
-            - Available ad types: display, video, social media
-            - Available merchants: McDonald's, Starbucks, Target, CVS (examples)
-
-            Guide the user through ad creation step by step. Ask for:
-            1. Ad name and type
-            2. Target merchant
-            3. Offer/promotion details
-            4. Media requirements
-            5. Budget/cost structure
-
-            Be helpful, specific, and action-oriented. Keep responses concise but comprehensive."""
-
-            latest_message = messages[-1] if messages else None
-            user_input = latest_message.content if latest_message else "I need help with campaigns"
-
-            response = await llm.ainvoke([
-                SystemMessage(content=system_prompt),
-                HumanMessage(content=user_input)
-            ])
-
-            ai_response = AIMessage(content=response.content)
-
-            return {
-                **state,
-                "messages": messages + [ai_response],
-            }
-
-    except Exception as e:
-        print(f"Campaign agent error: {e}")
-        # Fallback response
-        if intent == "ad_creation":
-            ai_response = AIMessage(content="Let me help you create an ad! I'll take you to our ad creation page where we can get started.")
-            return {
-                **state,
-                "messages": messages + [ai_response],
-                "workflow_data": {
-                    "pending_actions": [
-                        {
-                            "action_name": "navigateToAdCreation",
-                            "parameters": {"adType": "display"},
-                        }
-                    ]
-                }
-            }
-        else:
-            ai_response = AIMessage(content="I can help you with campaign management. What would you like to work on?")
-            return {
-                **state,
-                "messages": messages + [ai_response],
-            }
+        return {
+            **state,
+            "messages": messages + [ai_response],
+        }
 
 async def error_handler(state: KigoProAgentState) -> KigoProAgentState:
     """Error Handler Agent"""
@@ -524,6 +529,10 @@ def create_supervisor_workflow():
     workflow.add_node("analytics_agent", analytics_agent)
     workflow.add_node("merchant_agent", merchant_agent)
     
+    # Add human-in-the-loop nodes
+    workflow.add_node("approval_node", approval_node)
+    workflow.add_node("execute_action", execute_approved_action)
+    
     # Set entry point
     workflow.set_entry_point("supervisor")
     
@@ -541,16 +550,51 @@ def create_supervisor_workflow():
         }
     )
     
-    # All agents end the workflow
-    workflow.add_edge("campaign_agent", END)
+    # Helper function for approval routing
+    def should_request_approval(state: KigoProAgentState) -> str:
+        """Determine if state requires human approval"""
+        if state.get("requires_approval"):
+            return "approval"
+        return "end"
+    
+    def should_execute_action(state: KigoProAgentState) -> str:
+        """Determine if approved action should be executed"""
+        approval_status = state.get("approval_status")
+        if approval_status == "approved":
+            return "execute"
+        return "end"
+    
+    # Campaign agent can require approval
+    workflow.add_conditional_edges(
+        "campaign_agent",
+        should_request_approval,
+        {
+            "approval": "approval_node",
+            "end": END
+        }
+    )
+    
+    # Approval flow
+    workflow.add_conditional_edges(
+        "approval_node",
+        should_execute_action,
+        {
+            "execute": "execute_action", 
+            "end": END
+        }
+    )
+    
+    workflow.add_edge("execute_action", END)
+    
+    # Other agents end the workflow directly
     workflow.add_edge("general_assistant", END)
     workflow.add_edge("error_handler", END)
     workflow.add_edge("filter_agent", END)
     workflow.add_edge("analytics_agent", END)
     workflow.add_edge("merchant_agent", END)
     
-    # Compile and return
-    compiled = workflow.compile()
+    # Compile with interrupt for human approval
+    compiled = workflow.compile(interrupt_before=["approval_node"])
     
     print("🎯 Python LangGraph Supervisor Workflow compiled successfully!")
     return compiled
