@@ -1,21 +1,8 @@
-INFO:     Started server process [45273]
+INFO:     Started server process [63884]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-[CopilotKit Endpoint] 📋 POST /copilotkit/info - Info discovery request
-[CopilotKit Endpoint] ✅ Returning info: {'actions': [], 'agents': [{'name': 'supervisor', 'description': 'Kigo Pro campaign management supervisor agent'}]}
-INFO:     127.0.0.1:60566 - "POST /copilotkit/info HTTP/1.1" 200 OK
-[CopilotKit Endpoint] 📋 GET /copilotkit/info - Info discovery request
-[CopilotKit Endpoint] ✅ Returning info: {'actions': [], 'agents': [{'name': 'supervisor', 'description': 'Kigo Pro campaign management supervisor agent'}]}
-INFO:     127.0.0.1:60593 - "GET /copilotkit/info HTTP/1.1" 200 OK
-[CopilotKit Endpoint] 📋 GET /copilotkit - Actions discovery request
-[CopilotKit Endpoint] ✅ Returning actions: {'actions': [], 'agents': [{'name': 'supervisor', 'description': 'Kigo Pro campaign management supervisor agent'}]}
-INFO:     127.0.0.1:60595 - "GET /copilotkit HTTP/1.1" 200 OK
-[CopilotKit Endpoint] 📋 POST /copilotkit/info - Info discovery request
-[CopilotKit Endpoint] ✅ Returning info: {'actions': [], 'agents': [{'name': 'supervisor', 'description': 'Kigo Pro campaign management supervisor agent'}]}
-INFO:     127.0.0.1:60652 - "POST /copilotkit/info HTTP/1.1" 200 OK
-INFO:     127.0.0.1:60652 - "POST /copilotkit/agents/execute HTTP/1.1" 404 Not Found
 INFO:     Shutting down
 INFO:     Waiting for application shutdown.
 INFO:     Application shutdown complete.
-INFO:     Finished server process [45273]
+INFO:     Finished server process [63884]

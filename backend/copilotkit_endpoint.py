@@ -54,7 +54,12 @@ async def copilotkit_endpoint(request: CopilotKitRequest):
         if not user_messages:
             return {"role": "assistant", "content": "Hello! I'm your Kigo Pro assistant. How can I help you today?"}
         
-        message = user_messages[-1].content.lower()
+        # Handle content that might be a string or list
+        content = user_messages[-1].content
+        if isinstance(content, list):
+            message = ' '.join(str(item) for item in content).lower()
+        else:
+            message = str(content).lower()
         print(f"[CopilotKit Endpoint] 🚀 Message: {message}")
         
         # Simple intent detection and routing

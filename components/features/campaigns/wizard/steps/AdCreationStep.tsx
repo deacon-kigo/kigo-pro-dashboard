@@ -202,6 +202,13 @@ const AdCreationStep: React.FC<AdCreationStepProps> = ({
       shortText: "Free Drink",
       logoUrl: "https://placehold.co/400x200/0a0/fff?text=Starbucks+Logo",
     },
+    {
+      id: "mcm_o12_2023",
+      merchantId: "m11",
+      name: "Free fries with any burger purchase",
+      shortText: "FreeFries",
+      logoUrl: "https://placehold.co/400x200/ffcc00/000?text=McDonald's+Logo",
+    },
   ];
 
   // Media type definitions
