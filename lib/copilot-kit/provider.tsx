@@ -41,8 +41,8 @@ function NavigationBridge() {
     hasAds: campaignState.formData?.ads?.length || 0,
   });
 
-  // Actions are now handled by Python LangGraph backend
-  // useCopilotActions(); // Disabled - Python backend handles all actions
+  // DEMO MODE: Re-enable frontend actions for demo presentation
+  useCopilotActions(); // Re-enabled for demo - provides immediate action execution
 
   // Provide comprehensive context to CopilotKit
   useCopilotReadable({

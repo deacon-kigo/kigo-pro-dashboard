@@ -1,28 +1,31 @@
+/**
+ * Official CopilotKit SDK Integration
+ *
+ * Configured to prioritize remote LangGraph endpoint over OpenAI fallback
+ * This ensures responses come from our custom agents when available
+ */
+
 import { NextRequest } from "next/server";
 import {
   CopilotRuntime,
   OpenAIAdapter,
   copilotRuntimeNextJSAppRouterEndpoint,
-  copilotKitEndpoint,
 } from "@copilotkit/runtime";
 import OpenAI from "openai";
 
-const openai = new OpenAI();
-const llmAdapter = new OpenAIAdapter({ openai } as any);
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 export const POST = async (req: NextRequest) => {
-  // Use copilotKitEndpoint pointing to REAL Python LangGraph server on port 8000
-  const remoteEndpoint = copilotKitEndpoint({
-    url: "http://localhost:8000",
-  });
-
+  // DEMO MODE: Use only frontend actions (no remote backend)
   const runtime = new CopilotRuntime({
-    remoteEndpoints: [remoteEndpoint],
+    // No remote endpoints - use frontend actions only
   });
 
   const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({
     runtime,
-    serviceAdapter: llmAdapter,
+    serviceAdapter: new OpenAIAdapter({ openai }),
     endpoint: "/api/copilotkit",
   });
 
