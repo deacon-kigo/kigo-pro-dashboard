@@ -37,6 +37,12 @@ async def detect_user_intent(user_input: str, context: dict) -> str:
     """
     AI-powered intent detection using OpenAI LLM
     """
+    # Ensure user_input is a string (fix for LangGraph Studio compatibility)
+    if isinstance(user_input, list):
+        user_input = ' '.join(str(item) for item in user_input)
+    elif not isinstance(user_input, str):
+        user_input = str(user_input)
+    
     current_page = context.get("currentPage", "/")
     
     intent_prompt = f"""You are an intent classifier for the Kigo Pro advertising platform. 
@@ -73,22 +79,31 @@ Respond with ONLY the intent category name (e.g., "ad_creation"). No explanation
             
     except Exception as e:
         print(f"Intent detection error: {e}")
-        # Fallback to keyword detection
-        user_input_lower = user_input.lower()
-        if any(word in user_input_lower for word in ["create ad", "new ad", "campaign", "advertisement"]):
-            return "ad_creation"
-        elif any(word in user_input_lower for word in ["analytics", "performance", "metrics", "report", "stats"]):
-            return "analytics_query"
-        elif any(word in user_input_lower for word in ["filter", "targeting", "audience", "segment"]):
-            return "filter_management"
-        elif any(word in user_input_lower for word in ["merchant", "business", "account", "setup"]):
-            return "merchant_support"
+        # Fallback to keyword detection with type safety
+        try:
+            user_input_lower = user_input.lower()
+            if any(word in user_input_lower for word in ["create ad", "new ad", "campaign", "advertisement"]):
+                return "ad_creation"
+            elif any(word in user_input_lower for word in ["analytics", "performance", "metrics", "report", "stats"]):
+                return "analytics_query"
+            elif any(word in user_input_lower for word in ["filter", "targeting", "audience", "segment"]):
+                return "filter_management"
+            elif any(word in user_input_lower for word in ["merchant", "business", "account", "setup"]):
+                return "merchant_support"
+        except Exception as fallback_error:
+            print(f"Fallback intent detection error: {fallback_error}")
         return "general_assistance"
 
 def extract_workflow_data(user_input: str, intent: str) -> dict:
     """Extract relevant data from user input based on intent"""
     import re
     from datetime import datetime
+    
+    # Ensure user_input is a string (fix for LangGraph Studio compatibility)
+    if isinstance(user_input, list):
+        user_input = ' '.join(str(item) for item in user_input)
+    elif not isinstance(user_input, str):
+        user_input = str(user_input)
     
     data = {
         "timestamp": datetime.now().isoformat(),
@@ -157,9 +172,16 @@ async def supervisor_agent(state: KigoProAgentState) -> KigoProAgentState:
                 "workflow_data": {},
             }
         
-        # Get latest user message
+        # Get latest user message with robust type handling
         latest_message = messages[-1]
-        user_input = latest_message.content if hasattr(latest_message, 'content') else str(latest_message)
+        if hasattr(latest_message, 'content'):
+            user_input = latest_message.content
+        elif isinstance(latest_message, str):
+            user_input = latest_message
+        elif isinstance(latest_message, list):
+            user_input = ' '.join(str(item) for item in latest_message)
+        else:
+            user_input = str(latest_message)
         
         # Analyze user intent
         intent = await detect_user_intent(user_input, full_context)
