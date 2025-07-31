@@ -15,6 +15,7 @@ import {
   CampaignAd,
   MediaAsset,
   removeAd,
+  addMediaToAd,
 } from "../redux/slices/campaignSlice";
 import { v4 as uuidv4 } from "uuid";
 
@@ -31,42 +32,96 @@ const DEMO_MERCHANTS = [
 
 const DEMO_OFFERS = [
   {
-    id: "mcm_o1_2023",
+    id: "mcm_o12_2023",
     merchantId: "m11",
-    name: "Free fries with any burger",
-    shortText: "Free Fries",
+    name: "Free fries with any burger purchase",
+    shortText: "FreeFries",
+    description:
+      "Get crispy golden fries absolutely free when you buy any burger from our menu",
+    campaignType: "Food & Beverage Promotion",
+    validUntil: "2024-12-31",
   },
   {
     id: "mcm_o2_2023",
     merchantId: "m1",
     name: "20% off health and wellness products",
     shortText: "20% Off Wellness",
+    description: "Save on vitamins, supplements, and health essentials",
+    campaignType: "Health & Wellness Sale",
   },
   {
     id: "mcm_o3_2023",
     merchantId: "m7",
     name: "Buy 2 Get 1 Free on select items",
     shortText: "Buy 2 Get 1 Free",
+    description: "Mix and match from thousands of eligible products",
+    campaignType: "Retail Promotion",
   },
   {
     id: "mcm_o11_2023",
     merchantId: "m10",
     name: "Free drink with food purchase",
     shortText: "Free Drink",
+    description: "Complement your meal with a free beverage of your choice",
+    campaignType: "Food & Beverage Bundle",
   },
   {
     id: "mcm_o4_2023",
     merchantId: "m3",
     name: "$50 off TVs over $500",
     shortText: "TV Discount",
+    description: "Save big on premium televisions and entertainment systems",
+    campaignType: "Electronics Sale",
   },
   {
     id: "mcm_o5_2023",
     merchantId: "m14",
     name: "Free flu shot with coupon",
     shortText: "Free Flu Shot",
+    description:
+      "Protect yourself and your family with a complimentary flu vaccination",
+    campaignType: "Healthcare Service",
   },
 ];
+
+// 📱 MEDIA TYPE CONFIGURATIONS with optimal suggestions
+const MEDIA_TYPE_CONFIGS = {
+  display_banner: {
+    label: "Display Banner",
+    dimensions: "728x90",
+    description: "Traditional web banner ads",
+    bestFor: ["awareness", "reach"],
+    requiresAsset: true,
+  },
+  double_decker: {
+    label: "Double Decker",
+    dimensions: "728x180",
+    description: "Larger banner format for impact",
+    bestFor: ["branding", "promotions"],
+    requiresAsset: true,
+  },
+  native: {
+    label: "Native (Text Only)",
+    dimensions: "Text Only",
+    description: "Blends with content naturally",
+    bestFor: ["engagement", "conversions"],
+    requiresAsset: false,
+  },
+  video: {
+    label: "Video Ad",
+    dimensions: "16:9 ratio",
+    description: "Engaging video content",
+    bestFor: ["storytelling", "engagement"],
+    requiresAsset: true,
+  },
+  social: {
+    label: "Social Media",
+    dimensions: "1080x1080",
+    description: "Square format for social platforms",
+    bestFor: ["social engagement", "sharing"],
+    requiresAsset: true,
+  },
+};
 
 export function useCopilotActions() {
   const router = useRouter();
@@ -1005,14 +1060,16 @@ What would you like to create?`;
     },
   });
 
-  // 🎬 DEMO: Create McDonald's ad instantly via Redux
+  // 🎬 DEMO: Create McDonald's FreeFries campaign with everything filled out
   useCopilotAction({
-    name: "createMcDonaldsAd",
+    name: "createMcDonaldsFreeFriesCampaign",
     description:
-      "Create a complete McDonald's ad campaign with all details populated in Redux state",
+      "Create a complete McDonald's FreeFries campaign with all details, optimal media types, and asset upload guidance",
     parameters: [],
     handler: async () => {
-      console.log("[DEMO] 🎬 Creating McDonald's ad via Redux");
+      console.log(
+        "[DEMO] 🎬 Creating comprehensive McDonald's FreeFries campaign"
+      );
 
       // First, ensure we're on the right page
       if (!currentPage.includes("ads-create")) {
@@ -1023,136 +1080,295 @@ What would you like to create?`;
       const mcdonaldsMerchant = DEMO_MERCHANTS.find(
         (m) => m.dba === "McDonald's"
       );
-      const friesOffer = DEMO_OFFERS.find((o) => o.merchantId === "m11");
+      const freeFriesOffer = DEMO_OFFERS.find(
+        (o) => o.shortText === "FreeFries"
+      );
 
-      if (mcdonaldsMerchant && friesOffer) {
-        const demoAd: CampaignAd = {
+      if (mcdonaldsMerchant && freeFriesOffer) {
+        // Comprehensive campaign with optimal media types for McDonald's FreeFries
+        const comprehensiveCampaign: CampaignAd = {
           id: uuidv4(),
-          name: "McDonald's Free Fries Summer Campaign",
+          name: "McDonald's FreeFries Summer Campaign 2024",
           merchantId: mcdonaldsMerchant.id,
           merchantName: mcdonaldsMerchant.name,
-          offerId: friesOffer.id,
-          mediaType: ["display_banner", "native"],
+          offerId: freeFriesOffer.id,
+          mediaType: ["display_banner", "double_decker", "social", "native"], // Optimal mix for food campaign
           mediaAssets: [],
-          costPerActivation: 1.25,
-          costPerRedemption: 2.5,
+          costPerActivation: 1.85, // Realistic fast food CPA
+          costPerRedemption: 3.2, // Realistic fast food CPR
         };
 
-        // Add to Redux store - the form will automatically update!
-        dispatch(addAd(demoAd));
+        // Add to Redux store
+        dispatch(addAd(comprehensiveCampaign));
 
         dispatch(
           addNotification({
-            message: `🎬 McDonald's campaign created! Check the form - it's automatically populated.`,
+            message: `🍟 McDonald's FreeFries campaign created with optimal media mix!`,
             type: "success",
           })
         );
 
-        return `🎬 **McDonald's Ad Campaign Created Successfully!**
+        return `🍟 **McDonald's FreeFries Campaign Created Successfully!**
 
-✅ **Ad Name**: McDonald's Free Fries Summer Campaign
+✅ **Campaign**: McDonald's FreeFries Summer Campaign 2024
 ✅ **Merchant**: McDonald's Corporation  
-✅ **Offer**: Free fries with any burger
-✅ **Media Types**: Display Banner + Native
-✅ **Pricing**: $1.25 CPA, $2.50 CPR
+✅ **Offer**: ${freeFriesOffer.name}
+✅ **Campaign Type**: ${freeFriesOffer.campaignType}
+✅ **Description**: ${freeFriesOffer.description}
 
-*I've navigated you to the ad creation form and populated it with this data!*
+📱 **Optimal Media Types Selected:**
+• **Display Banner** (728x90) - Web awareness
+• **Double Decker** (728x180) - High-impact promotion  
+• **Social Media** (1080x1080) - Social engagement
+• **Native** (Text Only) - Natural content integration
 
-**What you'll see in the form:**
-• Ad name field filled automatically
-• McDonald's selected in merchant dropdown  
-• Free fries offer pre-selected
-• Media types configured
+💰 **Pricing Optimized for Fast Food:**
+• Cost Per Activation: $1.85
+• Cost Per Redemption: $3.20
 
-**Next steps I can help with:**
-• Upload media assets
-• Set budget and targeting
-• Generate ad copy
-• Launch the campaign
+*I've navigated you to the ad creation form and filled out everything optimally for a McDonald's food promotion!*
+
+**Ready for asset upload! Try these commands:**
+• "Upload banner asset" - Add display banner image
+• "Upload social asset" - Add social media creative
+• "Preview campaign" - See how it looks
+• "Generate ad copy" - Create compelling headlines
 
 What would you like to do next?`;
       }
 
-      return `Demo ad creation encountered an issue, but I can still guide you manually!`;
+      return `Unable to create McDonald's FreeFries campaign. Please try again.`;
     },
-  });
+  }),
+    // 📤 ASSET UPLOAD with preview functionality (inspired by CopilotKit state machine)
+    useCopilotAction({
+      name: "uploadAssetForCampaign",
+      description:
+        "Upload and preview media assets for the current campaign with intelligent suggestions",
+      parameters: [
+        {
+          name: "mediaType",
+          type: "string",
+          description:
+            "Media type: display_banner, double_decker, social, video, or native",
+          required: true,
+        },
+        {
+          name: "assetDescription",
+          type: "string",
+          description: "Description of the asset you want to upload",
+          required: false,
+        },
+      ],
+      handler: async ({ mediaType, assetDescription = "" }) => {
+        const ads = campaignState.formData.ads;
 
-  // 🎯 SMART AD CREATION - From user intent
-  useCopilotAction({
-    name: "createAdForMerchant",
-    description:
-      "Create an ad campaign for any merchant with intelligent offer matching",
-    parameters: [
-      {
-        name: "merchantName",
-        type: "string",
-        description: "Merchant name (McDonald's, CVS, Target, Starbucks, etc.)",
-        required: true,
+        if (ads.length === 0) {
+          return `❌ No campaign found. Create a campaign first using "Create McDonald's FreeFries campaign".`;
+        }
+
+        const currentAd = ads[ads.length - 1];
+        const mediaConfig =
+          MEDIA_TYPE_CONFIGS[mediaType as keyof typeof MEDIA_TYPE_CONFIGS];
+
+        if (!mediaConfig) {
+          const availableTypes = Object.keys(MEDIA_TYPE_CONFIGS).join(", ");
+          return `❌ Invalid media type "${mediaType}". Available types: ${availableTypes}`;
+        }
+
+        // Check if this media type is selected for the campaign
+        if (!currentAd.mediaType.includes(mediaType)) {
+          return `❌ Media type "${mediaType}" is not selected for campaign "${currentAd.name}". 
+
+Selected media types: ${currentAd.mediaType.join(", ")}
+
+Would you like me to add this media type to your campaign?`;
+        }
+
+        // Simulate asset upload process (in real implementation, this would handle file upload)
+        const mockAsset: MediaAsset = {
+          id: uuidv4(),
+          name: `${currentAd.name}_${mediaType}_asset`,
+          type: mediaType === "video" ? "video/mp4" : "image/png",
+          size: Math.floor(Math.random() * 1024 * 1024), // Random size
+          url: `https://placehold.co/728x90/ff0000/ffffff?text=McDonald's+FreeFries`,
+          previewUrl: `https://placehold.co/400x200/ffcc00/000000?text=McDonald's+FreeFries+Preview`,
+          dimensions: { width: 728, height: 90 },
+          mediaType: mediaType,
+        };
+
+        // Add asset to campaign via Redux
+        dispatch(addMediaToAd({ adId: currentAd.id, media: mockAsset }));
+
+        dispatch(
+          addNotification({
+            message: `📤 Uploaded ${mediaConfig.label} asset for ${currentAd.name}!`,
+            type: "success",
+          })
+        );
+
+        return `📤 **Asset Uploaded Successfully!**
+
+✅ **Campaign**: ${currentAd.name}
+✅ **Media Type**: ${mediaConfig.label} (${mediaConfig.dimensions})
+✅ **Asset**: ${mockAsset.name}
+✅ **Size**: ${Math.round(mockAsset.size / 1024)}KB
+
+📱 **Media Configuration:**
+• **Description**: ${mediaConfig.description}
+• **Best For**: ${mediaConfig.bestFor.join(", ")}
+• **Dimensions**: ${mediaConfig.dimensions}
+
+🖼️ **Preview Available**: ${mockAsset.previewUrl}
+
+*The asset has been added to your campaign and is visible in the form preview!*
+
+**Next steps:**
+• Upload additional assets for other media types
+• "Preview campaign" - See complete campaign preview
+• "Generate ad copy" - Create compelling copy
+• "Launch campaign" - Ready to go live
+
+Need to upload more assets or ready to preview?`;
       },
-      {
-        name: "campaignName",
-        type: "string",
-        description: "Custom campaign name (optional)",
-        required: false,
+    }),
+    // 👀 CAMPAIGN PREVIEW with comprehensive overview
+    useCopilotAction({
+      name: "previewCampaign",
+      description:
+        "Show a comprehensive preview of the current campaign with all assets and details",
+      parameters: [],
+      handler: async () => {
+        const ads = campaignState.formData.ads;
+
+        if (ads.length === 0) {
+          return `📝 No campaign to preview. Create one first with "Create McDonald's FreeFries campaign".`;
+        }
+
+        const currentAd = ads[ads.length - 1];
+        const offer = DEMO_OFFERS.find((o) => o.id === currentAd.offerId);
+
+        const assetSummary = currentAd.mediaType
+          .map((type) => {
+            const mediaConfig =
+              MEDIA_TYPE_CONFIGS[type as keyof typeof MEDIA_TYPE_CONFIGS];
+            const hasAsset = currentAd.mediaAssets.some(
+              (asset) => asset.mediaType === type
+            );
+            const status = hasAsset ? "✅ Ready" : "⏳ Needs Upload";
+            return `• **${mediaConfig?.label}** (${mediaConfig?.dimensions}) - ${status}`;
+          })
+          .join("\n");
+
+        const totalAssets = currentAd.mediaAssets.length;
+        const requiredAssets = currentAd.mediaType.filter(
+          (type) =>
+            MEDIA_TYPE_CONFIGS[type as keyof typeof MEDIA_TYPE_CONFIGS]
+              ?.requiresAsset
+        ).length;
+
+        return `👀 **Campaign Preview: ${currentAd.name}**
+
+🏪 **Merchant**: ${currentAd.merchantName}
+🎁 **Offer**: ${offer?.name || "Unknown offer"}
+📝 **Description**: ${offer?.description || "No description available"}
+🏷️ **Campaign Type**: ${offer?.campaignType || "Standard"}
+
+📱 **Media Assets Status (${totalAssets}/${requiredAssets} uploaded):**
+${assetSummary}
+
+💰 **Pricing**:
+• Cost Per Activation: $${currentAd.costPerActivation.toFixed(2)}
+• Cost Per Redemption: $${currentAd.costPerRedemption.toFixed(2)}
+
+🎯 **Campaign Readiness**:
+${totalAssets >= requiredAssets ? "🟢 **Ready to Launch!**" : "🟡 **Needs More Assets**"}
+
+**Quick Actions:**
+• Upload missing assets with "Upload [media type] asset"
+• Generate ad copy with "Generate ad copy" 
+• Launch campaign with "Launch campaign"
+
+What would you like to do next?`;
       },
-    ],
-    handler: async ({ merchantName, campaignName }) => {
-      console.log("[DEMO] 🎯 Creating ad for merchant:", merchantName);
+    }),
+    // 🎯 SMART AD CREATION - From user intent
+    useCopilotAction({
+      name: "createAdForMerchant",
+      description:
+        "Create an ad campaign for any merchant with intelligent offer matching",
+      parameters: [
+        {
+          name: "merchantName",
+          type: "string",
+          description:
+            "Merchant name (McDonald's, CVS, Target, Starbucks, etc.)",
+          required: true,
+        },
+        {
+          name: "campaignName",
+          type: "string",
+          description: "Custom campaign name (optional)",
+          required: false,
+        },
+      ],
+      handler: async ({ merchantName, campaignName }) => {
+        console.log("[DEMO] 🎯 Creating ad for merchant:", merchantName);
 
-      // First, ensure we're on the right page
-      if (!currentPage.includes("ads-create")) {
-        dispatch(setCurrentPage("/campaign-manager/ads-create"));
-        router.push("/campaign-manager/ads-create");
-      }
+        // First, ensure we're on the right page
+        if (!currentPage.includes("ads-create")) {
+          dispatch(setCurrentPage("/campaign-manager/ads-create"));
+          router.push("/campaign-manager/ads-create");
+        }
 
-      // Find matching merchant
-      const merchant = DEMO_MERCHANTS.find(
-        (m) =>
-          m.dba.toLowerCase().includes(merchantName.toLowerCase()) ||
-          m.name.toLowerCase().includes(merchantName.toLowerCase())
-      );
+        // Find matching merchant
+        const merchant = DEMO_MERCHANTS.find(
+          (m) =>
+            m.dba.toLowerCase().includes(merchantName.toLowerCase()) ||
+            m.name.toLowerCase().includes(merchantName.toLowerCase())
+        );
 
-      if (!merchant) {
-        return `❌ Sorry, I couldn't find a merchant matching "${merchantName}". 
+        if (!merchant) {
+          return `❌ Sorry, I couldn't find a merchant matching "${merchantName}". 
 
 Available merchants: ${DEMO_MERCHANTS.map((m) => m.dba).join(", ")}
 
 Would you like me to navigate you to the ad creation page to explore available options?`;
-      }
+        }
 
-      // Find best offer for this merchant
-      const offer = DEMO_OFFERS.find((o) => o.merchantId === merchant.id);
+        // Find best offer for this merchant
+        const offer = DEMO_OFFERS.find((o) => o.merchantId === merchant.id);
 
-      if (!offer) {
-        return `❌ No offers available for ${merchant.dba} right now.`;
-      }
+        if (!offer) {
+          return `❌ No offers available for ${merchant.dba} right now.`;
+        }
 
-      const finalCampaignName =
-        campaignName || `${merchant.dba} ${offer.shortText} Campaign`;
+        const finalCampaignName =
+          campaignName || `${merchant.dba} ${offer.shortText} Campaign`;
 
-      const newAd: CampaignAd = {
-        id: uuidv4(),
-        name: finalCampaignName,
-        merchantId: merchant.id,
-        merchantName: merchant.name,
-        offerId: offer.id,
-        mediaType: ["display_banner"],
-        mediaAssets: [],
-        costPerActivation: 1.0 + Math.random() * 2, // Random pricing for demo
-        costPerRedemption: 2.0 + Math.random() * 3,
-      };
+        const newAd: CampaignAd = {
+          id: uuidv4(),
+          name: finalCampaignName,
+          merchantId: merchant.id,
+          merchantName: merchant.name,
+          offerId: offer.id,
+          mediaType: ["display_banner"],
+          mediaAssets: [],
+          costPerActivation: 1.0 + Math.random() * 2, // Random pricing for demo
+          costPerRedemption: 2.0 + Math.random() * 3,
+        };
 
-      // Add to Redux - form updates automatically!
-      dispatch(addAd(newAd));
+        // Add to Redux - form updates automatically!
+        dispatch(addAd(newAd));
 
-      dispatch(
-        addNotification({
-          message: `🎯 Created "${finalCampaignName}" - form auto-populated!`,
-          type: "success",
-        })
-      );
+        dispatch(
+          addNotification({
+            message: `🎯 Created "${finalCampaignName}" - form auto-populated!`,
+            type: "success",
+          })
+        );
 
-      return `🎯 **Ad Campaign Created Successfully!**
+        return `🎯 **Ad Campaign Created Successfully!**
 
 ✅ **Campaign**: ${finalCampaignName}
 ✅ **Merchant**: ${merchant.dba}
@@ -1168,8 +1384,8 @@ Would you like me to navigate you to the ad creation page to explore available o
 • Launch campaign
 
 What would you like to work on next?`;
-    },
-  });
+      },
+    });
 
   // 📝 FORM MANAGEMENT - Update existing ad
   useCopilotAction({
@@ -1372,4 +1588,704 @@ ${adsList}
 What would you like to do next?`;
     },
   });
+
+  // 🚀 QUICK DEMO ACTIONS for streamlined workflow
+
+  // 📱 Upload banner asset (shortcut)
+  useCopilotAction({
+    name: "uploadBannerAsset",
+    description: "Quick upload of display banner asset for current campaign",
+    parameters: [],
+    handler: async () => {
+      const ads = campaignState.formData.ads;
+
+      if (ads.length === 0) {
+        return `❌ No campaign found. Create a campaign first.`;
+      }
+
+      const currentAd = ads[ads.length - 1];
+      const mediaType = "display_banner";
+      const mediaConfig = MEDIA_TYPE_CONFIGS[mediaType];
+
+      if (!currentAd.mediaType.includes(mediaType)) {
+        return `❌ Display banner is not selected for this campaign.`;
+      }
+
+      const mockAsset: MediaAsset = {
+        id: uuidv4(),
+        name: `${currentAd.name}_banner_asset`,
+        type: "image/png",
+        size: Math.floor(Math.random() * 1024 * 1024),
+        url: `https://placehold.co/728x90/ff0000/ffffff?text=McDonald's+FreeFries+Banner`,
+        previewUrl: `https://placehold.co/400x200/ffcc00/000000?text=Banner+Preview`,
+        dimensions: { width: 728, height: 90 },
+        mediaType: mediaType,
+      };
+
+      dispatch(addMediaToAd({ adId: currentAd.id, media: mockAsset }));
+      dispatch(
+        addNotification({
+          message: `📤 Banner asset uploaded for ${currentAd.name}!`,
+          type: "success",
+        })
+      );
+
+      return `📤 **Banner Asset Uploaded!** ✅
+
+Ready for more uploads or launch campaign?`;
+    },
+  }),
+    // 📱 Upload social asset (shortcut)
+    useCopilotAction({
+      name: "uploadSocialAsset",
+      description: "Quick upload of social media asset for current campaign",
+      parameters: [],
+      handler: async () => {
+        const ads = campaignState.formData.ads;
+
+        if (ads.length === 0) {
+          return `❌ No campaign found. Create a campaign first.`;
+        }
+
+        const currentAd = ads[ads.length - 1];
+        const mediaType = "social";
+        const mediaConfig = MEDIA_TYPE_CONFIGS[mediaType];
+
+        if (!currentAd.mediaType.includes(mediaType)) {
+          return `❌ Social media format is not selected for this campaign.`;
+        }
+
+        const mockAsset: MediaAsset = {
+          id: uuidv4(),
+          name: `${currentAd.name}_social_asset`,
+          type: "image/png",
+          size: Math.floor(Math.random() * 1024 * 1024),
+          url: `https://placehold.co/1080x1080/ff0000/ffffff?text=McDonald's+Social`,
+          previewUrl: `https://placehold.co/400x400/ffcc00/000000?text=Social+Preview`,
+          dimensions: { width: 1080, height: 1080 },
+          mediaType: mediaType,
+        };
+
+        dispatch(addMediaToAd({ adId: currentAd.id, media: mockAsset }));
+        dispatch(
+          addNotification({
+            message: `📤 Social asset uploaded for ${currentAd.name}!`,
+            type: "success",
+          })
+        );
+
+        return `📤 **Social Media Asset Uploaded!** ✅
+
+Perfect for Instagram, Facebook, and Twitter campaigns!`;
+      },
+    }),
+    // 📝 Generate compelling ad copy
+    useCopilotAction({
+      name: "generateAdCopy",
+      description:
+        "Generate compelling ad copy and headlines for the current campaign",
+      parameters: [
+        {
+          name: "tone",
+          type: "string",
+          description:
+            "Tone of voice: exciting, professional, friendly, or urgent",
+          required: false,
+        },
+      ],
+      handler: async ({ tone = "exciting" }) => {
+        const ads = campaignState.formData.ads;
+
+        if (ads.length === 0) {
+          return `❌ No campaign found. Create a campaign first.`;
+        }
+
+        const currentAd = ads[ads.length - 1];
+        const offer = DEMO_OFFERS.find((o) => o.id === currentAd.offerId);
+
+        // Generate contextual ad copy based on merchant and offer
+        const headlines = {
+          exciting: [
+            `🍟 FREE Fries Alert! Get yours with any burger at McDonald's!`,
+            `🎉 Golden & Crispy Fries on the House - Limited Time!`,
+            `🔥 Hot Deal: FREE McDonald's Fries with Every Burger!`,
+          ],
+          professional: [
+            `Complimentary fries with burger purchase at McDonald's`,
+            `Enhanced value: Free fries included with entrée selection`,
+            `Premium dining experience: Fries complimentary with burger`,
+          ],
+          friendly: [
+            `Hey! Grab free fries with your McDonald's burger today 😊`,
+            `We're treating you to free fries with any burger! 🍟`,
+            `Your burger just got better - free fries included! ✨`,
+          ],
+          urgent: [
+            `⏰ LIMITED TIME: Free fries disappearing soon!`,
+            `🚨 Last chance for FREE McDonald's fries with burger!`,
+            `⏳ Don't miss out - Free fries offer ends soon!`,
+          ],
+        };
+
+        const selectedHeadlines =
+          headlines[tone as keyof typeof headlines] || headlines.exciting;
+
+        return `📝 **Ad Copy Generated for ${currentAd.name}**
+
+🎯 **Tone**: ${tone.charAt(0).toUpperCase() + tone.slice(1)}
+🎁 **Offer**: ${offer?.name}
+
+📢 **Headline Options:**
+1. ${selectedHeadlines[0]}
+2. ${selectedHeadlines[1]}  
+3. ${selectedHeadlines[2]}
+
+📱 **Call-to-Action Suggestions:**
+• "Get Your Free Fries Now!"
+• "Order Today & Save!"
+• "Claim Your Fries!"
+• "Don't Wait - Free Fries Inside!"
+
+🎨 **Copy Variations by Media Type:**
+• **Banner**: Short & punchy headlines
+• **Social**: Emoji-rich, shareable content
+• **Native**: Natural, informative descriptions
+• **Double Decker**: Multiple CTAs, more detail
+
+*Copy has been optimized for ${offer?.campaignType} campaigns!*
+
+**Ready to launch?** Try "Launch campaign" or upload more assets first.`;
+      },
+    }),
+    // 🚀 Launch campaign (final demo step)
+    useCopilotAction({
+      name: "launchCampaign",
+      description:
+        "Final step: Launch the campaign after review and asset upload",
+      parameters: [],
+      handler: async () => {
+        const ads = campaignState.formData.ads;
+
+        if (ads.length === 0) {
+          return `❌ No campaign to launch. Create one first.`;
+        }
+
+        const currentAd = ads[ads.length - 1];
+        const offer = DEMO_OFFERS.find((o) => o.id === currentAd.offerId);
+        const totalAssets = currentAd.mediaAssets.length;
+        const requiredAssets = currentAd.mediaType.filter(
+          (type) =>
+            MEDIA_TYPE_CONFIGS[type as keyof typeof MEDIA_TYPE_CONFIGS]
+              ?.requiresAsset
+        ).length;
+
+        if (totalAssets < requiredAssets) {
+          return `⚠️ **Campaign Not Ready to Launch**
+
+Missing assets for: ${currentAd.mediaType
+            .filter((type) => {
+              const config =
+                MEDIA_TYPE_CONFIGS[type as keyof typeof MEDIA_TYPE_CONFIGS];
+              return (
+                config?.requiresAsset &&
+                !currentAd.mediaAssets.some((asset) => asset.mediaType === type)
+              );
+            })
+            .join(", ")}
+
+**Upload missing assets first:**
+• "Upload banner asset"
+• "Upload social asset"  
+• "Upload [media type] asset"
+
+Then try launching again!`;
+        }
+
+        dispatch(
+          addNotification({
+            message: `🚀 ${currentAd.name} launched successfully! Campaign is now live.`,
+            type: "success",
+          })
+        );
+
+        return `🚀 **Campaign Launched Successfully!**
+
+🎉 **${currentAd.name}** is now LIVE!
+
+📊 **Campaign Summary:**
+• **Merchant**: ${currentAd.merchantName}
+• **Offer**: ${offer?.name}
+• **Media Types**: ${currentAd.mediaType.length} formats
+• **Assets**: ${totalAssets} uploaded and ready
+• **Budget**: $${currentAd.costPerActivation.toFixed(2)} CPA / $${currentAd.costPerRedemption.toFixed(2)} CPR
+
+🎯 **Expected Performance:**
+• Reach: 50,000+ potential customers
+• Engagement: High for food promotions
+• Conversion: Strong for free fries offers
+
+📈 **Next Steps:**
+• Monitor campaign performance
+• Optimize based on results  
+• Scale successful creatives
+• A/B test different copy variants
+
+**🎉 DEMO COMPLETE!** Your McDonald's FreeFries campaign is now running across all selected media channels.
+
+ Want to create another campaign or explore more features?`;
+      },
+    });
+
+  // 📤 DRAG & DROP IMAGE UPLOAD - Advanced file handling in chat
+  useCopilotAction({
+    name: "uploadImageAsset",
+    description:
+      "Upload image assets via drag & drop or file selection for the current campaign with automatic media type detection",
+    parameters: [
+      {
+        name: "fileName",
+        type: "string",
+        description: "Name of the uploaded file",
+        required: false,
+      },
+      {
+        name: "fileSize",
+        type: "number",
+        description: "Size of the file in bytes",
+        required: false,
+      },
+      {
+        name: "mediaType",
+        type: "string",
+        description:
+          "Target media type: display_banner, double_decker, social, video (auto-detected if not specified)",
+        required: false,
+      },
+      {
+        name: "imageDescription",
+        type: "string",
+        description: "Description of the image content for preview",
+        required: false,
+      },
+    ],
+    handler: async ({
+      fileName = "uploaded_image.png",
+      fileSize = 0,
+      mediaType,
+      imageDescription = "",
+    }) => {
+      const ads = campaignState.formData.ads;
+
+      if (ads.length === 0) {
+        return `📤 **Ready for Image Upload!**
+
+But first, create a campaign:
+• "Create McDonald's FreeFries campaign"
+• "Create ad for [merchant name]"
+
+Then drag & drop your images here! 📸`;
+      }
+
+      const currentAd = ads[ads.length - 1];
+
+      // Auto-detect media type based on file name or dimensions if not specified
+      let detectedMediaType = mediaType;
+      if (!detectedMediaType) {
+        if (fileName.toLowerCase().includes("banner")) {
+          detectedMediaType = "display_banner";
+        } else if (
+          fileName.toLowerCase().includes("social") ||
+          fileName.toLowerCase().includes("square")
+        ) {
+          detectedMediaType = "social";
+        } else if (
+          fileName.toLowerCase().includes("double") ||
+          fileName.toLowerCase().includes("large")
+        ) {
+          detectedMediaType = "double_decker";
+        } else {
+          // Default to first available media type for the campaign
+          detectedMediaType = currentAd.mediaType[0] || "display_banner";
+        }
+      }
+
+      const mediaConfig =
+        MEDIA_TYPE_CONFIGS[
+          detectedMediaType as keyof typeof MEDIA_TYPE_CONFIGS
+        ];
+
+      if (!mediaConfig) {
+        return `❌ Unknown media type "${detectedMediaType}". Available types: ${Object.keys(MEDIA_TYPE_CONFIGS).join(", ")}`;
+      }
+
+      // Check if this media type is selected for the campaign
+      if (!currentAd.mediaType.includes(detectedMediaType)) {
+        return `🔄 **Media Type Not Selected**
+
+"${mediaConfig.label}" is not enabled for "${currentAd.name}".
+
+**Selected media types:** ${currentAd.mediaType.join(", ")}
+
+Would you like me to add ${mediaConfig.label} to your campaign first?`;
+      }
+
+      // Generate realistic file metadata
+      const actualFileSize =
+        fileSize || Math.floor(Math.random() * 2048 * 1024) + 512 * 1024; // 512KB - 2.5MB
+      const fileExtension = fileName.split(".").pop()?.toLowerCase() || "png";
+      const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, "_");
+
+      // Create preview URL based on media type dimensions
+      let previewDimensions = { width: 400, height: 200 };
+      let assetDimensions = { width: 728, height: 90 };
+
+      switch (detectedMediaType) {
+        case "display_banner":
+          assetDimensions = { width: 728, height: 90 };
+          previewDimensions = { width: 400, height: 50 };
+          break;
+        case "double_decker":
+          assetDimensions = { width: 728, height: 180 };
+          previewDimensions = { width: 400, height: 100 };
+          break;
+        case "social":
+          assetDimensions = { width: 1080, height: 1080 };
+          previewDimensions = { width: 300, height: 300 };
+          break;
+        case "video":
+          assetDimensions = { width: 1920, height: 1080 };
+          previewDimensions = { width: 400, height: 225 };
+          break;
+      }
+
+      // Create media asset with uploaded file data
+      const uploadedAsset: MediaAsset = {
+        id: uuidv4(),
+        name: `${currentAd.name}_${detectedMediaType}_${sanitizedFileName}`,
+        type: `image/${fileExtension}`,
+        size: actualFileSize,
+        url: `https://placehold.co/${assetDimensions.width}x${assetDimensions.height}/ff0000/ffffff?text=${encodeURIComponent(currentAd.name)}`,
+        previewUrl: `https://placehold.co/${previewDimensions.width}x${previewDimensions.height}/ffcc00/000000?text=${encodeURIComponent("Preview: " + sanitizedFileName)}`,
+        dimensions: assetDimensions,
+        mediaType: detectedMediaType,
+      };
+
+      // Add asset to campaign via Redux
+      dispatch(addMediaToAd({ adId: currentAd.id, media: uploadedAsset }));
+
+      dispatch(
+        addNotification({
+          message: `📤 Uploaded ${sanitizedFileName} for ${currentAd.name}!`,
+          type: "success",
+        })
+      );
+
+      // Check campaign completion status
+      const totalAssets = currentAd.mediaAssets.length + 1; // +1 for the one we just added
+      const requiredAssets = currentAd.mediaType.filter(
+        (type) =>
+          MEDIA_TYPE_CONFIGS[type as keyof typeof MEDIA_TYPE_CONFIGS]
+            ?.requiresAsset
+      ).length;
+
+      const completionStatus =
+        totalAssets >= requiredAssets
+          ? "🟢 **Campaign Ready to Launch!**"
+          : `🟡 **${requiredAssets - totalAssets} more assets needed**`;
+
+      return `📤 **Image Uploaded Successfully!**
+
+✅ **File**: ${sanitizedFileName} (${Math.round(actualFileSize / 1024)}KB)
+✅ **Media Type**: ${mediaConfig.label} (${mediaConfig.dimensions})
+✅ **Campaign**: ${currentAd.name}
+✅ **Asset Count**: ${totalAssets}/${requiredAssets}
+
+🖼️ **Preview**: ${uploadedAsset.previewUrl}
+
+📱 **Optimized for**: ${mediaConfig.bestFor.join(", ")}
+${imageDescription ? `📝 **Content**: ${imageDescription}` : ""}
+
+${completionStatus}
+
+**Next steps:**
+• Drag & drop more images for other media types
+• "Preview campaign" - See all assets
+• "Generate ad copy" - Create compelling headlines
+• "Launch campaign" - Go live!
+
+Ready for more uploads or shall we proceed?`;
+    },
+  }),
+    // 🖼️ BULK IMAGE UPLOAD - Handle multiple files at once
+    useCopilotAction({
+      name: "uploadMultipleImages",
+      description:
+        "Upload multiple images at once via drag & drop with automatic media type assignment",
+      parameters: [
+        {
+          name: "fileCount",
+          type: "number",
+          description: "Number of files being uploaded",
+          required: true,
+        },
+        {
+          name: "fileNames",
+          type: "string",
+          description: "Comma-separated list of file names",
+          required: false,
+        },
+        {
+          name: "totalSize",
+          type: "number",
+          description: "Total size of all files in bytes",
+          required: false,
+        },
+      ],
+      handler: async ({ fileCount, fileNames = "", totalSize = 0 }) => {
+        const ads = campaignState.formData.ads;
+
+        if (ads.length === 0) {
+          return `📤 **Multiple Files Detected!**
+
+Create a campaign first, then drag & drop your ${fileCount} images:
+• "Create McDonald's FreeFries campaign"
+
+I'll automatically assign them to the right media types! 🎯`;
+        }
+
+        const currentAd = ads[ads.length - 1];
+        const fileList = fileNames
+          ? fileNames.split(",").map((f) => f.trim())
+          : [];
+
+        // Auto-assign files to available media types
+        const availableMediaTypes = currentAd.mediaType.filter(
+          (type) =>
+            MEDIA_TYPE_CONFIGS[type as keyof typeof MEDIA_TYPE_CONFIGS]
+              ?.requiresAsset
+        );
+
+        if (availableMediaTypes.length === 0) {
+          return `ℹ️ **No Media Types Need Images**
+
+Campaign "${currentAd.name}" only uses text-based formats.
+Current media types: ${currentAd.mediaType.join(", ")}`;
+        }
+
+        let uploadedCount = 0;
+        const uploadResults: string[] = [];
+
+        // Process each file (simulate bulk upload)
+        for (
+          let i = 0;
+          i < Math.min(fileCount, availableMediaTypes.length);
+          i++
+        ) {
+          const fileName = fileList[i] || `uploaded_image_${i + 1}.png`;
+          const mediaType = availableMediaTypes[i];
+          const mediaConfig =
+            MEDIA_TYPE_CONFIGS[mediaType as keyof typeof MEDIA_TYPE_CONFIGS];
+
+          const mockAsset: MediaAsset = {
+            id: uuidv4(),
+            name: `${currentAd.name}_${mediaType}_${fileName}`,
+            type: "image/png",
+            size: Math.floor((totalSize || 5 * 1024 * 1024) / fileCount),
+            url: `https://placehold.co/728x90/ff0000/ffffff?text=${encodeURIComponent(fileName)}`,
+            previewUrl: `https://placehold.co/300x150/ffcc00/000000?text=${encodeURIComponent("Preview: " + fileName)}`,
+            dimensions: { width: 728, height: 90 },
+            mediaType: mediaType,
+          };
+
+          dispatch(addMediaToAd({ adId: currentAd.id, media: mockAsset }));
+          uploadedCount++;
+          uploadResults.push(`✅ ${fileName} → ${mediaConfig?.label}`);
+        }
+
+        dispatch(
+          addNotification({
+            message: `📤 Uploaded ${uploadedCount} images for ${currentAd.name}!`,
+            type: "success",
+          })
+        );
+
+        const newTotalAssets = currentAd.mediaAssets.length + uploadedCount;
+        const requiredAssets = availableMediaTypes.length;
+
+        return `📤 **Bulk Upload Completed!**
+
+🎯 **Processed**: ${uploadedCount}/${fileCount} files
+📁 **Campaign**: ${currentAd.name}
+💾 **Total Size**: ${Math.round((totalSize || 5 * 1024 * 1024) / 1024 / 1024)}MB
+
+📋 **File Assignments**:
+${uploadResults.join("\n")}
+
+📊 **Campaign Status**: ${newTotalAssets}/${requiredAssets} assets uploaded
+${newTotalAssets >= requiredAssets ? "🟢 **Ready to Launch!**" : `🟡 **${requiredAssets - newTotalAssets} more needed**`}
+
+**Ready for next steps:**
+• "Preview campaign" - See all uploaded assets
+• "Generate ad copy" - Create compelling copy  
+• "Launch campaign" - Go live!
+
+All set for launch or need more uploads?`;
+      },
+    }),
+    // 📝 Generate compelling ad copy
+    useCopilotAction({
+      name: "generateAdCopy",
+      description:
+        "Generate compelling ad copy and headlines for the current campaign",
+      parameters: [
+        {
+          name: "tone",
+          type: "string",
+          description:
+            "Tone of voice: exciting, professional, friendly, or urgent",
+          required: false,
+        },
+      ],
+      handler: async ({ tone = "exciting" }) => {
+        const ads = campaignState.formData.ads;
+
+        if (ads.length === 0) {
+          return `❌ No campaign found. Create a campaign first.`;
+        }
+
+        const currentAd = ads[ads.length - 1];
+        const offer = DEMO_OFFERS.find((o) => o.id === currentAd.offerId);
+
+        // Generate contextual ad copy based on merchant and offer
+        const headlines = {
+          exciting: [
+            `🍟 FREE Fries Alert! Get yours with any burger at McDonald's!`,
+            `🎉 Golden & Crispy Fries on the House - Limited Time!`,
+            `🔥 Hot Deal: FREE McDonald's Fries with Every Burger!`,
+          ],
+          professional: [
+            `Complimentary fries with burger purchase at McDonald's`,
+            `Enhanced value: Free fries included with entrée selection`,
+            `Premium dining experience: Fries complimentary with burger`,
+          ],
+          friendly: [
+            `Hey! Grab free fries with your McDonald's burger today 😊`,
+            `We're treating you to free fries with any burger! 🍟`,
+            `Your burger just got better - free fries included! ✨`,
+          ],
+          urgent: [
+            `⏰ LIMITED TIME: Free fries disappearing soon!`,
+            `🚨 Last chance for FREE McDonald's fries with burger!`,
+            `⏳ Don't miss out - Free fries offer ends soon!`,
+          ],
+        };
+
+        const selectedHeadlines =
+          headlines[tone as keyof typeof headlines] || headlines.exciting;
+
+        return `📝 **Ad Copy Generated for ${currentAd.name}**
+
+🎯 **Tone**: ${tone.charAt(0).toUpperCase() + tone.slice(1)}
+🎁 **Offer**: ${offer?.name}
+
+📢 **Headline Options:**
+1. ${selectedHeadlines[0]}
+2. ${selectedHeadlines[1]}  
+3. ${selectedHeadlines[2]}
+
+📱 **Call-to-Action Suggestions:**
+• "Get Your Free Fries Now!"
+• "Order Today & Save!"
+• "Claim Your Fries!"
+• "Don't Wait - Free Fries Inside!"
+
+🎨 **Copy Variations by Media Type:**
+• **Banner**: Short & punchy headlines
+• **Social**: Emoji-rich, shareable content
+• **Native**: Natural, informative descriptions
+• **Double Decker**: Multiple CTAs, more detail
+
+*Copy has been optimized for ${offer?.campaignType} campaigns!*
+
+**Ready to launch?** Try "Launch campaign" or upload more assets first.`;
+      },
+    }),
+    // 🚀 Launch campaign (final demo step)
+    useCopilotAction({
+      name: "launchCampaign",
+      description:
+        "Final step: Launch the campaign after review and asset upload",
+      parameters: [],
+      handler: async () => {
+        const ads = campaignState.formData.ads;
+
+        if (ads.length === 0) {
+          return `❌ No campaign to launch. Create one first.`;
+        }
+
+        const currentAd = ads[ads.length - 1];
+        const offer = DEMO_OFFERS.find((o) => o.id === currentAd.offerId);
+        const totalAssets = currentAd.mediaAssets.length;
+        const requiredAssets = currentAd.mediaType.filter(
+          (type) =>
+            MEDIA_TYPE_CONFIGS[type as keyof typeof MEDIA_TYPE_CONFIGS]
+              ?.requiresAsset
+        ).length;
+
+        if (totalAssets < requiredAssets) {
+          return `⚠️ **Campaign Not Ready to Launch**
+
+Missing assets for: ${currentAd.mediaType
+            .filter((type) => {
+              const config =
+                MEDIA_TYPE_CONFIGS[type as keyof typeof MEDIA_TYPE_CONFIGS];
+              return (
+                config?.requiresAsset &&
+                !currentAd.mediaAssets.some((asset) => asset.mediaType === type)
+              );
+            })
+            .join(", ")}
+
+**Upload missing assets first:**
+• "Upload banner asset"
+• "Upload social asset"  
+• "Upload image asset with file name: banner.png"
+
+Then try launching again!`;
+        }
+
+        dispatch(
+          addNotification({
+            message: `🚀 ${currentAd.name} launched successfully! Campaign is now live.`,
+            type: "success",
+          })
+        );
+
+        return `🚀 **Campaign Launched Successfully!**
+
+🎉 **${currentAd.name}** is now LIVE!
+
+📊 **Campaign Summary:**
+• **Merchant**: ${currentAd.merchantName}
+• **Offer**: ${offer?.name}
+• **Media Types**: ${currentAd.mediaType.length} formats
+• **Assets**: ${totalAssets} uploaded and ready
+• **Budget**: $${currentAd.costPerActivation.toFixed(2)} CPA / $${currentAd.costPerRedemption.toFixed(2)} CPR
+
+🎯 **Expected Performance:**
+• Reach: 50,000+ potential customers
+• Engagement: High for food promotions
+• Conversion: Strong for free fries offers
+
+📈 **Next Steps:**
+• Monitor campaign performance
+• Optimize based on results  
+• Scale successful creatives
+• A/B test different copy variants
+
+**🎉 DEMO COMPLETE!** Your McDonald's FreeFries campaign is now running across all selected media channels.
+
+Want to create another campaign or explore more features?`;
+      },
+    });
 }
