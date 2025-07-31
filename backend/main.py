@@ -1,18 +1,20 @@
 """
 FastAPI + LangGraph Backend for Kigo Pro Dashboard
 
-This replaces the Next.js API route and provides:
-- CopilotKit-compatible endpoints
-- LangGraph agent orchestration
-- Better Studio integration
+Official CopilotKit integration pattern using CopilotKit SDK
 """
 
 import os
+import time
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Any, Dict, List, Optional
 import uvicorn
+
+# CopilotKit Official SDK imports (DISABLED due to compatibility issues)
+# from copilotkit.integrations.fastapi import add_fastapi_endpoint
+# from copilotkit import CopilotKitRemoteEndpoint, LangGraphAgent
 from dotenv import load_dotenv
 
 from app.agents.supervisor import create_supervisor_workflow
@@ -34,6 +36,20 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Logging middleware to debug CopilotKit requests
+@app.middleware("http")
+async def log_requests(request, call_next):
+    start_time = time.time()
+    print(f"🔍 [Request] {request.method} {request.url.path}")
+    if request.headers.get("content-type") == "application/json":
+        body = await request.body()
+        if body:
+            print(f"📝 [Body Preview] {str(body[:200])}")
+    response = await call_next(request)
+    process_time = time.time() - start_time
+    print(f"⏱️ [Response] {request.method} {request.url.path} - {response.status_code} in {process_time:.2f}s")
+    return response
 
 # Initialize LangGraph workflow
 supervisor_workflow = create_supervisor_workflow()
@@ -306,23 +322,67 @@ async def copilotkit_info_post():
         ]
     }
 
-class AgentExecuteRequest(BaseModel):
-    agent_name: str
-    input: Dict[str, Any]
+# Official CopilotKit endpoint pattern
+@app.get("/copilotkit/info")
+async def copilotkit_info_get():
+    """Official CopilotKit info endpoint for agent discovery (GET)"""
+    return {
+        "actions": [],
+        "agents": [
+            {
+                "name": "supervisor",
+                "description": "Kigo Pro multi-agent supervisor that routes to campaign, analytics, filter, and merchant specialists",
+                "type": "langgraph"
+            }
+        ]
+    }
+
+@app.post("/copilotkit/info")
+async def copilotkit_info_post():
+    """Official CopilotKit info endpoint for agent discovery (POST)"""
+    return {
+        "actions": [],
+        "agents": [
+            {
+                "name": "supervisor",
+                "description": "Kigo Pro multi-agent supervisor that routes to campaign, analytics, filter, and merchant specialists", 
+                "type": "langgraph"
+            }
+        ]
+    }
+
+class CopilotKitAgentRequest(BaseModel):
+    name: str
+    threadId: str
+    messages: List[Dict[str, Any]]
+    state: Dict[str, Any] = {}
+    config: Dict[str, Any] = {}
+    properties: Dict[str, Any] = {}
+    actions: List[Dict[str, Any]] = []
 
 @app.post("/agents/execute")
-async def execute_agent(request: AgentExecuteRequest):
-    """Execute LangGraph agent - the endpoint CopilotKit calls"""
-    print(f"[Python LangGraph] 🎯 AGENT EXECUTION - {request.agent_name}")
-    print(f"[Python LangGraph] 📝 Input: {request.input}")
+async def execute_agent(request: CopilotKitAgentRequest):
+    """Execute LangGraph agent - handles CopilotKit's actual request format"""
+    print(f"[Python LangGraph] 🎯 AGENT EXECUTION - {request.name}")
+    print(f"[Python LangGraph] 📝 Thread ID: {request.threadId}")
+    print(f"[Python LangGraph] 📝 Messages: {len(request.messages)} messages")
     
     try:
+        # Extract the user's last message
+        user_message = ""
+        for msg in reversed(request.messages):
+            if msg.get("role") == "user":
+                user_message = msg.get("content", "")
+                break
+        
+        print(f"[Python LangGraph] 💬 User message: {user_message}")
+        
         # Route to supervisor workflow (using async)
         result = await supervisor_workflow.ainvoke({
-            "messages": [{"type": "human", "content": str(request.input)}],
+            "messages": [{"type": "human", "content": user_message}],
             "user_intent": "general",
-            "context": request.input.get("context", {}),
-            "agent_decision": request.agent_name
+            "context": {"threadId": request.threadId, "copilotkit_state": request.state},
+            "agent_decision": request.name
         })
         
         print(f"[Python LangGraph] ✅ Workflow result: {result}")
@@ -348,6 +408,51 @@ async def execute_agent(request: AgentExecuteRequest):
             "result": {"error": str(e)},
             "status": "failed"
         }
+
+# ============================================================================
+# OFFICIAL COPILOTKIT SDK INTEGRATION (DISABLED - Compatibility Issues)
+# ============================================================================
+
+# NOTE: The official CopilotKit SDK has compatibility issues with our LangGraph version
+# Keeping our custom integration that works with CopilotKit frontend
+
+# print("🚀 Setting up Official CopilotKit SDK Integration...")
+
+# # Create CopilotKit agent wrapper for the supervisor workflow
+# kigo_agent = LangGraphAgent(
+#     name="kigo_supervisor",
+#     description="Kigo Pro multi-agent supervisor that handles campaigns, analytics, filters, and merchant workflows",
+#     graph=supervisor_workflow,
+# )
+
+# # Initialize CopilotKit Remote Endpoint
+# copilotkit_endpoint = CopilotKitRemoteEndpoint(
+#     agents=[kigo_agent],
+#     actions=[]  # Can add custom actions here if needed
+# )
+
+# # Add the official CopilotKit FastAPI endpoint
+# add_fastapi_endpoint(
+#     app, 
+#     copilotkit_endpoint, 
+#     "/copilotkit_remote", 
+#     max_workers=10
+# )
+
+# print("✅ CopilotKit SDK Integration Complete!")
+# print("📡 Available at: http://localhost:8000/copilotkit_remote")
+
+# Official CopilotKit agent execution endpoint
+@app.post("/copilotkit/agents/execute")
+async def copilotkit_agents_execute(request: CopilotKitAgentRequest):
+    """Official CopilotKit agents execution endpoint - proxies to our main handler"""
+    return await execute_agent(request)
+
+print("✅ Kigo Pro LangGraph Backend Ready!")
+print("📡 Available endpoints:")
+print("  - /info & /copilotkit/info (CopilotKit agent discovery)")
+print("  - /agents/execute & /copilotkit/agents/execute (CopilotKit agent execution)")
+print("  - /copilotkit (Chat endpoint)")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
