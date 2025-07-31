@@ -8,10 +8,15 @@ import { usePathname } from "next/navigation";
 import { useCopilotReadable } from "@copilotkit/react-core";
 import { useCopilotActions } from "../hooks/useCopilotActions";
 import { useAppSelector } from "../redux/hooks";
+import ActionExecutor from "./action-executor";
+import { useApprovalFlow } from "../hooks/useApprovalFlow";
 
 // Dynamic imports for components
-const ApprovalWorkflowUI = dynamic(
-  () => import("../../components/ui/ApprovalWorkflowUI"),
+const ApprovalDialog = dynamic(
+  () =>
+    import("../../components/ui/ApprovalDialog").then((mod) => ({
+      default: mod.ApprovalDialog,
+    })),
   {
     loading: () => <div>Loading...</div>,
     ssr: false,
@@ -27,6 +32,8 @@ function NavigationBridge() {
   const pathname = usePathname();
   const uiState = useAppSelector((state) => state.ui);
   const campaignState = useAppSelector((state) => state.campaign);
+  const { approval, handleApprove, handleReject, closeApproval } =
+    useApprovalFlow();
 
   console.log("[NavigationBridge] 🚀 Current context:", {
     pathname,
@@ -34,8 +41,8 @@ function NavigationBridge() {
     hasAds: campaignState.formData?.ads?.length || 0,
   });
 
-  // Register all CopilotKit actions - these can be called by LangGraph
-  useCopilotActions();
+  // Actions are now handled by Python LangGraph backend
+  // useCopilotActions(); // Disabled - Python backend handles all actions
 
   // Provide comprehensive context to CopilotKit
   useCopilotReadable({
@@ -64,7 +71,23 @@ function NavigationBridge() {
     },
   });
 
-  return <ApprovalWorkflowUI />;
+  return (
+    <ApprovalDialog
+      isOpen={approval.isOpen}
+      pendingAction={
+        approval.pendingAction || {
+          action_name: "",
+          parameters: {},
+          description: "",
+        }
+      }
+      message={approval.message}
+      threadId={approval.threadId}
+      onApprove={handleApprove}
+      onReject={handleReject}
+      onClose={closeApproval}
+    />
+  );
 }
 
 // Get available actions based on current page
@@ -145,50 +168,46 @@ function CopilotKitProviderContent({ children }: CopilotKitProviderProps) {
       runtimeUrl={
         process.env.NEXT_PUBLIC_COPILOT_RUNTIME_URL || "/api/copilotkit"
       }
-      showDevConsole={false}
+      showDevConsole={true} // Enable for debugging during migration
     >
       {children}
 
       <NavigationBridge />
+      <ActionExecutor />
 
       {isEnabled && (
         <CopilotSidebar
-          instructions={`You are the Kigo Pro Business Success Manager, an AI assistant powered by LangGraph multi-agent system.
+          instructions={`🚀 **Kigo Pro AI Assistant** - Powered by Python LangGraph Multi-Agent System
 
-🧠 **Your Capabilities:**
-• Multi-agent orchestration with specialist agents (Campaign, Analytics, Filter, etc.)
-• Intelligent intent detection and contextual routing
-• Complex workflow management with conversation memory
-• UI action execution through CopilotKit integration
-• Human-in-the-loop breakpoints for critical decisions
+You are directly connected to our Python LangGraph backend with:
 
-🎯 **How You Work:**
-• All messages are processed through our Python LangGraph backend
-• The supervisor agent analyzes intent and routes to specialist agents
-• Specialist agents can call CopilotKit actions to control the UI
-• Each agent maintains full context awareness of the application state
+🧠 **Intelligent Agents:**
+• **Supervisor**: Routes your requests to the right specialist
+• **Campaign Agent**: Handles ad creation with human approval workflows  
+• **Analytics Agent**: Provides performance insights and recommendations
+• **Filter Agent**: Manages product targeting and audience segmentation
+• **Merchant Agent**: Assists with merchant-specific workflows
 
-🚀 **Available Actions You Can Execute:**
-• navigateToAdCreation - Take users to ad creation page with smart defaults
-• navigateToAnalytics - Navigate to analytics dashboard for data insights  
-• createAd - Create complete advertising campaigns with user requirements
-• requestApproval - Show human-in-the-loop approval workflows
-• getCurrentPageInfo - Get detailed information about user's current page
+🎯 **How It Works:**
+• All messages go through Python LangGraph supervisor
+• Context-aware routing to appropriate specialist agents
+• Human-in-the-loop approvals for critical actions
+• Conversation memory across all interactions
 
-💡 **Your Expertise Areas:**
-• **Campaign Agent**: Ad creation, targeting, budget optimization, creative assistance
-• **Analytics Agent**: Performance analysis, ROI insights, trend identification, optimization recommendations
-• **Filter Agent**: Product targeting, audience segmentation, demographic filtering
-• **General Assistant**: Platform navigation, feature explanations, workflow guidance
+🔧 **Available Actions:**
+• Create ads with guided workflows
+• Navigate to different dashboard sections  
+• Analyze campaign performance
+• Set up product filters and targeting
+• Request approvals for budget/campaign changes
 
-🎨 **Interaction Patterns:**
-• Proactively identify user needs and suggest appropriate actions
-• Navigate users to relevant pages when they express specific intents
-• Provide step-by-step guidance through complex workflows
-• Offer contextual help based on current page and user activity
-• Use specialist agents for domain-specific expertise
+💬 **Just Ask:**
+• "Create an ad for McDonald's"
+• "Show me my analytics" 
+• "Help me set up filters"
+• "I need approval for a budget change"
 
-**Remember**: You're orchestrating through LangGraph - leverage the full multi-agent system for intelligent, contextual responses and actions!`}
+**All powered by sophisticated multi-agent workflows with full conversation memory!**`}
           labels={{
             title: "AI Assistant",
             initial:

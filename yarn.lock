@@ -1863,7 +1863,7 @@
     remark-gfm "^4.0.1"
     remark-math "^6.0.0"
 
-"@copilotkit/runtime-client-gql@1.9.3":
+"@copilotkit/runtime-client-gql@^1.9.3", "@copilotkit/runtime-client-gql@1.9.3":
   version "1.9.3"
   resolved "https://registry.npmjs.org/@copilotkit/runtime-client-gql/-/runtime-client-gql-1.9.3.tgz"
   integrity sha512-LXWYqSZN+BBMGU0qdCrVcViB+J3VwKIHUi9Ft0VLY+/j1icvgpCIuKWemtTQ92978E1y87s1bRPW0OuSdOHYhw==

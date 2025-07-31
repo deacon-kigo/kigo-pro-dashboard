@@ -306,5 +306,48 @@ async def copilotkit_info_post():
         ]
     }
 
+class AgentExecuteRequest(BaseModel):
+    agent_name: str
+    input: Dict[str, Any]
+
+@app.post("/agents/execute")
+async def execute_agent(request: AgentExecuteRequest):
+    """Execute LangGraph agent - the endpoint CopilotKit calls"""
+    print(f"[Python LangGraph] 🎯 AGENT EXECUTION - {request.agent_name}")
+    print(f"[Python LangGraph] 📝 Input: {request.input}")
+    
+    try:
+        # Route to supervisor workflow (using async)
+        result = await supervisor_workflow.ainvoke({
+            "messages": [{"type": "human", "content": str(request.input)}],
+            "user_intent": "general",
+            "context": request.input.get("context", {}),
+            "agent_decision": request.agent_name
+        })
+        
+        print(f"[Python LangGraph] ✅ Workflow result: {result}")
+        
+        # Extract the final response
+        if "messages" in result and result["messages"]:
+            last_message = result["messages"][-1]
+            response_content = last_message.content if hasattr(last_message, 'content') else str(last_message)
+        else:
+            response_content = str(result)
+            
+        return {
+            "result": {
+                "message": response_content,
+                "workflow_data": result
+            },
+            "status": "completed"
+        }
+        
+    except Exception as e:
+        print(f"[Python LangGraph] ❌ Agent execution error: {e}")
+        return {
+            "result": {"error": str(e)},
+            "status": "failed"
+        }
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
