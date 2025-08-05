@@ -861,7 +861,20 @@ interface CampaignFilters {
   adNames: string[];
   merchants: string[];
   offers: string[];
+  offerTypes: string[];
 }
+
+// Offer type options based on database schema
+const OFFER_TYPE_OPTIONS = [
+  { label: "Money Off", value: "AMT" },
+  { label: "Percent Off", value: "PCT" },
+  { label: "Free Product", value: "FREE" },
+  { label: "Cashback", value: "CASH" },
+  { label: "Special Price", value: "SPEC" },
+  { label: "Buy One, Get One", value: "BOGO" },
+  { label: "Click Thru", value: "CLK" },
+  { label: "Cash Back", value: "CB" },
+];
 
 // Mock data with Kigo context - loyalty/cashback platform, focused on ad-specific data
 const mockCampaigns: Campaign[] = [
@@ -896,7 +909,7 @@ const mockCampaigns: Campaign[] = [
             id: "ad-1",
             name: "Tony's Pizza Family Special",
             merchantId: "m1",
-            merchantName: "Tony's Authentic Pizza",
+            merchantName: "Tony's Pizza - Tony's Restaurant Corp",
             offerId: "o1",
             offerName: "20% off family meals (up to $15)",
             status: "Active",
@@ -930,7 +943,7 @@ const mockCampaigns: Campaign[] = [
             id: "ad-2",
             name: "Deacon's Weekend Bundle",
             merchantId: "m2",
-            merchantName: "Deacon's Pizza House",
+            merchantName: "Deacon's Pizza - Deacon's Restaurant Corp",
             offerId: "o2",
             offerName: "Buy 2 pizzas, get free breadsticks",
             status: "Active",
@@ -965,7 +978,7 @@ const mockCampaigns: Campaign[] = [
             id: "ad-3",
             name: "Frank's Slice Deal",
             merchantId: "m3",
-            merchantName: "Frank's Famous Pizza",
+            merchantName: "Frank's Pizza - Frank's Restaurant Corp",
             offerId: "o3",
             offerName: "Two slices + drink for $8.99",
             status: "Published",
@@ -990,7 +1003,7 @@ const mockCampaigns: Campaign[] = [
             id: "ad-4",
             name: "Luigi's Lunch Rush",
             merchantId: "m4",
-            merchantName: "Luigi's Pizzeria",
+            merchantName: "Luigi's Pizza - Luigi's Restaurant Corp",
             offerId: "o4",
             offerName: "15% off orders over $25 (weekdays 11-2pm)",
             status: "Paused",
@@ -1041,7 +1054,7 @@ const mockCampaigns: Campaign[] = [
             id: "ad-5",
             name: "Mama Mia's Lunch Express",
             merchantId: "m5",
-            merchantName: "Mama Mia's Italian Kitchen",
+            merchantName: "Mama Mia's - Mama Mia's Restaurant Corp",
             offerId: "o5",
             offerName: "15% off lunch orders (weekdays only)",
             status: "Paused",
@@ -1097,7 +1110,7 @@ const mockCampaigns: Campaign[] = [
             id: "ad-4",
             name: "Java Joe's Morning Special",
             merchantId: "merchant-jj",
-            merchantName: "Java Joe's Coffee House",
+            merchantName: "Java Joe's - Java Joe's Coffee Corp",
             offerId: "offer-jj-01",
             offerName: "Free pastry with coffee purchase",
             status: "Active",
@@ -1136,7 +1149,7 @@ const mockCampaigns: Campaign[] = [
             id: "ad-5",
             name: "Brew & Bite Breakfast Deal",
             merchantId: "merchant-bb",
-            merchantName: "Brew & Bite Cafe",
+            merchantName: "Brew & Bite - Brew & Bite Coffee Corp",
             offerId: "offer-bb-01",
             offerName: "$2 off breakfast sandwiches",
             status: "Published",
@@ -1192,7 +1205,7 @@ const mockCampaigns: Campaign[] = [
             id: "ad-6",
             name: "Sunny Side Brunch Special",
             merchantId: "merchant-ss",
-            merchantName: "Sunny Side Breakfast Bar",
+            merchantName: "Sunny Side - Sunny Side Restaurant Corp",
             offerId: "offer-ss-01",
             offerName: "Buy brunch, get mimosa half-price",
             status: "Draft",
@@ -1252,7 +1265,7 @@ const mockCampaigns: Campaign[] = [
             id: "ad-7",
             name: "Starbucks Loyalty Rewards",
             merchantId: "merchant-sb",
-            merchantName: "Starbucks Corporation",
+            merchantName: "Starbucks - Starbucks Corporation",
             offerId: "offer-sb-01",
             offerName: "Buy 2 Get 1 Free beverages",
             status: "Active",
@@ -1281,7 +1294,7 @@ const mockCampaigns: Campaign[] = [
             id: "ad-8",
             name: "Starbucks Holiday Blend Promo",
             merchantId: "merchant-sb",
-            merchantName: "Starbucks Corporation",
+            merchantName: "Starbucks - Starbucks Corporation",
             offerId: "offer-sb-02",
             offerName: "20% off holiday blends",
             status: "Ended",
@@ -1326,7 +1339,7 @@ const mockCampaigns: Campaign[] = [
             id: "ad-9",
             name: "Chipotle Welcome Offer",
             merchantId: "merchant-chipotle",
-            merchantName: "Chipotle Mexican Grill",
+            merchantName: "Chipotle - Chipotle Mexican Grill Inc",
             offerId: "offer-chipotle-01",
             offerName: "Free guacamole with entrée",
             status: "Draft",
@@ -1386,7 +1399,7 @@ const mockCampaigns: Campaign[] = [
             id: "ad-10",
             name: "Walmart Holiday Promotion",
             merchantId: "merchant-walmart",
-            merchantName: "Walmart Inc.",
+            merchantName: "Walmart - Walmart Inc",
             offerId: "offer-walmart-01",
             offerName: "$10 off $50 purchase",
             status: "Draft",
@@ -1432,7 +1445,7 @@ const mockCampaigns: Campaign[] = [
             id: "ad-11",
             name: "Target Home Decor Special",
             merchantId: "merchant-target",
-            merchantName: "Target Corporation",
+            merchantName: "Target - Target Corporation",
             offerId: "offer-target-01",
             offerName: "15% off home decor",
             status: "Draft",
@@ -1461,7 +1474,7 @@ const mockCampaigns: Campaign[] = [
             id: "ad-12",
             name: "Target Holiday Lighting Sale",
             merchantId: "merchant-target",
-            merchantName: "Target Corporation",
+            merchantName: "Target - Target Corporation",
             offerId: "offer-target-02",
             offerName: "25% off holiday lighting",
             status: "Draft",
@@ -1773,7 +1786,8 @@ const CampaignFilterDropdown = memo(function CampaignFilterDropdown({
   const hasActiveFilters =
     filters.adNames.length > 0 ||
     filters.merchants.length > 0 ||
-    filters.offers.length > 0;
+    filters.offers.length > 0 ||
+    filters.offerTypes.length > 0;
 
   const handleFilterChange = (
     type: keyof CampaignFilters,
@@ -1786,7 +1800,10 @@ const CampaignFilterDropdown = memo(function CampaignFilterDropdown({
   };
 
   const activeFilterCount =
-    filters.adNames.length + filters.merchants.length + filters.offers.length;
+    filters.adNames.length +
+    filters.merchants.length +
+    filters.offers.length +
+    filters.offerTypes.length;
 
   return (
     <>
@@ -1892,6 +1909,23 @@ const CampaignFilterDropdown = memo(function CampaignFilterDropdown({
                   maxDisplayValues={2}
                 />
               </div>
+
+              {/* Offer Type Filter */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-700">
+                  Offer Type
+                </label>
+                <ReactSelectMulti
+                  placeholder="Select offer types..."
+                  options={OFFER_TYPE_OPTIONS}
+                  values={filters.offerTypes}
+                  onChange={(values) =>
+                    handleFilterChange("offerTypes", values)
+                  }
+                  width="100%"
+                  maxDisplayValues={2}
+                />
+              </div>
             </div>
 
             {/* Footer */}
@@ -1943,6 +1977,7 @@ export default function AdManagerListView() {
     adNames: [],
     merchants: [],
     offers: [],
+    offerTypes: [],
   });
 
   // Modal states - use useState with function to prevent object recreation
@@ -2025,6 +2060,7 @@ export default function AdManagerListView() {
       adNames: [],
       merchants: [],
       offers: [],
+      offerTypes: [],
     });
   }, []);
 
@@ -2244,6 +2280,7 @@ export default function AdManagerListView() {
       adNames: [],
       merchants: [],
       offers: [],
+      offerTypes: [],
     });
     // Reset to page 1 when clearing filters
     setPaginationState((prev) => ({
