@@ -4,3 +4,11 @@ __pycache__/
 .env
 venv/
 .venv/
+
+# Log files
+*.log
+langgraph.log
+copilotkit.log
+
+# LangGraph API cache
+.langgraph_api/
