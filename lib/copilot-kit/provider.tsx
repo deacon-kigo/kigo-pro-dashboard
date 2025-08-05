@@ -151,7 +151,8 @@ function getPageContext(currentPath: string) {
 
 function CopilotKitProviderContent({ children }: CopilotKitProviderProps) {
   const [isMounted, setIsMounted] = useState(false);
-  const isEnabled = process.env.NEXT_PUBLIC_FEATURE_COPILOT_CHAT === "true";
+  // REMOVED: Feature flag check - CopilotKit now always enabled
+  // const isEnabled = process.env.NEXT_PUBLIC_FEATURE_COPILOT_CHAT === "true";
 
   // Prevent hydration mismatch by only rendering after client mount
   useEffect(() => {
@@ -175,9 +176,9 @@ function CopilotKitProviderContent({ children }: CopilotKitProviderProps) {
       <NavigationBridge />
       <ActionExecutor />
 
-      {isEnabled && (
-        <CopilotSidebar
-          instructions={`🚀 **Kigo Pro AI Assistant** - Powered by Python LangGraph Multi-Agent System
+      {/* ALWAYS ENABLED: CopilotKit UI now available in production */}
+      <CopilotSidebar
+        instructions={`🚀 **Kigo Pro AI Assistant** - Powered by Python LangGraph Multi-Agent System
 
 You are directly connected to our Python LangGraph backend with:
 
@@ -208,14 +209,13 @@ You are directly connected to our Python LangGraph backend with:
 • "I need approval for a budget change"
 
 **All powered by sophisticated multi-agent workflows with full conversation memory!**`}
-          labels={{
-            title: "AI Assistant",
-            initial:
-              "Hi! I'm your Kigo Pro assistant powered by our multi-agent system. I can help with campaigns, analytics, filters, and more. What would you like to work on?",
-          }}
-          defaultOpen={true}
-        />
-      )}
+        labels={{
+          title: "AI Assistant",
+          initial:
+            "Hi! I'm your Kigo Pro assistant powered by our multi-agent system. I can help with campaigns, analytics, filters, and more. What would you like to work on?",
+        }}
+        defaultOpen={true}
+      />
     </CopilotKit>
   );
 }
