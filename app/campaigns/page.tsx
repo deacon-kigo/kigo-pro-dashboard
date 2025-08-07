@@ -28,7 +28,7 @@ export default function CampaignsPage() {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>Ads Manager</BreadcrumbPage>
+            <BreadcrumbPage>Ad Manager</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>

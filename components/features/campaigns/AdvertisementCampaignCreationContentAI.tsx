@@ -326,7 +326,7 @@ export default function AdvertisementCampaignCreationContentAI() {
       className="flex items-center gap-1"
     >
       <ArrowLeftIcon className="h-4 w-4" />
-      Back to Ads Manager
+      Back to Ad Manager
     </Button>
   );
 
