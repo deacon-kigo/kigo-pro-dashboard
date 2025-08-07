@@ -370,7 +370,7 @@ const createAdSetColumns = (
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
         >
-          Ads Group Name
+          Ad Group Name
           <SortIcon sorted={column.getIsSorted()} />
         </Button>
       );
