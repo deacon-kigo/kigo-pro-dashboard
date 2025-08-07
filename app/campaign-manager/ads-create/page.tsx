@@ -71,7 +71,7 @@ export default function AdvertisementCampaignCreatePage() {
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbLink href="/campaigns">Ads Manager</BreadcrumbLink>
+          <BreadcrumbLink href="/campaigns">Ad Manager</BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>

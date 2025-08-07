@@ -309,7 +309,7 @@ const AdvertisementWizardAI: React.FC = () => {
           strokeLinejoin="round"
         />
       </svg>
-      Back to Ads Manager
+      Back to Ad Manager
     </Button>
   );
 

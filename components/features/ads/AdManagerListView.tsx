@@ -260,7 +260,7 @@ const createCampaignColumns = (
   },
   {
     id: "adSets",
-    header: () => <div className="text-left font-medium">Ads Groups</div>,
+    header: () => <div className="text-left font-medium">Ad Groups</div>,
     cell: ({ row }) => (
       <div className="text-left">
         <div className="font-medium">
@@ -760,16 +760,16 @@ const AdSetTable = memo(function AdSetTable({
         <div className="flex items-center space-x-2 text-base text-muted-foreground">
           <div>
             {totalItems === 0 ? (
-              <span>No ads groups</span>
+              <span>No ad groups</span>
             ) : (
               <span>
-                Showing {startIndex + 1}-{endIndex} of {totalItems} ads groups
+                Showing {startIndex + 1}-{endIndex} of {totalItems} ad groups
               </span>
             )}
           </div>
 
           <div className="flex items-center ml-4">
-            <span className="mr-2">Ads groups per page:</span>
+            <span className="mr-2">Ad groups per page:</span>
             <Select
               value={actualPageSize.toString()}
               onValueChange={handlePageSizeChange}
@@ -1883,10 +1883,10 @@ const CampaignFilterDropdown = memo(function CampaignFilterDropdown({
               {/* Merchant Filter */}
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-700">
-                  Merchant
+                  Merchant Name
                 </label>
                 <ReactSelectMulti
-                  placeholder="Select merchants..."
+                  placeholder="Select merchant names..."
                   options={filterOptions.merchants}
                   values={filters.merchants}
                   onChange={(values) => handleFilterChange("merchants", values)}
@@ -1898,10 +1898,10 @@ const CampaignFilterDropdown = memo(function CampaignFilterDropdown({
               {/* Offer Filter */}
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-700">
-                  Offer
+                  Offer Name
                 </label>
                 <ReactSelectMulti
-                  placeholder="Select offers..."
+                  placeholder="Select offer names..."
                   options={filterOptions.offers}
                   values={filters.offers}
                   onChange={(values) => handleFilterChange("offers", values)}
@@ -2483,21 +2483,21 @@ export default function AdManagerListView() {
 
   // Create dynamic page header and search context
   const getContextProps = useMemo(() => {
-    let title = "Ads Manager";
+    let title = "Ad Manager";
     let description =
       "Create, manage, and optimize your advertising campaigns across multiple channels and platforms.";
     let searchPlaceholder = "Search campaigns...";
 
     if (currentLevel === "ads") {
-      title = "Ads Manager";
+      title = "Ad Manager";
       description =
         "Create, manage, and optimize your advertising campaigns across multiple channels and platforms.";
       searchPlaceholder = "Search ads...";
     } else if (currentLevel === "adsets") {
-      title = "Ads Manager";
+      title = "Ad Manager";
       description =
         "Create, manage, and optimize your advertising campaigns across multiple channels and platforms.";
-      searchPlaceholder = "Search ads groups...";
+      searchPlaceholder = "Search ad groups...";
     }
 
     return { title, description, searchPlaceholder };
@@ -2580,7 +2580,7 @@ export default function AdManagerListView() {
           {/* Right: Tabs like Catalog */}
           <TabsList>
             <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
-            <TabsTrigger value="adsets">Ads Groups</TabsTrigger>
+            <TabsTrigger value="adsets">Ad Groups</TabsTrigger>
             <TabsTrigger value="ads">Ads</TabsTrigger>
           </TabsList>
         </div>

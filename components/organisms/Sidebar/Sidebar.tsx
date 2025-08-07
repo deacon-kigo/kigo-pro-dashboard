@@ -274,7 +274,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 href="/campaigns"
                 icon={MegaphoneIcon}
                 title={
-                  isPublisherDashboard ? "Program Ads Manager" : "Ads Manager"
+                  isPublisherDashboard ? "Program Ad Manager" : "Ad Manager"
                 }
                 isActive={isLinkActive("/campaigns")}
                 isCollapsed={sidebarCollapsed}
@@ -349,7 +349,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 href="/campaigns"
                 icon={MegaphoneIcon}
                 title={
-                  isPublisherDashboard ? "Program Ads Manager" : "Ads Manager"
+                  isPublisherDashboard ? "Program Ad Manager" : "Ad Manager"
                 }
                 isActive={isLinkActive("/campaigns")}
                 isCollapsed={sidebarCollapsed}
