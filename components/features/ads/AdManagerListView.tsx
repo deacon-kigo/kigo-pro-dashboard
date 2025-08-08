@@ -267,12 +267,7 @@ const createCampaignColumns = (
           {((row.original && row.original.adSets) || []).length}
         </div>
         <div className="text-sm text-gray-500">
-          {
-            ((row.original && row.original.adSets) || []).filter(
-              (as) => as.status === "Active"
-            ).length
-          }{" "}
-          active
+          {((row.original && row.original.adSets) || []).length} total
         </div>
       </div>
     ),
@@ -319,7 +314,7 @@ const createCampaignColumns = (
   },
   {
     id: "actions",
-    header: () => <div className="text-center font-medium">Actions</div>,
+    header: () => <div className="text-left font-medium">Actions</div>,
     cell: ({ row }) => (
       <div className="flex justify-center">
         <ActionDropdown
@@ -335,7 +330,7 @@ const createCampaignColumns = (
   },
 ];
 
-// Ad Set columns definition (simplified for V1 - just grouping of ads)
+// Ad Set columns definition (enhanced for V1 - ad grouping with better organization)
 const createAdSetColumns = (
   onAdSetSelect: (adSet: AdSet) => void
 ): ColumnDef<AdSet>[] => [
@@ -363,18 +358,7 @@ const createAdSetColumns = (
   },
   {
     accessorKey: "name",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
-        >
-          Ad Group Name
-          <SortIcon sorted={column.getIsSorted()} />
-        </Button>
-      );
-    },
+    header: () => <div className="text-left font-medium">Ad Group Name</div>,
     cell: ({ row }) => (
       <button
         className="font-medium text-left max-w-[200px] truncate text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
@@ -384,28 +368,81 @@ const createAdSetColumns = (
         {row.getValue("name") || "Unnamed Ad Group"}
       </button>
     ),
+    enableSorting: false,
   },
   {
-    accessorKey: "status",
-    header: ({ column }) => {
+    accessorKey: "description",
+    header: () => <div className="text-left font-medium">Description</div>,
+    cell: ({ row }) => (
+      <div
+        className="text-left max-w-[300px] truncate text-gray-700"
+        title={row.getValue("description")}
+      >
+        {row.getValue("description") || "No description"}
+      </div>
+    ),
+    enableSorting: false,
+  },
+  {
+    accessorKey: "distributionChannels",
+    header: () => (
+      <div className="text-left font-medium">Distribution Channels</div>
+    ),
+    cell: ({ row }) => {
+      const channels = (row.getValue("distributionChannels") as string[]) || [];
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
-        >
-          Status
-          <SortIcon sorted={column.getIsSorted()} />
-        </Button>
+        <div className="flex flex-wrap gap-1">
+          {channels.map((channel, index) => (
+            <span
+              key={index}
+              className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 border border-green-200"
+            >
+              {channel}
+            </span>
+          ))}
+          {channels.length === 0 && (
+            <span className="text-gray-400 text-sm">None</span>
+          )}
+        </div>
       );
     },
-    cell: ({ row }) => (
-      <span
-        className={`inline-flex px-2 py-1 text-sm font-semibold rounded-full ${getStatusColor(row.getValue("status") || "Draft")}`}
-      >
-        {row.getValue("status") || "Draft"}
-      </span>
-    ),
+    enableSorting: false,
+  },
+  {
+    accessorKey: "linkedCampaigns",
+    header: () => <div className="text-left font-medium">Linked Campaigns</div>,
+    cell: ({ row }) => {
+      const campaigns =
+        (row.getValue("linkedCampaigns") as Array<{
+          id: string;
+          name: string;
+          partnerName: string;
+          programName: string;
+        }>) || [];
+
+      if (campaigns.length === 0) {
+        return <span className="text-gray-400 text-sm">None</span>;
+      }
+
+      return (
+        <div className="flex items-center gap-2">
+          <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700 border border-blue-200">
+            {campaigns.length} campaign{campaigns.length !== 1 ? "s" : ""}
+          </span>
+          {campaigns.length > 0 && (
+            <span className="text-xs text-gray-500">
+              ({[...new Set(campaigns.map((c) => c.partnerName))].length}{" "}
+              partner
+              {[...new Set(campaigns.map((c) => c.partnerName))].length !== 1
+                ? "s"
+                : ""}
+              )
+            </span>
+          )}
+        </div>
+      );
+    },
+    enableSorting: false,
   },
   {
     id: "ads",
@@ -805,12 +842,19 @@ interface Campaign {
   adSets: AdSet[];
 }
 
-// Type for Ad Set (simplified for V1 - just grouping of ads)
+// Type for Ad Set (enhanced for V1 - ad grouping with description and distribution)
 interface AdSet {
   id: string;
   name: string;
   campaignId: string;
-  status: CampaignStatus;
+  description: string;
+  distributionChannels: string[];
+  linkedCampaigns: Array<{
+    id: string;
+    name: string;
+    partnerName: string;
+    programName: string;
+  }>;
   createdDate: string;
   lastModified: string;
   ads: Ad[];
@@ -854,7 +898,17 @@ const mockCampaigns: Campaign[] = [
         id: "adset-1",
         name: "Northeast Pizza Restaurants",
         campaignId: "campaign-1",
-        status: "Active",
+        description:
+          "Targeting family-friendly pizza restaurants in the northeast region for summer dining promotions",
+        distributionChannels: ["TOP", "Local+"],
+        linkedCampaigns: [
+          {
+            id: "campaign-1",
+            name: "Summer Family Dining Campaign",
+            partnerName: "Kigo",
+            programName: "Restaurant Network",
+          },
+        ],
         createdDate: "2024-06-01",
         lastModified: "2024-06-10",
         ads: [
@@ -992,7 +1046,17 @@ const mockCampaigns: Campaign[] = [
         id: "adset-2",
         name: "Boston Metro Casual Dining",
         campaignId: "campaign-1",
-        status: "Paused",
+        description:
+          "Professional lunch promotions for working adults in Boston metropolitan area",
+        distributionChannels: ["TOP", "Local+"],
+        linkedCampaigns: [
+          {
+            id: "campaign-1",
+            name: "Summer Family Dining Campaign",
+            partnerName: "Kigo",
+            programName: "Restaurant Network",
+          },
+        ],
         createdDate: "2024-06-05",
         lastModified: "2024-06-18",
         ads: [
@@ -1041,7 +1105,17 @@ const mockCampaigns: Campaign[] = [
         id: "adset-3",
         name: "Morning Rush Hour Targeting",
         campaignId: "campaign-2",
-        status: "Active",
+        description:
+          "Coffee and breakfast promotions during morning commute hours (7-9am)",
+        distributionChannels: ["TOP", "Local+", "Signals"],
+        linkedCampaigns: [
+          {
+            id: "campaign-2",
+            name: "Local Coffee & Breakfast Promo",
+            partnerName: "Kigo",
+            programName: "Coffee Network",
+          },
+        ],
         createdDate: "2024-07-01",
         lastModified: "2024-07-15",
         ads: [
@@ -1129,7 +1203,16 @@ const mockCampaigns: Campaign[] = [
         id: "adset-4",
         name: "Weekend Brunch Specials",
         campaignId: "campaign-2",
-        status: "Published",
+        description: "Weekend brunch promotions targeting leisure dining crowd",
+        distributionChannels: ["TOP", "Local+"],
+        linkedCampaigns: [
+          {
+            id: "campaign-2",
+            name: "Local Coffee & Breakfast Promo",
+            partnerName: "Kigo",
+            programName: "Coffee Network",
+          },
+        ],
         createdDate: "2024-07-05",
         lastModified: "2024-07-18",
         ads: [
@@ -1180,9 +1263,19 @@ const mockCampaigns: Campaign[] = [
     adSets: [
       {
         id: "adset-5",
-        name: "Memorial Day Weekend Sales",
+        name: "Holiday Blend Collection",
         campaignId: "campaign-3",
-        status: "Active",
+        description:
+          "Premium coffee blends and seasonal beverages for holiday shopping period",
+        distributionChannels: ["TOP", "Local+", "Catalog"],
+        linkedCampaigns: [
+          {
+            id: "campaign-3",
+            name: "Local Retail Holiday Push",
+            partnerName: "Kigo",
+            programName: "Retail Network",
+          },
+        ],
         createdDate: "2024-08-01",
         lastModified: "2024-08-12",
         ads: [
@@ -1247,9 +1340,19 @@ const mockCampaigns: Campaign[] = [
       },
       {
         id: "adset-6",
-        name: "Chipotle Welcome Offers",
+        name: "Fast Casual Welcome Campaign",
         campaignId: "campaign-3",
-        status: "Draft",
+        description:
+          "Welcome offers for new customers at fast-casual restaurant chains",
+        distributionChannels: ["TOP", "Signals"],
+        linkedCampaigns: [
+          {
+            id: "campaign-3",
+            name: "Local Retail Holiday Push",
+            partnerName: "Kigo",
+            programName: "Retail Network",
+          },
+        ],
         createdDate: "2024-09-01",
         lastModified: "2024-09-10",
         ads: [
@@ -1302,7 +1405,17 @@ const mockCampaigns: Campaign[] = [
         id: "adset-7",
         name: "Walmart Holiday Promotions",
         campaignId: "campaign-4",
-        status: "Draft",
+        description:
+          "Holiday shopping deals and promotions for major retail chains",
+        distributionChannels: ["TOP", "Local+", "Signals", "Catalog"],
+        linkedCampaigns: [
+          {
+            id: "campaign-4",
+            name: "Holiday Shopping Extravaganza",
+            partnerName: "Kigo",
+            programName: "Retail Network",
+          },
+        ],
         createdDate: "2024-10-01",
         lastModified: "2024-10-15",
         ads: [
@@ -1341,7 +1454,17 @@ const mockCampaigns: Campaign[] = [
         id: "adset-8",
         name: "Target Home Decor Holiday",
         campaignId: "campaign-4",
-        status: "Draft",
+        description:
+          "Home decor and holiday lighting promotions for seasonal shoppers",
+        distributionChannels: ["TOP", "Local+"],
+        linkedCampaigns: [
+          {
+            id: "campaign-4",
+            name: "Holiday Shopping Extravaganza",
+            partnerName: "Kigo",
+            programName: "Retail Network",
+          },
+        ],
         createdDate: "2024-10-05",
         lastModified: "2024-10-20",
         ads: [
@@ -1672,9 +1795,10 @@ const CampaignFilterDropdown = memo(function CampaignFilterDropdown({
   useEffect(() => {
     if (isOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
+      const dropdownWidth = 384; // w-96 = 384px
       setDropdownPosition({
         top: rect.bottom + window.scrollY + 8,
-        left: rect.left + window.scrollX,
+        left: rect.right + window.scrollX - dropdownWidth,
       });
     }
   }, [isOpen]);
