@@ -57,6 +57,138 @@ import {
 } from "@/components/atoms/Select";
 import { cn } from "@/lib/utils";
 import { ReactSelectMulti } from "@/components/ui/react-select-multi";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Badge } from "@/components/atoms/Badge";
+import {
+  BuildingOfficeIcon,
+  BriefcaseIcon,
+  ExclamationTriangleIcon,
+} from "@heroicons/react/24/outline";
+import { Briefcase } from "lucide-react";
+
+// LinkedCampaigns cell component with hover details (matching catalog filter)
+const LinkedCampaignsCell = memo(function LinkedCampaignsCell({
+  campaigns,
+}: {
+  campaigns: Array<{
+    id: string;
+    name: string;
+    partnerName: string;
+    programName: string;
+  }>;
+}) {
+  if (!campaigns || campaigns.length === 0) {
+    return (
+      <div className="flex items-center text-gray-400">
+        <span className="text-sm">None</span>
+      </div>
+    );
+  }
+
+  // Group campaigns by partner for better organization
+  const campaignsByPartner = campaigns.reduce(
+    (acc, campaign) => {
+      if (!acc[campaign.partnerName]) {
+        acc[campaign.partnerName] = [];
+      }
+      acc[campaign.partnerName].push(campaign);
+      return acc;
+    },
+    {} as Record<string, typeof campaigns>
+  );
+
+  const totalCount = campaigns.length;
+  const partnerCount = Object.keys(campaignsByPartner).length;
+
+  return (
+    <TooltipProvider>
+      <Tooltip delayDuration={300}>
+        <TooltipTrigger asChild>
+          <div className="flex items-center gap-2 cursor-pointer hover:bg-blue-50 rounded-md p-1 transition-colors">
+            <Badge
+              variant="outline"
+              className="bg-blue-50 text-blue-700 border-blue-200 font-medium text-sm"
+            >
+              {totalCount} campaign{totalCount !== 1 ? "s" : ""}
+            </Badge>
+            <span className="text-sm text-gray-500">
+              ({partnerCount} partner{partnerCount !== 1 ? "s" : ""})
+            </span>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="left" className="max-w-md p-0 border-0">
+          <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-h-80 overflow-y-auto">
+            <div className="mb-3">
+              <h4 className="font-medium text-gray-900 flex items-center gap-2 text-base">
+                <BriefcaseIcon className="h-5 w-5 text-blue-600" />
+                Distribution Channel Partners
+              </h4>
+              <p className="text-sm text-gray-500 mt-1">
+                {totalCount} campaign{totalCount !== 1 ? "s" : ""} across{" "}
+                {partnerCount} partner{partnerCount !== 1 ? "s" : ""}
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {Object.entries(campaignsByPartner).map(
+                ([partnerName, partnerCampaigns]) => (
+                  <div key={partnerName} className="space-y-2">
+                    <div className="flex items-center gap-2 pb-1 border-b border-gray-100">
+                      <BuildingOfficeIcon className="h-4 w-4 text-gray-600" />
+                      <span className="text-base font-medium text-gray-900">
+                        {partnerName}
+                      </span>
+                      <Badge variant="secondary" className="text-sm">
+                        {partnerCampaigns.length}
+                      </Badge>
+                    </div>
+
+                    <div className="pl-5 space-y-1.5">
+                      {partnerCampaigns.map((campaign) => (
+                        <div
+                          key={campaign.id}
+                          className="flex items-start justify-between"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <div className="text-base font-medium text-gray-900 truncate">
+                              {campaign.name}
+                            </div>
+                            <div className="text-sm text-gray-600 flex items-center gap-1">
+                              <Briefcase className="h-4 w-4" />
+                              {campaign.programName}
+                            </div>
+                          </div>
+                          <Badge
+                            variant="outline"
+                            className="bg-green-50 text-green-700 border-green-200 ml-2"
+                          >
+                            Active
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
+
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              <div className="text-sm text-gray-500 flex items-center gap-1">
+                <ExclamationTriangleIcon className="h-4 w-4 text-amber-500" />
+                Active distribution partnerships for this ad group
+              </div>
+            </div>
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+});
 
 // Type for pagination state
 interface PaginationState {
@@ -384,63 +516,13 @@ const createAdSetColumns = (
     enableSorting: false,
   },
   {
-    accessorKey: "distributionChannels",
+    accessorKey: "linkedCampaigns",
     header: () => (
-      <div className="text-left font-medium">Distribution Channels</div>
+      <div className="text-left font-medium">Distribution Channel</div>
     ),
     cell: ({ row }) => {
-      const channels = (row.getValue("distributionChannels") as string[]) || [];
-      return (
-        <div className="flex flex-wrap gap-1">
-          {channels.map((channel, index) => (
-            <span
-              key={index}
-              className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 border border-green-200"
-            >
-              {channel}
-            </span>
-          ))}
-          {channels.length === 0 && (
-            <span className="text-gray-400 text-sm">None</span>
-          )}
-        </div>
-      );
-    },
-    enableSorting: false,
-  },
-  {
-    accessorKey: "linkedCampaigns",
-    header: () => <div className="text-left font-medium">Linked Campaigns</div>,
-    cell: ({ row }) => {
-      const campaigns =
-        (row.getValue("linkedCampaigns") as Array<{
-          id: string;
-          name: string;
-          partnerName: string;
-          programName: string;
-        }>) || [];
-
-      if (campaigns.length === 0) {
-        return <span className="text-gray-400 text-sm">None</span>;
-      }
-
-      return (
-        <div className="flex items-center gap-2">
-          <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700 border border-blue-200">
-            {campaigns.length} campaign{campaigns.length !== 1 ? "s" : ""}
-          </span>
-          {campaigns.length > 0 && (
-            <span className="text-xs text-gray-500">
-              ({[...new Set(campaigns.map((c) => c.partnerName))].length}{" "}
-              partner
-              {[...new Set(campaigns.map((c) => c.partnerName))].length !== 1
-                ? "s"
-                : ""}
-              )
-            </span>
-          )}
-        </div>
-      );
+      const campaigns = row.original.linkedCampaigns || [];
+      return <LinkedCampaignsCell campaigns={campaigns} />;
     },
     enableSorting: false,
   },
@@ -842,13 +924,12 @@ interface Campaign {
   adSets: AdSet[];
 }
 
-// Type for Ad Set (enhanced for V1 - ad grouping with description and distribution)
+// Type for Ad Set (enhanced for V1 - ad grouping with description)
 interface AdSet {
   id: string;
   name: string;
   campaignId: string;
   description: string;
-  distributionChannels: string[];
   linkedCampaigns: Array<{
     id: string;
     name: string;
@@ -900,13 +981,18 @@ const mockCampaigns: Campaign[] = [
         campaignId: "campaign-1",
         description:
           "Targeting family-friendly pizza restaurants in the northeast region for summer dining promotions",
-        distributionChannels: ["TOP", "Local+"],
         linkedCampaigns: [
           {
-            id: "campaign-1",
-            name: "Summer Family Dining Campaign",
-            partnerName: "Kigo",
-            programName: "Restaurant Network",
+            id: "promo-campaign-001",
+            name: "Northeast Pizza Network Boost",
+            partnerName: "DoorDash",
+            programName: "Restaurant Partners",
+          },
+          {
+            id: "promo-campaign-002",
+            name: "Family Dining Summer Promo",
+            partnerName: "Grubhub",
+            programName: "Local Restaurants",
           },
         ],
         createdDate: "2024-06-01",
@@ -1048,13 +1134,24 @@ const mockCampaigns: Campaign[] = [
         campaignId: "campaign-1",
         description:
           "Professional lunch promotions for working adults in Boston metropolitan area",
-        distributionChannels: ["TOP", "Local+"],
         linkedCampaigns: [
           {
-            id: "campaign-1",
-            name: "Summer Family Dining Campaign",
-            partnerName: "Kigo",
-            programName: "Restaurant Network",
+            id: "promo-campaign-003",
+            name: "Boston Business Lunch Initiative",
+            partnerName: "Uber Eats",
+            programName: "Corporate Dining",
+          },
+          {
+            id: "promo-campaign-004",
+            name: "Metro Express Meals",
+            partnerName: "Seamless",
+            programName: "Quick Service",
+          },
+          {
+            id: "promo-campaign-005",
+            name: "Downtown Delivery Boost",
+            partnerName: "Postmates",
+            programName: "City Partners",
           },
         ],
         createdDate: "2024-06-05",
@@ -1107,13 +1204,19 @@ const mockCampaigns: Campaign[] = [
         campaignId: "campaign-2",
         description:
           "Coffee and breakfast promotions during morning commute hours (7-9am)",
-        distributionChannels: ["TOP", "Local+", "Signals"],
+
         linkedCampaigns: [
           {
-            id: "campaign-2",
-            name: "Local Coffee & Breakfast Promo",
-            partnerName: "Kigo",
-            programName: "Coffee Network",
+            id: "promo-campaign-006",
+            name: "Morning Coffee Rush Rewards",
+            partnerName: "Starbucks",
+            programName: "Loyalty Plus",
+          },
+          {
+            id: "promo-campaign-007",
+            name: "Breakfast Express Network",
+            partnerName: "Dunkin'",
+            programName: "DD Perks Pro",
           },
         ],
         createdDate: "2024-07-01",
@@ -1204,13 +1307,18 @@ const mockCampaigns: Campaign[] = [
         name: "Weekend Brunch Specials",
         campaignId: "campaign-2",
         description: "Weekend brunch promotions targeting leisure dining crowd",
-        distributionChannels: ["TOP", "Local+"],
         linkedCampaigns: [
           {
-            id: "campaign-2",
-            name: "Local Coffee & Breakfast Promo",
-            partnerName: "Kigo",
-            programName: "Coffee Network",
+            id: "promo-campaign-008",
+            name: "Weekend Brunch Club",
+            partnerName: "OpenTable",
+            programName: "Dining Rewards",
+          },
+          {
+            id: "promo-campaign-009",
+            name: "Leisurely Weekend Dining",
+            partnerName: "Resy",
+            programName: "VIP Dining",
           },
         ],
         createdDate: "2024-07-05",
@@ -1267,13 +1375,24 @@ const mockCampaigns: Campaign[] = [
         campaignId: "campaign-3",
         description:
           "Premium coffee blends and seasonal beverages for holiday shopping period",
-        distributionChannels: ["TOP", "Local+", "Catalog"],
         linkedCampaigns: [
           {
-            id: "campaign-3",
-            name: "Local Retail Holiday Push",
-            partnerName: "Kigo",
-            programName: "Retail Network",
+            id: "promo-campaign-010",
+            name: "Holiday Coffee Collection",
+            partnerName: "Peet's Coffee",
+            programName: "Seasonal Blends",
+          },
+          {
+            id: "promo-campaign-011",
+            name: "Winter Warmth Campaign",
+            partnerName: "Blue Bottle Coffee",
+            programName: "Artisan Series",
+          },
+          {
+            id: "promo-campaign-012",
+            name: "Holiday Spice Network",
+            partnerName: "Intelligentsia",
+            programName: "Craft Coffee",
           },
         ],
         createdDate: "2024-08-01",
@@ -1344,13 +1463,18 @@ const mockCampaigns: Campaign[] = [
         campaignId: "campaign-3",
         description:
           "Welcome offers for new customers at fast-casual restaurant chains",
-        distributionChannels: ["TOP", "Signals"],
         linkedCampaigns: [
           {
-            id: "campaign-3",
-            name: "Local Retail Holiday Push",
-            partnerName: "Kigo",
-            programName: "Retail Network",
+            id: "promo-campaign-013",
+            name: "New Customer Welcome Series",
+            partnerName: "Chipotle",
+            programName: "Burrito Rewards",
+          },
+          {
+            id: "promo-campaign-014",
+            name: "First Visit Incentive",
+            partnerName: "Panera",
+            programName: "MyPanera Plus",
           },
         ],
         createdDate: "2024-09-01",
@@ -1407,13 +1531,24 @@ const mockCampaigns: Campaign[] = [
         campaignId: "campaign-4",
         description:
           "Holiday shopping deals and promotions for major retail chains",
-        distributionChannels: ["TOP", "Local+", "Signals", "Catalog"],
         linkedCampaigns: [
           {
-            id: "campaign-4",
-            name: "Holiday Shopping Extravaganza",
-            partnerName: "Kigo",
-            programName: "Retail Network",
+            id: "promo-campaign-015",
+            name: "Black Friday Mega Deals",
+            partnerName: "Walmart",
+            programName: "Rollback Rewards",
+          },
+          {
+            id: "promo-campaign-016",
+            name: "Holiday Shopping Spree",
+            partnerName: "Target",
+            programName: "Circle Rewards",
+          },
+          {
+            id: "promo-campaign-017",
+            name: "Cyber Monday Blitz",
+            partnerName: "Amazon",
+            programName: "Prime Shopping",
           },
         ],
         createdDate: "2024-10-01",
@@ -1456,13 +1591,24 @@ const mockCampaigns: Campaign[] = [
         campaignId: "campaign-4",
         description:
           "Home decor and holiday lighting promotions for seasonal shoppers",
-        distributionChannels: ["TOP", "Local+"],
         linkedCampaigns: [
           {
-            id: "campaign-4",
-            name: "Holiday Shopping Extravaganza",
-            partnerName: "Kigo",
-            programName: "Retail Network",
+            id: "promo-campaign-018",
+            name: "Holiday Home Makeover",
+            partnerName: "Home Depot",
+            programName: "Pro Rewards",
+          },
+          {
+            id: "promo-campaign-019",
+            name: "Festive Decor Collection",
+            partnerName: "Lowe's",
+            programName: "MyLowe's Rewards",
+          },
+          {
+            id: "promo-campaign-020",
+            name: "Holiday Lighting Spectacular",
+            partnerName: "Wayfair",
+            programName: "Way to Save",
           },
         ],
         createdDate: "2024-10-05",
