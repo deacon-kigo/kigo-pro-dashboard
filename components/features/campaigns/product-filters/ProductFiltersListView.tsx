@@ -7,6 +7,7 @@ import {
   TrashIcon,
   DocumentDuplicateIcon,
   CalendarIcon,
+  ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import {
   Tabs,
@@ -22,6 +23,12 @@ import { ProductFilterSearchBar, SearchField } from "./ProductFilterSearchBar";
 import { useDispatch } from "react-redux";
 import { clearAllDropdowns } from "@/lib/redux/slices/uiSlice";
 import { CatalogFilterBulkDeleteDialog } from "./CatalogFilterBulkDeleteDialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Type for pagination state
 interface PaginationState {
@@ -49,21 +56,72 @@ const BulkActions = memo(function BulkActions({
 
   if (selectedCount === 0) return null;
 
+  // Check if any selected filters have linked campaigns
+  const hasProtectedFilters = selectedFilters.some((selectedFilter) => {
+    const fullFilter = allFilters.find((f) => f.id === selectedFilter.id);
+    return fullFilter?.linkedCampaigns && fullFilter.linkedCampaigns.length > 0;
+  });
+
+  const protectedCount = selectedFilters.filter((selectedFilter) => {
+    const fullFilter = allFilters.find((f) => f.id === selectedFilter.id);
+    return fullFilter?.linkedCampaigns && fullFilter.linkedCampaigns.length > 0;
+  }).length;
+
   return (
     <>
       <div className="flex items-center gap-2">
         <span className="text-sm font-medium whitespace-nowrap">
           {selectedCount} selected
         </span>
-        <Button
-          variant="destructive"
-          size="sm"
-          className="flex items-center gap-1"
-          onClick={() => setDeleteDialogOpen(true)}
-        >
-          <TrashIcon className="h-3.5 w-3.5" />
-          Delete
-        </Button>
+
+        {hasProtectedFilters ? (
+          <TooltipProvider>
+            <Tooltip delayDuration={300}>
+              <TooltipTrigger asChild>
+                <div>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="flex items-center gap-1 opacity-50 cursor-not-allowed"
+                    disabled
+                  >
+                    <TrashIcon className="h-3.5 w-3.5" />
+                    Delete
+                  </Button>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-sm">
+                <div className="p-2">
+                  <div className="flex items-center gap-2 mb-2">
+                    <ExclamationTriangleIcon className="h-4 w-4 text-amber-500" />
+                    <span className="font-medium text-sm">
+                      Cannot Delete Selection
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">
+                    {protectedCount} of {selectedCount} selected filter
+                    {protectedCount !== 1 ? "s are" : " is"} linked to promoted
+                    campaigns and cannot be deleted.
+                  </p>
+                  <p className="text-sm text-blue-600 font-medium">
+                    Edit the filters to unlink campaigns first, or deselect the
+                    protected filters.
+                  </p>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ) : (
+          <Button
+            variant="destructive"
+            size="sm"
+            className="flex items-center gap-1"
+            onClick={() => setDeleteDialogOpen(true)}
+          >
+            <TrashIcon className="h-3.5 w-3.5" />
+            Delete
+          </Button>
+        )}
       </div>
 
       {/* Enhanced bulk delete confirmation dialog */}
