@@ -173,13 +173,13 @@ export function CatalogFilterDeleteDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={onClose}>Cancel</AlertDialogCancel>
-          <AlertDialogAction
+          <Button
             onClick={handleConfirmedDelete}
             disabled={isDeleting}
-            className="bg-red-600 hover:bg-red-700"
+            variant="destructive"
           >
             {isDeleting ? "Deleting..." : "Delete Filter"}
-          </AlertDialogAction>
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

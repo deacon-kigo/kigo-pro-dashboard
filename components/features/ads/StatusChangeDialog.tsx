@@ -11,6 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/molecules/alert-dialog/AlertDialog";
+import { Button } from "@/components/atoms/Button";
 import { Ad } from "./adColumns";
 
 interface StatusChangeDialogProps {
@@ -91,12 +92,15 @@ export function StatusChangeDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={onClose}>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={handleConfirm}
-            className={isDestructive ? "bg-red-600 hover:bg-red-700" : ""}
-          >
-            {actionText}
-          </AlertDialogAction>
+          {isDestructive ? (
+            <Button onClick={handleConfirm} variant="destructive">
+              {actionText}
+            </Button>
+          ) : (
+            <AlertDialogAction onClick={handleConfirm}>
+              {actionText}
+            </AlertDialogAction>
+          )}
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
