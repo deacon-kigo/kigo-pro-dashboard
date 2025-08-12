@@ -169,7 +169,7 @@ function CopilotKitProviderContent({ children }: CopilotKitProviderProps) {
       runtimeUrl={
         process.env.NEXT_PUBLIC_COPILOT_RUNTIME_URL || "/api/copilotkit"
       }
-      showDevConsole={true} // Enable for debugging during migration
+      showDevConsole={false} // Hidden completely
     >
       {children}
 

@@ -232,20 +232,7 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
         criteriaCount: 6,
         mandatoryCriteriaCount: 4,
         publisherSpecific: false,
-        linkedCampaigns: [
-          {
-            id: "pp1",
-            name: "Legal Research Promotion",
-            partnerName: "Augeo",
-            programName: "LexisNexis",
-          },
-          {
-            id: "pp4",
-            name: "Retirement Planning",
-            partnerName: "Augeo",
-            programName: "Fidelity Investments",
-          },
-        ],
+        // No linked campaigns - can be deleted
       },
       {
         id: "2",
@@ -262,10 +249,22 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
         publisherSpecific: false,
         linkedCampaigns: [
           {
-            id: "pp6",
-            name: "Credit Card Rewards",
-            partnerName: "ampliFI",
-            programName: "Chase",
+            id: "pp3",
+            name: "Morning Coffee Rush Rewards",
+            partnerName: "Starbucks",
+            programName: "Loyalty Plus",
+          },
+          {
+            id: "pp4",
+            name: "Breakfast Express Network",
+            partnerName: "Dunkin'",
+            programName: "DD Perks Pro",
+          },
+          {
+            id: "pp5",
+            name: "Holiday Coffee Collection",
+            partnerName: "Peet's Coffee",
+            programName: "Seasonal Blends",
           },
         ],
       },
@@ -282,6 +281,7 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
         criteriaCount: 5,
         mandatoryCriteriaCount: 3,
         publisherSpecific: false,
+        // No linked campaigns - can be deleted
       },
       {
         id: "4",
@@ -332,38 +332,7 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
         mandatoryCriteriaCount: 4,
         publisherSpecific: true,
         publisherName: "Bank of America",
-        linkedCampaigns: [
-          {
-            id: "pp11",
-            name: "Cash Rewards Program",
-            partnerName: "Bank of America",
-            programName: "BankAmeriDeals",
-          },
-          {
-            id: "pp12",
-            name: "Premium Credit Card Benefits",
-            partnerName: "Bank of America",
-            programName: "BankAmeriDeals",
-          },
-          {
-            id: "pp13",
-            name: "Banking Customer Rewards",
-            partnerName: "Chase",
-            programName: "Chase Offers",
-          },
-          {
-            id: "pp14",
-            name: "Financial Services Promotion",
-            partnerName: "Wells Fargo",
-            programName: "Wells Fargo Rewards",
-          },
-          {
-            id: "pp15",
-            name: "Investment Account Bonus",
-            partnerName: "Fidelity",
-            programName: "Fidelity Rewards+",
-          },
-        ],
+        // No linked campaigns - can be deleted
       },
       {
         id: "6",
@@ -378,6 +347,7 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
         criteriaCount: 4,
         mandatoryCriteriaCount: 2,
         publisherSpecific: false,
+        // No linked campaigns - can be deleted
       },
       {
         id: "7",
@@ -392,6 +362,7 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
         criteriaCount: 6,
         mandatoryCriteriaCount: 4,
         publisherSpecific: false,
+        // No linked campaigns - can be deleted
       },
       {
         id: "8",
@@ -428,6 +399,7 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
         criteriaCount: 5,
         mandatoryCriteriaCount: 4,
         publisherSpecific: false,
+        // No linked campaigns - can be deleted
       },
       {
         id: "10",
@@ -443,6 +415,7 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
         mandatoryCriteriaCount: 4,
         publisherSpecific: true,
         publisherName: "Chase",
+        // No linked campaigns - can be deleted
       },
       {
         id: "11",
@@ -513,6 +486,20 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
         criteriaCount: 7,
         mandatoryCriteriaCount: 4,
         publisherSpecific: false,
+        linkedCampaigns: [
+          {
+            id: "pp17",
+            name: "Electronics Flash Sale",
+            partnerName: "Best Buy",
+            programName: "My Best Buy Rewards",
+          },
+          {
+            id: "pp18",
+            name: "Tech Innovation Deals",
+            partnerName: "Amazon",
+            programName: "Prime Exclusive",
+          },
+        ],
       },
       {
         id: "16",
@@ -569,6 +556,14 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
         criteriaCount: 6,
         mandatoryCriteriaCount: 4,
         publisherSpecific: false,
+        linkedCampaigns: [
+          {
+            id: "pp19",
+            name: "Beauty Rewards Program",
+            partnerName: "Sephora",
+            programName: "Beauty Insider",
+          },
+        ],
       },
       {
         id: "20",

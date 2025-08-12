@@ -178,7 +178,7 @@ export function CatalogFilterBulkDeleteDialog({
             <Button
               onClick={handleDeleteAll}
               disabled={isDeleting}
-              className="bg-red-600 hover:bg-red-700"
+              variant="destructive"
             >
               {isDeleting
                 ? "Deleting..."
@@ -273,7 +273,9 @@ export function CatalogFilterBulkDeleteDialog({
             {dependencyAnalysis.deletableFilters.length} of{" "}
             {selectedFilters.length} selected filters can be deleted.
             {dependencyAnalysis.blockedFilters.length} filter
-            {dependencyAnalysis.blockedFilters.length !== 1 ? "s are" : " is"}{" "}
+            {dependencyAnalysis.blockedFilters.length !== 1
+              ? "s are"
+              : " is"}{" "}
             linked to promoted campaigns.
           </AlertDialogDescription>
         </AlertDialogHeader>

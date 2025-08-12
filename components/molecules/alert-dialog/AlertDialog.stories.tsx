@@ -85,9 +85,7 @@ export const WithDetails: Story = {
         </div>
         <AlertDialogFooter>
           <AlertDialogCancel>No, keep my account</AlertDialogCancel>
-          <AlertDialogAction className="bg-red-600 hover:bg-red-700">
-            Yes, delete my account
-          </AlertDialogAction>
+          <Button variant="destructive">Yes, delete my account</Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

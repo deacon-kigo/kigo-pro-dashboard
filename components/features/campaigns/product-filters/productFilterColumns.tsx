@@ -97,7 +97,7 @@ const SortIcon = ({ sorted }: { sorted?: "asc" | "desc" | false }) => {
   );
 };
 
-// LinkedCampaigns cell component with hover details
+// LinkedCampaigns cell component with hover details and deletion indicators
 const LinkedCampaignsCell = memo(function LinkedCampaignsCell({
   campaigns,
 }: {
@@ -497,25 +497,71 @@ ${filterId},"${row.original.name}","${row.original.description}","${status}","${
                   Edit Filter
                 </button>
 
-                {/* Delete option */}
-                <button
-                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 flex items-center"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    document
-                      .getElementById(`filter-menu-${filterId}`)
-                      ?.classList.add("hidden");
-                    // Open the delete confirmation dialog
-                    setDeleteDialogOpen(true);
-                  }}
-                  style={{ color: "#dc2626" }}
-                >
-                  <TrashIcon
-                    className="mr-2 h-4 w-4"
-                    style={{ color: "#dc2626" }}
-                  />
-                  Delete Filter
-                </button>
+                {/* Delete option - conditional based on linked campaigns */}
+                {(() => {
+                  const hasLinkedCampaigns =
+                    row.original.linkedCampaigns &&
+                    row.original.linkedCampaigns.length > 0;
+                  const linkedCount = row.original.linkedCampaigns?.length || 0;
+
+                  if (hasLinkedCampaigns) {
+                    return (
+                      <TooltipProvider>
+                        <Tooltip delayDuration={300}>
+                          <TooltipTrigger asChild>
+                            <button
+                              className="w-full text-left px-4 py-2 text-sm text-gray-400 cursor-not-allowed flex items-center"
+                              disabled
+                              onClick={(e) => e.preventDefault()}
+                            >
+                              <TrashIcon className="mr-2 h-4 w-4 text-gray-400" />
+                              Delete Filter
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="left" className="max-w-sm">
+                            <div className="p-2">
+                              <div className="flex items-center gap-2 mb-2">
+                                <ExclamationTriangleIcon className="h-4 w-4 text-amber-500" />
+                                <span className="font-medium text-sm">
+                                  Cannot Delete Filter
+                                </span>
+                              </div>
+                              <p className="text-sm text-gray-600 mb-2">
+                                This filter is linked to {linkedCount} promoted
+                                campaign{linkedCount !== 1 ? "s" : ""} and
+                                cannot be deleted.
+                              </p>
+                              <p className="text-sm text-blue-600 font-medium">
+                                Edit the filter to unlink campaigns first.
+                              </p>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    );
+                  }
+
+                  return (
+                    <button
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 flex items-center"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        document
+                          .getElementById(`filter-menu-${filterId}`)
+                          ?.classList.add("hidden");
+                        // Open the delete confirmation dialog
+                        setDeleteDialogOpen(true);
+                      }}
+                      style={{ color: "#dc2626" }}
+                    >
+                      <TrashIcon
+                        className="mr-2 h-4 w-4"
+                        style={{ color: "#dc2626" }}
+                      />
+                      Delete Filter
+                    </button>
+                  );
+                })()}
               </div>
             </div>
 
