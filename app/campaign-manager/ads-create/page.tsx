@@ -52,6 +52,9 @@ export default function AdvertisementCampaignCreatePage() {
   const searchParams = useSearchParams();
   // Make wizard the default mode, only use accordion mode if explicitly set to false
   const useWizard = searchParams.get("wizard") !== "false";
+  // Check if we're creating an ad group
+  const tabParam = searchParams.get("tab");
+  const isAdGroupMode = tabParam === "adgroup";
 
   // Preserve wizard parameter if needed
   useEffect(() => {
@@ -75,7 +78,9 @@ export default function AdvertisementCampaignCreatePage() {
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbPage>Ad Creation</BreadcrumbPage>
+          <BreadcrumbPage>
+            {isAdGroupMode ? "Ad Group Creation" : "Ad Creation"}
+          </BreadcrumbPage>
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>
@@ -86,9 +91,9 @@ export default function AdvertisementCampaignCreatePage() {
       <AppLayout customBreadcrumb={breadcrumb}>
         <div className="pt-0 mt-0">
           {useWizard ? (
-            <AdvertisementWizard />
+            <AdvertisementWizard isAdGroupMode={isAdGroupMode} />
           ) : (
-            <AdvertisementCampaignContent />
+            <AdvertisementCampaignContent isAdGroupMode={isAdGroupMode} />
           )}
         </div>
       </AppLayout>
