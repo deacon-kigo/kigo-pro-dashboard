@@ -7,7 +7,7 @@ import React, {
   useCallback,
   useRef,
 } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/atoms/Button";
 import { Input } from "@/components/atoms/Input";
 import Card from "@/components/atoms/Card/Card";
@@ -17,6 +17,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/atoms/Tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Label } from "@/components/atoms/Label";
 import { Textarea } from "@/components/atoms/Textarea";
@@ -31,6 +37,7 @@ import {
   LightBulbIcon,
   BanknotesIcon,
   PhotoIcon,
+  RectangleGroupIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import {
@@ -107,8 +114,42 @@ const generateUniqueId = () => {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 };
 
-export default function AdvertisementCampaignCreationContent() {
+interface AdvertisementCampaignCreationContentProps {
+  isAdGroupMode?: boolean;
+}
+
+export default function AdvertisementCampaignCreationContent({
+  isAdGroupMode = false,
+}: AdvertisementCampaignCreationContentProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Tab state
+  const [currentTab, setCurrentTab] = useState(
+    isAdGroupMode ? "adgroup" : "ad"
+  );
+
+  // Sync tab state with URL parameter
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam === "adgroup") {
+      setCurrentTab("adgroup");
+    } else {
+      setCurrentTab("ad");
+    }
+  }, [searchParams]);
+
+  // Handle tab change and update URL
+  const handleTabChange = (newTab: string) => {
+    setCurrentTab(newTab);
+    const url = new URL(window.location.href);
+    if (newTab === "adgroup") {
+      url.searchParams.set("tab", "adgroup");
+    } else {
+      url.searchParams.delete("tab");
+    }
+    window.history.replaceState({}, "", url.toString());
+  };
 
   // Form state
   const [merchantId, setMerchantId] = useState("");
@@ -305,8 +346,12 @@ export default function AdvertisementCampaignCreationContent() {
   return (
     <div className="space-y-2 h-full flex flex-col">
       <PageHeader
-        title="Create Ad"
-        description="Design and configure your advertisement campaign in one place."
+        title={currentTab === "adgroup" ? "Create Ad Group" : "Create Ad"}
+        description={
+          currentTab === "adgroup"
+            ? "Group existing ads together for easier management and organization."
+            : "Design and configure your advertisement campaign in one place."
+        }
         emoji="📊"
         actions={backButton}
         variant="aurora"
@@ -315,645 +360,780 @@ export default function AdvertisementCampaignCreationContent() {
       {/* Main content container with strict viewport-based height */}
       <div
         className="flex-1 flex flex-col"
-        style={{ height: "calc(100vh - 160px)" }}
+        style={{ height: "calc(100vh - 200px)" }}
       >
-        <div className="flex gap-3 h-full">
-          {/* Left Column - AI Assistant Panel */}
-          <div
-            className="w-1/4 flex-shrink-0"
-            style={{
-              position: "sticky",
-              top: "1rem",
-              height: "calc(100vh - 180px)",
-            }}
-          >
-            <Card className="p-0 h-full flex flex-col overflow-hidden shadow-md">
-              <div className="flex-1 flex flex-col overflow-hidden">
-                <AIAssistantPanel
-                  title="AI Campaign Assistant"
-                  description="Tell me about the campaign you want to create"
-                  onOptionSelected={handleOptionSelected}
-                  className="h-full flex-1"
-                />
-              </div>
-              {isLoading && (
-                <div className="fixed inset-0 bg-black/5 backdrop-blur-sm flex items-center justify-center z-50">
-                  <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="bg-white p-4 rounded-lg shadow-lg flex flex-col items-center"
-                  >
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{
-                        duration: 1.5,
-                        repeat: Infinity,
-                        ease: "linear",
-                      }}
-                    >
-                      <SparklesIcon className="h-10 w-10 text-primary" />
-                    </motion.div>
-                    <p className="mt-3 text-sm font-medium">
-                      Processing your request...
-                    </p>
-                  </motion.div>
-                </div>
-              )}
-            </Card>
+        <Tabs value={currentTab} onValueChange={handleTabChange}>
+          {/* Navigation Tabs */}
+          <div className="border-b mb-4">
+            <TabsList className="grid w-full grid-cols-2 max-w-md">
+              <TabsTrigger value="ad" className="flex items-center gap-2">
+                <PhotoIcon className="h-4 w-4" />
+                Create Ad
+              </TabsTrigger>
+              <TabsTrigger value="adgroup" className="flex items-center gap-2">
+                <RectangleGroupIcon className="h-4 w-4" />
+                Create Ad Group
+              </TabsTrigger>
+            </TabsList>
           </div>
-
-          {/* Middle Column - Campaign Configuration with scrollable content */}
-          <div
-            className="w-[37.5%] overflow-auto pb-6"
-            style={{ height: "100vh" }}
-          >
-            <div className="flex flex-col h-full">
-              {/* Validation Message Banner */}
-              {validationMessage && (
-                <motion.div
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="mb-3 p-2 bg-yellow-100 border border-yellow-300 rounded-md flex items-center"
-                >
-                  <ExclamationCircleIcon className="h-5 w-5 text-yellow-600 mr-2" />
-                  <span className="text-sm text-yellow-700">
-                    {validationMessage}
-                  </span>
-                  <button
-                    onClick={() => setValidationMessage(null)}
-                    className="ml-auto text-yellow-500 hover:text-yellow-700"
-                  >
-                    <svg
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                </motion.div>
-              )}
-
-              {/* Success Message Banner */}
-              {successMessage && (
-                <motion.div
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="mb-3 p-2 bg-green-100 border border-green-300 rounded-md flex items-center"
-                >
-                  <CheckCircleIcon className="h-5 w-5 text-green-600 mr-2" />
-                  <span className="text-sm text-green-700">
-                    {successMessage}
-                  </span>
-                </motion.div>
-              )}
-
-              <Card className="p-0 flex-1 flex flex-col overflow-hidden shadow-md">
-                <div className="flex items-center justify-between p-3 border-b bg-muted/20 flex-shrink-0 sticky top-0 z-10">
-                  <div className="flex items-center">
-                    <BanknotesIcon className="h-5 w-5 mr-2 text-primary" />
-                    <h3 className="font-medium">
-                      Advertisement Campaign Configuration
-                    </h3>
+          <TabsContent value="ad" className="flex-1 mt-0">
+            <div className="flex gap-3 h-full">
+              {/* Left Column - AI Assistant Panel */}
+              <div
+                className="w-1/4 flex-shrink-0"
+                style={{
+                  position: "sticky",
+                  top: "1rem",
+                  height: "calc(100vh - 180px)",
+                }}
+              >
+                <Card className="p-0 h-full flex flex-col overflow-hidden shadow-md">
+                  <div className="flex-1 flex flex-col overflow-hidden">
+                    <AIAssistantPanel
+                      title="AI Campaign Assistant"
+                      description="Tell me about the campaign you want to create"
+                      onOptionSelected={handleOptionSelected}
+                      className="h-full flex-1"
+                    />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="secondary"
-                      onClick={handleSaveAsDraft}
-                      disabled={!campaignName.trim()}
-                      size="sm"
-                    >
-                      Save as Draft
-                    </Button>
-                    <Button onClick={handleCreateCampaign} size="sm">
-                      Create Campaign
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="flex-1 overflow-auto">
-                  <div className="p-4">
-                    <div className="grid grid-cols-12 gap-6">
-                      {/* Left side - Merchant & Basic Information */}
-                      <div className="col-span-12 space-y-6">
-                        {/* Campaign Basic Information */}
-                        <Accordion
-                          type="single"
-                          collapsible
-                          defaultValue="basic-info"
-                          className="border rounded-md"
+                  {isLoading && (
+                    <div className="fixed inset-0 bg-black/5 backdrop-blur-sm flex items-center justify-center z-50">
+                      <motion.div
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="bg-white p-4 rounded-lg shadow-lg flex flex-col items-center"
+                      >
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{
+                            duration: 1.5,
+                            repeat: Infinity,
+                            ease: "linear",
+                          }}
                         >
-                          <AccordionItem
-                            value="basic-info"
-                            className="border-none"
-                          >
-                            <AccordionTrigger className="px-4 py-3 text-sm font-medium">
-                              Campaign Information
-                            </AccordionTrigger>
-                            <AccordionContent className="px-4 text-left">
-                              <div className="space-y-5 pb-2 text-left">
-                                <div className="text-left">
-                                  <Label
-                                    htmlFor="campaign-name"
-                                    className="text-sm"
-                                  >
-                                    Campaign Name*
-                                  </Label>
-                                  <Input
-                                    id="campaign-name"
-                                    placeholder="Enter campaign name"
-                                    value={campaignName}
-                                    onChange={(e) =>
-                                      setCampaignName(e.target.value)
-                                    }
-                                    className="mt-1"
-                                    maxLength={50}
-                                  />
-                                  <p className="mt-1.5 text-xs font-medium text-gray-600">
-                                    Enter a unique name for your campaign (max
-                                    50 characters)
-                                  </p>
-                                </div>
+                          <SparklesIcon className="h-10 w-10 text-primary" />
+                        </motion.div>
+                        <p className="mt-3 text-sm font-medium">
+                          Processing your request...
+                        </p>
+                      </motion.div>
+                    </div>
+                  )}
+                </Card>
+              </div>
 
-                                <div className="text-left">
-                                  <Label
-                                    htmlFor="description"
-                                    className="text-sm"
-                                  >
-                                    Campaign Description*
-                                  </Label>
-                                  <Textarea
-                                    id="description"
-                                    placeholder="Enter campaign description"
-                                    value={campaignDescription}
-                                    onChange={(e) =>
-                                      setCampaignDescription(e.target.value)
-                                    }
-                                    className="mt-1"
-                                    rows={3}
-                                    maxLength={100}
-                                  />
-                                  <p className="mt-1.5 text-xs font-medium text-gray-600">
-                                    Describe your campaign in detail (max 100
-                                    characters)
-                                  </p>
-                                </div>
+              {/* Middle Column - Campaign Configuration with scrollable content */}
+              <div
+                className="w-[37.5%] overflow-auto pb-6"
+                style={{ height: "100vh" }}
+              >
+                <div className="flex flex-col h-full">
+                  {/* Validation Message Banner */}
+                  {validationMessage && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.3 }}
+                      className="mb-3 p-2 bg-yellow-100 border border-yellow-300 rounded-md flex items-center"
+                    >
+                      <ExclamationCircleIcon className="h-5 w-5 text-yellow-600 mr-2" />
+                      <span className="text-sm text-yellow-700">
+                        {validationMessage}
+                      </span>
+                      <button
+                        onClick={() => setValidationMessage(null)}
+                        className="ml-auto text-yellow-500 hover:text-yellow-700"
+                      >
+                        <svg
+                          className="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </motion.div>
+                  )}
 
-                                <div className="text-left">
-                                  <Label
-                                    htmlFor="campaign-type"
-                                    className="text-sm"
-                                  >
-                                    Campaign Type*
-                                  </Label>
-                                  <Select
-                                    value={campaignType}
-                                    onValueChange={setCampaignType}
-                                  >
-                                    <SelectTrigger className="mt-1">
-                                      <SelectValue placeholder="Select campaign type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="advertising">
-                                        Advertising
-                                      </SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  <p className="mt-1.5 text-xs font-medium text-gray-600">
-                                    Select the type of campaign you want to
-                                    create
-                                  </p>
-                                </div>
+                  {/* Success Message Banner */}
+                  {successMessage && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.3 }}
+                      className="mb-3 p-2 bg-green-100 border border-green-300 rounded-md flex items-center"
+                    >
+                      <CheckCircleIcon className="h-5 w-5 text-green-600 mr-2" />
+                      <span className="text-sm text-green-700">
+                        {successMessage}
+                      </span>
+                    </motion.div>
+                  )}
 
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div className="text-left">
-                                    <Label
-                                      htmlFor="start-date"
-                                      className="text-sm"
-                                    >
-                                      Start Date*
-                                    </Label>
-                                    <DatePicker
-                                      id="start-date"
-                                      selected={startDate}
-                                      onSelect={setStartDate}
-                                      placeholder="Select start date"
-                                      className="mt-1 w-full"
-                                    />
-                                  </div>
+                  <Card className="p-0 flex-1 flex flex-col overflow-hidden shadow-md">
+                    <div className="flex items-center justify-between p-3 border-b bg-muted/20 flex-shrink-0 sticky top-0 z-10">
+                      <div className="flex items-center">
+                        <BanknotesIcon className="h-5 w-5 mr-2 text-primary" />
+                        <h3 className="font-medium">
+                          Advertisement Campaign Configuration
+                        </h3>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="secondary"
+                          onClick={handleSaveAsDraft}
+                          disabled={!campaignName.trim()}
+                          size="sm"
+                        >
+                          Save as Draft
+                        </Button>
+                        <Button onClick={handleCreateCampaign} size="sm">
+                          Create Campaign
+                        </Button>
+                      </div>
+                    </div>
 
-                                  <div className="text-left">
-                                    <Label
-                                      htmlFor="end-date"
-                                      className="text-sm"
-                                    >
-                                      End Date*
-                                    </Label>
-                                    <DatePicker
-                                      id="end-date"
-                                      selected={endDate}
-                                      onSelect={setEndDate}
-                                      placeholder="Select end date"
-                                      className="mt-1 w-full"
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-                            </AccordionContent>
-                          </AccordionItem>
-                        </Accordion>
-
-                        <div className="grid md:grid-cols-2 gap-6">
-                          <div className="space-y-6">
-                            {/* Distribution Information */}
+                    <div className="flex-1 overflow-auto">
+                      <div className="p-4">
+                        <div className="grid grid-cols-12 gap-6">
+                          {/* Left side - Merchant & Basic Information */}
+                          <div className="col-span-12 space-y-6">
+                            {/* Campaign Basic Information */}
                             <Accordion
                               type="single"
                               collapsible
-                              defaultValue="distribution-info"
+                              defaultValue="basic-info"
                               className="border rounded-md"
                             >
                               <AccordionItem
-                                value="distribution-info"
+                                value="basic-info"
                                 className="border-none"
                               >
                                 <AccordionTrigger className="px-4 py-3 text-sm font-medium">
-                                  Distribution
-                                </AccordionTrigger>
-                                <AccordionContent className="px-4 text-left">
-                                  <div className="space-y-5 pb-2 text-left">
-                                    <div className="text-left">
-                                      <Label className="text-sm mb-2 block">
-                                        Channels/Editions*
-                                      </Label>
-                                      <div className="flex flex-wrap gap-2">
-                                        {channels.map((channel) => (
-                                          <Badge
-                                            key={channel}
-                                            variant="default"
-                                            className="bg-primary text-primary-foreground"
-                                          >
-                                            {channel.charAt(0).toUpperCase() +
-                                              channel.slice(1)}
-                                          </Badge>
-                                        ))}
-                                      </div>
-                                      <p className="mt-1.5 text-xs font-medium text-gray-600">
-                                        All channels are selected by default
-                                      </p>
-                                    </div>
-
-                                    <div className="text-left">
-                                      <Label className="text-sm mb-2 block">
-                                        Programs
-                                      </Label>
-                                      <div className="flex flex-wrap gap-2">
-                                        {programOptions.map((program) => (
-                                          <Badge
-                                            key={program}
-                                            variant={
-                                              programs.includes(program)
-                                                ? "default"
-                                                : "outline"
-                                            }
-                                            className={cn(
-                                              "cursor-pointer",
-                                              programs.includes(program)
-                                                ? "bg-primary text-primary-foreground"
-                                                : ""
-                                            )}
-                                            onClick={() =>
-                                              toggleProgram(program)
-                                            }
-                                          >
-                                            {program}
-                                          </Badge>
-                                        ))}
-                                      </div>
-                                      <p className="mt-1.5 text-xs font-medium text-gray-600">
-                                        Select the programs for this campaign
-                                      </p>
-                                    </div>
-                                  </div>
-                                </AccordionContent>
-                              </AccordionItem>
-                            </Accordion>
-
-                            {/* Budget Information */}
-                            <Accordion
-                              type="single"
-                              collapsible
-                              defaultValue="budget-info"
-                              className="border rounded-md"
-                            >
-                              <AccordionItem
-                                value="budget-info"
-                                className="border-none"
-                              >
-                                <AccordionTrigger className="px-4 py-3 text-sm font-medium">
-                                  Budget Information
+                                  Campaign Information
                                 </AccordionTrigger>
                                 <AccordionContent className="px-4 text-left">
                                   <div className="space-y-5 pb-2 text-left">
                                     <div className="text-left">
                                       <Label
-                                        htmlFor="budget"
+                                        htmlFor="campaign-name"
                                         className="text-sm"
                                       >
-                                        Max Budget (USD)*
+                                        Campaign Name*
                                       </Label>
                                       <Input
-                                        id="budget"
-                                        type="number"
-                                        min="0"
-                                        step="0.01"
-                                        placeholder="Enter max budget amount"
-                                        value={budget}
+                                        id="campaign-name"
+                                        placeholder="Enter campaign name"
+                                        value={campaignName}
                                         onChange={(e) =>
-                                          setBudget(e.target.value)
+                                          setCampaignName(e.target.value)
                                         }
                                         className="mt-1"
+                                        maxLength={50}
                                       />
                                       <p className="mt-1.5 text-xs font-medium text-gray-600">
-                                        The maximum budget allocated for this
-                                        campaign
-                                      </p>
-                                    </div>
-                                  </div>
-                                </AccordionContent>
-                              </AccordionItem>
-                            </Accordion>
-                          </div>
-
-                          <div className="space-y-6">
-                            {/* Media Type Selection */}
-                            <Accordion
-                              type="single"
-                              collapsible
-                              defaultValue="media-type"
-                              className="border rounded-md"
-                            >
-                              <AccordionItem
-                                value="media-type"
-                                className="border-none"
-                              >
-                                <AccordionTrigger className="px-4 py-3 text-sm font-medium">
-                                  Media Type & Assets
-                                </AccordionTrigger>
-                                <AccordionContent className="px-4 text-left">
-                                  <div className="space-y-5 pb-2 text-left">
-                                    <div className="text-left">
-                                      <Label className="text-sm">
-                                        Media Types*
-                                      </Label>
-                                      <div className="mt-2 flex flex-wrap gap-2">
-                                        {mediaTypeOptions.map((type) => (
-                                          <Badge
-                                            key={type}
-                                            variant={
-                                              mediaTypes.includes(type)
-                                                ? "default"
-                                                : "outline"
-                                            }
-                                            className={cn(
-                                              "cursor-pointer",
-                                              mediaTypes.includes(type)
-                                                ? "bg-primary text-primary-foreground"
-                                                : ""
-                                            )}
-                                            onClick={() =>
-                                              toggleMediaType(type)
-                                            }
-                                          >
-                                            {type}
-                                          </Badge>
-                                        ))}
-                                      </div>
-                                      <p className="mt-1.5 text-xs font-medium text-gray-600">
-                                        Select the types of media for this
-                                        campaign
+                                        Enter a unique name for your campaign
+                                        (max 50 characters)
                                       </p>
                                     </div>
 
                                     <div className="text-left">
                                       <Label
-                                        htmlFor="media-upload"
+                                        htmlFor="description"
                                         className="text-sm"
                                       >
-                                        Upload Media Assets*
+                                        Campaign Description*
                                       </Label>
-                                      <div className="mt-2 border-2 border-dashed rounded-md border-gray-300 p-6 text-center">
-                                        <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
-                                        <div className="mt-2">
-                                          <label
-                                            htmlFor="file-upload"
-                                            className="relative cursor-pointer rounded-md bg-white font-medium text-primary hover:text-primary-dark focus-within:outline-none"
-                                          >
-                                            <span className="text-sm">
-                                              Upload an image
-                                            </span>
-                                            <input
-                                              id="file-upload"
-                                              name="file-upload"
-                                              type="file"
-                                              className="sr-only"
-                                              accept="image/*"
-                                              onChange={handleImageUpload}
-                                            />
-                                          </label>
-                                        </div>
-                                        <p className="text-xs text-gray-500 mt-1">
-                                          PNG, JPG, GIF up to 5MB
-                                        </p>
+                                      <Textarea
+                                        id="description"
+                                        placeholder="Enter campaign description"
+                                        value={campaignDescription}
+                                        onChange={(e) =>
+                                          setCampaignDescription(e.target.value)
+                                        }
+                                        className="mt-1"
+                                        rows={3}
+                                        maxLength={100}
+                                      />
+                                      <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                        Describe your campaign in detail (max
+                                        100 characters)
+                                      </p>
+                                    </div>
+
+                                    <div className="text-left">
+                                      <Label
+                                        htmlFor="campaign-type"
+                                        className="text-sm"
+                                      >
+                                        Campaign Type*
+                                      </Label>
+                                      <Select
+                                        value={campaignType}
+                                        onValueChange={setCampaignType}
+                                      >
+                                        <SelectTrigger className="mt-1">
+                                          <SelectValue placeholder="Select campaign type" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="advertising">
+                                            Advertising
+                                          </SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                        Select the type of campaign you want to
+                                        create
+                                      </p>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div className="text-left">
+                                        <Label
+                                          htmlFor="start-date"
+                                          className="text-sm"
+                                        >
+                                          Start Date*
+                                        </Label>
+                                        <DatePicker
+                                          id="start-date"
+                                          selected={startDate}
+                                          onSelect={setStartDate}
+                                          placeholder="Select start date"
+                                          className="mt-1 w-full"
+                                        />
                                       </div>
 
-                                      {/* Show uploaded images */}
-                                      {uploadedImages.length > 0 && (
-                                        <div className="mt-3">
-                                          <h4 className="text-sm font-medium mb-2">
-                                            Uploaded Media:
-                                          </h4>
-                                          <div className="flex flex-wrap gap-2">
-                                            {uploadedImages.map((fileData) => (
-                                              <div
-                                                key={fileData.id}
-                                                className="relative bg-gray-100 rounded-md p-2"
-                                              >
-                                                <div className="text-xs truncate max-w-[150px]">
-                                                  {fileData.file.name}
-                                                </div>
-                                                <button
-                                                  className="absolute -top-1 -right-1 bg-red-100 text-red-600 rounded-full p-0.5"
-                                                  onClick={() => {
-                                                    const newImages =
-                                                      uploadedImages.filter(
-                                                        (img) =>
-                                                          img.id !== fileData.id
-                                                      );
-                                                    setUploadedImages(
-                                                      newImages
-                                                    );
-                                                  }}
-                                                >
-                                                  <XCircleIcon className="h-4 w-4" />
-                                                </button>
-                                              </div>
-                                            ))}
-                                          </div>
-                                        </div>
-                                      )}
+                                      <div className="text-left">
+                                        <Label
+                                          htmlFor="end-date"
+                                          className="text-sm"
+                                        >
+                                          End Date*
+                                        </Label>
+                                        <DatePicker
+                                          id="end-date"
+                                          selected={endDate}
+                                          onSelect={setEndDate}
+                                          placeholder="Select end date"
+                                          className="mt-1 w-full"
+                                        />
+                                      </div>
                                     </div>
                                   </div>
                                 </AccordionContent>
                               </AccordionItem>
                             </Accordion>
 
-                            {/* Campaign Summary */}
-                            <Accordion
-                              type="single"
-                              collapsible
-                              defaultValue="campaign-summary"
-                              className="border rounded-md"
-                            >
-                              <AccordionItem
-                                value="campaign-summary"
-                                className="border-none"
-                              >
-                                <AccordionTrigger className="px-4 py-3 text-sm font-medium">
-                                  Campaign Summary
-                                </AccordionTrigger>
-                                <AccordionContent className="px-4 text-left">
-                                  <div className="space-y-3 pb-2 text-left">
-                                    {!campaignName && !campaignDescription && (
-                                      <p className="text-sm text-gray-500 italic">
-                                        Fill out the campaign details to see a
-                                        summary here.
-                                      </p>
-                                    )}
+                            <div className="grid md:grid-cols-2 gap-6">
+                              <div className="space-y-6">
+                                {/* Distribution Information */}
+                                <Accordion
+                                  type="single"
+                                  collapsible
+                                  defaultValue="distribution-info"
+                                  className="border rounded-md"
+                                >
+                                  <AccordionItem
+                                    value="distribution-info"
+                                    className="border-none"
+                                  >
+                                    <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                                      Distribution
+                                    </AccordionTrigger>
+                                    <AccordionContent className="px-4 text-left">
+                                      <div className="space-y-5 pb-2 text-left">
+                                        <div className="text-left">
+                                          <Label className="text-sm mb-2 block">
+                                            Channels/Editions*
+                                          </Label>
+                                          <div className="flex flex-wrap gap-2">
+                                            {channels.map((channel) => (
+                                              <Badge
+                                                key={channel}
+                                                variant="default"
+                                                className="bg-primary text-primary-foreground"
+                                              >
+                                                {channel
+                                                  .charAt(0)
+                                                  .toUpperCase() +
+                                                  channel.slice(1)}
+                                              </Badge>
+                                            ))}
+                                          </div>
+                                          <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                            All channels are selected by default
+                                          </p>
+                                        </div>
 
-                                    {(campaignName || campaignDescription) && (
-                                      <>
-                                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                                          {campaignName && (
-                                            <>
-                                              <div className="font-medium">
-                                                Campaign:
+                                        <div className="text-left">
+                                          <Label className="text-sm mb-2 block">
+                                            Programs
+                                          </Label>
+                                          <div className="flex flex-wrap gap-2">
+                                            {programOptions.map((program) => (
+                                              <Badge
+                                                key={program}
+                                                variant={
+                                                  programs.includes(program)
+                                                    ? "default"
+                                                    : "outline"
+                                                }
+                                                className={cn(
+                                                  "cursor-pointer",
+                                                  programs.includes(program)
+                                                    ? "bg-primary text-primary-foreground"
+                                                    : ""
+                                                )}
+                                                onClick={() =>
+                                                  toggleProgram(program)
+                                                }
+                                              >
+                                                {program}
+                                              </Badge>
+                                            ))}
+                                          </div>
+                                          <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                            Select the programs for this
+                                            campaign
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </AccordionContent>
+                                  </AccordionItem>
+                                </Accordion>
+
+                                {/* Budget Information */}
+                                <Accordion
+                                  type="single"
+                                  collapsible
+                                  defaultValue="budget-info"
+                                  className="border rounded-md"
+                                >
+                                  <AccordionItem
+                                    value="budget-info"
+                                    className="border-none"
+                                  >
+                                    <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                                      Budget Information
+                                    </AccordionTrigger>
+                                    <AccordionContent className="px-4 text-left">
+                                      <div className="space-y-5 pb-2 text-left">
+                                        <div className="text-left">
+                                          <Label
+                                            htmlFor="budget"
+                                            className="text-sm"
+                                          >
+                                            Max Budget (USD)*
+                                          </Label>
+                                          <Input
+                                            id="budget"
+                                            type="number"
+                                            min="0"
+                                            step="0.01"
+                                            placeholder="Enter max budget amount"
+                                            value={budget}
+                                            onChange={(e) =>
+                                              setBudget(e.target.value)
+                                            }
+                                            className="mt-1"
+                                          />
+                                          <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                            The maximum budget allocated for
+                                            this campaign
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </AccordionContent>
+                                  </AccordionItem>
+                                </Accordion>
+                              </div>
+
+                              <div className="space-y-6">
+                                {/* Media Type Selection */}
+                                <Accordion
+                                  type="single"
+                                  collapsible
+                                  defaultValue="media-type"
+                                  className="border rounded-md"
+                                >
+                                  <AccordionItem
+                                    value="media-type"
+                                    className="border-none"
+                                  >
+                                    <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                                      Media Type & Assets
+                                    </AccordionTrigger>
+                                    <AccordionContent className="px-4 text-left">
+                                      <div className="space-y-5 pb-2 text-left">
+                                        <div className="text-left">
+                                          <Label className="text-sm">
+                                            Media Types*
+                                          </Label>
+                                          <div className="mt-2 flex flex-wrap gap-2">
+                                            {mediaTypeOptions.map((type) => (
+                                              <Badge
+                                                key={type}
+                                                variant={
+                                                  mediaTypes.includes(type)
+                                                    ? "default"
+                                                    : "outline"
+                                                }
+                                                className={cn(
+                                                  "cursor-pointer",
+                                                  mediaTypes.includes(type)
+                                                    ? "bg-primary text-primary-foreground"
+                                                    : ""
+                                                )}
+                                                onClick={() =>
+                                                  toggleMediaType(type)
+                                                }
+                                              >
+                                                {type}
+                                              </Badge>
+                                            ))}
+                                          </div>
+                                          <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                            Select the types of media for this
+                                            campaign
+                                          </p>
+                                        </div>
+
+                                        <div className="text-left">
+                                          <Label
+                                            htmlFor="media-upload"
+                                            className="text-sm"
+                                          >
+                                            Upload Media Assets*
+                                          </Label>
+                                          <div className="mt-2 border-2 border-dashed rounded-md border-gray-300 p-6 text-center">
+                                            <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
+                                            <div className="mt-2">
+                                              <label
+                                                htmlFor="file-upload"
+                                                className="relative cursor-pointer rounded-md bg-white font-medium text-primary hover:text-primary-dark focus-within:outline-none"
+                                              >
+                                                <span className="text-sm">
+                                                  Upload an image
+                                                </span>
+                                                <input
+                                                  id="file-upload"
+                                                  name="file-upload"
+                                                  type="file"
+                                                  className="sr-only"
+                                                  accept="image/*"
+                                                  onChange={handleImageUpload}
+                                                />
+                                              </label>
+                                            </div>
+                                            <p className="text-xs text-gray-500 mt-1">
+                                              PNG, JPG, GIF up to 5MB
+                                            </p>
+                                          </div>
+
+                                          {/* Show uploaded images */}
+                                          {uploadedImages.length > 0 && (
+                                            <div className="mt-3">
+                                              <h4 className="text-sm font-medium mb-2">
+                                                Uploaded Media:
+                                              </h4>
+                                              <div className="flex flex-wrap gap-2">
+                                                {uploadedImages.map(
+                                                  (fileData) => (
+                                                    <div
+                                                      key={fileData.id}
+                                                      className="relative bg-gray-100 rounded-md p-2"
+                                                    >
+                                                      <div className="text-xs truncate max-w-[150px]">
+                                                        {fileData.file.name}
+                                                      </div>
+                                                      <button
+                                                        className="absolute -top-1 -right-1 bg-red-100 text-red-600 rounded-full p-0.5"
+                                                        onClick={() => {
+                                                          const newImages =
+                                                            uploadedImages.filter(
+                                                              (img) =>
+                                                                img.id !==
+                                                                fileData.id
+                                                            );
+                                                          setUploadedImages(
+                                                            newImages
+                                                          );
+                                                        }}
+                                                      >
+                                                        <XCircleIcon className="h-4 w-4" />
+                                                      </button>
+                                                    </div>
+                                                  )
+                                                )}
                                               </div>
-                                              <div>{campaignName}</div>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </AccordionContent>
+                                  </AccordionItem>
+                                </Accordion>
 
-                                              {campaignDescription && (
+                                {/* Campaign Summary */}
+                                <Accordion
+                                  type="single"
+                                  collapsible
+                                  defaultValue="campaign-summary"
+                                  className="border rounded-md"
+                                >
+                                  <AccordionItem
+                                    value="campaign-summary"
+                                    className="border-none"
+                                  >
+                                    <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                                      Campaign Summary
+                                    </AccordionTrigger>
+                                    <AccordionContent className="px-4 text-left">
+                                      <div className="space-y-3 pb-2 text-left">
+                                        {!campaignName &&
+                                          !campaignDescription && (
+                                            <p className="text-sm text-gray-500 italic">
+                                              Fill out the campaign details to
+                                              see a summary here.
+                                            </p>
+                                          )}
+
+                                        {(campaignName ||
+                                          campaignDescription) && (
+                                          <>
+                                            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                                              {campaignName && (
                                                 <>
                                                   <div className="font-medium">
-                                                    Description:
+                                                    Campaign:
                                                   </div>
-                                                  <div>
-                                                    {campaignDescription}
+                                                  <div>{campaignName}</div>
+
+                                                  {campaignDescription && (
+                                                    <>
+                                                      <div className="font-medium">
+                                                        Description:
+                                                      </div>
+                                                      <div>
+                                                        {campaignDescription}
+                                                      </div>
+                                                    </>
+                                                  )}
+                                                </>
+                                              )}
+
+                                              {campaignType && (
+                                                <>
+                                                  <div className="font-medium">
+                                                    Type:
+                                                  </div>
+                                                  <div className="capitalize">
+                                                    {campaignType}
                                                   </div>
                                                 </>
                                               )}
-                                            </>
-                                          )}
 
-                                          {campaignType && (
-                                            <>
-                                              <div className="font-medium">
-                                                Type:
-                                              </div>
-                                              <div className="capitalize">
-                                                {campaignType}
-                                              </div>
-                                            </>
-                                          )}
+                                              {startDate && endDate && (
+                                                <>
+                                                  <div className="font-medium">
+                                                    Duration:
+                                                  </div>
+                                                  <div>
+                                                    {format(
+                                                      startDate,
+                                                      "MMM d, yyyy"
+                                                    )}{" "}
+                                                    -{" "}
+                                                    {format(
+                                                      endDate,
+                                                      "MMM d, yyyy"
+                                                    )}
+                                                  </div>
+                                                </>
+                                              )}
 
-                                          {startDate && endDate && (
-                                            <>
-                                              <div className="font-medium">
-                                                Duration:
-                                              </div>
-                                              <div>
-                                                {format(
-                                                  startDate,
-                                                  "MMM d, yyyy"
-                                                )}{" "}
-                                                -{" "}
-                                                {format(endDate, "MMM d, yyyy")}
-                                              </div>
-                                            </>
-                                          )}
+                                              {budget && (
+                                                <>
+                                                  <div className="font-medium">
+                                                    Budget:
+                                                  </div>
+                                                  <div>${budget} USD</div>
+                                                </>
+                                              )}
 
-                                          {budget && (
-                                            <>
-                                              <div className="font-medium">
-                                                Budget:
-                                              </div>
-                                              <div>${budget} USD</div>
-                                            </>
-                                          )}
+                                              {mediaTypes.length > 0 && (
+                                                <>
+                                                  <div className="font-medium">
+                                                    Media Types:
+                                                  </div>
+                                                  <div>
+                                                    {mediaTypes.join(", ")}
+                                                  </div>
+                                                </>
+                                              )}
 
-                                          {mediaTypes.length > 0 && (
-                                            <>
-                                              <div className="font-medium">
-                                                Media Types:
-                                              </div>
-                                              <div>{mediaTypes.join(", ")}</div>
-                                            </>
-                                          )}
+                                              {programs.length > 0 && (
+                                                <>
+                                                  <div className="font-medium">
+                                                    Programs:
+                                                  </div>
+                                                  <div>
+                                                    {programs.length} program(s)
+                                                    selected
+                                                  </div>
+                                                </>
+                                              )}
+                                            </div>
 
-                                          {programs.length > 0 && (
-                                            <>
-                                              <div className="font-medium">
-                                                Programs:
-                                              </div>
-                                              <div>
-                                                {programs.length} program(s)
-                                                selected
-                                              </div>
-                                            </>
-                                          )}
-                                        </div>
-
-                                        <div className="mt-4 pt-3 border-t border-gray-200">
-                                          <Button
-                                            onClick={handleCreateCampaign}
-                                            className="w-full"
-                                          >
-                                            Create Campaign
-                                          </Button>
-                                        </div>
-                                      </>
-                                    )}
-                                  </div>
-                                </AccordionContent>
-                              </AccordionItem>
-                            </Accordion>
+                                            <div className="mt-4 pt-3 border-t border-gray-200">
+                                              <Button
+                                                onClick={handleCreateCampaign}
+                                                className="w-full"
+                                              >
+                                                Create Campaign
+                                              </Button>
+                                            </div>
+                                          </>
+                                        )}
+                                      </div>
+                                    </AccordionContent>
+                                  </AccordionItem>
+                                </Accordion>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </Card>
                 </div>
-              </Card>
-            </div>
-          </div>
-
-          {/* Right Column - Campaign Progress Checklist */}
-          <div className="w-[37.5%] flex-shrink-0 h-full">
-            <Card className="h-full p-0 flex flex-col overflow-hidden shadow-md">
-              <div className="flex-1 overflow-hidden">
-                <CampaignAnalyticsPanelLite className="h-full flex-1" />
               </div>
-            </Card>
-          </div>
-        </div>
+
+              {/* Right Column - Campaign Progress Checklist */}
+              <div className="w-[37.5%] flex-shrink-0 h-full">
+                <Card className="h-full p-0 flex flex-col overflow-hidden shadow-md">
+                  <div className="flex-1 overflow-hidden">
+                    <CampaignAnalyticsPanelLite className="h-full flex-1" />
+                  </div>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="adgroup" className="flex-1 mt-0">
+            <div className="flex gap-3 h-full">
+              {/* Ad Group Creation Content */}
+              <div className="flex-1">
+                <Card className="p-6 h-full overflow-y-auto">
+                  <div className="space-y-6">
+                    <div className="text-center">
+                      <RectangleGroupIcon className="h-16 w-16 text-blue-500 mx-auto mb-4" />
+                      <h3 className="text-2xl font-semibold mb-2">
+                        Create Ad Group
+                      </h3>
+                      <p className="text-gray-600 max-w-md mx-auto">
+                        Group existing ads together for better organization and
+                        management. Ad groups help you organize related ads and
+                        optimize performance.
+                      </p>
+                    </div>
+
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                      <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                        <InformationCircleIcon className="h-5 w-5" />
+                        How Ad Groups Work
+                      </h4>
+                      <ul className="space-y-2 text-blue-800 text-sm">
+                        <li className="flex items-start gap-2">
+                          <CheckCircleIcon className="h-4 w-4 mt-0.5 text-blue-600" />
+                          Select multiple existing ads to group together
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircleIcon className="h-4 w-4 mt-0.5 text-blue-600" />
+                          Set unified targeting and budget rules for the group
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircleIcon className="h-4 w-4 mt-0.5 text-blue-600" />
+                          Monitor and optimize group performance together
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircleIcon className="h-4 w-4 mt-0.5 text-blue-600" />
+                          Easier bulk management and campaign organization
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div className="text-center">
+                      <p className="text-gray-500 mb-4">
+                        🚧 Ad Group creation interface coming soon! For now, you
+                        can create individual ads.
+                      </p>
+                      <Button
+                        onClick={() => handleTabChange("ad")}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        Create Individual Ad Instead
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Right Column - Similar to ad creation */}
+              <div className="w-1/3">
+                <Card className="p-6 h-full">
+                  <h4 className="font-semibold mb-4">Ad Group Benefits</h4>
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <div className="bg-green-100 p-2 rounded-lg">
+                        <CheckCircleIcon className="h-5 w-5 text-green-600" />
+                      </div>
+                      <div>
+                        <h5 className="font-medium">Unified Management</h5>
+                        <p className="text-sm text-gray-600">
+                          Manage multiple ads with shared settings and targeting
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <div className="bg-blue-100 p-2 rounded-lg">
+                        <SparklesIcon className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <h5 className="font-medium">Better Performance</h5>
+                        <p className="text-sm text-gray-600">
+                          Optimize budget allocation across related ads
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <div className="bg-purple-100 p-2 rounded-lg">
+                        <BanknotesIcon className="h-5 w-5 text-purple-600" />
+                      </div>
+                      <div>
+                        <h5 className="font-medium">Cost Efficiency</h5>
+                        <p className="text-sm text-gray-600">
+                          Share budget and reduce management overhead
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

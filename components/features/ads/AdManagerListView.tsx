@@ -1680,6 +1680,7 @@ const mockCampaigns: Campaign[] = [
 
 // Custom dropdown without ShadCN to avoid re-rendering issues
 const CreateButtonCustom = memo(function CreateButtonCustom() {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({
@@ -1751,8 +1752,9 @@ const CreateButtonCustom = memo(function CreateButtonCustom() {
               <button
                 className="w-full text-left px-5 py-3 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
                 onClick={() => {
-                  console.log("Create Ad Group clicked");
                   setIsOpen(false);
+                  // TODO: Open ad group creation modal
+                  router.push("/campaign-manager/ads-create?tab=adgroup");
                 }}
               >
                 <RectangleGroupIcon className="mr-3 h-4 w-4" />
