@@ -16,13 +16,19 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetFooter,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { ShinyBorder } from "@/components/ui/shiny-border";
+import { SelectedProgramsDisplay } from "@/components/features/campaigns/product-filters/SelectedProgramsDisplay";
+import {
+  AssignToProgramsPanel,
+  mockPartners,
+} from "@/components/features/campaigns/product-filters/AssignToProgramsPanel";
+import { Badge } from "@/components/atoms/Badge";
 
 import {
   resetCampaign,
@@ -53,6 +59,8 @@ import {
   CogIcon,
   PencilIcon,
   MagnifyingGlassIcon,
+  UsersIcon,
+  ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 import {
   AlertDialog,
@@ -735,10 +743,6 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                 <div className="space-y-6 pb-4">
                                   {/* Merchant Selection */}
                                   <div className="space-y-4">
-                                    <h5 className="font-medium text-sm text-gray-900">
-                                      Select Merchant
-                                    </h5>
-
                                     <div>
                                       <label className="text-sm font-medium mb-2 block">
                                         Merchant *
@@ -827,17 +831,6 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                           </>
                                         )}
                                       </div>
-                                      <p className="text-xs text-gray-500 mt-1">
-                                        {selectedMerchantData
-                                          ? `Selected: ${selectedMerchantData.name}`
-                                          : "Select a merchant to view available ads"}
-                                      </p>
-                                      {selectedMerchantData && (
-                                        <p className="text-xs text-blue-600 mt-1 font-medium">
-                                          ℹ️ Ad groups can only contain ads from
-                                          one merchant
-                                        </p>
-                                      )}
                                     </div>
                                   </div>
 
@@ -1017,142 +1010,37 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                             </AccordionItem>
                           </Accordion>
 
-                          {/* Program Assignment Section - Using exact catalog filter component */}
-                          <Accordion
-                            type="single"
-                            collapsible
-                            defaultValue="program-assignment"
-                            className="border rounded-md overflow-hidden"
-                          >
-                            <AccordionItem
-                              value="program-assignment"
-                              className="border-none"
+                          {/* Program Assignment Section - Clean button interface */}
+                          <div className="flex-1 min-h-0">
+                            <ShinyBorder
+                              isActive={selectedPrograms.length > 0}
+                              borderRadius={8}
                             >
-                              <AccordionTrigger className="px-4 py-3 text-sm font-medium">
-                                <div className="flex items-center">
-                                  <CogIcon className="h-4 w-4 mr-2 text-purple-600" />
-                                  Program Campaign Assignment
-                                  {selectedPrograms.length > 0 && (
-                                    <span className="ml-2 text-sm text-gray-500">
-                                      ({selectedPrograms.length} programs
-                                      assigned)
-                                    </span>
-                                  )}
-                                </div>
-                              </AccordionTrigger>
-                              <AccordionContent className="px-4 text-left overflow-hidden">
-                                <div className="space-y-4 pb-4">
-                                  <div className="text-sm text-gray-600 mb-4">
-                                    Assign this ad group to program campaigns
-                                    for distribution and targeting.
+                              <div className="border rounded-md overflow-hidden hover:bg-gray-50 transition-colors cursor-pointer">
+                                <Button
+                                  variant="ghost"
+                                  className="w-full justify-between px-4 py-3 text-sm font-medium hover:bg-transparent"
+                                  onClick={() =>
+                                    setIsProgramAssignmentOpen(true)
+                                  }
+                                >
+                                  <div className="flex items-center">
+                                    <UsersIcon className="h-4 w-4 mr-2" />
+                                    {selectedPrograms.length > 0
+                                      ? `Edit Program Assignments (${selectedPrograms.length})`
+                                      : "Assign to Program Campaigns"}
+                                    <Badge
+                                      variant="outline"
+                                      className="ml-2 text-xs bg-blue-50 text-blue-700"
+                                    >
+                                      Optional
+                                    </Badge>
                                   </div>
-
-                                  <div className="min-h-[200px]">
-                                    {selectedPrograms.length === 0 ? (
-                                      <div className="border rounded-md p-3 bg-gray-50 text-center">
-                                        <CogIcon className="mx-auto h-8 w-8 text-gray-400 mb-3" />
-                                        <p className="text-sm text-gray-500 mb-2">
-                                          No programs selected
-                                        </p>
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          onClick={() =>
-                                            setIsProgramAssignmentOpen(true)
-                                          }
-                                          className="text-purple-600 border-purple-300 hover:bg-purple-50"
-                                        >
-                                          <CogIcon className="h-4 w-4 mr-2" />
-                                          Assign Programs
-                                        </Button>
-                                      </div>
-                                    ) : (
-                                      <div className="border rounded-md overflow-hidden flex flex-col h-full">
-                                        {/* Header - matching catalog filter style */}
-                                        <div className="flex items-center justify-between bg-slate-50 p-4 border-b flex-shrink-0">
-                                          <div className="flex items-center space-x-3">
-                                            <CheckCircleIcon className="h-5 w-5 text-green-600" />
-                                            <div className="flex flex-col">
-                                              <div className="font-semibold text-sm leading-tight">
-                                                Programs Selected
-                                              </div>
-                                              <div className="text-xs text-gray-600 mt-1">
-                                                {selectedPrograms.length}{" "}
-                                                programs assigned
-                                              </div>
-                                            </div>
-                                          </div>
-                                          <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() =>
-                                              setIsProgramAssignmentOpen(true)
-                                            }
-                                            className="flex items-center gap-1.5 h-8 px-3"
-                                          >
-                                            <PencilIcon className="h-3 w-3" />
-                                            <span className="text-xs font-medium">
-                                              Edit
-                                            </span>
-                                          </Button>
-                                        </div>
-
-                                        {/* Selected Programs List */}
-                                        <div className="flex-1 overflow-auto p-3">
-                                          <div className="space-y-2">
-                                            {selectedPrograms.map(
-                                              (programId) => {
-                                                const program =
-                                                  mockProgramCampaigns.find(
-                                                    (p) => p.id === programId
-                                                  );
-                                                return program ? (
-                                                  <div
-                                                    key={programId}
-                                                    className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200"
-                                                  >
-                                                    <div className="flex-1">
-                                                      <div className="font-medium text-sm">
-                                                        {program.name}
-                                                      </div>
-                                                      <div className="text-sm text-gray-500">
-                                                        {program.category} •{" "}
-                                                        {program.description}
-                                                      </div>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                        Active
-                                                      </span>
-                                                      <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => {
-                                                          setSelectedPrograms(
-                                                            selectedPrograms.filter(
-                                                              (id) =>
-                                                                id !== programId
-                                                            )
-                                                          );
-                                                        }}
-                                                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                                                      >
-                                                        ×
-                                                      </Button>
-                                                    </div>
-                                                  </div>
-                                                ) : null;
-                                              }
-                                            )}
-                                          </div>
-                                        </div>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              </AccordionContent>
-                            </AccordionItem>
-                          </Accordion>
+                                  <ChevronRightIcon className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </ShinyBorder>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1180,6 +1068,7 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                       <div className="space-y-6">
                         {/* Group Hierarchy with Full Details */}
                         <div className="space-y-3">
+                          {/* Ad Group Container */}
                           <div className="bg-white rounded-lg p-4 border border-gray-200">
                             <div className="space-y-3">
                               {/* Ad Group Header */}
@@ -1307,6 +1196,26 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                               )}
                             </div>
                           </div>
+
+                          {/* Program Campaigns Assignment - Using EXACT catalog filter component */}
+                          {selectedPrograms.length > 0 && (
+                            <div className="bg-white rounded-lg overflow-hidden border border-gray-200">
+                              <div className="flex items-center gap-2 p-3 border-b bg-gray-50">
+                                <UsersIcon className="h-4 w-4 text-purple-600" />
+                                <span className="text-sm font-medium text-gray-900">
+                                  Program Campaign Assignment
+                                </span>
+                              </div>
+                              <SelectedProgramsDisplay
+                                partners={mockPartners}
+                                selectedProgramIds={selectedPrograms}
+                                onEditClick={() =>
+                                  setIsProgramAssignmentOpen(true)
+                                }
+                                bulkAssignmentStatus="idle"
+                              />
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1318,163 +1227,43 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
         </div>
       </div>
 
-      {/* Program Assignment Sheet - Catalog filter style */}
-      <Sheet
-        open={isProgramAssignmentOpen}
-        onOpenChange={setIsProgramAssignmentOpen}
-      >
-        <SheetContent className="w-[600px] sm:w-[800px]">
-          <SheetHeader>
-            <SheetTitle>Assign to Program Campaigns</SheetTitle>
-            <SheetDescription>
-              Select program campaigns to distribute this ad group. Programs
-              help target and organize your advertising campaigns.
-            </SheetDescription>
-          </SheetHeader>
-
-          <div className="py-6">
-            {/* Search - TODO: Add search functionality */}
-            <div className="mb-4 text-sm text-gray-500">
-              Select program campaigns to assign to this ad group:
+      {/* Program Assignment Modal - EXACT catalog filter structure */}
+      {isProgramAssignmentOpen && (
+        <Dialog
+          open={isProgramAssignmentOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              setIsProgramAssignmentOpen(false);
+            }
+          }}
+        >
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+            <DialogHeader>
+              <DialogTitle>Assign Ad Group to Programs</DialogTitle>
+              <DialogDescription>
+                Select which program campaigns this ad group should be assigned
+                to for distribution.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="max-h-[calc(80vh-10rem)] overflow-hidden">
+              <AssignToProgramsPanel
+                filterId="ad-group-temp-id"
+                filterName="Ad Group Assignment"
+                onClose={(selectedIds) => {
+                  setIsProgramAssignmentOpen(false);
+                  if (selectedIds) {
+                    setSelectedPrograms(selectedIds);
+                  }
+                }}
+                initialSelection={selectedPrograms}
+                partnerData={mockPartners}
+                onSelectionChange={() => {}}
+                onStartBulkAssignment={() => {}}
+              />
             </div>
-
-            {/* Categories and Programs */}
-            <div className="space-y-4 max-h-[calc(100vh-280px)] overflow-y-auto">
-              {["Seasonal", "Special Event", "Demographic", "Travel Type"].map(
-                (category) => {
-                  const programsInCategory = mockProgramCampaigns.filter(
-                    (p) => p.category === category
-                  );
-                  const selectedInCategory = programsInCategory.filter((p) =>
-                    selectedPrograms.includes(p.id)
-                  ).length;
-                  const isFullySelected =
-                    selectedInCategory === programsInCategory.length;
-                  const isPartiallySelected =
-                    selectedInCategory > 0 &&
-                    selectedInCategory < programsInCategory.length;
-
-                  return (
-                    <div key={category} className="space-y-3">
-                      {/* Category header with checkbox */}
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={isFullySelected}
-                          ref={(checkbox) => {
-                            if (checkbox) {
-                              checkbox.indeterminate = isPartiallySelected;
-                            }
-                          }}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              // Select all in category
-                              const categoryProgramIds = programsInCategory.map(
-                                (p) => p.id
-                              );
-                              setSelectedPrograms([
-                                ...new Set([
-                                  ...selectedPrograms,
-                                  ...categoryProgramIds,
-                                ]),
-                              ]);
-                            } else {
-                              // Deselect all in category
-                              const categoryProgramIds = programsInCategory.map(
-                                (p) => p.id
-                              );
-                              setSelectedPrograms(
-                                selectedPrograms.filter(
-                                  (id) => !categoryProgramIds.includes(id)
-                                )
-                              );
-                            }
-                          }}
-                          className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
-                        />
-                        <label className="text-sm font-medium cursor-pointer">
-                          {category} ({selectedInCategory}/
-                          {programsInCategory.length})
-                        </label>
-                      </div>
-
-                      {/* Programs in category */}
-                      <div className="space-y-2 pl-6">
-                        {programsInCategory.map((program) => (
-                          <div
-                            key={program.id}
-                            className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50"
-                          >
-                            <input
-                              type="checkbox"
-                              id={program.id}
-                              checked={selectedPrograms.includes(program.id)}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setSelectedPrograms([
-                                    ...selectedPrograms,
-                                    program.id,
-                                  ]);
-                                } else {
-                                  setSelectedPrograms(
-                                    selectedPrograms.filter(
-                                      (id) => id !== program.id
-                                    )
-                                  );
-                                }
-                              }}
-                              className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
-                            />
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <label
-                                  htmlFor={program.id}
-                                  className="font-medium text-sm cursor-pointer"
-                                >
-                                  {program.name}
-                                </label>
-                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                  {program.category}
-                                </span>
-                                {program.active && (
-                                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    Active
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-sm text-gray-500 mt-1">
-                                {program.description}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                }
-              )}
-            </div>
-          </div>
-
-          <SheetFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsProgramAssignmentOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() => {
-                setIsProgramAssignmentOpen(false);
-                console.log("Assigned programs:", selectedPrograms);
-              }}
-              className="bg-purple-600 hover:bg-purple-700 text-white"
-            >
-              Save Assignments ({selectedPrograms.length})
-            </Button>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Confirmation Dialog */}
       <AlertDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
