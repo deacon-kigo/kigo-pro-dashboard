@@ -8,6 +8,22 @@ import { RootState } from "@/lib/redux/store";
 
 import Card from "@/components/atoms/Card/Card";
 import { Button } from "@/components/atoms/Button";
+import { Input } from "@/components/atoms/Input";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+} from "@/components/ui/sheet";
+
 import {
   resetCampaign,
   addAd,
@@ -32,6 +48,11 @@ import {
   InformationCircleIcon,
   SparklesIcon,
   BanknotesIcon,
+  DocumentTextIcon,
+  BuildingStorefrontIcon,
+  CogIcon,
+  PencilIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import {
   AlertDialog,
@@ -68,6 +89,10 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
   const [merchantSearchOpen, setMerchantSearchOpen] = useState(false);
   const [merchantSearchQuery, setMerchantSearchQuery] = useState("");
   const [selectedAds, setSelectedAds] = useState<string[]>([]);
+
+  // Program assignment state
+  const [isProgramAssignmentOpen, setIsProgramAssignmentOpen] = useState(false);
+  const [selectedPrograms, setSelectedPrograms] = useState<string[]>([]);
 
   // Mock merchant data (in real app, this would come from API)
   const availableMerchants = [
@@ -219,6 +244,38 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
     ? getAdsForMerchant(selectedMerchant)
     : [];
   const allAds = getAllAds();
+
+  // Mock program campaigns data
+  const mockProgramCampaigns = [
+    {
+      id: "pc-001",
+      name: "Summer Holiday Campaign",
+      description: "Special offers for summer vacation packages",
+      category: "Seasonal",
+      active: true,
+    },
+    {
+      id: "pc-002",
+      name: "Winter Wonderland",
+      description: "Winter season promotional campaign",
+      category: "Seasonal",
+      active: true,
+    },
+    {
+      id: "pc-003",
+      name: "Family Package Promotion",
+      description: "Special rates for family packages",
+      category: "Demographic",
+      active: true,
+    },
+    {
+      id: "pc-004",
+      name: "Weekend Getaway",
+      description: "Special offers for weekend trips",
+      category: "Travel Type",
+      active: true,
+    },
+  ];
 
   // Sync tab state with URL parameter
   useEffect(() => {
@@ -467,10 +524,7 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                     title="Create Ad"
                   >
                     <PhotoIcon className="h-5 w-5" />
-                    {/* Active indicator */}
-                    {currentTab === "ad" && (
-                      <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-primary rounded-full" />
-                    )}
+
                     {/* Tooltip on hover */}
                     <div className="absolute left-16 top-1/2 transform -translate-y-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
                       Create Ad
@@ -487,10 +541,7 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                     title="Create Ad Group"
                   >
                     <RectangleGroupIcon className="h-5 w-5" />
-                    {/* Active indicator */}
-                    {currentTab === "adgroup" && (
-                      <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-1 h-6 bg-primary rounded-full" />
-                    )}
+
                     {/* Tooltip on hover */}
                     <div className="absolute left-16 top-1/2 transform -translate-y-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
                       Create Ad Group
@@ -611,282 +662,497 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                     {/* Ad Group Form - Match the ad creation form style */}
                     <div className="flex-1 overflow-auto">
                       <div className="p-3">
-                        <div className="space-y-6">
+                        <div className="space-y-4">
                           {/* Basic Details Section */}
-                          <div className="space-y-4">
-                            <h4 className="font-medium text-sm text-gray-900 border-b pb-2">
-                              Basic Information
-                            </h4>
-
-                            <div>
-                              <label className="text-sm font-medium mb-2 block">
-                                Ad Group Name *
-                              </label>
-                              <input
-                                type="text"
-                                placeholder="Enter ad group name..."
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="text-sm font-medium mb-2 block">
-                                Description
-                              </label>
-                              <textarea
-                                placeholder="Describe the purpose of this ad group..."
-                                rows={3}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                              />
-                            </div>
-                          </div>
-
-                          {/* Merchant Selection Section */}
-                          <div className="space-y-4">
-                            <h4 className="font-medium text-sm text-gray-900 border-b pb-2">
-                              Merchant Selection
-                            </h4>
-
-                            <div>
-                              <label className="text-sm font-medium mb-2 block">
-                                Merchant *
-                              </label>
-                              <div className="relative">
-                                <input
-                                  type="text"
-                                  placeholder={
-                                    selectedMerchantData
-                                      ? selectedMerchantData.name
-                                      : "Type to search merchants..."
-                                  }
-                                  value={merchantSearchQuery}
-                                  onChange={(e) => {
-                                    setMerchantSearchQuery(e.target.value);
-                                    setMerchantSearchOpen(true);
-                                  }}
-                                  onFocus={() => setMerchantSearchOpen(true)}
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                  <svg
-                                    className="h-4 w-4 text-gray-400"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M19 9l-7 7-7-7"
-                                    />
-                                  </svg>
+                          <Accordion
+                            type="single"
+                            collapsible
+                            defaultValue="basic-info"
+                            className="border rounded-md overflow-hidden"
+                          >
+                            <AccordionItem
+                              value="basic-info"
+                              className="border-none"
+                            >
+                              <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                                <div className="flex items-center">
+                                  <DocumentTextIcon className="h-4 w-4 mr-2 text-blue-600" />
+                                  Basic Information
                                 </div>
-
-                                {/* Merchant Dropdown */}
-                                {merchantSearchOpen && (
-                                  <>
-                                    <div
-                                      className="fixed inset-0 z-10"
-                                      onClick={() =>
-                                        setMerchantSearchOpen(false)
-                                      }
+                              </AccordionTrigger>
+                              <AccordionContent className="px-4 text-left overflow-hidden">
+                                <div className="space-y-4 pb-4">
+                                  <div>
+                                    <label className="text-sm font-medium mb-2 block">
+                                      Ad Group Name *
+                                    </label>
+                                    <input
+                                      type="text"
+                                      placeholder="Enter ad group name..."
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />
-                                    <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
-                                      {filteredMerchants.length > 0 ? (
-                                        filteredMerchants.map((merchant) => (
-                                          <div
-                                            key={merchant.id}
-                                            className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                                            onClick={() => {
-                                              setSelectedMerchant(merchant.id);
-                                              setMerchantSearchQuery("");
-                                              setMerchantSearchOpen(false);
-                                              // Don't reset selected ads - preserve across merchant switches
-                                            }}
+                                  </div>
+
+                                  <div>
+                                    <label className="text-sm font-medium mb-2 block">
+                                      Description
+                                    </label>
+                                    <textarea
+                                      placeholder="Describe the purpose of this ad group..."
+                                      rows={3}
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                                    />
+                                  </div>
+                                </div>
+                              </AccordionContent>
+                            </AccordionItem>
+                          </Accordion>
+
+                          {/* Merchant & Ad Selection Section */}
+                          <Accordion
+                            type="single"
+                            collapsible
+                            defaultValue="merchant-ads"
+                            className="border rounded-md overflow-hidden"
+                          >
+                            <AccordionItem
+                              value="merchant-ads"
+                              className="border-none"
+                            >
+                              <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                                <div className="flex items-center">
+                                  <BuildingStorefrontIcon className="h-4 w-4 mr-2 text-green-600" />
+                                  Merchant & Ad Selection
+                                  {selectedMerchant &&
+                                    selectedAds.length > 0 && (
+                                      <span className="ml-2 text-sm text-gray-500">
+                                        ({selectedAds.length} ads selected)
+                                      </span>
+                                    )}
+                                </div>
+                              </AccordionTrigger>
+                              <AccordionContent className="px-4 text-left overflow-hidden">
+                                <div className="space-y-6 pb-4">
+                                  {/* Merchant Selection */}
+                                  <div className="space-y-4">
+                                    <h5 className="font-medium text-sm text-gray-900">
+                                      Select Merchant
+                                    </h5>
+
+                                    <div>
+                                      <label className="text-sm font-medium mb-2 block">
+                                        Merchant *
+                                      </label>
+                                      <div className="relative">
+                                        <input
+                                          type="text"
+                                          placeholder={
+                                            selectedMerchantData
+                                              ? selectedMerchantData.name
+                                              : "Type to search merchants..."
+                                          }
+                                          value={merchantSearchQuery}
+                                          onChange={(e) => {
+                                            setMerchantSearchQuery(
+                                              e.target.value
+                                            );
+                                            setMerchantSearchOpen(true);
+                                          }}
+                                          onFocus={() =>
+                                            setMerchantSearchOpen(true)
+                                          }
+                                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                          <svg
+                                            className="h-4 w-4 text-gray-400"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
                                           >
-                                            <div className="font-medium text-sm">
-                                              {merchant.name}
-                                            </div>
-                                            <div className="text-xs text-gray-500">
-                                              {merchant.category}
-                                            </div>
-                                          </div>
-                                        ))
-                                      ) : (
-                                        <div className="px-3 py-2 text-sm text-gray-500">
-                                          No merchants found
+                                            <path
+                                              strokeLinecap="round"
+                                              strokeLinejoin="round"
+                                              strokeWidth={2}
+                                              d="M19 9l-7 7-7-7"
+                                            />
+                                          </svg>
                                         </div>
+
+                                        {/* Merchant Dropdown */}
+                                        {merchantSearchOpen && (
+                                          <>
+                                            <div
+                                              className="fixed inset-0 z-10"
+                                              onClick={() =>
+                                                setMerchantSearchOpen(false)
+                                              }
+                                            />
+                                            <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                                              {filteredMerchants.length > 0 ? (
+                                                filteredMerchants.map(
+                                                  (merchant) => (
+                                                    <div
+                                                      key={merchant.id}
+                                                      className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                                      onClick={() => {
+                                                        setSelectedMerchant(
+                                                          merchant.id
+                                                        );
+                                                        setMerchantSearchQuery(
+                                                          ""
+                                                        );
+                                                        setMerchantSearchOpen(
+                                                          false
+                                                        );
+                                                        // Clear selected ads when changing merchants (single-merchant ad groups only)
+                                                        setSelectedAds([]);
+                                                      }}
+                                                    >
+                                                      <div className="font-medium text-sm">
+                                                        {merchant.name}
+                                                      </div>
+                                                      <div className="text-xs text-gray-500">
+                                                        {merchant.category}
+                                                      </div>
+                                                    </div>
+                                                  )
+                                                )
+                                              ) : (
+                                                <div className="px-3 py-2 text-sm text-gray-500">
+                                                  No merchants found
+                                                </div>
+                                              )}
+                                            </div>
+                                          </>
+                                        )}
+                                      </div>
+                                      <p className="text-xs text-gray-500 mt-1">
+                                        {selectedMerchantData
+                                          ? `Selected: ${selectedMerchantData.name}`
+                                          : "Select a merchant to view available ads"}
+                                      </p>
+                                      {selectedMerchantData && (
+                                        <p className="text-xs text-blue-600 mt-1 font-medium">
+                                          ℹ️ Ad groups can only contain ads from
+                                          one merchant
+                                        </p>
                                       )}
                                     </div>
-                                  </>
-                                )}
-                              </div>
-                              <p className="text-xs text-gray-500 mt-1">
-                                {selectedMerchantData
-                                  ? `Selected: ${selectedMerchantData.name}`
-                                  : "Select a merchant to view available ads"}
-                              </p>
-                            </div>
-                          </div>
+                                  </div>
 
-                          {/* Ad Selection Section */}
-                          <div className="space-y-4">
-                            <h4 className="font-medium text-sm text-gray-900 border-b pb-2 flex items-center gap-2">
-                              Ad Selection
-                              <span className="text-xs font-normal text-gray-500">
-                                ({selectedAds.length} selected)
-                              </span>
-                            </h4>
+                                  {/* Ad Selection Section */}
+                                  <div className="space-y-4">
+                                    <h4 className="font-medium text-sm text-gray-900 border-b pb-2 flex items-center gap-2">
+                                      Ad Selection
+                                      <span className="text-xs font-normal text-gray-500">
+                                        ({selectedAds.length} selected)
+                                      </span>
+                                    </h4>
 
-                            {!selectedMerchant ? (
-                              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-                                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                  <RectangleGroupIcon className="h-6 w-6 text-blue-600" />
-                                </div>
-                                <p className="text-sm text-blue-700 font-medium mb-1">
-                                  Select a Merchant First
-                                </p>
-                                <p className="text-xs text-blue-600">
-                                  Choose a merchant above to view their
-                                  available ads
-                                </p>
-                              </div>
-                            ) : (
-                              <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                  <p className="text-sm text-gray-600">
-                                    {availableAds.length} ads available from{" "}
-                                    {selectedMerchantData?.name}
-                                  </p>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={availableAds.length === 0}
-                                    onClick={() => {
-                                      if (
-                                        selectedAds.length ===
-                                        availableAds.length
-                                      ) {
-                                        setSelectedAds([]);
-                                      } else {
-                                        setSelectedAds(
-                                          availableAds.map((ad) => ad.id)
-                                        );
-                                      }
-                                    }}
-                                  >
-                                    {selectedAds.length === availableAds.length
-                                      ? "Deselect All"
-                                      : "Select All"}
-                                  </Button>
-                                </div>
-
-                                <div className="max-h-96 overflow-y-auto space-y-2 border rounded-lg p-3 bg-gray-50">
-                                  {availableAds.map((ad) => (
-                                    <div
-                                      key={ad.id}
-                                      className={`border rounded-md p-3 transition-colors bg-white ${
-                                        selectedAds.includes(ad.id)
-                                          ? "border-blue-500 ring-1 ring-blue-200"
-                                          : "border-gray-200 hover:border-blue-300"
-                                      }`}
-                                    >
-                                      <div className="flex items-start gap-3">
-                                        <input
-                                          type="checkbox"
-                                          checked={selectedAds.includes(ad.id)}
-                                          onChange={() => {
-                                            if (selectedAds.includes(ad.id)) {
-                                              setSelectedAds(
-                                                selectedAds.filter(
-                                                  (id) => id !== ad.id
-                                                )
-                                              );
-                                            } else {
-                                              setSelectedAds([
-                                                ...selectedAds,
-                                                ad.id,
-                                              ]);
-                                            }
-                                          }}
-                                          className="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                        />
-                                        <div className="flex-1 min-w-0">
-                                          <div className="flex items-center gap-2 mb-1">
-                                            <h5 className="font-medium text-sm truncate">
-                                              {ad.name}
-                                            </h5>
-                                            <span
-                                              className={`px-2 py-1 text-xs rounded-full ${
-                                                ad.status === "Active"
-                                                  ? "bg-green-100 text-green-800"
-                                                  : "bg-yellow-100 text-yellow-800"
-                                              }`}
-                                            >
-                                              {ad.status}
-                                            </span>
-                                          </div>
-                                          <p className="text-xs text-gray-500 mb-2">
-                                            {ad.offer}
-                                          </p>
-                                          <div className="flex flex-wrap gap-1 mb-2">
-                                            {ad.mediaTypes.map(
-                                              (type: string) => (
-                                                <span
-                                                  key={type}
-                                                  className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
-                                                >
-                                                  {type}
-                                                </span>
-                                              )
-                                            )}
-                                          </div>
+                                    {!selectedMerchant ? (
+                                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+                                        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                          <RectangleGroupIcon className="h-6 w-6 text-blue-600" />
                                         </div>
-                                        <div className="flex flex-col gap-1">
-                                          {selectedAds.includes(ad.id) ? (
-                                            <Button
-                                              size="sm"
-                                              variant="outline"
-                                              onClick={() => {
+                                        <p className="text-sm text-blue-700 font-medium mb-1">
+                                          Select a Merchant First
+                                        </p>
+                                        <p className="text-xs text-blue-600">
+                                          Choose a merchant above to view their
+                                          available ads
+                                        </p>
+                                      </div>
+                                    ) : (
+                                      <div className="space-y-3">
+                                        <div className="flex items-center justify-between">
+                                          <p className="text-sm text-gray-600">
+                                            {availableAds.length} ads available
+                                            from {selectedMerchantData?.name}
+                                          </p>
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            disabled={availableAds.length === 0}
+                                            onClick={() => {
+                                              if (
+                                                selectedAds.length ===
+                                                availableAds.length
+                                              ) {
+                                                setSelectedAds([]);
+                                              } else {
                                                 setSelectedAds(
-                                                  selectedAds.filter(
-                                                    (id) => id !== ad.id
+                                                  availableAds.map(
+                                                    (ad) => ad.id
                                                   )
                                                 );
-                                              }}
-                                              className="text-red-600 border-red-300 hover:bg-red-50"
+                                              }
+                                            }}
+                                          >
+                                            {selectedAds.length ===
+                                            availableAds.length
+                                              ? "Deselect All"
+                                              : "Select All"}
+                                          </Button>
+                                        </div>
+
+                                        <div className="max-h-96 overflow-y-auto space-y-2 border rounded-lg p-3 bg-gray-50">
+                                          {availableAds.map((ad) => (
+                                            <div
+                                              key={ad.id}
+                                              className={`border rounded-md p-3 transition-colors bg-white ${
+                                                selectedAds.includes(ad.id)
+                                                  ? "border-blue-500 ring-1 ring-blue-200"
+                                                  : "border-gray-200 hover:border-blue-300"
+                                              }`}
                                             >
-                                              Remove
-                                            </Button>
-                                          ) : (
-                                            <Button
-                                              size="sm"
-                                              onClick={() => {
-                                                setSelectedAds([
-                                                  ...selectedAds,
-                                                  ad.id,
-                                                ]);
-                                              }}
-                                              className="bg-blue-600 hover:bg-blue-700 text-white"
-                                            >
-                                              Add
-                                            </Button>
+                                              <div className="flex items-start gap-3">
+                                                <input
+                                                  type="checkbox"
+                                                  checked={selectedAds.includes(
+                                                    ad.id
+                                                  )}
+                                                  onChange={() => {
+                                                    if (
+                                                      selectedAds.includes(
+                                                        ad.id
+                                                      )
+                                                    ) {
+                                                      setSelectedAds(
+                                                        selectedAds.filter(
+                                                          (id) => id !== ad.id
+                                                        )
+                                                      );
+                                                    } else {
+                                                      setSelectedAds([
+                                                        ...selectedAds,
+                                                        ad.id,
+                                                      ]);
+                                                    }
+                                                  }}
+                                                  className="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                                />
+                                                <div className="flex-1 min-w-0">
+                                                  <div className="flex items-center gap-2 mb-1">
+                                                    <h5 className="font-medium text-sm truncate">
+                                                      {ad.name}
+                                                    </h5>
+                                                    <span
+                                                      className={`px-2 py-1 text-xs rounded-full ${
+                                                        ad.status === "Active"
+                                                          ? "bg-green-100 text-green-800"
+                                                          : "bg-yellow-100 text-yellow-800"
+                                                      }`}
+                                                    >
+                                                      {ad.status}
+                                                    </span>
+                                                  </div>
+                                                  <p className="text-xs text-gray-500 mb-2">
+                                                    {ad.offer}
+                                                  </p>
+                                                  <div className="flex flex-wrap gap-1 mb-2">
+                                                    {ad.mediaTypes.map(
+                                                      (type: string) => (
+                                                        <span
+                                                          key={type}
+                                                          className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
+                                                        >
+                                                          {type}
+                                                        </span>
+                                                      )
+                                                    )}
+                                                  </div>
+                                                </div>
+                                                <div className="flex flex-col gap-1">
+                                                  {selectedAds.includes(
+                                                    ad.id
+                                                  ) ? (
+                                                    <Button
+                                                      size="sm"
+                                                      variant="outline"
+                                                      onClick={() => {
+                                                        setSelectedAds(
+                                                          selectedAds.filter(
+                                                            (id) => id !== ad.id
+                                                          )
+                                                        );
+                                                      }}
+                                                      className="text-red-600 border-red-300 hover:bg-red-50"
+                                                    >
+                                                      Remove
+                                                    </Button>
+                                                  ) : (
+                                                    <Button
+                                                      size="sm"
+                                                      onClick={() => {
+                                                        setSelectedAds([
+                                                          ...selectedAds,
+                                                          ad.id,
+                                                        ]);
+                                                      }}
+                                                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                                                    >
+                                                      Add
+                                                    </Button>
+                                                  )}
+                                                </div>
+                                              </div>
+                                            </div>
+                                          ))}
+
+                                          {availableAds.length === 0 && (
+                                            <div className="text-center py-8 text-gray-500">
+                                              <p>
+                                                No ads available for this
+                                                merchant
+                                              </p>
+                                            </div>
                                           )}
                                         </div>
                                       </div>
-                                    </div>
-                                  ))}
+                                    )}
+                                  </div>
+                                </div>
+                              </AccordionContent>
+                            </AccordionItem>
+                          </Accordion>
 
-                                  {availableAds.length === 0 && (
-                                    <div className="text-center py-8 text-gray-500">
-                                      <p>No ads available for this merchant</p>
-                                    </div>
+                          {/* Program Assignment Section - Using exact catalog filter component */}
+                          <Accordion
+                            type="single"
+                            collapsible
+                            defaultValue="program-assignment"
+                            className="border rounded-md overflow-hidden"
+                          >
+                            <AccordionItem
+                              value="program-assignment"
+                              className="border-none"
+                            >
+                              <AccordionTrigger className="px-4 py-3 text-sm font-medium">
+                                <div className="flex items-center">
+                                  <CogIcon className="h-4 w-4 mr-2 text-purple-600" />
+                                  Program Campaign Assignment
+                                  {selectedPrograms.length > 0 && (
+                                    <span className="ml-2 text-sm text-gray-500">
+                                      ({selectedPrograms.length} programs
+                                      assigned)
+                                    </span>
                                   )}
                                 </div>
-                              </div>
-                            )}
-                          </div>
+                              </AccordionTrigger>
+                              <AccordionContent className="px-4 text-left overflow-hidden">
+                                <div className="space-y-4 pb-4">
+                                  <div className="text-sm text-gray-600 mb-4">
+                                    Assign this ad group to program campaigns
+                                    for distribution and targeting.
+                                  </div>
+
+                                  <div className="min-h-[200px]">
+                                    {selectedPrograms.length === 0 ? (
+                                      <div className="border rounded-md p-3 bg-gray-50 text-center">
+                                        <CogIcon className="mx-auto h-8 w-8 text-gray-400 mb-3" />
+                                        <p className="text-sm text-gray-500 mb-2">
+                                          No programs selected
+                                        </p>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() =>
+                                            setIsProgramAssignmentOpen(true)
+                                          }
+                                          className="text-purple-600 border-purple-300 hover:bg-purple-50"
+                                        >
+                                          <CogIcon className="h-4 w-4 mr-2" />
+                                          Assign Programs
+                                        </Button>
+                                      </div>
+                                    ) : (
+                                      <div className="border rounded-md overflow-hidden flex flex-col h-full">
+                                        {/* Header - matching catalog filter style */}
+                                        <div className="flex items-center justify-between bg-slate-50 p-4 border-b flex-shrink-0">
+                                          <div className="flex items-center space-x-3">
+                                            <CheckCircleIcon className="h-5 w-5 text-green-600" />
+                                            <div className="flex flex-col">
+                                              <div className="font-semibold text-sm leading-tight">
+                                                Programs Selected
+                                              </div>
+                                              <div className="text-xs text-gray-600 mt-1">
+                                                {selectedPrograms.length}{" "}
+                                                programs assigned
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() =>
+                                              setIsProgramAssignmentOpen(true)
+                                            }
+                                            className="flex items-center gap-1.5 h-8 px-3"
+                                          >
+                                            <PencilIcon className="h-3 w-3" />
+                                            <span className="text-xs font-medium">
+                                              Edit
+                                            </span>
+                                          </Button>
+                                        </div>
+
+                                        {/* Selected Programs List */}
+                                        <div className="flex-1 overflow-auto p-3">
+                                          <div className="space-y-2">
+                                            {selectedPrograms.map(
+                                              (programId) => {
+                                                const program =
+                                                  mockProgramCampaigns.find(
+                                                    (p) => p.id === programId
+                                                  );
+                                                return program ? (
+                                                  <div
+                                                    key={programId}
+                                                    className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200"
+                                                  >
+                                                    <div className="flex-1">
+                                                      <div className="font-medium text-sm">
+                                                        {program.name}
+                                                      </div>
+                                                      <div className="text-sm text-gray-500">
+                                                        {program.category} •{" "}
+                                                        {program.description}
+                                                      </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                        Active
+                                                      </span>
+                                                      <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                          setSelectedPrograms(
+                                                            selectedPrograms.filter(
+                                                              (id) =>
+                                                                id !== programId
+                                                            )
+                                                          );
+                                                        }}
+                                                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                                      >
+                                                        ×
+                                                      </Button>
+                                                    </div>
+                                                  </div>
+                                                ) : null;
+                                              }
+                                            )}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </AccordionContent>
+                            </AccordionItem>
+                          </Accordion>
                         </div>
                       </div>
                     </div>
@@ -912,42 +1178,9 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                     {/* Preview Content */}
                     <div className="flex-1 overflow-auto p-4">
                       <div className="space-y-6">
-                        {/* Summary Cards */}
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
-                            <div className="text-2xl font-bold text-blue-600">
-                              {selectedAds.length}
-                            </div>
-                            <div className="text-xs text-blue-600">
-                              Selected Ads
-                            </div>
-                          </div>
-                          <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
-                            <div className="text-2xl font-bold text-green-600">
-                              {
-                                new Set(
-                                  selectedAds
-                                    .map(
-                                      (adId) =>
-                                        allAds.find((a) => a.id === adId)
-                                          ?.merchantId
-                                    )
-                                    .filter(Boolean)
-                                ).size
-                              }
-                            </div>
-                            <div className="text-xs text-green-600">
-                              Merchants
-                            </div>
-                          </div>
-                        </div>
-
                         {/* Group Hierarchy with Full Details */}
                         <div className="space-y-3">
-                          <h4 className="font-medium text-sm text-gray-900 border-b pb-2">
-                            Group Hierarchy
-                          </h4>
-                          <div className="bg-gray-50 rounded-lg p-4">
+                          <div className="bg-white rounded-lg p-4 border border-gray-200">
                             <div className="space-y-3">
                               {/* Ad Group Header */}
                               <div className="flex items-center gap-2">
@@ -955,7 +1188,7 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                 <span className="text-sm font-medium text-gray-900">
                                   Ad Group
                                 </span>
-                                <span className="text-xs text-gray-500">
+                                <span className="text-sm text-gray-500">
                                   ({selectedAds.length} ads)
                                 </span>
                               </div>
@@ -992,10 +1225,10 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                         {/* Merchant Header */}
                                         <div className="flex items-center gap-2">
                                           <BanknotesIcon className="h-3 w-3 text-green-600" />
-                                          <span className="text-xs font-medium text-gray-700">
+                                          <span className="text-sm font-medium text-gray-700">
                                             {merchant?.name}
                                           </span>
-                                          <span className="text-xs text-gray-500">
+                                          <span className="text-sm text-gray-500">
                                             ({merchantAds.length} ads)
                                           </span>
                                         </div>
@@ -1015,11 +1248,11 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                                   <div className="flex-1 min-w-0">
                                                     <div className="flex items-center gap-2 mb-1">
                                                       <PhotoIcon className="h-3 w-3 text-blue-500" />
-                                                      <span className="text-xs font-medium truncate">
+                                                      <span className="text-sm font-medium truncate">
                                                         {ad.name}
                                                       </span>
                                                       <span
-                                                        className={`px-1.5 py-0.5 text-xs rounded-full ${
+                                                        className={`px-1.5 py-0.5 text-sm rounded-full ${
                                                           ad.status === "Active"
                                                             ? "bg-green-100 text-green-800"
                                                             : "bg-yellow-100 text-yellow-800"
@@ -1028,7 +1261,7 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                                         {ad.status}
                                                       </span>
                                                     </div>
-                                                    <div className="text-xs text-gray-500 mb-1">
+                                                    <div className="text-sm text-gray-500 mb-1">
                                                       {ad.offer}
                                                     </div>
                                                     <div className="flex flex-wrap gap-1">
@@ -1036,7 +1269,7 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                                         (type: string) => (
                                                           <span
                                                             key={type}
-                                                            className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded"
+                                                            className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-sm rounded"
                                                           >
                                                             {type}
                                                           </span>
@@ -1068,7 +1301,7 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                   })}
                                 </div>
                               ) : (
-                                <div className="ml-6 text-xs text-gray-400 italic">
+                                <div className="ml-6 text-sm text-gray-400 italic">
                                   No ads selected
                                 </div>
                               )}
@@ -1084,6 +1317,164 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Program Assignment Sheet - Catalog filter style */}
+      <Sheet
+        open={isProgramAssignmentOpen}
+        onOpenChange={setIsProgramAssignmentOpen}
+      >
+        <SheetContent className="w-[600px] sm:w-[800px]">
+          <SheetHeader>
+            <SheetTitle>Assign to Program Campaigns</SheetTitle>
+            <SheetDescription>
+              Select program campaigns to distribute this ad group. Programs
+              help target and organize your advertising campaigns.
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="py-6">
+            {/* Search - TODO: Add search functionality */}
+            <div className="mb-4 text-sm text-gray-500">
+              Select program campaigns to assign to this ad group:
+            </div>
+
+            {/* Categories and Programs */}
+            <div className="space-y-4 max-h-[calc(100vh-280px)] overflow-y-auto">
+              {["Seasonal", "Special Event", "Demographic", "Travel Type"].map(
+                (category) => {
+                  const programsInCategory = mockProgramCampaigns.filter(
+                    (p) => p.category === category
+                  );
+                  const selectedInCategory = programsInCategory.filter((p) =>
+                    selectedPrograms.includes(p.id)
+                  ).length;
+                  const isFullySelected =
+                    selectedInCategory === programsInCategory.length;
+                  const isPartiallySelected =
+                    selectedInCategory > 0 &&
+                    selectedInCategory < programsInCategory.length;
+
+                  return (
+                    <div key={category} className="space-y-3">
+                      {/* Category header with checkbox */}
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={isFullySelected}
+                          ref={(checkbox) => {
+                            if (checkbox) {
+                              checkbox.indeterminate = isPartiallySelected;
+                            }
+                          }}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              // Select all in category
+                              const categoryProgramIds = programsInCategory.map(
+                                (p) => p.id
+                              );
+                              setSelectedPrograms([
+                                ...new Set([
+                                  ...selectedPrograms,
+                                  ...categoryProgramIds,
+                                ]),
+                              ]);
+                            } else {
+                              // Deselect all in category
+                              const categoryProgramIds = programsInCategory.map(
+                                (p) => p.id
+                              );
+                              setSelectedPrograms(
+                                selectedPrograms.filter(
+                                  (id) => !categoryProgramIds.includes(id)
+                                )
+                              );
+                            }
+                          }}
+                          className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                        />
+                        <label className="text-sm font-medium cursor-pointer">
+                          {category} ({selectedInCategory}/
+                          {programsInCategory.length})
+                        </label>
+                      </div>
+
+                      {/* Programs in category */}
+                      <div className="space-y-2 pl-6">
+                        {programsInCategory.map((program) => (
+                          <div
+                            key={program.id}
+                            className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50"
+                          >
+                            <input
+                              type="checkbox"
+                              id={program.id}
+                              checked={selectedPrograms.includes(program.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedPrograms([
+                                    ...selectedPrograms,
+                                    program.id,
+                                  ]);
+                                } else {
+                                  setSelectedPrograms(
+                                    selectedPrograms.filter(
+                                      (id) => id !== program.id
+                                    )
+                                  );
+                                }
+                              }}
+                              className="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                            />
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <label
+                                  htmlFor={program.id}
+                                  className="font-medium text-sm cursor-pointer"
+                                >
+                                  {program.name}
+                                </label>
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                  {program.category}
+                                </span>
+                                {program.active && (
+                                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    Active
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm text-gray-500 mt-1">
+                                {program.description}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+              )}
+            </div>
+          </div>
+
+          <SheetFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsProgramAssignmentOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                setIsProgramAssignmentOpen(false);
+                console.log("Assigned programs:", selectedPrograms);
+              }}
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              Save Assignments ({selectedPrograms.length})
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
 
       {/* Confirmation Dialog */}
       <AlertDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
