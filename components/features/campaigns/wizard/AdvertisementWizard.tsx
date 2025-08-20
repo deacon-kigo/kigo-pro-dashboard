@@ -510,7 +510,7 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
           {/* Side Navigation */}
           <div className="w-16 flex-shrink-0">
             <div className="h-full bg-white rounded-l-lg border border-r-0 border-gray-200 shadow-sm">
-              <div className="p-3 pr-4">
+              <div className="p-2">
                 <nav className="space-y-3">
                   <button
                     onClick={() => handleTabChange("ad")}
@@ -1031,7 +1031,7 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                       <div className="flex items-center">
                         <SparklesIcon className="h-5 w-5 mr-2 text-primary" />
                         <div>
-                          <h3 className="font-medium">Ad Group Preview</h3>
+                          <h3 className="font-medium">Preview Ad Groups</h3>
                           <p className="text-sm text-muted-foreground">
                             Review your ad group configuration
                           </p>
@@ -1040,7 +1040,7 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                     </div>
 
                     {/* Preview Content */}
-                    <div className="flex-1 overflow-auto p-4">
+                    <div className="flex-1 overflow-auto p-3">
                       <div className="space-y-6">
                         {/* Group Hierarchy with Full Details */}
                         <div className="space-y-3">
