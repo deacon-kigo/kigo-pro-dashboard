@@ -462,9 +462,54 @@ const createCampaignColumns = (
   },
 ];
 
+// Ad Set Status Toggle Component
+const AdSetStatusToggle = memo(function AdSetStatusToggle({
+  adSet,
+  onStatusChange,
+}: {
+  adSet: AdSet;
+  onStatusChange: (adSetId: string, newStatus: CampaignStatus) => void;
+}) {
+  const currentStatus = adSet.status || "Draft";
+  const isActive = currentStatus === "Active";
+
+  const handleToggle = () => {
+    const newStatus = isActive ? "Paused" : "Active";
+    onStatusChange(adSet.id, newStatus);
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <button
+        onClick={handleToggle}
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+          isActive ? "bg-primary" : "bg-gray-200"
+        }`}
+        role="switch"
+        aria-checked={isActive}
+        title={`Toggle ad group ${isActive ? "off" : "on"}`}
+      >
+        <span
+          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+            isActive ? "translate-x-6" : "translate-x-1"
+          }`}
+        />
+      </button>
+      <span
+        className={`text-sm font-medium ${
+          isActive ? "text-green-600" : "text-gray-500"
+        }`}
+      >
+        {isActive ? "Active" : "Paused"}
+      </span>
+    </div>
+  );
+});
+
 // Ad Set columns definition (enhanced for V1 - ad grouping with better organization)
 const createAdSetColumns = (
-  onAdSetSelect: (adSet: AdSet) => void
+  onAdSetSelect: (adSet: AdSet) => void,
+  onStatusChange: (adSetId: string, newStatus: CampaignStatus) => void
 ): ColumnDef<AdSet>[] => [
   {
     id: "select",
@@ -487,6 +532,14 @@ const createAdSetColumns = (
     ),
     enableSorting: false,
     enableHiding: false,
+  },
+  {
+    id: "status",
+    header: () => <div className="text-left font-medium">Status</div>,
+    cell: ({ row }) => (
+      <AdSetStatusToggle adSet={row.original} onStatusChange={onStatusChange} />
+    ),
+    enableSorting: false,
   },
   {
     accessorKey: "name",
@@ -734,6 +787,7 @@ const CampaignTable = memo(function CampaignTable({
 const AdSetTable = memo(function AdSetTable({
   data,
   onAdSetSelect,
+  onStatusChange,
   className,
   rowSelection = {},
   onRowSelectionChange,
@@ -744,6 +798,7 @@ const AdSetTable = memo(function AdSetTable({
 }: {
   data: AdSet[];
   onAdSetSelect: (adSet: AdSet) => void;
+  onStatusChange: (adSetId: string, newStatus: CampaignStatus) => void;
   className?: string;
   rowSelection?: SelectedRows;
   onRowSelectionChange?: (selection: SelectedRows) => void;
@@ -814,9 +869,9 @@ const AdSetTable = memo(function AdSetTable({
 
   // Create columns
   const columns = useMemo(() => {
-    const adSetColumns = createAdSetColumns(onAdSetSelect);
+    const adSetColumns = createAdSetColumns(onAdSetSelect, onStatusChange);
     return (adSetColumns || []) as unknown as ColumnDef<unknown, unknown>[];
-  }, [onAdSetSelect]);
+  }, [onAdSetSelect, onStatusChange]);
 
   // Selection count
   const selectionCount = useMemo(
@@ -929,6 +984,7 @@ interface AdSet {
   id: string;
   name: string;
   campaignId: string;
+  status?: CampaignStatus; // Optional for now, will be added to all mock data
   description: string;
   linkedCampaigns: Array<{
     id: string;
@@ -979,6 +1035,7 @@ const mockCampaigns: Campaign[] = [
         id: "adset-1",
         name: "Northeast Pizza Restaurants",
         campaignId: "campaign-1",
+        status: "Active",
         description:
           "Targeting family-friendly pizza restaurants in the northeast region for summer dining promotions",
         linkedCampaigns: [
@@ -1132,6 +1189,7 @@ const mockCampaigns: Campaign[] = [
         id: "adset-2",
         name: "Boston Metro Casual Dining",
         campaignId: "campaign-1",
+        status: "Paused",
         description:
           "Professional lunch promotions for working adults in Boston metropolitan area",
         linkedCampaigns: [
@@ -1202,6 +1260,7 @@ const mockCampaigns: Campaign[] = [
         id: "adset-3",
         name: "Morning Rush Hour Targeting",
         campaignId: "campaign-2",
+        status: "Active",
         description:
           "Coffee and breakfast promotions during morning commute hours (7-9am)",
 
@@ -2217,6 +2276,17 @@ export default function AdManagerListView() {
     setSelectedAds(EMPTY_SELECTED_ADS);
   }, []);
 
+  // Handle ad set status change
+  const handleAdSetStatusChange = useCallback(
+    (adSetId: string, newStatus: CampaignStatus) => {
+      console.log(`Changing ad group ${adSetId} status to ${newStatus}`);
+      // TODO: Implement actual status change logic here
+      // This would typically call an API to update the ad group status
+      // For now, just log the action
+    },
+    []
+  );
+
   // Clear all filters
   const handleClearAllFilters = useCallback(() => {
     setActiveFilters({
@@ -2710,6 +2780,7 @@ export default function AdManagerListView() {
           <AdSetTable
             data={getCurrentData as AdSet[]}
             onAdSetSelect={handleAdSetSelect}
+            onStatusChange={handleAdSetStatusChange}
             className="border-rounded"
             rowSelection={selectedAdSets}
             onRowSelectionChange={handleRowSelectionChange}

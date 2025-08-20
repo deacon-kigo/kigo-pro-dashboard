@@ -843,7 +843,7 @@ interface AdSet {
   id: string;
   name: string;
   campaignId: string;
-  status: CampaignStatus;
+  status?: CampaignStatus;
   budget: number;
   spent: number;
   impressions: number;
