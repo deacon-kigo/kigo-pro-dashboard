@@ -147,7 +147,6 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
           name: "Tony's Family Special",
           offer: "20% off family meals (up to $15)",
           mediaTypes: ["Display Banner", "Social Media"],
-          status: "Active",
         },
         {
           id: "ad-2",
@@ -155,7 +154,6 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
           name: "Tony's Lunch Deal",
           offer: "Buy one pizza, get 50% off second",
           mediaTypes: ["Display Banner"],
-          status: "Active",
         },
       ],
       m2: [
@@ -165,7 +163,6 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
           name: "Deacon's Weekend Bundle",
           offer: "Buy 2 pizzas, get free breadsticks",
           mediaTypes: ["Display Banner", "Social Media"],
-          status: "Active",
         },
         {
           id: "ad-4",
@@ -173,7 +170,6 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
           name: "Deacon's Happy Hour",
           offer: "25% off all orders 3-6 PM",
           mediaTypes: ["Social Media"],
-          status: "Paused",
         },
       ],
       m3: [
@@ -183,7 +179,6 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
           name: "Frank's Lunch Deal",
           offer: "Two slices + drink for $8.99",
           mediaTypes: ["Display Banner"],
-          status: "Active",
         },
       ],
       m4: [
@@ -193,7 +188,6 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
           name: "Coffee Express Morning Special",
           offer: "Buy any coffee, get pastry 50% off",
           mediaTypes: ["Display Banner", "Native"],
-          status: "Active",
         },
         {
           id: "ad-7",
@@ -201,7 +195,6 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
           name: "Coffee Express Loyalty",
           offer: "Buy 10 coffees, get 1 free",
           mediaTypes: ["Display Banner"],
-          status: "Active",
         },
       ],
       m5: [
@@ -211,7 +204,6 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
           name: "Textbook Sale",
           offer: "15% off all textbooks",
           mediaTypes: ["Social Media"],
-          status: "Active",
         },
       ],
       m6: [
@@ -221,7 +213,6 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
           name: "New Member Deal",
           offer: "First month free with annual membership",
           mediaTypes: ["Display Banner", "Video"],
-          status: "Active",
         },
         {
           id: "ad-10",
@@ -229,7 +220,6 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
           name: "Personal Training Special",
           offer: "3 sessions for $99",
           mediaTypes: ["Display Banner"],
-          status: "Active",
         },
       ],
     };
@@ -520,14 +510,14 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
           {/* Side Navigation */}
           <div className="w-16 flex-shrink-0">
             <div className="h-full bg-white rounded-l-lg border border-r-0 border-gray-200 shadow-sm">
-              <div className="p-3">
+              <div className="p-3 pr-4">
                 <nav className="space-y-3">
                   <button
                     onClick={() => handleTabChange("ad")}
-                    className={`group relative w-12 h-12 flex items-center justify-center rounded-xl transition-all duration-200 ${
+                    className={`group relative w-12 h-12 flex items-center justify-center rounded-lg transition-all duration-200 ${
                       currentTab === "ad"
-                        ? "!bg-primary !text-primary-foreground shadow-lg shadow-primary/25 scale-105 ring-2 ring-primary/20"
-                        : "text-gray-600 hover:text-primary hover:bg-primary/10 hover:shadow-md hover:scale-105 bg-gray-50/80"
+                        ? "bg-pastel-blue text-primary font-medium"
+                        : "text-gray-600 hover:bg-pastel-blue hover:text-primary"
                     }`}
                     title="Create Ad"
                   >
@@ -541,10 +531,10 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
 
                   <button
                     onClick={() => handleTabChange("adgroup")}
-                    className={`group relative w-12 h-12 flex items-center justify-center rounded-xl transition-all duration-200 ${
+                    className={`group relative w-12 h-12 flex items-center justify-center rounded-lg transition-all duration-200 ${
                       currentTab === "adgroup"
-                        ? "!bg-primary !text-primary-foreground shadow-lg shadow-primary/25 scale-105 ring-2 ring-primary/20"
-                        : "text-gray-600 hover:text-primary hover:bg-primary/10 hover:shadow-md hover:scale-105 bg-gray-50/80"
+                        ? "bg-pastel-blue text-primary font-medium"
+                        : "text-gray-600 hover:bg-pastel-blue hover:text-primary"
                     }`}
                     title="Create Ad Group"
                   >
@@ -809,14 +799,12 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                                         setMerchantSearchOpen(
                                                           false
                                                         );
-                                                        // Clear selected ads when changing merchants (single-merchant ad groups only)
-                                                        setSelectedAds([]);
                                                       }}
                                                     >
                                                       <div className="font-medium text-sm">
                                                         {merchant.name}
                                                       </div>
-                                                      <div className="text-xs text-gray-500">
+                                                      <div className="text-sm text-gray-500">
                                                         {merchant.category}
                                                       </div>
                                                     </div>
@@ -836,24 +824,21 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
 
                                   {/* Ad Selection Section */}
                                   <div className="space-y-4">
-                                    <h4 className="font-medium text-sm text-gray-900 border-b pb-2 flex items-center gap-2">
+                                    <h4 className="font-medium text-sm text-gray-900 border-b pb-2">
                                       Ad Selection
-                                      <span className="text-xs font-normal text-gray-500">
-                                        ({selectedAds.length} selected)
-                                      </span>
                                     </h4>
 
                                     {!selectedMerchant ? (
-                                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-                                        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                          <RectangleGroupIcon className="h-6 w-6 text-blue-600" />
+                                      <div className="flex flex-col items-center justify-center text-center py-8">
+                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full">
+                                          <BuildingStorefrontIcon className="w-8 h-8 text-primary" />
                                         </div>
-                                        <p className="text-sm text-blue-700 font-medium mb-1">
+                                        <h3 className="text-lg font-medium text-gray-900 mb-2">
                                           Select a Merchant First
-                                        </p>
-                                        <p className="text-xs text-blue-600">
+                                        </h3>
+                                        <p className="text-sm text-muted-foreground max-w-sm">
                                           Choose a merchant above to view their
-                                          available ads
+                                          available ads for your ad group
                                         </p>
                                       </div>
                                     ) : (
@@ -930,17 +915,8 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                                     <h5 className="font-medium text-sm truncate">
                                                       {ad.name}
                                                     </h5>
-                                                    <span
-                                                      className={`px-2 py-1 text-xs rounded-full ${
-                                                        ad.status === "Active"
-                                                          ? "bg-green-100 text-green-800"
-                                                          : "bg-yellow-100 text-yellow-800"
-                                                      }`}
-                                                    >
-                                                      {ad.status}
-                                                    </span>
                                                   </div>
-                                                  <p className="text-xs text-gray-500 mb-2">
+                                                  <p className="text-sm text-gray-500 mb-2">
                                                     {ad.offer}
                                                   </p>
                                                   <div className="flex flex-wrap gap-1 mb-2">
@@ -948,7 +924,7 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                                       (type: string) => (
                                                         <span
                                                           key={type}
-                                                          className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
+                                                          className="px-2 py-1 bg-gray-100 text-gray-700 text-sm rounded"
                                                         >
                                                           {type}
                                                         </span>
@@ -1082,7 +1058,7 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                 </span>
                               </div>
 
-                              {/* Merchants and their ads */}
+                              {/* Merchants and their ads - Multiple merchants supported */}
                               {selectedAds.length > 0 ? (
                                 <div className="ml-6 space-y-3">
                                   {/* Group ads by merchant */}
@@ -1139,15 +1115,6 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                                       <PhotoIcon className="h-3 w-3 text-blue-500" />
                                                       <span className="text-sm font-medium truncate">
                                                         {ad.name}
-                                                      </span>
-                                                      <span
-                                                        className={`px-1.5 py-0.5 text-sm rounded-full ${
-                                                          ad.status === "Active"
-                                                            ? "bg-green-100 text-green-800"
-                                                            : "bg-yellow-100 text-yellow-800"
-                                                        }`}
-                                                      >
-                                                        {ad.status}
                                                       </span>
                                                     </div>
                                                     <div className="text-sm text-gray-500 mb-1">
