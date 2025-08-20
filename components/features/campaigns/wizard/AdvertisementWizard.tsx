@@ -1042,137 +1042,175 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                     {/* Preview Content */}
                     <div className="flex-1 overflow-auto p-3">
                       <div className="space-y-6">
-                        {/* Group Hierarchy with Full Details */}
+                        {/* Group Hierarchy with Progressive Disclosure */}
                         <div className="space-y-3">
-                          {/* Ad Group Container */}
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <div className="space-y-3">
-                              {/* Ad Group Header */}
-                              <div className="flex items-center gap-2">
-                                <RectangleGroupIcon className="h-4 w-4 text-blue-600" />
-                                <span className="text-sm font-medium text-gray-900">
-                                  Ad Group
-                                </span>
-                                <span className="text-sm text-gray-500">
-                                  ({selectedAds.length} ads)
-                                </span>
-                              </div>
-
-                              {/* Merchants and their ads - Multiple merchants supported */}
-                              {selectedAds.length > 0 ? (
-                                <div className="ml-6 space-y-3">
-                                  {/* Group ads by merchant */}
-                                  {Array.from(
-                                    new Set(
-                                      selectedAds
-                                        .map(
-                                          (adId) =>
-                                            allAds.find((a) => a.id === adId)
-                                              ?.merchantId
+                          {/* Ad Group Container with Accordion */}
+                          <Accordion
+                            type="single"
+                            collapsible
+                            defaultValue="ad-group-hierarchy"
+                            className="border rounded-lg overflow-hidden"
+                          >
+                            <AccordionItem
+                              value="ad-group-hierarchy"
+                              className="border-none"
+                            >
+                              <AccordionTrigger className="px-4 py-3 text-sm font-medium hover:no-underline">
+                                <div className="flex items-center gap-2">
+                                  <RectangleGroupIcon className="h-4 w-4 text-blue-600" />
+                                  <span className="text-sm font-medium text-gray-900">
+                                    Ad Group
+                                  </span>
+                                  <span className="text-sm text-gray-500">
+                                    ({selectedAds.length} ads,{" "}
+                                    {
+                                      Array.from(
+                                        new Set(
+                                          selectedAds
+                                            .map(
+                                              (adId) =>
+                                                allAds.find(
+                                                  (a) => a.id === adId
+                                                )?.merchantId
+                                            )
+                                            .filter(Boolean)
                                         )
-                                        .filter(Boolean)
-                                    )
-                                  ).map((merchantId) => {
-                                    const merchant = availableMerchants.find(
-                                      (m) => m.id === merchantId
-                                    );
-                                    const merchantAds = selectedAds.filter(
-                                      (adId) =>
-                                        allAds.find((a) => a.id === adId)
-                                          ?.merchantId === merchantId
-                                    );
+                                      ).length
+                                    }{" "}
+                                    merchants)
+                                  </span>
+                                </div>
+                              </AccordionTrigger>
+                              <AccordionContent className="px-4 pb-4">
+                                {/* Merchants and their ads - Multiple merchants supported */}
+                                {selectedAds.length > 0 ? (
+                                  <div className="space-y-3">
+                                    {/* Group ads by merchant */}
+                                    {Array.from(
+                                      new Set(
+                                        selectedAds
+                                          .map(
+                                            (adId) =>
+                                              allAds.find((a) => a.id === adId)
+                                                ?.merchantId
+                                          )
+                                          .filter(Boolean)
+                                      )
+                                    ).map((merchantId) => {
+                                      const merchant = availableMerchants.find(
+                                        (m) => m.id === merchantId
+                                      );
+                                      const merchantAds = selectedAds.filter(
+                                        (adId) =>
+                                          allAds.find((a) => a.id === adId)
+                                            ?.merchantId === merchantId
+                                      );
 
-                                    return (
-                                      <div
-                                        key={merchantId}
-                                        className="space-y-2"
-                                      >
-                                        {/* Merchant Header */}
-                                        <div className="flex items-center gap-2">
-                                          <BanknotesIcon className="h-3 w-3 text-green-600" />
-                                          <span className="text-sm font-medium text-gray-700">
-                                            {merchant?.name}
-                                          </span>
-                                          <span className="text-sm text-gray-500">
-                                            ({merchantAds.length} ads)
-                                          </span>
-                                        </div>
-
-                                        {/* Ads under this merchant */}
-                                        <div className="ml-4 space-y-2">
-                                          {merchantAds.map((adId) => {
-                                            const ad = allAds.find(
-                                              (a) => a.id === adId
-                                            );
-                                            return ad ? (
-                                              <div
-                                                key={adId}
-                                                className="bg-white rounded-md p-3 border border-gray-200"
-                                              >
-                                                <div className="flex items-start justify-between gap-2">
-                                                  <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                      <PhotoIcon className="h-3 w-3 text-blue-500" />
-                                                      <span className="text-sm font-medium truncate">
-                                                        {ad.name}
-                                                      </span>
-                                                    </div>
-                                                    <div className="text-sm text-gray-500 mb-1">
-                                                      {ad.offer}
-                                                    </div>
-                                                    <div className="flex flex-wrap gap-1">
-                                                      {ad.mediaTypes.map(
-                                                        (type: string) => (
-                                                          <span
-                                                            key={type}
-                                                            className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-sm rounded"
-                                                          >
-                                                            {type}
-                                                          </span>
-                                                        )
-                                                      )}
-                                                    </div>
-                                                  </div>
-                                                  <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => {
-                                                      setSelectedAds(
-                                                        selectedAds.filter(
-                                                          (id) => id !== adId
-                                                        )
-                                                      );
-                                                    }}
-                                                    className="text-red-600 border-red-300 hover:bg-red-50 flex-shrink-0"
-                                                  >
-                                                    ×
-                                                  </Button>
-                                                </div>
+                                      return (
+                                        <Accordion
+                                          key={merchantId}
+                                          type="single"
+                                          collapsible
+                                          defaultValue={`merchant-${merchantId}`}
+                                          className="border rounded-md overflow-hidden"
+                                        >
+                                          <AccordionItem
+                                            value={`merchant-${merchantId}`}
+                                            className="border-none"
+                                          >
+                                            <AccordionTrigger className="px-3 py-2 text-sm hover:no-underline">
+                                              <div className="flex items-center gap-2">
+                                                <BanknotesIcon className="h-3 w-3 text-green-600" />
+                                                <span className="text-sm font-medium text-gray-700">
+                                                  {merchant?.name}
+                                                </span>
+                                                <span className="text-sm text-gray-500">
+                                                  ({merchantAds.length} ads)
+                                                </span>
                                               </div>
-                                            ) : null;
-                                          })}
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              ) : (
-                                <div className="ml-6 text-sm text-gray-400 italic">
-                                  No ads selected
-                                </div>
-                              )}
-                            </div>
-                          </div>
+                                            </AccordionTrigger>
+                                            <AccordionContent className="px-3 pb-3">
+                                              {/* Ads under this merchant */}
+                                              <div className="space-y-2">
+                                                {merchantAds.map((adId) => {
+                                                  const ad = allAds.find(
+                                                    (a) => a.id === adId
+                                                  );
+                                                  return ad ? (
+                                                    <div
+                                                      key={adId}
+                                                      className="bg-white rounded-md p-3 border border-gray-200"
+                                                    >
+                                                      <div className="flex items-start justify-between gap-2">
+                                                        <div className="flex-1 min-w-0">
+                                                          <div className="flex items-center gap-2 mb-1">
+                                                            <PhotoIcon className="h-3 w-3 text-blue-500" />
+                                                            <span className="text-sm font-medium truncate">
+                                                              {ad.name}
+                                                            </span>
+                                                          </div>
+                                                          <div className="text-sm text-gray-500 mb-1">
+                                                            {ad.offer}
+                                                          </div>
+                                                          <div className="flex flex-wrap gap-1">
+                                                            {ad.mediaTypes.map(
+                                                              (
+                                                                type: string
+                                                              ) => (
+                                                                <span
+                                                                  key={type}
+                                                                  className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-sm rounded"
+                                                                >
+                                                                  {type}
+                                                                </span>
+                                                              )
+                                                            )}
+                                                          </div>
+                                                        </div>
+                                                        <Button
+                                                          size="sm"
+                                                          variant="outline"
+                                                          onClick={() => {
+                                                            setSelectedAds(
+                                                              selectedAds.filter(
+                                                                (id) =>
+                                                                  id !== adId
+                                                              )
+                                                            );
+                                                          }}
+                                                          className="text-red-600 border-red-300 hover:bg-red-50 flex-shrink-0"
+                                                        >
+                                                          ×
+                                                        </Button>
+                                                      </div>
+                                                    </div>
+                                                  ) : null;
+                                                })}
+                                              </div>
+                                            </AccordionContent>
+                                          </AccordionItem>
+                                        </Accordion>
+                                      );
+                                    })}
+                                  </div>
+                                ) : (
+                                  <div className="text-sm text-gray-400 italic">
+                                    No ads selected
+                                  </div>
+                                )}
+                              </AccordionContent>
+                            </AccordionItem>
+                          </Accordion>
 
-                          {/* Program Campaigns Assignment - Using EXACT catalog filter component */}
-                          {selectedPrograms.length > 0 && (
-                            <div className="bg-white rounded-lg overflow-hidden border border-gray-200">
-                              <div className="flex items-center gap-2 p-3 border-b bg-gray-50">
-                                <UsersIcon className="h-4 w-4 text-purple-600" />
-                                <span className="text-sm font-medium text-gray-900">
-                                  Program Campaign Assignment
-                                </span>
-                              </div>
+                          {/* Program Campaigns Assignment - Always show container */}
+                          <div className="bg-white rounded-lg overflow-hidden border border-gray-200">
+                            <div className="flex items-center gap-2 p-3 border-b bg-gray-50">
+                              <UsersIcon className="h-4 w-4 text-purple-600" />
+                              <span className="text-sm font-medium text-gray-900">
+                                Program Campaign Assignment
+                              </span>
+                            </div>
+                            {selectedPrograms.length > 0 ? (
                               <SelectedProgramsDisplay
                                 partners={mockPartners}
                                 selectedProgramIds={selectedPrograms}
@@ -1181,8 +1219,21 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                 }
                                 bulkAssignmentStatus="idle"
                               />
-                            </div>
-                          )}
+                            ) : (
+                              <div className="flex flex-col items-center justify-center text-center py-8">
+                                <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full">
+                                  <UsersIcon className="w-8 h-8 text-primary" />
+                                </div>
+                                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                                  No Program Campaigns Assigned
+                                </h3>
+                                <p className="text-sm text-muted-foreground max-w-sm">
+                                  Assign this ad group to program campaigns for
+                                  distribution and reach
+                                </p>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
