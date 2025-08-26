@@ -43,7 +43,7 @@ import { StatusChangeDialog } from "./StatusChangeDialog";
 import { AdDetailModal } from "./AdDetailModal";
 import { FloatingSelectionToolbar } from "./FloatingSelectionToolbar";
 import { useDispatch } from "react-redux";
-import { clearAllDropdowns } from "@/lib/redux/slices/uiSlice";
+import { clearAllDropdowns, addNotification } from "@/lib/redux/slices/uiSlice";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
@@ -2189,6 +2189,9 @@ export default function AdManagerListView() {
   const [selectedAds, setSelectedAds] = useState<SelectedRows>({});
   const [selectedRowId] = useState<string | null>(null);
 
+  // State for campaigns data (allows for status updates)
+  const [campaignsData, setCampaignsData] = useState<Campaign[]>(mockCampaigns);
+
   // Filter state - tracks which campaigns/ad sets are used to filter ads
   const [activeFilters, setActiveFilters] = useState<{
     campaignIds: string[];
@@ -2280,11 +2283,26 @@ export default function AdManagerListView() {
   const handleAdSetStatusChange = useCallback(
     (adSetId: string, newStatus: CampaignStatus) => {
       console.log(`Changing ad group ${adSetId} status to ${newStatus}`);
-      // TODO: Implement actual status change logic here
-      // This would typically call an API to update the ad group status
-      // For now, just log the action
+
+      // Update the local campaigns data state (in real app, this would be an API call)
+      setCampaignsData((currentData) => {
+        return currentData.map((campaign) => ({
+          ...campaign,
+          adSets: campaign.adSets.map((adSet) =>
+            adSet.id === adSetId ? { ...adSet, status: newStatus } : adSet
+          ),
+        }));
+      });
+
+      // Show a notification
+      dispatch(
+        addNotification({
+          message: `Ad group status changed to ${newStatus}`,
+          type: "success",
+        })
+      );
     },
-    []
+    [dispatch]
   );
 
   // Clear all filters
@@ -2310,7 +2328,7 @@ export default function AdManagerListView() {
     switch (currentLevel) {
       case "adsets":
         // Always show ALL ad sets from ALL campaigns
-        let allAdSets = (mockCampaigns || []).flatMap((campaign) =>
+        let allAdSets = (campaignsData || []).flatMap((campaign) =>
           (campaign.adSets || []).map((adSet) => ({
             ...adSet,
             campaignId: campaign.id,
@@ -2350,7 +2368,7 @@ export default function AdManagerListView() {
 
       case "ads":
         // Get ALL ads from ALL campaigns
-        let allAds = (mockCampaigns || []).flatMap((campaign) =>
+        let allAds = (campaignsData || []).flatMap((campaign) =>
           (campaign.adSets || []).flatMap((adSet) =>
             (adSet.ads || []).map((ad) => ({
               ...ad,
@@ -2403,7 +2421,7 @@ export default function AdManagerListView() {
       default:
         return [];
     }
-  }, [currentLevel, activeFilters, campaignFilters, mockCampaigns]);
+  }, [currentLevel, activeFilters, campaignFilters, campaignsData]);
 
   // Apply search filtering
   const searchFilteredData = useMemo(() => {
@@ -2652,7 +2670,7 @@ export default function AdManagerListView() {
     // Add campaign filters
     if (activeFilters.campaignIds.length > 0) {
       const campaignNames = activeFilters.campaignIds.map((id) => {
-        const campaign = mockCampaigns.find((c) => c.id === id);
+        const campaign = campaignsData.find((c) => c.id === id);
         return campaign?.name || id;
       });
       filters.push(...campaignNames.map((name) => `Campaign: ${name}`));
@@ -2661,7 +2679,7 @@ export default function AdManagerListView() {
     // Add ad set filters
     if (activeFilters.adSetIds.length > 0) {
       const adSetNames = activeFilters.adSetIds.map((id) => {
-        const adSet = mockCampaigns
+        const adSet = campaignsData
           .flatMap((c) => c.adSets)
           .find((as) => as.id === id);
         return adSet?.name || id;
@@ -2670,7 +2688,7 @@ export default function AdManagerListView() {
     }
 
     return filters;
-  }, [activeFilters, mockCampaigns]);
+  }, [activeFilters, campaignsData]);
 
   // Create dynamic page header and search context
   const getContextProps = useMemo(() => {
@@ -2761,7 +2779,7 @@ export default function AdManagerListView() {
           {/* Center: Universal Filter Button - Available on all levels */}
           <div className="flex items-center">
             <CampaignFilterDropdown
-              campaigns={mockCampaigns}
+              campaigns={campaignsData}
               filters={campaignFilters}
               onFiltersChange={handleCampaignFiltersChange}
               onClearFilters={handleClearCampaignFilters}
