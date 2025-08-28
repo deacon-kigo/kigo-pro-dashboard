@@ -5,15 +5,29 @@ Converted from TypeScript version to leverage better Python LangGraph Studio sup
 This supervisor analyzes user intent and routes to appropriate specialist agents.
 """
 
-from typing import TypedDict, Annotated, List, Any, Optional
+from typing import Annotated, List, Any, Optional
 from langgraph.graph import StateGraph, START, END
-from langgraph.graph.message import add_messages
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage
 from langchain_openai import ChatOpenAI
+from langchain_core.runnables import RunnableConfig
 import asyncio
 import os
 import re
 from datetime import datetime
+
+# Import CopilotKit state
+try:
+    from copilotkit import CopilotKitState
+    COPILOTKIT_AVAILABLE = True
+except ImportError:
+    print("⚠️  CopilotKit not available, using fallback state")
+    from typing import TypedDict
+    from langgraph.graph.message import add_messages
+    
+    class CopilotKitState(TypedDict):
+        messages: Annotated[List[BaseMessage], add_messages]
+    
+    COPILOTKIT_AVAILABLE = False
 
 # Lazy initialization of OpenAI model
 def get_llm():
@@ -24,20 +38,20 @@ def get_llm():
         max_tokens=1000,
     )
 
-# State definition
-class KigoProAgentState(TypedDict):
-    messages: Annotated[List[BaseMessage], add_messages]
-    user_intent: str
-    context: dict
-    agent_decision: str
-    workflow_data: dict
-    error: Optional[str]
+# State definition following CopilotKit pattern
+class KigoProAgentState(CopilotKitState):
+    """Kigo Pro Agent State extending CopilotKitState"""
+    user_intent: Optional[str] = ""
+    context: Optional[dict] = {}
+    agent_decision: Optional[str] = ""
+    workflow_data: Optional[dict] = {}
+    error: Optional[str] = None
     # Human-in-the-loop fields
-    pending_action: Optional[dict]  # Action waiting for approval
-    approval_status: Optional[str]  # "pending", "approved", "rejected"
-    requires_approval: Optional[bool]  # Flag to trigger interrupt
+    pending_action: Optional[dict] = None  # Action waiting for approval
+    approval_status: Optional[str] = None  # "pending", "approved", "rejected"
+    requires_approval: Optional[bool] = None  # Flag to trigger interrupt
 
-async def detect_user_intent(user_input: str, context: dict) -> str:
+def detect_user_intent(user_input: str, context: dict) -> str:
     """
     AI-powered intent detection using OpenAI LLM
     """
@@ -67,7 +81,7 @@ Respond with ONLY the intent category name (e.g., "ad_creation"). No explanation
 
     try:
         llm = get_llm()
-        response = await llm.ainvoke([
+        response = llm.invoke([
             SystemMessage(content=intent_prompt),
             HumanMessage(content=user_input)
         ])
@@ -98,7 +112,7 @@ Respond with ONLY the intent category name (e.g., "ad_creation"). No explanation
             print(f"Fallback intent detection error: {fallback_error}")
         return "general_assistance"
 
-def approval_node(state: KigoProAgentState) -> KigoProAgentState:
+async def approval_node(state: KigoProAgentState, config: RunnableConfig) -> KigoProAgentState:
     """Node that handles human approval for actions - triggers interrupt"""
     print(f"[Approval] Action pending approval: {state.get('pending_action', {}).get('description', 'Unknown action')}")
     
@@ -109,7 +123,7 @@ def approval_node(state: KigoProAgentState) -> KigoProAgentState:
         "approval_status": "pending"
     }
 
-def execute_approved_action(state: KigoProAgentState) -> KigoProAgentState:
+async def execute_approved_action(state: KigoProAgentState, config: RunnableConfig) -> KigoProAgentState:
     """Execute the action after approval"""
     approval_status = state.get("approval_status")
     pending_action = state.get("pending_action")
@@ -201,7 +215,7 @@ def determine_agent_routing(intent: str, context: dict) -> str:
     
     return routing_map.get(intent, "general_assistant")
 
-def supervisor_agent(state: KigoProAgentState) -> KigoProAgentState:
+async def supervisor_agent(state: KigoProAgentState, config: RunnableConfig) -> KigoProAgentState:
     """
     Supervisor Agent - analyzes user input and routes to appropriate specialist agents
     """
@@ -220,26 +234,34 @@ def supervisor_agent(state: KigoProAgentState) -> KigoProAgentState:
         # Handle empty messages
         if not messages:
             return {
+                **state,
                 "agent_decision": "general_assistant",
                 "context": full_context,
-                "messages": messages,
                 "user_intent": "",
                 "workflow_data": {},
             }
         
         # Get latest user message with robust type handling
         latest_message = messages[-1]
+        user_input = ""
+        
         if hasattr(latest_message, 'content'):
-            user_input = latest_message.content
+            content = latest_message.content
+            if isinstance(content, str):
+                user_input = content
+            elif isinstance(content, list):
+                user_input = ' '.join(str(item) for item in content)
+            else:
+                user_input = str(content)
         elif isinstance(latest_message, str):
             user_input = latest_message
-        elif isinstance(latest_message, list):
-            user_input = ' '.join(str(item) for item in latest_message)
+        elif isinstance(latest_message, dict) and "content" in latest_message:
+            user_input = str(latest_message["content"])
         else:
             user_input = str(latest_message)
         
         # Analyze user intent (sync version for now)
-        user_lower = user_input.lower()
+        user_lower = user_input.lower() if user_input else ""
         if any(word in user_lower for word in ["create ad", "new ad", "campaign", "advertisement", "create an ad"]):
             intent = "ad_creation"
         elif any(word in user_lower for word in ["analytics", "performance", "metrics", "report", "stats"]):
@@ -257,19 +279,19 @@ def supervisor_agent(state: KigoProAgentState) -> KigoProAgentState:
         print(f"[Supervisor] Intent: {intent}, Routing to: {decision}")
         
         return {
+            **state,
             "user_intent": intent,
             "agent_decision": decision,
             "context": full_context,
             "workflow_data": extract_workflow_data(user_input, intent),
-            "messages": messages,
         }
         
     except Exception as error:
         print(f"Supervisor agent error: {error}")
         return {
+            **state,
             "agent_decision": "error_handler",
             "error": str(error),
-            "messages": state.get("messages", []),
             "user_intent": "",
             "context": state.get("context", {}),
             "workflow_data": {},
@@ -279,9 +301,9 @@ def route_to_agent(state: KigoProAgentState) -> str:
     """Route to appropriate agent based on supervisor decision"""
     return state["agent_decision"]
 
-async def general_assistant(state: KigoProAgentState) -> KigoProAgentState:
+async def general_assistant(state: KigoProAgentState, config: RunnableConfig) -> KigoProAgentState:
     """General Assistant Agent (fallback)"""
-    messages = state["messages"]
+    messages = state.get("messages", [])
     context = state.get("context", {})
     current_page = context.get("currentPage", "/")
     
@@ -296,7 +318,15 @@ Current context:
 Provide helpful guidance about what you can help with on the Kigo Pro platform. Be concise and actionable."""
 
         latest_message = messages[-1] if messages else None
-        user_input = latest_message.content if latest_message else "How can I help?"
+        user_input = "How can I help?"
+        
+        if latest_message:
+            if hasattr(latest_message, 'content'):
+                user_input = latest_message.content
+            elif isinstance(latest_message, dict) and "content" in latest_message:
+                user_input = str(latest_message["content"])
+            else:
+                user_input = str(latest_message)
 
         llm = get_llm()
         response = await llm.ainvoke([
@@ -316,9 +346,9 @@ Provide helpful guidance about what you can help with on the Kigo Pro platform. 
         "messages": messages + [ai_response],
     }
 
-def campaign_agent(state: KigoProAgentState) -> KigoProAgentState:
+async def campaign_agent(state: KigoProAgentState, config: RunnableConfig) -> KigoProAgentState:
     """Campaign Agent - handles ad creation and campaign management"""
-    messages = state["messages"]
+    messages = state.get("messages", [])
     intent = state.get("user_intent", "")
     context = state.get("context", {})
     current_page = context.get("currentPage", "/")
@@ -363,9 +393,9 @@ def campaign_agent(state: KigoProAgentState) -> KigoProAgentState:
             "messages": messages + [ai_response],
         }
 
-async def error_handler(state: KigoProAgentState) -> KigoProAgentState:
+async def error_handler(state: KigoProAgentState, config: RunnableConfig) -> KigoProAgentState:
     """Error Handler Agent"""
-    messages = state["messages"]
+    messages = state.get("messages", [])
     error = state.get("error", "Unknown error occurred")
     
     response = AIMessage(content=f"""I apologize, but I encountered an error while processing your request. Please try again or contact support if the issue persists.
@@ -377,9 +407,9 @@ Error: {error}""")
         "messages": messages + [response],
     }
 
-async def filter_agent(state: KigoProAgentState) -> KigoProAgentState:
+async def filter_agent(state: KigoProAgentState, config: RunnableConfig) -> KigoProAgentState:
     """Filter Agent - handles product filter management"""
-    messages = state["messages"]
+    messages = state.get("messages", [])
     
     response = AIMessage(content="""🎯 **Product Filter Management**
 
@@ -397,9 +427,9 @@ What specific filtering task would you like help with?""")
         "messages": messages + [response],
     }
 
-async def analytics_agent(state: KigoProAgentState) -> KigoProAgentState:
+async def analytics_agent(state: KigoProAgentState, config: RunnableConfig) -> KigoProAgentState:
     """Analytics Agent - handles performance data and insights"""
-    messages = state["messages"]
+    messages = state.get("messages", [])
     intent = state.get("user_intent", "")
     context = state.get("context", {})
     current_page = context.get("currentPage", "/")
@@ -425,7 +455,7 @@ async def analytics_agent(state: KigoProAgentState) -> KigoProAgentState:
             latest_message = messages[-1] if messages else None
             user_input = latest_message.content if latest_message else "Show me analytics"
 
-            response = await llm.ainvoke([
+            response = llm.invoke([
                 SystemMessage(content=system_prompt),
                 HumanMessage(content=user_input)
             ])
@@ -458,7 +488,7 @@ async def analytics_agent(state: KigoProAgentState) -> KigoProAgentState:
             latest_message = messages[-1] if messages else None
             user_input = latest_message.content if latest_message else "I need analytics help"
 
-            response = await llm.ainvoke([
+            response = llm.invoke([
                 SystemMessage(content=system_prompt),
                 HumanMessage(content=user_input)
             ])
@@ -494,9 +524,9 @@ async def analytics_agent(state: KigoProAgentState) -> KigoProAgentState:
                 "messages": messages + [ai_response],
             }
 
-async def merchant_agent(state: KigoProAgentState) -> KigoProAgentState:
+async def merchant_agent(state: KigoProAgentState, config: RunnableConfig) -> KigoProAgentState:
     """Merchant Agent - handles merchant support and guidance"""
-    messages = state["messages"]
+    messages = state.get("messages", [])
     
     response = AIMessage(content="""🏪 **Merchant Support & Guidance**
 
