@@ -57,20 +57,64 @@ else:
         """Manual CopilotKit chat endpoint"""
         print(f"[CopilotKit] Received request: {request}")
         
-        # Extract messages and invoke your existing workflow
-        messages = request.get("messages", [])
-        if messages:
-            # Convert to your workflow format and invoke
-            result = workflow.invoke({
-                "messages": messages,
-                "context": {"currentPage": "/", "userRole": "admin"},
-                "user_intent": "",
-                "agent_decision": "",
-                "workflow_data": {},
-            })
-            return {"messages": result.get("messages", [])}
-        
-        return {"messages": []}
+        try:
+            # Extract messages and invoke your existing workflow
+            raw_messages = request.get("messages", [])
+            
+            # Convert to proper LangGraph message format
+            from langchain_core.messages import HumanMessage, AIMessage
+            converted_messages = []
+            
+            for msg in raw_messages:
+                if isinstance(msg, dict):
+                    role = msg.get("role", "user")
+                    content = msg.get("content", "")
+                    
+                    # Ensure content is a string
+                    if isinstance(content, list):
+                        content = ' '.join(str(item) for item in content)
+                    elif not isinstance(content, str):
+                        content = str(content)
+                    
+                    if role == "user":
+                        converted_messages.append(HumanMessage(content=content))
+                    elif role == "assistant":
+                        converted_messages.append(AIMessage(content=content))
+                else:
+                    # Handle other message formats
+                    converted_messages.append(HumanMessage(content=str(msg)))
+            
+            print(f"[CopilotKit] Converted messages: {[msg.content for msg in converted_messages]}")
+            
+            if converted_messages:
+                # Invoke your workflow with proper message format
+                result = workflow.invoke({
+                    "messages": converted_messages,
+                    "context": {"currentPage": "/", "userRole": "admin"},
+                    "user_intent": "",
+                    "agent_decision": "",
+                    "workflow_data": {},
+                })
+                
+                # Return messages in expected format
+                response_messages = result.get("messages", [])
+                return {
+                    "messages": [
+                        {"role": "assistant", "content": msg.content} 
+                        for msg in response_messages 
+                        if hasattr(msg, 'content')
+                    ]
+                }
+            
+            return {"messages": [{"role": "assistant", "content": "Hello! How can I help you today?"}]}
+            
+        except Exception as e:
+            print(f"[CopilotKit] Error processing request: {e}")
+            return {
+                "messages": [
+                    {"role": "assistant", "content": f"I apologize, but I encountered an error: {str(e)}. Please try again."}
+                ]
+            }
 
 @app.get("/")
 async def root():
