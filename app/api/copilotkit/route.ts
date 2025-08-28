@@ -10,6 +10,7 @@ import {
   CopilotRuntime,
   OpenAIAdapter,
   copilotRuntimeNextJSAppRouterEndpoint,
+  LangGraphHttpAgent,
 } from "@copilotkit/runtime";
 import OpenAI from "openai";
 
@@ -18,9 +19,14 @@ const openai = new OpenAI({
 });
 
 export const POST = async (req: NextRequest) => {
-  // DEMO MODE: Use only frontend actions (no remote backend)
+  // Connect to your existing LangGraph supervisor workflow via FastAPI
   const runtime = new CopilotRuntime({
-    // No remote endpoints - use frontend actions only
+    agents: {
+      supervisor: new LangGraphHttpAgent({
+        url:
+          process.env.REMOTE_ACTION_URL || "http://localhost:8000/copilotkit",
+      }),
+    },
   });
 
   const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({
@@ -39,7 +45,7 @@ export async function OPTIONS() {
     headers: {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, x-api-key",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
     },
   });
 }
