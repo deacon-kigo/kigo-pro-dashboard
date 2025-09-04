@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { motion } from "framer-motion";
 import { RootState } from "@/lib/redux/store";
+import { useToast } from "@/lib/hooks/use-toast";
 
 import Card from "@/components/atoms/Card/Card";
 import { Button } from "@/components/atoms/Button";
@@ -86,6 +87,7 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
   const router = useRouter();
   const dispatch = useDispatch();
   const searchParams = useSearchParams();
+  const { toast } = useToast();
 
   // Tab state
   const [currentTab, setCurrentTab] = useState(
@@ -97,6 +99,18 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
   const [merchantSearchOpen, setMerchantSearchOpen] = useState(false);
   const [merchantSearchQuery, setMerchantSearchQuery] = useState("");
   const [selectedAds, setSelectedAds] = useState<string[]>([]);
+  const adsContainerRef = useRef<HTMLDivElement>(null);
+  const previewAdsContainerRef = useRef<HTMLDivElement>(null);
+
+  // Function to scroll preview to bottom
+  const scrollPreviewToBottom = useCallback(() => {
+    setTimeout(() => {
+      if (previewAdsContainerRef.current) {
+        previewAdsContainerRef.current.scrollTop =
+          previewAdsContainerRef.current.scrollHeight;
+      }
+    }, 100);
+  }, []);
 
   // Program assignment state
   const [isProgramAssignmentOpen, setIsProgramAssignmentOpen] = useState(false);
@@ -801,7 +815,7 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                                         );
                                                       }}
                                                     >
-                                                      <div className="font-medium text-sm">
+                                                      <div className="font-medium text-sm text-gray-400">
                                                         {merchant.name}
                                                       </div>
                                                     </div>
@@ -816,13 +830,16 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                           </>
                                         )}
                                       </div>
+                                      <p className="text-sm text-muted-foreground mt-1">
+                                        You can select multiple merchants
+                                      </p>
                                     </div>
                                   </div>
 
                                   {/* Ad Selection Section */}
                                   <div className="space-y-4">
                                     <h4 className="font-medium text-sm text-gray-900 border-b pb-2">
-                                      Ad Selection
+                                      Merchant and Ad Selection
                                     </h4>
 
                                     {!selectedMerchant ? (
@@ -845,33 +862,66 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                             {availableAds.length} ads available
                                             from {selectedMerchantData?.name}
                                           </p>
-                                          <Button
-                                            variant="outline"
-                                            size="sm"
-                                            disabled={availableAds.length === 0}
-                                            onClick={() => {
-                                              if (
-                                                selectedAds.length ===
-                                                availableAds.length
-                                              ) {
-                                                setSelectedAds([]);
-                                              } else {
-                                                setSelectedAds(
-                                                  availableAds.map(
-                                                    (ad) => ad.id
-                                                  )
-                                                );
-                                              }
-                                            }}
-                                          >
-                                            {selectedAds.length ===
-                                            availableAds.length
-                                              ? "Deselect All"
-                                              : "Select All"}
-                                          </Button>
+                                          {availableAds.length > 0 && (
+                                            <Button
+                                              variant="outline"
+                                              size="sm"
+                                              onClick={() => {
+                                                if (
+                                                  selectedAds.length ===
+                                                  availableAds.length
+                                                ) {
+                                                  setSelectedAds([]);
+
+                                                  // Show toast feedback for deselect all
+                                                  toast({
+                                                    title: "Ads Removed",
+                                                    description: `${availableAds.length} ads have been removed from ad group`,
+                                                    className:
+                                                      "!bg-orange-100 !border-orange-300 !text-orange-800",
+                                                  });
+                                                } else {
+                                                  setSelectedAds(
+                                                    availableAds.map(
+                                                      (ad) => ad.id
+                                                    )
+                                                  );
+
+                                                  // Show toast feedback for select all
+                                                  toast({
+                                                    title: "Ads Added",
+                                                    description: `${availableAds.length} ads have been added to ad group`,
+                                                    className:
+                                                      "!bg-green-100 !border-green-300 !text-green-800",
+                                                  });
+
+                                                  // Scroll to bottom of both containers
+                                                  setTimeout(() => {
+                                                    if (
+                                                      adsContainerRef.current
+                                                    ) {
+                                                      adsContainerRef.current.scrollTop =
+                                                        adsContainerRef.current.scrollHeight;
+                                                    }
+                                                  }, 100);
+
+                                                  // Scroll preview to bottom
+                                                  scrollPreviewToBottom();
+                                                }
+                                              }}
+                                            >
+                                              {selectedAds.length ===
+                                              availableAds.length
+                                                ? "Deselect All"
+                                                : "Select All"}
+                                            </Button>
+                                          )}
                                         </div>
 
-                                        <div className="max-h-96 overflow-y-auto space-y-2 border rounded-lg p-3 bg-gray-50">
+                                        <div
+                                          ref={adsContainerRef}
+                                          className="max-h-96 overflow-y-auto space-y-2 border rounded-lg p-3 bg-gray-50"
+                                        >
                                           {availableAds.map((ad) => (
                                             <div
                                               key={ad.id}
@@ -898,11 +948,40 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                                           (id) => id !== ad.id
                                                         )
                                                       );
+
+                                                      // Show toast feedback for removal
+                                                      toast({
+                                                        title: "Ad Removed",
+                                                        description: `"${ad.name}" has been removed from your ad group`,
+                                                        className:
+                                                          "!bg-orange-100 !border-orange-300 !text-orange-800",
+                                                      });
                                                     } else {
                                                       setSelectedAds([
                                                         ...selectedAds,
                                                         ad.id,
                                                       ]);
+
+                                                      // Show toast feedback for addition
+                                                      toast({
+                                                        title: "Ad Added",
+                                                        description: `"${ad.name}" has been added to your ad group`,
+                                                        className:
+                                                          "!bg-green-100 !border-green-300 !text-green-800",
+                                                      });
+
+                                                      // Scroll to bottom of both containers
+                                                      setTimeout(() => {
+                                                        if (
+                                                          adsContainerRef.current
+                                                        ) {
+                                                          adsContainerRef.current.scrollTop =
+                                                            adsContainerRef.current.scrollHeight;
+                                                        }
+                                                      }, 100);
+
+                                                      // Scroll preview to bottom
+                                                      scrollPreviewToBottom();
                                                     }
                                                   }}
                                                   className="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
@@ -942,6 +1021,14 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                                             (id) => id !== ad.id
                                                           )
                                                         );
+
+                                                        // Show toast feedback
+                                                        toast({
+                                                          title: "Ad Removed",
+                                                          description: `"${ad.name}" has been removed from your ad group`,
+                                                          className:
+                                                            "!bg-orange-100 !border-orange-300 !text-orange-800",
+                                                        });
                                                       }}
                                                       className="text-red-600 border-red-300 hover:bg-red-50"
                                                     >
@@ -955,6 +1042,27 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                                           ...selectedAds,
                                                           ad.id,
                                                         ]);
+
+                                                        // Show toast feedback
+                                                        toast({
+                                                          title: "Ad Added",
+                                                          description: `"${ad.name}" has been added to your ad group`,
+                                                          className:
+                                                            "!bg-green-100 !border-green-300 !text-green-800",
+                                                        });
+
+                                                        // Scroll to bottom of both containers
+                                                        setTimeout(() => {
+                                                          if (
+                                                            adsContainerRef.current
+                                                          ) {
+                                                            adsContainerRef.current.scrollTop =
+                                                              adsContainerRef.current.scrollHeight;
+                                                          }
+                                                        }, 100);
+
+                                                        // Scroll preview to bottom
+                                                        scrollPreviewToBottom();
                                                       }}
                                                       className="bg-blue-600 hover:bg-blue-700 text-white"
                                                     >
@@ -1068,7 +1176,10 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                 </span>
                               </div>
                             </div>
-                            <div className="px-4 py-4 flex-1 overflow-auto min-h-0">
+                            <div
+                              ref={previewAdsContainerRef}
+                              className="px-4 py-4 flex-1 overflow-auto min-h-0"
+                            >
                               {/* Merchants and their ads - Multiple merchants supported */}
                               {selectedAds.length > 0 ? (
                                 <div className="space-y-3">
