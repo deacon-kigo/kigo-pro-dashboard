@@ -867,25 +867,46 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                               variant="outline"
                                               size="sm"
                                               onClick={() => {
+                                                // Check if all current merchant's ads are selected
+                                                const currentMerchantSelectedCount =
+                                                  availableAds.filter((ad) =>
+                                                    selectedAds.includes(ad.id)
+                                                  ).length;
+
                                                 if (
-                                                  selectedAds.length ===
+                                                  currentMerchantSelectedCount ===
                                                   availableAds.length
                                                 ) {
-                                                  setSelectedAds([]);
+                                                  // Deselect only current merchant's ads
+                                                  const otherMerchantAds =
+                                                    selectedAds.filter(
+                                                      (adId) =>
+                                                        !availableAds.some(
+                                                          (ad) => ad.id === adId
+                                                        )
+                                                    );
+                                                  setSelectedAds(
+                                                    otherMerchantAds
+                                                  );
 
                                                   // Show toast feedback for deselect all
                                                   toast({
                                                     title: "Ads Removed",
                                                     description: `${availableAds.length} ads have been removed from ad group`,
                                                     className:
-                                                      "!bg-orange-100 !border-orange-300 !text-orange-800",
+                                                      "!bg-yellow-100 !border-yellow-300 !text-yellow-800",
                                                   });
                                                 } else {
-                                                  setSelectedAds(
-                                                    availableAds.map(
-                                                      (ad) => ad.id
-                                                    )
-                                                  );
+                                                  // Add current merchant's ads to existing selection
+                                                  const newSelection = [
+                                                    ...new Set([
+                                                      ...selectedAds,
+                                                      ...availableAds.map(
+                                                        (ad) => ad.id
+                                                      ),
+                                                    ]),
+                                                  ];
+                                                  setSelectedAds(newSelection);
 
                                                   // Show toast feedback for select all
                                                   toast({
@@ -910,8 +931,9 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                                 }
                                               }}
                                             >
-                                              {selectedAds.length ===
-                                              availableAds.length
+                                              {availableAds.filter((ad) =>
+                                                selectedAds.includes(ad.id)
+                                              ).length === availableAds.length
                                                 ? "Deselect All"
                                                 : "Select All"}
                                             </Button>
@@ -954,7 +976,7 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                                         title: "Ad Removed",
                                                         description: `"${ad.name}" has been removed from your ad group`,
                                                         className:
-                                                          "!bg-orange-100 !border-orange-300 !text-orange-800",
+                                                          "!bg-yellow-100 !border-yellow-300 !text-yellow-800",
                                                       });
                                                     } else {
                                                       setSelectedAds([
@@ -1027,7 +1049,7 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                                           title: "Ad Removed",
                                                           description: `"${ad.name}" has been removed from your ad group`,
                                                           className:
-                                                            "!bg-orange-100 !border-orange-300 !text-orange-800",
+                                                            "!bg-yellow-100 !border-yellow-300 !text-yellow-800",
                                                         });
                                                       }}
                                                       className="text-red-600 border-red-300 hover:bg-red-50"
