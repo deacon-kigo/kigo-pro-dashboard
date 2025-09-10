@@ -831,7 +831,9 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                         )}
                                       </div>
                                       <p className="text-sm text-muted-foreground mt-1">
-                                        You can select multiple merchants
+                                        Choose merchants individually by
+                                        selecting each merchant and its ads. You
+                                        can select multiple merchants
                                       </p>
                                     </div>
                                   </div>
@@ -1029,68 +1031,6 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                                       )
                                                     )}
                                                   </div>
-                                                </div>
-                                                <div className="flex flex-col gap-1">
-                                                  {selectedAds.includes(
-                                                    ad.id
-                                                  ) ? (
-                                                    <Button
-                                                      size="sm"
-                                                      variant="outline"
-                                                      onClick={() => {
-                                                        setSelectedAds(
-                                                          selectedAds.filter(
-                                                            (id) => id !== ad.id
-                                                          )
-                                                        );
-
-                                                        // Show toast feedback
-                                                        toast({
-                                                          title: "Ad Removed",
-                                                          description: `"${ad.name}" has been removed from your ad group`,
-                                                          className:
-                                                            "!bg-yellow-100 !border-yellow-300 !text-yellow-800",
-                                                        });
-                                                      }}
-                                                      className="text-red-600 border-red-300 hover:bg-red-50"
-                                                    >
-                                                      Remove
-                                                    </Button>
-                                                  ) : (
-                                                    <Button
-                                                      size="sm"
-                                                      onClick={() => {
-                                                        setSelectedAds([
-                                                          ...selectedAds,
-                                                          ad.id,
-                                                        ]);
-
-                                                        // Show toast feedback
-                                                        toast({
-                                                          title: "Ad Added",
-                                                          description: `"${ad.name}" has been added to your ad group`,
-                                                          className:
-                                                            "!bg-green-100 !border-green-300 !text-green-800",
-                                                        });
-
-                                                        // Scroll to bottom of both containers
-                                                        setTimeout(() => {
-                                                          if (
-                                                            adsContainerRef.current
-                                                          ) {
-                                                            adsContainerRef.current.scrollTop =
-                                                              adsContainerRef.current.scrollHeight;
-                                                          }
-                                                        }, 100);
-
-                                                        // Scroll preview to bottom
-                                                        scrollPreviewToBottom();
-                                                      }}
-                                                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                                                    >
-                                                      Add
-                                                    </Button>
-                                                  )}
                                                 </div>
                                               </div>
                                             </div>
