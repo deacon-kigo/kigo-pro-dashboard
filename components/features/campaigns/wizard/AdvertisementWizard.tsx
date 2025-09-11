@@ -841,7 +841,7 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                   {/* Ad Selection Section */}
                                   <div className="space-y-4">
                                     <h4 className="font-medium text-sm text-gray-900 border-b pb-2">
-                                      Merchant and Ad Selection
+                                      Ad Selection *
                                     </h4>
 
                                     {!selectedMerchant ? (
@@ -1072,12 +1072,6 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                     {selectedPrograms.length > 0
                                       ? `Edit Program Assignments (${selectedPrograms.length})`
                                       : "Assign to Program Campaigns"}
-                                    <Badge
-                                      variant="outline"
-                                      className="ml-2 text-xs bg-blue-50 text-blue-700"
-                                    >
-                                      Optional
-                                    </Badge>
                                   </div>
                                   <ChevronRightIcon className="h-4 w-4" />
                                 </Button>
