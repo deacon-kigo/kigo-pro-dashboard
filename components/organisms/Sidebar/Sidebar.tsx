@@ -563,10 +563,10 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         </li>
         <li className="nav-item px-3 py-1">
           <SidebarLabel
-            href="/help"
+            href="https://augeoaffinitymarketing.sharepoint.com/:w:/r/sites/Heaps/_layouts/15/Doc.aspx?sourcedoc=%7Bc80d3798-caf2-4ee0-9c36-efafdd44497e%7D&action=edit&wdPreviousSession=32cf0f93-8f07-7682-4ad0-2e9fb5cdd368"
             icon={QuestionMarkCircleIcon}
             title="Help & Support"
-            isActive={isLinkActive("/help")}
+            isActive={false}
             isCollapsed={sidebarCollapsed}
           />
         </li>
