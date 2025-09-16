@@ -23,6 +23,16 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/molecules/alert-dialog/AlertDialog";
 import { ShinyBorder } from "@/components/ui/shiny-border";
 import { SelectedProgramsDisplay } from "@/components/features/campaigns/product-filters/SelectedProgramsDisplay";
 import {
@@ -62,17 +72,15 @@ import {
   MagnifyingGlassIcon,
   UsersIcon,
   ChevronRightIcon,
+  RectangleStackIcon,
+  ShareIcon,
 } from "@heroicons/react/24/outline";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/molecules/alert-dialog/AlertDialog";
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Import step components
 import AdCreationStep from "./steps/AdCreationStep";
@@ -80,6 +88,86 @@ import AdCreationStep from "./steps/AdCreationStep";
 interface AdvertisementWizardProps {
   isAdGroupMode?: boolean;
 }
+
+// Media type configuration with appropriate icons (same as adColumns.tsx)
+const MEDIA_TYPE_CONFIG = {
+  "Display Banner": {
+    icon: PhotoIcon,
+    color: "bg-blue-100 text-blue-800 border-blue-200",
+    label: "Banner",
+  },
+  "Double Decker": {
+    icon: RectangleStackIcon,
+    color: "bg-purple-100 text-purple-800 border-purple-200",
+    label: "Double",
+  },
+  "Social Media": {
+    icon: ShareIcon,
+    color: "bg-orange-100 text-orange-800 border-orange-200",
+    label: "Social",
+  },
+  Native: {
+    icon: DocumentTextIcon,
+    color: "bg-green-100 text-green-800 border-green-200",
+    label: "Native",
+  },
+  Video: {
+    icon: PhotoIcon, // Using PhotoIcon as placeholder for video
+    color: "bg-red-100 text-red-800 border-red-200",
+    label: "Video",
+  },
+};
+
+// Media Types Component with Icons (same pattern as adColumns.tsx)
+const MediaTypesDisplay = React.memo(
+  ({ mediaTypes }: { mediaTypes: string[] }) => {
+    if (!mediaTypes || mediaTypes.length === 0) {
+      return <span className="text-gray-400">No media</span>;
+    }
+
+    return (
+      <div className="flex items-center gap-1 flex-wrap">
+        {mediaTypes.map((type, index) => {
+          const config =
+            MEDIA_TYPE_CONFIG[type as keyof typeof MEDIA_TYPE_CONFIG];
+          if (!config) {
+            // Fallback for unknown media types
+            return (
+              <Badge
+                key={index}
+                variant="outline"
+                className="bg-gray-100 text-gray-600 border-gray-200 flex items-center gap-1 text-xs px-2 py-1"
+              >
+                <span>{type}</span>
+              </Badge>
+            );
+          }
+
+          const IconComponent = config.icon;
+
+          return (
+            <TooltipProvider key={index}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge
+                    variant="outline"
+                    className={`${config.color} flex items-center gap-1 text-xs px-2 py-1 cursor-help`}
+                  >
+                    <IconComponent className="w-3 h-3" />
+                    <span className="hidden sm:inline">{config.label}</span>
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{type}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          );
+        })}
+      </div>
+    );
+  }
+);
 
 const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
   isAdGroupMode = false,
@@ -99,6 +187,9 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
   const [merchantSearchOpen, setMerchantSearchOpen] = useState(false);
   const [merchantSearchQuery, setMerchantSearchQuery] = useState("");
   const [selectedAds, setSelectedAds] = useState<string[]>([]);
+  const [adGroupName, setAdGroupName] = useState<string>("");
+  const [adGroupDescription, setAdGroupDescription] = useState<string>("");
+  const [isCreatingAdGroup, setIsCreatingAdGroup] = useState<boolean>(false);
   const adsContainerRef = useRef<HTMLDivElement>(null);
   const previewAdsContainerRef = useRef<HTMLDivElement>(null);
 
@@ -465,6 +556,216 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
     [dispatch]
   );
 
+  // State for publish confirmation dialog
+  const [showPublishDialog, setShowPublishDialog] = useState(false);
+  const [createdAdGroupId, setCreatedAdGroupId] = useState<string | null>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
+
+  // Handle ad group creation
+  const handleCreateAdGroup = useCallback(async () => {
+    // Validation
+    if (!adGroupName.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Please enter an ad group name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (selectedAds.length === 0) {
+      toast({
+        title: "Validation Error",
+        description: "Please select at least one ad for the group",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (selectedPrograms.length === 0) {
+      toast({
+        title: "Validation Error",
+        description: "Please select at least one program campaign",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsCreatingAdGroup(true);
+
+    try {
+      // Import the ad group service
+      const { adGroupService } = await import("@/lib/services/adGroupService");
+
+      // Step 1: Create ad group (unpublished)
+      const adGroupData = {
+        name: adGroupName,
+        description: adGroupDescription,
+        selectedAds: selectedAds,
+        selectedPrograms: [], // Don't assign programs yet
+        merchantIds: selectedMerchant ? [selectedMerchant] : [],
+      };
+
+      const createResult = await adGroupService.createAdGroup(adGroupData);
+
+      if (!createResult.success) {
+        toast({
+          title: "Creation Failed",
+          description: createResult.error || "Failed to create ad group",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Show success toast for creation
+      toast({
+        title: "✅ Ad Group Created",
+        description: `Ad group "${adGroupName}" created successfully`,
+        className: "!bg-green-100 !border-green-300 !text-green-800",
+      });
+
+      // Step 2: Assign to program campaigns
+      const assignResult = await adGroupService.assignToPrograms(
+        createResult.adGroupId!,
+        selectedPrograms
+      );
+
+      if (!assignResult.success) {
+        toast({
+          title: "Assignment Failed",
+          description:
+            assignResult.error || "Failed to assign ad group to programs",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Show success toast for assignment
+      toast({
+        title: "✅ Programs Assigned",
+        description: `Ad group assigned to ${assignResult.assignedPrograms} program campaigns`,
+        className: "!bg-green-100 !border-green-300 !text-green-800",
+      });
+
+      // Step 3: Store the created ad group ID and show publish confirmation
+      setCreatedAdGroupId(createResult.adGroupId!);
+      setShowPublishDialog(true);
+    } catch (error) {
+      console.error("Error creating ad group:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while creating the ad group",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreatingAdGroup(false);
+    }
+  }, [
+    adGroupName,
+    adGroupDescription,
+    selectedAds,
+    selectedMerchant,
+    selectedPrograms,
+    toast,
+  ]);
+
+  // Handle publish confirmation
+  const handlePublishAdGroup = useCallback(async () => {
+    if (!createdAdGroupId) return;
+
+    setIsPublishing(true);
+
+    try {
+      const { adGroupService } = await import("@/lib/services/adGroupService");
+
+      const publishResult =
+        await adGroupService.publishAdGroup(createdAdGroupId);
+
+      if (publishResult.success) {
+        toast({
+          title: "🚀 Ad Group Published",
+          description: `Ad group "${adGroupName}" is now active and live`,
+          className: "!bg-green-100 !border-green-300 !text-green-800",
+        });
+
+        // Reset form
+        setAdGroupName("");
+        setAdGroupDescription("");
+        setSelectedAds([]);
+        setSelectedMerchant("");
+        setSelectedPrograms([]);
+        setCreatedAdGroupId(null);
+
+        // Navigate back to Ad Manager with success feedback and new ad group data
+        setTimeout(() => {
+          const newAdGroupData = encodeURIComponent(
+            JSON.stringify({
+              id: createdAdGroupId,
+              name: adGroupName,
+              description: adGroupDescription,
+              adsCount: selectedAds.length,
+              programsCount: selectedPrograms.length,
+              status: "active",
+            })
+          );
+          router.push(
+            `/campaigns?success=published&newAdGroup=${newAdGroupData}`
+          );
+        }, 1000);
+      } else {
+        toast({
+          title: "Publishing Failed",
+          description: publishResult.error || "Failed to publish ad group",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error publishing ad group:", error);
+      toast({
+        title: "Error",
+        description:
+          "An unexpected error occurred while publishing the ad group",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPublishing(false);
+      setShowPublishDialog(false);
+    }
+  }, [createdAdGroupId, adGroupName, toast, router]);
+
+  // Handle creating without publishing
+  const handleCreateWithoutPublishing = useCallback(() => {
+    toast({
+      title: "📝 Ad Group Created",
+      description: `Ad group "${adGroupName}" created successfully (not published)`,
+      className: "!bg-blue-100 !border-blue-300 !text-blue-800",
+    });
+
+    // Reset form
+    setAdGroupName("");
+    setAdGroupDescription("");
+    setSelectedAds([]);
+    setSelectedMerchant("");
+    setSelectedPrograms([]);
+    setShowPublishDialog(false);
+    setCreatedAdGroupId(null);
+
+    // Navigate back to Ad Manager with new ad group data
+    setTimeout(() => {
+      const newAdGroupData = encodeURIComponent(
+        JSON.stringify({
+          id: createdAdGroupId,
+          name: adGroupName,
+          description: adGroupDescription,
+          adsCount: selectedAds.length,
+          programsCount: selectedPrograms.length,
+          status: "inactive",
+        })
+      );
+      router.push(`/campaigns?success=created&newAdGroup=${newAdGroupData}`);
+    }, 1000);
+  }, [adGroupName, toast, router]);
+
   // Create back button
   const backButton = (
     <Button
@@ -662,12 +963,16 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                         </div>
                       </div>
                       <Button
-                        onClick={() => {}}
-                        disabled={selectedAds.length === 0}
+                        onClick={handleCreateAdGroup}
+                        disabled={
+                          selectedAds.length === 0 ||
+                          !adGroupName.trim() ||
+                          isCreatingAdGroup
+                        }
                         className="flex items-center gap-1"
                         size="sm"
                       >
-                        Create Ad Group
+                        {isCreatingAdGroup ? "Creating..." : "Create Ad Group"}
                       </Button>
                     </div>
 
@@ -700,6 +1005,10 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                     </label>
                                     <input
                                       type="text"
+                                      value={adGroupName}
+                                      onChange={(e) =>
+                                        setAdGroupName(e.target.value)
+                                      }
                                       placeholder="Enter ad group name..."
                                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />
@@ -710,6 +1019,10 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                       Description
                                     </label>
                                     <textarea
+                                      value={adGroupDescription}
+                                      onChange={(e) =>
+                                        setAdGroupDescription(e.target.value)
+                                      }
                                       placeholder="Describe the purpose of this ad group..."
                                       rows={3}
                                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
@@ -1019,17 +1332,10 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                                   <p className="text-sm text-gray-500 mb-2">
                                                     {ad.offer}
                                                   </p>
-                                                  <div className="flex flex-wrap gap-1 mb-2">
-                                                    {ad.mediaTypes.map(
-                                                      (type: string) => (
-                                                        <span
-                                                          key={type}
-                                                          className="px-2 py-1 bg-gray-100 text-gray-700 text-sm rounded"
-                                                        >
-                                                          {type}
-                                                        </span>
-                                                      )
-                                                    )}
+                                                  <div className="mb-2">
+                                                    <MediaTypesDisplay
+                                                      mediaTypes={ad.mediaTypes}
+                                                    />
                                                   </div>
                                                 </div>
                                               </div>
@@ -1206,17 +1512,12 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
                                                         <div className="text-sm text-gray-500 mb-1">
                                                           {ad.offer}
                                                         </div>
-                                                        <div className="flex flex-wrap gap-1">
-                                                          {ad.mediaTypes.map(
-                                                            (type: string) => (
-                                                              <span
-                                                                key={type}
-                                                                className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-sm rounded"
-                                                              >
-                                                                {type}
-                                                              </span>
-                                                            )
-                                                          )}
+                                                        <div>
+                                                          <MediaTypesDisplay
+                                                            mediaTypes={
+                                                              ad.mediaTypes
+                                                            }
+                                                          />
                                                         </div>
                                                       </div>
                                                       <Button
@@ -1369,6 +1670,62 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
             <AlertDialogAction onClick={handleConfirmedCreateAd}>
               {isEditMode ? "Update Ad" : "Create Ad"}
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Publish Confirmation Dialog */}
+      <AlertDialog open={showPublishDialog} onOpenChange={setShowPublishDialog}>
+        <AlertDialogContent className="sm:max-w-lg">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-semibold text-gray-900">
+              Publish Ad Group?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-base text-gray-700 leading-relaxed mt-3">
+              Your ad group{" "}
+              <span className="font-medium text-gray-900">"{adGroupName}"</span>{" "}
+              has been created successfully and assigned to{" "}
+              {selectedPrograms.length} program campaigns.
+              <br />
+              <br />
+              <span className="font-medium">Choose what to do next:</span>
+              <div className="mt-4 space-y-3">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <div className="font-medium text-blue-900 text-sm">
+                    📝 Create Without Publishing
+                  </div>
+                  <div className="text-blue-700 text-sm mt-1">
+                    Save the ad group as inactive. You can review and publish it
+                    later from the Ad Manager.
+                  </div>
+                </div>
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                  <div className="font-medium text-green-900 text-sm">
+                    🚀 Publish & Activate
+                  </div>
+                  <div className="text-green-700 text-sm mt-1">
+                    Make the ad group live immediately. It will start delivering
+                    ads to customers right away.
+                  </div>
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-3 mt-6">
+            <AlertDialogCancel
+              onClick={handleCreateWithoutPublishing}
+              disabled={isPublishing}
+              className="w-full sm:w-auto text-base py-3 px-6 border-gray-300 text-gray-700 hover:bg-gray-50 font-medium"
+            >
+              Create Without Publishing
+            </AlertDialogCancel>
+            <Button
+              onClick={handlePublishAdGroup}
+              disabled={isPublishing}
+              className="w-full sm:w-auto text-base py-3 px-6 font-medium"
+            >
+              {isPublishing ? "Publishing..." : "Publish & Activate"}
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
