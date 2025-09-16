@@ -6,8 +6,6 @@ import "@copilotkit/react-ui/styles.css";
 import { Providers } from "@/lib/providers";
 import URLSyncProvider from "@/lib/providers/URLSyncProvider";
 import { Toaster } from "@/components/molecules/Toaster";
-import { StagewiseToolbar } from "@stagewise/toolbar-next";
-import ReactPlugin from "@stagewise-plugins/react";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -43,11 +41,6 @@ export default function RootLayout({
           </URLSyncProvider>
         </Providers>
         <Toaster />
-        <StagewiseToolbar
-          config={{
-            plugins: [ReactPlugin],
-          }}
-        />
       </body>
     </html>
   );
