@@ -17,6 +17,7 @@ import {
   PhotoIcon,
   RectangleStackIcon,
   ShareIcon,
+  DocumentTextIcon,
 } from "@heroicons/react/24/outline";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -68,7 +69,35 @@ export type Ad = {
 };
 
 // Media type configuration with appropriate icons
+// Support both lowercase keys (from backend) and title case keys (legacy)
 const MEDIA_TYPE_CONFIG = {
+  // Lowercase keys (from backend)
+  display_banner: {
+    icon: PhotoIcon,
+    color: "bg-blue-100 text-blue-800 border-blue-200",
+    label: "Banner",
+  },
+  double_decker: {
+    icon: RectangleStackIcon,
+    color: "bg-purple-100 text-purple-800 border-purple-200",
+    label: "Double",
+  },
+  social: {
+    icon: ShareIcon,
+    color: "bg-orange-100 text-orange-800 border-orange-200",
+    label: "Social",
+  },
+  native: {
+    icon: DocumentTextIcon,
+    color: "bg-green-100 text-green-800 border-green-200",
+    label: "Native",
+  },
+  video: {
+    icon: PhotoIcon,
+    color: "bg-red-100 text-red-800 border-red-200",
+    label: "Video",
+  },
+  // Title case keys (legacy support)
   "Display Banner": {
     icon: PhotoIcon,
     color: "bg-blue-100 text-blue-800 border-blue-200",
@@ -83,6 +112,16 @@ const MEDIA_TYPE_CONFIG = {
     icon: ShareIcon,
     color: "bg-orange-100 text-orange-800 border-orange-200",
     label: "Social",
+  },
+  Native: {
+    icon: DocumentTextIcon,
+    color: "bg-green-100 text-green-800 border-green-200",
+    label: "Native",
+  },
+  Video: {
+    icon: PhotoIcon,
+    color: "bg-red-100 text-red-800 border-red-200",
+    label: "Video",
   },
 };
 

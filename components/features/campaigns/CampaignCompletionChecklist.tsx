@@ -170,7 +170,9 @@ export function CampaignCompletionChecklist({
     const mediaTypes = {
       display_banner: "Display Banner",
       double_decker: "Double Decker",
+      social: "Social Media",
       native: "Native (No Image)",
+      video: "Video Ad",
     };
     return mediaTypes[typeId as keyof typeof mediaTypes] || typeId;
   };
@@ -228,10 +230,22 @@ export function CampaignCompletionChecklist({
       requiresAsset: true,
     },
     {
+      id: "social",
+      label: "Social Media",
+      dimensions: "1080x1080",
+      requiresAsset: true,
+    },
+    {
       id: "native",
       label: "Native (No Image)",
       dimensions: "Text Only",
       requiresAsset: false,
+    },
+    {
+      id: "video",
+      label: "Video Ad",
+      dimensions: "16:9 ratio",
+      requiresAsset: true,
     },
   ];
 
