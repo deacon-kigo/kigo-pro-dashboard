@@ -519,19 +519,47 @@ export default function CampaignLaunchUI({
             </CardContent>
           </Card>
 
-          {/* Tucker's Success Quote */}
-          <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-green-500 flex items-center justify-center mx-auto mb-4">
-                <Users className="w-6 h-6 text-white" />
+          {/* Real-Time AI Intelligence */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <Activity className="w-6 h-6 text-blue-600" />
+                <h4 className="text-lg font-semibold text-gray-900">
+                  Real-Time AI Intelligence
+                </h4>
               </div>
-              <blockquote className="text-lg font-semibold text-gray-900 mb-2">
-                "This gives us incredible visibility into immediate revenue and
-                long-term value!"
-              </blockquote>
-              <p className="text-sm text-gray-600">
-                — Tucker Williams, ABC FI Marketing Manager
-              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    <span className="text-gray-700">
+                      AI monitoring journey progression and personalizing timing
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    <span className="text-gray-700">
+                      Partner performance tracking with optimization
+                      recommendations
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    <span className="text-gray-700">
+                      Revenue rebalancing between immediate gains and LTV
+                      enhancement
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    <span className="text-gray-700">
+                      New pattern discovery for future campaign opportunities
+                    </span>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
