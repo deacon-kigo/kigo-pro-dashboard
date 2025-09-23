@@ -71,46 +71,14 @@ interface QueryResult {
 }
 
 const QUERY_SUGGESTIONS: QuerySuggestion[] = [
-  // Tucker Williams Journey Discovery Workflow
+  // Tucker Williams Complete Campaign Creation Demo
   {
-    id: "discover-journeys",
-    text: "Show me high-value customer journey patterns",
-    category: "insights",
+    id: "create-campaign-demo",
+    text: "Create a complete campaign for home buyers (Full Demo)",
+    category: "campaign",
     icon: <Brain className="w-4 h-4" />,
     example:
-      "Display 4 journey opportunities: Home Purchase + Relocation (567 customers/month, $72K-139K revenue)",
-  },
-  {
-    id: "home-purchase-journey",
-    text: "Analyze home purchase + relocation journey (567 customers/month)",
-    category: "insights",
-    icon: <TrendingUp className="w-4 h-4" />,
-    example:
-      "12-week timeline: 94% logistics, 89% travel, 96% setup, 91% integration engagement",
-  },
-  {
-    id: "build-campaign-architecture",
-    text: "Build phase-based campaign with 15 national + 12K local partners",
-    category: "campaign",
-    icon: <Target className="w-4 h-4" />,
-    example:
-      "4 phases: Moving logistics, Travel, Home setup, Local integration",
-  },
-  {
-    id: "lightning-offers-strategy",
-    text: "Create lightning offers (+34% engagement, +$67 revenue)",
-    category: "campaign",
-    icon: <Zap className="w-4 h-4" />,
-    example:
-      "Phase-triggered scarcity offers: '1 of 200: 40% off moving company' (48hr window)",
-  },
-  {
-    id: "launch-campaign",
-    text: "Launch campaign: 567 targets, live performance tracking",
-    category: "campaign",
-    icon: <Target className="w-4 h-4" />,
-    example:
-      "Real-time: 127 Phase 1, 89 Phase 2, 156 Phase 3, 195 Phase 4 customers active",
+      "Walk through the entire process: Journey discovery → Analysis → Architecture → Lightning offers → Launch",
   },
   // Original suggestions for variety
   {
@@ -314,6 +282,85 @@ export default function AIQueryInterface({
     }
   };
 
+  // Complete campaign demo flow - runs all 5 steps in sequence
+  const startCompleteCampaignDemo = async () => {
+    const steps = [
+      {
+        delay: 500,
+        userMessage: "Show me high-value customer journey patterns",
+        aiResponse:
+          "I've discovered several high-value customer journey patterns from ABC FI's transaction data:\n\n🏡 **Home Purchase + Relocation:** 567 customers/month, $127-245 revenue potential, $72K-139K monthly (94% confidence)\n🔨 **DIY Home Improvement:** 1,240 customers/month, $85-156 revenue, $105K-194K monthly (87% confidence)\n🎒 **Back to School:** 2,890 families/month, $45-89 revenue, $130K-257K monthly (92% confidence)\n🍽️ **Weekend Entertainment:** 4,200+ customers/month, $28-52 revenue, $118K-218K monthly (78% confidence)\n\nThe Home Purchase + Relocation journey shows the highest revenue potential. Let me analyze this pattern in detail...",
+        uiComponent: { type: "journey-discovery" as const, props: {} },
+      },
+      {
+        delay: 2000,
+        userMessage: "Analyze the home purchase + relocation journey pattern",
+        aiResponse:
+          "**Journey Pattern Analysis Complete**\n\n**12-Week Customer Timeline:**\n• **Weeks 3-4:** Moving logistics (94% engagement)\n• **Weeks 5-6:** Travel & transition (89% engagement)\n• **Weeks 7-8:** Home setup (96% engagement)\n• **Weeks 9-12:** Local integration (91% engagement)\n\n**Financial Impact:** $3,200-4,800 incremental spend + $2,400-3,800 LTV boost\n**Revenue Breakdown:** $45-85 ad-funded + $82-160 merchant partnerships = $127-245 per customer\n**ROI Projections:** 445% immediate, 890% LTV, 1,200%+ combined\n\nNow let me build the campaign architecture...",
+        uiComponent: {
+          type: "pattern-analysis" as const,
+          props: { journeyType: "Home Purchase + Relocation" },
+        },
+      },
+      {
+        delay: 2000,
+        userMessage: "Build the phase-based campaign architecture",
+        aiResponse:
+          "**Campaign Architecture Built Successfully**\n\n**4-Phase Structure with Partner Network:**\n\n**Phase 1 - Moving Logistics (Weeks 3-4):**\n• Ad-funded: U-Haul ($25), Two Men and a Truck ($18)\n• Merchant: Local movers (12%), storage (15%)\n• Revenue: $32-58 per customer\n\n**Phase 2 - Travel + Transition (Weeks 5-6):**\n• Ad-funded: Southwest ($25), Hilton ($20), National ($12)\n• Revenue: $28-52 per customer\n\n**Phase 3 - Home Setup (Weeks 7-8):**\n• Ad-funded: Home Depot ($22), Best Buy ($18), West Elm ($15)\n• Revenue: $35-68 per customer\n\n**Phase 4 - Local Integration (Weeks 9-12):**\n• Network: 12,000+ local businesses (10-15% commissions)\n• Revenue: $32-67 per customer\n\n**Total Network:** 15 national partners + 12,000+ local merchants activated\n\nNow let me create the lightning offers strategy...",
+        uiComponent: { type: "campaign-architecture" as const, props: {} },
+      },
+      {
+        delay: 2000,
+        userMessage: "Create the lightning offers strategy",
+        aiResponse:
+          '**Lightning Offers Strategy Activated**\n\n**AI Optimization Features:**\n• **Phase-specific timing:** Offers triggered by journey progression\n• **Scarcity management:** Limited quantities create urgency\n• **Cross-phase integration:** Early offers inform later opportunities\n• **Performance boost:** +34% engagement, +$67 revenue per customer\n\n**Example Lightning Offers:**\n• Phase 1: "1 of 200: 40% off moving company" (48-hour window)\n• Phase 2: "1 of 300: Hotel suite upgrade" (arrival-triggered)\n• Phase 3: "1 of 500: Free furniture delivery" (setup-triggered)\n• Phase 4: "1 of 400: Local discovery package" (integration-triggered)\n\n**Market Intelligence Alert:** Increased home-buying activity detected in Denver (+34%), Austin (+28%), Seattle (+31%), Charleston (+42%).\n\nReady to launch the campaign...',
+        uiComponent: { type: "lightning-strategy" as const, props: {} },
+      },
+      {
+        delay: 2000,
+        userMessage: "Launch the campaign with live performance tracking",
+        aiResponse:
+          "**🚀 Campaign Launched Successfully!**\n\n**Live Campaign Status:**\n• **Target:** 567 customers/month entering journey nationwide\n• **Partner Network:** 15 national + 12,000+ local merchants activated\n• **AI Intelligence:** Real-time optimization and market alerts active\n\n**Current Customer Activity:**\n• Phase 1 (Moving): 127 customers\n• Phase 2 (Travel): 89 customers\n• Phase 3 (Setup): 156 customers\n• Phase 4 (Integration): 195 customers\n\n**Projected Performance:**\n• **Month 1:** $72K-139K immediate revenue + $680K-1.08M LTV boost\n• **Annual Program:** $1.03M-2.00M immediate + $16.3M-25.8M LTV enhancement\n\n**Campaign is now live with real-time performance tracking and AI optimization!**\n\nTucker, your complete home purchase + relocation campaign is now running across all phases with full partner network activation.",
+        uiComponent: { type: "campaign-launch" as const, props: {} },
+      },
+    ];
+
+    // Execute each step in sequence
+    for (let i = 0; i < steps.length; i++) {
+      const step = steps[i];
+
+      await new Promise((resolve) => setTimeout(resolve, step.delay));
+
+      // Add user message
+      const userMessage = {
+        id: Date.now().toString() + "-user-" + i,
+        role: "user" as const,
+        content: step.userMessage,
+      };
+
+      setLocalMessages((prev) => [...prev, userMessage]);
+
+      // Wait a bit then add AI response
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      const assistantMessage = {
+        id: Date.now().toString() + "-assistant-" + i,
+        role: "assistant" as const,
+        content: step.aiResponse,
+      };
+
+      setLocalMessages((prev) => [...prev, assistantMessage]);
+      setGenerativeComponents((prev) =>
+        new Map(prev).set(assistantMessage.id, step.uiComponent)
+      );
+
+      // Auto-scroll to bottom
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    }
+  };
+
   // Use local state if useChat input is not available
   const currentInput = input !== undefined ? input : localInput;
   const currentSetInput = setInput || setLocalInput;
@@ -346,6 +393,19 @@ export default function AIQueryInterface({
         // For demo purposes, simulate a response with generative UI based on Tucker's workflow
         let assistantMessage: any;
         let mockUI: any;
+
+        // Handle the complete campaign creation demo flow
+        if (
+          currentInput.toLowerCase().includes("complete campaign") ||
+          currentInput.toLowerCase().includes("full demo") ||
+          (currentInput.toLowerCase().includes("campaign") &&
+            currentInput.toLowerCase().includes("home buyers"))
+        ) {
+          // Clear input and start the complete demo flow
+          currentSetInput("");
+          startCompleteCampaignDemo();
+          return;
+        }
 
         // Determine response based on user input
         if (
