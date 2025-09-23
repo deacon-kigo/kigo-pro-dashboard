@@ -22,7 +22,7 @@ export function IOSHomeScreen({ onAppOpen }: IOSHomeScreenProps) {
       </div>
 
       {/* ABC FI App Icon Overlay (clickable) - Positioned under Settings */}
-      <div className="absolute left-8 bottom-32">
+      <div className="absolute left-4 bottom-40">
         <button onClick={onAppOpen} className="relative group">
           {/* ABC FI App Icon */}
           <div className="w-16 h-16 rounded-2xl shadow-lg transform transition-all duration-200 group-active:scale-95 group-hover:shadow-xl overflow-hidden">
