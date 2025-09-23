@@ -74,42 +74,43 @@ const QUERY_SUGGESTIONS: QuerySuggestion[] = [
   // Tucker Williams Journey Discovery Workflow
   {
     id: "discover-journeys",
-    text: "Discover high-value customer journey opportunities",
+    text: "Show me high-value customer journey patterns",
     category: "insights",
     icon: <Brain className="w-4 h-4" />,
     example:
-      "Show me AI-discovered patterns from transaction data with revenue projections",
+      "Display 4 journey opportunities: Home Purchase + Relocation (567 customers/month, $72K-139K revenue)",
   },
   {
     id: "home-purchase-journey",
-    text: "Analyze the home purchase and relocation journey pattern",
+    text: "Analyze home purchase + relocation journey (567 customers/month)",
     category: "insights",
     icon: <TrendingUp className="w-4 h-4" />,
     example:
-      "Deep-dive into the 12-week journey with engagement rates and financial impact",
+      "12-week timeline: 94% logistics, 89% travel, 96% setup, 91% integration engagement",
   },
   {
     id: "build-campaign-architecture",
-    text: "Build campaign architecture for home purchase journey",
+    text: "Build phase-based campaign with 15 national + 12K local partners",
     category: "campaign",
     icon: <Target className="w-4 h-4" />,
-    example: "Phase-based structure with national and local partner networks",
+    example:
+      "4 phases: Moving logistics, Travel, Home setup, Local integration",
   },
   {
     id: "lightning-offers-strategy",
-    text: "Design lightning offers strategy with AI optimization",
+    text: "Create lightning offers (+34% engagement, +$67 revenue)",
     category: "campaign",
     icon: <Zap className="w-4 h-4" />,
     example:
-      "Phase-specific timing with scarcity management and performance enhancement",
+      "Phase-triggered scarcity offers: '1 of 200: 40% off moving company' (48hr window)",
   },
   {
     id: "launch-campaign",
-    text: "Launch campaign with real-time performance tracking",
+    text: "Launch campaign: 567 targets, live performance tracking",
     category: "campaign",
     icon: <Target className="w-4 h-4" />,
     example:
-      "Live dashboard with customer progression and business impact metrics",
+      "Real-time: 127 Phase 1, 89 Phase 2, 156 Phase 3, 195 Phase 4 customers active",
   },
   // Original suggestions for variety
   {
@@ -225,8 +226,9 @@ export default function AIQueryInterface({
     Map<string, GenerativeUIComponent>
   >(new Map());
   const [localMessages, setLocalMessages] = useState<any[]>([]);
-  const [isTyping, setIsTyping] = useState(false);
-  const [typingText, setTypingText] = useState("");
+  // Local state for campaign creation flow
+  const [currentStep, setCurrentStep] = useState<string | null>(null);
+  const [selectedJourney, setSelectedJourney] = useState<string | null>(null);
 
   // Function to render generative UI components
   const renderGenerativeUI = (component: GenerativeUIComponent) => {
@@ -252,27 +254,12 @@ export default function AIQueryInterface({
     }
   };
 
-  // Typing animation function
-  const typeMessage = (text: string, callback?: () => void) => {
-    setIsTyping(true);
-    setTypingText("");
-
-    let index = 0;
-    const typeInterval = setInterval(() => {
-      if (index < text.length) {
-        setTypingText(text.slice(0, index + 1));
-        index++;
-        // Auto-scroll during typing
-        setTimeout(() => {
-          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-        }, 50);
-      } else {
-        clearInterval(typeInterval);
-        setIsTyping(false);
-        setTypingText("");
-        callback?.();
-      }
-    }, 30); // Adjust speed here
+  // Campaign creation flow handler
+  const handleCampaignStep = (step: string, journey?: string) => {
+    setCurrentStep(step);
+    if (journey) {
+      setSelectedJourney(journey);
+    }
   };
 
   // Use local state if useChat input is not available
@@ -317,7 +304,7 @@ export default function AIQueryInterface({
             id: Date.now().toString() + "-assistant",
             role: "assistant" as const,
             content:
-              "I've analyzed ABC FI's transaction data and discovered several high-value customer journey patterns. Here are the opportunities ranked by revenue potential and confidence:",
+              "I've discovered several high-value customer journey patterns from ABC FI's transaction data:\n\n🏡 **Home Purchase + Relocation:** 567 customers/month, $127-245 revenue potential, $72K-139K monthly (94% confidence)\n🔨 **DIY Home Improvement:** 1,240 customers/month, $85-156 revenue, $105K-194K monthly (87% confidence)\n🎒 **Back to School:** 2,890 families/month, $45-89 revenue, $130K-257K monthly (92% confidence)\n🍽️ **Weekend Entertainment:** 4,200+ customers/month, $28-52 revenue, $118K-218K monthly (78% confidence)\n\nThe Home Purchase + Relocation journey shows the highest revenue potential. Select it to proceed with campaign creation.",
           };
           mockUI = {
             type: "journey-discovery" as const,
@@ -331,7 +318,7 @@ export default function AIQueryInterface({
             id: Date.now().toString() + "-assistant",
             role: "assistant" as const,
             content:
-              "Here's the detailed journey pattern analysis for the Home Purchase + Relocation journey. This shows the 12-week customer timeline with engagement rates and financial impact projections:",
+              "**Journey Pattern Analysis Complete**\n\n**12-Week Customer Timeline:**\n• **Weeks 3-4:** Moving logistics (94% engagement)\n• **Weeks 5-6:** Travel & transition (89% engagement)\n• **Weeks 7-8:** Home setup (96% engagement)\n• **Weeks 9-12:** Local integration (91% engagement)\n\n**Financial Impact:** $3,200-4,800 incremental spend + $2,400-3,800 LTV boost\n**Revenue Breakdown:** $45-85 ad-funded + $82-160 merchant partnerships = $127-245 per customer\n**ROI Projections:** 445% immediate, 890% LTV, 1,200%+ combined\n\nReady to build campaign architecture around this pattern?",
           };
           mockUI = {
             type: "pattern-analysis" as const,
@@ -347,7 +334,7 @@ export default function AIQueryInterface({
             id: Date.now().toString() + "-assistant",
             role: "assistant" as const,
             content:
-              "I've designed a phase-based campaign architecture that leverages our full partner network. Each phase targets customers at different stages of their relocation journey:",
+              "**Campaign Architecture Built Successfully**\n\n**4-Phase Structure with Partner Network:**\n\n**Phase 1 - Moving Logistics (Weeks 3-4):**\n• Ad-funded: U-Haul ($25), Two Men and a Truck ($18)\n• Merchant: Local movers (12%), storage (15%)\n• Revenue: $32-58 per customer\n\n**Phase 2 - Travel + Transition (Weeks 5-6):**\n• Ad-funded: Southwest ($25), Hilton ($20), National ($12)\n• Revenue: $28-52 per customer\n\n**Phase 3 - Home Setup (Weeks 7-8):**\n• Ad-funded: Home Depot ($22), Best Buy ($18), West Elm ($15)\n• Revenue: $35-68 per customer\n\n**Phase 4 - Local Integration (Weeks 9-12):**\n• Network: 12,000+ local businesses (10-15% commissions)\n• Revenue: $32-67 per customer\n\n**Total Network:** 15 national partners + 12,000+ local merchants activated",
           };
           mockUI = {
             type: "campaign-architecture" as const,
@@ -361,7 +348,7 @@ export default function AIQueryInterface({
             id: Date.now().toString() + "-assistant",
             role: "assistant" as const,
             content:
-              "Here's the AI-optimized lightning offers strategy. This approach uses phase-specific timing and scarcity management to boost engagement and revenue:",
+              '**Lightning Offers Strategy Activated**\n\n**AI Optimization Features:**\n• **Phase-specific timing:** Offers triggered by journey progression\n• **Scarcity management:** Limited quantities create urgency\n• **Cross-phase integration:** Early offers inform later opportunities\n• **Performance boost:** +34% engagement, +$67 revenue per customer\n\n**Example Lightning Offers:**\n• Phase 1: "1 of 200: 40% off moving company" (48-hour window)\n• Phase 2: "1 of 300: Hotel suite upgrade" (arrival-triggered)\n• Phase 3: "1 of 500: Free furniture delivery" (setup-triggered)\n• Phase 4: "1 of 400: Local discovery package" (integration-triggered)\n\n**Market Intelligence Alert:** Increased home-buying activity detected in Denver (+34%), Austin (+28%), Seattle (+31%), Charleston (+42%). Ready to launch?',
           };
           mockUI = {
             type: "lightning-strategy" as const,
@@ -375,7 +362,7 @@ export default function AIQueryInterface({
             id: Date.now().toString() + "-assistant",
             role: "assistant" as const,
             content:
-              "Campaign launched successfully! Here's your real-time performance dashboard showing live customer progression and business impact metrics:",
+              "**🚀 Campaign Launched Successfully!**\n\n**Live Campaign Status:**\n• **Target:** 567 customers/month entering journey nationwide\n• **Partner Network:** 15 national + 12,000+ local merchants activated\n• **AI Intelligence:** Real-time optimization and market alerts active\n\n**Current Customer Activity:**\n• Phase 1 (Moving): 127 customers\n• Phase 2 (Travel): 89 customers\n• Phase 3 (Setup): 156 customers\n• Phase 4 (Integration): 195 customers\n\n**Projected Performance:**\n• **Month 1:** $72K-139K immediate revenue + $680K-1.08M LTV boost\n• **Annual Program:** $1.03M-2.00M immediate + $16.3M-25.8M LTV enhancement\n\nCampaign is now live with real-time performance tracking and AI optimization!",
           };
           mockUI = {
             type: "campaign-launch" as const,
@@ -410,15 +397,17 @@ export default function AIQueryInterface({
         // Clear input immediately
         currentSetInput("");
 
-        // Start typing animation for AI response
+        // Add AI response immediately with generative UI
         setTimeout(() => {
-          typeMessage(assistantMessage.content, () => {
-            // Add the complete AI message after typing is done
-            setLocalMessages((prev) => [...prev, assistantMessage]);
-            setGenerativeComponents((prev) =>
-              new Map(prev).set(assistantMessage.id, mockUI)
-            );
-          });
+          setLocalMessages((prev) => [...prev, assistantMessage]);
+          setGenerativeComponents((prev) =>
+            new Map(prev).set(assistantMessage.id, mockUI)
+          );
+
+          // Handle campaign creation flow
+          if (mockUI) {
+            handleCampaignStep(mockUI.type, selectedJourney);
+          }
         }, 300);
       }
     });
@@ -832,31 +821,6 @@ export default function AIQueryInterface({
                         </div>
                       </div>
                     ))}
-
-                    {/* Typing Indicator */}
-                    {isTyping && (
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-purple-100 to-blue-100">
-                          <Bot className="w-4 h-4 text-purple-600" />
-                        </div>
-                        <div className="flex-1 rounded-lg p-3 bg-white border border-gray-200 shadow-sm">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-sm font-medium text-gray-900">
-                              AI Marketing Co-pilot
-                            </span>
-                            <Badge variant="outline" className="text-xs">
-                              AI Assistant
-                            </Badge>
-                          </div>
-                          <div className="prose prose-sm max-w-none">
-                            <div className="text-sm text-gray-700 whitespace-pre-wrap">
-                              {typingText}
-                              <span className="animate-pulse">|</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
 
                     {/* Scroll anchor */}
                     <div ref={messagesEndRef} />
