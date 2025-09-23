@@ -15,15 +15,15 @@ export function SplashScreen({ onSplashComplete }: SplashScreenProps) {
     // Fade in immediately
     setIsVisible(true);
 
-    // Start fade out after 2.5 seconds
+    // Start fade out after 2 seconds
     const fadeOutTimer = setTimeout(() => {
       setIsExiting(true);
-    }, 2500);
+    }, 2000);
 
     // Complete transition after fade out animation
     const completeTimer = setTimeout(() => {
       onSplashComplete();
-    }, 3000);
+    }, 2200);
 
     return () => {
       clearTimeout(fadeOutTimer);
@@ -33,7 +33,7 @@ export function SplashScreen({ onSplashComplete }: SplashScreenProps) {
 
   return (
     <div
-      className={`absolute inset-0 w-full h-full bg-white flex items-center justify-center transition-opacity duration-500 ${
+      className={`absolute inset-0 w-full h-full bg-white flex items-center justify-center transition-opacity duration-200 ${
         isVisible && !isExiting ? "opacity-100" : "opacity-0"
       }`}
     >
