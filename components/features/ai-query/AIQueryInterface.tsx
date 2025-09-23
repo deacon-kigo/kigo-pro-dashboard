@@ -240,13 +240,65 @@ export default function AIQueryInterface({
       case "customer-insights":
         return <CustomerInsightsUI {...component.props} />;
       case "journey-discovery":
-        return <JourneyDiscoveryUI {...component.props} />;
+        return (
+          <JourneyDiscoveryUI
+            {...component.props}
+            onAnalyzeJourney={(journeyId) => {
+              // Trigger the next step by simulating a query submission
+              setLocalInput(
+                "Analyze home purchase + relocation journey (567 customers/month)"
+              );
+              setTimeout(() => {
+                safeHandleSubmit(new Event("submit") as any);
+              }, 100);
+            }}
+          />
+        );
       case "pattern-analysis":
-        return <PatternAnalysisUI {...component.props} />;
+        return (
+          <PatternAnalysisUI
+            {...component.props}
+            onContinue={() => {
+              // Trigger the next step by simulating a query submission
+              setLocalInput(
+                "Build phase-based campaign with 15 national + 12K local partners"
+              );
+              setTimeout(() => {
+                safeHandleSubmit(new Event("submit") as any);
+              }, 100);
+            }}
+          />
+        );
       case "campaign-architecture":
-        return <CampaignArchitectureUI {...component.props} />;
+        return (
+          <CampaignArchitectureUI
+            {...component.props}
+            onActivateNetwork={() => {
+              // Trigger the next step by simulating a query submission
+              setLocalInput(
+                "Create lightning offers (+34% engagement, +$67 revenue)"
+              );
+              setTimeout(() => {
+                safeHandleSubmit(new Event("submit") as any);
+              }, 100);
+            }}
+          />
+        );
       case "lightning-strategy":
-        return <LightningStrategyUI {...component.props} />;
+        return (
+          <LightningStrategyUI
+            {...component.props}
+            onLaunchCampaign={() => {
+              // Trigger the next step by simulating a query submission
+              setLocalInput(
+                "Launch campaign: 567 targets, live performance tracking"
+              );
+              setTimeout(() => {
+                safeHandleSubmit(new Event("submit") as any);
+              }, 100);
+            }}
+          />
+        );
       case "campaign-launch":
         return <CampaignLaunchUI {...component.props} />;
       default:
