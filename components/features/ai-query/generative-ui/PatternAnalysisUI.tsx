@@ -12,6 +12,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import {
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
+import {
   Calendar,
   TrendingUp,
   DollarSign,
@@ -19,7 +39,7 @@ import {
   Target,
   ArrowRight,
   BarChart3,
-  PieChart,
+  PieChart as PieChartIcon,
   Activity,
 } from "lucide-react";
 
@@ -36,10 +56,10 @@ export default function PatternAnalysisUI({
   const analysisData = {
     timeline: "12-week pattern",
     phases: [
-      { name: "Logistics", engagement: 94, color: "bg-blue-500" },
-      { name: "Travel", engagement: 89, color: "bg-green-500" },
-      { name: "Setup", engagement: 96, color: "bg-purple-500" },
-      { name: "Local Integration", engagement: 91, color: "bg-orange-500" },
+      { name: "Logistics", engagement: 94, color: "#3b82f6" },
+      { name: "Travel", engagement: 89, color: "#10b981" },
+      { name: "Setup", engagement: 96, color: "#8b5cf6" },
+      { name: "Local Integration", engagement: 91, color: "#f59e0b" },
     ],
     financialImpact: {
       incrementalSpend: "$3,200-4,800",
@@ -59,6 +79,41 @@ export default function PatternAnalysisUI({
       { week: "Week 9-10", triggers: 76, engagement: 69, conversion: 45 },
       { week: "Week 11-12", triggers: 54, engagement: 49, conversion: 38 },
     ],
+  };
+
+  // Chart configurations
+  const engagementChartConfig = {
+    logistics: {
+      label: "Logistics",
+      color: "#3b82f6",
+    },
+    travel: {
+      label: "Travel",
+      color: "#10b981",
+    },
+    setup: {
+      label: "Setup",
+      color: "#8b5cf6",
+    },
+    integration: {
+      label: "Local Integration",
+      color: "#f59e0b",
+    },
+  };
+
+  const timelineChartConfig = {
+    triggers: {
+      label: "Triggers",
+      color: "#3b82f6",
+    },
+    engagement: {
+      label: "Engagement",
+      color: "#10b981",
+    },
+    conversion: {
+      label: "Conversion",
+      color: "#8b5cf6",
+    },
   };
 
   return (
@@ -138,7 +193,7 @@ export default function PatternAnalysisUI({
         </Card>
       </div>
 
-      {/* Engagement Phases */}
+      {/* Engagement Phases Chart */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base font-semibold flex items-center gap-2">
@@ -147,31 +202,41 @@ export default function PatternAnalysisUI({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {analysisData.phases.map((phase, index) => (
-              <div key={phase.name} className="flex items-center gap-4">
-                <div className="w-20 text-sm font-medium text-gray-700">
-                  Phase {index + 1}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium text-gray-900">
-                      {phase.name}
-                    </span>
-                    <span className="text-sm font-bold text-gray-700">
-                      {phase.engagement}%
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className={`${phase.color} h-2 rounded-full transition-all duration-500`}
-                      style={{ width: `${phase.engagement}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ChartContainer config={engagementChartConfig} className="h-[200px]">
+            <BarChart
+              data={analysisData.phases}
+              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="name"
+                tick={{ fontSize: 12 }}
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis
+                tick={{ fontSize: 12 }}
+                tickLine={false}
+                axisLine={false}
+                domain={[0, 100]}
+                tickFormatter={(value) => `${value}%`}
+              />
+              <ChartTooltip
+                content={<ChartTooltipContent />}
+                formatter={(value) => [`${value}%`, "Engagement Rate"]}
+              />
+              <Bar
+                dataKey="engagement"
+                fill="var(--color-logistics)"
+                radius={[4, 4, 0, 0]}
+                fillOpacity={0.8}
+              >
+                {analysisData.phases.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ChartContainer>
         </CardContent>
       </Card>
 
@@ -200,47 +265,59 @@ export default function PatternAnalysisUI({
         </CardContent>
       </Card>
 
-      {/* Weekly Journey Timeline */}
+      {/* Weekly Journey Timeline Chart */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base font-semibold flex items-center gap-2">
-            <PieChart className="w-5 h-5 text-purple-600" />
+            <PieChartIcon className="w-5 h-5 text-purple-600" />
             Journey Timeline Breakdown
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {analysisData.weeklyData.map((week) => (
-              <div
-                key={week.week}
-                className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg"
-              >
-                <div className="w-20 text-sm font-medium text-gray-700">
-                  {week.week}
-                </div>
-                <div className="flex-1 grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <p className="text-xs text-gray-500">Triggers</p>
-                    <p className="text-sm font-semibold text-blue-600">
-                      {week.triggers}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500">Engagement</p>
-                    <p className="text-sm font-semibold text-green-600">
-                      {week.engagement}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500">Conversion</p>
-                    <p className="text-sm font-semibold text-purple-600">
-                      {week.conversion}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ChartContainer config={timelineChartConfig} className="h-[300px]">
+            <AreaChart
+              data={analysisData.weeklyData}
+              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="week"
+                tick={{ fontSize: 12 }}
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis
+                tick={{ fontSize: 12 }}
+                tickLine={false}
+                axisLine={false}
+              />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Area
+                type="monotone"
+                dataKey="triggers"
+                stackId="1"
+                stroke="#3b82f6"
+                fill="#3b82f6"
+                fillOpacity={0.6}
+              />
+              <Area
+                type="monotone"
+                dataKey="engagement"
+                stackId="1"
+                stroke="#10b981"
+                fill="#10b981"
+                fillOpacity={0.6}
+              />
+              <Area
+                type="monotone"
+                dataKey="conversion"
+                stackId="1"
+                stroke="#8b5cf6"
+                fill="#8b5cf6"
+                fillOpacity={0.6}
+              />
+            </AreaChart>
+          </ChartContainer>
         </CardContent>
       </Card>
 

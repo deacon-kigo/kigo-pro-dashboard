@@ -12,6 +12,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  ResponsiveContainer,
+} from "recharts";
+import {
   Rocket,
   Activity,
   TrendingUp,
@@ -20,7 +38,7 @@ import {
   Target,
   CheckCircle,
   BarChart3,
-  PieChart,
+  PieChart as PieChartIcon,
   Calendar,
   Globe,
   Heart,
@@ -95,24 +113,55 @@ export default function CampaignLaunchUI({
     {
       name: "Moving Logistics",
       current: currentCustomers.phase1,
-      color: "bg-blue-500",
+      color: "#3b82f6",
     },
     {
       name: "Travel & Stay",
       current: currentCustomers.phase2,
-      color: "bg-green-500",
+      color: "#10b981",
     },
     {
       name: "Home Setup",
       current: currentCustomers.phase3,
-      color: "bg-purple-500",
+      color: "#8b5cf6",
     },
     {
       name: "Local Integration",
       current: currentCustomers.phase4,
-      color: "bg-orange-500",
+      color: "#f59e0b",
     },
   ];
+
+  // Chart configurations
+  const phaseChartConfig = {
+    phase1: {
+      label: "Moving Logistics",
+      color: "#3b82f6",
+    },
+    phase2: {
+      label: "Travel & Stay",
+      color: "#10b981",
+    },
+    phase3: {
+      label: "Home Setup",
+      color: "#8b5cf6",
+    },
+    phase4: {
+      label: "Local Integration",
+      color: "#f59e0b",
+    },
+  };
+
+  const revenueChartConfig = {
+    immediate: {
+      label: "Immediate Revenue",
+      color: "#3b82f6",
+    },
+    ltv: {
+      label: "LTV Enhancement",
+      color: "#10b981",
+    },
+  };
 
   return (
     <div className="space-y-6">
@@ -237,44 +286,69 @@ export default function CampaignLaunchUI({
             </Card>
           </div>
 
-          {/* Phase Distribution */}
+          {/* Phase Distribution Chart */}
           <Card>
             <CardHeader>
               <CardTitle className="text-base font-semibold flex items-center gap-2">
-                <PieChart className="w-5 h-5 text-blue-600" />
+                <PieChartIcon className="w-5 h-5 text-blue-600" />
                 Current Customer Distribution by Phase
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {phaseData.map((phase) => (
-                  <div key={phase.name} className="flex items-center gap-4">
-                    <div className="w-24 text-sm font-medium text-gray-700">
-                      {phase.name}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm text-gray-600">
-                          {phase.current} customers
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <ChartContainer config={phaseChartConfig} className="h-[250px]">
+                  <PieChart>
+                    <Pie
+                      data={phaseData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="current"
+                      label={({ name, percent }) =>
+                        `${name}: ${(percent * 100).toFixed(0)}%`
+                      }
+                      labelLine={false}
+                    >
+                      {phaseData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <ChartTooltip
+                      content={<ChartTooltipContent />}
+                      formatter={(value, name) => [`${value} customers`, name]}
+                    />
+                  </PieChart>
+                </ChartContainer>
+                <div className="space-y-3">
+                  {phaseData.map((phase) => (
+                    <div
+                      key={phase.name}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-4 h-4 rounded-full"
+                          style={{ backgroundColor: phase.color }}
+                        />
+                        <span className="text-sm font-medium text-gray-900">
+                          {phase.name}
                         </span>
-                        <span className="text-sm font-bold text-gray-700">
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-gray-900">
+                          {phase.current}
+                        </p>
+                        <p className="text-xs text-gray-500">
                           {Math.round(
                             (phase.current / campaignStats.totalActive) * 100
                           )}
                           %
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                          className={`${phase.color} h-2 rounded-full transition-all duration-1000`}
-                          style={{
-                            width: `${(phase.current / campaignStats.totalActive) * 100}%`,
-                          }}
-                        />
+                        </p>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>

@@ -12,6 +12,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
+import {
   Home,
   ShoppingBag,
   GraduationCap,
@@ -106,6 +120,23 @@ export default function JourneyDiscoveryUI({
   };
 
   const currentSelection = localSelectedJourney || selectedJourney;
+
+  // Chart configuration
+  const revenueChartConfig = {
+    revenue: {
+      label: "Monthly Revenue",
+      color: "#3b82f6",
+    },
+  };
+
+  // Prepare chart data
+  const chartData = JOURNEY_OPPORTUNITIES.map((journey) => ({
+    name: journey.title.replace(" + ", " &\n"),
+    revenue: parseInt(journey.monthlyRevenue.replace(/[^0-9]/g, "")),
+    customers: journey.customers,
+    confidence: journey.confidence,
+    color: journey.color.replace("bg-", "#").replace("-500", ""),
+  }));
 
   return (
     <div className="space-y-6">
@@ -250,6 +281,52 @@ export default function JourneyDiscoveryUI({
           );
         })}
       </div>
+
+      {/* Revenue Comparison Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base font-semibold flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-blue-600" />
+            Monthly Revenue Potential Comparison
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer config={revenueChartConfig} className="h-[300px]">
+            <BarChart
+              data={chartData}
+              margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="name"
+                tick={{ fontSize: 11 }}
+                tickLine={false}
+                axisLine={false}
+                interval={0}
+                angle={-45}
+                textAnchor="end"
+                height={80}
+              />
+              <YAxis
+                tick={{ fontSize: 12 }}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(value) => `$${value}K`}
+              />
+              <ChartTooltip
+                content={<ChartTooltipContent />}
+                formatter={(value, name) => [`$${value}K`, "Monthly Revenue"]}
+                labelFormatter={(label) => `Journey: ${label}`}
+              />
+              <Bar dataKey="revenue" radius={[4, 4, 0, 0]} fillOpacity={0.8}>
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color || "#3b82f6"} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ChartContainer>
+        </CardContent>
+      </Card>
 
       {/* Summary Stats */}
       <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
