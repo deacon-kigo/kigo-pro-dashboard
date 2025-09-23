@@ -21,32 +21,27 @@ export function IOSHomeScreen({ onAppOpen }: IOSHomeScreenProps) {
         />
       </div>
 
-      {/* ABC FI App Icon Overlay (clickable) */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="grid grid-cols-4 gap-4 p-6 w-full h-full">
-          {/* Position ABC FI app icon under Settings - bottom left area */}
-          <div className="col-start-1 row-start-5 flex justify-center">
-            <button onClick={onAppOpen} className="relative group">
-              {/* ABC FI App Icon */}
-              <div className="w-16 h-16 rounded-2xl shadow-lg transform transition-all duration-200 group-active:scale-95 group-hover:shadow-xl overflow-hidden">
-                <Image
-                  src="/illustration/abc-fi/asset/abc-fi-app-icon.png"
-                  alt="ABC FI App"
-                  width={64}
-                  height={64}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-
-              {/* App Name */}
-              <div className="mt-1 text-center">
-                <span className="text-white text-xs font-medium drop-shadow-sm">
-                  ABC FI
-                </span>
-              </div>
-            </button>
+      {/* ABC FI App Icon Overlay (clickable) - Positioned under Settings */}
+      <div className="absolute left-8 bottom-32">
+        <button onClick={onAppOpen} className="relative group">
+          {/* ABC FI App Icon */}
+          <div className="w-16 h-16 rounded-2xl shadow-lg transform transition-all duration-200 group-active:scale-95 group-hover:shadow-xl overflow-hidden">
+            <Image
+              src="/illustration/abc-fi/asset/abc-fi-app-icon.png"
+              alt="ABC FI App"
+              width={64}
+              height={64}
+              className="w-full h-full object-cover"
+            />
           </div>
-        </div>
+
+          {/* App Name */}
+          <div className="mt-1 text-center">
+            <span className="text-white text-xs font-medium drop-shadow-sm">
+              ABC FI
+            </span>
+          </div>
+        </button>
       </div>
 
       {/* iOS Status Bar */}
