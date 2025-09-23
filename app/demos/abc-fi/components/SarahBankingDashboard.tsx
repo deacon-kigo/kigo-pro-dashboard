@@ -71,7 +71,7 @@ export function SarahBankingDashboard({
           </h1>
         </div>
 
-        {/* Notification Banner */}
+        {/* Offers Notification */}
         {showNotification && (
           <div className="absolute top-4 left-4 right-4 z-50 animate-fade-in">
             <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 flex items-center gap-3 shadow-lg border border-blue-200">
