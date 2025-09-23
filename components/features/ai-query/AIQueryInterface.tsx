@@ -8,7 +8,6 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { useChat } from "@ai-sdk/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -152,14 +151,12 @@ const QUERY_SUGGESTIONS: QuerySuggestion[] = [
 interface AIQueryInterfaceProps {
   isOpen: boolean;
   onClose: () => void;
-  mode?: "copilotkit" | "vercel-ai";
   apiEndpoint?: string;
 }
 
 export default function AIQueryInterface({
   isOpen,
   onClose,
-  mode = "vercel-ai",
   apiEndpoint = "/api/ai/chat",
 }: AIQueryInterfaceProps) {
   // Vercel AI SDK useChat hook
@@ -227,9 +224,8 @@ export default function AIQueryInterface({
     Map<string, GenerativeUIComponent>
   >(new Map());
   const [localMessages, setLocalMessages] = useState<any[]>([]);
-
-  // Debug: Log useChat hook values (remove in production)
-  // console.log('useChat values:', { input, handleInputChange: !!handleInputChange, handleSubmit: !!handleSubmit, messages: messages?.length || 0, isLoading });
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingText, setTypingText] = useState("");
 
   // Function to render generative UI components
   const renderGenerativeUI = (component: GenerativeUIComponent) => {
@@ -253,6 +249,29 @@ export default function AIQueryInterface({
       default:
         return null;
     }
+  };
+
+  // Typing animation function
+  const typeMessage = (text: string, callback?: () => void) => {
+    setIsTyping(true);
+    setTypingText("");
+
+    let index = 0;
+    const typeInterval = setInterval(() => {
+      if (index < text.length) {
+        setTypingText(text.slice(0, index + 1));
+        index++;
+        // Auto-scroll during typing
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }, 50);
+      } else {
+        clearInterval(typeInterval);
+        setIsTyping(false);
+        setTypingText("");
+        callback?.();
+      }
+    }, 30); // Adjust speed here
   };
 
   // Use local state if useChat input is not available
@@ -384,14 +403,22 @@ export default function AIQueryInterface({
           };
         }
 
-        // Update local messages and components
-        setLocalMessages((prev) => [...prev, userMessage, assistantMessage]);
-        setGenerativeComponents((prev) =>
-          new Map(prev).set(assistantMessage.id, mockUI)
-        );
+        // Add user message immediately
+        setLocalMessages((prev) => [...prev, userMessage]);
 
-        // Clear input
+        // Clear input immediately
         currentSetInput("");
+
+        // Start typing animation for AI response
+        setTimeout(() => {
+          typeMessage(assistantMessage.content, () => {
+            // Add the complete AI message after typing is done
+            setLocalMessages((prev) => [...prev, assistantMessage]);
+            setGenerativeComponents((prev) =>
+              new Map(prev).set(assistantMessage.id, mockUI)
+            );
+          });
+        }, 300);
       }
     });
 
@@ -718,9 +745,14 @@ export default function AIQueryInterface({
                         <div
                           className={`flex-1 rounded-lg p-3 ${
                             message.role === "user"
-                              ? "bg-blue-50 border border-blue-200"
+                              ? "border border-blue-200 shadow-sm"
                               : "bg-white border border-gray-200 shadow-sm"
                           }`}
+                          style={
+                            message.role === "user"
+                              ? { backgroundColor: "#dbeafe" }
+                              : {}
+                          }
                         >
                           <div className="flex items-center gap-2 mb-2">
                             <span className="text-sm font-medium text-gray-900">
@@ -729,9 +761,7 @@ export default function AIQueryInterface({
                                 : "AI Marketing Co-pilot"}
                             </span>
                             <Badge variant="outline" className="text-xs">
-                              {mode === "vercel-ai"
-                                ? "Vercel AI"
-                                : "CopilotKit"}
+                              AI Assistant
                             </Badge>
                           </div>
 
@@ -801,6 +831,31 @@ export default function AIQueryInterface({
                         </div>
                       </div>
                     ))}
+
+                    {/* Typing Indicator */}
+                    {isTyping && (
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-purple-100 to-blue-100">
+                          <Bot className="w-4 h-4 text-purple-600" />
+                        </div>
+                        <div className="flex-1 rounded-lg p-3 bg-white border border-gray-200 shadow-sm">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm font-medium text-gray-900">
+                              AI Marketing Co-pilot
+                            </span>
+                            <Badge variant="outline" className="text-xs">
+                              AI Assistant
+                            </Badge>
+                          </div>
+                          <div className="prose prose-sm max-w-none">
+                            <div className="text-sm text-gray-700 whitespace-pre-wrap">
+                              {typingText}
+                              <span className="animate-pulse">|</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Scroll anchor */}
                     <div ref={messagesEndRef} />
