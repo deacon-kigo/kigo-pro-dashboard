@@ -20,7 +20,7 @@ export function IOSHomeScreen({ onAppOpen }: IOSHomeScreenProps) {
 
   return (
     <div
-      className={`absolute inset-0 w-full h-full bg-gradient-to-b from-blue-900 via-purple-900 to-indigo-900 z-50 transition-opacity duration-300 ${
+      className={`absolute inset-0 w-full h-full bg-gradient-to-b from-blue-900 via-purple-900 to-indigo-900 z-50 transition-opacity duration-150 ${
         isExiting ? "opacity-0" : "opacity-100"
       }`}
     >
