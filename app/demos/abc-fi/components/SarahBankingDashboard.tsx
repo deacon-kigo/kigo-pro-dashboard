@@ -1,8 +1,10 @@
 "use client";
 
+import React from "react";
 import { Card } from "./ui/Card";
 import { Button } from "./ui/Button";
 import { MobileLayout } from "./MobileLayout";
+import { ConfettiEffect } from "./ConfettiEffect";
 
 interface SarahBankingDashboardProps {
   showNotification: boolean;
@@ -17,6 +19,16 @@ export function SarahBankingDashboard({
   onNotificationDismiss,
   onNavigate,
 }: SarahBankingDashboardProps) {
+  const [showConfetti, setShowConfetti] = React.useState(false);
+
+  const handleNotificationClick = () => {
+    setShowConfetti(true);
+    // Navigate to relocation center after confetti starts
+    setTimeout(() => {
+      onNotificationClick();
+    }, 500);
+  };
+
   return (
     <MobileLayout>
       <div className="relative animate-fade-in">
@@ -72,31 +84,11 @@ export function SarahBankingDashboard({
 
         {/* Offers Notification */}
         {showNotification && (
-          <div className="absolute top-4 left-4 right-4 z-50 animate-fade-in">
-            <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 flex items-center gap-3 shadow-lg border border-blue-200">
-              {/* Confetti Effect */}
-              <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-xl">
-                {[...Array(8)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="absolute w-1.5 h-1.5 animate-bounce"
-                    style={{
-                      left: `${Math.random() * 100}%`,
-                      top: `${Math.random() * 50}%`,
-                      backgroundColor: [
-                        "#3b82f6",
-                        "#10b981",
-                        "#f59e0b",
-                        "#ef4444",
-                        "#8b5cf6",
-                      ][Math.floor(Math.random() * 5)],
-                      animationDelay: `${Math.random() * 1}s`,
-                      animationDuration: `${1 + Math.random()}s`,
-                    }}
-                  />
-                ))}
-              </div>
-
+          <div className="mx-6 my-4 animate-fade-in">
+            <div
+              className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:from-blue-100 hover:to-blue-200 transition-all duration-200 active:scale-98 shadow-sm border border-blue-200"
+              onClick={handleNotificationClick}
+            >
               {/* Icon */}
               <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
                 <svg
@@ -109,13 +101,13 @@ export function SarahBankingDashboard({
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                    d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
                   />
                 </svg>
               </div>
 
               {/* Content */}
-              <div className="flex-1" onClick={onNotificationClick}>
+              <div className="flex-1">
                 <h3 className="font-semibold text-blue-900 text-sm">
                   Tap into the all new offers experience
                 </h3>
@@ -126,7 +118,10 @@ export function SarahBankingDashboard({
 
               {/* Dismiss Button */}
               <button
-                onClick={onNotificationDismiss}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onNotificationDismiss?.();
+                }}
                 className="p-1 text-blue-600 hover:text-blue-800 transition-colors"
               >
                 <svg
@@ -506,6 +501,12 @@ export function SarahBankingDashboard({
             </div>
           </div>
         )}
+
+        {/* Confetti Effect */}
+        <ConfettiEffect
+          isActive={showConfetti}
+          onComplete={() => setShowConfetti(false)}
+        />
 
         <style jsx>{`
           @keyframes slideDown {
