@@ -19,7 +19,7 @@ export function SarahBankingDashboard({
 }: SarahBankingDashboardProps) {
   return (
     <MobileLayout>
-      <div className="relative">
+      <div className="relative animate-fade-in">
         {/* Header */}
         <div className="px-6 py-6 flex items-center justify-between">
           <div className="flex items-center gap-4">

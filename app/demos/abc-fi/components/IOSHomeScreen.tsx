@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 
 interface IOSHomeScreenProps {
@@ -8,8 +8,22 @@ interface IOSHomeScreenProps {
 }
 
 export function IOSHomeScreen({ onAppOpen }: IOSHomeScreenProps) {
+  const [isExiting, setIsExiting] = useState(false);
+
+  const handleAppOpen = () => {
+    setIsExiting(true);
+    // Delay the actual transition to allow fade out
+    setTimeout(() => {
+      onAppOpen();
+    }, 300);
+  };
+
   return (
-    <div className="absolute inset-0 w-full h-full bg-gradient-to-b from-blue-900 via-purple-900 to-indigo-900 z-50">
+    <div
+      className={`absolute inset-0 w-full h-full bg-gradient-to-b from-blue-900 via-purple-900 to-indigo-900 z-50 transition-opacity duration-300 ${
+        isExiting ? "opacity-0" : "opacity-100"
+      }`}
+    >
       {/* iOS Home Screen Image */}
       <div className="absolute inset-0">
         <Image
@@ -23,7 +37,7 @@ export function IOSHomeScreen({ onAppOpen }: IOSHomeScreenProps) {
 
       {/* ABC FI App Icon Overlay (clickable) - Positioned under Settings */}
       <div className="absolute left-4 bottom-44">
-        <button onClick={onAppOpen} className="relative group">
+        <button onClick={handleAppOpen} className="relative group">
           {/* ABC FI App Icon */}
           <div className="w-16 h-16 rounded-2xl shadow-lg transform transition-all duration-200 group-active:scale-95 group-hover:shadow-xl overflow-hidden">
             <Image
