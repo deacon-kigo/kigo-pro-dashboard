@@ -316,7 +316,7 @@ export default function AIQueryInterface({
   };
 
   // Handle suggestion clicks for interactive demo flow
-  const handleSuggestionClick = (suggestion: string) => {
+  const handleDemoSuggestionClick = (suggestion: string) => {
     // Clear current suggestions
     setCurrentSuggestions([]);
 
@@ -975,7 +975,7 @@ export default function AIQueryInterface({
                               <button
                                 key={index}
                                 onClick={() =>
-                                  handleSuggestionClick(suggestion)
+                                  handleDemoSuggestionClick(suggestion)
                                 }
                                 className="px-3 py-2 text-sm bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg hover:from-blue-100 hover:to-purple-100 hover:border-blue-300 transition-all duration-200 text-blue-700 font-medium"
                               >
