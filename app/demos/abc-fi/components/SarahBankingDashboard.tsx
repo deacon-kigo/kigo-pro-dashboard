@@ -26,7 +26,7 @@ export function SarahBankingDashboard({
             <img
               src="/logos/abc-fi-logo.png"
               alt="ABC FI"
-              className="w-16 h-16 object-contain"
+              className="w-20 h-20 object-contain"
             />
           </div>
           <div className="flex items-center gap-3">
