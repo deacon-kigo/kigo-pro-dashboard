@@ -22,11 +22,11 @@ export function SarahBankingDashboard({
       <div className="relative animate-fade-in">
         {/* Header */}
         <div className="px-6 py-4 flex items-center justify-between bg-white">
-          <div className="flex-1 flex justify-center">
+          <div className="flex items-center">
             <img
               src="/logos/abc-fi-logo.png"
               alt="ABC FI"
-              className="w-12 h-12 object-contain"
+              className="w-16 h-16 object-contain"
             />
           </div>
           <div className="flex items-center gap-3">
