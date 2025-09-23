@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { IOSHomeScreen } from "../demos/abc-fi/components/IOSHomeScreen";
 import { SarahBankingDashboard } from "../demos/abc-fi/components/SarahBankingDashboard";
 import { PushNotificationScreen } from "../demos/abc-fi/components/PushNotificationScreen";
 import { KigoMarketplace } from "../demos/abc-fi/components/KigoMarketplace";
@@ -10,6 +11,7 @@ import { ReceiptScanning } from "../demos/abc-fi/components/ReceiptScanning";
 import { ValueSummary } from "../demos/abc-fi/components/ValueSummary";
 
 type DemoStep =
+  | "ios-homescreen"
   | "banking-dashboard"
   | "push-notification"
   | "kigo-marketplace"
@@ -19,7 +21,7 @@ type DemoStep =
   | "value-summary";
 
 export default function ABCFIDemoStandalone() {
-  const [currentStep, setCurrentStep] = useState<DemoStep>("banking-dashboard");
+  const [currentStep, setCurrentStep] = useState<DemoStep>("ios-homescreen");
   const [showNotification, setShowNotification] = useState(false);
   const [notificationDismissed, setNotificationDismissed] = useState(false);
   const [showDevNav, setShowDevNav] = useState(false);
@@ -75,6 +77,12 @@ export default function ABCFIDemoStandalone() {
 
   const renderCurrentStep = () => {
     switch (currentStep) {
+      case "ios-homescreen":
+        return (
+          <IOSHomeScreen
+            onAppOpen={() => setCurrentStep("banking-dashboard")}
+          />
+        );
       case "banking-dashboard":
         return (
           <SarahBankingDashboard
@@ -128,6 +136,7 @@ export default function ABCFIDemoStandalone() {
           {showDevNav && (
             <div className="flex flex-col gap-2 w-32">
               {[
+                { key: "ios-homescreen", label: "0. iOS Home" },
                 { key: "banking-dashboard", label: "1. Dashboard" },
                 { key: "kigo-marketplace", label: "2. Marketplace" },
                 { key: "lightning-deals", label: "3. Lightning" },
