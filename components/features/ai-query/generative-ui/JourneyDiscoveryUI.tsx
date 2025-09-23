@@ -54,6 +54,7 @@ interface JourneyOpportunity {
 interface JourneyDiscoveryUIProps {
   onJourneySelect?: (journey: JourneyOpportunity) => void;
   selectedJourney?: string | null;
+  onAnalyzeJourney?: (journeyId: string) => void;
 }
 
 const JOURNEY_OPPORTUNITIES: JourneyOpportunity[] = [
@@ -109,6 +110,7 @@ const JOURNEY_OPPORTUNITIES: JourneyOpportunity[] = [
 export default function JourneyDiscoveryUI({
   onJourneySelect,
   selectedJourney,
+  onAnalyzeJourney,
 }: JourneyDiscoveryUIProps) {
   const [localSelectedJourney, setLocalSelectedJourney] = useState<
     string | null
@@ -267,8 +269,8 @@ export default function JourneyDiscoveryUI({
                       className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                       onClick={(e) => {
                         e.stopPropagation();
-                        // This would trigger the next step in the workflow
-                        console.log("Analyze journey pattern:", journey.id);
+                        // Trigger the next step in the workflow
+                        onAnalyzeJourney?.(journey.id);
                       }}
                     >
                       Analyze Journey Pattern
