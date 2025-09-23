@@ -14,6 +14,11 @@ const generativeUISchema = z.object({
     "campaign-builder",
     "analytics-dashboard",
     "customer-insights",
+    "journey-discovery",
+    "pattern-analysis",
+    "campaign-architecture",
+    "lightning-strategy",
+    "campaign-launch",
   ]),
   props: z.record(z.any()),
 });
@@ -23,7 +28,48 @@ function analyzePromptForUI(
 ): { type: string; props: any } | null {
   const lowerPrompt = prompt.toLowerCase();
 
-  // Campaign creation patterns
+  // Tucker Williams Journey Discovery Workflow
+  if (lowerPrompt.includes("discover") && lowerPrompt.includes("journey")) {
+    return {
+      type: "journey-discovery",
+      props: {},
+    };
+  }
+
+  if (lowerPrompt.includes("analyze") && lowerPrompt.includes("pattern")) {
+    return {
+      type: "pattern-analysis",
+      props: {
+        journeyType: "Home Purchase + Relocation",
+      },
+    };
+  }
+
+  if (lowerPrompt.includes("architecture") || lowerPrompt.includes("partner")) {
+    return {
+      type: "campaign-architecture",
+      props: {},
+    };
+  }
+
+  if (
+    lowerPrompt.includes("lightning") ||
+    lowerPrompt.includes("optimization")
+  ) {
+    return {
+      type: "lightning-strategy",
+      props: {},
+    };
+  }
+
+  if (lowerPrompt.includes("launch") || lowerPrompt.includes("performance")) {
+    return {
+      type: "campaign-launch",
+      props: {},
+    };
+  }
+
+  // Original campaign creation patterns
   if (
     lowerPrompt.includes("create") &&
     (lowerPrompt.includes("campaign") || lowerPrompt.includes("targeting"))
@@ -49,7 +95,6 @@ function analyzePromptForUI(
   // Analytics patterns
   if (
     lowerPrompt.includes("analytics") ||
-    lowerPrompt.includes("performance") ||
     lowerPrompt.includes("revenue") ||
     lowerPrompt.includes("roi")
   ) {
@@ -157,30 +202,39 @@ export async function POST(req: Request) {
 
     const result = streamText({
       model: openai("gpt-4o"),
-      system: `You are an AI Marketing Co-pilot for Kigo Pro, a sophisticated marketing platform. You help marketing managers with:
+      system: `You are an AI Marketing Co-pilot for Kigo Pro, specifically designed to help Tucker Williams (ABC FI Marketing Manager) with sophisticated campaign creation and customer journey analysis.
 
-1. **Campaign Creation**: Design targeted campaigns with specific audiences, offers, and mechanics
-2. **Customer Analysis**: Analyze behavioral patterns, segments, and opportunities  
-3. **Revenue Optimization**: Identify high-value opportunities and ROI projections
-4. **Strategic Recommendations**: Provide tactical and strategic marketing advice
+**Your Core Capabilities**:
+1. **Journey Discovery**: Analyze transaction data to identify high-value customer journey patterns
+2. **Pattern Analysis**: Deep-dive into 12-week customer journeys with engagement rates and financial impact
+3. **Campaign Architecture**: Design phase-based campaigns with national and local partner networks
+4. **Lightning Strategy**: Create AI-optimized scarcity offers with performance enhancement
+5. **Campaign Launch**: Real-time performance tracking with business impact metrics
 
-**Context**: You have access to customer data showing:
-- 34,000+ active customers across various segments
-- Journey opportunities in home buying, DIY, education, food & beverage
-- Revenue potential of $2.9M+ in identified opportunities
-- Behavioral patterns for millennials, families, urban professionals
+**ABC FI Context**: You have access to:
+- 567 customers/month in home purchase + relocation journey (94% confidence)
+- $127-245 revenue per customer potential
+- $72K-139K monthly revenue opportunity  
+- 15 national partners + 12,000+ local merchants
+- 18 months of transaction data for pattern analysis
+
+**Tucker Williams Profile**:
+- Role: Marketing Manager, ABC FI Loyalty Team
+- Goal: Create revenue-generating customer campaigns
+- KPIs: Customer engagement, revenue per campaign, LTV enhancement
+- Tech Level: Comfortable with marketing tools
 
 **Response Style**:
-- Be specific with numbers, timelines, and actionable recommendations
-- Include revenue projections and confidence scores when relevant
-- Provide clear next steps and implementation guidance
-- Use emojis and formatting for readability
-- Focus on practical, implementable solutions
+- Address Tucker directly as a marketing professional
+- Include specific revenue projections and confidence scores
+- Reference ABC FI's customer data and business context
+- Provide actionable next steps for campaign implementation
+- Use professional marketing terminology
+- Focus on ROI and business impact metrics
 
-${uiComponent ? `**IMPORTANT**: An interactive UI component will be generated alongside your response. Keep your text response concise and complementary to the UI component.` : ""}
+${uiComponent ? `**IMPORTANT**: An interactive UI component will be generated alongside your response. Keep your text response concise and complementary to the UI component that shows detailed data visualizations.` : ""}
 
-**Example Query**: "Create a campaign targeting first-time home buyers with HELOC offers"
-**Your Response Should Include**: Target audience size, offer structure, revenue projections, timeline, and next steps.`,
+**Example**: When Tucker asks "Discover high-value customer journey opportunities", show the 4 journey patterns with revenue potential, confidence scores, and customer volumes.`,
       messages,
       temperature: 0.7,
       maxTokens: 1000,
