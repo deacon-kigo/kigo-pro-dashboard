@@ -37,6 +37,11 @@ import {
   CampaignBuilderUI,
   AnalyticsDashboardUI,
   CustomerInsightsUI,
+  JourneyDiscoveryUI,
+  PatternAnalysisUI,
+  CampaignArchitectureUI,
+  LightningStrategyUI,
+  CampaignLaunchUI,
   type GenerativeUIComponent,
 } from "./generative-ui";
 
@@ -66,13 +71,47 @@ interface QueryResult {
 }
 
 const QUERY_SUGGESTIONS: QuerySuggestion[] = [
+  // Tucker Williams Journey Discovery Workflow
   {
-    id: "home-buyers-heloc",
-    text: "Create a campaign targeting first-time home buyers with HELOC offers",
+    id: "discover-journeys",
+    text: "Discover high-value customer journey opportunities",
+    category: "insights",
+    icon: <Brain className="w-4 h-4" />,
+    example:
+      "Show me AI-discovered patterns from transaction data with revenue projections",
+  },
+  {
+    id: "home-purchase-journey",
+    text: "Analyze the home purchase and relocation journey pattern",
+    category: "insights",
+    icon: <TrendingUp className="w-4 h-4" />,
+    example:
+      "Deep-dive into the 12-week journey with engagement rates and financial impact",
+  },
+  {
+    id: "build-campaign-architecture",
+    text: "Build campaign architecture for home purchase journey",
     category: "campaign",
     icon: <Target className="w-4 h-4" />,
-    example: "Include local moving services and home improvement offers",
+    example: "Phase-based structure with national and local partner networks",
   },
+  {
+    id: "lightning-offers-strategy",
+    text: "Design lightning offers strategy with AI optimization",
+    category: "campaign",
+    icon: <Zap className="w-4 h-4" />,
+    example:
+      "Phase-specific timing with scarcity management and performance enhancement",
+  },
+  {
+    id: "launch-campaign",
+    text: "Launch campaign with real-time performance tracking",
+    category: "campaign",
+    icon: <Target className="w-4 h-4" />,
+    example:
+      "Live dashboard with customer progression and business impact metrics",
+  },
+  // Original suggestions for variety
   {
     id: "back-to-school",
     text: "Design a back-to-school campaign for families with children",
@@ -95,13 +134,6 @@ const QUERY_SUGGESTIONS: QuerySuggestion[] = [
     example: "Show preferences, frequency, and seasonal trends",
   },
   {
-    id: "customer-journeys",
-    text: "Identify high-value customer journey opportunities",
-    category: "insights",
-    icon: <TrendingUp className="w-4 h-4" />,
-    example: "Find patterns in transaction data and life events",
-  },
-  {
     id: "revenue-forecast",
     text: "What are our biggest revenue opportunities this quarter?",
     category: "analytics",
@@ -109,25 +141,11 @@ const QUERY_SUGGESTIONS: QuerySuggestion[] = [
     example: "Include ROI projections and implementation timelines",
   },
   {
-    id: "campaign-performance",
-    text: "Analyze performance of current active campaigns",
-    category: "analytics",
-    icon: <DollarSign className="w-4 h-4" />,
-    example: "Show engagement rates, conversion, and revenue impact",
-  },
-  {
     id: "family-targeting",
     text: "Set up targeting for high-value suburban families",
     category: "targeting",
     icon: <Users className="w-4 h-4" />,
     example: "Focus on household income, family size, and location",
-  },
-  {
-    id: "urban-professionals",
-    text: "Create audience segments for urban professionals",
-    category: "targeting",
-    icon: <Users className="w-4 h-4" />,
-    example: "Target based on income, commute patterns, and lifestyle",
   },
 ];
 
@@ -222,6 +240,16 @@ export default function AIQueryInterface({
         return <AnalyticsDashboardUI {...component.props} />;
       case "customer-insights":
         return <CustomerInsightsUI {...component.props} />;
+      case "journey-discovery":
+        return <JourneyDiscoveryUI {...component.props} />;
+      case "pattern-analysis":
+        return <PatternAnalysisUI {...component.props} />;
+      case "campaign-architecture":
+        return <CampaignArchitectureUI {...component.props} />;
+      case "lightning-strategy":
+        return <LightningStrategyUI {...component.props} />;
+      case "campaign-launch":
+        return <CampaignLaunchUI {...component.props} />;
       default:
         return null;
     }
@@ -256,28 +284,105 @@ export default function AIQueryInterface({
           content: currentInput,
         };
 
-        // For demo purposes, simulate a response with generative UI
-        const assistantMessage = {
-          id: Date.now().toString() + "-assistant",
-          role: "assistant" as const,
-          content:
-            "I'll help you create that campaign! Here's an interactive campaign builder based on your requirements.",
-        };
+        // For demo purposes, simulate a response with generative UI based on Tucker's workflow
+        let assistantMessage: any;
+        let mockUI: any;
 
-        // Add mock UI component
-        const mockUI = {
-          type: "campaign-builder" as const,
-          props: {
-            campaignType: "First-Time Home Buyer Campaign",
-            targetAudience: "First-time home buyers",
-            offers: [
-              "HELOC Special Rate",
-              "Moving Day Package",
-              "Local Business Partnerships",
-              "First-Time Buyer Bonus",
-            ],
-          },
-        };
+        // Determine response based on user input
+        if (
+          currentInput.toLowerCase().includes("discover") &&
+          currentInput.toLowerCase().includes("journey")
+        ) {
+          assistantMessage = {
+            id: Date.now().toString() + "-assistant",
+            role: "assistant" as const,
+            content:
+              "I've analyzed ABC FI's transaction data and discovered several high-value customer journey patterns. Here are the opportunities ranked by revenue potential and confidence:",
+          };
+          mockUI = {
+            type: "journey-discovery" as const,
+            props: {},
+          };
+        } else if (
+          currentInput.toLowerCase().includes("analyze") &&
+          currentInput.toLowerCase().includes("pattern")
+        ) {
+          assistantMessage = {
+            id: Date.now().toString() + "-assistant",
+            role: "assistant" as const,
+            content:
+              "Here's the detailed journey pattern analysis for the Home Purchase + Relocation journey. This shows the 12-week customer timeline with engagement rates and financial impact projections:",
+          };
+          mockUI = {
+            type: "pattern-analysis" as const,
+            props: {
+              journeyType: "Home Purchase + Relocation",
+            },
+          };
+        } else if (
+          currentInput.toLowerCase().includes("architecture") ||
+          currentInput.toLowerCase().includes("partner")
+        ) {
+          assistantMessage = {
+            id: Date.now().toString() + "-assistant",
+            role: "assistant" as const,
+            content:
+              "I've designed a phase-based campaign architecture that leverages our full partner network. Each phase targets customers at different stages of their relocation journey:",
+          };
+          mockUI = {
+            type: "campaign-architecture" as const,
+            props: {},
+          };
+        } else if (
+          currentInput.toLowerCase().includes("lightning") ||
+          currentInput.toLowerCase().includes("optimization")
+        ) {
+          assistantMessage = {
+            id: Date.now().toString() + "-assistant",
+            role: "assistant" as const,
+            content:
+              "Here's the AI-optimized lightning offers strategy. This approach uses phase-specific timing and scarcity management to boost engagement and revenue:",
+          };
+          mockUI = {
+            type: "lightning-strategy" as const,
+            props: {},
+          };
+        } else if (
+          currentInput.toLowerCase().includes("launch") ||
+          currentInput.toLowerCase().includes("performance")
+        ) {
+          assistantMessage = {
+            id: Date.now().toString() + "-assistant",
+            role: "assistant" as const,
+            content:
+              "Campaign launched successfully! Here's your real-time performance dashboard showing live customer progression and business impact metrics:",
+          };
+          mockUI = {
+            type: "campaign-launch" as const,
+            props: {},
+          };
+        } else {
+          // Default fallback
+          assistantMessage = {
+            id: Date.now().toString() + "-assistant",
+            role: "assistant" as const,
+            content:
+              "I'll help you create that campaign! Here's an interactive campaign builder based on your requirements.",
+          };
+          mockUI = {
+            type: "campaign-builder" as const,
+            props: {
+              campaignType: "First-Time Home Buyer Campaign",
+              targetAudience: "First-time home buyers",
+              offers: [
+                "HELOC Special Rate",
+                "Moving Day Package",
+                "Local Business Partnerships",
+                "First-Time Buyer Bonus",
+              ],
+            },
+          };
+        }
 
         // Update local messages and components
         setLocalMessages((prev) => [...prev, userMessage, assistantMessage]);
