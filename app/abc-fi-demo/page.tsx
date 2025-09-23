@@ -112,11 +112,6 @@ export default function ABCFIDemoStandalone() {
     }
   };
 
-  // If iOS homescreen, render it fullscreen without any containers
-  if (currentStep === "ios-homescreen") {
-    return renderCurrentStep();
-  }
-
   return (
     <div
       className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center p-8"
