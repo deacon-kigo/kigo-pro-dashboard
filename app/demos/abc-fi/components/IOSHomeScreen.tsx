@@ -27,17 +27,15 @@ export function IOSHomeScreen({ onAppOpen }: IOSHomeScreenProps) {
           {/* Position ABC FI app icon under Settings - bottom left area */}
           <div className="col-start-1 row-start-5 flex justify-center">
             <button onClick={onAppOpen} className="relative group">
-              {/* High-Fidelity ABC FI App Icon */}
-              <div
-                className="w-16 h-16 rounded-2xl bg-blue-600 shadow-lg flex items-center justify-center transform transition-all duration-200 group-active:scale-95 group-hover:shadow-xl"
-                style={{ backgroundColor: "#2563eb" }}
-              >
-                {/* ABC FI Icon - Three ascending bars */}
-                <div className="flex items-end gap-1">
-                  <div className="w-2 h-6 bg-white rounded-sm"></div>
-                  <div className="w-2 h-8 bg-white rounded-sm"></div>
-                  <div className="w-2 h-10 bg-white rounded-sm"></div>
-                </div>
+              {/* ABC FI App Icon */}
+              <div className="w-16 h-16 rounded-2xl shadow-lg transform transition-all duration-200 group-active:scale-95 group-hover:shadow-xl overflow-hidden">
+                <Image
+                  src="/illustration/abc-fi/asset/abc-fi-app-icon.png"
+                  alt="ABC FI App"
+                  width={64}
+                  height={64}
+                  className="w-full h-full object-cover"
+                />
               </div>
 
               {/* App Name */}
