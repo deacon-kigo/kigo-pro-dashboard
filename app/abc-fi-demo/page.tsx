@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { IOSHomeScreen } from "../demos/abc-fi/components/IOSHomeScreen";
+import { SplashScreen } from "../demos/abc-fi/components/SplashScreen";
 import { SarahBankingDashboard } from "../demos/abc-fi/components/SarahBankingDashboard";
 import { PushNotificationScreen } from "../demos/abc-fi/components/PushNotificationScreen";
 import { KigoMarketplace } from "../demos/abc-fi/components/KigoMarketplace";
@@ -12,6 +13,7 @@ import { ValueSummary } from "../demos/abc-fi/components/ValueSummary";
 
 type DemoStep =
   | "ios-homescreen"
+  | "splash-screen"
   | "banking-dashboard"
   | "push-notification"
   | "kigo-marketplace"
@@ -79,8 +81,12 @@ export default function ABCFIDemoStandalone() {
     switch (currentStep) {
       case "ios-homescreen":
         return (
-          <IOSHomeScreen
-            onAppOpen={() => setCurrentStep("banking-dashboard")}
+          <IOSHomeScreen onAppOpen={() => setCurrentStep("splash-screen")} />
+        );
+      case "splash-screen":
+        return (
+          <SplashScreen
+            onSplashComplete={() => setCurrentStep("banking-dashboard")}
           />
         );
       case "banking-dashboard":
@@ -137,12 +143,13 @@ export default function ABCFIDemoStandalone() {
             <div className="flex flex-col gap-2 w-32">
               {[
                 { key: "ios-homescreen", label: "0. iOS Home" },
-                { key: "banking-dashboard", label: "1. Dashboard" },
-                { key: "kigo-marketplace", label: "2. Marketplace" },
-                { key: "lightning-deals", label: "3. Lightning" },
-                { key: "ai-chat", label: "4. AI Chat" },
-                { key: "receipt-scanning", label: "5. Receipt" },
-                { key: "value-summary", label: "6. Summary" },
+                { key: "splash-screen", label: "1. Splash" },
+                { key: "banking-dashboard", label: "2. Dashboard" },
+                { key: "kigo-marketplace", label: "3. Marketplace" },
+                { key: "lightning-deals", label: "4. Lightning" },
+                { key: "ai-chat", label: "5. AI Chat" },
+                { key: "receipt-scanning", label: "6. Receipt" },
+                { key: "value-summary", label: "7. Summary" },
               ].map(({ key, label }) => (
                 <button
                   key={key}
@@ -170,6 +177,7 @@ export default function ABCFIDemoStandalone() {
                 <span className="text-sm font-medium text-gray-700">
                   {currentStep === "ios-homescreen" &&
                     "Tap ABC FI app to start Sarah's journey"}
+                  {currentStep === "splash-screen" && "ABC FI app launching..."}
                   {currentStep === "banking-dashboard" &&
                     !showNotification &&
                     "Banking dashboard - notification coming..."}
