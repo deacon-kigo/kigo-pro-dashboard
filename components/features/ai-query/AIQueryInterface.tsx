@@ -198,6 +198,7 @@ export default function AIQueryInterface({
   const [currentStep, setCurrentStep] = useState<string | null>(null);
   const [selectedJourney, setSelectedJourney] = useState<string | null>(null);
   const [isRunningDemo, setIsRunningDemo] = useState(false);
+  const [currentSuggestions, setCurrentSuggestions] = useState<string[]>([]);
 
   // Function to render generative UI components
   const renderGenerativeUI = (component: GenerativeUIComponent) => {
@@ -283,94 +284,102 @@ export default function AIQueryInterface({
     }
   };
 
-  // Complete campaign demo flow - visual, data-driven experience
-  const startCompleteCampaignDemo = async () => {
-    setIsRunningDemo(true);
-    const steps = [
-      {
-        delay: 800,
-        userMessage: "Show me high-value customer journey patterns",
-        aiResponse:
-          "I've analyzed ABC FI's transaction data and discovered 4 high-value customer journey opportunities:",
-        uiComponent: { type: "journey-discovery" as const, props: {} },
-      },
-      {
-        delay: 3000,
-        userMessage: "Analyze the home purchase + relocation journey pattern",
-        aiResponse:
-          "Here's the detailed 12-week journey analysis with engagement rates and financial projections:",
-        uiComponent: {
+  // Start the interactive campaign demo - just shows the first step
+  const startCompleteCampaignDemo = () => {
+    // Clear any existing messages and start fresh
+    setLocalMessages([]);
+    setGenerativeComponents(new Map());
+
+    // Add initial AI greeting and first step
+    const initialMessage = {
+      id: Date.now().toString() + "-initial",
+      role: "assistant" as const,
+      content:
+        "I've analyzed ABC FI's transaction data and discovered 4 high-value customer journey opportunities:",
+    };
+
+    setLocalMessages([initialMessage]);
+    setGenerativeComponents(
+      new Map().set(initialMessage.id, {
+        type: "journey-discovery" as const,
+        props: {},
+      })
+    );
+
+    // Show first suggestion after a delay
+    setTimeout(() => {
+      setCurrentSuggestions([
+        "Analyze the home purchase + relocation journey pattern",
+      ]);
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 1000);
+  };
+
+  // Handle suggestion clicks for interactive demo flow
+  const handleSuggestionClick = (suggestion: string) => {
+    // Clear current suggestions
+    setCurrentSuggestions([]);
+
+    // Add user message
+    const userMessage = {
+      id: Date.now().toString() + "-user",
+      role: "user" as const,
+      content: suggestion,
+    };
+
+    setLocalMessages((prev) => [...prev, userMessage]);
+
+    // Determine next step based on suggestion
+    setTimeout(() => {
+      let aiResponse = "";
+      let uiComponent: any = null;
+      let nextSuggestions: string[] = [];
+
+      if (suggestion.includes("Analyze the home purchase")) {
+        aiResponse =
+          "Here's the detailed 12-week journey analysis with engagement rates and financial projections:";
+        uiComponent = {
           type: "pattern-analysis" as const,
           props: { journeyType: "Home Purchase + Relocation" },
-        },
-      },
-      {
-        delay: 3000,
-        userMessage: "Build the phase-based campaign architecture",
-        aiResponse:
-          "Campaign architecture designed with 4 phases and full partner network integration:",
-        uiComponent: { type: "campaign-architecture" as const, props: {} },
-      },
-      {
-        delay: 3000,
-        userMessage: "Create the lightning offers strategy",
-        aiResponse:
-          "AI-optimized lightning offers strategy activated with phase-specific timing and scarcity management:",
-        uiComponent: { type: "lightning-strategy" as const, props: {} },
-      },
-      {
-        delay: 3000,
-        userMessage: "Launch the campaign with live performance tracking",
-        aiResponse:
-          "🚀 Campaign launched! Real-time performance dashboard is now active:",
-        uiComponent: { type: "campaign-launch" as const, props: {} },
-      },
-    ];
+        };
+        nextSuggestions = ["Build the phase-based campaign architecture"];
+      } else if (suggestion.includes("Build the phase-based campaign")) {
+        aiResponse =
+          "Campaign architecture designed with 4 phases and full partner network integration:";
+        uiComponent = { type: "campaign-architecture" as const, props: {} };
+        nextSuggestions = ["Create the lightning offers strategy"];
+      } else if (suggestion.includes("Create the lightning offers")) {
+        aiResponse =
+          "AI-optimized lightning offers strategy activated with phase-specific timing and scarcity management:";
+        uiComponent = { type: "lightning-strategy" as const, props: {} };
+        nextSuggestions = [
+          "Launch the campaign with live performance tracking",
+        ];
+      } else if (suggestion.includes("Launch the campaign")) {
+        aiResponse =
+          "🚀 Campaign launched! Real-time performance dashboard is now active:";
+        uiComponent = { type: "campaign-launch" as const, props: {} };
+        nextSuggestions = []; // No more suggestions - demo complete
+      }
 
-    // Execute each step in sequence with better pacing
-    for (let i = 0; i < steps.length; i++) {
-      const step = steps[i];
-
-      // Wait before showing user message
-      await new Promise((resolve) => setTimeout(resolve, step.delay));
-
-      // Add user message
-      const userMessage = {
-        id: Date.now().toString() + "-user-" + i,
-        role: "user" as const,
-        content: step.userMessage,
-      };
-
-      setLocalMessages((prev) => [...prev, userMessage]);
-
-      // Auto-scroll after user message
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, 100);
-
-      // Wait before AI response (shorter for better flow)
-      await new Promise((resolve) => setTimeout(resolve, 600));
-
-      // Add AI response with generative UI
+      // Add AI response
       const assistantMessage = {
-        id: Date.now().toString() + "-assistant-" + i,
+        id: Date.now().toString() + "-assistant",
         role: "assistant" as const,
-        content: step.aiResponse,
+        content: aiResponse,
       };
 
       setLocalMessages((prev) => [...prev, assistantMessage]);
       setGenerativeComponents((prev) =>
-        new Map(prev).set(assistantMessage.id, step.uiComponent)
+        new Map(prev).set(assistantMessage.id, uiComponent)
       );
 
-      // Auto-scroll after AI response
+      // Show next suggestions after a delay
       setTimeout(() => {
+        setCurrentSuggestions(nextSuggestions);
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, 200);
-    }
-
-    // Demo complete
-    setIsRunningDemo(false);
+      }, 1000);
+    }, 500);
   };
 
   // Use local state if useChat input is not available
@@ -945,6 +954,38 @@ export default function AIQueryInterface({
                         </div>
                       </div>
                     ))}
+
+                    {/* Interactive Suggestions */}
+                    {currentSuggestions.length > 0 && (
+                      <div className="flex items-start gap-3 mb-4 animate-fade-in">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center flex-shrink-0">
+                          <Bot className="w-4 h-4 text-blue-600" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm font-medium text-gray-900">
+                              AI Marketing Co-pilot
+                            </span>
+                            <Badge variant="outline" className="text-xs">
+                              AI Assistant
+                            </Badge>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {currentSuggestions.map((suggestion, index) => (
+                              <button
+                                key={index}
+                                onClick={() =>
+                                  handleSuggestionClick(suggestion)
+                                }
+                                className="px-3 py-2 text-sm bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg hover:from-blue-100 hover:to-purple-100 hover:border-blue-300 transition-all duration-200 text-blue-700 font-medium"
+                              >
+                                {suggestion}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Demo Running Indicator */}
                     {isRunningDemo && (
