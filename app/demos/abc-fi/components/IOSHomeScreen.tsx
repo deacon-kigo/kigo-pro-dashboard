@@ -9,7 +9,7 @@ interface IOSHomeScreenProps {
 
 export function IOSHomeScreen({ onAppOpen }: IOSHomeScreenProps) {
   return (
-    <div className="relative w-full h-screen bg-black flex items-center justify-center">
+    <div className="fixed inset-0 w-full h-full bg-black flex items-center justify-center z-50">
       {/* iOS Home Screen Background */}
       <div className="relative w-[375px] h-[812px] bg-gradient-to-b from-blue-900 via-purple-900 to-indigo-900 rounded-[40px] overflow-hidden shadow-2xl border-4 border-gray-800">
         {/* iOS Home Screen Image */}
@@ -25,9 +25,9 @@ export function IOSHomeScreen({ onAppOpen }: IOSHomeScreenProps) {
 
         {/* ABC FI App Icon Overlay (clickable) */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="grid grid-cols-4 gap-6 p-8 w-full h-full">
-            {/* Position ABC FI app icon in a realistic spot */}
-            <div className="col-start-2 row-start-3 flex justify-center">
+          <div className="grid grid-cols-4 gap-4 p-6 w-full h-full">
+            {/* Position ABC FI app icon in a realistic spot - middle area */}
+            <div className="col-start-1 row-start-4 flex justify-center">
               <button onClick={onAppOpen} className="relative group">
                 {/* App Icon */}
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 shadow-lg flex items-center justify-center transform transition-all duration-200 group-active:scale-95 group-hover:shadow-xl">
