@@ -594,7 +594,7 @@ export default function AIQueryInterface({
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-xs">
-              {mode === "copilotkit" ? "CopilotKit" : "Vercel AI"}
+              AI Assistant
             </Badge>
             <Button
               onClick={onClose}
