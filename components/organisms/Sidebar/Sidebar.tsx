@@ -21,6 +21,7 @@ import {
   AdjustmentsHorizontalIcon,
   PlusIcon,
   ChatBubbleLeftRightIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 import { useDemoState } from "@/lib/redux/hooks";
 import { toggleSidebar, setSidebarCollapsed } from "@/lib/redux/slices/uiSlice";
@@ -282,6 +283,15 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
             </li>
             <li className="nav-item px-3 py-1">
               <SidebarLabel
+                href="/campaign-manager/ai-insights"
+                icon={SparklesIcon}
+                title="AI Insights"
+                isActive={isLinkActive("/campaign-manager/ai-insights")}
+                isCollapsed={sidebarCollapsed}
+              />
+            </li>
+            <li className="nav-item px-3 py-1">
+              <SidebarLabel
                 href="/campaigns/product-filters"
                 icon={AdjustmentsHorizontalIcon}
                 title="Catalog Filters"
@@ -352,6 +362,15 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                   isPublisherDashboard ? "Program Ad Manager" : "Ad Manager"
                 }
                 isActive={isLinkActive("/campaigns")}
+                isCollapsed={sidebarCollapsed}
+              />
+            </li>
+            <li className="nav-item px-3 py-1">
+              <SidebarLabel
+                href="/campaign-manager/ai-insights"
+                icon={SparklesIcon}
+                title="AI Insights"
+                isActive={isLinkActive("/campaign-manager/ai-insights")}
                 isCollapsed={sidebarCollapsed}
               />
             </li>

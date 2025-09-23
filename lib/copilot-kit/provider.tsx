@@ -7,9 +7,11 @@ import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useCopilotReadable } from "@copilotkit/react-core";
 import { useCopilotActions } from "../hooks/useCopilotActions";
+import { useMarketingInsightsCopilot } from "../hooks/useMarketingInsightsCopilot";
 import { useAppSelector } from "../redux/hooks";
 import ActionExecutor from "./action-executor";
 import { useApprovalFlow } from "../hooks/useApprovalFlow";
+import AIQueryTrigger from "../../components/features/ai-query/AIQueryTrigger";
 
 // Dynamic imports for components
 const ApprovalDialog = dynamic(
@@ -43,6 +45,7 @@ function NavigationBridge() {
 
   // DEMO MODE: Re-enable frontend actions for demo presentation
   useCopilotActions(); // Re-enabled for demo - provides immediate action execution
+  useMarketingInsightsCopilot(); // Marketing insights and behavioral analysis actions
 
   // Provide comprehensive context to CopilotKit
   useCopilotReadable({
@@ -186,6 +189,7 @@ You are directly connected to our Python LangGraph backend with:
 • **Supervisor**: Routes your requests to the right specialist
 • **Campaign Agent**: Handles ad creation with human approval workflows  
 • **Analytics Agent**: Provides performance insights and recommendations
+• **Marketing Insights Agent**: AI-driven behavioral analysis and strategic recommendations
 • **Filter Agent**: Manages product targeting and audience segmentation
 • **Merchant Agent**: Assists with merchant-specific workflows
 
@@ -198,24 +202,31 @@ You are directly connected to our Python LangGraph backend with:
 🔧 **Available Actions:**
 • Create ads with guided workflows
 • Navigate to different dashboard sections  
-• Analyze campaign performance
+• Analyze campaign performance and marketing insights
+• Generate behavioral analysis and strategic recommendations
 • Set up product filters and targeting
 • Request approvals for budget/campaign changes
 
 💬 **Just Ask:**
 • "Create an ad for McDonald's"
-• "Show me my analytics" 
+• "Show me my analytics and marketing insights" 
+• "What are our biggest revenue opportunities?"
+• "Analyze customer behavior patterns"
+• "Generate a campaign strategy for home buyers"
 • "Help me set up filters"
 • "I need approval for a budget change"
 
 **All powered by sophisticated multi-agent workflows with full conversation memory!**`}
         labels={{
-          title: "AI Assistant",
+          title: "AI Marketing Co-pilot",
           initial:
-            "Hi! I'm your Kigo Pro assistant powered by our multi-agent system. I can help with campaigns, analytics, filters, and more. What would you like to work on?",
+            "Hi! I'm your Kigo Pro AI Marketing Co-pilot. I can analyze customer behavior, identify revenue opportunities, generate campaign strategies, and provide strategic recommendations. I can also help with campaigns, analytics, filters, and approvals. What would you like to explore?",
         }}
         defaultOpen={true}
       />
+
+      {/* AI Query Interface - Vercel AI SDK UI */}
+      <AIQueryTrigger mode="vercel-ai" position="bottom-left" />
     </CopilotKit>
   );
 }
