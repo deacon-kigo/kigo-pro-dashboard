@@ -112,6 +112,11 @@ export default function ABCFIDemoStandalone() {
     }
   };
 
+  // If iOS homescreen, render it fullscreen without any containers
+  if (currentStep === "ios-homescreen") {
+    return renderCurrentStep();
+  }
+
   return (
     <div
       className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center p-8"
@@ -168,6 +173,8 @@ export default function ABCFIDemoStandalone() {
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                 <span className="text-sm font-medium text-gray-700">
+                  {currentStep === "ios-homescreen" &&
+                    "Tap ABC FI app to start Sarah's journey"}
                   {currentStep === "banking-dashboard" &&
                     !showNotification &&
                     "Banking dashboard - notification coming..."}
