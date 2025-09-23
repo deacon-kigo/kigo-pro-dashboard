@@ -27,15 +27,17 @@ export function IOSHomeScreen({ onAppOpen }: IOSHomeScreenProps) {
           {/* Position ABC FI app icon in a realistic spot - upper middle area */}
           <div className="col-start-2 row-start-3 flex justify-center">
             <button onClick={onAppOpen} className="relative group">
-              {/* App Icon */}
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-800 shadow-lg flex items-center justify-center transform transition-all duration-200 group-active:scale-95 group-hover:shadow-xl">
-                <Image
-                  src="/logos/abc-fi-logo-white.png"
-                  alt="ABC FI App"
-                  width={48}
-                  height={48}
-                  className="rounded-lg"
-                />
+              {/* High-Fidelity ABC FI App Icon */}
+              <div
+                className="w-16 h-16 rounded-2xl bg-blue-600 shadow-lg flex items-center justify-center transform transition-all duration-200 group-active:scale-95 group-hover:shadow-xl"
+                style={{ backgroundColor: "#2563eb" }}
+              >
+                {/* ABC FI Icon - Three ascending bars */}
+                <div className="flex items-end gap-1">
+                  <div className="w-2 h-6 bg-white rounded-sm"></div>
+                  <div className="w-2 h-8 bg-white rounded-sm"></div>
+                  <div className="w-2 h-10 bg-white rounded-sm"></div>
+                </div>
               </div>
 
               {/* App Name */}
@@ -43,11 +45,6 @@ export function IOSHomeScreen({ onAppOpen }: IOSHomeScreenProps) {
                 <span className="text-white text-xs font-medium drop-shadow-sm">
                   ABC FI
                 </span>
-              </div>
-
-              {/* Tap Indicator */}
-              <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
-                <span className="text-white text-xs font-bold">1</span>
               </div>
             </button>
           </div>
