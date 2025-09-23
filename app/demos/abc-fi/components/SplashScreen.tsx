@@ -9,10 +9,10 @@ interface SplashScreenProps {
 
 export function SplashScreen({ onSplashComplete }: SplashScreenProps) {
   useEffect(() => {
-    // Auto-transition to banking dashboard after 4 seconds for better UX
+    // Auto-transition to banking dashboard after 3 seconds
     const timer = setTimeout(() => {
       onSplashComplete();
-    }, 4000);
+    }, 3000);
 
     return () => clearTimeout(timer);
   }, [onSplashComplete]);
@@ -29,26 +29,18 @@ export function SplashScreen({ onSplashComplete }: SplashScreenProps) {
           priority
         />
 
-        {/* Enhanced loading indicator with smoother animation */}
+        {/* Loading indicator */}
         <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 animate-fade-in">
-          <div className="flex flex-col items-center gap-4">
-            {/* Loading dots */}
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-blue-600 rounded-full animate-bounce"></div>
-              <div
-                className="w-3 h-3 bg-blue-600 rounded-full animate-bounce"
-                style={{ animationDelay: "0.1s" }}
-              ></div>
-              <div
-                className="w-3 h-3 bg-blue-600 rounded-full animate-bounce"
-                style={{ animationDelay: "0.2s" }}
-              ></div>
-            </div>
-
-            {/* Loading text */}
-            <div className="text-blue-600 text-sm font-medium animate-pulse">
-              Loading your banking experience...
-            </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-blue-600 rounded-full animate-bounce"></div>
+            <div
+              className="w-3 h-3 bg-blue-600 rounded-full animate-bounce"
+              style={{ animationDelay: "0.1s" }}
+            ></div>
+            <div
+              className="w-3 h-3 bg-blue-600 rounded-full animate-bounce"
+              style={{ animationDelay: "0.2s" }}
+            ></div>
           </div>
         </div>
       </div>
