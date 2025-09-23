@@ -24,8 +24,8 @@ export function IOSHomeScreen({ onAppOpen }: IOSHomeScreenProps) {
       {/* ABC FI App Icon Overlay (clickable) */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="grid grid-cols-4 gap-4 p-6 w-full h-full">
-          {/* Position ABC FI app icon in a realistic spot - upper middle area */}
-          <div className="col-start-2 row-start-3 flex justify-center">
+          {/* Position ABC FI app icon under Settings - bottom left area */}
+          <div className="col-start-1 row-start-5 flex justify-center">
             <button onClick={onAppOpen} className="relative group">
               {/* High-Fidelity ABC FI App Icon */}
               <div
