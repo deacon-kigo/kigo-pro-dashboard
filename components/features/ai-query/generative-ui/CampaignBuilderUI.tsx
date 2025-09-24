@@ -25,16 +25,18 @@ interface CampaignBuilderUIProps {
   campaignType: string;
   targetAudience: string;
   offers: string[];
+  steps?: string[];
 }
 
 export default function CampaignBuilderUI({
   campaignType,
   targetAudience,
   offers,
+  steps,
 }: CampaignBuilderUIProps) {
   const [selectedOffers, setSelectedOffers] = useState<string[]>([
-    "HELOC Special Rate",
-    "Moving Day Package",
+    "$100 AI Gift Personalization",
+    "Moving Journey Bundle",
   ]);
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -103,12 +105,57 @@ export default function CampaignBuilderUI({
         </CardContent>
       </Card>
 
-      {/* Offers Selection */}
+      {/* Conversational Flow Steps */}
+      {steps && (
+        <Card className="bg-white/80 backdrop-blur-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-blue-600" />
+              Conversational Flow
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0 pb-3">
+            <div className="space-y-3">
+              {steps.map((step, index) => (
+                <div key={index} className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-xs font-semibold text-blue-600">
+                      {index + 1}
+                    </span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900">{step}</p>
+                    {index === 0 && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        AI personalizes gift options based on customer profile
+                      </p>
+                    )}
+                    {index === 1 && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        "Is there anything else we can help you with to plan
+                        your move?"
+                      </p>
+                    )}
+                    {index === 2 && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Pre-built bundle with U-Haul, Public Storage, Hilton
+                        offers
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Partner Network */}
       <Card className="bg-white/80 backdrop-blur-sm">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm flex items-center gap-2">
             <DollarSign className="w-4 h-4 text-green-600" />
-            Available Offers
+            Partner Network Integration
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0 pb-3">
