@@ -4,7 +4,18 @@ import { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Brain, User, Bot, X, Sparkles } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import {
+  Brain,
+  User,
+  Bot,
+  X,
+  Sparkles,
+  Zap,
+  Target,
+  TrendingUp,
+  Clock,
+} from "lucide-react";
 import CampaignBuilderUI from "@/components/features/ai-query/generative-ui/CampaignBuilderUI";
 
 interface TuckerAIChatInterfaceProps {
@@ -33,6 +44,9 @@ export function TuckerAIChatInterface({
   const [hasStarted, setHasStarted] = useState(false);
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [campaignProgress, setCampaignProgress] = useState(0);
+  const [currentTask, setCurrentTask] = useState("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -54,7 +68,7 @@ export function TuckerAIChatInterface({
   }, [hasStarted]);
 
   const handleInitialPrompt = () => {
-    // Add Tucker's initial message
+    // Add user's initial message
     const userMessage: Message = {
       id: Date.now().toString(),
       text: initialPrompt,
@@ -64,38 +78,84 @@ export function TuckerAIChatInterface({
 
     setMessages([userMessage]);
 
-    // Show AI thinking
+    // Start analysis phase
+    setIsAnalyzing(true);
     setIsTyping(true);
+    setCurrentTask("Analyzing customer data and market trends...");
+    setCampaignProgress(10);
 
-    // AI response after delay
-    setTimeout(() => {
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: "Excellent choice, Tucker! Let's architect your AI-Powered New Mover Journey. I'll guide you through configuring each step of the conversational experience. You can customize the gift value, messaging, and partner offers to match your campaign objectives.",
-        sender: "ai",
-        timestamp: new Date(),
-        uiComponent: {
-          type: "campaign-builder",
-          data: {
-            campaignType: "AI-Powered New Mover Journey",
-            targetAudience: "New mortgage customers",
-            offers: [
-              "$100 AI Gift Personalization",
-              "Moving Journey Bundle",
-              "U-Haul, Public Storage, Hilton",
-            ],
-            steps: [
-              "Step 1: AI-powered gifting moment ($100 value)",
-              "Step 2: Follow-up conversation about move planning",
-              "Step 3: Moving Journey bundle with partner offers",
-            ],
-          },
-        },
-      };
+    // Simulate progressive analysis
+    const analysisSteps = [
+      { task: "Processing customer demographics...", progress: 25, delay: 800 },
+      { task: "Identifying high-value segments...", progress: 45, delay: 1200 },
+      {
+        task: "Calculating campaign impact potential...",
+        progress: 65,
+        delay: 1000,
+      },
+      {
+        task: "Designing personalized journey flow...",
+        progress: 85,
+        delay: 900,
+      },
+      {
+        task: "Finalizing campaign architecture...",
+        progress: 100,
+        delay: 700,
+      },
+    ];
 
-      setMessages((prev) => [...prev, aiMessage]);
-      setIsTyping(false);
-    }, 2000);
+    let currentStep = 0;
+    const runAnalysisStep = () => {
+      if (currentStep < analysisSteps.length) {
+        const step = analysisSteps[currentStep];
+        setTimeout(() => {
+          setCurrentTask(step.task);
+          setCampaignProgress(step.progress);
+          currentStep++;
+          runAnalysisStep();
+        }, step.delay);
+      } else {
+        // Analysis complete, show AI response
+        setTimeout(() => {
+          setIsAnalyzing(false);
+          setCurrentTask("");
+
+          const aiMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            text: "Perfect! I've analyzed your customer base and identified a high-impact opportunity. Based on recent mortgage data, I can see approximately 2,847 new homeowners in your target markets who would be ideal for this journey.\n\nI've designed a three-phase conversational experience that leverages AI personalization to maximize engagement and conversion. The projected impact looks very promising - let me show you the campaign architecture.",
+            sender: "ai",
+            timestamp: new Date(),
+            uiComponent: {
+              type: "campaign-builder",
+              data: {
+                campaignType: "AI-Powered New Mover Journey",
+                targetAudience: "New mortgage customers",
+                estimatedReach: "2,847 customers",
+                projectedEngagement: "68% open rate",
+                expectedConversion: "23% conversion",
+                offers: [
+                  "$100 AI Gift Personalization",
+                  "Moving Journey Bundle",
+                  "U-Haul, Public Storage, Hilton",
+                ],
+                steps: [
+                  "Step 1: AI-powered gifting moment ($100 value)",
+                  "Step 2: Follow-up conversation about move planning",
+                  "Step 3: Moving Journey bundle with partner offers",
+                ],
+              },
+            },
+          };
+
+          setMessages((prev) => [...prev, aiMessage]);
+          setIsTyping(false);
+          setCampaignProgress(0);
+        }, 500);
+      }
+    };
+
+    runAnalysisStep();
   };
 
   const handleSendMessage = () => {
@@ -112,18 +172,46 @@ export function TuckerAIChatInterface({
     setInputText("");
     setIsTyping(true);
 
-    // Simple AI response
-    setTimeout(() => {
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: "I understand! Let me help you with that. Is there anything specific you'd like to adjust in the campaign configuration?",
-        sender: "ai",
-        timestamp: new Date(),
-      };
+    // More natural AI responses based on input
+    setTimeout(
+      () => {
+        let responseText = "";
+        const input = inputText.toLowerCase();
 
-      setMessages((prev) => [...prev, aiMessage]);
-      setIsTyping(false);
-    }, 1500);
+        if (
+          input.includes("gift") ||
+          input.includes("amount") ||
+          input.includes("value")
+        ) {
+          responseText =
+            "Great question! The gift value is completely customizable. Based on your customer lifetime value data, I'd recommend starting with $100 as it typically drives 3x higher engagement rates. However, you can adjust this anywhere from $25 to $500 depending on your campaign budget and target segment value.";
+        } else if (input.includes("partner") || input.includes("offer")) {
+          responseText =
+            "Excellent point! I've pre-selected high-performing partners based on new mover behavior patterns. U-Haul shows 89% relevance for your audience, Public Storage has 76% appeal, and Hilton captures the celebration aspect. We can easily swap these for other partners in your network if you prefer.";
+        } else if (
+          input.includes("launch") ||
+          input.includes("start") ||
+          input.includes("begin")
+        ) {
+          responseText =
+            "Perfect timing! To launch this campaign, I'll need a few quick details: your preferred gift card value, any specific partner preferences, and your target launch date. Should we configure these settings now?";
+        } else {
+          responseText =
+            "I understand! That's a great consideration for optimizing campaign performance. Based on similar campaigns, I can provide specific recommendations. What aspect would you like to dive deeper into?";
+        }
+
+        const aiMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          text: responseText,
+          sender: "ai",
+          timestamp: new Date(),
+        };
+
+        setMessages((prev) => [...prev, aiMessage]);
+        setIsTyping(false);
+      },
+      1200 + Math.random() * 800
+    ); // Variable response time for naturalness
   };
 
   const renderUIComponent = (component: UIComponent) => {
@@ -138,33 +226,65 @@ export function TuckerAIChatInterface({
   return (
     <Card className="w-full h-full overflow-hidden shadow-lg bg-white">
       {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-white border border-gray-200 flex items-center justify-center shadow-sm">
-            <Brain className="w-5 h-5 text-blue-600" />
+      <div className="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
+        <div className="flex items-center justify-between p-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-white border border-gray-200 flex items-center justify-center shadow-sm">
+              <Brain className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">
+                AI Command Center
+              </h2>
+              <p className="text-sm text-gray-600">
+                Campaign creation and marketing insights
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">
-              AI Command Center
-            </h2>
-            <p className="text-sm text-gray-600">
-              Campaign creation and marketing insights
-            </p>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-xs">
+              AI Assistant
+            </Badge>
+            <Button
+              onClick={onClose}
+              variant="ghost"
+              size="sm"
+              className="p-2 hover:bg-gray-100 rounded-lg"
+            >
+              <X className="w-4 h-4" />
+            </Button>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-xs">
-            AI Assistant
-          </Badge>
-          <Button
-            onClick={onClose}
-            variant="ghost"
-            size="sm"
-            className="p-2 hover:bg-gray-100 rounded-lg"
-          >
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
+
+        {/* Progress Toolbar */}
+        {(isAnalyzing || currentTask) && (
+          <div className="px-6 pb-4">
+            <div className="bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center">
+                  <Zap className="w-3 h-3 text-blue-600 animate-pulse" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium text-gray-900">
+                      AI Campaign Architect
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {campaignProgress}%
+                    </span>
+                  </div>
+                  <Progress value={campaignProgress} className="h-2" />
+                </div>
+              </div>
+              {currentTask && (
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <Clock className="w-4 h-4 animate-spin" />
+                  <span>{currentTask}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Chat Content */}
@@ -206,7 +326,7 @@ export function TuckerAIChatInterface({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-sm font-medium text-gray-900">
-                    {message.sender === "user" ? "Tucker" : "AI Assistant"}
+                    {message.sender === "user" ? "You" : "AI Assistant"}
                   </span>
                   <span className="text-xs text-gray-500">
                     {message.timestamp.toLocaleTimeString([], {
@@ -231,29 +351,41 @@ export function TuckerAIChatInterface({
 
           {/* AI Typing Indicator */}
           {isTyping && (
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-3 animate-fade-in">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center flex-shrink-0">
-                <Bot className="w-4 h-4 text-purple-600" />
+                <Bot className="w-4 h-4 text-purple-600 animate-pulse" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-sm font-medium text-gray-900">
                     AI Assistant
                   </span>
-                </div>
-                <div className="flex items-center gap-1 text-sm text-gray-500">
-                  <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                    <div
-                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                      style={{ animationDelay: "0.1s" }}
-                    ></div>
-                    <div
-                      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                      style={{ animationDelay: "0.2s" }}
-                    ></div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-xs text-green-600 font-medium">
+                      Active
+                    </span>
                   </div>
-                  <span className="ml-2">AI is thinking...</span>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <div className="flex gap-1">
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+                      <div
+                        className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.1s" }}
+                      ></div>
+                      <div
+                        className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.2s" }}
+                      ></div>
+                    </div>
+                    <span className="ml-2">
+                      {isAnalyzing
+                        ? "Analyzing data and building campaign..."
+                        : "Crafting response..."}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
