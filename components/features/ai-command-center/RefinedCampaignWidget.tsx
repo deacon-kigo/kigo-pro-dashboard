@@ -38,6 +38,8 @@ export function RefinedCampaignWidget({
   steps = [],
 }: RefinedCampaignWidgetProps) {
   const [isConfiguring, setIsConfiguring] = useState(false);
+  const [isLaunching, setIsLaunching] = useState(false);
+  const [launchProgress, setLaunchProgress] = useState(0);
   const [giftAmount, setGiftAmount] = useState(100);
   const [slideDirection, setSlideDirection] = useState<"left" | "right">(
     "right"
@@ -54,20 +56,64 @@ export function RefinedCampaignWidget({
   };
 
   const handleConfirmLaunch = () => {
-    // Store configuration and navigate to campaign creation
-    const campaignData = {
-      type: campaignType,
-      audience: targetAudience,
-      giftAmount,
-      reach: estimatedReach,
-      engagement: projectedEngagement,
-      conversion: expectedConversion,
-      timestamp: new Date().toISOString(),
+    setIsLaunching(true);
+    setLaunchProgress(0);
+
+    // Simulate campaign creation process
+    const launchSteps = [
+      {
+        task: "Setting up AI gift personalization...",
+        progress: 20,
+        delay: 800,
+      },
+      { task: "Configuring conversational flow...", progress: 40, delay: 1000 },
+      {
+        task: "Connecting partner offers (U-Haul, Public Storage, Hilton)...",
+        progress: 60,
+        delay: 1200,
+      },
+      { task: "Activating customer targeting...", progress: 80, delay: 900 },
+      { task: "Campaign launched successfully!", progress: 100, delay: 600 },
+    ];
+
+    let currentStep = 0;
+    const runLaunchStep = () => {
+      if (currentStep < launchSteps.length) {
+        const step = launchSteps[currentStep];
+        setTimeout(() => {
+          setLaunchProgress(step.progress);
+          currentStep++;
+          runLaunchStep();
+        }, step.delay);
+      } else {
+        // Launch complete, store data and navigate
+        setTimeout(() => {
+          const campaignData = {
+            type: campaignType,
+            audience: targetAudience,
+            giftAmount,
+            reach: estimatedReach,
+            engagement: projectedEngagement,
+            conversion: expectedConversion,
+            giftOptions: [
+              "Olive & Finch - Italian Restaurant ($100)",
+              "Williams Sonoma - Home & Kitchen ($100)",
+              "Denver Cleaning Co - Professional Service ($100)",
+            ],
+            timestamp: new Date().toISOString(),
+          };
+
+          sessionStorage.setItem(
+            "aiCampaignData",
+            JSON.stringify(campaignData)
+          );
+          window.location.href =
+            "/campaign-manager/campaign-create?source=ai-builder";
+        }, 1000);
+      }
     };
 
-    sessionStorage.setItem("aiCampaignData", JSON.stringify(campaignData));
-    window.location.href =
-      "/campaign-manager/campaign-create?source=ai-builder";
+    runLaunchStep();
   };
 
   return (
@@ -370,7 +416,7 @@ export function RefinedCampaignWidget({
         {/* Configuration Content */}
         <div
           className={`absolute inset-0 transition-transform duration-500 ease-in-out ${
-            isConfiguring
+            isConfiguring && !isLaunching
               ? "translate-x-0 opacity-100"
               : slideDirection === "left"
                 ? "translate-x-full opacity-0"
@@ -549,6 +595,174 @@ export function RefinedCampaignWidget({
                 <Zap className="w-4 h-4" />
                 Launch Campaign
               </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Launch Progress Content */}
+        <div
+          className={`absolute inset-0 transition-transform duration-500 ease-in-out ${
+            isLaunching
+              ? "translate-x-0 opacity-100"
+              : "translate-x-full opacity-0"
+          }`}
+        >
+          {/* Launch Header */}
+          <div
+            className="p-6 border-b border-white/20"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(248, 250, 252, 0.1) 100%)",
+              backdropFilter: "blur(8px)",
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className="w-12 h-12 rounded-xl flex items-center justify-center"
+                style={{
+                  background:
+                    "linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.1) 100%)",
+                  border: "1px solid rgba(255, 255, 255, 0.3)",
+                }}
+              >
+                <Zap className="w-6 h-6 text-green-600 animate-pulse" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">
+                  Launching Campaign
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Setting up your AI-powered customer journey
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Launch Progress */}
+          <div
+            className="p-8 flex flex-col items-center justify-center min-h-[400px]"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(248, 250, 252, 0.05) 100%)",
+              backdropFilter: "blur(6px)",
+            }}
+          >
+            {/* Progress Circle */}
+            <div className="relative w-32 h-32 mb-8">
+              <svg
+                className="w-32 h-32 transform -rotate-90"
+                viewBox="0 0 120 120"
+              >
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="50"
+                  fill="none"
+                  stroke="rgba(99, 102, 241, 0.1)"
+                  strokeWidth="8"
+                />
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="50"
+                  fill="none"
+                  stroke="url(#progressGradient)"
+                  strokeWidth="8"
+                  strokeLinecap="round"
+                  strokeDasharray={`${(launchProgress / 100) * 314} 314`}
+                  className="transition-all duration-500 ease-out"
+                />
+                <defs>
+                  <linearGradient
+                    id="progressGradient"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="0%"
+                  >
+                    <stop offset="0%" stopColor="#6366f1" />
+                    <stop offset="50%" stopColor="#8b5cf6" />
+                    <stop offset="100%" stopColor="#a855f7" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-2xl font-bold text-gray-900">
+                  {launchProgress}%
+                </span>
+              </div>
+            </div>
+
+            {/* Progress Status */}
+            <div className="text-center space-y-4 max-w-md">
+              <h4 className="text-xl font-semibold text-gray-900">
+                {launchProgress === 100
+                  ? "🎉 Campaign Launched!"
+                  : "Creating Your Campaign..."}
+              </h4>
+
+              {launchProgress < 100 ? (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    <div
+                      className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"
+                      style={{ animationDelay: "0.2s" }}
+                    ></div>
+                    <div
+                      className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"
+                      style={{ animationDelay: "0.4s" }}
+                    ></div>
+                  </div>
+                  <p className="text-gray-600">
+                    Setting up AI personalization and partner integrations...
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-gray-700 font-medium">
+                    Your AI-Powered New Mover Journey is now live!
+                  </p>
+                  <div
+                    className="rounded-xl p-4 border border-white/30"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.05) 100%)",
+                      backdropFilter: "blur(10px)",
+                    }}
+                  >
+                    <div className="text-sm space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-green-700">
+                          ✓ Gift Options Connected:
+                        </span>
+                        <span className="text-green-600 font-medium">
+                          3 Partners
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-green-700">
+                          ✓ Target Audience:
+                        </span>
+                        <span className="text-green-600 font-medium">
+                          2,847 Customers
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-green-700">
+                          ✓ Campaign Status:
+                        </span>
+                        <span className="text-green-600 font-medium">
+                          Active
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    Redirecting to campaign dashboard...
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
