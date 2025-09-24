@@ -49,14 +49,50 @@ export function RefinedCampaignWidget({
     "right"
   );
 
+  // Configuration step states
+  const [configStep, setConfigStep] = useState<
+    "overview" | "step1" | "step2" | "step3"
+  >("overview");
+  const [giftPersonalization, setGiftPersonalization] = useState(true);
+  const [selectedGifts, setSelectedGifts] = useState<string[]>([
+    "Olive & Finch - Italian Restaurant",
+    "Williams Sonoma - Home & Kitchen",
+    "Denver Cleaning Co - Professional Service",
+  ]);
+  const [followUpQuestion, setFollowUpQuestion] = useState(
+    "Is there anything else we can help you with to plan your move?"
+  );
+  const [selectedPartners, setSelectedPartners] = useState<string[]>([
+    "U-Haul",
+    "Public Storage",
+    "Hilton Hotels",
+  ]);
+
   const handleLaunchCampaign = () => {
     setSlideDirection("left");
-    setTimeout(() => setIsConfiguring(true), 150);
+    setTimeout(() => {
+      setIsConfiguring(true);
+      setConfigStep("step1");
+    }, 150);
   };
 
   const handleBackToOverview = () => {
     setSlideDirection("right");
-    setTimeout(() => setIsConfiguring(false), 150);
+    setTimeout(() => {
+      setIsConfiguring(false);
+      setConfigStep("overview");
+    }, 150);
+  };
+
+  const handleNextStep = () => {
+    if (configStep === "step1") setConfigStep("step2");
+    else if (configStep === "step2") setConfigStep("step3");
+  };
+
+  const handlePrevStep = () => {
+    if (configStep === "step2") setConfigStep("step1");
+    else if (configStep === "step3") setConfigStep("step2");
+    else handleBackToOverview();
   };
 
   const handleConfirmLaunch = () => {
@@ -78,19 +114,17 @@ export function RefinedCampaignWidget({
           setLaunchProgress(step.progress);
           if (step.progress === 100) {
             setTimeout(() => {
-              // Store campaign data including gift options from Sarah's demo
+              // Store campaign data with configured values
               const campaignData = {
                 type: campaignType,
                 audience: targetAudience,
                 giftAmount,
-                giftOptions: [
-                  "Olive & Finch - Italian Restaurant ($100)",
-                  "Williams Sonoma - Home & Kitchen ($100)",
-                  "Denver Cleaning Co - Professional Service ($100)",
-                ],
-                followUpQuestion:
-                  "Is there anything else we can help you with to plan your move?",
-                journeyBundle: ["U-Haul", "Public Storage", "Hilton Hotels"],
+                giftPersonalization,
+                giftOptions: selectedGifts.map(
+                  (gift) => `${gift} ($${giftAmount})`
+                ),
+                followUpQuestion,
+                journeyBundle: selectedPartners,
                 reach: estimatedReach,
                 engagement: projectedEngagement,
                 conversion: expectedConversion,
@@ -432,59 +466,275 @@ export function RefinedCampaignWidget({
         >
           {!isLaunching ? (
             <div className="p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Campaign Configuration
-                </h3>
-                <button
-                  onClick={handleBackToOverview}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  ← Back
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Gift Card Value
-                  </label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {[50, 100, 150, 200].map((amount) => (
+              {/* Step 1: The Gift */}
+              {configStep === "step1" && (
+                <div className="animate-fade-in">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Step 1: The Gift
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-500">1/3</span>
                       <button
-                        key={amount}
-                        onClick={() => setGiftAmount(amount)}
-                        className={`p-2 rounded-lg border text-sm font-medium transition-all ${
-                          giftAmount === amount
-                            ? "bg-indigo-50 border-indigo-300 text-indigo-700"
-                            : "bg-white border-gray-200 text-gray-700 hover:border-gray-300"
-                        }`}
+                        onClick={handleBackToOverview}
+                        className="text-gray-500 hover:text-gray-700"
                       >
-                        ${amount}
+                        ✕
                       </button>
-                    ))}
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Configure the AI-powered gifting moment, setting the value
+                    and enabling personalization.
+                  </p>
+
+                  {/* Gift Amount Selection */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Gift Card Value
+                    </label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {[50, 100, 150, 200].map((amount) => (
+                        <button
+                          key={amount}
+                          onClick={() => setGiftAmount(amount)}
+                          className={`p-2 rounded-lg border text-sm font-medium transition-all ${
+                            giftAmount === amount
+                              ? "bg-blue-50 border-blue-300 text-blue-700"
+                              : "bg-white border-gray-200 text-gray-700 hover:border-gray-300"
+                          }`}
+                        >
+                          ${amount}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* AI Personalization Toggle */}
+                  <div className="mb-4">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={giftPersonalization}
+                        onChange={(e) =>
+                          setGiftPersonalization(e.target.checked)
+                        }
+                        className="rounded border-gray-300"
+                      />
+                      <span className="text-sm font-medium text-gray-700">
+                        Enable AI Gift Personalization
+                      </span>
+                    </label>
+                    <p className="text-xs text-gray-500 mt-1">
+                      AI will select hyper-relevant options for each user
+                    </p>
+                  </div>
+
+                  {/* Gift Options Preview */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Available Gift Options
+                    </label>
+                    <div className="space-y-2">
+                      {selectedGifts.map((gift, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg"
+                        >
+                          <span className="text-sm text-gray-700">
+                            ✓ {gift} (${giftAmount})
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <button
+                      onClick={handlePrevStep}
+                      className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                    >
+                      ← Back
+                    </button>
+                    <button
+                      onClick={handleNextStep}
+                      className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                    >
+                      Next: Follow-Up →
+                    </button>
                   </div>
                 </div>
+              )}
 
-                <div className="p-4 bg-blue-50 rounded-lg">
-                  <h4 className="font-medium text-blue-900 mb-2">
-                    Configuration Preview
-                  </h4>
-                  <div className="text-sm text-blue-800 space-y-1">
-                    <div>• Gift Value: ${giftAmount}</div>
-                    <div>• AI Personalization: Enabled</div>
-                    <div>• Follow-up: Moving assistance inquiry</div>
-                    <div>• Partner Bundle: U-Haul, Storage, Hotels</div>
+              {/* Step 2: The Follow-Up */}
+              {configStep === "step2" && (
+                <div className="animate-fade-in">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Step 2: The Follow-Up
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-500">2/3</span>
+                      <button
+                        onClick={handleBackToOverview}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Program the agent to ask a follow-up question to guide
+                    customers to the moving journey.
+                  </p>
+
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Follow-Up Question
+                    </label>
+                    <textarea
+                      value={followUpQuestion}
+                      onChange={(e) => setFollowUpQuestion(e.target.value)}
+                      className="w-full p-3 border border-gray-300 rounded-lg text-sm resize-none"
+                      rows={3}
+                      placeholder="Enter the question the AI agent will ask..."
+                    />
+                  </div>
+
+                  <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+                    <h4 className="text-sm font-medium text-blue-900 mb-2">
+                      Preview: Customer Experience
+                    </h4>
+                    <div className="text-xs text-blue-800">
+                      <div className="mb-2">
+                        🎁 <strong>AI:</strong> "Here's your ${giftAmount} gift
+                        card for {selectedGifts[0]}!"
+                      </div>
+                      <div>
+                        💬 <strong>AI:</strong> "{followUpQuestion}"
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <button
+                      onClick={handlePrevStep}
+                      className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                    >
+                      ← Back
+                    </button>
+                    <button
+                      onClick={handleNextStep}
+                      className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                    >
+                      Next: Journey Bundle →
+                    </button>
                   </div>
                 </div>
+              )}
 
-                <button
-                  onClick={handleConfirmLaunch}
-                  className="w-full py-3 px-6 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg font-semibold hover:from-green-700 hover:to-blue-700 transition-all duration-200 shadow-lg"
-                >
-                  Launch Campaign
-                </button>
-              </div>
+              {/* Step 3: The Journey Bundle */}
+              {configStep === "step3" && (
+                <div className="animate-fade-in">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Step 3: The Journey Bundle
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-500">3/3</span>
+                      <button
+                        onClick={handleBackToOverview}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Link the pre-built "Moving Journey" offer bundle to this
+                    conversational path.
+                  </p>
+
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Partner Offers
+                    </label>
+                    <div className="space-y-2">
+                      {["U-Haul", "Public Storage", "Hilton Hotels"].map(
+                        (partner) => (
+                          <label
+                            key={partner}
+                            className="flex items-center gap-2"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedPartners.includes(partner)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedPartners([
+                                    ...selectedPartners,
+                                    partner,
+                                  ]);
+                                } else {
+                                  setSelectedPartners(
+                                    selectedPartners.filter(
+                                      (p) => p !== partner
+                                    )
+                                  );
+                                }
+                              }}
+                              className="rounded border-gray-300"
+                            />
+                            <span className="text-sm text-gray-700">
+                              {partner}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {partner === "U-Haul" && "(Moving truck rentals)"}
+                              {partner === "Public Storage" &&
+                                "(Storage solutions)"}
+                              {partner === "Hilton Hotels" && "(Accommodation)"}
+                            </span>
+                          </label>
+                        )
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mb-4 p-3 bg-green-50 rounded-lg">
+                    <h4 className="text-sm font-medium text-green-900 mb-2">
+                      Complete Journey Preview
+                    </h4>
+                    <div className="text-xs text-green-800 space-y-1">
+                      <div>
+                        1. 🎁 AI personalizes ${giftAmount} gift from{" "}
+                        {selectedGifts.length} options
+                      </div>
+                      <div>
+                        2. 💬 AI asks: "{followUpQuestion.substring(0, 50)}..."
+                      </div>
+                      <div>
+                        3. 🏠 AI presents {selectedPartners.length} moving
+                        partner offers
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <button
+                      onClick={handlePrevStep}
+                      className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                    >
+                      ← Back
+                    </button>
+                    <button
+                      onClick={handleConfirmLaunch}
+                      className="px-6 py-2 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg font-medium hover:from-green-700 hover:to-blue-700 transition-all duration-200 shadow-lg"
+                    >
+                      🚀 Launch Campaign
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="p-6 text-center">
