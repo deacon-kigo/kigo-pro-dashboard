@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -23,6 +24,10 @@ import {
   GraduationCap,
   Coffee,
   Calendar,
+  Sparkles,
+  X,
+  ArrowRight,
+  Lightbulb,
 } from "lucide-react";
 
 // Import chart components
@@ -31,8 +36,150 @@ import RevenueProjectionCharts from "./components/RevenueProjectionCharts";
 import CustomerBehaviorAnalytics from "./components/CustomerBehaviorAnalytics";
 import AICopilotDemo from "./components/AICopilotDemo";
 
+// AI Insight Notification - Proactive suggestion for Q4 opportunity
+interface AIInsightNotificationProps {
+  onDismiss: () => void;
+}
+
+const AIInsightNotification = ({ onDismiss }: AIInsightNotificationProps) => {
+  const router = useRouter();
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const handleExploreOpportunity = () => {
+    // Navigate to AI command center with auto-prompt
+    router.push(
+      "/campaign-manager/ai-command-center?prompt=new-mover-journey&client=abc-fi"
+    );
+  };
+
+  return (
+    <div className="fixed top-4 right-4 z-50 max-w-md animate-slide-in-right">
+      <Card
+        className="border-purple-200 shadow-lg"
+        style={{
+          background: "linear-gradient(to bottom right, #faf5ff, #eff6ff)",
+        }}
+      >
+        <div className="p-4">
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 text-sm">
+                  AI Insight
+                </h3>
+                <Badge className="bg-purple-100 text-purple-700 text-xs">
+                  Q4 Opportunity
+                </Badge>
+              </div>
+            </div>
+            <button
+              onClick={onDismiss}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-start gap-2">
+              <Lightbulb className="w-4 h-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+              <p className="text-sm text-gray-700">
+                <strong>Tucker</strong>, I've identified a high-impact Q4
+                opportunity in your Home Purchase journey data.
+              </p>
+            </div>
+
+            {!isExpanded ? (
+              <div className="space-y-2">
+                <p className="text-sm text-gray-600">
+                  The <strong>567 new mortgage customers/month</strong> segment
+                  shows strong potential for an AI-powered moving journey.
+                </p>
+                <button
+                  onClick={() => setIsExpanded(true)}
+                  className="text-xs text-purple-600 hover:text-purple-700 font-medium"
+                >
+                  Show campaign details →
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="bg-white rounded-lg p-3 space-y-2 border border-gray-100">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-blue-600" />
+                    <span className="text-sm font-medium text-gray-900">
+                      Campaign Opportunity
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="text-center p-2 bg-blue-50 rounded">
+                      <div className="font-bold text-blue-900">567</div>
+                      <div className="text-blue-600">customers/month</div>
+                    </div>
+                    <div className="text-center p-2 bg-green-50 rounded">
+                      <div className="font-bold text-green-900">
+                        $127K-$245K
+                      </div>
+                      <div className="text-green-600">revenue potential</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg p-3 border border-gray-100">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Target className="w-4 h-4 text-green-600" />
+                    <span className="text-sm font-medium text-gray-900">
+                      AI-Powered New Mover Journey
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600">
+                    Start with personalized $100 gifts, then guide customers
+                    through curated moving offers from U-Haul, Public Storage,
+                    and Hilton.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-2 pt-2">
+              <Button
+                onClick={handleExploreOpportunity}
+                className="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-sm"
+              >
+                <ArrowRight className="w-3 h-3 mr-1" />
+                Create Campaign
+              </Button>
+              <Button
+                onClick={onDismiss}
+                variant="outline"
+                className="text-xs px-3"
+              >
+                Later
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+};
+
 export default function MarketingInsightsView() {
   const [selectedJourney, setSelectedJourney] = useState<string | null>(null);
+  const [showAIInsight, setShowAIInsight] = useState(false);
+
+  // Show AI insight when user selects the home-purchase journey
+  const handleJourneySelection = (journeyId: string) => {
+    setSelectedJourney(journeyId);
+
+    // Show AI insight when home-purchase journey is selected
+    if (journeyId === "home-purchase") {
+      setShowAIInsight(true);
+    }
+  };
 
   // Mock data for journey opportunities
   const journeyOpportunities = [
@@ -93,6 +240,12 @@ export default function MarketingInsightsView() {
           border: 1px solid #4b55fd !important;
         }
       `}</style>
+
+      {/* Proactive AI Insight - appears while Tucker analyzes insights */}
+      {showAIInsight && (
+        <AIInsightNotification onDismiss={() => setShowAIInsight(false)} />
+      )}
+
       <div className="space-y-4">
         {/* Minimalistic Header */}
         <div className="relative overflow-hidden rounded-lg border border-gray-200 p-6 bg-white shadow-sm">
@@ -248,7 +401,7 @@ export default function MarketingInsightsView() {
                         ? "border-primary bg-pastel-blue shadow-sm"
                         : "border-gray-200 hover:border-gray-300 bg-white"
                     }`}
-                    onClick={() => setSelectedJourney(journey.id)}
+                    onClick={() => handleJourneySelection(journey.id)}
                   >
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between mb-3">
