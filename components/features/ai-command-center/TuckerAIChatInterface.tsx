@@ -17,6 +17,7 @@ import {
   Clock,
 } from "lucide-react";
 import { RefinedCampaignWidget } from "./RefinedCampaignWidget";
+import { ThinkingToCampaignWidget } from "./ThinkingToCampaignWidget";
 
 interface TuckerAIChatInterfaceProps {
   onClose: () => void;
@@ -87,11 +88,41 @@ export function TuckerAIChatInterface({
 
     setMessages([userMessage]);
 
-    // Start analysis phase
-    setIsAnalyzing(true);
-    setIsTyping(true);
-    setCurrentTask("Analyzing customer data and market trends...");
-    setCampaignProgress(10);
+    // Show the thinking widget that will transform into campaign widget
+    setTimeout(() => {
+      const thinkingMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: "Let me analyze your customer base and design the perfect AI-powered campaign...",
+        sender: "ai",
+        timestamp: new Date(),
+        uiComponent: {
+          type: "thinking-to-campaign-widget",
+          data: {
+            campaignType: "AI-Powered New Mover Journey",
+            targetAudience: "New mortgage customers",
+            estimatedReach: "2,847 customers",
+            projectedEngagement: "68% open rate",
+            expectedConversion: "23% conversion",
+            currentStep: 1,
+            stepStatus: "configuring",
+            isTransformed: false, // Will transform after analysis
+            offers: [
+              "$100 AI Gift Personalization",
+              "Moving Journey Bundle",
+              "U-Haul, Public Storage, Hilton",
+            ],
+            steps: [
+              "Step 1: AI-powered gifting moment ($100 value)",
+              "Step 2: Follow-up conversation about move planning",
+              "Step 3: Moving Journey bundle with partner offers",
+            ],
+          },
+        },
+      };
+
+      setMessages((prev) => [...prev, thinkingMessage]);
+      setIsAnalyzing(true);
+    }, 800);
 
     // Simulate progressive analysis
     const analysisSteps = [
@@ -136,7 +167,7 @@ export function TuckerAIChatInterface({
             sender: "ai",
             timestamp: new Date(),
             uiComponent: {
-              type: "refined-campaign-widget",
+              type: "thinking-to-campaign-widget",
               data: {
                 campaignType: "AI-Powered New Mover Journey",
                 targetAudience: "New mortgage customers",
@@ -145,6 +176,7 @@ export function TuckerAIChatInterface({
                 expectedConversion: "23% conversion",
                 currentStep: 1,
                 stepStatus: "configuring",
+                isTransformed: true, // Indicates it should show as campaign widget
                 offers: [
                   "$100 AI Gift Personalization",
                   "Moving Journey Bundle",
@@ -446,6 +478,8 @@ export function TuckerAIChatInterface({
     switch (component.type) {
       case "refined-campaign-widget":
         return <RefinedCampaignWidget {...component.data} />;
+      case "thinking-to-campaign-widget":
+        return <ThinkingToCampaignWidget {...component.data} />;
       default:
         return null;
     }
@@ -547,8 +581,8 @@ export function TuckerAIChatInterface({
             </div>
           ))}
 
-          {/* AI Typing Indicator with Progress */}
-          {isTyping && (
+          {/* Simple AI Typing Indicator */}
+          {isTyping && !isAnalyzing && (
             <div className="flex items-start gap-3 animate-fade-in">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center flex-shrink-0">
                 <Bot className="w-4 h-4 text-purple-600 animate-pulse" />
