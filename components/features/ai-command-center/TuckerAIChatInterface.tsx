@@ -123,7 +123,7 @@ export function TuckerAIChatInterface({
 
           const aiMessage: Message = {
             id: (Date.now() + 1).toString(),
-            text: "Perfect! I've analyzed your customer base and identified a high-impact opportunity. Based on recent mortgage data, I can see approximately 2,847 new homeowners in your target markets who would be ideal for this journey.\n\nI've designed a three-phase conversational experience that leverages AI personalization to maximize engagement and conversion. The projected impact looks very promising - let me show you the campaign architecture.",
+            text: "Perfect! I've analyzed your customer base and identified a high-impact opportunity. Based on recent mortgage data, I can see approximately 2,847 new homeowners in your target markets who would be ideal for this journey.\n\nI've designed a three-phase conversational experience that leverages AI personalization to maximize engagement and conversion. For the gifting moment, I've pre-selected three high-performing local partners: Olive & Finch (Italian restaurant), Williams Sonoma (home essentials), and Denver Cleaning Co (move-in service) - all $100 value options that resonate perfectly with new homeowners.\n\nThe projected impact looks very promising - let me show you the campaign architecture.",
             sender: "ai",
             timestamp: new Date(),
             uiComponent: {
@@ -184,10 +184,16 @@ export function TuckerAIChatInterface({
           input.includes("value")
         ) {
           responseText =
-            "Great question! The gift value is completely customizable. Based on your customer lifetime value data, I'd recommend starting with $100 as it typically drives 3x higher engagement rates. However, you can adjust this anywhere from $25 to $500 depending on your campaign budget and target segment value.";
-        } else if (input.includes("partner") || input.includes("offer")) {
+            "Great question! The gift value is completely customizable. Based on your customer lifetime value data, I'd recommend starting with $100 as it typically drives 3x higher engagement rates. The three gift options I've selected - Olive & Finch (Italian dining), Williams Sonoma (home essentials), and Denver Cleaning Co (move-in service) - all offer $100 value and have shown excellent performance with new homeowners. You can adjust this anywhere from $25 to $500 depending on your campaign budget.";
+        } else if (
+          input.includes("partner") ||
+          input.includes("offer") ||
+          input.includes("olive") ||
+          input.includes("williams") ||
+          input.includes("cleaning")
+        ) {
           responseText =
-            "Excellent point! I've pre-selected high-performing partners based on new mover behavior patterns. U-Haul shows 89% relevance for your audience, Public Storage has 76% appeal, and Hilton captures the celebration aspect. We can easily swap these for other partners in your network if you prefer.";
+            "Excellent point! I've pre-selected these three partners based on new mover behavior patterns: Olive & Finch shows 92% relevance for celebration dining, Williams Sonoma has 87% appeal for home setup needs, and Denver Cleaning Co captures 94% interest for move-in services. These local partners have proven track records with new homeowners. For the moving journey bundle, I've also connected U-Haul, Public Storage, and Hilton which complement the initial gift experience perfectly.";
         } else if (
           input.includes("launch") ||
           input.includes("start") ||
