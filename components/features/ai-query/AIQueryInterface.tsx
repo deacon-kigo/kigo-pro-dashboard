@@ -80,6 +80,15 @@ const QUERY_SUGGESTIONS: QuerySuggestion[] = [
     example:
       "Build 3-step conversational flow: $100 AI Gift → Follow-up conversation → Moving Journey bundle with U-Haul, Public Storage, Hilton",
   },
+  // Tucker's Starbucks Coffee Switch Campaign (Part 2 of Demo Script)
+  {
+    id: "starbucks-conquesting",
+    text: "Create Starbucks Coffee Switch conquesting campaign",
+    category: "campaign",
+    icon: <DollarSign className="w-4 h-4" />,
+    example:
+      "Target 50,000 members with competitor coffee purchases → 1,000 bonus points offer → Geofenced delivery near Starbucks",
+  },
   // Tucker Williams Complete Campaign Creation Demo
   {
     id: "create-campaign-demo",
@@ -437,8 +446,41 @@ export default function AIQueryInterface({
           let assistantMessage: any;
           let mockUI: any;
 
-          // Handle Tucker's New Mover Journey
+          // Handle Tucker's Starbucks Coffee Switch Campaign (Part 2)
           if (
+            currentInput.toLowerCase().includes("starbucks") ||
+            currentInput.toLowerCase().includes("coffee switch") ||
+            currentInput.toLowerCase().includes("conquesting")
+          ) {
+            assistantMessage = {
+              id: Date.now().toString() + "-assistant",
+              role: "assistant" as const,
+              content:
+                "Excellent opportunity, Tucker! I've identified a high-value partnership with Starbucks. Our AI has detected **50,000 ABC FI members** who frequently purchase coffee at competitor locations but haven't visited Starbucks in 180+ days. This is prime conquesting territory with significant revenue potential. Let me show you the campaign architecture:",
+            };
+
+            mockUI = {
+              type: "campaign-builder" as const,
+              props: {
+                campaignType: "Brand-Funded Coffee Switch Campaign",
+                targetAudience: "Coffee competitor customers",
+                offers: [
+                  "1,000 Bonus ABC FI Points",
+                  "Geofenced Push Notifications",
+                  "Starbucks Partnership",
+                ],
+                steps: [
+                  "Step 1: Identify conquesting segment (3+ competitor purchases, 0 Starbucks)",
+                  "Step 2: Create high-value brand-funded offer (1,000 points)",
+                  "Step 3: Configure geofenced delivery when near Starbucks locations",
+                ],
+                audience: "50,000 ABC FI members",
+                funding: "Advertiser-funded (Starbucks pays point liability)",
+              },
+            };
+          }
+          // Handle Tucker's New Mover Journey
+          else if (
             currentInput.toLowerCase().includes("new mover") ||
             (currentInput.toLowerCase().includes("mortgage") &&
               currentInput.toLowerCase().includes("campaign")) ||
