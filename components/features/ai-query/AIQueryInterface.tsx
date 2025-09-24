@@ -1120,7 +1120,7 @@ export default function AIQueryInterface({
                     {filteredSuggestions.map((suggestion, index) => (
                       <button
                         key={index}
-                        onClick={() => handleSuggestionClick(suggestion.text)}
+                        onClick={() => handleSuggestionClick(suggestion)}
                         className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors group"
                       >
                         <div className="flex items-start gap-2">
@@ -1478,6 +1478,10 @@ export default function AIQueryInterface({
 
             {/* Right Panel - Chat Interface */}
             <div className="md:col-span-3 flex flex-col h-full overflow-hidden">
+              {console.log(
+                "🔍 Rendering check - currentMessages.length:",
+                currentMessages.length
+              )}
               {currentMessages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center flex-1 text-center py-12">
                   <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center mb-4">
