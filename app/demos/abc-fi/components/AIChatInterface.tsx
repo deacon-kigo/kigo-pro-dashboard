@@ -6,7 +6,7 @@ import { Button } from "./ui/Button";
 import { MobileLayout } from "./MobileLayout";
 
 interface AIChatInterfaceProps {
-  onNext: () => void;
+  onChatComplete: () => void;
 }
 
 interface Message {
@@ -19,6 +19,7 @@ interface Message {
 
 interface UIComponent {
   type:
+    | "gift-selection"
     | "moving-offers"
     | "travel-offers"
     | "home-setup-offers"
@@ -37,20 +38,19 @@ interface Offer {
   category: string;
 }
 
-export function AIChatInterface({ onNext }: AIChatInterfaceProps) {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      text: "🌟 Moving your whole family from Kansas City to Denver! I can help organize everything from movers to kids' new rooms! Cross-state family moves have so many pieces. I've organized deals for moving logistics, travel, and setting up your new Denver home. Where should we start?",
-      sender: "ai",
-      timestamp: new Date(),
-    },
-  ]);
+export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [hasStarted, setHasStarted] = useState(false);
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [currentPhase, setCurrentPhase] = useState<
-    "moving" | "travel" | "home-setup" | "local-discovery"
-  >("moving");
+    "gift-selection" | "moving" | "travel" | "home-setup" | "local-discovery"
+  >("gift-selection");
+  const [selectedGift, setSelectedGift] = useState<string | null>(null);
+  const [visibleGifts, setVisibleGifts] = useState<number>(0);
+  const [visibleOffers, setVisibleOffers] = useState<number>(0);
+  const [conversationSequenceComplete, setConversationSequenceComplete] =
+    useState(false);
   const [savedOffers, setSavedOffers] = useState<string[]>([]);
   const [totalSavings, setTotalSavings] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -59,9 +59,251 @@ export function AIChatInterface({ onNext }: AIChatInterfaceProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const scrollToLatestContent = () => {
+    // Smooth scroll that doesn't jump to the very bottom
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }, 100);
+  };
+
   useEffect(() => {
-    scrollToBottom();
+    scrollToLatestContent();
   }, [messages]);
+
+  // Scroll when gift options become visible
+  useEffect(() => {
+    if (visibleGifts > 0) {
+      scrollToLatestContent();
+    }
+  }, [visibleGifts]);
+
+  // Scroll when offers become visible
+  useEffect(() => {
+    if (visibleOffers > 0) {
+      scrollToLatestContent();
+    }
+  }, [visibleOffers]);
+
+  // Start the conversation when component mounts
+  useEffect(() => {
+    if (!hasStarted) {
+      setHasStarted(true);
+      startConversationSequence();
+    }
+  }, [hasStarted]);
+
+  const startConversationSequence = () => {
+    setIsTyping(true);
+
+    // Step 1: Congratulations message
+    setTimeout(() => {
+      const congratsMessage: Message = {
+        id: "congrats",
+        text: "🏡 Congratulations on your new home in Denver, Sarah!",
+        sender: "ai",
+        timestamp: new Date(),
+      };
+
+      setMessages([congratsMessage]);
+      setIsTyping(false);
+
+      // Step 2: Gift announcement
+      setTimeout(() => {
+        setIsTyping(true);
+        setTimeout(() => {
+          const giftMessage: Message = {
+            id: "gift-announce",
+            text: "I have a special $100 housewarming gift for you! 🎁",
+            sender: "ai",
+            timestamp: new Date(),
+          };
+
+          setMessages((prev) => [...prev, giftMessage]);
+          setIsTyping(false);
+
+          // Step 3: Personalization explanation
+          setTimeout(() => {
+            setIsTyping(true);
+            setTimeout(() => {
+              const personalizationMessage: Message = {
+                id: "personalization",
+                text: "I've selected these options specifically for your family and your new Denver location:",
+                sender: "ai",
+                timestamp: new Date(),
+              };
+
+              setMessages((prev) => [...prev, personalizationMessage]);
+              setIsTyping(false);
+
+              // Step 4: Show gift options with progressive reveal
+              setTimeout(() => {
+                const giftOptionsMessage: Message = {
+                  id: "gift-options",
+                  text: "", // Empty text since we're just showing the component
+                  sender: "ai",
+                  timestamp: new Date(),
+                  uiComponent: {
+                    type: "gift-selection",
+                    data: {
+                      gifts: [
+                        {
+                          id: "restaurant-1",
+                          title: "Olive & Finch",
+                          merchant: "Popular Italian Restaurant",
+                          logo: "/illustration/abc-fi/mock/italian-restaurant.jpg",
+                          value: "$100",
+                          description:
+                            "Authentic Italian cuisine in downtown Denver",
+                          category: "restaurant",
+                        },
+                        {
+                          id: "home-goods-1",
+                          title: "Williams Sonoma",
+                          merchant: "Home & Kitchen",
+                          logo: "/logos/williams-sonoma-logo.png",
+                          value: "$100",
+                          description: "Premium kitchen and home essentials",
+                          category: "home-goods",
+                        },
+                        {
+                          id: "local-service-1",
+                          title: "Denver Cleaning Co",
+                          merchant: "Professional Cleaning Service",
+                          logo: "/illustration/abc-fi/mock/cleaning-service.jpg",
+                          value: "$100",
+                          description:
+                            "Professional home cleaning for your new place",
+                          category: "local-service",
+                        },
+                      ],
+                    },
+                  },
+                };
+
+                setMessages((prev) => [...prev, giftOptionsMessage]);
+
+                // Start progressive reveal of gift options
+                setTimeout(() => {
+                  setVisibleGifts(1);
+                  setTimeout(() => {
+                    setVisibleGifts(2);
+                    setTimeout(() => {
+                      setVisibleGifts(3);
+                      // Mark conversation sequence as complete after all gifts are shown
+                      setTimeout(() => {
+                        setConversationSequenceComplete(true);
+                      }, 500);
+                    }, 800);
+                  }, 800);
+                }, 500);
+              }, 1000);
+            }, 1500);
+          }, 1000);
+        }, 1500);
+      }, 1500);
+    }, 2000);
+  };
+
+  const startMovingPlanningSequence = () => {
+    setIsTyping(true);
+    setConversationSequenceComplete(false);
+
+    // Step 1: Initial acknowledgment
+    setTimeout(() => {
+      const acknowledgmentMessage: Message = {
+        id: "planning-ack",
+        text: "Of course! Let me help you plan your move.",
+        sender: "ai",
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, acknowledgmentMessage]);
+      setIsTyping(false);
+
+      // Step 2: Show thinking process
+      setTimeout(() => {
+        setIsTyping(true);
+        setTimeout(() => {
+          const thinkingMessage: Message = {
+            id: "planning-thinking",
+            text: "🤔 Let me analyze your specific situation... Kansas City to Denver with Emma and Jake...",
+            sender: "ai",
+            timestamp: new Date(),
+          };
+
+          setMessages((prev) => [...prev, thinkingMessage]);
+          setIsTyping(false);
+
+          // Step 3: Show analysis process
+          setTimeout(() => {
+            setIsTyping(true);
+            setTimeout(() => {
+              const analysisMessage: Message = {
+                id: "planning-analysis",
+                text: "📊 I'm checking the best moving options for families... cross-state logistics... timing considerations...",
+                sender: "ai",
+                timestamp: new Date(),
+              };
+
+              setMessages((prev) => [...prev, analysisMessage]);
+              setIsTyping(false);
+
+              // Step 4: Show curation process
+              setTimeout(() => {
+                setIsTyping(true);
+                setTimeout(() => {
+                  const curationMessage: Message = {
+                    id: "planning-curation",
+                    text: "✨ Perfect! I found some excellent options that match your family's needs and timeline.",
+                    sender: "ai",
+                    timestamp: new Date(),
+                  };
+
+                  setMessages((prev) => [...prev, curationMessage]);
+                  setIsTyping(false);
+
+                  // Step 5: Present the offers
+                  setTimeout(() => {
+                    setIsTyping(true);
+                    setTimeout(() => {
+                      const offersMessage: Message = {
+                        id: "planning-offers",
+                        text: "Here are the best offers I've curated for your Kansas City to Denver move:",
+                        sender: "ai",
+                        timestamp: new Date(),
+                        uiComponent: getMovingJourneyBundle(),
+                      };
+
+                      setMessages((prev) => [...prev, offersMessage]);
+                      setIsTyping(false);
+
+                      // Start progressive reveal of offers
+                      setTimeout(() => {
+                        setVisibleOffers(1);
+                        setTimeout(() => {
+                          setVisibleOffers(2);
+                          setTimeout(() => {
+                            setVisibleOffers(3);
+                            // Mark sequence complete after offers are shown
+                            setTimeout(() => {
+                              setConversationSequenceComplete(true);
+                            }, 500);
+                          }, 800);
+                        }, 800);
+                      }, 1000);
+                    }, 1500);
+                  }, 1000);
+                }, 2000);
+              }, 1500);
+            }, 2000);
+          }, 1500);
+        }, 2000);
+      }, 1000);
+    }, 1500);
+  };
 
   const sendMessage = (text: string) => {
     const userMessage: Message = {
@@ -74,20 +316,41 @@ export function AIChatInterface({ onNext }: AIChatInterfaceProps) {
     setMessages((prev) => [...prev, userMessage]);
     setInputText("");
     setIsTyping(true);
+    setVisibleOffers(0); // Reset offers animation
+    setConversationSequenceComplete(false); // Reset sequence state
 
     // Simulate AI response following Sarah's journey story
     setTimeout(() => {
       let aiResponse = "";
       let uiComponent: UIComponent | undefined;
 
-      // Follow the demo script conversation flow
+      // Follow the demo script conversation flow - Part 1 Implementation
       if (
+        text.toLowerCase().includes("plan") &&
+        text.toLowerCase().includes("move")
+      ) {
+        // Start the background agent thinking pattern
+        startMovingPlanningSequence();
+        return; // Don't add the AI message yet, let the sequence handle it
+      } else if (
         text.toLowerCase().includes("overwhelming") ||
         text.toLowerCase().includes("everything")
       ) {
         aiResponse =
           "I understand! Cross-state family moves have so many pieces. I've organized deals for moving logistics, travel, and setting up your new Denver home. Let's start with the most urgent - your moving logistics:";
         uiComponent = getPhaseOffers("moving");
+
+        // Start progressive reveal of offers
+        setTimeout(() => {
+          setVisibleOffers(1);
+          setTimeout(() => {
+            setVisibleOffers(2);
+            // Mark sequence complete after offers are shown
+            setTimeout(() => {
+              setConversationSequenceComplete(true);
+            }, 500);
+          }, 600);
+        }, 1000);
       } else if (
         text.toLowerCase().includes("moving") ||
         text.toLowerCase().includes("logistics")
@@ -159,6 +422,35 @@ export function AIChatInterface({ onNext }: AIChatInterfaceProps) {
           phaseResponses[currentPhase] ||
           "I'm here to help with your Kansas City to Denver move. What would you like to start with?";
         uiComponent = getPhaseOffers(currentPhase);
+
+        // Start progressive reveal for any offers
+        if (uiComponent && uiComponent.data.offers) {
+          setTimeout(() => {
+            setVisibleOffers(1);
+            setTimeout(() => {
+              setVisibleOffers(2);
+              if (uiComponent.data.offers.length > 2) {
+                setTimeout(() => {
+                  setVisibleOffers(3);
+                  // Mark sequence complete after all offers are shown
+                  setTimeout(() => {
+                    setConversationSequenceComplete(true);
+                  }, 500);
+                }, 600);
+              } else {
+                // Mark sequence complete for 2-item offers
+                setTimeout(() => {
+                  setConversationSequenceComplete(true);
+                }, 500);
+              }
+            }, 600);
+          }, 1000);
+        } else {
+          // No offers, mark sequence complete immediately
+          setTimeout(() => {
+            setConversationSequenceComplete(true);
+          }, 500);
+        }
       }
 
       const aiMessage: Message = {
@@ -176,11 +468,17 @@ export function AIChatInterface({ onNext }: AIChatInterfaceProps) {
 
   const getPhaseReplies = () => {
     switch (currentPhase) {
+      case "gift-selection":
+        return [
+          "Thank you! This is so thoughtful.",
+          "These look great! Let me choose one.",
+          "I love the personalized options!",
+        ];
       case "moving":
         return [
+          "I need to plan the move",
           "We need help with everything! This feels overwhelming.",
           "Can you help with moving logistics?",
-          "Show me moving company deals",
         ];
       case "travel":
         return [
@@ -207,6 +505,81 @@ export function AIChatInterface({ onNext }: AIChatInterfaceProps) {
 
   const quickReplies = getPhaseReplies();
 
+  const handleGiftSelection = (gift: any) => {
+    setSelectedGift(gift.id);
+    // DON'T reset visibleGifts - keep them visible to show selection state
+    setConversationSequenceComplete(false); // Reset sequence state
+
+    // Add confirmation message
+    const confirmationMessage: Message = {
+      id: Date.now().toString(),
+      text: `Perfect choice! I've added your ${gift.value} gift card for ${gift.title} to your Kigo Hub. 🎁`,
+      sender: "ai",
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, confirmationMessage]);
+
+    // Move to next phase after a delay
+    setTimeout(() => {
+      setIsTyping(true);
+      setTimeout(() => {
+        const followUpMessage: Message = {
+          id: Date.now().toString() + "-followup",
+          text: "Is there anything else we can help you with to plan your move to Denver?",
+          sender: "ai",
+          timestamp: new Date(),
+        };
+
+        setMessages((prev) => [...prev, followUpMessage]);
+        setCurrentPhase("moving");
+        setIsTyping(false);
+
+        // Mark sequence complete after follow-up message
+        setTimeout(() => {
+          setConversationSequenceComplete(true);
+        }, 500);
+      }, 1500);
+    }, 1000);
+  };
+
+  const handleSaveAllOffers = (offers: Offer[]) => {
+    // Save all unsaved offers
+    const unsavedOffers = offers.filter(
+      (offer) => !savedOffers.includes(offer.id)
+    );
+    const newOfferIds = unsavedOffers.map((offer) => offer.id);
+    const totalNewSavings = unsavedOffers.reduce((sum, offer) => {
+      return sum + parseInt(offer.savings.replace(/[^0-9]/g, ""));
+    }, 0);
+
+    setSavedOffers((prev) => [...prev, ...newOfferIds]);
+    setTotalSavings((prev) => prev + totalNewSavings);
+
+    // Add confirmation message matching the script
+    const confirmationMessage: Message = {
+      id: Date.now().toString(),
+      text: `🎉 Perfect! I've saved all your moving offers to your Kigo Hub. You'll save $${totalNewSavings} total on your Kansas City to Denver move!`,
+      sender: "ai",
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, confirmationMessage]);
+
+    // Show impressed reaction after a delay
+    setTimeout(() => {
+      const impressedMessage: Message = {
+        id: Date.now().toString() + "-impressed",
+        text: "I can see you're impressed with these personalized offers! Is there anything else I can help you with for your move?",
+        sender: "ai",
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, impressedMessage]);
+      setConversationSequenceComplete(true);
+    }, 2000);
+  };
+
   const handleOfferClick = (offer: Offer) => {
     if (savedOffers.includes(offer.id)) {
       return; // Already saved
@@ -220,7 +593,7 @@ export function AIChatInterface({ onNext }: AIChatInterfaceProps) {
     // Add a confirmation message
     const confirmationMessage: Message = {
       id: Date.now().toString(),
-      text: `✅ Great choice! I've saved the ${offer.title} deal for you. You'll save ${offer.savings}! Your total savings so far: $${totalSavings + savingsAmount}`,
+      text: `✅ Great choice! I've saved the ${offer.title} deal to your Kigo Hub. You'll save ${offer.savings}!`,
       sender: "ai",
       timestamp: new Date(),
     };
@@ -228,7 +601,7 @@ export function AIChatInterface({ onNext }: AIChatInterfaceProps) {
     setMessages((prev) => [...prev, confirmationMessage]);
 
     // Progress to next phase if enough offers saved
-    if (savedOffers.length >= 1) {
+    if (savedOffers.length >= 2) {
       setTimeout(() => {
         progressToNextPhase();
       }, 1500);
@@ -269,6 +642,46 @@ export function AIChatInterface({ onNext }: AIChatInterfaceProps) {
         }, 2000);
       }
     }
+  };
+
+  const getMovingJourneyBundle = (): UIComponent => {
+    return {
+      type: "moving-offers",
+      data: {
+        offers: [
+          {
+            id: "uhaul-bundle",
+            title: "U-Haul Complete Moving Package",
+            merchant: "U-Haul",
+            logo: "/logos/U-Haul-logo.png",
+            price: "$450",
+            savings: "Save $200",
+            description: "Truck rental + moving supplies for KC→Denver",
+            category: "Moving Logistics",
+          },
+          {
+            id: "public-storage-bundle",
+            title: "Public Storage Denver",
+            merchant: "Public Storage",
+            logo: "/logos/public-storage-logo.png",
+            price: "$89/month",
+            savings: "First month FREE",
+            description: "Secure storage near your new Denver home",
+            category: "Storage",
+          },
+          {
+            id: "hilton-bundle",
+            title: "Hilton Denver Downtown",
+            merchant: "Hilton",
+            logo: "/logos/hilton-honor-logo.png",
+            price: "$129/night",
+            savings: "Save $70/night",
+            description: "Family suite for your moving weekend",
+            category: "Accommodation",
+          },
+        ],
+      },
+    };
   };
 
   const getPhaseOffers = (phase: string): UIComponent => {
@@ -392,23 +805,177 @@ export function AIChatInterface({ onNext }: AIChatInterfaceProps) {
 
   const renderUIComponent = (component: UIComponent) => {
     switch (component.type) {
+      case "gift-selection":
+        return (
+          <div className="mt-3 space-y-3">
+            {component.data.gifts.map((gift: any, index: number) => {
+              const isSelected = selectedGift === gift.id;
+              return (
+                <div
+                  key={gift.id}
+                  onClick={() => !isSelected && handleGiftSelection(gift)}
+                  className={`rounded-2xl shadow-sm p-4 transition-all duration-500 border relative ${
+                    isSelected
+                      ? "bg-green-50 border-green-200 cursor-default"
+                      : "bg-white border-gray-100 cursor-pointer hover:shadow-md hover:border-blue-200 active:scale-[0.98]"
+                  } ${
+                    index < visibleGifts
+                      ? "opacity-100 translate-y-0"
+                      : "opacity-0 translate-y-4 pointer-events-none"
+                  }`}
+                  style={{
+                    transitionDelay: `${index * 100}ms`,
+                  }}
+                >
+                  {/* Selected State Indicator */}
+                  {isSelected && (
+                    <div className="absolute top-3 right-3 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                      <svg
+                        className="w-4 h-4"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center p-2">
+                      <img
+                        src={gift.logo}
+                        alt={gift.merchant}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <h4 className="font-medium text-sm text-gray-900">
+                          {gift.title}
+                        </h4>
+                        <div className="text-right">
+                          <p className="font-bold text-sm text-green-600">
+                            {gift.value}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="text-xs mb-2 text-gray-600">
+                        {gift.description}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
+                          {gift.category === "restaurant" && "🍽️ Dining"}
+                          {gift.category === "home-goods" &&
+                            "🏠 Home & Kitchen"}
+                          {gift.category === "local-service" &&
+                            "🧹 Local Service"}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {gift.merchant}
+                        </span>
+                      </div>
+
+                      {/* Added to Hub indicator */}
+                      {isSelected && (
+                        <div className="mt-2 px-3 py-1 bg-green-100 border border-green-200 rounded-lg">
+                          <p className="text-xs font-medium text-green-700 text-center">
+                            ✅ Added to your Kigo Hub
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Right side icon - different for selected vs unselected */}
+                    <div
+                      className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${
+                        isSelected
+                          ? "border-green-200 bg-green-50"
+                          : "border-gray-200"
+                      }`}
+                    >
+                      {isSelected ? (
+                        <svg
+                          className="w-4 h-4 text-green-600"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      ) : (
+                        <svg
+                          className="w-4 h-4 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        );
+
       case "moving-offers":
       case "travel-offers":
       case "home-setup-offers":
       case "local-discovery":
+        const allOffersVisible = visibleOffers >= component.data.offers.length;
+        const allOffersSaved = component.data.offers.every((offer: Offer) =>
+          savedOffers.includes(offer.id)
+        );
+        const someOffersSaved = component.data.offers.some((offer: Offer) =>
+          savedOffers.includes(offer.id)
+        );
+
         return (
           <div className="mt-3 space-y-3">
-            {component.data.offers.map((offer: Offer) => {
+            {/* Save All Button - appears after all offers are visible */}
+            {allOffersVisible && !allOffersSaved && (
+              <div className="animate-fade-in">
+                <button
+                  onClick={() => handleSaveAllOffers(component.data.offers)}
+                  className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-2xl font-medium text-sm hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                >
+                  💾 Save All Moving Offers to Kigo Hub
+                </button>
+              </div>
+            )}
+
+            {/* Individual Offers */}
+            {component.data.offers.map((offer: Offer, index: number) => {
               const isSaved = savedOffers.includes(offer.id);
               return (
                 <div
                   key={offer.id}
                   onClick={() => handleOfferClick(offer)}
-                  className={`rounded-2xl shadow-sm p-4 transition-all border ${
+                  className={`rounded-2xl shadow-sm p-4 transition-all duration-500 border ${
                     isSaved
                       ? "bg-green-50 border-green-200 cursor-default"
                       : "bg-white border-gray-100 cursor-pointer hover:shadow-md hover:border-blue-200"
+                  } ${
+                    index < visibleOffers
+                      ? "opacity-100 translate-y-0"
+                      : "opacity-0 translate-y-4 pointer-events-none"
                   }`}
+                  style={{
+                    transitionDelay: `${index * 100}ms`,
+                  }}
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center p-2 relative">
@@ -598,18 +1165,22 @@ export function AIChatInterface({ onNext }: AIChatInterfaceProps) {
                   </div>
                 )}
 
-                <div
-                  className={`rounded-2xl px-4 py-3 shadow-sm ${
-                    message.sender === "user" ? "text-white" : "bg-white"
-                  }`}
-                  style={
-                    message.sender === "user"
-                      ? { backgroundColor: "#3b82f6" }
-                      : {}
-                  }
-                >
-                  <p className="text-sm whitespace-pre-line">{message.text}</p>
-                </div>
+                {message.text && (
+                  <div
+                    className={`rounded-2xl px-4 py-3 shadow-sm ${
+                      message.sender === "user" ? "text-white" : "bg-white"
+                    }`}
+                    style={
+                      message.sender === "user"
+                        ? { backgroundColor: "#3b82f6" }
+                        : {}
+                    }
+                  >
+                    <p className="text-sm whitespace-pre-line">
+                      {message.text}
+                    </p>
+                  </div>
+                )}
 
                 {/* Render generative UI component if present */}
                 {message.uiComponent && (
@@ -661,9 +1232,10 @@ export function AIChatInterface({ onNext }: AIChatInterfaceProps) {
             </div>
           )}
 
-          {/* Suggestion Bubbles in Chat - only show when no messages or after AI response */}
-          {(messages.length <= 1 ||
-            messages[messages.length - 1]?.sender === "ai") &&
+          {/* Suggestion Bubbles in Chat - only show when conversation sequence is complete */}
+          {conversationSequenceComplete &&
+            (messages.length <= 1 ||
+              messages[messages.length - 1]?.sender === "ai") &&
             !isTyping && (
               <div className="flex justify-start animate-fade-in">
                 <div className="max-w-[85%]">
@@ -748,6 +1320,24 @@ export function AIChatInterface({ onNext }: AIChatInterfaceProps) {
             </div>
           </div>
         </div>
+
+        {/* Custom animations */}
+        <style jsx>{`
+          @keyframes fadeInUp {
+            from {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+
+          .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease-out forwards;
+          }
+        `}</style>
       </div>
     </MobileLayout>
   );
