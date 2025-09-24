@@ -421,6 +421,12 @@ export default function AIQueryInterface({
   // Use local state if useChat input is not available
   const currentInput = input !== undefined ? input : localInput || "";
   const currentSetInput = setInput || setLocalInput;
+
+  // Debug logging
+  console.log("AIQueryInterface - messages from useChat:", messages);
+  console.log("AIQueryInterface - localMessages:", localMessages);
+  console.log("AIQueryInterface - initialMessages prop:", initialMessages);
+
   const currentMessages =
     messages && messages.length > 0 ? messages : localMessages;
 
