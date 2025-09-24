@@ -140,12 +140,16 @@ interface AIQueryInterfaceProps {
   isOpen: boolean;
   onClose: () => void;
   apiEndpoint?: string;
+  mode?: "vercel-ai" | "copilotkit";
+  isFullScreen?: boolean;
 }
 
 export default function AIQueryInterface({
   isOpen,
   onClose,
   apiEndpoint = "/api/ai/chat",
+  mode = "vercel-ai",
+  isFullScreen = false,
 }: AIQueryInterfaceProps) {
   // Vercel AI SDK useChat hook
   const {
@@ -402,7 +406,7 @@ export default function AIQueryInterface({
   };
 
   // Use local state if useChat input is not available
-  const currentInput = input !== undefined ? input : localInput;
+  const currentInput = input !== undefined ? input : localInput || "";
   const currentSetInput = setInput || setLocalInput;
   const currentMessages =
     messages && messages.length > 0 ? messages : localMessages;
@@ -419,7 +423,7 @@ export default function AIQueryInterface({
     ((e: React.FormEvent) => {
       e.preventDefault();
       console.log("Form submitted with input:", currentInput);
-      if (currentInput.trim()) {
+      if (currentInput && currentInput.trim()) {
         // Manual submission if handleSubmit not available
         console.log("Submitting query:", currentInput);
 
@@ -490,7 +494,26 @@ export default function AIQueryInterface({
               id: Date.now().toString() + "-assistant",
               role: "assistant" as const,
               content:
-                "Perfect timing, Tucker! I've analyzed ABC FI's Q4 objectives and identified a high-impact opportunity. Based on our transaction data, I recommend the **AI-Powered New Mover Journey** for new mortgage customers. This campaign targets 567 customers per month with a projected $127K-$245K revenue potential. Let me show you the campaign architecture:",
+                "Perfect timing, Tucker! I've analyzed ABC FI's Q4 objectives and identified a high-impact opportunity.\n\n**💡 AI Insight**: Based on our transaction data, I recommend creating an **AI-Powered New Mover Journey** for new mortgage customers. This campaign targets 567 customers per month with a projected $127K-$245K revenue potential.\n\n**🎯 Strategy**: Begin with a personalized gift, then guide customers through their moving journey with curated partner offers.\n\nWould you like me to help you architect this conversational experience using the Kigo PRO campaign builder?",
+            };
+
+            // Don't show the campaign builder immediately - wait for Tucker's confirmation
+          }
+          // Handle Tucker's confirmation to proceed with campaign builder
+          else if (
+            (currentInput.toLowerCase().includes("yes") ||
+              currentInput.toLowerCase().includes("architect") ||
+              currentInput.toLowerCase().includes("build") ||
+              currentInput.toLowerCase().includes("create")) &&
+            (currentInput.toLowerCase().includes("campaign") ||
+              currentInput.toLowerCase().includes("journey") ||
+              currentInput.toLowerCase().includes("experience"))
+          ) {
+            assistantMessage = {
+              id: Date.now().toString() + "-assistant",
+              role: "assistant" as const,
+              content:
+                "Excellent choice, Tucker! Let's architect your AI-Powered New Mover Journey. I'll guide you through configuring each step of the conversational experience. You can customize the gift value, messaging, and partner offers to match your campaign objectives.",
             };
 
             mockUI = {
@@ -709,6 +732,36 @@ export default function AIQueryInterface({
       );
   }, [currentSetInput]);
 
+  // Listen for auto-prompt events (for command center navigation)
+  useEffect(() => {
+    const handleAutoPrompt = (event: CustomEvent) => {
+      const { prompt, clientId } = event.detail;
+      if (prompt) {
+        currentSetInput(prompt);
+        // Auto-submit the prompt after a brief delay to ensure state update
+        setTimeout(() => {
+          if (formRef.current && prompt.trim()) {
+            const submitEvent = new Event("submit", {
+              bubbles: true,
+              cancelable: true,
+            });
+            formRef.current.dispatchEvent(submitEvent);
+          }
+        }, 300);
+      }
+    };
+
+    window.addEventListener(
+      "ai-auto-prompt",
+      handleAutoPrompt as EventListener
+    );
+    return () =>
+      window.removeEventListener(
+        "ai-auto-prompt",
+        handleAutoPrompt as EventListener
+      );
+  }, [currentSetInput]);
+
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -790,11 +843,335 @@ export default function AIQueryInterface({
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-      <Card className="w-full h-full max-w-none max-h-none overflow-hidden bg-white shadow-2xl">
+  // Full-screen mode (no modal overlay)
+  if (isFullScreen) {
+    return (
+      <Card className="w-full h-full overflow-hidden shadow-lg bg-white">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-white border border-gray-200 flex items-center justify-center shadow-sm">
+              <Brain className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">
+                AI Command Center
+              </h2>
+              <p className="text-sm text-gray-600">
+                Campaign creation and marketing insights
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-xs">
+              AI Assistant
+            </Badge>
+            <Button
+              onClick={onClose}
+              variant="ghost"
+              size="sm"
+              className="p-2 hover:bg-gray-100 rounded-lg"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+
+        <CardContent className="p-0 h-[calc(100vh-200px)] overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-0 h-full">
+            {/* Left Panel - Suggestions Only */}
+            <div className="md:col-span-1 border-r border-gray-200 p-4 h-full overflow-y-auto bg-gray-50">
+              <div className="space-y-4">
+                {/* Category Filters */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Categories
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { key: "campaign", label: "Campaigns" },
+                      { key: "insights", label: "Customer Insights" },
+                      { key: "analytics", label: "Performance" },
+                      { key: "optimization", label: "Optimization" },
+                    ].map((category) => (
+                      <Button
+                        key={category.key}
+                        onClick={() =>
+                          setSelectedCategory(
+                            selectedCategory === category.key
+                              ? null
+                              : category.key
+                          )
+                        }
+                        variant={
+                          selectedCategory === category.key
+                            ? "default"
+                            : "outline"
+                        }
+                        size="sm"
+                        className="text-xs"
+                      >
+                        {category.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Suggestions */}
+                <div className="space-y-3">
+                  <label className="text-sm font-medium text-gray-700">
+                    Quick Suggestions
+                  </label>
+                  <div className="space-y-2">
+                    {filteredSuggestions.map((suggestion, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleSuggestionClick(suggestion.text)}
+                        className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors group"
+                      >
+                        <div className="flex items-start gap-2">
+                          <div className="text-blue-600 mt-0.5">
+                            {suggestion.icon}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 group-hover:text-blue-900">
+                              {suggestion.text}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {suggestion.example}
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Main Chat Area */}
+            <div className="md:col-span-3 flex flex-col h-full">
+              {/* Messages Area */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {messages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-center">
+                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                      <Sparkles className="w-8 h-8 text-blue-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Welcome to AI Command Center
+                    </h3>
+                    <p className="text-gray-600 mb-6 max-w-md">
+                      Ask me anything about campaigns, customer insights,
+                      analytics, or marketing strategies. I'm here to help you
+                      grow your business.
+                    </p>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {QUERY_SUGGESTIONS.slice(0, 3).map(
+                        (suggestion, index) => (
+                          <Button
+                            key={index}
+                            onClick={() =>
+                              handleSuggestionClick(suggestion.text)
+                            }
+                            variant="outline"
+                            size="sm"
+                            className="text-xs"
+                          >
+                            {suggestion.text}
+                          </Button>
+                        )
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  messages.map((message, index) => (
+                    <div key={index} className="space-y-4">
+                      <div
+                        className={`flex gap-3 ${
+                          message.role === "user"
+                            ? "justify-end"
+                            : "justify-start"
+                        }`}
+                      >
+                        <div
+                          className={`max-w-[80%] rounded-lg p-4 ${
+                            message.role === "user"
+                              ? "bg-blue-600 text-white"
+                              : "bg-white border border-gray-200 shadow-sm"
+                          }`}
+                        >
+                          <div className="flex items-start gap-2">
+                            {message.role === "assistant" && (
+                              <Brain className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                            )}
+                            {message.role === "user" && (
+                              <User className="w-5 h-5 text-white mt-0.5 flex-shrink-0" />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <div className="prose prose-sm max-w-none">
+                                {message.content}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Render generative UI component if available */}
+                      {generativeComponents.has(message.id) && (
+                        <div className="bg-white border border-gray-200 shadow-sm rounded-lg p-3">
+                          {(() => {
+                            const component = generativeComponents.get(
+                              message.id
+                            );
+                            if (!component) return null;
+
+                            switch (component.type) {
+                              case "campaign-builder":
+                                return <CampaignBuilderUI />;
+                              case "customer-insights":
+                                return <CustomerInsightsUI />;
+                              case "analytics-dashboard":
+                                return <AnalyticsDashboardUI />;
+                              default:
+                                return (
+                                  <div className="text-gray-500 text-sm">
+                                    Unknown component type: {component.type}
+                                  </div>
+                                );
+                            }
+                          })()}
+                        </div>
+                      )}
+
+                      {/* Action buttons for non-campaign-builder responses */}
+                      {message.role === "assistant" &&
+                        !generativeComponents.has(message.id) && (
+                          <div className="flex gap-2 justify-start">
+                            <Button
+                              onClick={() =>
+                                router.push("/campaign-manager/campaign-create")
+                              }
+                              size="sm"
+                              variant="outline"
+                              className="text-xs"
+                            >
+                              <Target className="w-3 h-3 mr-1" />
+                              Create Campaign
+                            </Button>
+                            <Button
+                              onClick={() =>
+                                router.push("/campaign-manager/ai-insights")
+                              }
+                              size="sm"
+                              variant="outline"
+                              className="text-xs"
+                            >
+                              <TrendingUp className="w-3 h-3 mr-1" />
+                              View Insights
+                            </Button>
+                            <Button
+                              onClick={() =>
+                                router.push("/campaign-manager/analytics")
+                              }
+                              size="sm"
+                              variant="outline"
+                              className="text-xs"
+                            >
+                              <DollarSign className="w-3 h-3 mr-1" />
+                              Analytics
+                            </Button>
+                          </div>
+                        )}
+                    </div>
+                  ))
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Chat Input at Bottom */}
+              <div className="border-t border-gray-200 p-4 bg-white">
+                <form
+                  ref={formRef}
+                  onSubmit={safeHandleSubmit}
+                  className="space-y-2"
+                >
+                  <div className="flex gap-2">
+                    <div className="flex-1 relative">
+                      <input
+                        ref={inputRef}
+                        type="text"
+                        value={input}
+                        onChange={handleInputChange}
+                        placeholder="Ask me about campaigns, insights, analytics..."
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                        disabled={isLoading}
+                      />
+                      {isLoading && (
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                        </div>
+                      )}
+                    </div>
+                    <Button
+                      type="submit"
+                      disabled={!input?.trim() || isLoading}
+                      className="px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      <Send className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={toggleVoiceInput}
+                      variant="outline"
+                      className="px-4 py-3"
+                      disabled={isLoading}
+                    >
+                      {isListening ? (
+                        <MicOff className="w-4 h-4 text-red-500" />
+                      ) : (
+                        <Mic className="w-4 h-4" />
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Modal mode (original glassmorphic modal)
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+      }}
+    >
+      <Card
+        className="w-full h-full max-w-none max-h-none overflow-hidden shadow-2xl"
+        style={{
+          backgroundColor: "rgba(255, 255, 255, 0.98)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          border: "1px solid rgba(255, 255, 255, 0.2)",
+        }}
+      >
+        {/* Header */}
+        <div
+          className="flex items-center justify-between p-6 border-b border-gray-200"
+          style={{
+            background:
+              "linear-gradient(to right, rgba(239, 246, 255, 0.9), rgba(250, 245, 255, 0.9))",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
+          }}
+        >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-white border border-gray-200 flex items-center justify-center shadow-sm">
               <Brain className="w-5 h-5 text-blue-600" />
@@ -826,7 +1203,14 @@ export default function AIQueryInterface({
         <CardContent className="p-0 h-[calc(100vh-120px)] overflow-hidden">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-0 h-full">
             {/* Left Panel - Suggestions Only */}
-            <div className="md:col-span-1 border-r border-gray-200 p-4 bg-gray-50 h-full overflow-y-auto">
+            <div
+              className="md:col-span-1 border-r border-gray-200 p-4 h-full overflow-y-auto"
+              style={{
+                backgroundColor: "rgba(249, 250, 251, 0.95)",
+                backdropFilter: "blur(8px)",
+                WebkitBackdropFilter: "blur(8px)",
+              }}
+            >
               <div className="space-y-4">
                 {/* Category Filters */}
                 <div className="space-y-2">
@@ -1009,42 +1393,47 @@ export default function AIQueryInterface({
                               </div>
                             )}
 
-                          {/* Action Buttons for AI Messages */}
-                          {message.role === "assistant" && (
-                            <div className="mt-3 flex flex-wrap gap-2">
-                              <Button
-                                onClick={() =>
-                                  router.push("/campaign-manager/ads-create")
-                                }
-                                variant="outline"
-                                size="sm"
-                                className="text-xs"
-                              >
-                                <Target className="w-3 h-3 mr-1" />
-                                Create Campaign
-                              </Button>
-                              <Button
-                                onClick={() =>
-                                  router.push("/campaign-manager/ai-insights")
-                                }
-                                variant="outline"
-                                size="sm"
-                                className="text-xs"
-                              >
-                                <TrendingUp className="w-3 h-3 mr-1" />
-                                View Insights
-                              </Button>
-                              <Button
-                                onClick={() => router.push("/analytics")}
-                                variant="outline"
-                                size="sm"
-                                className="text-xs"
-                              >
-                                <DollarSign className="w-3 h-3 mr-1" />
-                                Analytics
-                              </Button>
-                            </div>
-                          )}
+                          {/* Action Buttons for AI Messages - Only show for non-campaign-builder responses */}
+                          {message.role === "assistant" &&
+                            !generativeComponents.has(message.id) && (
+                              <div className="mt-3 flex flex-wrap gap-2">
+                                <Button
+                                  onClick={() =>
+                                    router.push(
+                                      "/campaign-manager/campaign-create"
+                                    )
+                                  }
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-xs"
+                                >
+                                  <Target className="w-3 h-3 mr-1" />
+                                  Create Campaign
+                                </Button>
+                                <Button
+                                  onClick={() =>
+                                    router.push("/campaign-manager/ai-insights")
+                                  }
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-xs"
+                                >
+                                  <TrendingUp className="w-3 h-3 mr-1" />
+                                  View Insights
+                                </Button>
+                                <Button
+                                  onClick={() =>
+                                    router.push("/campaign-manager/analytics")
+                                  }
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-xs"
+                                >
+                                  <DollarSign className="w-3 h-3 mr-1" />
+                                  Analytics
+                                </Button>
+                              </div>
+                            )}
                         </div>
                       </div>
                     ))}
@@ -1139,7 +1528,14 @@ export default function AIQueryInterface({
               )}
 
               {/* Chat Input at Bottom */}
-              <div className="border-t border-gray-200 p-4 bg-white">
+              <div
+                className="border-t border-gray-200 p-4"
+                style={{
+                  backgroundColor: "rgba(255, 255, 255, 0.98)",
+                  backdropFilter: "blur(12px)",
+                  WebkitBackdropFilter: "blur(12px)",
+                }}
+              >
                 <form
                   ref={formRef}
                   onSubmit={safeHandleSubmit}
