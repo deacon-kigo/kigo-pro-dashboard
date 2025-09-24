@@ -56,12 +56,19 @@ export default function AICommandCenterView() {
 
   // Pre-populate initial messages based on URL parameters
   const initialMessages = useMemo(() => {
+    console.log(
+      "AICommandCenterView - Creating initial messages for promptKey:",
+      promptKey
+    );
+
     if (
       promptKey &&
       CONVERSATION_FLOWS[promptKey as keyof typeof CONVERSATION_FLOWS]
     ) {
       const flow =
         CONVERSATION_FLOWS[promptKey as keyof typeof CONVERSATION_FLOWS];
+
+      console.log("AICommandCenterView - Found conversation flow:", flow);
 
       const userMessage = {
         id: Date.now().toString() + "-user",
@@ -75,14 +82,20 @@ export default function AICommandCenterView() {
         content: flow.aiResponse,
       };
 
-      return {
+      const result = {
         messages: [userMessage, aiMessage],
         uiComponent: flow.uiComponent
           ? { messageId: aiMessage.id, component: flow.uiComponent }
           : null,
       };
+
+      console.log("AICommandCenterView - Created initial messages:", result);
+      return result;
     }
 
+    console.log(
+      "AICommandCenterView - No conversation flow found, returning empty"
+    );
     return { messages: [], uiComponent: null };
   }, [promptKey]);
 
