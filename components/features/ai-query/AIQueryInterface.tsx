@@ -423,6 +423,7 @@ export default function AIQueryInterface({
     ((e: React.FormEvent) => {
       e.preventDefault();
       console.log("Form submitted with input:", currentInput);
+      console.log("handleSubmit available:", !!handleSubmit);
       if (currentInput && currentInput.trim()) {
         // Manual submission if handleSubmit not available
         console.log("Submitting query:", currentInput);
@@ -736,10 +737,13 @@ export default function AIQueryInterface({
   useEffect(() => {
     const handleAutoPrompt = (event: CustomEvent) => {
       const { prompt, clientId } = event.detail;
+      console.log("Auto-prompt received:", prompt, clientId);
       if (prompt) {
+        console.log("Setting input to:", prompt);
         currentSetInput(prompt);
         // Auto-submit the prompt after a brief delay to ensure state update
         setTimeout(() => {
+          console.log("Attempting to submit form with prompt:", prompt);
           if (formRef.current && prompt.trim()) {
             const submitEvent = new Event("submit", {
               bubbles: true,
