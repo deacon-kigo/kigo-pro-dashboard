@@ -255,36 +255,6 @@ export function TuckerAIChatInterface({
             </Button>
           </div>
         </div>
-
-        {/* Progress Toolbar */}
-        {(isAnalyzing || currentTask) && (
-          <div className="px-6 pb-4">
-            <div className="bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center">
-                  <Zap className="w-3 h-3 text-blue-600 animate-pulse" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium text-gray-900">
-                      AI Campaign Architect
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {campaignProgress}%
-                    </span>
-                  </div>
-                  <Progress value={campaignProgress} className="h-2" />
-                </div>
-              </div>
-              {currentTask && (
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <Clock className="w-4 h-4 animate-spin" />
-                  <span>{currentTask}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Chat Content */}
@@ -349,7 +319,7 @@ export function TuckerAIChatInterface({
             </div>
           ))}
 
-          {/* AI Typing Indicator */}
+          {/* AI Typing Indicator with Progress */}
           {isTyping && (
             <div className="flex items-start gap-3 animate-fade-in">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center flex-shrink-0">
@@ -367,7 +337,45 @@ export function TuckerAIChatInterface({
                     </span>
                   </div>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+
+                {/* Enhanced thinking indicator with glassmorphic design */}
+                <div
+                  className="rounded-xl p-4 border border-purple-200/50 backdrop-blur-sm"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, rgba(249, 250, 251, 0.9) 0%, rgba(243, 244, 246, 0.8) 100%)",
+                    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+                  }}
+                >
+                  {/* Progress section for analysis */}
+                  {isAnalyzing && (campaignProgress > 0 || currentTask) && (
+                    <div className="mb-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                          <Zap className="w-3 h-3 text-blue-600 animate-pulse" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm font-medium text-gray-900">
+                              AI Campaign Architect
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {campaignProgress}%
+                            </span>
+                          </div>
+                          <Progress value={campaignProgress} className="h-2" />
+                        </div>
+                      </div>
+                      {currentTask && (
+                        <div className="flex items-center gap-2 text-sm text-gray-600 bg-white/50 rounded-lg p-2">
+                          <Clock className="w-4 h-4 animate-spin" />
+                          <span>{currentTask}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Thinking animation */}
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <div className="flex gap-1">
                       <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
@@ -382,7 +390,7 @@ export function TuckerAIChatInterface({
                     </div>
                     <span className="ml-2">
                       {isAnalyzing
-                        ? "Analyzing data and building campaign..."
+                        ? "Building your campaign..."
                         : "Crafting response..."}
                     </span>
                   </div>
