@@ -620,23 +620,21 @@ export default function AIQueryInterface({
             };
           }
 
-          // Add AI response with natural timing and generative UI
+          // Add AI response with generative UI immediately
           setLocalMessages((prev) => [...prev, assistantMessage]);
+          setGenerativeComponents((prev) =>
+            new Map(prev).set(assistantMessage.id, mockUI)
+          );
 
-          // Add generative UI component after a slight delay for natural feel
+          // Handle campaign creation flow
+          if (mockUI) {
+            handleCampaignStep(mockUI.type, selectedJourney);
+          }
+
+          // Scroll to bottom after a short delay
           setTimeout(() => {
-            setGenerativeComponents((prev) =>
-              new Map(prev).set(assistantMessage.id, mockUI)
-            );
-
-            // Handle campaign creation flow
-            if (mockUI) {
-              handleCampaignStep(mockUI.type, selectedJourney);
-            }
-
-            // Scroll to bottom
             messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-          }, 800); // Delay UI appearance for natural conversation flow
+          }, 300);
         }, processingTime); // End of setTimeout for AI processing
       }
     });
