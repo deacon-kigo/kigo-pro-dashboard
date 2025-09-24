@@ -8,8 +8,6 @@ import { PushNotificationScreen } from "../demos/abc-fi/components/PushNotificat
 import { KigoMarketplace } from "../demos/abc-fi/components/KigoMarketplace";
 import { LightningDeals } from "../demos/abc-fi/components/LightningDeals";
 import { AIChatInterface } from "../demos/abc-fi/components/AIChatInterface";
-import { DaysLaterTransition } from "../demos/abc-fi/components/DaysLaterTransition";
-import { DenverStreetView } from "../demos/abc-fi/components/DenverStreetView";
 import { StarbucksGeofenceNotification } from "../demos/abc-fi/components/StarbucksGeofenceNotification";
 import { CoffeeConquestCampaign } from "../demos/abc-fi/components/CoffeeConquestCampaign";
 import { TransactionConfirmation } from "../demos/abc-fi/components/TransactionConfirmation";
@@ -23,8 +21,6 @@ type DemoStep =
   | "banking-dashboard"
   | "push-notification"
   | "ai-chat"
-  | "transition-days-later"
-  | "denver-street-view"
   | "starbucks-geofence"
   | "coffee-conquest"
   | "transaction-confirmation"
@@ -89,16 +85,7 @@ export default function ABCFIDemoStandalone() {
   };
 
   const handleChatComplete = () => {
-    // Auto-transition to Scene 2: Coffee Conquest after Scene 1 completes
-    setCurrentStep("transition-days-later");
-  };
-
-  // Scene 2: Coffee Conquest handlers
-  const handleTransitionComplete = () => {
-    setCurrentStep("denver-street-view");
-  };
-
-  const handleStarbucksApproach = () => {
+    // Direct transition to Scene 2: Starbucks notification
     setCurrentStep("starbucks-geofence");
   };
 
@@ -152,16 +139,6 @@ export default function ABCFIDemoStandalone() {
         return <AIChatInterface onChatComplete={handleChatComplete} />;
 
       // Scene 2: Coffee Conquest
-      case "transition-days-later":
-        return (
-          <DaysLaterTransition
-            onTransitionComplete={handleTransitionComplete}
-          />
-        );
-      case "denver-street-view":
-        return (
-          <DenverStreetView onStarbucksApproach={handleStarbucksApproach} />
-        );
       case "starbucks-geofence":
         return (
           <StarbucksGeofenceNotification
@@ -220,15 +197,13 @@ export default function ABCFIDemoStandalone() {
                 { key: "splash-screen", label: "1. Splash" },
                 { key: "banking-dashboard", label: "2. Dashboard" },
                 { key: "ai-chat", label: "3. AI Chat" },
-                { key: "transition-days-later", label: "4. Days Later" },
-                { key: "denver-street-view", label: "5. Street View" },
-                { key: "starbucks-geofence", label: "6. Geofence" },
-                { key: "coffee-conquest", label: "7. Coffee" },
-                { key: "transaction-confirmation", label: "8. Success" },
-                { key: "kigo-marketplace", label: "9. Marketplace" },
-                { key: "lightning-deals", label: "10. Lightning" },
-                { key: "receipt-scanning", label: "11. Receipt" },
-                { key: "value-summary", label: "12. Summary" },
+                { key: "starbucks-geofence", label: "4. Notification" },
+                { key: "coffee-conquest", label: "5. Coffee" },
+                { key: "transaction-confirmation", label: "6. Success" },
+                { key: "kigo-marketplace", label: "7. Marketplace" },
+                { key: "lightning-deals", label: "8. Lightning" },
+                { key: "receipt-scanning", label: "9. Receipt" },
+                { key: "value-summary", label: "10. Summary" },
               ].map(({ key, label }) => (
                 <button
                   key={key}
