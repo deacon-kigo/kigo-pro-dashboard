@@ -105,7 +105,8 @@ export default function AICampaignCreationContent() {
 
     // Determine client ID from URL or use default
     const urlParams = new URLSearchParams(window.location.search);
-    const clientParam = urlParams.get("client") || "seven-eleven";
+    const clientParam = urlParams.get("client") || "abc-fi"; // Default to ABC FI for Tucker
+    const insightParam = urlParams.get("insight");
 
     // Set client ID and greeting only once
     setClientId(clientParam);
@@ -113,12 +114,32 @@ export default function AICampaignCreationContent() {
 
     // Initialize at the first step
     setCampaignCreationStep("business-intelligence");
+
+    // If coming from dashboard insight, auto-trigger the new mover journey conversation
+    if (insightParam === "new-mover-journey") {
+      // Small delay to ensure AI panel is ready
+      setTimeout(() => {
+        // This will trigger the AI to start the new mover journey conversation
+        const aiPanel = document.querySelector("[data-ai-panel]");
+        if (aiPanel) {
+          // Simulate the user asking about the new mover journey
+          const event = new CustomEvent("ai-auto-message", {
+            detail: {
+              message:
+                "I want to explore the AI-Powered New Mover Journey opportunity you identified",
+            },
+          });
+          aiPanel.dispatchEvent(event);
+        }
+      }, 1000);
+    }
   }, [setClientId, setCampaignCreationStep, getGreeting]);
 
   // Get merchant name for display
   const merchantName = useMemo(() => {
     if (clientId === "seven-eleven") return "7-Eleven";
     if (clientId === "deacons") return "Deacon";
+    if (clientId === "abc-fi") return "Tucker";
     return clientName || "Merchant";
   }, [clientId, clientName]);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { IOSHomeScreen } from "../demos/abc-fi/components/IOSHomeScreen";
 import { SplashScreen } from "../demos/abc-fi/components/SplashScreen";
 import { SarahBankingDashboard } from "../demos/abc-fi/components/SarahBankingDashboard";
@@ -8,17 +8,28 @@ import { PushNotificationScreen } from "../demos/abc-fi/components/PushNotificat
 import { KigoMarketplace } from "../demos/abc-fi/components/KigoMarketplace";
 import { LightningDeals } from "../demos/abc-fi/components/LightningDeals";
 import { AIChatInterface } from "../demos/abc-fi/components/AIChatInterface";
+import { DaysLaterTransition } from "../demos/abc-fi/components/DaysLaterTransition";
+import { DenverStreetView } from "../demos/abc-fi/components/DenverStreetView";
+import { StarbucksGeofenceNotification } from "../demos/abc-fi/components/StarbucksGeofenceNotification";
+import { CoffeeConquestCampaign } from "../demos/abc-fi/components/CoffeeConquestCampaign";
+import { TransactionConfirmation } from "../demos/abc-fi/components/TransactionConfirmation";
 import { ReceiptScanning } from "../demos/abc-fi/components/ReceiptScanning";
 import { ValueSummary } from "../demos/abc-fi/components/ValueSummary";
+import { Confetti, type ConfettiRef } from "@/components/ui/confetti";
 
 type DemoStep =
   | "ios-homescreen"
   | "splash-screen"
   | "banking-dashboard"
   | "push-notification"
+  | "ai-chat"
+  | "transition-days-later"
+  | "denver-street-view"
+  | "starbucks-geofence"
+  | "coffee-conquest"
+  | "transaction-confirmation"
   | "kigo-marketplace"
   | "lightning-deals"
-  | "ai-chat"
   | "receipt-scanning"
   | "value-summary";
 
@@ -27,6 +38,7 @@ export default function ABCFIDemoStandalone() {
   const [showNotification, setShowNotification] = useState(false);
   const [notificationDismissed, setNotificationDismissed] = useState(false);
   const [showDevNav, setShowDevNav] = useState(false);
+  const confettiRef = useRef<ConfettiRef>(null);
 
   // Auto-trigger notification after user lands on dashboard
   useEffect(() => {
@@ -42,8 +54,20 @@ export default function ABCFIDemoStandalone() {
   }, [currentStep, notificationDismissed]);
 
   const handleNotificationClick = () => {
+    // Trigger confetti animation
+    confettiRef.current?.fire({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"],
+    });
+
     setShowNotification(false);
-    setCurrentStep("kigo-marketplace");
+
+    // Delay transition to AI chat to let confetti show
+    setTimeout(() => {
+      setCurrentStep("ai-chat");
+    }, 500);
   };
 
   const handleNotificationDismiss = () => {
@@ -65,6 +89,29 @@ export default function ABCFIDemoStandalone() {
   };
 
   const handleChatComplete = () => {
+    // Auto-transition to Scene 2: Coffee Conquest after Scene 1 completes
+    setCurrentStep("transition-days-later");
+  };
+
+  // Scene 2: Coffee Conquest handlers
+  const handleTransitionComplete = () => {
+    setCurrentStep("denver-street-view");
+  };
+
+  const handleStarbucksApproach = () => {
+    setCurrentStep("starbucks-geofence");
+  };
+
+  const handleGeofenceNotificationClick = () => {
+    setCurrentStep("coffee-conquest");
+  };
+
+  const handlePurchaseComplete = () => {
+    setCurrentStep("transaction-confirmation");
+  };
+
+  const handleTransactionComplete = () => {
+    // Continue to original demo flow
     setCurrentStep("receipt-scanning");
   };
 
@@ -103,6 +150,33 @@ export default function ABCFIDemoStandalone() {
         return <LightningDeals onChatWithAI={handleLightningDealsAction} />;
       case "ai-chat":
         return <AIChatInterface onChatComplete={handleChatComplete} />;
+
+      // Scene 2: Coffee Conquest
+      case "transition-days-later":
+        return (
+          <DaysLaterTransition
+            onTransitionComplete={handleTransitionComplete}
+          />
+        );
+      case "denver-street-view":
+        return (
+          <DenverStreetView onStarbucksApproach={handleStarbucksApproach} />
+        );
+      case "starbucks-geofence":
+        return (
+          <StarbucksGeofenceNotification
+            onNotificationClick={handleGeofenceNotificationClick}
+          />
+        );
+      case "coffee-conquest":
+        return (
+          <CoffeeConquestCampaign onPurchaseComplete={handlePurchaseComplete} />
+        );
+      case "transaction-confirmation":
+        return (
+          <TransactionConfirmation onComplete={handleTransactionComplete} />
+        );
+
       case "receipt-scanning":
         return <ReceiptScanning onReceiptScanned={handleReceiptScanned} />;
       case "value-summary":
@@ -145,11 +219,16 @@ export default function ABCFIDemoStandalone() {
                 { key: "ios-homescreen", label: "0. iOS Home" },
                 { key: "splash-screen", label: "1. Splash" },
                 { key: "banking-dashboard", label: "2. Dashboard" },
-                { key: "kigo-marketplace", label: "3. Marketplace" },
-                { key: "lightning-deals", label: "4. Lightning" },
-                { key: "ai-chat", label: "5. AI Chat" },
-                { key: "receipt-scanning", label: "6. Receipt" },
-                { key: "value-summary", label: "7. Summary" },
+                { key: "ai-chat", label: "3. AI Chat" },
+                { key: "transition-days-later", label: "4. Days Later" },
+                { key: "denver-street-view", label: "5. Street View" },
+                { key: "starbucks-geofence", label: "6. Geofence" },
+                { key: "coffee-conquest", label: "7. Coffee" },
+                { key: "transaction-confirmation", label: "8. Success" },
+                { key: "kigo-marketplace", label: "9. Marketplace" },
+                { key: "lightning-deals", label: "10. Lightning" },
+                { key: "receipt-scanning", label: "11. Receipt" },
+                { key: "value-summary", label: "12. Summary" },
               ].map(({ key, label }) => (
                 <button
                   key={key}
@@ -184,12 +263,12 @@ export default function ABCFIDemoStandalone() {
                   {currentStep === "banking-dashboard" &&
                     showNotification &&
                     "Tap notification to continue"}
+                  {currentStep === "ai-chat" &&
+                    "AI assistant with gift selection & move planning"}
                   {currentStep === "kigo-marketplace" &&
                     "Exploring personalized marketplace"}
                   {currentStep === "lightning-deals" &&
                     "Discovering limited-time offers"}
-                  {currentStep === "ai-chat" &&
-                    "AI assistant helping with move"}
                   {currentStep === "receipt-scanning" &&
                     "Earning points from purchases"}
                   {currentStep === "value-summary" &&
@@ -209,6 +288,16 @@ export default function ABCFIDemoStandalone() {
                 msOverflowStyle: "none",
               }}
             >
+              {/* Confetti Canvas - confined to mobile screen */}
+              <Confetti
+                ref={confettiRef}
+                className="absolute inset-0 pointer-events-none z-50"
+                manualstart={true}
+                globalOptions={{
+                  resize: true,
+                  useWorker: false,
+                }}
+              />
               {/* Main Content */}
               <div className="pb-16 h-full">{renderCurrentStep()}</div>
 

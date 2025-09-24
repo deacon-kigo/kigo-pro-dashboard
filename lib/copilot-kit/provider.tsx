@@ -11,7 +11,6 @@ import { useMarketingInsightsCopilot } from "../hooks/useMarketingInsightsCopilo
 import { useAppSelector } from "../redux/hooks";
 import ActionExecutor from "./action-executor";
 import { useApprovalFlow } from "../hooks/useApprovalFlow";
-import AIQueryTrigger from "../../components/features/ai-query/AIQueryTrigger";
 
 // Dynamic imports for components
 const ApprovalDialog = dynamic(
@@ -222,11 +221,8 @@ You are directly connected to our Python LangGraph backend with:
           initial:
             "Hi! I'm your Kigo Pro AI Marketing Co-pilot. I can analyze customer behavior, identify revenue opportunities, generate campaign strategies, and provide strategic recommendations. I can also help with campaigns, analytics, filters, and approvals. What would you like to explore?",
         }}
-        defaultOpen={true}
+        defaultOpen={false}
       />
-
-      {/* AI Query Interface - Vercel AI SDK UI */}
-      <AIQueryTrigger mode="vercel-ai" position="bottom-left" />
     </CopilotKit>
   );
 }

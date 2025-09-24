@@ -4,7 +4,6 @@ import React from "react";
 import { Card } from "./ui/Card";
 import { Button } from "./ui/Button";
 import { MobileLayout } from "./MobileLayout";
-import { ConfettiEffect } from "./ConfettiEffect";
 
 interface SarahBankingDashboardProps {
   showNotification: boolean;
@@ -19,14 +18,9 @@ export function SarahBankingDashboard({
   onNotificationDismiss,
   onNavigate,
 }: SarahBankingDashboardProps) {
-  const [showConfetti, setShowConfetti] = React.useState(false);
-
   const handleNotificationClick = () => {
-    setShowConfetti(true);
-    // Navigate to relocation center after confetti starts
-    setTimeout(() => {
-      onNotificationClick();
-    }, 500);
+    // Use the main confetti system from the parent component
+    onNotificationClick();
   };
 
   return (
@@ -454,7 +448,7 @@ export function SarahBankingDashboard({
             }}
           >
             <div
-              onClick={onNotificationClick}
+              onClick={handleNotificationClick}
               className="bg-white rounded-2xl p-4 shadow-xl border border-gray-200 active:scale-[0.98] active:bg-gray-50 transition-all touch-manipulation select-none"
             >
               <div className="flex items-start gap-3">
@@ -501,12 +495,6 @@ export function SarahBankingDashboard({
             </div>
           </div>
         )}
-
-        {/* Confetti Effect */}
-        <ConfettiEffect
-          isActive={showConfetti}
-          onComplete={() => setShowConfetti(false)}
-        />
 
         <style jsx>{`
           @keyframes slideDown {
