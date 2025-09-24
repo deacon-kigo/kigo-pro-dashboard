@@ -178,65 +178,151 @@ export function RefinedCampaignWidget({
   }
 
   return (
-    <Card className="w-full max-w-2xl mx-auto mt-4 overflow-hidden border-2 border-blue-200 shadow-lg animate-fade-in">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 border-b">
+    <div
+      className="w-full max-w-2xl mx-auto mt-4 rounded-2xl overflow-hidden border border-purple-200/50 shadow-2xl animate-fade-in backdrop-blur-sm"
+      style={{
+        background:
+          "linear-gradient(135deg, rgba(250, 245, 255, 0.95) 0%, rgba(239, 246, 255, 0.9) 50%, rgba(243, 244, 246, 0.85) 100%)",
+        boxShadow:
+          "0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.2)",
+      }}
+    >
+      {/* Header with glassmorphic design */}
+      <div
+        className="p-6 border-b border-white/20"
+        style={{
+          background:
+            "linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(248, 250, 252, 0.3) 100%)",
+          backdropFilter: "blur(12px)",
+        }}
+      >
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-blue-600" />
+          <div className="flex items-center gap-4">
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg"
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%)",
+                border: "1px solid rgba(255, 255, 255, 0.3)",
+              }}
+            >
+              <Sparkles className="w-7 h-7 text-indigo-600" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-gray-900">
+              <h3 className="text-xl font-bold text-gray-900 mb-1">
                 {campaignType}
               </h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 flex items-center gap-2">
+                <Zap className="w-4 h-4 text-purple-500" />
                 AI-optimized customer journey
               </p>
             </div>
           </div>
-          <Badge className="bg-green-100 text-green-800 border-green-200">
-            Ready to Launch
-          </Badge>
+          <div
+            className="px-4 py-2 rounded-full text-sm font-medium"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.1) 100%)",
+              border: "1px solid rgba(34, 197, 94, 0.2)",
+              color: "#166534",
+            }}
+          >
+            ✨ Ready to Launch
+          </div>
         </div>
       </div>
 
       {/* Impact Metrics */}
-      <div className="p-6 border-b bg-white">
-        <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-blue-600" />
+      <div
+        className="p-6 border-b border-white/20"
+        style={{
+          background:
+            "linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(248, 250, 252, 0.1) 100%)",
+          backdropFilter: "blur(8px)",
+        }}
+      >
+        <h4 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-indigo-600" />
           Projected Impact
         </h4>
 
         <div className="grid grid-cols-3 gap-4">
-          <div className="text-center p-4 bg-blue-50 rounded-lg">
-            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-2">
-              <Users className="w-4 h-4 text-blue-600" />
+          <div
+            className="text-center p-5 rounded-xl border border-white/30"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%)",
+              backdropFilter: "blur(10px)",
+            }}
+          >
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3"
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.1) 100%)",
+                border: "1px solid rgba(59, 130, 246, 0.3)",
+              }}
+            >
+              <Users className="w-5 h-5 text-blue-600" />
             </div>
-            <div className="text-2xl font-bold text-blue-900">
+            <div className="text-2xl font-bold text-blue-900 mb-1">
               {estimatedReach.split(" ")[0]}
             </div>
-            <div className="text-sm text-blue-700">Target Customers</div>
+            <div className="text-sm text-blue-700 font-medium">
+              Target Customers
+            </div>
           </div>
 
-          <div className="text-center p-4 bg-green-50 rounded-lg">
-            <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-2">
-              <Target className="w-4 h-4 text-green-600" />
+          <div
+            className="text-center p-5 rounded-xl border border-white/30"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.05) 100%)",
+              backdropFilter: "blur(10px)",
+            }}
+          >
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3"
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 163, 74, 0.1) 100%)",
+                border: "1px solid rgba(34, 197, 94, 0.3)",
+              }}
+            >
+              <Target className="w-5 h-5 text-green-600" />
             </div>
-            <div className="text-2xl font-bold text-green-900">
+            <div className="text-2xl font-bold text-green-900 mb-1">
               {projectedEngagement.split("%")[0]}%
             </div>
-            <div className="text-sm text-green-700">Engagement Rate</div>
+            <div className="text-sm text-green-700 font-medium">
+              Engagement Rate
+            </div>
           </div>
 
-          <div className="text-center p-4 bg-purple-50 rounded-lg">
-            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-2">
-              <DollarSign className="w-4 h-4 text-purple-600" />
+          <div
+            className="text-center p-5 rounded-xl border border-white/30"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(147, 51, 234, 0.05) 100%)",
+              backdropFilter: "blur(10px)",
+            }}
+          >
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3"
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(147, 51, 234, 0.1) 100%)",
+                border: "1px solid rgba(168, 85, 247, 0.3)",
+              }}
+            >
+              <DollarSign className="w-5 h-5 text-purple-600" />
             </div>
-            <div className="text-2xl font-bold text-purple-900">
+            <div className="text-2xl font-bold text-purple-900 mb-1">
               {expectedConversion.split("%")[0]}%
             </div>
-            <div className="text-sm text-purple-700">Conversion Rate</div>
+            <div className="text-sm text-purple-700 font-medium">
+              Conversion Rate
+            </div>
           </div>
         </div>
       </div>
@@ -341,19 +427,32 @@ export function RefinedCampaignWidget({
       </div>
 
       {/* Action Button */}
-      <div className="p-6 bg-white">
-        <Button
+      <div
+        className="p-6"
+        style={{
+          background:
+            "linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(248, 250, 252, 0.2) 100%)",
+          backdropFilter: "blur(8px)",
+        }}
+      >
+        <button
           onClick={handleLaunchCampaign}
-          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+          className="w-full py-4 px-6 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl active:scale-[0.98] flex items-center justify-center gap-3"
+          style={{
+            background:
+              "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%)",
+            boxShadow:
+              "0 10px 30px rgba(99, 102, 241, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)",
+          }}
         >
-          <Zap className="w-5 h-5 mr-2" />
+          <Zap className="w-5 h-5" />
           Configure & Launch Campaign
-        </Button>
+        </button>
 
-        <p className="text-center text-sm text-gray-500 mt-3">
-          Campaign will be ready to launch in ~2 hours after configuration
+        <p className="text-center text-sm text-gray-600 mt-4 font-medium">
+          ⚡ Campaign will be ready to launch in ~2 hours after configuration
         </p>
       </div>
-    </Card>
+    </div>
   );
 }
