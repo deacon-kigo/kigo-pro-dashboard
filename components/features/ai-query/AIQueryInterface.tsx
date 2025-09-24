@@ -142,6 +142,8 @@ interface AIQueryInterfaceProps {
   apiEndpoint?: string;
   mode?: "vercel-ai" | "copilotkit";
   isFullScreen?: boolean;
+  initialMessages?: any[];
+  initialUIComponent?: { messageId: string; component: any } | null;
 }
 
 export default function AIQueryInterface({
@@ -150,6 +152,8 @@ export default function AIQueryInterface({
   apiEndpoint = "/api/ai/chat",
   mode = "vercel-ai",
   isFullScreen = false,
+  initialMessages = [],
+  initialUIComponent = null,
 }: AIQueryInterfaceProps) {
   // Vercel AI SDK useChat hook
   const {
@@ -214,8 +218,17 @@ export default function AIQueryInterface({
   const [localInput, setLocalInput] = useState("");
   const [generativeComponents, setGenerativeComponents] = useState<
     Map<string, GenerativeUIComponent>
-  >(new Map());
-  const [localMessages, setLocalMessages] = useState<any[]>([]);
+  >(() => {
+    const initialMap = new Map();
+    if (initialUIComponent) {
+      initialMap.set(
+        initialUIComponent.messageId,
+        initialUIComponent.component
+      );
+    }
+    return initialMap;
+  });
+  const [localMessages, setLocalMessages] = useState<any[]>(initialMessages);
   // Local state for campaign creation flow
   const [currentStep, setCurrentStep] = useState<string | null>(null);
   const [selectedJourney, setSelectedJourney] = useState<string | null>(null);
