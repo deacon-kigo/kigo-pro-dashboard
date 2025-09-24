@@ -28,6 +28,33 @@ function analyzePromptForUI(
 ): { type: string; props: any } | null {
   const lowerPrompt = prompt.toLowerCase();
 
+  // Tucker's Starbucks Coffee Switch Campaign (Part 2)
+  if (
+    lowerPrompt.includes("starbucks") ||
+    lowerPrompt.includes("coffee switch") ||
+    lowerPrompt.includes("conquesting")
+  ) {
+    return {
+      type: "campaign-builder",
+      props: {
+        campaignType: "Brand-Funded Coffee Switch Campaign",
+        targetAudience: "Coffee competitor customers",
+        offers: [
+          "1,000 Bonus ABC FI Points",
+          "Geofenced Push Notifications",
+          "Starbucks Partnership",
+        ],
+        steps: [
+          "Step 1: Identify conquesting segment (3+ competitor purchases, 0 Starbucks)",
+          "Step 2: Create high-value brand-funded offer (1,000 points)",
+          "Step 3: Configure geofenced delivery when near Starbucks locations",
+        ],
+        audience: "50,000 ABC FI members",
+        funding: "Advertiser-funded (Starbucks pays point liability)",
+      },
+    };
+  }
+
   // Tucker's New Mover Campaign Creation
   if (
     lowerPrompt.includes("new mover") ||

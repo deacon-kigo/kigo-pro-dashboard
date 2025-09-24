@@ -26,6 +26,8 @@ interface CampaignBuilderUIProps {
   targetAudience: string;
   offers: string[];
   steps?: string[];
+  audience?: string;
+  funding?: string;
 }
 
 export default function CampaignBuilderUI({
@@ -33,6 +35,8 @@ export default function CampaignBuilderUI({
   targetAudience,
   offers,
   steps,
+  audience,
+  funding,
 }: CampaignBuilderUIProps) {
   const [selectedOffers, setSelectedOffers] = useState<string[]>([
     "$100 AI Gift Personalization",
@@ -84,7 +88,7 @@ export default function CampaignBuilderUI({
                 {targetAudience}
               </Badge>
               <span className="text-sm text-gray-600">
-                • 2,847 customers identified
+                • {audience || "2,847 customers identified"}
               </span>
             </div>
             <div className="grid grid-cols-3 gap-3 text-center">
@@ -218,6 +222,32 @@ export default function CampaignBuilderUI({
           </div>
         </CardContent>
       </Card>
+
+      {/* Funding Model (for brand-funded campaigns) */}
+      {funding && (
+        <Card className="bg-white/80 backdrop-blur-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <DollarSign className="w-4 h-4 text-green-600" />
+              Funding Model
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0 pb-3">
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <CheckCircle className="w-4 h-4 text-green-600" />
+                <span className="text-sm font-medium text-green-900">
+                  {funding}
+                </span>
+              </div>
+              <p className="text-xs text-green-700">
+                Zero cost to ABC FI - all point rewards and campaign costs
+                covered by advertiser partnership
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Action Buttons */}
       <div className="flex items-center gap-3">
