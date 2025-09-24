@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Brain, User, Bot, X, Sparkles } from "lucide-react";
-import { CampaignBuilderUI } from "@/components/features/ai-query/generative-ui/CampaignBuilderUI";
+import CampaignBuilderUI from "@/components/features/ai-query/generative-ui/CampaignBuilderUI";
 
 interface TuckerAIChatInterfaceProps {
   onClose: () => void;
