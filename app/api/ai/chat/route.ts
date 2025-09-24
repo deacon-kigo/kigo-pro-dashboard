@@ -28,6 +28,30 @@ function analyzePromptForUI(
 ): { type: string; props: any } | null {
   const lowerPrompt = prompt.toLowerCase();
 
+  // Tucker's New Mover Campaign Creation
+  if (
+    lowerPrompt.includes("new mover") ||
+    (lowerPrompt.includes("mortgage") && lowerPrompt.includes("campaign"))
+  ) {
+    return {
+      type: "campaign-builder",
+      props: {
+        campaignType: "AI-Powered New Mover Journey",
+        targetAudience: "New mortgage customers",
+        offers: [
+          "$100 AI Gift Personalization",
+          "Moving Journey Bundle",
+          "U-Haul, Public Storage, Hilton",
+        ],
+        steps: [
+          "Step 1: AI-powered gifting moment ($100 value)",
+          "Step 2: Follow-up conversation about move planning",
+          "Step 3: Moving Journey bundle with partner offers",
+        ],
+      },
+    };
+  }
+
   // Tucker Williams Journey Discovery Workflow
   if (lowerPrompt.includes("discover") && lowerPrompt.includes("journey")) {
     return {
@@ -205,22 +229,23 @@ export async function POST(req: Request) {
       system: `You are an AI Marketing Co-pilot for Kigo Pro, specifically designed to help Tucker Williams (ABC FI Marketing Manager) with sophisticated campaign creation and customer journey analysis.
 
 **Your Core Capabilities**:
-1. **Journey Discovery**: Analyze transaction data to identify high-value customer journey patterns
-2. **Pattern Analysis**: Deep-dive into 12-week customer journeys with engagement rates and financial impact
-3. **Campaign Architecture**: Design phase-based campaigns with national and local partner networks
-4. **Lightning Strategy**: Create AI-optimized scarcity offers with performance enhancement
-5. **Campaign Launch**: Real-time performance tracking with business impact metrics
+1. **New Mover Journey Creation**: Build AI-powered campaigns for new mortgage customers with personalized gifting and conversational flows
+2. **Journey Discovery**: Analyze transaction data to identify high-value customer journey patterns
+3. **Pattern Analysis**: Deep-dive into 12-week customer journeys with engagement rates and financial impact
+4. **Campaign Architecture**: Design phase-based campaigns with national and local partner networks
+5. **Lightning Strategy**: Create AI-optimized scarcity offers with performance enhancement
+6. **Campaign Launch**: Real-time performance tracking with business impact metrics
 
 **ABC FI Context**: You have access to:
 - 567 customers/month in home purchase + relocation journey (94% confidence)
 - $127-245 revenue per customer potential
-- $72K-139K monthly revenue opportunity  
-- 15 national partners + 12,000+ local merchants
+- $72K-139K monthly revenue opportunity
+- 15 national partners + 12,000+ local merchants (U-Haul, Public Storage, Hilton, etc.)
 - 18 months of transaction data for pattern analysis
 
 **Tucker Williams Profile**:
 - Role: Marketing Manager, ABC FI Loyalty Team
-- Goal: Create revenue-generating customer campaigns
+- Goal: Create revenue-generating customer campaigns, especially for Q4 objectives
 - KPIs: Customer engagement, revenue per campaign, LTV enhancement
 - Tech Level: Comfortable with marketing tools
 
@@ -232,9 +257,9 @@ export async function POST(req: Request) {
 - Use professional marketing terminology
 - Focus on ROI and business impact metrics
 
-${uiComponent ? `**IMPORTANT**: An interactive UI component will be generated alongside your response. Keep your text response concise and complementary to the UI component that shows detailed data visualizations.` : ""}
+${uiComponent ? `**IMPORTANT**: An interactive UI component will be generated alongside your response. Keep your text response concise and complementary to the UI component that shows detailed campaign configuration options.` : ""}
 
-**Example**: When Tucker asks "Discover high-value customer journey opportunities", show the 4 journey patterns with revenue potential, confidence scores, and customer volumes.`,
+**New Mover Journey Example**: When Tucker asks about creating campaigns for new mortgage customers, recommend the "AI-Powered New Mover Journey" with $100 personalized gifts, follow-up conversations, and moving bundle offers from partners like U-Haul, Public Storage, and Hilton.`,
       messages,
       temperature: 0.7,
       maxTokens: 1000,

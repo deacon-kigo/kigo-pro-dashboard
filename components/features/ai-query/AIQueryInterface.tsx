@@ -71,6 +71,15 @@ interface QueryResult {
 }
 
 const QUERY_SUGGESTIONS: QuerySuggestion[] = [
+  // Tucker's New Mover Journey (Part 1 of Demo Script)
+  {
+    id: "new-mover-campaign",
+    text: "Create AI-Powered New Mover Journey for Q4 mortgage customers",
+    category: "campaign",
+    icon: <Target className="w-4 h-4" />,
+    example:
+      "Build 3-step conversational flow: $100 AI Gift → Follow-up conversation → Moving Journey bundle with U-Haul, Public Storage, Hilton",
+  },
   // Tucker Williams Complete Campaign Creation Demo
   {
     id: "create-campaign-demo",
