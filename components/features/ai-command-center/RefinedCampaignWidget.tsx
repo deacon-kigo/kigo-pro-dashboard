@@ -26,6 +26,8 @@ interface RefinedCampaignWidgetProps {
   expectedConversion?: string;
   offers?: string[];
   steps?: string[];
+  currentStep?: number;
+  stepStatus?: "configuring" | "configured" | "complete";
 }
 
 export function RefinedCampaignWidget({
@@ -36,6 +38,8 @@ export function RefinedCampaignWidget({
   expectedConversion = "23% conversion",
   offers = [],
   steps = [],
+  currentStep = 0,
+  stepStatus = "configuring",
 }: RefinedCampaignWidgetProps) {
   const [isConfiguring, setIsConfiguring] = useState(false);
   const [isLaunching, setIsLaunching] = useState(false);
@@ -157,16 +161,52 @@ export function RefinedCampaignWidget({
               </p>
             </div>
           </div>
-          <div
-            className="px-4 py-2 rounded-full text-sm font-medium"
-            style={{
-              background:
-                "linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.1) 100%)",
-              border: "1px solid rgba(34, 197, 94, 0.2)",
-              color: "#166534",
-            }}
-          >
-            ✨ Ready to Launch
+          <div className="flex items-center gap-2">
+            {currentStep > 0 && (
+              <div className="flex items-center gap-1">
+                <div
+                  className={`w-2 h-2 rounded-full ${currentStep >= 1 ? "bg-blue-500" : "bg-gray-300"}`}
+                ></div>
+                <div
+                  className={`w-2 h-2 rounded-full ${currentStep >= 2 ? "bg-blue-500" : "bg-gray-300"}`}
+                ></div>
+                <div
+                  className={`w-2 h-2 rounded-full ${currentStep >= 3 ? "bg-blue-500" : "bg-gray-300"}`}
+                ></div>
+                <span className="text-xs text-gray-500 ml-1">
+                  Step {currentStep}/3
+                </span>
+              </div>
+            )}
+            <div
+              className="px-4 py-2 rounded-full text-sm font-medium"
+              style={{
+                background:
+                  stepStatus === "complete"
+                    ? "linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.1) 100%)"
+                    : stepStatus === "configured"
+                      ? "linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%)"
+                      : "linear-gradient(135deg, rgba(251, 146, 60, 0.1) 0%, rgba(249, 115, 22, 0.1) 100%)",
+                border:
+                  stepStatus === "complete"
+                    ? "1px solid rgba(34, 197, 94, 0.2)"
+                    : stepStatus === "configured"
+                      ? "1px solid rgba(59, 130, 246, 0.2)"
+                      : "1px solid rgba(251, 146, 60, 0.2)",
+                color:
+                  stepStatus === "complete"
+                    ? "#166534"
+                    : stepStatus === "configured"
+                      ? "#1e40af"
+                      : "#ea580c",
+              }}
+            >
+              {stepStatus === "complete"
+                ? "✨ Ready to Launch"
+                : stepStatus === "configured"
+                  ? "⚙️ Configured"
+                  : "🔧 Configuring..."}
+            </div>
           </div>
         </div>
       </div>
