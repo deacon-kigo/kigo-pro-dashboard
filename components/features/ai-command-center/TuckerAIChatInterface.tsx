@@ -88,41 +88,11 @@ export function TuckerAIChatInterface({
 
     setMessages([userMessage]);
 
-    // Show the thinking widget that will transform into campaign widget
-    setTimeout(() => {
-      const thinkingMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: "Let me analyze your customer base and design the perfect AI-powered campaign...",
-        sender: "ai",
-        timestamp: new Date(),
-        uiComponent: {
-          type: "thinking-to-campaign-widget",
-          data: {
-            campaignType: "AI-Powered New Mover Journey",
-            targetAudience: "New mortgage customers",
-            estimatedReach: "2,847 customers",
-            projectedEngagement: "68% open rate",
-            expectedConversion: "23% conversion",
-            currentStep: 1,
-            stepStatus: "configuring",
-            isTransformed: false, // Will transform after analysis
-            offers: [
-              "$100 AI Gift Personalization",
-              "Moving Journey Bundle",
-              "U-Haul, Public Storage, Hilton",
-            ],
-            steps: [
-              "Step 1: AI-powered gifting moment ($100 value)",
-              "Step 2: Follow-up conversation about move planning",
-              "Step 3: Moving Journey bundle with partner offers",
-            ],
-          },
-        },
-      };
-
-      setMessages((prev) => [...prev, thinkingMessage]);
-      setIsAnalyzing(true);
-    }, 800);
+    // Start analysis with existing progress bar that will transform
+    setIsAnalyzing(true);
+    setIsTyping(true);
+    setCurrentTask("Analyzing customer data and market trends...");
+    setCampaignProgress(10);
 
     // Simulate progressive analysis
     const analysisSteps = [
@@ -156,10 +126,12 @@ export function TuckerAIChatInterface({
           runAnalysisStep();
         }, step.delay);
       } else {
-        // Analysis complete, show AI response
+        // Analysis complete, transform progress bar into campaign widget
         setTimeout(() => {
           setIsAnalyzing(false);
+          setIsTyping(false);
           setCurrentTask("");
+          setCampaignProgress(0);
 
           const aiMessage: Message = {
             id: (Date.now() + 1).toString(),
@@ -167,7 +139,7 @@ export function TuckerAIChatInterface({
             sender: "ai",
             timestamp: new Date(),
             uiComponent: {
-              type: "thinking-to-campaign-widget",
+              type: "refined-campaign-widget",
               data: {
                 campaignType: "AI-Powered New Mover Journey",
                 targetAudience: "New mortgage customers",
@@ -176,7 +148,6 @@ export function TuckerAIChatInterface({
                 expectedConversion: "23% conversion",
                 currentStep: 1,
                 stepStatus: "configuring",
-                isTransformed: true, // Indicates it should show as campaign widget
                 offers: [
                   "$100 AI Gift Personalization",
                   "Moving Journey Bundle",
@@ -192,10 +163,7 @@ export function TuckerAIChatInterface({
           };
 
           setCampaignStep("step1");
-
           setMessages((prev) => [...prev, aiMessage]);
-          setIsTyping(false);
-          setCampaignProgress(0);
         }, 500);
       }
     };
@@ -241,39 +209,6 @@ export function TuckerAIChatInterface({
               responseText =
                 "Excellent! I've configured the gift value at $100 with AI personalization enabled. The system will automatically select the most relevant gift option for each customer from our three partners.\n\n**Step 2: The Follow-Up Configuration**\nNow let's program the conversational flow. After the customer selects their gift, the AI agent should ask a follow-up question to guide them to the moving journey bundle.\n\nI recommend: 'Is there anything else we can help you with to plan your move?'\n\nShould we use this follow-up question, or would you like to customize it?";
               nextStep = "step2";
-
-              // Add updated widget for step 2
-              setTimeout(() => {
-                const updatedMessage: Message = {
-                  id: (Date.now() + 2).toString(),
-                  text: "Step 1 configured! Now let's set up the follow-up question.",
-                  sender: "ai",
-                  timestamp: new Date(),
-                  uiComponent: {
-                    type: "refined-campaign-widget",
-                    data: {
-                      campaignType: "AI-Powered New Mover Journey",
-                      targetAudience: "New mortgage customers",
-                      estimatedReach: "2,847 customers",
-                      projectedEngagement: "68% open rate",
-                      expectedConversion: "23% conversion",
-                      currentStep: 2,
-                      stepStatus: "configuring",
-                      offers: [
-                        "✓ $100 AI Gift Personalization",
-                        "Moving Journey Bundle",
-                        "U-Haul, Public Storage, Hilton",
-                      ],
-                      steps: [
-                        "✓ Step 1: AI-powered gifting moment ($100 value)",
-                        "→ Step 2: Follow-up conversation about move planning",
-                        "Step 3: Moving Journey bundle with partner offers",
-                      ],
-                    },
-                  },
-                };
-                setMessages((prev) => [...prev, updatedMessage]);
-              }, 500);
             } else if (
               currentInput.includes("no") ||
               currentInput.includes("different") ||
@@ -303,39 +238,6 @@ export function TuckerAIChatInterface({
               responseText =
                 "Perfect! I've programmed the AI agent to ask: 'Is there anything else we can help you with to plan your move?' after the gift selection.\n\n**Step 3: The Journey Bundle Configuration**\nNow let's link the pre-built 'Moving Journey' offer bundle to this conversational path. This bundle contains offers for:\n• U-Haul (moving truck rentals)\n• Public Storage (temporary storage solutions)\n• Hilton Hotels (accommodation during the move)\n\nShould I activate all three partner offers in the Moving Journey bundle?";
               nextStep = "step3";
-
-              // Add updated widget for step 3
-              setTimeout(() => {
-                const updatedMessage: Message = {
-                  id: (Date.now() + 3).toString(),
-                  text: "Step 2 configured! Now let's set up the journey bundle.",
-                  sender: "ai",
-                  timestamp: new Date(),
-                  uiComponent: {
-                    type: "refined-campaign-widget",
-                    data: {
-                      campaignType: "AI-Powered New Mover Journey",
-                      targetAudience: "New mortgage customers",
-                      estimatedReach: "2,847 customers",
-                      projectedEngagement: "68% open rate",
-                      expectedConversion: "23% conversion",
-                      currentStep: 3,
-                      stepStatus: "configuring",
-                      offers: [
-                        "✓ $100 AI Gift Personalization",
-                        "✓ Follow-up Question Configured",
-                        "→ U-Haul, Public Storage, Hilton",
-                      ],
-                      steps: [
-                        "✓ Step 1: AI-powered gifting moment ($100 value)",
-                        "✓ Step 2: Follow-up conversation about move planning",
-                        "→ Step 3: Moving Journey bundle with partner offers",
-                      ],
-                    },
-                  },
-                };
-                setMessages((prev) => [...prev, updatedMessage]);
-              }, 500);
             } else if (
               currentInput.includes("custom") ||
               currentInput.includes("different") ||
@@ -364,39 +266,6 @@ export function TuckerAIChatInterface({
               responseText =
                 "Excellent! I've linked all three partner offers to the Moving Journey bundle:\n✓ U-Haul - Moving truck rentals\n✓ Public Storage - Storage solutions  \n✓ Hilton Hotels - Accommodation\n\n**Campaign Configuration Complete!**\nYour AI-Powered New Mover Journey is now fully configured and ready to launch!";
               nextStep = "complete";
-
-              // Add final complete widget
-              setTimeout(() => {
-                const completeMessage: Message = {
-                  id: (Date.now() + 4).toString(),
-                  text: "🎉 All steps configured! Your campaign is ready to launch.",
-                  sender: "ai",
-                  timestamp: new Date(),
-                  uiComponent: {
-                    type: "refined-campaign-widget",
-                    data: {
-                      campaignType: "AI-Powered New Mover Journey",
-                      targetAudience: "New mortgage customers",
-                      estimatedReach: "2,847 customers",
-                      projectedEngagement: "68% open rate",
-                      expectedConversion: "23% conversion",
-                      currentStep: 3,
-                      stepStatus: "complete",
-                      offers: [
-                        "✓ $100 AI Gift Personalization",
-                        "✓ Follow-up Question Configured",
-                        "✓ U-Haul, Public Storage, Hilton",
-                      ],
-                      steps: [
-                        "✓ Step 1: AI-powered gifting moment ($100 value)",
-                        "✓ Step 2: Follow-up conversation about move planning",
-                        "✓ Step 3: Moving Journey bundle with partner offers",
-                      ],
-                    },
-                  },
-                };
-                setMessages((prev) => [...prev, completeMessage]);
-              }, 500);
             } else if (
               currentInput.includes("custom") ||
               currentInput.includes("select") ||
@@ -581,8 +450,8 @@ export function TuckerAIChatInterface({
             </div>
           ))}
 
-          {/* Simple AI Typing Indicator */}
-          {isTyping && !isAnalyzing && (
+          {/* AI Typing Indicator with Progress */}
+          {isTyping && (
             <div className="flex items-start gap-3 animate-fade-in">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center flex-shrink-0">
                 <Bot className="w-4 h-4 text-purple-600 animate-pulse" />
