@@ -738,20 +738,89 @@ export default function AIQueryInterface({
     const handleAutoPrompt = (event: CustomEvent) => {
       const { prompt, clientId } = event.detail;
       console.log("Auto-prompt received:", prompt, clientId);
-      if (prompt) {
-        console.log("Setting input to:", prompt);
-        currentSetInput(prompt);
-        // Auto-submit the prompt after a brief delay to ensure state update
+      if (prompt && prompt.trim()) {
+        console.log("Processing auto-prompt:", prompt);
+
+        // Immediately add user message to chat
+        const userMessage = {
+          id: Date.now().toString() + "-user",
+          role: "user" as const,
+          content: prompt,
+        };
+
+        setLocalMessages((prev) => [...prev, userMessage]);
+
+        // Show AI thinking state
+        setIsAIThinking(true);
+
+        // Simulate AI processing and response
         setTimeout(() => {
-          console.log("Attempting to submit form with prompt:", prompt);
-          if (formRef.current && prompt.trim()) {
-            const submitEvent = new Event("submit", {
-              bubbles: true,
-              cancelable: true,
-            });
-            formRef.current.dispatchEvent(submitEvent);
+          setIsAIThinking(false);
+
+          // Generate AI response based on the prompt
+          let assistantMessage: any;
+          let mockUI: any;
+
+          // Handle Tucker's New Mover Journey auto-prompt
+          if (
+            prompt.toLowerCase().includes("new mover") ||
+            (prompt.toLowerCase().includes("mortgage") &&
+              prompt.toLowerCase().includes("campaign"))
+          ) {
+            assistantMessage = {
+              id: Date.now().toString() + "-assistant",
+              role: "assistant" as const,
+              content:
+                "Excellent choice, Tucker! Let's architect your AI-Powered New Mover Journey. I'll guide you through configuring each step of the conversational experience. You can customize the gift value, messaging, and partner offers to match your campaign objectives.",
+            };
+
+            mockUI = {
+              type: "campaign-builder" as const,
+              props: {
+                campaignType: "AI-Powered New Mover Journey",
+                targetAudience: "New mortgage customers",
+                offers: [
+                  "$100 AI Gift Personalization",
+                  "Moving Journey Bundle",
+                  "U-Haul, Public Storage, Hilton",
+                ],
+                steps: [
+                  "Step 1: AI-powered gifting moment ($100 value)",
+                  "Step 2: Follow-up conversation about move planning",
+                  "Step 3: Moving Journey bundle with partner offers",
+                ],
+              },
+            };
+          } else {
+            // Default response
+            assistantMessage = {
+              id: Date.now().toString() + "-assistant",
+              role: "assistant" as const,
+              content:
+                "I'll help you create that campaign! Let me set up the campaign builder for you.",
+            };
+
+            mockUI = {
+              type: "campaign-builder" as const,
+              props: {
+                campaignType: "Marketing Campaign",
+                targetAudience: "Target customers",
+                offers: ["Special Offer", "Partnership Benefits"],
+              },
+            };
           }
-        }, 300);
+
+          // Add AI response with generative UI
+          setLocalMessages((prev) => [...prev, assistantMessage]);
+          setGenerativeComponents((prev) =>
+            new Map(prev).set(assistantMessage.id, mockUI)
+          );
+
+          // Scroll to bottom
+          setTimeout(() => {
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+          }, 100);
+        }, 1500); // 1.5 second delay for AI thinking
       }
     };
 
