@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import { RootState } from "@/lib/redux/store";
@@ -45,12 +45,54 @@ const StepContent = ({ step }: { step: string }) => (
 
 const CampaignWizard: React.FC = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const dispatch = useDispatch();
 
   // Get campaign state from Redux
   const { currentStep, formData, stepValidation, isGenerating } = useSelector(
     (state: RootState) => state.campaign
   );
+
+  // Load AI-generated campaign data if coming from AI builder
+  useEffect(() => {
+    const source = searchParams.get("source");
+    if (source === "ai-builder") {
+      const aiCampaignData = sessionStorage.getItem("aiGeneratedCampaign");
+      if (aiCampaignData) {
+        try {
+          const campaignData = JSON.parse(aiCampaignData);
+
+          // Apply the AI-generated data to the campaign form
+          dispatch(
+            applyCampaignUpdate({
+              basicInfo: {
+                name: `${campaignData.type} - ${new Date().toLocaleDateString()}`,
+                description: `AI-generated campaign targeting ${campaignData.audience} with ${campaignData.giftValue} gift value`,
+                campaignType: "Advertising",
+              },
+              targeting: {
+                // Pre-fill with new mortgage customer targeting
+                startDate: new Date().toISOString().split("T")[0],
+                endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                  .toISOString()
+                  .split("T")[0], // 30 days from now
+                noEndDate: false,
+                locations: [],
+                gender: [],
+                ageRange: null,
+                campaignWeight: "medium" as const,
+              },
+            })
+          );
+
+          // Clear the session storage after loading
+          sessionStorage.removeItem("aiGeneratedCampaign");
+        } catch (error) {
+          console.error("Error loading AI campaign data:", error);
+        }
+      }
+    }
+  }, [searchParams, dispatch]);
 
   // Update AI context when form data changes
   useEffect(() => {

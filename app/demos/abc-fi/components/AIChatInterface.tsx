@@ -222,6 +222,7 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
 
       setMessages((prev) => [...prev, acknowledgmentMessage]);
       setIsTyping(false);
+      scrollToLatestContent();
 
       // Step 2: Show thinking process
       setTimeout(() => {
@@ -236,6 +237,7 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
 
           setMessages((prev) => [...prev, thinkingMessage]);
           setIsTyping(false);
+          scrollToLatestContent();
 
           // Step 3: Show analysis process
           setTimeout(() => {
@@ -250,6 +252,7 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
 
               setMessages((prev) => [...prev, analysisMessage]);
               setIsTyping(false);
+              scrollToLatestContent();
 
               // Step 4: Show curation process
               setTimeout(() => {
@@ -264,6 +267,7 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
 
                   setMessages((prev) => [...prev, curationMessage]);
                   setIsTyping(false);
+                  scrollToLatestContent();
 
                   // Step 5: Present the offers
                   setTimeout(() => {
@@ -279,6 +283,7 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
 
                       setMessages((prev) => [...prev, offersMessage]);
                       setIsTyping(false);
+                      scrollToLatestContent();
 
                       // Start progressive reveal of offers
                       setTimeout(() => {
@@ -803,133 +808,189 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
     }
   };
 
-  const renderUIComponent = (component: UIComponent) => {
-    switch (component.type) {
-      case "gift-selection":
-        return (
-          <div className="mt-3 space-y-3">
-            {component.data.gifts.map((gift: any, index: number) => {
-              const isSelected = selectedGift === gift.id;
-              return (
-                <div
-                  key={gift.id}
-                  onClick={() => !isSelected && handleGiftSelection(gift)}
-                  className={`rounded-2xl shadow-sm p-4 transition-all duration-500 border relative ${
-                    isSelected
-                      ? "bg-green-50 border-green-200 cursor-default"
-                      : "bg-white border-gray-100 cursor-pointer hover:shadow-md hover:border-blue-200 active:scale-[0.98]"
-                  } ${
-                    index < visibleGifts
-                      ? "opacity-100 translate-y-0"
-                      : "opacity-0 translate-y-4 pointer-events-none"
-                  }`}
-                  style={{
-                    transitionDelay: `${index * 100}ms`,
-                  }}
-                >
-                  {/* Selected State Indicator */}
-                  {isSelected && (
-                    <div className="absolute top-3 right-3 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
-                      <svg
-                        className="w-4 h-4"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center p-2">
-                      <img
-                        src={gift.logo}
-                        alt={gift.merchant}
-                        className="w-full h-full object-contain"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <h4 className="font-medium text-sm text-gray-900">
-                          {gift.title}
-                        </h4>
-                        <div className="text-right">
-                          <p className="font-bold text-sm text-green-600">
-                            {gift.value}
-                          </p>
-                        </div>
-                      </div>
-                      <p className="text-xs mb-2 text-gray-600">
-                        {gift.description}
+  // Unified offer card renderer for both gifts and offers
+  const renderOfferCards = (
+    items: any[],
+    type: "gifts" | "offers",
+    visibleCount: number
+  ) => {
+    const isGiftType = type === "gifts";
+    const selectedId = isGiftType ? selectedGift : null;
+
+    return (
+      <div className="mt-3 space-y-3">
+        {items.map((item: any, index: number) => {
+          const isSelected = isGiftType
+            ? selectedId === item.id
+            : savedOffers.includes(item.id);
+          const handleClick = isGiftType
+            ? () => !isSelected && handleGiftSelection(item)
+            : () => !isSelected && handleOfferClick(item);
+
+          return (
+            <div
+              key={item.id}
+              onClick={handleClick}
+              className={`rounded-2xl shadow-sm p-4 transition-all duration-500 border relative ${
+                isSelected
+                  ? "bg-green-50 border-green-200 cursor-default"
+                  : "bg-white border-gray-100 cursor-pointer hover:shadow-md hover:border-blue-200 active:scale-[0.98]"
+              } ${
+                index < visibleCount
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-4 pointer-events-none"
+              }`}
+              style={{
+                transitionDelay: `${index * 100}ms`,
+              }}
+            >
+              {/* Selected State Indicator */}
+              {isSelected && (
+                <div className="absolute top-3 right-3 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                  <svg
+                    className="w-4 h-4"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+              )}
+
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center p-2">
+                  <img
+                    src={item.logo}
+                    alt={item.merchant || item.title}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <h4 className="font-medium text-sm text-gray-900">
+                      {item.title}
+                    </h4>
+                    <div className="text-right">
+                      <p className="font-bold text-sm text-blue-600">
+                        {item.value || item.price}
                       </p>
-                      <div className="flex items-center justify-between">
-                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
-                          {gift.category === "restaurant" && "🍽️ Dining"}
-                          {gift.category === "home-goods" &&
-                            "🏠 Home & Kitchen"}
-                          {gift.category === "local-service" &&
-                            "🧹 Local Service"}
-                        </span>
-                        <span className="text-xs text-gray-500">
-                          {gift.merchant}
-                        </span>
-                      </div>
-
-                      {/* Added to Hub indicator */}
-                      {isSelected && (
-                        <div className="mt-2 px-3 py-1 bg-green-100 border border-green-200 rounded-lg">
-                          <p className="text-xs font-medium text-green-700 text-center">
-                            ✅ Added to your Kigo Hub
-                          </p>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Right side icon - different for selected vs unselected */}
-                    <div
-                      className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${
-                        isSelected
-                          ? "border-green-200 bg-green-50"
-                          : "border-gray-200"
-                      }`}
-                    >
-                      {isSelected ? (
-                        <svg
-                          className="w-4 h-4 text-green-600"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      ) : (
-                        <svg
-                          className="w-4 h-4 text-gray-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 5l7 7-7 7"
-                          />
-                        </svg>
+                      {item.savings && (
+                        <p className="text-xs text-green-600 font-medium">
+                          {item.savings}
+                        </p>
                       )}
                     </div>
                   </div>
+                  <p className="text-xs mb-2 text-gray-600">
+                    {item.description}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
+                      {isGiftType ? (
+                        <>
+                          {item.category === "restaurant" && "🍽️ Dining"}
+                          {item.category === "home-goods" &&
+                            "🏠 Home & Kitchen"}
+                          {item.category === "local-service" &&
+                            "🧹 Local Service"}
+                        </>
+                      ) : (
+                        item.category
+                      )}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {item.merchant}
+                    </span>
+                  </div>
+
+                  {/* Added to Hub indicator */}
+                  {isSelected && (
+                    <div className="mt-2 px-3 py-1 bg-green-100 border border-green-200 rounded-lg">
+                      <p className="text-xs font-medium text-green-700 text-center">
+                        ✅ Added to your Kigo Hub
+                      </p>
+                    </div>
+                  )}
                 </div>
-              );
-            })}
-          </div>
-        );
+
+                {/* Action button - different for gifts vs offers */}
+                <div
+                  className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${
+                    isSelected
+                      ? "border-green-200 bg-green-50"
+                      : isGiftType
+                        ? "border-gray-200"
+                        : "border-gray-200 hover:border-red-200 hover:bg-red-50"
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!isSelected) {
+                      if (isGiftType) {
+                        handleGiftSelection(item);
+                      } else {
+                        handleOfferClick(item);
+                      }
+                    }
+                  }}
+                >
+                  {isSelected ? (
+                    <svg
+                      className="w-4 h-4 text-green-600"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  ) : isGiftType ? (
+                    <svg
+                      className="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      className="w-4 h-4 text-gray-400 hover:text-red-500 transition-colors"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                      />
+                    </svg>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderUIComponent = (component: UIComponent) => {
+    switch (component.type) {
+      case "gift-selection":
+        return renderOfferCards(component.data.gifts, "gifts", visibleGifts);
 
       case "moving-offers":
       case "travel-offers":
@@ -937,9 +998,6 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
       case "local-discovery":
         const allOffersVisible = visibleOffers >= component.data.offers.length;
         const allOffersSaved = component.data.offers.every((offer: Offer) =>
-          savedOffers.includes(offer.id)
-        );
-        const someOffersSaved = component.data.offers.some((offer: Offer) =>
           savedOffers.includes(offer.id)
         );
 
@@ -957,97 +1015,8 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
               </div>
             )}
 
-            {/* Individual Offers */}
-            {component.data.offers.map((offer: Offer, index: number) => {
-              const isSaved = savedOffers.includes(offer.id);
-              return (
-                <div
-                  key={offer.id}
-                  onClick={() => handleOfferClick(offer)}
-                  className={`rounded-2xl shadow-sm p-4 transition-all duration-500 border ${
-                    isSaved
-                      ? "bg-green-50 border-green-200 cursor-default"
-                      : "bg-white border-gray-100 cursor-pointer hover:shadow-md hover:border-blue-200"
-                  } ${
-                    index < visibleOffers
-                      ? "opacity-100 translate-y-0"
-                      : "opacity-0 translate-y-4 pointer-events-none"
-                  }`}
-                  style={{
-                    transitionDelay: `${index * 100}ms`,
-                  }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center p-2 relative">
-                      <img
-                        src={offer.logo}
-                        alt={offer.merchant}
-                        className="w-full h-full object-contain"
-                      />
-                      {isSaved && (
-                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                          <svg
-                            className="w-3 h-3 text-white"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <h4
-                          className={`font-medium text-sm ${isSaved ? "text-green-800" : "text-gray-900"}`}
-                        >
-                          {offer.title}
-                        </h4>
-                        <div className="text-right">
-                          <p
-                            className={`font-bold text-sm ${isSaved ? "text-green-800" : "text-gray-900"}`}
-                          >
-                            {offer.price}
-                          </p>
-                          <p
-                            className={`text-xs ${isSaved ? "text-green-600" : "text-green-600"}`}
-                          >
-                            {offer.savings}
-                          </p>
-                        </div>
-                      </div>
-                      <p
-                        className={`text-xs mb-2 ${isSaved ? "text-green-700" : "text-gray-600"}`}
-                      >
-                        {offer.description}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            isSaved
-                              ? "bg-green-100 text-green-700"
-                              : "bg-blue-100 text-blue-700"
-                          }`}
-                        >
-                          {isSaved ? "✅ Saved" : offer.category}
-                        </span>
-                        <span
-                          className={`text-xs ${isSaved ? "text-green-600" : "text-gray-500"}`}
-                        >
-                          {offer.merchant}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+            {/* Use unified component for offers */}
+            {renderOfferCards(component.data.offers, "offers", visibleOffers)}
           </div>
         );
 
@@ -1182,9 +1151,9 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                   </div>
                 )}
 
-                {/* Render generative UI component if present */}
+                {/* Render generative UI component if present - Full width */}
                 {message.uiComponent && (
-                  <div className="mt-2">
+                  <div className="mt-2 -mx-6 px-6 py-4 bg-gray-50/50">
                     {renderUIComponent(message.uiComponent)}
                   </div>
                 )}

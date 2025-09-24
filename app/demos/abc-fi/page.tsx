@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { SarahBankingDashboard } from "./components/SarahBankingDashboard";
 import { PushNotificationScreen } from "./components/PushNotificationScreen";
+import { GiftSelection } from "./components/GiftSelection";
 import { KigoMarketplace } from "./components/KigoMarketplace";
 import { LightningDeals } from "./components/LightningDeals";
 import { AIChatInterface } from "./components/AIChatInterface";
@@ -12,9 +13,10 @@ import { ValueSummary } from "./components/ValueSummary";
 type DemoStep =
   | "banking-dashboard"
   | "push-notification"
+  | "gift-selection"
+  | "ai-chat"
   | "kigo-marketplace"
   | "lightning-deals"
-  | "ai-chat"
   | "receipt-scanning"
   | "value-summary";
 
@@ -22,6 +24,7 @@ export default function ABCFIDemo() {
   const [currentStep, setCurrentStep] = useState<DemoStep>("banking-dashboard");
   const [showNotification, setShowNotification] = useState(false);
   const [notificationDismissed, setNotificationDismissed] = useState(false);
+  const [selectedGift, setSelectedGift] = useState<string | null>(null);
 
   const demoSteps = [
     {
@@ -35,6 +38,12 @@ export default function ABCFIDemo() {
       component: PushNotificationScreen,
     },
     {
+      key: "gift-selection",
+      label: "Gift Selection",
+      component: GiftSelection,
+    },
+    { key: "ai-chat", label: "AI Chat", component: AIChatInterface },
+    {
       key: "kigo-marketplace",
       label: "Marketplace",
       component: KigoMarketplace,
@@ -44,7 +53,6 @@ export default function ABCFIDemo() {
       label: "Lightning Deals",
       component: LightningDeals,
     },
-    { key: "ai-chat", label: "AI Chat", component: AIChatInterface },
     {
       key: "receipt-scanning",
       label: "Receipt Scan",
@@ -77,7 +85,7 @@ export default function ABCFIDemo() {
 
   const handleNotificationClick = () => {
     setShowNotification(false);
-    setCurrentStep("kigo-marketplace");
+    setCurrentStep("gift-selection");
   };
 
   const handleNotificationReshow = () => {
@@ -86,9 +94,19 @@ export default function ABCFIDemo() {
   };
 
   const renderCurrentStep = () => {
-    const StepComponent =
-      demoSteps.find((step) => step.key === currentStep)?.component ||
-      SarahBankingDashboard;
+    const stepConfig = demoSteps.find((step) => step.key === currentStep);
+    const StepComponent = stepConfig?.component || SarahBankingDashboard;
+
+    // Special handling for GiftSelection component
+    if (currentStep === "gift-selection") {
+      return (
+        <GiftSelection
+          onGiftSelected={(giftId: string) => setSelectedGift(giftId)}
+          onNext={() => setCurrentStep("ai-chat")}
+        />
+      );
+    }
+
     return (
       <StepComponent onNext={() => setCurrentStep(nextStep as DemoStep)} />
     );
@@ -149,12 +167,12 @@ export default function ABCFIDemo() {
                       </div>
 
                       <h4 className="font-medium text-gray-900 text-sm mb-1">
-                        🏡 Congratulations on your new Denver home!
+                        🏡 Congratulations on the purchase of your new home in
+                        Denver!
                       </h4>
 
                       <p className="text-xs text-gray-600 leading-relaxed mb-3">
-                        We've found everything you need for your Kansas City to
-                        Denver move.
+                        We have a housewarming gift for you.
                       </p>
 
                       <button
@@ -182,6 +200,16 @@ export default function ABCFIDemo() {
                     }`}
                   >
                     <span className="text-xs">🏠</span>
+                  </button>
+                  <button
+                    onClick={() => setCurrentStep("gift-selection")}
+                    className={`p-2 rounded-lg transition-colors ${
+                      currentStep === "gift-selection"
+                        ? "bg-blue-100 text-blue-600"
+                        : "text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    <span className="text-xs">🎁</span>
                   </button>
                   <button
                     onClick={() => setCurrentStep("kigo-marketplace")}

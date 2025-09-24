@@ -1,8 +1,20 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { useDemoState } from "@/lib/redux/hooks";
 import { convertMockUserToUserProfile } from "@/lib/userProfileUtils";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  SparklesIcon,
+  XMarkIcon,
+  ArrowRightIcon,
+  LightBulbIcon,
+  ArrowTrendingUpIcon,
+  UsersIcon,
+} from "@heroicons/react/24/outline";
 
 // Simplified greeting header component with proper gradient background
 const GreetingHeader = () => {
@@ -109,12 +121,155 @@ const GreetingHeader = () => {
   );
 };
 
+// AI Insight Notification - Proactive suggestion that appears while Tucker works
+interface AIInsightNotificationProps {
+  onDismiss: () => void;
+}
+
+const AIInsightNotification = ({ onDismiss }: AIInsightNotificationProps) => {
+  const router = useRouter();
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const handleExploreOpportunity = () => {
+    // Navigate to AI chat interface with the new mover journey context
+    router.push(
+      "/campaign-manager/ai-create?insight=new-mover-journey&client=abc-fi"
+    );
+  };
+
+  return (
+    <div className="fixed top-4 right-4 z-50 max-w-md animate-slide-in-right">
+      <Card className="bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200 shadow-lg">
+        <div className="p-4">
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                <SparklesIcon className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 text-sm">
+                  AI Insight
+                </h3>
+                <Badge className="bg-purple-100 text-purple-700 text-xs">
+                  Q4 Opportunity
+                </Badge>
+              </div>
+            </div>
+            <button
+              onClick={onDismiss}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <XMarkIcon className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-start gap-2">
+              <LightBulbIcon className="w-4 h-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+              <p className="text-sm text-gray-700">
+                <strong>Tucker</strong>, I've identified a high-impact Q4
+                opportunity for ABC FI.
+              </p>
+            </div>
+
+            {!isExpanded ? (
+              <div className="space-y-2">
+                <p className="text-sm text-gray-600">
+                  <strong>567 new mortgage customers/month</strong> could
+                  benefit from an AI-powered moving journey.
+                </p>
+                <button
+                  onClick={() => setIsExpanded(true)}
+                  className="text-xs text-purple-600 hover:text-purple-700 font-medium"
+                >
+                  Show details →
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="bg-white/60 rounded-lg p-3 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <UsersIcon className="w-4 h-4 text-blue-600" />
+                    <span className="text-sm font-medium text-gray-900">
+                      Target Opportunity
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="text-center p-2 bg-blue-50 rounded">
+                      <div className="font-bold text-blue-900">567</div>
+                      <div className="text-blue-600">customers/month</div>
+                    </div>
+                    <div className="text-center p-2 bg-green-50 rounded">
+                      <div className="font-bold text-green-900">
+                        $127K-$245K
+                      </div>
+                      <div className="text-green-600">revenue potential</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white/60 rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <ArrowTrendingUpIcon className="w-4 h-4 text-green-600" />
+                    <span className="text-sm font-medium text-gray-900">
+                      Recommended Strategy
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600">
+                    <strong>AI-Powered New Mover Journey:</strong> Start with
+                    personalized $100 gifts, then guide customers through
+                    curated moving offers from U-Haul, Public Storage, and
+                    Hilton.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-2 pt-2">
+              <Button
+                onClick={handleExploreOpportunity}
+                className="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-sm"
+              >
+                <ArrowRightIcon className="w-3 h-3 mr-1" />
+                Explore Opportunity
+              </Button>
+              <Button
+                onClick={onDismiss}
+                variant="outline"
+                className="text-xs px-3"
+              >
+                Later
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+};
+
 // The main Campaign Manager dashboard component
 export default function CampaignManagerView() {
+  const [showAIInsight, setShowAIInsight] = useState(false);
+
+  // Show AI insight after user has been on dashboard for a few seconds (simulating Tucker working on Q4 objectives)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowAIInsight(true);
+    }, 4000); // Show after 4 seconds
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className="space-y-4">
       {/* Personalized greeting header */}
       <GreetingHeader />
+
+      {/* Proactive AI Insight - appears while Tucker is working */}
+      {showAIInsight && (
+        <AIInsightNotification onDismiss={() => setShowAIInsight(false)} />
+      )}
 
       {/* PowerBI dashboard embed - direct without Card container */}
       <PowerBIEmbed />
