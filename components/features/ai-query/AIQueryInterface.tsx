@@ -864,33 +864,128 @@ export default function AIQueryInterface({
     const fullQuery = suggestion.example
       ? `${suggestion.text}. ${suggestion.example}`
       : suggestion.text;
-    currentSetInput(fullQuery);
 
-    // Auto-submit the form after setting the input
-    setTimeout(() => {
-      if (formRef.current && handleSubmit) {
-        const submitEvent = new Event("submit", {
-          bubbles: true,
-          cancelable: true,
-        });
-        Object.defineProperty(submitEvent, "target", {
-          value: formRef.current,
-        });
-        Object.defineProperty(submitEvent, "currentTarget", {
-          value: formRef.current,
-        });
-        handleSubmit(submitEvent as any);
-      } else if (formRef.current) {
-        formRef.current.requestSubmit();
-      } else {
-        safeHandleSubmit({
-          preventDefault: () => {},
-          stopPropagation: () => {},
-          target: formRef.current,
-          currentTarget: formRef.current,
-        } as React.FormEvent);
-      }
-    }, 100); // Small delay to ensure input is set
+    console.log("Suggestion clicked:", fullQuery);
+
+    // Use the same direct message handling as auto-prompt
+    if (fullQuery && fullQuery.trim()) {
+      // Immediately add user message to chat
+      const userMessage = {
+        id: Date.now().toString() + "-user",
+        role: "user" as const,
+        content: fullQuery,
+      };
+
+      setLocalMessages((prev) => [...prev, userMessage]);
+
+      // Show AI thinking state
+      setIsAIThinking(true);
+
+      // Generate AI response based on the suggestion
+      setTimeout(() => {
+        setIsAIThinking(false);
+
+        let assistantMessage: any;
+        let mockUI: any;
+
+        // Handle different suggestion types
+        if (
+          fullQuery.toLowerCase().includes("new mover") ||
+          fullQuery.toLowerCase().includes("new-mover-campaign")
+        ) {
+          assistantMessage = {
+            id: Date.now().toString() + "-assistant",
+            role: "assistant" as const,
+            content:
+              "Excellent choice, Tucker! Let's architect your AI-Powered New Mover Journey. I'll guide you through configuring each step of the conversational experience. You can customize the gift value, messaging, and partner offers to match your campaign objectives.",
+          };
+
+          mockUI = {
+            type: "campaign-builder" as const,
+            props: {
+              campaignType: "AI-Powered New Mover Journey",
+              targetAudience: "New mortgage customers",
+              offers: [
+                "$100 AI Gift Personalization",
+                "Moving Journey Bundle",
+                "U-Haul, Public Storage, Hilton",
+              ],
+              steps: [
+                "Step 1: AI-powered gifting moment ($100 value)",
+                "Step 2: Follow-up conversation about move planning",
+                "Step 3: Moving Journey bundle with partner offers",
+              ],
+            },
+          };
+        } else if (
+          fullQuery.toLowerCase().includes("complete campaign") ||
+          fullQuery.toLowerCase().includes("home buyers")
+        ) {
+          // Start the interactive campaign demo flow
+          setIsAIThinking(false);
+          startCompleteCampaignDemo();
+          return;
+        } else if (
+          fullQuery.toLowerCase().includes("starbucks") ||
+          fullQuery.toLowerCase().includes("coffee switch")
+        ) {
+          assistantMessage = {
+            id: Date.now().toString() + "-assistant",
+            role: "assistant" as const,
+            content:
+              "Excellent opportunity, Tucker! I've identified a high-value partnership with Starbucks. Our AI has detected **50,000 ABC FI members** who frequently purchase coffee at competitor locations but haven't visited Starbucks in 180+ days. This is prime conquesting territory with significant revenue potential. Let me show you the campaign architecture:",
+          };
+
+          mockUI = {
+            type: "campaign-builder" as const,
+            props: {
+              campaignType: "Brand-Funded Coffee Switch Campaign",
+              targetAudience: "Coffee competitor customers",
+              offers: [
+                "1,000 Bonus ABC FI Points",
+                "Geofenced Push Notifications",
+                "Starbucks Partnership",
+              ],
+              steps: [
+                "Step 1: Identify conquesting segment (3+ competitor purchases, 0 Starbucks)",
+                "Step 2: Create high-value brand-funded offer (1,000 points)",
+                "Step 3: Configure geofenced delivery when near Starbucks locations",
+              ],
+              audience: "50,000 ABC FI members",
+              funding: "Advertiser-funded (Starbucks pays point liability)",
+            },
+          };
+        } else {
+          // Default campaign builder response
+          assistantMessage = {
+            id: Date.now().toString() + "-assistant",
+            role: "assistant" as const,
+            content:
+              "I'll help you create that campaign! Let me set up the campaign builder for you.",
+          };
+
+          mockUI = {
+            type: "campaign-builder" as const,
+            props: {
+              campaignType: "Marketing Campaign",
+              targetAudience: "Target customers",
+              offers: ["Special Offer", "Partnership Benefits"],
+            },
+          };
+        }
+
+        // Add AI response with generative UI
+        setLocalMessages((prev) => [...prev, assistantMessage]);
+        setGenerativeComponents((prev) =>
+          new Map(prev).set(assistantMessage.id, mockUI)
+        );
+
+        // Scroll to bottom
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      }, 1500); // 1.5 second delay for AI thinking
+    }
   };
 
   const toggleVoiceInput = () => {
