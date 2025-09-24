@@ -122,12 +122,11 @@ export function RefinedCampaignWidget({
 
   return (
     <div
-      className="w-full max-w-2xl mx-auto mt-4 rounded-2xl overflow-hidden border border-purple-200/50 shadow-2xl animate-fade-in backdrop-blur-sm"
+      className="w-full rounded-xl overflow-hidden border border-purple-200/50 shadow-2xl animate-fade-in backdrop-blur-sm"
       style={{
         background:
-          "linear-gradient(135deg, rgba(250, 245, 255, 0.95) 0%, rgba(239, 246, 255, 0.9) 50%, rgba(243, 244, 246, 0.85) 100%)",
-        boxShadow:
-          "0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.2)",
+          "linear-gradient(135deg, rgba(249, 250, 251, 0.9) 0%, rgba(243, 244, 246, 0.8) 100%)",
+        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
       }}
     >
       {/* Header with glassmorphic design */}
