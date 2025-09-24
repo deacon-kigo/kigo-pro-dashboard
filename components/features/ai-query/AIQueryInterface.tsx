@@ -208,6 +208,7 @@ export default function AIQueryInterface({
   const [selectedJourney, setSelectedJourney] = useState<string | null>(null);
   const [isRunningDemo, setIsRunningDemo] = useState(false);
   const [currentSuggestions, setCurrentSuggestions] = useState<string[]>([]);
+  const [isAIThinking, setIsAIThinking] = useState(false);
 
   // Function to render generative UI components
   const renderGenerativeUI = (component: GenerativeUIComponent) => {
@@ -413,144 +414,188 @@ export default function AIQueryInterface({
         // Manual submission if handleSubmit not available
         console.log("Submitting query:", currentInput);
 
-        // Add user message
+        // Add user message immediately
         const userMessage = {
           id: Date.now().toString() + "-user",
           role: "user" as const,
           content: currentInput,
         };
 
-        // For demo purposes, simulate a response with generative UI based on Tucker's workflow
-        let assistantMessage: any;
-        let mockUI: any;
-
-        // Handle the complete campaign creation demo flow
-        if (
-          currentInput.toLowerCase().includes("complete campaign") ||
-          currentInput.toLowerCase().includes("full demo") ||
-          (currentInput.toLowerCase().includes("campaign") &&
-            currentInput.toLowerCase().includes("home buyers"))
-        ) {
-          // Clear input and start the complete demo flow
-          currentSetInput("");
-          startCompleteCampaignDemo();
-          return;
-        }
-
-        // Determine response based on user input
-        if (
-          currentInput.toLowerCase().includes("discover") &&
-          currentInput.toLowerCase().includes("journey")
-        ) {
-          assistantMessage = {
-            id: Date.now().toString() + "-assistant",
-            role: "assistant" as const,
-            content:
-              "I've discovered several high-value customer journey patterns from ABC FI's transaction data:\n\n🏡 **Home Purchase + Relocation:** 567 customers/month, $127-245 revenue potential, $72K-139K monthly (94% confidence)\n🔨 **DIY Home Improvement:** 1,240 customers/month, $85-156 revenue, $105K-194K monthly (87% confidence)\n🎒 **Back to School:** 2,890 families/month, $45-89 revenue, $130K-257K monthly (92% confidence)\n🍽️ **Weekend Entertainment:** 4,200+ customers/month, $28-52 revenue, $118K-218K monthly (78% confidence)\n\nThe Home Purchase + Relocation journey shows the highest revenue potential. Select it to proceed with campaign creation.",
-          };
-          mockUI = {
-            type: "journey-discovery" as const,
-            props: {},
-          };
-        } else if (
-          currentInput.toLowerCase().includes("analyze") &&
-          currentInput.toLowerCase().includes("pattern")
-        ) {
-          assistantMessage = {
-            id: Date.now().toString() + "-assistant",
-            role: "assistant" as const,
-            content:
-              "**Journey Pattern Analysis Complete**\n\n**12-Week Customer Timeline:**\n• **Weeks 3-4:** Moving logistics (94% engagement)\n• **Weeks 5-6:** Travel & transition (89% engagement)\n• **Weeks 7-8:** Home setup (96% engagement)\n• **Weeks 9-12:** Local integration (91% engagement)\n\n**Financial Impact:** $3,200-4,800 incremental spend + $2,400-3,800 LTV boost\n**Revenue Breakdown:** $45-85 ad-funded + $82-160 merchant partnerships = $127-245 per customer\n**ROI Projections:** 445% immediate, 890% LTV, 1,200%+ combined\n\nReady to build campaign architecture around this pattern?",
-          };
-          mockUI = {
-            type: "pattern-analysis" as const,
-            props: {
-              journeyType: "Home Purchase + Relocation",
-            },
-          };
-        } else if (
-          currentInput.toLowerCase().includes("architecture") ||
-          currentInput.toLowerCase().includes("partner")
-        ) {
-          assistantMessage = {
-            id: Date.now().toString() + "-assistant",
-            role: "assistant" as const,
-            content:
-              "**Campaign Architecture Built Successfully**\n\n**4-Phase Structure with Partner Network:**\n\n**Phase 1 - Moving Logistics (Weeks 3-4):**\n• Ad-funded: U-Haul ($25), Two Men and a Truck ($18)\n• Merchant: Local movers (12%), storage (15%)\n• Revenue: $32-58 per customer\n\n**Phase 2 - Travel + Transition (Weeks 5-6):**\n• Ad-funded: Southwest ($25), Hilton ($20), National ($12)\n• Revenue: $28-52 per customer\n\n**Phase 3 - Home Setup (Weeks 7-8):**\n• Ad-funded: Home Depot ($22), Best Buy ($18), West Elm ($15)\n• Revenue: $35-68 per customer\n\n**Phase 4 - Local Integration (Weeks 9-12):**\n• Network: 12,000+ local businesses (10-15% commissions)\n• Revenue: $32-67 per customer\n\n**Total Network:** 15 national partners + 12,000+ local merchants activated",
-          };
-          mockUI = {
-            type: "campaign-architecture" as const,
-            props: {},
-          };
-        } else if (
-          currentInput.toLowerCase().includes("lightning") ||
-          currentInput.toLowerCase().includes("optimization")
-        ) {
-          assistantMessage = {
-            id: Date.now().toString() + "-assistant",
-            role: "assistant" as const,
-            content:
-              '**Lightning Offers Strategy Activated**\n\n**AI Optimization Features:**\n• **Phase-specific timing:** Offers triggered by journey progression\n• **Scarcity management:** Limited quantities create urgency\n• **Cross-phase integration:** Early offers inform later opportunities\n• **Performance boost:** +34% engagement, +$67 revenue per customer\n\n**Example Lightning Offers:**\n• Phase 1: "1 of 200: 40% off moving company" (48-hour window)\n• Phase 2: "1 of 300: Hotel suite upgrade" (arrival-triggered)\n• Phase 3: "1 of 500: Free furniture delivery" (setup-triggered)\n• Phase 4: "1 of 400: Local discovery package" (integration-triggered)\n\n**Market Intelligence Alert:** Increased home-buying activity detected in Denver (+34%), Austin (+28%), Seattle (+31%), Charleston (+42%). Ready to launch?',
-          };
-          mockUI = {
-            type: "lightning-strategy" as const,
-            props: {},
-          };
-        } else if (
-          currentInput.toLowerCase().includes("launch") ||
-          currentInput.toLowerCase().includes("performance")
-        ) {
-          assistantMessage = {
-            id: Date.now().toString() + "-assistant",
-            role: "assistant" as const,
-            content:
-              "**🚀 Campaign Launched Successfully!**\n\n**Live Campaign Status:**\n• **Target:** 567 customers/month entering journey nationwide\n• **Partner Network:** 15 national + 12,000+ local merchants activated\n• **AI Intelligence:** Real-time optimization and market alerts active\n\n**Current Customer Activity:**\n• Phase 1 (Moving): 127 customers\n• Phase 2 (Travel): 89 customers\n• Phase 3 (Setup): 156 customers\n• Phase 4 (Integration): 195 customers\n\n**Projected Performance:**\n• **Month 1:** $72K-139K immediate revenue + $680K-1.08M LTV boost\n• **Annual Program:** $1.03M-2.00M immediate + $16.3M-25.8M LTV enhancement\n\nCampaign is now live with real-time performance tracking and AI optimization!",
-          };
-          mockUI = {
-            type: "campaign-launch" as const,
-            props: {},
-          };
-        } else {
-          // Default fallback
-          assistantMessage = {
-            id: Date.now().toString() + "-assistant",
-            role: "assistant" as const,
-            content:
-              "I'll help you create that campaign! Here's an interactive campaign builder based on your requirements.",
-          };
-          mockUI = {
-            type: "campaign-builder" as const,
-            props: {
-              campaignType: "First-Time Home Buyer Campaign",
-              targetAudience: "First-time home buyers",
-              offers: [
-                "HELOC Special Rate",
-                "Moving Day Package",
-                "Local Business Partnerships",
-                "First-Time Buyer Bonus",
-              ],
-            },
-          };
-        }
-
-        // Add user message immediately
         setLocalMessages((prev) => [...prev, userMessage]);
+        currentSetInput(""); // Clear input immediately
 
-        // Clear input immediately
-        currentSetInput("");
+        // Show AI thinking state
+        setIsAIThinking(true);
 
-        // Add AI response immediately with generative UI
+        // Simulate natural AI processing time (2-4 seconds)
+        const processingTime = 2000 + Math.random() * 2000;
+
         setTimeout(() => {
-          setLocalMessages((prev) => [...prev, assistantMessage]);
-          setGenerativeComponents((prev) =>
-            new Map(prev).set(assistantMessage.id, mockUI)
-          );
+          setIsAIThinking(false);
 
-          // Handle campaign creation flow
-          if (mockUI) {
-            handleCampaignStep(mockUI.type, selectedJourney);
+          // For demo purposes, simulate a response with generative UI based on Tucker's workflow
+          let assistantMessage: any;
+          let mockUI: any;
+
+          // Handle Tucker's New Mover Journey
+          if (
+            currentInput.toLowerCase().includes("new mover") ||
+            (currentInput.toLowerCase().includes("mortgage") &&
+              currentInput.toLowerCase().includes("campaign")) ||
+            currentInput.toLowerCase().includes("q4 mortgage")
+          ) {
+            assistantMessage = {
+              id: Date.now().toString() + "-assistant",
+              role: "assistant" as const,
+              content:
+                "Perfect timing, Tucker! I've analyzed ABC FI's Q4 objectives and identified a high-impact opportunity. Based on our transaction data, I recommend the **AI-Powered New Mover Journey** for new mortgage customers. This campaign targets 567 customers per month with a projected $127K-$245K revenue potential. Let me show you the campaign architecture:",
+            };
+
+            mockUI = {
+              type: "campaign-builder" as const,
+              props: {
+                campaignType: "AI-Powered New Mover Journey",
+                targetAudience: "New mortgage customers",
+                offers: [
+                  "$100 AI Gift Personalization",
+                  "Moving Journey Bundle",
+                  "U-Haul, Public Storage, Hilton",
+                ],
+                steps: [
+                  "Step 1: AI-powered gifting moment ($100 value)",
+                  "Step 2: Follow-up conversation about move planning",
+                  "Step 3: Moving Journey bundle with partner offers",
+                ],
+              },
+            };
           }
-        }, 300);
+          // Handle the complete campaign creation demo flow
+          else if (
+            currentInput.toLowerCase().includes("complete campaign") ||
+            currentInput.toLowerCase().includes("full demo") ||
+            (currentInput.toLowerCase().includes("campaign") &&
+              currentInput.toLowerCase().includes("home buyers"))
+          ) {
+            // Clear input and start the complete demo flow
+            setIsAIThinking(false);
+            startCompleteCampaignDemo();
+            return;
+          }
+
+          // Determine response based on user input
+          if (
+            currentInput.toLowerCase().includes("discover") &&
+            currentInput.toLowerCase().includes("journey")
+          ) {
+            assistantMessage = {
+              id: Date.now().toString() + "-assistant",
+              role: "assistant" as const,
+              content:
+                "I've discovered several high-value customer journey patterns from ABC FI's transaction data:\n\n🏡 **Home Purchase + Relocation:** 567 customers/month, $127-245 revenue potential, $72K-139K monthly (94% confidence)\n🔨 **DIY Home Improvement:** 1,240 customers/month, $85-156 revenue, $105K-194K monthly (87% confidence)\n🎒 **Back to School:** 2,890 families/month, $45-89 revenue, $130K-257K monthly (92% confidence)\n🍽️ **Weekend Entertainment:** 4,200+ customers/month, $28-52 revenue, $118K-218K monthly (78% confidence)\n\nThe Home Purchase + Relocation journey shows the highest revenue potential. Select it to proceed with campaign creation.",
+            };
+            mockUI = {
+              type: "journey-discovery" as const,
+              props: {},
+            };
+          } else if (
+            currentInput.toLowerCase().includes("analyze") &&
+            currentInput.toLowerCase().includes("pattern")
+          ) {
+            assistantMessage = {
+              id: Date.now().toString() + "-assistant",
+              role: "assistant" as const,
+              content:
+                "**Journey Pattern Analysis Complete**\n\n**12-Week Customer Timeline:**\n• **Weeks 3-4:** Moving logistics (94% engagement)\n• **Weeks 5-6:** Travel & transition (89% engagement)\n• **Weeks 7-8:** Home setup (96% engagement)\n• **Weeks 9-12:** Local integration (91% engagement)\n\n**Financial Impact:** $3,200-4,800 incremental spend + $2,400-3,800 LTV boost\n**Revenue Breakdown:** $45-85 ad-funded + $82-160 merchant partnerships = $127-245 per customer\n**ROI Projections:** 445% immediate, 890% LTV, 1,200%+ combined\n\nReady to build campaign architecture around this pattern?",
+            };
+            mockUI = {
+              type: "pattern-analysis" as const,
+              props: {
+                journeyType: "Home Purchase + Relocation",
+              },
+            };
+          } else if (
+            currentInput.toLowerCase().includes("architecture") ||
+            currentInput.toLowerCase().includes("partner")
+          ) {
+            assistantMessage = {
+              id: Date.now().toString() + "-assistant",
+              role: "assistant" as const,
+              content:
+                "**Campaign Architecture Built Successfully**\n\n**4-Phase Structure with Partner Network:**\n\n**Phase 1 - Moving Logistics (Weeks 3-4):**\n• Ad-funded: U-Haul ($25), Two Men and a Truck ($18)\n• Merchant: Local movers (12%), storage (15%)\n• Revenue: $32-58 per customer\n\n**Phase 2 - Travel + Transition (Weeks 5-6):**\n• Ad-funded: Southwest ($25), Hilton ($20), National ($12)\n• Revenue: $28-52 per customer\n\n**Phase 3 - Home Setup (Weeks 7-8):**\n• Ad-funded: Home Depot ($22), Best Buy ($18), West Elm ($15)\n• Revenue: $35-68 per customer\n\n**Phase 4 - Local Integration (Weeks 9-12):**\n• Network: 12,000+ local businesses (10-15% commissions)\n• Revenue: $32-67 per customer\n\n**Total Network:** 15 national partners + 12,000+ local merchants activated",
+            };
+            mockUI = {
+              type: "campaign-architecture" as const,
+              props: {},
+            };
+          } else if (
+            currentInput.toLowerCase().includes("lightning") ||
+            currentInput.toLowerCase().includes("optimization")
+          ) {
+            assistantMessage = {
+              id: Date.now().toString() + "-assistant",
+              role: "assistant" as const,
+              content:
+                '**Lightning Offers Strategy Activated**\n\n**AI Optimization Features:**\n• **Phase-specific timing:** Offers triggered by journey progression\n• **Scarcity management:** Limited quantities create urgency\n• **Cross-phase integration:** Early offers inform later opportunities\n• **Performance boost:** +34% engagement, +$67 revenue per customer\n\n**Example Lightning Offers:**\n• Phase 1: "1 of 200: 40% off moving company" (48-hour window)\n• Phase 2: "1 of 300: Hotel suite upgrade" (arrival-triggered)\n• Phase 3: "1 of 500: Free furniture delivery" (setup-triggered)\n• Phase 4: "1 of 400: Local discovery package" (integration-triggered)\n\n**Market Intelligence Alert:** Increased home-buying activity detected in Denver (+34%), Austin (+28%), Seattle (+31%), Charleston (+42%). Ready to launch?',
+            };
+            mockUI = {
+              type: "lightning-strategy" as const,
+              props: {},
+            };
+          } else if (
+            currentInput.toLowerCase().includes("launch") ||
+            currentInput.toLowerCase().includes("performance")
+          ) {
+            assistantMessage = {
+              id: Date.now().toString() + "-assistant",
+              role: "assistant" as const,
+              content:
+                "**🚀 Campaign Launched Successfully!**\n\n**Live Campaign Status:**\n• **Target:** 567 customers/month entering journey nationwide\n• **Partner Network:** 15 national + 12,000+ local merchants activated\n• **AI Intelligence:** Real-time optimization and market alerts active\n\n**Current Customer Activity:**\n• Phase 1 (Moving): 127 customers\n• Phase 2 (Travel): 89 customers\n• Phase 3 (Setup): 156 customers\n• Phase 4 (Integration): 195 customers\n\n**Projected Performance:**\n• **Month 1:** $72K-139K immediate revenue + $680K-1.08M LTV boost\n• **Annual Program:** $1.03M-2.00M immediate + $16.3M-25.8M LTV enhancement\n\nCampaign is now live with real-time performance tracking and AI optimization!",
+            };
+            mockUI = {
+              type: "campaign-launch" as const,
+              props: {},
+            };
+          } else {
+            // Default fallback
+            assistantMessage = {
+              id: Date.now().toString() + "-assistant",
+              role: "assistant" as const,
+              content:
+                "I'll help you create that campaign! Here's an interactive campaign builder based on your requirements.",
+            };
+            mockUI = {
+              type: "campaign-builder" as const,
+              props: {
+                campaignType: "First-Time Home Buyer Campaign",
+                targetAudience: "First-time home buyers",
+                offers: [
+                  "HELOC Special Rate",
+                  "Moving Day Package",
+                  "Local Business Partnerships",
+                  "First-Time Buyer Bonus",
+                ],
+              },
+            };
+          }
+
+          // Add AI response with natural timing and generative UI
+          setLocalMessages((prev) => [...prev, assistantMessage]);
+
+          // Add generative UI component after a slight delay for natural feel
+          setTimeout(() => {
+            setGenerativeComponents((prev) =>
+              new Map(prev).set(assistantMessage.id, mockUI)
+            );
+
+            // Handle campaign creation flow
+            if (mockUI) {
+              handleCampaignStep(mockUI.type, selectedJourney);
+            }
+
+            // Scroll to bottom
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+          }, 800); // Delay UI appearance for natural conversation flow
+        }, processingTime); // End of setTimeout for AI processing
       }
     });
 
@@ -836,7 +881,7 @@ export default function AIQueryInterface({
                       AI Conversation
                     </h3>
                     <div className="flex items-center gap-2">
-                      {isLoading && (
+                      {(isLoading || isAIThinking) && (
                         <Badge variant="outline" className="text-xs">
                           <Loader2 className="w-3 h-3 mr-1 animate-spin" />
                           Thinking...
@@ -963,6 +1008,45 @@ export default function AIQueryInterface({
                         </div>
                       </div>
                     ))}
+
+                    {/* AI Thinking Indicator */}
+                    {isAIThinking && (
+                      <div className="flex items-start gap-3 animate-fade-in">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center flex-shrink-0">
+                          <Bot className="w-4 h-4 text-purple-600" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm font-medium text-gray-900">
+                              AI Marketing Co-pilot
+                            </span>
+                            <Badge variant="outline" className="text-xs">
+                              AI Assistant
+                            </Badge>
+                          </div>
+                          <div className="bg-white border border-gray-200 shadow-sm rounded-lg p-3">
+                            <div className="flex items-center gap-3">
+                              <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
+                              <span className="text-sm text-gray-600">
+                                Analyzing ABC FI's transaction data and Q4
+                                objectives...
+                              </span>
+                            </div>
+                            <div className="mt-2 flex gap-1">
+                              <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+                              <div
+                                className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"
+                                style={{ animationDelay: "0.1s" }}
+                              ></div>
+                              <div
+                                className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"
+                                style={{ animationDelay: "0.2s" }}
+                              ></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Interactive Suggestions */}
                     {currentSuggestions.length > 0 && (
