@@ -16,7 +16,7 @@ import {
   TrendingUp,
   Clock,
 } from "lucide-react";
-import CampaignBuilderUI from "@/components/features/ai-query/generative-ui/CampaignBuilderUI";
+import { RefinedCampaignWidget } from "./RefinedCampaignWidget";
 
 interface TuckerAIChatInterfaceProps {
   onClose: () => void;
@@ -32,7 +32,7 @@ interface Message {
 }
 
 interface UIComponent {
-  type: "campaign-builder";
+  type: "refined-campaign-widget";
   data: any;
 }
 
@@ -127,7 +127,7 @@ export function TuckerAIChatInterface({
             sender: "ai",
             timestamp: new Date(),
             uiComponent: {
-              type: "campaign-builder",
+              type: "refined-campaign-widget",
               data: {
                 campaignType: "AI-Powered New Mover Journey",
                 targetAudience: "New mortgage customers",
@@ -216,8 +216,8 @@ export function TuckerAIChatInterface({
 
   const renderUIComponent = (component: UIComponent) => {
     switch (component.type) {
-      case "campaign-builder":
-        return <CampaignBuilderUI {...component.data} />;
+      case "refined-campaign-widget":
+        return <RefinedCampaignWidget {...component.data} />;
       default:
         return null;
     }
