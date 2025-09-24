@@ -47,6 +47,15 @@ export function TuckerAIChatInterface({
   const [campaignProgress, setCampaignProgress] = useState(0);
   const [currentTask, setCurrentTask] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [campaignStep, setCampaignStep] = useState<
+    "analysis" | "step1" | "step2" | "step3" | "complete"
+  >("analysis");
+  const [campaignConfig, setCampaignConfig] = useState({
+    giftValue: 100,
+    giftPersonalization: true,
+    followUpQuestion: "",
+    journeyBundle: [] as string[],
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -123,30 +132,12 @@ export function TuckerAIChatInterface({
 
           const aiMessage: Message = {
             id: (Date.now() + 1).toString(),
-            text: "Perfect! I've analyzed your customer base and identified a high-impact opportunity. Based on recent mortgage data, I can see approximately 2,847 new homeowners in your target markets who would be ideal for this journey.\n\nI've designed a three-phase conversational experience that leverages AI personalization to maximize engagement and conversion. For the gifting moment, I've pre-selected three high-performing local partners: Olive & Finch (Italian restaurant), Williams Sonoma (home essentials), and Denver Cleaning Co (move-in service) - all $100 value options that resonate perfectly with new homeowners.\n\nThe projected impact looks very promising - let me show you the campaign architecture.",
+            text: "Perfect! I've analyzed your customer base and identified a high-impact opportunity. Based on recent mortgage data, I can see approximately 2,847 new homeowners in your target markets who would be ideal for this journey.\n\nNow let's architect your three-phase conversational experience together. We'll configure each step to maximize engagement and conversion.\n\n**Step 1: The Gift Configuration**\nLet's start with the AI-powered gifting moment. I recommend setting the value at $100 and enabling 'AI Gift Personalization' to ensure the options are hyper-relevant to each user. I've identified three high-performing local partners: Olive & Finch (Italian restaurant), Williams Sonoma (home essentials), and Denver Cleaning Co (move-in service).\n\nShould we proceed with the $100 gift value and AI personalization enabled?",
             sender: "ai",
             timestamp: new Date(),
-            uiComponent: {
-              type: "refined-campaign-widget",
-              data: {
-                campaignType: "AI-Powered New Mover Journey",
-                targetAudience: "New mortgage customers",
-                estimatedReach: "2,847 customers",
-                projectedEngagement: "68% open rate",
-                expectedConversion: "23% conversion",
-                offers: [
-                  "$100 AI Gift Personalization",
-                  "Moving Journey Bundle",
-                  "U-Haul, Public Storage, Hilton",
-                ],
-                steps: [
-                  "Step 1: AI-powered gifting moment ($100 value)",
-                  "Step 2: Follow-up conversation about move planning",
-                  "Step 3: Moving Journey bundle with partner offers",
-                ],
-              },
-            },
           };
+
+          setCampaignStep("step1");
 
           setMessages((prev) => [...prev, aiMessage]);
           setIsTyping(false);
@@ -169,42 +160,152 @@ export function TuckerAIChatInterface({
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    const currentInput = inputText.toLowerCase();
     setInputText("");
     setIsTyping(true);
 
-    // More natural AI responses based on input
+    // Handle conversational campaign building based on current step
     setTimeout(
       () => {
         let responseText = "";
-        const input = inputText.toLowerCase();
+        let nextStep = campaignStep;
 
-        if (
-          input.includes("gift") ||
-          input.includes("amount") ||
-          input.includes("value")
-        ) {
-          responseText =
-            "Great question! The gift value is completely customizable. Based on your customer lifetime value data, I'd recommend starting with $100 as it typically drives 3x higher engagement rates. The three gift options I've selected - Olive & Finch (Italian dining), Williams Sonoma (home essentials), and Denver Cleaning Co (move-in service) - all offer $100 value and have shown excellent performance with new homeowners. You can adjust this anywhere from $25 to $500 depending on your campaign budget.";
-        } else if (
-          input.includes("partner") ||
-          input.includes("offer") ||
-          input.includes("olive") ||
-          input.includes("williams") ||
-          input.includes("cleaning")
-        ) {
-          responseText =
-            "Excellent point! I've pre-selected these three partners based on new mover behavior patterns: Olive & Finch shows 92% relevance for celebration dining, Williams Sonoma has 87% appeal for home setup needs, and Denver Cleaning Co captures 94% interest for move-in services. These local partners have proven track records with new homeowners. For the moving journey bundle, I've also connected U-Haul, Public Storage, and Hilton which complement the initial gift experience perfectly.";
-        } else if (
-          input.includes("launch") ||
-          input.includes("start") ||
-          input.includes("begin")
-        ) {
-          responseText =
-            "Perfect timing! To launch this campaign, I'll need a few quick details: your preferred gift card value, any specific partner preferences, and your target launch date. Should we configure these settings now?";
-        } else {
-          responseText =
-            "I understand! That's a great consideration for optimizing campaign performance. Based on similar campaigns, I can provide specific recommendations. What aspect would you like to dive deeper into?";
+        switch (campaignStep) {
+          case "step1":
+            // Step 1: Gift Configuration
+            if (
+              currentInput.includes("yes") ||
+              currentInput.includes("proceed") ||
+              currentInput.includes("100") ||
+              currentInput.includes("agree")
+            ) {
+              setCampaignConfig((prev) => ({
+                ...prev,
+                giftValue: 100,
+                giftPersonalization: true,
+              }));
+              responseText =
+                "Excellent! I've configured the gift value at $100 with AI personalization enabled. The system will automatically select the most relevant gift option for each customer from our three partners.\n\n**Step 2: The Follow-Up Configuration**\nNow let's program the conversational flow. After the customer selects their gift, the AI agent should ask a follow-up question to guide them to the moving journey bundle.\n\nI recommend: 'Is there anything else we can help you with to plan your move?'\n\nShould we use this follow-up question, or would you like to customize it?";
+              nextStep = "step2";
+            } else if (
+              currentInput.includes("no") ||
+              currentInput.includes("different") ||
+              currentInput.includes("change")
+            ) {
+              responseText =
+                "Of course! What gift value would you prefer? You can set it anywhere from $25 to $500. Also, would you like to keep AI personalization enabled, or manually select specific gift options?";
+            } else {
+              responseText =
+                "I can help you configure the gift settings. Would you like to proceed with $100 value and AI personalization, or would you prefer different settings? You can also ask me about the gift partners or personalization options.";
+            }
+            break;
+
+          case "step2":
+            // Step 2: Follow-up Question Configuration
+            if (
+              currentInput.includes("yes") ||
+              currentInput.includes("use") ||
+              currentInput.includes("good") ||
+              currentInput.includes("perfect")
+            ) {
+              setCampaignConfig((prev) => ({
+                ...prev,
+                followUpQuestion:
+                  "Is there anything else we can help you with to plan your move?",
+              }));
+              responseText =
+                "Perfect! I've programmed the AI agent to ask: 'Is there anything else we can help you with to plan your move?' after the gift selection.\n\n**Step 3: The Journey Bundle Configuration**\nNow let's link the pre-built 'Moving Journey' offer bundle to this conversational path. This bundle contains offers for:\n• U-Haul (moving truck rentals)\n• Public Storage (temporary storage solutions)\n• Hilton Hotels (accommodation during the move)\n\nShould I activate all three partner offers in the Moving Journey bundle?";
+              nextStep = "step3";
+            } else if (
+              currentInput.includes("custom") ||
+              currentInput.includes("different") ||
+              currentInput.includes("change")
+            ) {
+              responseText =
+                "Great! What follow-up question would you like the AI agent to ask after the gift selection? This should guide customers toward the moving journey offers.";
+            } else {
+              responseText =
+                "I can help you configure the follow-up question. The AI agent will ask this after the customer selects their gift. Would you like to use the recommended question: 'Is there anything else we can help you with to plan your move?' or customize it?";
+            }
+            break;
+
+          case "step3":
+            // Step 3: Journey Bundle Configuration
+            if (
+              currentInput.includes("yes") ||
+              currentInput.includes("activate") ||
+              currentInput.includes("all") ||
+              currentInput.includes("proceed")
+            ) {
+              setCampaignConfig((prev) => ({
+                ...prev,
+                journeyBundle: ["U-Haul", "Public Storage", "Hilton Hotels"],
+              }));
+              responseText =
+                "Excellent! I've linked all three partner offers to the Moving Journey bundle:\n✓ U-Haul - Moving truck rentals\n✓ Public Storage - Storage solutions  \n✓ Hilton Hotels - Accommodation\n\n**Campaign Configuration Complete!**\nYour AI-Powered New Mover Journey is now fully configured:\n• Step 1: $100 AI-personalized gift (Olive & Finch, Williams Sonoma, Denver Cleaning Co)\n• Step 2: Follow-up question about move planning\n• Step 3: Moving Journey bundle with 3 partner offers\n\nTarget audience: 2,847 new mortgage customers\nProjected engagement: 68% open rate\nExpected conversion: 23%\n\nReady to launch this campaign?";
+              nextStep = "complete";
+            } else if (
+              currentInput.includes("custom") ||
+              currentInput.includes("select") ||
+              currentInput.includes("specific")
+            ) {
+              responseText =
+                "Of course! Which partners would you like to include in the Moving Journey bundle? You can choose from:\n• U-Haul (moving truck rentals)\n• Public Storage (storage solutions)\n• Hilton Hotels (accommodation)\n• Or suggest other moving-related partners";
+            } else {
+              responseText =
+                "I can help you configure the Moving Journey bundle. Would you like to activate all three partner offers (U-Haul, Public Storage, Hilton), or would you prefer to select specific partners?";
+            }
+            break;
+
+          case "complete":
+            // Campaign Complete - Handle launch
+            if (
+              currentInput.includes("launch") ||
+              currentInput.includes("yes") ||
+              currentInput.includes("ready")
+            ) {
+              responseText =
+                "🚀 Launching your AI-Powered New Mover Journey campaign now!\n\nI'm setting up the campaign with your configurations:\n• Gift personalization active\n• Conversational flow programmed\n• Partner integrations connecting...\n\nYour campaign will be live and ready to engage new homeowners in approximately 2 hours. I'll redirect you to the campaign dashboard to monitor performance.";
+
+              // Store campaign data and redirect
+              setTimeout(() => {
+                const campaignData = {
+                  type: "AI-Powered New Mover Journey",
+                  audience: "New mortgage customers",
+                  giftAmount: campaignConfig.giftValue,
+                  giftPersonalization: campaignConfig.giftPersonalization,
+                  followUpQuestion: campaignConfig.followUpQuestion,
+                  journeyBundle: campaignConfig.journeyBundle,
+                  giftOptions: [
+                    "Olive & Finch - Italian Restaurant ($100)",
+                    "Williams Sonoma - Home & Kitchen ($100)",
+                    "Denver Cleaning Co - Professional Service ($100)",
+                  ],
+                  reach: "2,847 customers",
+                  engagement: "68% open rate",
+                  conversion: "23% conversion",
+                  timestamp: new Date().toISOString(),
+                };
+
+                sessionStorage.setItem(
+                  "aiCampaignData",
+                  JSON.stringify(campaignData)
+                );
+                window.location.href =
+                  "/campaign-manager/campaign-create?source=ai-builder";
+              }, 3000);
+            } else {
+              responseText =
+                "I understand you might want to review the configuration. Your campaign is ready with all three steps configured. Would you like to make any adjustments before launching, or shall we proceed with the launch?";
+            }
+            break;
+
+          default:
+            responseText =
+              "I'm here to help you configure your AI-Powered New Mover Journey campaign. What would you like to know or adjust?";
         }
+
+        setCampaignStep(nextStep);
 
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
@@ -217,7 +318,7 @@ export function TuckerAIChatInterface({
         setIsTyping(false);
       },
       1200 + Math.random() * 800
-    ); // Variable response time for naturalness
+    );
   };
 
   const renderUIComponent = (component: UIComponent) => {
@@ -332,16 +433,44 @@ export function TuckerAIChatInterface({
                 <Bot className="w-4 h-4 text-purple-600 animate-pulse" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-sm font-medium text-gray-900">
-                    AI Assistant
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-xs text-green-600 font-medium">
-                      Active
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-gray-900">
+                      AI Assistant
                     </span>
+                    <div className="flex items-center gap-1">
+                      <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-xs text-green-600 font-medium">
+                        Active
+                      </span>
+                    </div>
                   </div>
+                  {campaignStep !== "analysis" && (
+                    <div className="flex items-center gap-1">
+                      <div
+                        className={`w-2 h-2 rounded-full ${campaignStep === "step1" || campaignStep === "step2" || campaignStep === "step3" || campaignStep === "complete" ? "bg-blue-500" : "bg-gray-300"}`}
+                      ></div>
+                      <div
+                        className={`w-2 h-2 rounded-full ${campaignStep === "step2" || campaignStep === "step3" || campaignStep === "complete" ? "bg-blue-500" : "bg-gray-300"}`}
+                      ></div>
+                      <div
+                        className={`w-2 h-2 rounded-full ${campaignStep === "step3" || campaignStep === "complete" ? "bg-blue-500" : "bg-gray-300"}`}
+                      ></div>
+                      <span className="text-xs text-gray-500 ml-1">
+                        Step{" "}
+                        {campaignStep === "step1"
+                          ? "1"
+                          : campaignStep === "step2"
+                            ? "2"
+                            : campaignStep === "step3"
+                              ? "3"
+                              : campaignStep === "complete"
+                                ? "✓"
+                                : "0"}
+                        /3
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Enhanced thinking indicator with glassmorphic design */}
@@ -397,7 +526,17 @@ export function TuckerAIChatInterface({
                     <span className="ml-2">
                       {isAnalyzing
                         ? "Building your campaign..."
-                        : "Crafting response..."}
+                        : `Configuring ${
+                            campaignStep === "step1"
+                              ? "gift settings"
+                              : campaignStep === "step2"
+                                ? "follow-up question"
+                                : campaignStep === "step3"
+                                  ? "journey bundle"
+                                  : campaignStep === "complete"
+                                    ? "final review"
+                                    : "campaign"
+                          }...`}
                     </span>
                   </div>
                 </div>
