@@ -426,9 +426,16 @@ export default function AIQueryInterface({
   console.log("AIQueryInterface - messages from useChat:", messages);
   console.log("AIQueryInterface - localMessages:", localMessages);
   console.log("AIQueryInterface - initialMessages prop:", initialMessages);
+  console.log(
+    "AIQueryInterface - initialUIComponent prop:",
+    initialUIComponent
+  );
+  console.log("AIQueryInterface - generativeComponents:", generativeComponents);
 
   const currentMessages =
     messages && messages.length > 0 ? messages : localMessages;
+
+  console.log("AIQueryInterface - currentMessages (final):", currentMessages);
 
   // Fallback handlers in case useChat doesn't provide them
   const safeHandleInputChange =
