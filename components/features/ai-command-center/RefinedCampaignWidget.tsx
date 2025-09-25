@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,6 +15,7 @@ import {
   ArrowRight,
   Clock,
   Gift,
+  Brain,
 } from "lucide-react";
 
 interface RefinedCampaignWidgetProps {
@@ -67,6 +68,21 @@ export function RefinedCampaignWidget({
     "Public Storage",
     "Hilton Hotels",
   ]);
+
+  // Ref for scrolling to bottom of step containers
+  const stepContainerRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to bottom when step changes
+  useEffect(() => {
+    if (stepContainerRef.current && isConfiguring) {
+      setTimeout(() => {
+        stepContainerRef.current?.scrollTo({
+          top: stepContainerRef.current.scrollHeight,
+          behavior: "smooth",
+        });
+      }, 100);
+    }
+  }, [configStep, isConfiguring]);
 
   const handleLaunchCampaign = () => {
     console.log("handleLaunchCampaign called");
@@ -258,11 +274,11 @@ export function RefinedCampaignWidget({
         >
           {/* Impact Metrics */}
           <div
-            className="p-4 border-b border-white/20"
+            className="p-4 border-b"
             style={{
-              background:
-                "linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(248, 250, 252, 0.1) 100%)",
+              background: "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
               backdropFilter: "blur(8px)",
+              borderColor: "#e5e7eb",
             }}
           >
             <h4 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
@@ -272,19 +288,20 @@ export function RefinedCampaignWidget({
 
             <div className="grid grid-cols-3 gap-3">
               <div
-                className="text-center p-3 rounded-xl border border-white/30"
+                className="text-center p-3 rounded-xl border"
                 style={{
                   background:
-                    "linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%)",
+                    "linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%)",
                   backdropFilter: "blur(10px)",
+                  borderColor: "#bfdbfe",
                 }}
               >
                 <div
                   className="w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-2"
                   style={{
                     background:
-                      "linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.1) 100%)",
-                    border: "1px solid rgba(59, 130, 246, 0.3)",
+                      "linear-gradient(135deg, #bfdbfe 0%, #dbeafe 100%)",
+                    border: "1px solid #93c5fd",
                   }}
                 >
                   <Users className="w-4 h-4 text-blue-600" />
@@ -298,19 +315,20 @@ export function RefinedCampaignWidget({
               </div>
 
               <div
-                className="text-center p-3 rounded-xl border border-white/30"
+                className="text-center p-3 rounded-xl border"
                 style={{
                   background:
-                    "linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.05) 100%)",
+                    "linear-gradient(135deg, #dcfce7 0%, #f0fdf4 100%)",
                   backdropFilter: "blur(10px)",
+                  borderColor: "#bbf7d0",
                 }}
               >
                 <div
                   className="w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-2"
                   style={{
                     background:
-                      "linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 163, 74, 0.1) 100%)",
-                    border: "1px solid rgba(34, 197, 94, 0.3)",
+                      "linear-gradient(135deg, #bbf7d0 0%, #dcfce7 100%)",
+                    border: "1px solid #86efac",
                   }}
                 >
                   <Target className="w-4 h-4 text-green-600" />
@@ -324,19 +342,20 @@ export function RefinedCampaignWidget({
               </div>
 
               <div
-                className="text-center p-3 rounded-xl border border-white/30"
+                className="text-center p-3 rounded-xl border"
                 style={{
                   background:
-                    "linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(147, 51, 234, 0.05) 100%)",
+                    "linear-gradient(135deg, #e9d5ff 0%, #f3e8ff 100%)",
                   backdropFilter: "blur(10px)",
+                  borderColor: "#c4b5fd",
                 }}
               >
                 <div
                   className="w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-2"
                   style={{
                     background:
-                      "linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(147, 51, 234, 0.1) 100%)",
-                    border: "1px solid rgba(168, 85, 247, 0.3)",
+                      "linear-gradient(135deg, #c4b5fd 0%, #e9d5ff 100%)",
+                    border: "1px solid #a78bfa",
                   }}
                 >
                   <DollarSign className="w-4 h-4 text-purple-600" />
@@ -465,114 +484,262 @@ export function RefinedCampaignWidget({
           <div
             className="absolute inset-0 animate-slide-in-right"
             style={{
-              background:
-                "linear-gradient(135deg, rgba(249, 250, 251, 0.95) 0%, rgba(243, 244, 246, 0.9) 100%)",
+              background: "linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)",
               backdropFilter: "blur(10px)",
             }}
           >
             {!isLaunching ? (
-              <div className="p-4">
-                {/* Step 1: The Gift */}
+              <div className="h-full flex flex-col">
+                {/* Step 1: The Gift - Compact Version */}
                 {configStep === "step1" && (
                   <div
-                    className="animate-fade-in rounded-xl border border-white/30 shadow-lg"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%)",
-                      backdropFilter: "blur(12px)",
-                    }}
+                    className="animate-fade-in flex-1 overflow-y-auto"
+                    ref={stepContainerRef}
                   >
-                    <div className="p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900">
-                          Step 1: The Gift
-                        </h3>
+                    {/* Compact Header */}
+                    <div
+                      className="px-4 py-3 border-b"
+                      style={{
+                        background:
+                          "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
+                        borderColor: "#e5e7eb",
+                      }}
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <button
+                          onClick={handleBackToOverview}
+                          className="w-7 h-7 bg-white rounded-full shadow-sm flex items-center justify-center border"
+                          style={{ borderColor: "#e5e7eb" }}
+                        >
+                          <ArrowRight className="w-3 h-3 text-gray-600 rotate-180" />
+                        </button>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-500">1/3</span>
-                          <button
-                            onClick={handleBackToOverview}
-                            className="text-gray-500 hover:text-gray-700"
+                          <div
+                            className="px-2 py-1 rounded-full"
+                            style={{
+                              backgroundColor: "#dbeafe",
+                              color: "#1d4ed8",
+                            }}
                           >
-                            ✕
-                          </button>
+                            <span className="text-xs font-medium">
+                              Step 1/3
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <p className="text-sm text-gray-600 mb-4">
-                        Configure the AI-powered gifting moment, setting the
-                        value and enabling personalization.
-                      </p>
+
+                      <div className="text-center">
+                        <div
+                          className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
+                          style={{ backgroundColor: "#dbeafe" }}
+                        >
+                          <Gift
+                            className="w-6 h-6"
+                            style={{ color: "#2563eb" }}
+                          />
+                        </div>
+                        <h1 className="text-lg font-bold text-gray-900 mb-1">
+                          Configure AI Gift Selection
+                        </h1>
+                        <p className="text-gray-600 text-xs">
+                          Set up personalized $100 housewarming gifts
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* AI Personalization Banner */}
+                    <div className="px-4 py-3">
+                      <div
+                        className="rounded-xl p-3 mb-4 border"
+                        style={{
+                          background:
+                            "linear-gradient(to right, #faf5ff, #eff6ff)",
+                          borderColor: "#c4b5fd",
+                        }}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-6 h-6 rounded-full flex items-center justify-center"
+                            style={{ backgroundColor: "#e9d5ff" }}
+                          >
+                            <Sparkles
+                              className="w-3 h-3"
+                              style={{ color: "#7c3aed" }}
+                            />
+                          </div>
+                          <div>
+                            <h3
+                              className="font-medium text-xs"
+                              style={{ color: "#581c87" }}
+                            >
+                              AI-Powered Gift Personalization
+                            </h3>
+                            <p className="text-xs" style={{ color: "#7c2d12" }}>
+                              Automatically selects hyper-relevant options for
+                              each customer
+                            </p>
+                          </div>
+                        </div>
+                      </div>
 
                       {/* Gift Amount Selection */}
                       <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <h2 className="text-base font-semibold text-gray-900 mb-3">
                           Gift Card Value
-                        </label>
-                        <div className="grid grid-cols-4 gap-2">
+                        </h2>
+                        <div className="grid grid-cols-2 gap-2">
                           {[50, 100, 150, 200].map((amount) => (
                             <button
                               key={amount}
                               onClick={() => setGiftAmount(amount)}
-                              className={`p-2 rounded-lg border text-sm font-medium transition-all ${
+                              className={`p-3 rounded-xl border transition-all font-medium ${
                                 giftAmount === amount
-                                  ? "bg-blue-50 border-blue-300 text-blue-700"
-                                  : "bg-white border-gray-200 text-gray-700 hover:border-gray-300"
+                                  ? "shadow-md"
+                                  : "hover:shadow-md"
                               }`}
+                              style={{
+                                backgroundColor:
+                                  giftAmount === amount ? "#dbeafe" : "#ffffff",
+                                borderColor:
+                                  giftAmount === amount ? "#3b82f6" : "#e5e7eb",
+                                color:
+                                  giftAmount === amount ? "#1d4ed8" : "#374151",
+                              }}
                             >
-                              ${amount}
+                              <div className="text-lg font-bold">${amount}</div>
+                              <div className="text-xs opacity-75">
+                                Gift Value
+                              </div>
                             </button>
                           ))}
                         </div>
                       </div>
 
-                      {/* AI Personalization Toggle */}
+                      {/* Available Gift Options */}
                       <div className="mb-4">
-                        <label className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={giftPersonalization}
-                            onChange={(e) =>
-                              setGiftPersonalization(e.target.checked)
-                            }
-                            className="rounded border-gray-300"
-                          />
-                          <span className="text-sm font-medium text-gray-700">
-                            Enable AI Gift Personalization
-                          </span>
-                        </label>
-                        <p className="text-xs text-gray-500 mt-1">
-                          AI will select hyper-relevant options for each user
-                        </p>
-                      </div>
-
-                      {/* Gift Options Preview */}
-                      <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Available Gift Options
-                        </label>
+                        <h2 className="text-base font-semibold text-gray-900 mb-3">
+                          AI-Selected Gift Options
+                        </h2>
                         <div className="space-y-2">
-                          {selectedGifts.map((gift, index) => (
+                          {[
+                            {
+                              title: "Olive & Finch",
+                              merchant: "Popular Italian Restaurant",
+                              description:
+                                "Authentic Italian cuisine in downtown Denver",
+                              category: "🍽️ Dining",
+                              logo: "/illustration/abc-fi/mock/italian-restaurant.jpg",
+                            },
+                            {
+                              title: "Williams Sonoma",
+                              merchant: "Home & Kitchen",
+                              description:
+                                "Premium kitchen and home essentials",
+                              category: "🏠 Home & Kitchen",
+                              logo: "/logos/williams-sonoma-logo.png",
+                            },
+                            {
+                              title: "Denver Cleaning Co",
+                              merchant: "Professional Cleaning Service",
+                              description:
+                                "Professional home cleaning for your new place",
+                              category: "🧹 Local Service",
+                              logo: "/illustration/abc-fi/mock/cleaning-service.jpg",
+                            },
+                          ].map((gift, index) => (
                             <div
                               key={index}
-                              className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg"
+                              className="bg-white rounded-xl shadow-sm p-3 border transition-all"
+                              style={{ borderColor: "#e5e7eb" }}
                             >
-                              <span className="text-sm text-gray-700">
-                                ✓ {gift} (${giftAmount})
-                              </span>
+                              <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-lg overflow-hidden">
+                                  <img
+                                    src={gift.logo}
+                                    alt={gift.merchant}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                <div className="flex-1">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <h3 className="font-medium text-sm text-gray-900">
+                                      {gift.title}
+                                    </h3>
+                                    <span
+                                      className="text-sm font-bold"
+                                      style={{ color: "#059669" }}
+                                    >
+                                      ${giftAmount}
+                                    </span>
+                                  </div>
+                                  <p className="text-xs text-gray-600 mb-1">
+                                    {gift.description}
+                                  </p>
+                                  <div className="flex items-center justify-between">
+                                    <span
+                                      className="px-2 py-0.5 text-xs font-medium rounded-full"
+                                      style={{
+                                        backgroundColor: "#dbeafe",
+                                        color: "#1d4ed8",
+                                      }}
+                                    >
+                                      {gift.category}
+                                    </span>
+                                    <span className="text-xs text-gray-500">
+                                      {gift.merchant}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           ))}
                         </div>
                       </div>
 
-                      <div className="flex justify-between">
+                      {/* AI Explanation */}
+                      <div className="mb-4">
+                        <div
+                          className="bg-white rounded-xl shadow-sm p-3 border"
+                          style={{ borderColor: "#e5e7eb" }}
+                        >
+                          <div className="flex items-start gap-2">
+                            <div
+                              className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
+                              style={{ backgroundColor: "#dbeafe" }}
+                            >
+                              <Brain
+                                className="w-4 h-4"
+                                style={{ color: "#2563eb" }}
+                              />
+                            </div>
+                            <div>
+                              <h4 className="font-medium text-gray-900 text-xs mb-1">
+                                Why these options?
+                              </h4>
+                              <p className="text-xs text-gray-600 leading-relaxed">
+                                Our AI selected these gifts based on new
+                                homeowner profiles, Denver location data, and
+                                successful campaigns for similar customer
+                                segments.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-2 pb-4">
                         <button
                           onClick={handlePrevStep}
-                          className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                          className="flex-1 py-2 px-3 border rounded-lg font-medium text-gray-600 hover:text-gray-800 transition-colors text-sm"
+                          style={{ borderColor: "#e5e7eb" }}
                         >
-                          ← Back
+                          ← Back to Overview
                         </button>
                         <button
                           onClick={handleNextStep}
-                          className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                          className="flex-1 py-2 px-3 rounded-lg font-medium text-white transition-colors text-sm"
+                          style={{ backgroundColor: "#2563eb" }}
                         >
                           Next: Follow-Up →
                         </button>
@@ -584,71 +751,168 @@ export function RefinedCampaignWidget({
                 {/* Step 2: The Follow-Up */}
                 {configStep === "step2" && (
                   <div
-                    className="animate-fade-in rounded-xl border border-white/30 shadow-lg"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%)",
-                      backdropFilter: "blur(12px)",
-                    }}
+                    className="animate-fade-in flex-1 overflow-y-auto"
+                    ref={stepContainerRef}
                   >
-                    <div className="p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900">
-                          Step 2: The Follow-Up
-                        </h3>
+                    {/* Compact Header */}
+                    <div
+                      className="px-4 py-3 border-b"
+                      style={{
+                        background:
+                          "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
+                        borderColor: "#e5e7eb",
+                      }}
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <button
+                          onClick={handleBackToOverview}
+                          className="w-7 h-7 bg-white rounded-full shadow-sm flex items-center justify-center border"
+                          style={{ borderColor: "#e5e7eb" }}
+                        >
+                          <ArrowRight className="w-3 h-3 text-gray-600 rotate-180" />
+                        </button>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-500">2/3</span>
-                          <button
-                            onClick={handleBackToOverview}
-                            className="text-gray-500 hover:text-gray-700"
+                          <div
+                            className="px-2 py-1 rounded-full"
+                            style={{
+                              backgroundColor: "#dbeafe",
+                              color: "#1d4ed8",
+                            }}
                           >
-                            ✕
-                          </button>
+                            <span className="text-xs font-medium">
+                              Step 2/3
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <p className="text-sm text-gray-600 mb-4">
-                        Program the agent to ask a follow-up question to guide
-                        customers to the moving journey.
-                      </p>
 
+                      <div className="text-center">
+                        <div
+                          className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
+                          style={{ backgroundColor: "#dcfce7" }}
+                        >
+                          <ArrowRight
+                            className="w-6 h-6"
+                            style={{ color: "#16a34a" }}
+                          />
+                        </div>
+                        <h1 className="text-lg font-bold text-gray-900 mb-1">
+                          Configure Follow-Up Question
+                        </h1>
+                        <p className="text-gray-600 text-xs">
+                          Guide customers to the moving journey
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="px-4 py-3">
+                      {/* Follow-Up Question Configuration */}
                       <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Follow-Up Question
-                        </label>
-                        <textarea
-                          value={followUpQuestion}
-                          onChange={(e) => setFollowUpQuestion(e.target.value)}
-                          className="w-full p-3 border border-gray-300 rounded-lg text-sm resize-none"
-                          rows={3}
-                          placeholder="Enter the question the AI agent will ask..."
-                        />
+                        <h2 className="text-base font-semibold text-gray-900 mb-3">
+                          AI Agent Question
+                        </h2>
+                        <div
+                          className="bg-white rounded-xl shadow-sm p-3 border"
+                          style={{ borderColor: "#e5e7eb" }}
+                        >
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Follow-Up Question
+                          </label>
+                          <textarea
+                            value={followUpQuestion}
+                            onChange={(e) =>
+                              setFollowUpQuestion(e.target.value)
+                            }
+                            className="w-full p-3 border rounded-lg text-sm resize-none"
+                            style={{ borderColor: "#e5e7eb" }}
+                            rows={3}
+                            placeholder="Enter the question the AI agent will ask after gift delivery..."
+                          />
+                        </div>
                       </div>
 
-                      <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-                        <h4 className="text-sm font-medium text-blue-900 mb-2">
-                          Preview: Customer Experience
-                        </h4>
-                        <div className="text-xs text-blue-800">
-                          <div className="mb-2">
-                            🎁 <strong>AI:</strong> "Here's your ${giftAmount}{" "}
-                            gift card for {selectedGifts[0]}!"
-                          </div>
-                          <div>
-                            💬 <strong>AI:</strong> "{followUpQuestion}"
+                      {/* Preview Section */}
+                      <div className="mb-4">
+                        <h2 className="text-base font-semibold text-gray-900 mb-3">
+                          Customer Experience Preview
+                        </h2>
+                        <div
+                          className="rounded-xl p-3 border"
+                          style={{
+                            background:
+                              "linear-gradient(to right, #eff6ff, #f0f9ff)",
+                            borderColor: "#bfdbfe",
+                          }}
+                        >
+                          <h4
+                            className="text-xs font-medium mb-2"
+                            style={{ color: "#1e40af" }}
+                          >
+                            Conversation Flow Preview
+                          </h4>
+                          <div className="space-y-2 text-xs">
+                            <div
+                              className="flex items-start gap-2 p-2 rounded-lg"
+                              style={{
+                                backgroundColor: "#ffffff",
+                                border: "1px solid #e5e7eb",
+                              }}
+                            >
+                              <div
+                                className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
+                                style={{ backgroundColor: "#dcfce7" }}
+                              >
+                                🎁
+                              </div>
+                              <div>
+                                <div className="font-medium text-gray-900">
+                                  AI Agent
+                                </div>
+                                <div className="text-gray-700">
+                                  "Here's your ${giftAmount} gift card for Olive
+                                  & Finch! It's been added to your Kigo Hub."
+                                </div>
+                              </div>
+                            </div>
+                            <div
+                              className="flex items-start gap-2 p-2 rounded-lg"
+                              style={{
+                                backgroundColor: "#ffffff",
+                                border: "1px solid #e5e7eb",
+                              }}
+                            >
+                              <div
+                                className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
+                                style={{ backgroundColor: "#dbeafe" }}
+                              >
+                                💬
+                              </div>
+                              <div>
+                                <div className="font-medium text-gray-900">
+                                  AI Agent
+                                </div>
+                                <div className="text-gray-700">
+                                  "{followUpQuestion}"
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex justify-between">
+                      {/* Action Buttons */}
+                      <div className="flex gap-2 pb-4">
                         <button
                           onClick={handlePrevStep}
-                          className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                          className="flex-1 py-2 px-3 border rounded-lg font-medium text-gray-600 hover:text-gray-800 transition-colors text-sm"
+                          style={{ borderColor: "#e5e7eb" }}
                         >
-                          ← Back
+                          ← Back to Gift Setup
                         </button>
                         <button
                           onClick={handleNextStep}
-                          className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                          className="flex-1 py-2 px-3 rounded-lg font-medium text-white transition-colors text-sm"
+                          style={{ backgroundColor: "#16a34a" }}
                         >
                           Next: Journey Bundle →
                         </button>
@@ -660,110 +924,252 @@ export function RefinedCampaignWidget({
                 {/* Step 3: The Journey Bundle */}
                 {configStep === "step3" && (
                   <div
-                    className="animate-fade-in rounded-xl border border-white/30 shadow-lg"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%)",
-                      backdropFilter: "blur(12px)",
-                    }}
+                    className="animate-fade-in flex-1 overflow-y-auto"
+                    ref={stepContainerRef}
                   >
-                    <div className="p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900">
-                          Step 3: The Journey Bundle
-                        </h3>
+                    {/* Compact Header */}
+                    <div
+                      className="px-4 py-3 border-b"
+                      style={{
+                        background:
+                          "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
+                        borderColor: "#e5e7eb",
+                      }}
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <button
+                          onClick={handleBackToOverview}
+                          className="w-7 h-7 bg-white rounded-full shadow-sm flex items-center justify-center border"
+                          style={{ borderColor: "#e5e7eb" }}
+                        >
+                          <ArrowRight className="w-3 h-3 text-gray-600 rotate-180" />
+                        </button>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-500">3/3</span>
-                          <button
-                            onClick={handleBackToOverview}
-                            className="text-gray-500 hover:text-gray-700"
+                          <div
+                            className="px-2 py-1 rounded-full"
+                            style={{
+                              backgroundColor: "#dbeafe",
+                              color: "#1d4ed8",
+                            }}
                           >
-                            ✕
-                          </button>
+                            <span className="text-xs font-medium">
+                              Step 3/3
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <p className="text-sm text-gray-600 mb-4">
-                        Link the pre-built "Moving Journey" offer bundle to this
-                        conversational path.
-                      </p>
 
+                      <div className="text-center">
+                        <div
+                          className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
+                          style={{ backgroundColor: "#fef3c7" }}
+                        >
+                          <MapPin
+                            className="w-6 h-6"
+                            style={{ color: "#d97706" }}
+                          />
+                        </div>
+                        <h1 className="text-lg font-bold text-gray-900 mb-1">
+                          Configure Journey Bundle
+                        </h1>
+                        <p className="text-gray-600 text-xs">
+                          Link moving partner offers to the conversation
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="px-4 py-3">
+                      {/* Partner Selection */}
                       <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Partner Offers
-                        </label>
+                        <h2 className="text-base font-semibold text-gray-900 mb-3">
+                          Moving Partner Offers
+                        </h2>
                         <div className="space-y-2">
-                          {["U-Haul", "Public Storage", "Hilton Hotels"].map(
-                            (partner) => (
-                              <label
-                                key={partner}
-                                className="flex items-center gap-2"
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={selectedPartners.includes(partner)}
-                                  onChange={(e) => {
-                                    if (e.target.checked) {
-                                      setSelectedPartners([
-                                        ...selectedPartners,
-                                        partner,
-                                      ]);
-                                    } else {
-                                      setSelectedPartners(
-                                        selectedPartners.filter(
-                                          (p) => p !== partner
-                                        )
-                                      );
-                                    }
-                                  }}
-                                  className="rounded border-gray-300"
-                                />
-                                <span className="text-sm text-gray-700">
-                                  {partner}
-                                </span>
-                                <span className="text-xs text-gray-500">
-                                  {partner === "U-Haul" &&
-                                    "(Moving truck rentals)"}
-                                  {partner === "Public Storage" &&
-                                    "(Storage solutions)"}
-                                  {partner === "Hilton Hotels" &&
-                                    "(Accommodation)"}
-                                </span>
-                              </label>
-                            )
-                          )}
+                          {[
+                            {
+                              name: "U-Haul",
+                              description: "Moving truck rentals and equipment",
+                              category: "🚛 Moving Services",
+                              offer:
+                                "20% off truck rental + free moving supplies",
+                            },
+                            {
+                              name: "Public Storage",
+                              description: "Secure storage solutions",
+                              category: "📦 Storage",
+                              offer: "First month free + 50% off second month",
+                            },
+                            {
+                              name: "Hilton Hotels",
+                              description: "Accommodation during transition",
+                              category: "🏨 Hotels",
+                              offer: "25% off extended stays + free breakfast",
+                            },
+                          ].map((partner, index) => (
+                            <div
+                              key={partner.name}
+                              className="bg-white rounded-xl shadow-sm p-3 border transition-all"
+                              style={{ borderColor: "#e5e7eb" }}
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className="flex items-center pt-1">
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedPartners.includes(
+                                      partner.name
+                                    )}
+                                    onChange={(e) => {
+                                      if (e.target.checked) {
+                                        setSelectedPartners([
+                                          ...selectedPartners,
+                                          partner.name,
+                                        ]);
+                                      } else {
+                                        setSelectedPartners(
+                                          selectedPartners.filter(
+                                            (p) => p !== partner.name
+                                          )
+                                        );
+                                      }
+                                    }}
+                                    className="w-4 h-4 rounded border-2"
+                                    style={{
+                                      borderColor: selectedPartners.includes(
+                                        partner.name
+                                      )
+                                        ? "#2563eb"
+                                        : "#d1d5db",
+                                      backgroundColor:
+                                        selectedPartners.includes(partner.name)
+                                          ? "#2563eb"
+                                          : "#ffffff",
+                                    }}
+                                  />
+                                </div>
+                                <div className="flex-1">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <h3 className="font-semibold text-sm text-gray-900">
+                                      {partner.name}
+                                    </h3>
+                                    <span
+                                      className="px-2 py-0.5 text-xs font-medium rounded-full"
+                                      style={{
+                                        backgroundColor: "#fef3c7",
+                                        color: "#92400e",
+                                      }}
+                                    >
+                                      {partner.category}
+                                    </span>
+                                  </div>
+                                  <p className="text-xs text-gray-600 mb-2">
+                                    {partner.description}
+                                  </p>
+                                  <div
+                                    className="text-xs font-medium p-2 rounded-lg"
+                                    style={{
+                                      backgroundColor: "#dcfce7",
+                                      color: "#166534",
+                                    }}
+                                  >
+                                    💰 {partner.offer}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
 
-                      <div className="mb-4 p-3 bg-green-50 rounded-lg">
-                        <h4 className="text-sm font-medium text-green-900 mb-2">
+                      {/* Complete Journey Preview */}
+                      <div className="mb-4">
+                        <h2 className="text-base font-semibold text-gray-900 mb-3">
                           Complete Journey Preview
-                        </h4>
-                        <div className="text-xs text-green-800 space-y-1">
-                          <div>
-                            1. 🎁 AI personalizes ${giftAmount} gift from{" "}
-                            {selectedGifts.length} options
-                          </div>
-                          <div>
-                            2. 💬 AI asks: "{followUpQuestion.substring(0, 50)}
-                            ..."
-                          </div>
-                          <div>
-                            3. 🏠 AI presents {selectedPartners.length} moving
-                            partner offers
+                        </h2>
+                        <div
+                          className="rounded-xl p-3 border"
+                          style={{
+                            background:
+                              "linear-gradient(to right, #f0fdf4, #ecfdf5)",
+                            borderColor: "#bbf7d0",
+                          }}
+                        >
+                          <h4
+                            className="text-xs font-medium mb-2"
+                            style={{ color: "#166534" }}
+                          >
+                            End-to-End Customer Experience
+                          </h4>
+                          <div className="space-y-2 text-xs">
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="w-6 h-6 rounded-full flex items-center justify-center text-white font-bold"
+                                style={{ backgroundColor: "#2563eb" }}
+                              >
+                                1
+                              </div>
+                              <div>
+                                <div className="font-medium text-gray-900">
+                                  AI Gift Personalization
+                                </div>
+                                <div className="text-gray-600">
+                                  AI selects ${giftAmount} gift from 3 curated
+                                  options
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="w-6 h-6 rounded-full flex items-center justify-center text-white font-bold"
+                                style={{ backgroundColor: "#16a34a" }}
+                              >
+                                2
+                              </div>
+                              <div>
+                                <div className="font-medium text-gray-900">
+                                  Follow-Up Conversation
+                                </div>
+                                <div className="text-gray-600">
+                                  "{followUpQuestion.substring(0, 60)}..."
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="w-6 h-6 rounded-full flex items-center justify-center text-white font-bold"
+                                style={{ backgroundColor: "#d97706" }}
+                              >
+                                3
+                              </div>
+                              <div>
+                                <div className="font-medium text-gray-900">
+                                  Moving Journey Bundle
+                                </div>
+                                <div className="text-gray-600">
+                                  Present {selectedPartners.length} partner
+                                  offers for seamless move
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex justify-between">
+                      {/* Action Buttons */}
+                      <div className="flex gap-2 pb-4">
                         <button
                           onClick={handlePrevStep}
-                          className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                          className="flex-1 py-2 px-3 border rounded-lg font-medium text-gray-600 hover:text-gray-800 transition-colors text-sm"
+                          style={{ borderColor: "#e5e7eb" }}
                         >
-                          ← Back
+                          ← Back to Follow-Up
                         </button>
                         <button
                           onClick={handleConfirmLaunch}
-                          className="px-6 py-2 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg font-medium hover:from-green-700 hover:to-blue-700 transition-all duration-200 shadow-lg"
+                          className="flex-1 py-2 px-3 rounded-lg font-medium text-white transition-colors shadow-lg text-sm"
+                          style={{
+                            background:
+                              "linear-gradient(to right, #16a34a, #2563eb)",
+                          }}
                         >
                           🚀 Launch Campaign
                         </button>

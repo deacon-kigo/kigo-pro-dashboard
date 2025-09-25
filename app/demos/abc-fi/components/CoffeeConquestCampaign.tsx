@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { MobileLayout } from "./MobileLayout";
 
 interface CoffeeConquestCampaignProps {
   onPurchaseComplete: () => void;
@@ -10,22 +11,19 @@ export function CoffeeConquestCampaign({
   onPurchaseComplete,
 }: CoffeeConquestCampaignProps) {
   const [currentStep, setCurrentStep] = useState<
-    "offer" | "ordering" | "payment"
+    "offer" | "activated" | "transaction"
   >("offer");
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleAcceptOffer = () => {
-    setCurrentStep("ordering");
+  const handleActivateOffer = () => {
+    setCurrentStep("activated");
   };
 
-  const handlePlaceOrder = () => {
-    setCurrentStep("payment");
-  };
-
-  const handlePayWithCard = () => {
+  const handleSimulateTransaction = () => {
+    setCurrentStep("transaction");
     setIsProcessing(true);
 
-    // Simulate payment processing
+    // Simulate Sarah going to Starbucks and making a purchase
     setTimeout(() => {
       setIsProcessing(false);
       onPurchaseComplete();
@@ -33,143 +31,229 @@ export function CoffeeConquestCampaign({
   };
 
   const renderOfferScreen = () => (
-    <div className="w-full h-full bg-gradient-to-br from-green-700 via-green-600 to-green-800 flex flex-col">
-      {/* Header */}
-      <div className="bg-white/10 backdrop-blur-sm p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-              <span className="text-green-800 font-bold">★</span>
-            </div>
-            <h1 className="text-white font-bold text-lg">
-              Coffee Switch Campaign
-            </h1>
+    <MobileLayout>
+      <div className="relative animate-fade-in">
+        {/* Header - Exact same as banking dashboard */}
+        <div className="px-6 py-4 flex items-center justify-between bg-white">
+          <div className="flex items-center">
+            <img
+              src="/logos/abc-fi-logo.png"
+              alt="ABC FI"
+              className="w-20 h-20 object-contain"
+            />
           </div>
-          <div className="text-white/80 text-sm">ABC FI</div>
-        </div>
-      </div>
-
-      {/* Main offer content */}
-      <div className="flex-1 p-6 flex flex-col justify-center items-center text-center space-y-6">
-        {/* Starbucks logo */}
-        <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-2xl">
-          <div className="w-16 h-16 bg-green-700 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-2xl">★</span>
+          <div className="flex items-center gap-3">
+            <button className="p-2 text-gray-600 hover:text-gray-900 transition-colors">
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                />
+              </svg>
+            </button>
+            <button className="p-2 text-gray-600 hover:text-gray-900 transition-colors">
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </button>
           </div>
         </div>
 
-        {/* Offer details */}
-        <div className="space-y-4">
-          <h2 className="text-3xl font-bold text-white">
-            Welcome to Starbucks!
-          </h2>
-          <p className="text-xl text-white/90">Try something new, Sarah</p>
-        </div>
-
-        {/* Points offer */}
-        <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 space-y-3">
-          <div className="text-center">
-            <div className="text-4xl font-bold text-yellow-300">1,000</div>
-            <div className="text-white text-lg">Bonus Points</div>
-          </div>
-          <p className="text-white/90 text-sm">
-            Earn when you make your first purchase with your ABC FI card
-          </p>
-        </div>
-
-        {/* Brand-funded badge */}
-        <div className="bg-yellow-400 text-green-800 px-4 py-2 rounded-full text-sm font-bold">
-          🎯 Brand-Funded Offer
-        </div>
-
-        {/* CTA Button */}
-        <button
-          onClick={handleAcceptOffer}
-          className="w-full bg-white text-green-700 font-bold py-4 px-6 rounded-2xl text-lg hover:bg-gray-50 transition-colors shadow-lg"
-        >
-          Let's Try Starbucks! ☕️
-        </button>
-
-        <p className="text-white/70 text-xs">
-          Points will be automatically added to your ABC FI account
-        </p>
-      </div>
-    </div>
-  );
-
-  const renderOrderingScreen = () => (
-    <div className="w-full h-full bg-white flex flex-col">
-      {/* Starbucks header */}
-      <div className="bg-green-700 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-              <span className="text-green-800 font-bold">★</span>
-            </div>
-            <h1 className="text-white font-bold text-lg">Starbucks</h1>
-          </div>
-          <div className="text-white/80 text-sm">Order Here</div>
-        </div>
-      </div>
-
-      {/* Menu items */}
-      <div className="flex-1 p-4 space-y-4">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Popular Drinks</h2>
-
-        {/* Featured drink */}
-        <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-4">
-          <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 bg-green-100 rounded-xl flex items-center justify-center">
-              <span className="text-2xl">☕️</span>
-            </div>
-            <div className="flex-1">
-              <h3 className="font-bold text-gray-900">Pike Place Roast</h3>
-              <p className="text-gray-600 text-sm">Medium roast coffee</p>
-              <div className="flex items-center justify-between mt-2">
-                <span className="font-bold text-green-700">$2.45</span>
-                <div className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-bold">
-                  +1,000 pts with ABC FI
+        {/* Main offer content */}
+        <div className="flex-1 p-6 space-y-6">
+          {/* Offer Card */}
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
+            <div className="flex items-center space-x-4 mb-4">
+              <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-green-700 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">★</span>
                 </div>
               </div>
+              <div className="flex-1">
+                <h2 className="text-xl font-bold">Coffee Switch Campaign</h2>
+                <p className="text-blue-100 text-sm">Brand-funded offer</p>
+              </div>
             </div>
-          </div>
-        </div>
 
-        {/* Other options */}
-        <div className="space-y-3">
-          <div className="bg-gray-50 rounded-xl p-3 flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <span className="text-lg">🥤</span>
-              <div>
-                <div className="font-medium">Iced Coffee</div>
-                <div className="text-sm text-gray-600">$2.25</div>
+            <div className="space-y-3">
+              <p className="text-blue-50">
+                Time for a new coffee routine, Sarah? Earn bonus points when you
+                try Starbucks with your ABC FI card!
+              </p>
+
+              <div
+                className="text-blue-900 px-4 py-3 rounded-xl font-bold text-center"
+                style={{ backgroundColor: "#fbbf24" }}
+              >
+                🎉 Earn 1,000 Bonus Points
+              </div>
+
+              <div className="text-blue-100 text-sm space-y-1">
+                <p>• Valid for 30 days</p>
+                <p>• Use your ABC FI card at any Starbucks</p>
+                <p>• Points automatically added to your account</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-gray-50 rounded-xl p-3 flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <span className="text-lg">🍵</span>
-              <div>
-                <div className="font-medium">Green Tea Latte</div>
-                <div className="text-sm text-gray-600">$4.65</div>
-              </div>
-            </div>
+          {/* Location Info */}
+          <div className="bg-gray-50 rounded-2xl p-4">
+            <h3 className="font-semibold text-gray-900 mb-2">
+              📍 Nearest Starbucks
+            </h3>
+            <p className="text-gray-700 font-medium">
+              1847 Broadway, Denver, CO
+            </p>
+            <p className="text-gray-500 text-sm">0.2 miles away • 3 min walk</p>
           </div>
-        </div>
 
-        {/* Order button */}
-        <button
-          onClick={handlePlaceOrder}
-          className="w-full bg-green-700 text-white font-bold py-4 px-6 rounded-2xl text-lg hover:bg-green-800 transition-colors mt-6"
-        >
-          Order Pike Place Roast - $2.45
-        </button>
+          {/* CTA Button */}
+          <button
+            onClick={handleActivateOffer}
+            className="w-full bg-blue-600 text-white font-bold py-4 px-6 rounded-2xl text-lg hover:bg-blue-700 transition-colors"
+          >
+            Activate Offer ✅
+          </button>
+
+          <p className="text-gray-500 text-xs text-center">
+            Points will be automatically added to your ABC FI account when you
+            make a purchase
+          </p>
+        </div>
       </div>
-    </div>
+    </MobileLayout>
   );
 
-  const renderPaymentScreen = () => (
+  const renderActivatedScreen = () => (
+    <MobileLayout>
+      <div className="relative animate-fade-in">
+        {/* Header - Exact same as banking dashboard */}
+        <div className="px-6 py-4 flex items-center justify-between bg-white">
+          <div className="flex items-center">
+            <img
+              src="/logos/abc-fi-logo.png"
+              alt="ABC FI"
+              className="w-20 h-20 object-contain"
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <button className="p-2 text-gray-600 hover:text-gray-900 transition-colors">
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                />
+              </svg>
+            </button>
+            <button className="p-2 text-gray-600 hover:text-gray-900 transition-colors">
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Success content */}
+        <div className="flex-1 p-6 space-y-6">
+          {/* Success Card */}
+          <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-6 text-center">
+            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl text-white">✅</span>
+            </div>
+
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Offer Activated Successfully!
+            </h2>
+
+            <p className="text-gray-600">
+              Your Starbucks offer is now active and ready to use.
+            </p>
+          </div>
+
+          {/* Offer Details Card */}
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
+            <div className="text-center mb-4">
+              <div
+                className="text-blue-900 px-4 py-3 rounded-xl font-bold text-xl mb-3"
+                style={{ backgroundColor: "#fbbf24" }}
+              >
+                🎉 1,000 Bonus Points
+              </div>
+              <p className="text-blue-100">
+                Visit any Starbucks location and pay with your ABC FI card to
+                earn bonus points
+              </p>
+            </div>
+
+            <div className="text-blue-100 text-sm space-y-1">
+              <p>• Offer valid for 30 days</p>
+              <p>• Points automatically added to your account</p>
+              <p>• Use at any Starbucks location</p>
+            </div>
+          </div>
+
+          {/* Location Card */}
+          <div className="bg-gray-50 rounded-2xl p-4">
+            <h3 className="font-semibold text-gray-900 mb-2">
+              📍 Nearest Starbucks
+            </h3>
+            <p className="text-gray-700 font-medium">
+              1847 Broadway, Denver, CO
+            </p>
+            <p className="text-gray-500 text-sm">0.2 miles away • 3 min walk</p>
+          </div>
+
+          {/* Demo button to simulate transaction */}
+          <button
+            onClick={handleSimulateTransaction}
+            className="w-full bg-blue-600 text-white font-bold py-4 px-6 rounded-2xl text-lg hover:bg-blue-700 transition-colors"
+          >
+            Simulate Purchase at Starbucks 🚀
+          </button>
+
+          <p className="text-gray-500 text-xs text-center">
+            (Demo: This simulates Sarah making a purchase)
+          </p>
+        </div>
+      </div>
+    </MobileLayout>
+  );
+
+  const renderTransactionScreen = () => (
     <div className="w-full h-full bg-white flex flex-col">
       {/* Header */}
       <div className="bg-gray-50 p-4 border-b">
@@ -245,8 +329,8 @@ export function CoffeeConquestCampaign({
   return (
     <div className="w-full h-full">
       {currentStep === "offer" && renderOfferScreen()}
-      {currentStep === "ordering" && renderOrderingScreen()}
-      {currentStep === "payment" && renderPaymentScreen()}
+      {currentStep === "activated" && renderActivatedScreen()}
+      {currentStep === "transaction" && renderTransactionScreen()}
     </div>
   );
 }
