@@ -11,8 +11,6 @@ import { AIChatInterface } from "../demos/abc-fi/components/AIChatInterface";
 import { StarbucksGeofenceNotification } from "../demos/abc-fi/components/StarbucksGeofenceNotification";
 import { CoffeeConquestCampaign } from "../demos/abc-fi/components/CoffeeConquestCampaign";
 import { TransactionConfirmation } from "../demos/abc-fi/components/TransactionConfirmation";
-import { ReceiptScanning } from "../demos/abc-fi/components/ReceiptScanning";
-import { ValueSummary } from "../demos/abc-fi/components/ValueSummary";
 import { Confetti, type ConfettiRef } from "@/components/ui/confetti";
 
 type DemoStep =
@@ -25,9 +23,7 @@ type DemoStep =
   | "coffee-conquest"
   | "transaction-confirmation"
   | "kigo-marketplace"
-  | "lightning-deals"
-  | "receipt-scanning"
-  | "value-summary";
+  | "lightning-deals";
 
 export default function ABCFIDemoStandalone() {
   const [currentStep, setCurrentStep] = useState<DemoStep>("ios-homescreen");
@@ -98,12 +94,8 @@ export default function ABCFIDemoStandalone() {
   };
 
   const handleTransactionComplete = () => {
-    // Continue to original demo flow
-    setCurrentStep("receipt-scanning");
-  };
-
-  const handleReceiptScanned = () => {
-    setCurrentStep("value-summary");
+    // End the demo flow here - no need for receipt scanning or value summary
+    setCurrentStep("banking-dashboard");
   };
 
   const handleRestart = () => {
@@ -154,10 +146,6 @@ export default function ABCFIDemoStandalone() {
           <TransactionConfirmation onComplete={handleTransactionComplete} />
         );
 
-      case "receipt-scanning":
-        return <ReceiptScanning onReceiptScanned={handleReceiptScanned} />;
-      case "value-summary":
-        return <ValueSummary onRestart={handleRestart} />;
       default:
         return (
           <SarahBankingDashboard
@@ -200,10 +188,6 @@ export default function ABCFIDemoStandalone() {
                 { key: "starbucks-geofence", label: "4. Notification" },
                 { key: "coffee-conquest", label: "5. Coffee" },
                 { key: "transaction-confirmation", label: "6. Success" },
-                { key: "kigo-marketplace", label: "7. Marketplace" },
-                { key: "lightning-deals", label: "8. Lightning" },
-                { key: "receipt-scanning", label: "9. Receipt" },
-                { key: "value-summary", label: "10. Summary" },
               ].map(({ key, label }) => (
                 <button
                   key={key}
@@ -240,14 +224,12 @@ export default function ABCFIDemoStandalone() {
                     "Tap notification to continue"}
                   {currentStep === "ai-chat" &&
                     "AI assistant with gift selection & move planning"}
-                  {currentStep === "kigo-marketplace" &&
-                    "Exploring personalized marketplace"}
-                  {currentStep === "lightning-deals" &&
-                    "Discovering limited-time offers"}
-                  {currentStep === "receipt-scanning" &&
-                    "Earning points from purchases"}
-                  {currentStep === "value-summary" &&
-                    "Journey complete - $1,900 saved!"}
+                  {currentStep === "starbucks-geofence" &&
+                    "Geofenced Starbucks notification appears"}
+                  {currentStep === "coffee-conquest" &&
+                    "Activating Starbucks offer in ABC FI"}
+                  {currentStep === "transaction-confirmation" &&
+                    "Purchase confirmed - 1,000 bonus points earned!"}
                 </span>
               </div>
             </div>

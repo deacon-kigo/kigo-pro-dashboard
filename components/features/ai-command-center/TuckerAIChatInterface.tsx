@@ -33,7 +33,7 @@ interface Message {
 }
 
 interface UIComponent {
-  type: "refined-campaign-widget";
+  type: "refined-campaign-widget" | "thinking-to-campaign-widget";
   data: any;
 }
 
@@ -346,36 +346,69 @@ export function TuckerAIChatInterface({
   const renderUIComponent = (component: UIComponent) => {
     switch (component.type) {
       case "refined-campaign-widget":
-        return <RefinedCampaignWidget {...component.data} />;
+        return (
+          <div className="animate-fade-in">
+            <RefinedCampaignWidget {...component.data} />
+          </div>
+        );
       case "thinking-to-campaign-widget":
-        return <ThinkingToCampaignWidget {...component.data} />;
+        return (
+          <div className="animate-fade-in">
+            <ThinkingToCampaignWidget {...component.data} />
+          </div>
+        );
       default:
         return null;
     }
   };
 
   return (
-    <Card className="w-full h-full overflow-hidden shadow-lg bg-white">
-      {/* Header */}
-      <div className="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
+    <Card className="w-full h-full overflow-hidden shadow-2xl bg-white">
+      {/* Enhanced Header with Glassmorphic Design */}
+      <div
+        className="border-b border-purple-200/50"
+        style={{
+          background:
+            "linear-gradient(135deg, rgba(249, 250, 251, 0.9) 0%, rgba(243, 244, 246, 0.8) 100%)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+        }}
+      >
         <div className="flex items-center justify-between p-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-white border border-gray-200 flex items-center justify-center shadow-sm">
-              <Brain className="w-5 h-5 text-blue-600" />
+          <div className="flex items-center gap-4">
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg"
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%)",
+                border: "1px solid rgba(255, 255, 255, 0.3)",
+              }}
+            >
+              <Brain className="w-6 h-6 text-indigo-600" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-xl font-bold text-gray-900">
                 AI Command Center
               </h2>
-              <p className="text-sm text-gray-600">
-                Campaign creation and marketing insights
+              <p className="text-sm text-gray-600 flex items-center gap-1">
+                <Sparkles className="w-4 h-4 text-purple-500" />
+                Tucker's New Mover Journey Campaign
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-xs">
-              AI Assistant
-            </Badge>
+          <div className="flex items-center gap-3">
+            <div
+              className="px-4 py-2 rounded-full text-sm font-medium"
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.1) 100%)",
+                border: "1px solid rgba(34, 197, 94, 0.2)",
+                color: "#166534",
+              }}
+            >
+              <Zap className="w-4 h-4 mr-2 inline" />
+              AI Active
+            </div>
             <Button
               onClick={onClose}
               variant="ghost"
@@ -407,28 +440,52 @@ export function TuckerAIChatInterface({
           )}
 
           {messages.map((message) => (
-            <div key={message.id} className="flex items-start gap-3">
-              {/* Avatar */}
+            <div key={message.id} className="flex items-start gap-4">
+              {/* Enhanced Avatar */}
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg ${
                   message.sender === "user"
-                    ? "bg-blue-100"
-                    : "bg-gradient-to-br from-purple-100 to-blue-100"
+                    ? "bg-blue-100 border border-blue-200"
+                    : ""
                 }`}
+                style={
+                  message.sender === "ai"
+                    ? {
+                        background:
+                          "linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%)",
+                        border: "1px solid rgba(255, 255, 255, 0.3)",
+                      }
+                    : {}
+                }
               >
                 {message.sender === "user" ? (
-                  <User className="w-4 h-4 text-blue-600" />
+                  <User className="w-5 h-5 text-blue-600" />
                 ) : (
-                  <Bot className="w-4 h-4 text-purple-600" />
+                  <Sparkles className="w-5 h-5 text-indigo-600" />
                 )}
               </div>
 
-              {/* Message Content */}
+              {/* Enhanced Message Content */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-sm font-medium text-gray-900">
-                    {message.sender === "user" ? "You" : "AI Assistant"}
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm font-semibold text-gray-900">
+                    {message.sender === "user"
+                      ? "Tucker"
+                      : "AI Marketing Co-pilot"}
                   </span>
+                  {message.sender === "ai" && (
+                    <div
+                      className="px-2 py-1 rounded-full text-xs font-medium"
+                      style={{
+                        background:
+                          "linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)",
+                        border: "1px solid rgba(168, 85, 247, 0.2)",
+                        color: "#7c3aed",
+                      }}
+                    >
+                      AI Assistant
+                    </div>
+                  )}
                   <span className="text-xs text-gray-500">
                     {message.timestamp.toLocaleTimeString([], {
                       hour: "2-digit",
@@ -436,8 +493,27 @@ export function TuckerAIChatInterface({
                     })}
                   </span>
                 </div>
-                <div className="text-sm text-gray-700 whitespace-pre-wrap">
-                  {message.text}
+
+                {/* Enhanced Message Bubble */}
+                <div
+                  className={`rounded-xl p-4 shadow-sm border ${
+                    message.sender === "user"
+                      ? "border-blue-200 bg-blue-50"
+                      : "border-gray-200 bg-white"
+                  }`}
+                  style={
+                    message.sender === "ai"
+                      ? {
+                          background:
+                            "linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%)",
+                          backdropFilter: "blur(8px)",
+                        }
+                      : {}
+                  }
+                >
+                  <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+                    {message.text}
+                  </div>
                 </div>
 
                 {/* UI Component */}
@@ -450,24 +526,34 @@ export function TuckerAIChatInterface({
             </div>
           ))}
 
-          {/* AI Typing Indicator with Progress */}
+          {/* Enhanced AI Thinking Indicator */}
           {isTyping && (
-            <div className="flex items-start gap-3 animate-fade-in">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center flex-shrink-0">
-                <Bot className="w-4 h-4 text-purple-600 animate-pulse" />
+            <div className="flex items-start gap-4 animate-fade-in">
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg"
+                style={{
+                  background:
+                    "linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%)",
+                  border: "1px solid rgba(255, 255, 255, 0.3)",
+                }}
+              >
+                <Sparkles className="w-5 h-5 text-indigo-600 animate-pulse" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-900">
-                      AI Assistant
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></div>
-                      <span className="text-xs text-green-600 font-medium">
-                        Active
-                      </span>
-                    </div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm font-semibold text-gray-900">
+                    AI Marketing Co-pilot
+                  </span>
+                  <div
+                    className="px-2 py-1 rounded-full text-xs font-medium"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)",
+                      border: "1px solid rgba(168, 85, 247, 0.2)",
+                      color: "#7c3aed",
+                    }}
+                  >
+                    Thinking...
                   </div>
                   {campaignStep !== "analysis" && (
                     <div className="flex items-center gap-1">
@@ -499,26 +585,33 @@ export function TuckerAIChatInterface({
 
                 {/* Enhanced thinking indicator with glassmorphic design */}
                 <div
-                  className="rounded-xl p-4 border border-purple-200/50 backdrop-blur-sm"
+                  className="rounded-xl p-4 border border-gray-200 shadow-sm"
                   style={{
                     background:
-                      "linear-gradient(135deg, rgba(249, 250, 251, 0.9) 0%, rgba(243, 244, 246, 0.8) 100%)",
-                    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+                      "linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%)",
+                    backdropFilter: "blur(8px)",
                   }}
                 >
                   {/* Progress section for analysis */}
                   {isAnalyzing && (campaignProgress > 0 || currentTask) && (
                     <div className="mb-4">
                       <div className="flex items-center gap-3 mb-3">
-                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-                          <Zap className="w-3 h-3 text-blue-600 animate-pulse" />
+                        <div
+                          className="w-8 h-8 rounded-lg flex items-center justify-center"
+                          style={{
+                            background:
+                              "linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%)",
+                            border: "1px solid rgba(99, 102, 241, 0.2)",
+                          }}
+                        >
+                          <TrendingUp className="w-4 h-4 text-indigo-600 animate-pulse" />
                         </div>
                         <div className="flex-1">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-sm font-medium text-gray-900">
-                              AI Campaign Architect
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-semibold text-gray-900">
+                              Analyzing ABC FI's Q4 Objectives
                             </span>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-gray-500 font-medium">
                               {campaignProgress}%
                             </span>
                           </div>
@@ -526,18 +619,25 @@ export function TuckerAIChatInterface({
                         </div>
                       </div>
                       {currentTask && (
-                        <div className="flex items-center gap-2 text-sm text-gray-600 bg-white/50 rounded-lg p-2">
-                          <Clock className="w-4 h-4 animate-spin" />
+                        <div
+                          className="flex items-center gap-3 text-sm text-gray-700 rounded-lg p-3"
+                          style={{
+                            background:
+                              "linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(22, 163, 74, 0.05) 100%)",
+                            border: "1px solid rgba(34, 197, 94, 0.1)",
+                          }}
+                        >
+                          <Target className="w-4 h-4 text-green-600 animate-spin" />
                           <span>{currentTask}</span>
                         </div>
                       )}
                     </div>
                   )}
 
-                  {/* Thinking animation */}
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  {/* Enhanced thinking animation */}
+                  <div className="flex items-center gap-3 text-sm text-gray-600">
                     <div className="flex gap-1">
-                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div>
                       <div
                         className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"
                         style={{ animationDelay: "0.1s" }}
