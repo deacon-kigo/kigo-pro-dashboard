@@ -17,6 +17,17 @@ import {
   Gift,
   Brain,
 } from "lucide-react";
+import {
+  StepHeader,
+  Card,
+  SelectionButton,
+  InfoBanner,
+  ActionButtons,
+  SectionHeader,
+  OptionCard,
+  StepContainer,
+  ContentSection,
+} from "./CampaignUIComponents";
 
 interface RefinedCampaignWidgetProps {
   campaignType?: string;
@@ -490,136 +501,53 @@ export function RefinedCampaignWidget({
           >
             {!isLaunching ? (
               <div className="h-full flex flex-col">
-                {/* Step 1: The Gift - Compact Version */}
+                {/* Step 1: The Gift - Using Reusable Components */}
                 {configStep === "step1" && (
-                  <div
-                    className="animate-fade-in flex-1 overflow-y-auto"
-                    ref={stepContainerRef}
-                  >
-                    {/* Compact Header */}
-                    <div
-                      className="px-4 py-3 border-b"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
-                        borderColor: "#e5e7eb",
-                      }}
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <button
-                          onClick={handleBackToOverview}
-                          className="w-7 h-7 bg-white rounded-full shadow-sm flex items-center justify-center border"
-                          style={{ borderColor: "#e5e7eb" }}
-                        >
-                          <ArrowRight className="w-3 h-3 text-gray-600 rotate-180" />
-                        </button>
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="px-2 py-1 rounded-full"
-                            style={{
-                              backgroundColor: "#dbeafe",
-                              color: "#1d4ed8",
-                            }}
-                          >
-                            <span className="text-xs font-medium">
-                              Step 1/3
-                            </span>
-                          </div>
-                        </div>
-                      </div>
+                  <StepContainer stepRef={stepContainerRef}>
+                    <StepHeader
+                      stepNumber={1}
+                      totalSteps={3}
+                      title="Configure AI Gift Selection"
+                      subtitle="Set up personalized $100 housewarming gifts"
+                      icon={Gift}
+                      iconColor="#2563eb"
+                      iconBackgroundColor="#dbeafe"
+                      onBack={handleBackToOverview}
+                    />
 
-                      <div className="text-center">
-                        <div
-                          className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
-                          style={{ backgroundColor: "#dbeafe" }}
-                        >
-                          <Gift
-                            className="w-6 h-6"
-                            style={{ color: "#2563eb" }}
-                          />
-                        </div>
-                        <h1 className="text-lg font-bold text-gray-900 mb-1">
-                          Configure AI Gift Selection
-                        </h1>
-                        <p className="text-gray-600 text-xs">
-                          Set up personalized $100 housewarming gifts
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* AI Personalization Banner */}
-                    <div className="px-4 py-3">
-                      <div
-                        className="rounded-xl p-3 mb-4 border"
-                        style={{
-                          background:
-                            "linear-gradient(to right, #faf5ff, #eff6ff)",
-                          borderColor: "#c4b5fd",
-                        }}
-                      >
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="w-6 h-6 rounded-full flex items-center justify-center"
-                            style={{ backgroundColor: "#e9d5ff" }}
-                          >
-                            <Sparkles
-                              className="w-3 h-3"
-                              style={{ color: "#7c3aed" }}
-                            />
-                          </div>
-                          <div>
-                            <h3
-                              className="font-medium text-xs"
-                              style={{ color: "#581c87" }}
-                            >
-                              AI-Powered Gift Personalization
-                            </h3>
-                            <p className="text-xs" style={{ color: "#7c2d12" }}>
-                              Automatically selects hyper-relevant options for
-                              each customer
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+                    <ContentSection>
+                      <InfoBanner
+                        title="AI-Powered Gift Personalization"
+                        description="Automatically selects hyper-relevant options for each customer"
+                        icon={Sparkles}
+                        iconColor="#7c3aed"
+                        iconBackgroundColor="#e9d5ff"
+                        backgroundColor="linear-gradient(to right, #faf5ff, #eff6ff)"
+                        borderColor="#c4b5fd"
+                      />
 
                       {/* Gift Amount Selection */}
                       <div className="mb-4">
-                        <h2 className="text-base font-semibold text-gray-900 mb-3">
-                          Gift Card Value
-                        </h2>
+                        <SectionHeader title="Gift Card Value" />
                         <div className="grid grid-cols-2 gap-2">
                           {[50, 100, 150, 200].map((amount) => (
-                            <button
+                            <SelectionButton
                               key={amount}
+                              isSelected={giftAmount === amount}
                               onClick={() => setGiftAmount(amount)}
-                              className={`p-3 rounded-xl border transition-all font-medium ${
-                                giftAmount === amount
-                                  ? "shadow-md"
-                                  : "hover:shadow-md"
-                              }`}
-                              style={{
-                                backgroundColor:
-                                  giftAmount === amount ? "#dbeafe" : "#ffffff",
-                                borderColor:
-                                  giftAmount === amount ? "#3b82f6" : "#e5e7eb",
-                                color:
-                                  giftAmount === amount ? "#1d4ed8" : "#374151",
-                              }}
                             >
                               <div className="text-lg font-bold">${amount}</div>
                               <div className="text-xs opacity-75">
                                 Gift Value
                               </div>
-                            </button>
+                            </SelectionButton>
                           ))}
                         </div>
                       </div>
 
                       {/* Available Gift Options */}
                       <div className="mb-4">
-                        <h2 className="text-base font-semibold text-gray-900 mb-3">
-                          AI-Selected Gift Options
-                        </h2>
+                        <SectionHeader title="AI-Selected Gift Options" />
                         <div className="space-y-2">
                           {[
                             {
@@ -647,61 +575,21 @@ export function RefinedCampaignWidget({
                               logo: "/illustration/abc-fi/mock/cleaning-service.jpg",
                             },
                           ].map((gift, index) => (
-                            <div
+                            <OptionCard
                               key={index}
-                              className="bg-white rounded-xl shadow-sm p-3 border transition-all"
-                              style={{ borderColor: "#e5e7eb" }}
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 rounded-lg overflow-hidden">
-                                  <img
-                                    src={gift.logo}
-                                    alt={gift.merchant}
-                                    className="w-full h-full object-cover"
-                                  />
-                                </div>
-                                <div className="flex-1">
-                                  <div className="flex items-center justify-between mb-1">
-                                    <h3 className="font-medium text-sm text-gray-900">
-                                      {gift.title}
-                                    </h3>
-                                    <span
-                                      className="text-sm font-bold"
-                                      style={{ color: "#059669" }}
-                                    >
-                                      ${giftAmount}
-                                    </span>
-                                  </div>
-                                  <p className="text-xs text-gray-600 mb-1">
-                                    {gift.description}
-                                  </p>
-                                  <div className="flex items-center justify-between">
-                                    <span
-                                      className="px-2 py-0.5 text-xs font-medium rounded-full"
-                                      style={{
-                                        backgroundColor: "#dbeafe",
-                                        color: "#1d4ed8",
-                                      }}
-                                    >
-                                      {gift.category}
-                                    </span>
-                                    <span className="text-xs text-gray-500">
-                                      {gift.merchant}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
+                              title={gift.title}
+                              description={gift.description}
+                              category={gift.category}
+                              price={giftAmount}
+                              image={gift.logo}
+                            />
                           ))}
                         </div>
                       </div>
 
                       {/* AI Explanation */}
                       <div className="mb-4">
-                        <div
-                          className="bg-white rounded-xl shadow-sm p-3 border"
-                          style={{ borderColor: "#e5e7eb" }}
-                        >
+                        <Card>
                           <div className="flex items-start gap-2">
                             <div
                               className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
@@ -724,97 +612,39 @@ export function RefinedCampaignWidget({
                               </p>
                             </div>
                           </div>
-                        </div>
+                        </Card>
                       </div>
 
-                      {/* Action Buttons */}
-                      <div className="flex gap-2 pb-4">
-                        <button
-                          onClick={handlePrevStep}
-                          className="flex-1 py-2 px-3 border rounded-lg font-medium text-gray-600 hover:text-gray-800 transition-colors text-sm"
-                          style={{ borderColor: "#e5e7eb" }}
-                        >
-                          ← Back to Overview
-                        </button>
-                        <button
-                          onClick={handleNextStep}
-                          className="flex-1 py-2 px-3 rounded-lg font-medium text-white transition-colors text-sm"
-                          style={{ backgroundColor: "#2563eb" }}
-                        >
-                          Next: Follow-Up →
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                      <ActionButtons
+                        onBack={handlePrevStep}
+                        onNext={handleNextStep}
+                        backLabel="← Back to Overview"
+                        nextLabel="Next: Follow-Up →"
+                        nextColor="#2563eb"
+                      />
+                    </ContentSection>
+                  </StepContainer>
                 )}
 
-                {/* Step 2: The Follow-Up */}
+                {/* Step 2: The Follow-Up - Using Reusable Components */}
                 {configStep === "step2" && (
-                  <div
-                    className="animate-fade-in flex-1 overflow-y-auto"
-                    ref={stepContainerRef}
-                  >
-                    {/* Compact Header */}
-                    <div
-                      className="px-4 py-3 border-b"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
-                        borderColor: "#e5e7eb",
-                      }}
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <button
-                          onClick={handleBackToOverview}
-                          className="w-7 h-7 bg-white rounded-full shadow-sm flex items-center justify-center border"
-                          style={{ borderColor: "#e5e7eb" }}
-                        >
-                          <ArrowRight className="w-3 h-3 text-gray-600 rotate-180" />
-                        </button>
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="px-2 py-1 rounded-full"
-                            style={{
-                              backgroundColor: "#dbeafe",
-                              color: "#1d4ed8",
-                            }}
-                          >
-                            <span className="text-xs font-medium">
-                              Step 2/3
-                            </span>
-                          </div>
-                        </div>
-                      </div>
+                  <StepContainer stepRef={stepContainerRef}>
+                    <StepHeader
+                      stepNumber={2}
+                      totalSteps={3}
+                      title="Configure Follow-Up Question"
+                      subtitle="Guide customers to the moving journey"
+                      icon={ArrowRight}
+                      iconColor="#16a34a"
+                      iconBackgroundColor="#dcfce7"
+                      onBack={handleBackToOverview}
+                    />
 
-                      <div className="text-center">
-                        <div
-                          className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
-                          style={{ backgroundColor: "#dcfce7" }}
-                        >
-                          <ArrowRight
-                            className="w-6 h-6"
-                            style={{ color: "#16a34a" }}
-                          />
-                        </div>
-                        <h1 className="text-lg font-bold text-gray-900 mb-1">
-                          Configure Follow-Up Question
-                        </h1>
-                        <p className="text-gray-600 text-xs">
-                          Guide customers to the moving journey
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="px-4 py-3">
+                    <ContentSection>
                       {/* Follow-Up Question Configuration */}
                       <div className="mb-4">
-                        <h2 className="text-base font-semibold text-gray-900 mb-3">
-                          AI Agent Question
-                        </h2>
-                        <div
-                          className="bg-white rounded-xl shadow-sm p-3 border"
-                          style={{ borderColor: "#e5e7eb" }}
-                        >
+                        <SectionHeader title="AI Agent Question" />
+                        <Card>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
                             Follow-Up Question
                           </label>
@@ -828,14 +658,12 @@ export function RefinedCampaignWidget({
                             rows={3}
                             placeholder="Enter the question the AI agent will ask after gift delivery..."
                           />
-                        </div>
+                        </Card>
                       </div>
 
                       {/* Preview Section */}
                       <div className="mb-4">
-                        <h2 className="text-base font-semibold text-gray-900 mb-3">
-                          Customer Experience Preview
-                        </h2>
+                        <SectionHeader title="Customer Experience Preview" />
                         <div
                           className="rounded-xl p-3 border"
                           style={{
@@ -900,90 +728,35 @@ export function RefinedCampaignWidget({
                         </div>
                       </div>
 
-                      {/* Action Buttons */}
-                      <div className="flex gap-2 pb-4">
-                        <button
-                          onClick={handlePrevStep}
-                          className="flex-1 py-2 px-3 border rounded-lg font-medium text-gray-600 hover:text-gray-800 transition-colors text-sm"
-                          style={{ borderColor: "#e5e7eb" }}
-                        >
-                          ← Back to Gift Setup
-                        </button>
-                        <button
-                          onClick={handleNextStep}
-                          className="flex-1 py-2 px-3 rounded-lg font-medium text-white transition-colors text-sm"
-                          style={{ backgroundColor: "#16a34a" }}
-                        >
-                          Next: Journey Bundle →
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                      <ActionButtons
+                        onBack={handlePrevStep}
+                        onNext={handleNextStep}
+                        backLabel="← Back to Gift Setup"
+                        nextLabel="Next: Journey Bundle →"
+                        nextColor="#16a34a"
+                      />
+                    </ContentSection>
+                  </StepContainer>
                 )}
 
-                {/* Step 3: The Journey Bundle */}
+                {/* Step 3: The Journey Bundle - Using Reusable Components */}
                 {configStep === "step3" && (
-                  <div
-                    className="animate-fade-in flex-1 overflow-y-auto"
-                    ref={stepContainerRef}
-                  >
-                    {/* Compact Header */}
-                    <div
-                      className="px-4 py-3 border-b"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
-                        borderColor: "#e5e7eb",
-                      }}
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <button
-                          onClick={handleBackToOverview}
-                          className="w-7 h-7 bg-white rounded-full shadow-sm flex items-center justify-center border"
-                          style={{ borderColor: "#e5e7eb" }}
-                        >
-                          <ArrowRight className="w-3 h-3 text-gray-600 rotate-180" />
-                        </button>
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="px-2 py-1 rounded-full"
-                            style={{
-                              backgroundColor: "#dbeafe",
-                              color: "#1d4ed8",
-                            }}
-                          >
-                            <span className="text-xs font-medium">
-                              Step 3/3
-                            </span>
-                          </div>
-                        </div>
-                      </div>
+                  <StepContainer stepRef={stepContainerRef}>
+                    <StepHeader
+                      stepNumber={3}
+                      totalSteps={3}
+                      title="Configure Journey Bundle"
+                      subtitle="Link moving partner offers to the conversation"
+                      icon={MapPin}
+                      iconColor="#d97706"
+                      iconBackgroundColor="#fef3c7"
+                      onBack={handleBackToOverview}
+                    />
 
-                      <div className="text-center">
-                        <div
-                          className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
-                          style={{ backgroundColor: "#fef3c7" }}
-                        >
-                          <MapPin
-                            className="w-6 h-6"
-                            style={{ color: "#d97706" }}
-                          />
-                        </div>
-                        <h1 className="text-lg font-bold text-gray-900 mb-1">
-                          Configure Journey Bundle
-                        </h1>
-                        <p className="text-gray-600 text-xs">
-                          Link moving partner offers to the conversation
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="px-4 py-3">
+                    <ContentSection>
                       {/* Partner Selection */}
                       <div className="mb-4">
-                        <h2 className="text-base font-semibold text-gray-900 mb-3">
-                          Moving Partner Offers
-                        </h2>
+                        <SectionHeader title="Moving Partner Offers" />
                         <div className="space-y-2">
                           {[
                             {
@@ -1154,28 +927,15 @@ export function RefinedCampaignWidget({
                         </div>
                       </div>
 
-                      {/* Action Buttons */}
-                      <div className="flex gap-2 pb-4">
-                        <button
-                          onClick={handlePrevStep}
-                          className="flex-1 py-2 px-3 border rounded-lg font-medium text-gray-600 hover:text-gray-800 transition-colors text-sm"
-                          style={{ borderColor: "#e5e7eb" }}
-                        >
-                          ← Back to Follow-Up
-                        </button>
-                        <button
-                          onClick={handleConfirmLaunch}
-                          className="flex-1 py-2 px-3 rounded-lg font-medium text-white transition-colors shadow-lg text-sm"
-                          style={{
-                            background:
-                              "linear-gradient(to right, #16a34a, #2563eb)",
-                          }}
-                        >
-                          🚀 Launch Campaign
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                      <ActionButtons
+                        onBack={handlePrevStep}
+                        onNext={handleConfirmLaunch}
+                        backLabel="← Back to Follow-Up"
+                        nextLabel="🚀 Launch Campaign"
+                        nextColor="linear-gradient(to right, #16a34a, #2563eb)"
+                      />
+                    </ContentSection>
+                  </StepContainer>
                 )}
               </div>
             ) : (

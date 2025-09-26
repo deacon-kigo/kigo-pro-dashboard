@@ -30,7 +30,7 @@ export function MobileLayout({
       )}
 
       {/* Content with consistent padding */}
-      <div className="pb-20 overflow-y-auto h-full">{children}</div>
+      <div className="pb-12 overflow-y-auto h-full">{children}</div>
     </div>
   );
 }

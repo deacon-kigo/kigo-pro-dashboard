@@ -111,135 +111,293 @@ export default function JourneyDiscoveryDashboard({
   };
 
   return (
-    <div className="space-y-3">
-      {/* Journey Timeline Analysis */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-blue-600" />
-            Journey Timeline Analysis
-          </CardTitle>
-          <CardDescription>
-            12-week customer journey progression from trigger to conversion
-          </CardDescription>
+    <div className="space-y-4">
+      {/* Comprehensive Engagement Dashboard */}
+      <Card className="bg-white border border-gray-200 shadow-sm">
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-blue-600" />
+                Engagement Over Time
+              </CardTitle>
+              <CardDescription className="text-sm text-gray-600 mt-1">
+                90-day engagement trend showing customer interaction patterns
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                <span className="text-xs text-gray-600">Triggers</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                <span className="text-xs text-gray-600">Engagement</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+                <span className="text-xs text-gray-600">Conversion</span>
+              </div>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-80">
-            <AreaChart data={journeyTimelineData}>
-              <defs>
-                <linearGradient
-                  id="triggersGradient"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.05} />
-                </linearGradient>
-                <linearGradient
-                  id="engagementGradient"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0.05} />
-                </linearGradient>
-                <linearGradient
-                  id="conversionGradient"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.05} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis
-                dataKey="week"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 12, fill: "#64748b" }}
-              />
-              <YAxis
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 12, fill: "#64748b" }}
-              />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Area
-                type="monotone"
-                dataKey="triggers"
-                stroke="#3b82f6"
-                strokeWidth={2}
-                fill="url(#triggersGradient)"
-              />
-              <Area
-                type="monotone"
-                dataKey="engagement"
-                stroke="#10b981"
-                strokeWidth={2}
-                fill="url(#engagementGradient)"
-              />
-              <Area
-                type="monotone"
-                dataKey="conversion"
-                stroke="#f59e0b"
-                strokeWidth={2}
-                fill="url(#conversionGradient)"
-              />
-            </AreaChart>
-          </ChartContainer>
+          {/* Main Chart with Side Stats - Dynamic Layout */}
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Chart Area - Dynamic Width */}
+            <div className="flex-1 min-w-0">
+              <ChartContainer config={chartConfig} className="h-64 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={journeyTimelineData}>
+                    <defs>
+                      <linearGradient
+                        id="triggersGradient"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor="#3b82f6"
+                          stopOpacity={0.3}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="#3b82f6"
+                          stopOpacity={0.05}
+                        />
+                      </linearGradient>
+                      <linearGradient
+                        id="engagementGradient"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor="#10b981"
+                          stopOpacity={0.3}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="#10b981"
+                          stopOpacity={0.05}
+                        />
+                      </linearGradient>
+                      <linearGradient
+                        id="conversionGradient"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="5%"
+                          stopColor="#f59e0b"
+                          stopOpacity={0.3}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="#f59e0b"
+                          stopOpacity={0.05}
+                        />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                    <XAxis
+                      dataKey="week"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 11, fill: "#64748b" }}
+                    />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 11, fill: "#64748b" }}
+                    />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Area
+                      type="monotone"
+                      dataKey="triggers"
+                      stroke="#3b82f6"
+                      strokeWidth={2}
+                      fill="url(#triggersGradient)"
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="engagement"
+                      stroke="#10b981"
+                      strokeWidth={2}
+                      fill="url(#engagementGradient)"
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="conversion"
+                      stroke="#f59e0b"
+                      strokeWidth={2}
+                      fill="url(#conversionGradient)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </div>
+
+            {/* Key Metrics Sidebar - Fixed Width */}
+            <div className="w-full lg:w-80 xl:w-96 space-y-3">
+              {/* Peak Performance */}
+              <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-3 border border-blue-200">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-blue-700">
+                    Peak Week
+                  </span>
+                  <Badge className="bg-blue-600 text-white text-xs">
+                    Week 7
+                  </Badge>
+                </div>
+                <div className="text-lg font-bold text-blue-900">178</div>
+                <div className="text-xs text-blue-600">triggers generated</div>
+              </div>
+
+              {/* Conversion Rate */}
+              <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-3 border border-green-200">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-green-700">
+                    Avg Conversion
+                  </span>
+                  <Badge className="bg-green-600 text-white text-xs">
+                    37.6%
+                  </Badge>
+                </div>
+                <div className="text-lg font-bold text-green-900">67</div>
+                <div className="text-xs text-green-600">weekly conversions</div>
+              </div>
+
+              {/* Growth Trend */}
+              <div className="bg-gradient-to-r from-amber-50 to-amber-100 rounded-lg p-3 border border-amber-200">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-amber-700">
+                    Growth Rate
+                  </span>
+                  <Badge className="bg-amber-600 text-white text-xs">
+                    +295%
+                  </Badge>
+                </div>
+                <div className="text-lg font-bold text-amber-900">8 Weeks</div>
+                <div className="text-xs text-amber-600">sustained growth</div>
+              </div>
+
+              {/* Engagement Quality */}
+              <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-3 border border-purple-200">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-purple-700">
+                    Quality Score
+                  </span>
+                  <Badge className="bg-purple-600 text-white text-xs">
+                    92/100
+                  </Badge>
+                </div>
+                <div className="text-lg font-bold text-purple-900">High</div>
+                <div className="text-xs text-purple-600">
+                  engagement quality
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Insights Bar */}
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="grid grid-cols-4 gap-4">
+              <div className="text-center">
+                <div className="text-xs text-gray-500 mb-1">Total Triggers</div>
+                <div className="text-lg font-bold text-gray-900">1,037</div>
+                <div className="text-xs text-green-600">+23% vs target</div>
+              </div>
+              <div className="text-center">
+                <div className="text-xs text-gray-500 mb-1">
+                  Engagement Rate
+                </div>
+                <div className="text-lg font-bold text-gray-900">64.2%</div>
+                <div className="text-xs text-green-600">
+                  +8.3% vs last period
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-xs text-gray-500 mb-1">
+                  Conversion Rate
+                </div>
+                <div className="text-lg font-bold text-gray-900">37.6%</div>
+                <div className="text-xs text-green-600">+12.1% improvement</div>
+              </div>
+              <div className="text-center">
+                <div className="text-xs text-gray-500 mb-1">Revenue Impact</div>
+                <div className="text-lg font-bold text-gray-900">$127K</div>
+                <div className="text-xs text-green-600">+18% vs projection</div>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Engagement Phases */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-green-600" />
-              Engagement Phases
+      {/* Compact Performance Insights */}
+      <div className="grid grid-cols-3 gap-4">
+        {/* Journey Phases */}
+        <Card className="bg-white border border-gray-200 shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-green-600" />
+              Journey Phases
             </CardTitle>
-            <CardDescription>
-              Success rates across customer journey phases
-            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {engagementPhasesData.map((phase, index) => (
+          <CardContent className="pt-0">
+            <div className="space-y-2">
+              {engagementPhasesData.slice(0, 4).map((phase, index) => (
                 <div
                   key={phase.phase}
                   className="flex items-center justify-between"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     <div
-                      className="w-3 h-3 rounded-full"
+                      className="w-2 h-2 rounded-full"
                       style={{ backgroundColor: phase.color }}
                     />
-                    <span className="font-medium text-gray-900">
-                      {phase.phase}
-                    </span>
+                    <span className="text-xs text-gray-700">{phase.phase}</span>
                   </div>
+                  <Badge className="bg-gray-100 text-gray-700 text-xs px-2 py-0.5">
+                    {phase.rate}%
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Geographic Distribution */}
+        <Card className="bg-white border border-gray-200 shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-purple-600" />
+              Top Regions
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="space-y-2">
+              {geographicData.slice(0, 4).map((region, index) => (
+                <div
+                  key={region.region}
+                  className="flex items-center justify-between"
+                >
+                  <span className="text-xs text-gray-700">{region.region}</span>
                   <div className="flex items-center gap-2">
-                    <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="w-12 h-1.5 bg-gray-200 rounded-full overflow-hidden">
                       <div
-                        className="h-full rounded-full transition-all duration-500"
-                        style={{
-                          width: `${phase.rate}%`,
-                          backgroundColor: phase.color,
-                        }}
+                        className="h-full bg-purple-500 rounded-full"
+                        style={{ width: `${(region.customers / 2500) * 100}%` }}
                       />
                     </div>
-                    <Badge
-                      variant="secondary"
-                      className="bg-gray-50 text-gray-700"
-                    >
-                      {phase.rate}%
+                    <Badge className="bg-purple-100 text-purple-700 text-xs px-2 py-0.5">
+                      {region.percentage}%
                     </Badge>
                   </div>
                 </div>
@@ -248,139 +406,36 @@ export default function JourneyDiscoveryDashboard({
           </CardContent>
         </Card>
 
-        {/* Geographic Distribution */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-purple-600" />
-              Geographic Distribution
+        {/* Seasonal Trends */}
+        <Card className="bg-white border border-gray-200 shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+              <Clock className="w-4 h-4 text-orange-600" />
+              Seasonal Trends
             </CardTitle>
-            <CardDescription>
-              Customer concentration by metro areas
-            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="h-48">
-              <BarChart data={geographicData} layout="horizontal">
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis
-                  type="number"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12, fill: "#64748b" }}
-                />
-                <YAxis
-                  type="category"
-                  dataKey="region"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12, fill: "#64748b" }}
-                  width={100}
-                />
-                <ChartTooltip
-                  content={({ active, payload, label }) => {
-                    if (active && payload && payload.length) {
-                      return (
-                        <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
-                          <p className="font-medium text-gray-900">{label}</p>
-                          <p className="text-sm text-gray-600">
-                            {payload[0].value} customers (
-                            {payload[0].payload.percentage}%)
-                          </p>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-                <Bar dataKey="customers" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ChartContainer>
+          <CardContent className="pt-0">
+            <div className="space-y-2">
+              {seasonalData.slice(0, 4).map((month, index) => (
+                <div
+                  key={month.month}
+                  className="flex items-center justify-between"
+                >
+                  <span className="text-xs text-gray-700">{month.month}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-gray-900">
+                      {month.volume}
+                    </span>
+                    <Badge className="bg-orange-100 text-orange-700 text-xs px-2 py-0.5">
+                      {month.confidence}%
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Seasonal Patterns */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="w-5 h-5 text-orange-600" />
-            Seasonal Patterns & Confidence
-          </CardTitle>
-          <CardDescription>
-            Monthly volume trends with AI confidence levels
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer config={chartConfig} className="h-80">
-            <LineChart data={seasonalData}>
-              <defs>
-                <linearGradient id="volumeGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.05} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis
-                dataKey="month"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 12, fill: "#64748b" }}
-              />
-              <YAxis
-                yAxisId="volume"
-                orientation="left"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 12, fill: "#64748b" }}
-              />
-              <YAxis
-                yAxisId="confidence"
-                orientation="right"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 12, fill: "#64748b" }}
-                domain={[75, 100]}
-              />
-              <ChartTooltip
-                content={({ active, payload, label }) => {
-                  if (active && payload && payload.length) {
-                    return (
-                      <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
-                        <p className="font-medium text-gray-900">{label}</p>
-                        <p className="text-sm text-purple-600">
-                          Volume: {payload[0]?.value}
-                        </p>
-                        <p className="text-sm text-red-600">
-                          Confidence: {payload[1]?.value}%
-                        </p>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-              <Area
-                yAxisId="volume"
-                type="monotone"
-                dataKey="volume"
-                stroke="#8b5cf6"
-                strokeWidth={3}
-                fill="url(#volumeGradient)"
-              />
-              <Line
-                yAxisId="confidence"
-                type="monotone"
-                dataKey="confidence"
-                stroke="#ef4444"
-                strokeWidth={2}
-                strokeDasharray="5 5"
-                dot={{ fill: "#ef4444", strokeWidth: 2, r: 4 }}
-              />
-            </LineChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
     </div>
   );
 }

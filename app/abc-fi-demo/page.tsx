@@ -263,7 +263,7 @@ export default function ABCFIDemoStandalone() {
                 currentStep !== "splash-screen" && (
                   <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100">
                     <div className="flex items-center justify-center px-4 py-2">
-                      <div className="flex items-center justify-between w-full max-w-xs">
+                      <div className="flex items-center justify-around w-full max-w-xs">
                         {/* Home */}
                         <button
                           onClick={() => setCurrentStep("banking-dashboard")}
@@ -310,60 +310,6 @@ export default function ABCFIDemoStandalone() {
                               d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                             />
                           </svg>
-                        </button>
-
-                        {/* Center Action Button */}
-                        <button
-                          onClick={() => {
-                            if (!showNotification && notificationDismissed) {
-                              handleNotificationReshow();
-                            } else {
-                              const steps: DemoStep[] = [
-                                "banking-dashboard",
-                                "kigo-marketplace",
-                                "lightning-deals",
-                                "ai-chat",
-                                "receipt-scanning",
-                                "value-summary",
-                              ];
-                              const currentIndex = steps.indexOf(currentStep);
-                              const nextStep =
-                                steps[currentIndex + 1] || steps[0];
-                              setCurrentStep(nextStep);
-                            }
-                          }}
-                          className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-blue-600 transition-colors border-0"
-                          style={{ backgroundColor: "#3b82f6" }}
-                        >
-                          {!showNotification && notificationDismissed ? (
-                            <svg
-                              className="w-6 h-6"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15 17h5l-5 5-5-5h5V3h0z"
-                              />
-                            </svg>
-                          ) : (
-                            <svg
-                              className="w-6 h-6"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 4v16m8-8H4"
-                              />
-                            </svg>
-                          )}
                         </button>
 
                         {/* Marketplace */}
@@ -415,6 +361,36 @@ export default function ABCFIDemoStandalone() {
                         </button>
                       </div>
                     </div>
+                  </div>
+                )}
+
+              {/* Floating AI Chat Entry Point */}
+              {currentStep !== "ios-homescreen" &&
+                currentStep !== "splash-screen" &&
+                currentStep !== "ai-chat" && (
+                  <div className="absolute bottom-20 right-4 z-40">
+                    <button
+                      onClick={() => setCurrentStep("ai-chat")}
+                      className="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:shadow-xl transition-all duration-200 active:scale-95"
+                      style={{
+                        boxShadow:
+                          "0 8px 25px rgba(0, 0, 0, 0.15), 0 4px 10px rgba(0, 0, 0, 0.1)",
+                      }}
+                    >
+                      <svg
+                        className="w-6 h-6 text-gray-800"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                        />
+                      </svg>
+                    </button>
                   </div>
                 )}
             </div>
