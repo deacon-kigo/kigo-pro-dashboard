@@ -27,7 +27,7 @@ export function SarahBankingDashboard({
     <MobileLayout>
       <div className="relative animate-fade-in">
         {/* Header */}
-        <div className="px-6 py-4 flex items-center justify-between bg-white">
+        <div className="px-6 flex items-center justify-between bg-white">
           <div className="flex items-center">
             <img
               src="/logos/abc-fi-logo.png"
@@ -80,33 +80,39 @@ export function SarahBankingDashboard({
         {showNotification && (
           <div className="mx-6 my-4 animate-fade-in">
             <div
-              className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:from-blue-100 hover:to-blue-200 transition-all duration-200 active:scale-98 shadow-sm border border-blue-200"
+              className="rounded-xl p-4 flex items-center gap-3 cursor-pointer transition-all duration-200 active:scale-98 shadow-sm border hover:shadow-md"
               onClick={handleNotificationClick}
+              style={{
+                background:
+                  "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 50%, #93c5fd 100%)",
+                borderColor: "#60a5fa",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background =
+                  "linear-gradient(135deg, #bfdbfe 0%, #93c5fd 50%, #60a5fa 100%)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background =
+                  "linear-gradient(135deg, #dbeafe 0%, #bfdbfe 50%, #93c5fd 100%)";
+              }}
             >
               {/* Icon */}
-              <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg
-                  className="w-5 h-5 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-                  />
-                </svg>
+              <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center flex-shrink-0">
+                <img
+                  src="/illustration/abc-fi/asset/offer-icon-with-confetti.png"
+                  alt="Offers"
+                  className="w-full h-full object-contain"
+                />
               </div>
 
               {/* Content */}
               <div className="flex-1">
                 <h3 className="font-semibold text-blue-900 text-sm">
-                  Tap into the all new offers experience
+                  🏡 Welcome to Denver, Sarah!
                 </h3>
                 <p className="text-blue-700 text-xs mt-1">
-                  Unlock deep everyday savings through our new offers experience
+                  We've curated personalized moving gifts and local offers just
+                  for you
                 </p>
               </div>
 
@@ -137,8 +143,8 @@ export function SarahBankingDashboard({
         )}
 
         {/* Account Cards */}
-        <div className="px-6 mb-8">
-          <div className="flex gap-4 overflow-x-auto pb-2">
+        <div className="mb-8">
+          <div className="flex gap-4 overflow-x-auto pb-2 pl-6 pr-4 scrollbar-hide">
             {/* Credit Card */}
             <div
               className="min-w-[320px] text-white rounded-3xl p-6"
@@ -438,76 +444,6 @@ export function SarahBankingDashboard({
             </div>
           </div>
         </div>
-
-        {/* Native Push Notification */}
-        {showNotification && (
-          <div
-            className="absolute top-4 left-4 right-4 z-50 animate-slide-down"
-            style={{
-              animation: "slideDown 0.5s ease-out",
-            }}
-          >
-            <div
-              onClick={handleNotificationClick}
-              className="bg-white rounded-2xl p-4 shadow-xl border border-gray-200 active:scale-[0.98] active:bg-gray-50 transition-all touch-manipulation select-none"
-            >
-              <div className="flex items-start gap-3">
-                {/* ABC FI Logo */}
-                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center flex-shrink-0 p-2 shadow-sm">
-                  <img
-                    src="/logos/abc-fi-logo.png"
-                    alt="ABC FI"
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="font-semibold text-gray-900 text-sm">
-                      ABC FI
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <p className="text-xs text-gray-500">now</p>
-                      {onNotificationDismiss && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onNotificationDismiss();
-                          }}
-                          className="text-gray-400 hover:text-gray-600 text-lg leading-none p-1"
-                        >
-                          ×
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  <h4 className="font-medium text-gray-900 text-sm mb-1">
-                    🏡 Congratulations on your new Denver home!
-                  </h4>
-
-                  <p className="text-xs text-gray-600 leading-relaxed">
-                    We've found everything you need for your Kansas City to
-                    Denver move.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <style jsx>{`
-          @keyframes slideDown {
-            from {
-              transform: translateY(-100%);
-              opacity: 0;
-            }
-            to {
-              transform: translateY(0);
-              opacity: 1;
-            }
-          }
-        `}</style>
       </div>
     </MobileLayout>
   );

@@ -28,6 +28,7 @@ import {
   X,
   ArrowRight,
   Lightbulb,
+  Gift,
 } from "lucide-react";
 
 // Import chart components
@@ -235,9 +236,16 @@ export default function MarketingInsightsView() {
     <>
       <style jsx>{`
         .tabs-trigger-active[data-state="active"] {
-          background: #4b55fd !important;
+          background: #2563eb !important;
           color: white !important;
-          border: 1px solid #4b55fd !important;
+          border: 2px solid #2563eb !important;
+          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3) !important;
+          transform: translateY(-1px) !important;
+        }
+        .tabs-trigger-active[data-state="inactive"] {
+          background: #f8fafc !important;
+          color: #64748b !important;
+          border: 1px solid #e2e8f0 !important;
         }
       `}</style>
 
@@ -251,15 +259,19 @@ export default function MarketingInsightsView() {
         <div className="relative overflow-hidden rounded-lg border border-gray-200 p-6 bg-white shadow-sm">
           <div className="relative flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-pastel-blue border border-gray-200">
-                <Brain className="w-6 h-6 text-primary" />
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-white border border-gray-200 p-2">
+                <img
+                  src="/logos/abc-fi-logo.png"
+                  alt="ABC FI Logo"
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div>
                 <h1 className="text-2xl font-semibold text-gray-900">
-                  AI Marketing Insights
+                  ABC FI Rewards Program
                 </h1>
                 <p className="text-gray-600 text-sm mt-1">
-                  High-value customer journeys and campaign optimization
+                  Customer engagement and loyalty dashboard
                 </p>
               </div>
             </div>
@@ -283,13 +295,13 @@ export default function MarketingInsightsView() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-2">
-                    Active Journeys
+                    Active Members
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 mb-2">8,897</p>
+                  <p className="text-2xl font-bold text-gray-900 mb-2">1.2M</p>
                   <div className="flex items-center">
                     <div className="w-2 h-2 rounded-full mr-2 bg-green-500" />
                     <p className="text-sm font-medium text-green-600">
-                      +12% vs last month
+                      +8% vs last month
                     </p>
                   </div>
                 </div>
@@ -305,13 +317,61 @@ export default function MarketingInsightsView() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-2">
-                    Monthly Revenue
+                    Monthly Engagement Rate
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 mb-2">$425K</p>
+                  <p className="text-2xl font-bold text-gray-900 mb-2">34%</p>
                   <div className="flex items-center">
                     <div className="w-2 h-2 rounded-full mr-2 bg-green-500" />
                     <p className="text-sm font-medium text-green-600">
-                      +8% vs target
+                      +5% vs last month
+                    </p>
+                  </div>
+                </div>
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-pastel-purple border border-gray-200">
+                  <TrendingUp className="w-5 h-5 text-purple-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border border-gray-200 shadow-sm rounded-lg">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 mb-2">
+                    Offers Redeemed (MTD)
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900 mb-2">
+                    89,543
+                  </p>
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 rounded-full mr-2 bg-green-500" />
+                    <p className="text-sm font-medium text-green-600">
+                      +12% vs last month
+                    </p>
+                  </div>
+                </div>
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-pastel-orange border border-gray-200">
+                  <Gift className="w-5 h-5 text-orange-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border border-gray-200 shadow-sm rounded-lg">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 mb-2">
+                    Partner-Funded Value (MTD)
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900 mb-2">
+                    $215,780
+                  </p>
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 rounded-full mr-2 bg-green-500" />
+                    <p className="text-sm font-medium text-green-600">
+                      +18% vs last month
                     </p>
                   </div>
                 </div>
@@ -321,166 +381,13 @@ export default function MarketingInsightsView() {
               </div>
             </CardContent>
           </Card>
-
-          <Card className="bg-white border border-gray-200 shadow-sm rounded-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-2">
-                    AI Confidence
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900 mb-2">88%</p>
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 rounded-full mr-2 bg-purple-500" />
-                    <p className="text-sm font-medium text-purple-600">
-                      High accuracy
-                    </p>
-                  </div>
-                </div>
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-pastel-purple border border-gray-200">
-                  <Brain className="w-5 h-5 text-purple-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white border border-gray-200 shadow-sm rounded-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-2">
-                    ROI Projection
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900 mb-2">890%</p>
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 rounded-full mr-2 bg-blue-500" />
-                    <p className="text-sm font-medium text-blue-600">
-                      LTV impact
-                    </p>
-                  </div>
-                </div>
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-pastel-blue border border-gray-200">
-                  <Target className="w-5 h-5 text-blue-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
-        {/* Two Column Layout: Journey Opportunities + Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Journey Opportunities - Minimalistic */}
-          <Card className="bg-white border border-gray-200 shadow-sm rounded-lg">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-pastel-blue border border-gray-200">
-                    <Brain className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg font-semibold text-gray-900">
-                      Journey Opportunities
-                    </CardTitle>
-                    <CardDescription className="text-sm text-gray-600">
-                      AI-discovered customer patterns
-                    </CardDescription>
-                  </div>
-                </div>
-                <Badge className="bg-pastel-blue border border-gray-200 text-primary px-3 py-1 text-sm font-medium">
-                  4 Patterns Found
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="p-4">
-              <div className="space-y-4">
-                {journeyOpportunities.map((journey) => (
-                  <Card
-                    key={journey.id}
-                    className={`cursor-pointer transition-all duration-200 hover:shadow-md border ${
-                      selectedJourney === journey.id
-                        ? "border-primary bg-pastel-blue shadow-sm"
-                        : "border-gray-200 hover:border-gray-300 bg-white"
-                    }`}
-                    onClick={() => handleJourneySelection(journey.id)}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-8 h-8 rounded-lg flex items-center justify-center border border-gray-200 ${
-                              journey.id === "home-relocation"
-                                ? "bg-pastel-blue"
-                                : journey.id === "diy-home-improvement"
-                                  ? "bg-pastel-green"
-                                  : journey.id === "back-to-school"
-                                    ? "bg-pastel-purple"
-                                    : "bg-pastel-yellow"
-                            }`}
-                          >
-                            <div
-                              className={`${
-                                journey.id === "home-relocation"
-                                  ? "text-blue-600"
-                                  : journey.id === "diy-home-improvement"
-                                    ? "text-green-600"
-                                    : journey.id === "back-to-school"
-                                      ? "text-purple-600"
-                                      : "text-yellow-600"
-                              }`}
-                            >
-                              {journey.icon}
-                            </div>
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-gray-900 text-sm">
-                              {journey.title}
-                            </h3>
-                            <p className="text-xs text-gray-600 mt-1">
-                              {journey.description}
-                            </p>
-                          </div>
-                        </div>
-                        <Badge className="bg-pastel-green border border-gray-200 text-green-700 px-2 py-1 text-xs font-medium">
-                          {journey.confidence}%
-                        </Badge>
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-2">
-                        <div className="text-center p-2 bg-gray-50 rounded-lg border border-gray-200">
-                          <p className="text-xs font-medium text-gray-600 mb-1">
-                            Customers
-                          </p>
-                          <p className="font-semibold text-gray-900 text-sm">
-                            {journey.customers.toLocaleString()}
-                          </p>
-                        </div>
-                        <div className="text-center p-2 bg-gray-50 rounded-lg border border-gray-200">
-                          <p className="text-xs font-medium text-gray-600 mb-1">
-                            Revenue
-                          </p>
-                          <p className="font-semibold text-gray-900 text-sm">
-                            {journey.revenueRange}
-                          </p>
-                        </div>
-                        <div className="text-center p-2 bg-pastel-green rounded-lg border border-gray-200">
-                          <p className="text-xs font-medium text-gray-600 mb-1">
-                            Monthly
-                          </p>
-                          <p className="font-semibold text-green-700 text-sm">
-                            {journey.monthlyRevenue}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Minimalistic Analytics Dashboard */}
+        {/* Full Width Analytics Dashboard */}
+        <div className="w-full">
+          {/* Full Width Analytics Dashboard */}
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-            <Tabs defaultValue="overview" className="w-full">
+            <Tabs defaultValue="discovery" className="w-full">
               <div className="border-b border-gray-200 bg-gray-50">
                 <TabsList className="grid w-full grid-cols-4 bg-transparent h-auto p-2 gap-1">
                   <TabsTrigger

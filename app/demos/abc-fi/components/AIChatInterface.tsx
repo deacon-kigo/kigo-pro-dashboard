@@ -23,6 +23,7 @@ interface UIComponent {
     | "moving-offers"
     | "travel-offers"
     | "home-setup-offers"
+    | "local-discovery"
     | "loyalty-links";
   data: any;
 }
@@ -150,29 +151,29 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                     data: {
                       gifts: [
                         {
-                          id: "restaurant-1",
-                          title: "Olive & Finch",
-                          merchant: "Popular Italian Restaurant",
-                          logo: "/illustration/abc-fi/mock/italian-restaurant.jpg",
+                          id: "home-depot-1",
+                          title: "Home Depot Gift Card",
+                          merchant: "The Home Depot",
+                          logo: "/logos/home-depot-logo.png",
                           value: "$100",
                           description:
-                            "Authentic Italian cuisine in downtown Denver",
-                          category: "restaurant",
+                            "Perfect for all your home improvement needs",
+                          category: "home-goods",
                         },
                         {
-                          id: "home-goods-1",
+                          id: "williams-sonoma-1",
                           title: "Williams Sonoma",
                           merchant: "Home & Kitchen",
-                          logo: "/logos/williams-sonoma-logo.png",
+                          logo: "/logos/williams_sonoma_logo.svg",
                           value: "$100",
                           description: "Premium kitchen and home essentials",
                           category: "home-goods",
                         },
                         {
-                          id: "local-service-1",
-                          title: "Denver Cleaning Co",
+                          id: "danford-cleaning-1",
+                          title: "Danford Cleaning Company",
                           merchant: "Professional Cleaning Service",
-                          logo: "/illustration/abc-fi/mock/cleaning-service.jpg",
+                          logo: "/logos/denver_cleaning_co_logo.png",
                           value: "$100",
                           description:
                             "Professional home cleaning for your new place",
@@ -434,7 +435,7 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
             setVisibleOffers(1);
             setTimeout(() => {
               setVisibleOffers(2);
-              if (uiComponent.data.offers.length > 2) {
+              if (uiComponent?.data?.offers?.length > 2) {
                 setTimeout(() => {
                   setVisibleOffers(3);
                   // Mark sequence complete after all offers are shown
@@ -615,8 +616,8 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
 
   const progressToNextPhase = () => {
     const phases: Array<
-      "moving" | "travel" | "home-setup" | "local-discovery"
-    > = ["moving", "travel", "home-setup", "local-discovery"];
+      "gift-selection" | "moving" | "travel" | "home-setup" | "local-discovery"
+    > = ["gift-selection", "moving", "travel", "home-setup", "local-discovery"];
     const currentIndex = phases.indexOf(currentPhase);
 
     if (currentIndex < phases.length - 1) {
@@ -871,9 +872,14 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
-                    <h4 className="font-medium text-sm text-gray-900">
-                      {item.title}
-                    </h4>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-medium text-sm text-gray-900">
+                        {item.title}
+                      </h4>
+                      <span className="text-xs text-gray-500">
+                        {item.merchant}
+                      </span>
+                    </div>
                     <div className="text-right">
                       <p className="font-bold text-sm text-blue-600">
                         {item.value || item.price}
@@ -892,39 +898,23 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                     <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
                       {isGiftType ? (
                         <>
-                          {item.category === "restaurant" && "🍽️ Dining"}
-                          {item.category === "home-goods" &&
-                            "🏠 Home & Kitchen"}
-                          {item.category === "local-service" &&
-                            "🧹 Local Service"}
+                          {item.category === "restaurant" && "Dining"}
+                          {item.category === "home-goods" && "Home & Kitchen"}
+                          {item.category === "local-service" && "Local Service"}
                         </>
                       ) : (
                         item.category
                       )}
                     </span>
-                    <span className="text-xs text-gray-500">
-                      {item.merchant}
-                    </span>
                   </div>
-
-                  {/* Added to Hub indicator */}
-                  {isSelected && (
-                    <div className="mt-2 px-3 py-1 bg-green-100 border border-green-200 rounded-lg">
-                      <p className="text-xs font-medium text-green-700 text-center">
-                        ✅ Added to your Kigo Hub
-                      </p>
-                    </div>
-                  )}
                 </div>
 
-                {/* Action button - different for gifts vs offers */}
+                {/* Heart action button */}
                 <div
-                  className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${
+                  className={`w-8 h-8 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all ${
                     isSelected
-                      ? "border-green-200 bg-green-50"
-                      : isGiftType
-                        ? "border-gray-200"
-                        : "border-gray-200 hover:border-red-200 hover:bg-red-50"
+                      ? "border-red-200 bg-red-50"
+                      : "border-gray-200 hover:border-red-200 hover:bg-red-50"
                   }`}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -937,47 +927,23 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                     }
                   }}
                 >
-                  {isSelected ? (
-                    <svg
-                      className="w-4 h-4 text-green-600"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  ) : isGiftType ? (
-                    <svg
-                      className="w-4 h-4 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  ) : (
-                    <svg
-                      className="w-4 h-4 text-gray-400 hover:text-red-500 transition-colors"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                      />
-                    </svg>
-                  )}
+                  <svg
+                    className={`w-4 h-4 transition-colors ${
+                      isSelected
+                        ? "text-red-500"
+                        : "text-gray-400 hover:text-red-500"
+                    }`}
+                    fill={isSelected ? "currentColor" : "none"}
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                    />
+                  </svg>
                 </div>
               </div>
             </div>
@@ -1093,11 +1059,6 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="px-3 py-1 bg-blue-100 rounded-full">
-                <span className="text-xs font-medium text-blue-700">
-                  Moving Streak 1/3
-                </span>
-              </div>
               {totalSavings > 0 && (
                 <div className="px-3 py-1 bg-green-100 rounded-full">
                   <span className="text-xs font-medium text-green-700">

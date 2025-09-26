@@ -36,21 +36,125 @@
 
 ---
 
-Part 1: Marketing Journey - Campaign #1: AI-Powered New Mover Journey (2-3 minutes)
-Insight: In Kigo PRO, our marketer, Tucker, sets a strategic Q4 objective to increase engagement among new mortgage customers. The AI-Agent recommends an "AI-Powered New Mover Journey" that begins with a personalized gift.
-Action: Tucker uses the Kigo PRO campaign builder to architect the conversational experience.
-Conversational Flow:
-Step 1: The Gift: He configures the AI-powered gifting moment, setting the value at $100 and enabling "AI Gift Personalization" to ensure the options are hyper-relevant to each user.
-Step 2: The Follow-Up: He then adds a second step to the conversational flow. He programs the agent to ask, "Is there anything else we can help you with to plan your move?"
-Step 3: The Journey Bundle: He links a pre-built "Moving Journey" offer bundle to this conversational path. This bundle contains offers for brands like U-Haul, Public Storage, and Hilton hotels.
-Launch: Tucker launches the automated campaign, which will now guide new homeowners through this multi-step, value-driven conversation.
+Design Brief & Interactive Storyboard: Kigo PRO Demo
+Project: Kigo PRO AI-Powered Campaign Creation Demo
+Designer: Deacon
+Objective: To create a precise, interactive, and visually compelling demo that functions as a self-guided product tour. The demo must walk a user through a specific, pre-scripted narrative from goal to ROI.
+Target User Persona: Tucker, a hands-on Marketing Manager at "ABC FI" (a regional financial institution).
 
-Part 2: Marketing Journey - Campaign #2: Brand-Funded Conquesting (2 minutes)
-Insight: Tucker is in Kigo PRO, reviewing partnership opportunities. The AI-Agent surfaces a strategic insight: "Our partner, Starbucks, has allocated a Q4 budget to acquire new customers. We have identified a segment of 50,000 ABC FI members who frequently buy coffee at competitor locations... This is a prime audience for a conquesting campaign."
-Action: Tucker uses Kigo PRO to build a "Coffee Switch" campaign on behalf of Starbucks.
-Audience: He creates a precise conquesting segment: "Members with 3+ coffee purchases at competitor locations in the last 30 days AND zero Starbucks transactions in the last 180 days."
-Offer: He sets up a simple, high-value, brand-funded offer: "Earn 1,000 Bonus ABC FI Points on your first purchase at any Starbucks." The Kigo PRO interface clearly shows that the point liability is funded by the advertiser (Starbucks).
-Launch: He configures the campaign for delivery via a geofenced push notification when a targeted user is near a Starbucks location and launches the campaign.
+Core Narrative
+Tucker, a Marketing Manager at ABC FI, logs into Kigo PRO to find ways to boost customer engagement. Using the Kigo AI agent, he is guided to a high-value "New Homebuyer" segment. In minutes, he co-creates a targeted, partner-funded welcome campaign and sees a clear, positive ROI model, ready to be actioned.
+
+Scene 1: Opportunity Discovery
+Goal: To demonstrate Kigo's ability to instantly transform a generic marketing goal into specific, data-backed opportunities.
+Step 1.1: Initial View - The Dashboard
+UI State: The demo begins on the main Kigo PRO Dashboard. This screen should feel alive with data and provide a snapshot of the overall health of the "ABC FI Rewards Program."
+On-Screen Elements:
+Header: "ABC FI Rewards Program"
+Key Metric Cards (Visually prominent):
+Active Members: 1.2M
+Monthly Engagement Rate: 34%
+Offers Redeemed (MTD): 89,543
+Partner-Funded Value (MTD): $215,780
+Main Visual: A line chart titled "Engagement Over Time" showing a 90-day trend.
+Floating Action Button (FAB): A distinct, clickable chat icon in the lower right corner.
+Step 1.2: Engaging the AI Agent
+User Action: Tucker clicks the chat FAB.
+UI State: A chat window slides open from the right side of the screen, overlaying a portion of the dashboard.
+On-Screen Script (in Chat Window):
+Kigo Agent: "Good morning, Tucker! How can I help?"
+Tucker (User types): "one of my goals this quarter is to increase engagement among key customer segments"
+Step 1.3: Surfacing the Opportunity
+UI State: As the agent responds, the main dashboard view (left of the chat) smoothly transitions away, replaced by five distinct, visually appealing cards.
+On-Screen Script (in Chat Window):
+Kigo Agent: "That’s right. Here are 5 high-value customer journeys I’m seeing in the last 90 days:"
+On-Screen Elements (Main View - 5 Cards): Each card must display the following information clearly:
+Card Title: Home Purchase + Relocation Journey
+Customer Volume: 567 customers/month
+Revenue Potential: $127-245 per customer
+Card Title: Life Event Transitions
+Customer Volume: ~800 customers/month
+Revenue Potential: $89-156 per customer
+Card Title: Back-to-School Prep
+Customer Volume: 2,890 families/month
+Revenue Potential: $45-89 per customer
+Card Title: Home Improvement & DIY
+Customer Volume: 1,240 customers/month
+Revenue Potential: $85-156 per customer
+Card Title: Travel & Vacation Planning
+Customer Volume: 3,200+ customers/month
+Revenue Potential: $65-134 per customer
+Step 1.4: Selecting the Path
+User Action: Tucker types his response in the chat.
+On-Screen Script (in Chat Window):
+Tucker: "Home buyers. I met with the mortgage team yesterday and they’re looking for significant incremental revenue opportunities.”
+
+Scene 2: AI-Powered Campaign Co-Creation
+
+Goal: To showcase the AI agent's ability to instantly build a complete, ready-to-launch campaign strategy based on the user's selection.
+Step 2.1: Building the Plan
+UI State: The five cards animate out, and the main view is replaced by a single, beautifully designed, one-page campaign plan.
+On-Screen Script (in Chat Window):
+Kigo Agent: "Excellent choice. That aligns perfectly with the mortgage team's goals. Based on our network data, new homeowners are highly receptive to welcome offers. Here is a campaign plan I've drafted."
+On-Screen Elements (Main View - The Campaign Plan): This needs to be highly visual and well-organized.
+Header: New Homeowner Welcome Campaign
+Section 1: The Offer - A $100 Congratulatory Gift
+Visually display three choices side-by-side. Each choice needs an image and the supporting text:
+Option A: $100 Home Depot Gift Card. Insight: 78% of new homeowners visit a home improvement store within 30 days of moving.
+Option B: Professional Home Cleaning Service. Insight: 65% of relocating families hire a cleaning service within their first month.
+Option C: Local Dining Experience. Insight: 84% of new residents explore local dining options within the first two weeks.
+Section 2: The Customer Experience
+Use a simple 3-icon horizontal timeline:
+Icon 1 (Gift): Gift Selection: "Customer receives an in-app notification to select their gift."
+Icon 2 (Mail): Gift Delivery: "The digital gift card or voucher is delivered instantly to their Kigo Hub."
+Icon 3 (Chart): Follow-Up: "After 30 days, Kigo automatically presents relevant offers for home services and furnishings."
+Section 3: Our Brand Partnership Network
+A visually appealing section showcasing partner logos.
+Logos to include: The Home Depot, Lowe's, Best Buy, Wayfair, TaskRabbit, Yelp.
+
+Scene 3: Visualizing the End-Customer Experience
+
+Goal: To make the campaign's outcome tangible by showing exactly what the new homeowner will see.
+Step 3.1: Showing the Mobile Experience
+UI State: A clean, animated modal window appears, containing a mock-up of a smartphone. The phone screen should animate through a 3-step sequence.
+Sequence (On the simulated phone screen):
+Screen 1: Push Notification. A notification banner appears at the top of a generic phone screen.
+Icon: ABC FI Banking Logo
+Text: ABC FI Banking: Congratulations on your new home! We have a special welcome gift waiting for you.
+Screen 2: In-App Selection. The screen transitions to a clean app interface.
+Header: "Welcome Home! Choose Your Gift"
+Visuals: The three gift options (Home Depot, Cleaning, Dining) are displayed as large, tappable images.
+Screen 3: Confirmation.
+Header: "Your Gift is on its Way!"
+Text: "Your $100 Home Depot gift card has been added to your Kigo Hub. You can access it anytime."
+
+Scene 4: The Instant Business Case
+
+Goal: To clearly and simply demonstrate the financial value and business case for the campaign, closing the loop for Tucker.
+Step 4.1: The Critical Question
+User Action: Tucker types his final question into the chat.
+On-Screen Script (in Chat Window):
+Tucker: "This is great. What will this cost and how much incremental revenue will it generate for us?"
+Step 4.2: The ROI Model
+UI State: The campaign plan view transitions to a final, clean, and simple financial model/calculator. The numbers should be pre-populated and calculate automatically.
+On-Screen Script (in Chat Window):
+Kigo Agent: "Great question. Let me pull together a simple model quickly."
+On-Screen Elements (Main View - The Financial Model):
+Header: Projected Monthly ROI: New Homeowner Campaign
+Column 1: Inputs
+Monthly Mortgage Closings: 567
+Cost Per Gift: $100.00
+Advertiser Co-op Funding: 40%
+Column 2: Outputs (Calculated)
+Total Monthly Program Cost: $56,700 (Calculation: 567 _ $100)
+Net Cost to Bank: $34,020 (Calculation: $56,700 _ (1 - 0.40))
+Est. Incremental Revenue: $45,360 (Assumption: 20% of customers take a follow-up offer generating ~$400 in value)
+Projected Monthly ROI: +33% (Calculation: (($45,360 - $34,020) / $34,020) \* 100)
+
+Final UI & Visual Guidance
+
+Visual Identity: This entire flow must adhere to the existing Kigo PRO visual identity and UI kit that you are currently working with. Please ensure consistency in fonts, colors, spacing, and component design.
+Interactivity & Polish: Transitions between scenes must be fluid and seamless. The appearance of elements should be gracefully animated to guide the user's eye and create a polished, professional feel. The experience should feel responsive and fast.
 
 Part 3: The Customer Journey - Sarah's Experience (5-6 minutes)
 Scene 1: The Personalized New Mover Journey (2.5 minutes)
