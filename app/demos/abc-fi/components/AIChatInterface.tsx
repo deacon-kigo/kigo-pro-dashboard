@@ -366,7 +366,7 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
   const handleUHaulSave = () => {
     const savingsMessage: Message = {
       id: "uhaul-savings",
-      text: "Great choice! You've saved $200 on your moving logistics.",
+      text: "Great choice! You've saved $200 on your moving logistics. Total savings so far: $200",
       sender: "ai",
       timestamp: new Date(),
     };
@@ -443,10 +443,24 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
 
   // Step 4: Handle Staybridge offer save (map already shown)
   const handleStaybridgeSave = () => {
-    // Map is already displayed, just continue to storage
+    // Add savings confirmation message
+    const savingsMessage: Message = {
+      id: "staybridge-savings",
+      text: "Excellent! You've saved $70/night on accommodation. Total savings so far: $270",
+      sender: "ai",
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => {
+      const hasMessage = prev.some((msg) => msg.id === "staybridge-savings");
+      if (hasMessage) return prev;
+      return [...prev, savingsMessage];
+    });
+
+    // Map is already displayed, continue to storage after showing savings
     setTimeout(() => {
       showStorageTransition();
-    }, 1000);
+    }, 2000);
   };
 
   // Step 5: Show Staybridge map
@@ -514,8 +528,9 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
             merchant: "Extra Space Storage",
             logo: "/logos/extra_space_storage_logo.png",
             price: "$89/month",
-            savings: "First month FREE",
-            description: "Secure storage near your new Denver home",
+            savings: "Save $89",
+            description:
+              "First month FREE - Secure storage near your new Denver home",
             category: "Storage",
             address: "5062 Central Park Blvd, Denver, CO 80238",
           },
@@ -537,13 +552,13 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
 
   // Step 7: Handle Storage offer save (map already shown)
   const handleStorageSave = () => {
-    // Map is already displayed, show final wrap-up
+    // Skip individual savings message and go directly to final summary
     setTimeout(() => {
-      showFinalWrapUp();
+      showFinalSavingsSummary();
     }, 1000);
   };
 
-  // Step 8: Final wrap-up conversation
+  // Step 8: Final wrap-up with suggestion tabs
   const showFinalWrapUp = () => {
     const anythingElseMessage: Message = {
       id: "anything-else",
@@ -558,26 +573,9 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
       return [...prev, anythingElseMessage];
     });
 
-    // Add user response after delay
-    setTimeout(() => {
-      const userResponse: Message = {
-        id: "user-move-response",
-        text: "Yes the move...",
-        sender: "user",
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => {
-        const hasMessage = prev.some((msg) => msg.id === "user-move-response");
-        if (hasMessage) return prev;
-        return [...prev, userResponse];
-      });
-
-      // Show final savings summary
-      setTimeout(() => {
-        showFinalSavingsSummary();
-      }, 2000);
-    }, 3000);
+    // Show suggestion tabs and wait for user interaction
+    // The suggestion tabs will be handled by the existing UI logic
+    // When user clicks "Thank you", it will trigger the final response
   };
 
   // Step 9: Final savings summary
@@ -596,26 +594,10 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
       return [...prev, finalMessage];
     });
 
-    // Add final user response
+    // Complete the sequence
     setTimeout(() => {
-      const finalUserResponse: Message = {
-        id: "final-user-response",
-        text: "Wow! You made this so easy. Thanks. I think that's it for now.",
-        sender: "user",
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => {
-        const hasMessage = prev.some((msg) => msg.id === "final-user-response");
-        if (hasMessage) return prev;
-        return [...prev, finalUserResponse];
-      });
-
-      // Complete the sequence
-      setTimeout(() => {
-        setConversationSequenceComplete(true);
-      }, 2000);
-    }, 4000);
+      setConversationSequenceComplete(true);
+    }, 2000);
   };
 
   // Step 8: Show Storage map and complete sequence
@@ -895,6 +877,19 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
   };
 
   const getPhaseReplies = () => {
+    // Check if we're in the final savings summary phase
+    const hasFinalSavingsSummary = messages.some(
+      (msg) => msg.id === "final-savings-summary"
+    );
+
+    if (hasFinalSavingsSummary) {
+      return [
+        "Wow! You made this so easy. Thanks. I think that's it for now.",
+        "This was incredibly helpful!",
+        "Thank you so much!",
+      ];
+    }
+
     // If we're in moving conversation flow, return context-specific suggestions
     if (movingConversationStep > 0 && movingConversationStep < 5) {
       switch (movingConversationStep) {
@@ -1734,6 +1729,36 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                         <button
                           key={index}
                           onClick={() => {
+                            // Check if we're in final savings summary phase (final user response)
+                            const hasFinalSavingsSummary = messages.some(
+                              (msg) => msg.id === "final-savings-summary"
+                            );
+
+                            if (hasFinalSavingsSummary) {
+                              // Add final user message and complete the demo
+                              const userMessage: Message = {
+                                id: "final-user-response",
+                                text: reply,
+                                sender: "user",
+                                timestamp: new Date(),
+                              };
+
+                              setMessages((prev) => {
+                                const hasMessage = prev.some(
+                                  (msg) => msg.id === "final-user-response"
+                                );
+                                if (hasMessage) return prev;
+                                return [...prev, userMessage];
+                              });
+
+                              // Complete the demo
+                              setTimeout(() => {
+                                setConversationSequenceComplete(true);
+                              }, 1000);
+
+                              return;
+                            }
+
                             // Handle moving conversation flow
                             if (
                               movingConversationStep > 0 &&
