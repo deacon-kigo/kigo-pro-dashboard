@@ -32,7 +32,8 @@ interface UIComponent {
     | "inline-travel-animation"
     | "denver-home-location"
     | "merchant-location-map"
-    | "single-offer";
+    | "single-offer"
+    | "scheduled-message-indicator";
   data: any;
 }
 
@@ -600,6 +601,95 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
     }, 2000);
   };
 
+  // Step 10: Show follow-up offer (Screen 6)
+  const showFollowUpOffer = () => {
+    const followUpMessage: Message = {
+      id: "follow-up-offer",
+      text: "Happy to help! One last thought… Would you like me to follow up after your move-in date on October 25th with a few savings recommendations for popular local places to eat and fun family activities?",
+      sender: "ai",
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => {
+      const hasMessage = prev.some((msg) => msg.id === "follow-up-offer");
+      if (hasMessage) return prev;
+      return [...prev, followUpMessage];
+    });
+  };
+
+  // Step 11: Handle follow-up acceptance
+  const handleFollowUpAcceptance = () => {
+    // Show confirmation message
+    const confirmationMessage: Message = {
+      id: "follow-up-confirmation",
+      text: "Will do. I'll send you a message with a few choice options to earn reward points and save.",
+      sender: "ai",
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => {
+      const hasMessage = prev.some(
+        (msg) => msg.id === "follow-up-confirmation"
+      );
+      if (hasMessage) return prev;
+      return [...prev, confirmationMessage];
+    });
+
+    // Show final message and scheduled indicator
+    setTimeout(() => {
+      showFinalMessage();
+    }, 2000);
+  };
+
+  // Step 12: Show final message with scheduled indicator
+  const showFinalMessage = () => {
+    const finalMessage: Message = {
+      id: "final-message",
+      text: "Don't hesitate to come back if there's anything else we can help you with during your move. Congrats again and all the best to you and your family getting settled in the Mile High City!",
+      sender: "ai",
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => {
+      const hasMessage = prev.some((msg) => msg.id === "final-message");
+      if (hasMessage) return prev;
+      return [...prev, finalMessage];
+    });
+
+    // Show scheduled message indicator
+    setTimeout(() => {
+      showScheduledMessageIndicator();
+    }, 1000);
+  };
+
+  // Step 13: Show scheduled message indicator
+  const showScheduledMessageIndicator = () => {
+    const scheduledIndicator: Message = {
+      id: "scheduled-indicator",
+      text: "",
+      sender: "ai",
+      timestamp: new Date(),
+      uiComponent: {
+        type: "scheduled-message-indicator",
+        data: {
+          scheduledDate: "October 25th",
+          message: "Follow-up with local Denver recommendations",
+        },
+      },
+    };
+
+    setMessages((prev) => {
+      const hasMessage = prev.some((msg) => msg.id === "scheduled-indicator");
+      if (hasMessage) return prev;
+      return [...prev, scheduledIndicator];
+    });
+
+    // Complete the demo
+    setTimeout(() => {
+      setConversationSequenceComplete(true);
+    }, 2000);
+  };
+
   // Step 8: Show Storage map and complete sequence
   const showStorageMap = () => {
     const mapMessage: Message = {
@@ -877,6 +967,19 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
   };
 
   const getPhaseReplies = () => {
+    // Check if we're in the follow-up offer phase
+    const hasFollowUpOffer = messages.some(
+      (msg) => msg.id === "follow-up-offer"
+    );
+
+    if (hasFollowUpOffer) {
+      return [
+        "That would be amazing. Thank you.",
+        "Yes, that would be great!",
+        "I'd love that!",
+      ];
+    }
+
     // Check if we're in the final savings summary phase
     const hasFinalSavingsSummary = messages.some(
       (msg) => msg.id === "final-savings-summary"
@@ -1548,6 +1651,47 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
           </div>
         );
 
+      case "scheduled-message-indicator":
+        return (
+          <div className="mt-3 p-4 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-5 h-5 text-blue-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-medium text-blue-900">
+                    Message Scheduled
+                  </span>
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    {component.data.scheduledDate}
+                  </span>
+                </div>
+                <p className="text-sm text-blue-700 mt-1">
+                  {component.data.message}
+                </p>
+              </div>
+              <div className="flex-shrink-0">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        );
+
       default:
         return null;
     }
@@ -1729,13 +1873,43 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                         <button
                           key={index}
                           onClick={() => {
+                            // Check if we're in follow-up offer phase
+                            const hasFollowUpOffer = messages.some(
+                              (msg) => msg.id === "follow-up-offer"
+                            );
+
+                            if (hasFollowUpOffer) {
+                              // Add user acceptance message
+                              const userMessage: Message = {
+                                id: "follow-up-acceptance",
+                                text: reply,
+                                sender: "user",
+                                timestamp: new Date(),
+                              };
+
+                              setMessages((prev) => {
+                                const hasMessage = prev.some(
+                                  (msg) => msg.id === "follow-up-acceptance"
+                                );
+                                if (hasMessage) return prev;
+                                return [...prev, userMessage];
+                              });
+
+                              // Handle follow-up acceptance
+                              setTimeout(() => {
+                                handleFollowUpAcceptance();
+                              }, 1000);
+
+                              return;
+                            }
+
                             // Check if we're in final savings summary phase (final user response)
                             const hasFinalSavingsSummary = messages.some(
                               (msg) => msg.id === "final-savings-summary"
                             );
 
                             if (hasFinalSavingsSummary) {
-                              // Add final user message and complete the demo
+                              // Add final user message and show follow-up offer
                               const userMessage: Message = {
                                 id: "final-user-response",
                                 text: reply,
@@ -1751,9 +1925,9 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                                 return [...prev, userMessage];
                               });
 
-                              // Complete the demo
+                              // Show follow-up offer after delay
                               setTimeout(() => {
-                                setConversationSequenceComplete(true);
+                                showFollowUpOffer();
                               }, 1000);
 
                               return;

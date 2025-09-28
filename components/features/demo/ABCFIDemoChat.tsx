@@ -29,8 +29,9 @@ import {
   CheckCircle,
   UtensilsCrossed,
 } from "lucide-react";
-// Scene 2 UI components removed - imports will be added back when rebuilding
-// import { CampaignPlanCard } from "./CampaignPlanCard";
+// Scene 2 UI components
+import { CampaignPlanUI } from "./CampaignPlanUI";
+// Additional components will be added as needed
 // import { GiftSelectionUI } from "./GiftSelectionUI";
 // import { CustomerJourneyUI } from "./CustomerJourneyUI";
 // import { PartnerNetworkUI } from "./PartnerNetworkUI";
@@ -46,7 +47,11 @@ interface Message {
   text: string;
   sender: "ai" | "user";
   timestamp: Date;
-  component?: "mobile-experience" | "roi-model" | "placeholder"; // Scene 2 components removed, placeholder for rebuild
+  component?:
+    | "campaign-plan"
+    | "mobile-experience"
+    | "roi-model"
+    | "placeholder"; // Scene 2 components
   data?: any;
 }
 
@@ -205,7 +210,37 @@ export function ABCFIDemoChat({
 
   // Scene 2 handlers removed - will be rebuilt from scratch
 
-  // Demo step logic removed - demo stops after opportunities
+  // Scene 2: AI-Powered Campaign Co-Creation
+  const startScene2Flow = () => {
+    setIsTyping(true);
+
+    // Step 2.1: AI Response - "Excellent choice" message from documentation
+    setTimeout(() => {
+      const aiMessage: Message = {
+        id: Date.now().toString(),
+        text: "Excellent choice. That aligns perfectly with the mortgage team's goals. Based on our network data, new homeowners are highly receptive to welcome offers. Here is a campaign plan I've drafted.",
+        sender: "ai",
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, aiMessage]);
+      setIsTyping(false);
+
+      // Show campaign plan UI after AI message
+      setTimeout(() => {
+        const campaignPlanMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          text: "",
+          sender: "ai",
+          timestamp: new Date(),
+          component: "campaign-plan",
+          data: { title: "New Homeowner Welcome Campaign" },
+        };
+
+        setMessages((prev) => [...prev, campaignPlanMessage]);
+      }, 1000);
+    }, 1000);
+  };
 
   // Card scroll functions
   const scrollCardsLeft = () => {
@@ -232,16 +267,21 @@ export function ABCFIDemoChat({
     }
   };
 
-  // Handle card selection with animation - demo stops here
+  // Handle card selection with animation - trigger Scene 2
   const handleCardSelection = (cardId: string, cardTitle: string) => {
     if (isCardSelecting) return; // Prevent multiple selections
 
-    setIsCardSelecting(true);
     setSelectedCardId(cardId);
+    setIsCardSelecting(true);
 
-    // Demo stops after card selection - no further logic
     console.log(`🎯 Card selected: ${cardId} - ${cardTitle}`);
-    console.log("✅ Demo stops here - ready for Scene 2 rebuild");
+
+    // Trigger Scene 2 for Home Purchase journey
+    if (cardId === "home-purchase") {
+      setTimeout(() => {
+        startScene2Flow();
+      }, 800); // Shorter delay
+    }
   };
 
   useEffect(() => {
@@ -432,10 +472,21 @@ export function ABCFIDemoChat({
                 </div>
               )}
 
-              {/* Scene 2 UI components removed - clean slate for rebuild */}
+              {/* Scene 2 UI components */}
               {message.component && (
                 <div className="mt-4 w-full animate-in slide-in-from-left-2 fade-in duration-500">
-                  {/* All Scene 2 components removed - will be rebuilt from scratch */}
+                  {message.component === "campaign-plan" && (
+                    <div className="w-full">
+                      <CampaignPlanUI
+                        title={
+                          message.data?.title ||
+                          "New Homeowner Welcome Campaign"
+                        }
+                        className="w-full"
+                      />
+                    </div>
+                  )}
+
                   {message.component === "placeholder" && (
                     <div className="w-full p-4 bg-gray-100 rounded-lg text-center text-gray-500">
                       Scene 2 components will be rebuilt here
@@ -443,6 +494,8 @@ export function ABCFIDemoChat({
                   )}
                 </div>
               )}
+
+              {/* Thinking animation removed */}
             </div>
           ))}
 
@@ -665,8 +718,6 @@ export function ABCFIDemoChat({
                     ))}
                   </div>
                 )}
-
-                {/* AI Response removed - demo stops after card selection */}
               </div>
             </div>
           )}
