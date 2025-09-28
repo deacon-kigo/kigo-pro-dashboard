@@ -29,10 +29,11 @@ import {
   CheckCircle,
   UtensilsCrossed,
 } from "lucide-react";
-import { CampaignPlanCard } from "./CampaignPlanCard";
-import { GiftSelectionUI } from "./GiftSelectionUI";
-import { CustomerJourneyUI } from "./CustomerJourneyUI";
-import { PartnerNetworkUI } from "./PartnerNetworkUI";
+// Scene 2 UI components removed - imports will be added back when rebuilding
+// import { CampaignPlanCard } from "./CampaignPlanCard";
+// import { GiftSelectionUI } from "./GiftSelectionUI";
+// import { CustomerJourneyUI } from "./CustomerJourneyUI";
+// import { PartnerNetworkUI } from "./PartnerNetworkUI";
 
 interface ABCFIDemoChatProps {
   isOpen: boolean;
@@ -45,13 +46,7 @@ interface Message {
   text: string;
   sender: "ai" | "user";
   timestamp: Date;
-  component?:
-    | "campaign-plan"
-    | "gift-selection"
-    | "customer-journey"
-    | "partner-network"
-    | "mobile-experience"
-    | "roi-model";
+  component?: "mobile-experience" | "roi-model" | "placeholder"; // Scene 2 components removed, placeholder for rebuild
   data?: any;
 }
 
@@ -125,17 +120,7 @@ const JOURNEY_OPPORTUNITIES: JourneyCard[] = [
   },
 ];
 
-const CAMPAIGN_PLAN_CARD: JourneyCard = {
-  id: "campaign-plan",
-  title: "New Homeowner Welcome Campaign",
-  customerVolume: "Ready to Launch",
-  revenuePotential: "+33% ROI Potential",
-  icon: Gift,
-  color: "bg-green-500",
-  trendData: [100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150, 155],
-  growthRate: "+33%",
-  confidence: 96,
-};
+// Campaign plan card removed - Scene 2 will be rebuilt from scratch
 
 export function ABCFIDemoChat({
   isOpen,
@@ -145,31 +130,16 @@ export function ABCFIDemoChat({
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [demoStep, setDemoStep] = useState<
-    | "initial"
-    | "opportunities"
-    | "selection"
-    | "campaign"
-    | "mobile-experience"
-    | "roi-model"
-  >("initial");
+  const [demoStep, setDemoStep] = useState<"initial" | "opportunities">(
+    "initial"
+  );
   const [hasStarted, setHasStarted] = useState(false);
   const [cardScrollIndex, setCardScrollIndex] = useState(0);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [isCardSelecting, setIsCardSelecting] = useState(false);
 
-  // Clean Scene 2 Flow State
-  const [scene2Step, setScene2Step] = useState<
-    "plan" | "gift" | "journey" | "network" | "complete"
-  >("plan");
-  const [campaignConfig, setCampaignConfig] = useState({
-    gift: "home-depot",
-    giftAmount: 100,
-    notification: "congratulatory",
-    followupDays: 30,
-    partners: ["home-depot", "taskrabbit", "best-buy"] as string[],
-    projectedRevenue: 127,
-  });
+  // Simplified state - no Scene 2 complexity
+  // Scene 2 will be rebuilt from scratch
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const cardsScrollRef = useRef<HTMLDivElement>(null);
@@ -200,12 +170,8 @@ export function ABCFIDemoChat({
         { text: "What are high-value segments?", action: "show_segments" },
       ];
     } else if (demoStep === "opportunities") {
-      // Step 1.4 - After seeing the 5 journey cards
+      // Step 1.4 - After seeing the 5 journey cards - simplified
       return [
-        {
-          text: "Home buyers. I met with the mortgage team yesterday and they're looking for significant incremental revenue opportunities.",
-          action: "select_home_buyers",
-        },
         {
           text: "Tell me more about Life Event Transitions",
           action: "life_events",
@@ -214,53 +180,14 @@ export function ABCFIDemoChat({
           text: "Which journey has the highest potential?",
           action: "highest_potential",
         },
-      ];
-    } else if (demoStep === "selection") {
-      // Step 1.4 - After "Excellent choice" message (same options as opportunities for consistency)
-      return [
         {
-          text: "Home buyers. I met with the mortgage team yesterday and they're looking for significant incremental revenue opportunities.",
-          action: "build_campaign",
-        },
-        {
-          text: "Tell me more about Life Event Transitions",
-          action: "life_events",
-        },
-        {
-          text: "Which journey has the highest potential?",
-          action: "highest_potential",
+          text: "Show me the Back-to-School segment",
+          action: "back_to_school",
         },
       ];
-    } else if (demoStep === "campaign") {
-      // Scene 2 - Simple progression suggestions
-      if (scene2Step === "complete") {
-        return [
-          {
-            text: "This is great. What will this cost and how much incremental revenue will it generate for us?",
-            action: "show_roi",
-          },
-          {
-            text: "Show me what the customer will see on their phone",
-            action: "show_mobile",
-          },
-          {
-            text: "How do we launch this campaign?",
-            action: "launch_campaign",
-          },
-        ];
-      } else {
-        return [
-          { text: "This looks good, let's continue", action: "continue_flow" },
-          { text: "What's the expected ROI?", action: "show_roi_preview" },
-          { text: "Show me the mobile experience", action: "show_mobile" },
-        ];
-      }
     } else {
-      return [
-        { text: "How do I launch this campaign?", action: "launch_campaign" },
-        { text: "What are the expected results?", action: "campaign_results" },
-        { text: "Show me the next steps", action: "next_steps" },
-      ];
+      // Demo stops after opportunities - no more suggestions
+      return [];
     }
   };
 
@@ -276,87 +203,9 @@ export function ABCFIDemoChat({
     }, 100);
   };
 
-  // Clean Scene 2 Step-by-Step Handlers
-  const handleGiftSelection = (giftId: string, giftAmount: number) => {
-    setCampaignConfig((prev) => ({ ...prev, gift: giftId, giftAmount }));
-    setScene2Step("journey");
+  // Scene 2 handlers removed - will be rebuilt from scratch
 
-    // Move to next step: Customer Journey
-    const aiMessage: Message = {
-      id: Date.now().toString(),
-      text: `Perfect! $${giftAmount} ${giftId.replace("-", " ")} gift configured. Now let's set up the customer journey:`,
-      sender: "ai",
-      timestamp: new Date(),
-      component: "customer-journey",
-      data: { selectedGift: giftId, giftAmount },
-    };
-    setMessages((prev) => [...prev, aiMessage]);
-  };
-
-  const handleJourneyConfiguration = (journeyConfig: any) => {
-    setCampaignConfig((prev) => ({
-      ...prev,
-      notification: journeyConfig.notification,
-      followupDays: journeyConfig.followupDays,
-    }));
-    setScene2Step("network");
-
-    // Move to final step: Partner Network
-    const aiMessage: Message = {
-      id: Date.now().toString(),
-      text: `Great! Customer journey configured with ${journeyConfig.followupDays}-day follow-up. Finally, let's optimize the partner network:`,
-      sender: "ai",
-      timestamp: new Date(),
-      component: "partner-network",
-      data: {
-        selectedGift: campaignConfig.gift,
-        giftAmount: campaignConfig.giftAmount,
-      },
-    };
-    setMessages((prev) => [...prev, aiMessage]);
-  };
-
-  const handleNetworkConfiguration = (
-    selectedPartners: string[],
-    projectedRevenue: number
-  ) => {
-    setCampaignConfig((prev) => ({
-      ...prev,
-      partners: selectedPartners,
-      projectedRevenue,
-    }));
-    setScene2Step("complete");
-
-    // Campaign complete
-    const aiMessage: Message = {
-      id: Date.now().toString(),
-      text: `🎉 Campaign configured successfully! Your "New Homeowner Welcome Campaign" is ready with ${selectedPartners.length} partners and $${projectedRevenue} projected revenue per customer.`,
-      sender: "ai",
-      timestamp: new Date(),
-    };
-    setMessages((prev) => [...prev, aiMessage]);
-  };
-
-  // Update demo step based on user input
-  const updateDemoStep = (userInput: string) => {
-    const input = userInput.toLowerCase();
-
-    if (input.includes("engagement") || input.includes("customer segments")) {
-      setDemoStep("opportunities");
-    } else if (
-      input.includes("home") ||
-      input.includes("purchase") ||
-      input.includes("opportunities")
-    ) {
-      setDemoStep("selection");
-    } else if (
-      input.includes("campaign") ||
-      input.includes("target") ||
-      input.includes("next step")
-    ) {
-      setDemoStep("campaign");
-    }
-  };
+  // Demo step logic removed - demo stops after opportunities
 
   // Card scroll functions
   const scrollCardsLeft = () => {
@@ -383,23 +232,16 @@ export function ABCFIDemoChat({
     }
   };
 
-  // Handle card selection with animation
+  // Handle card selection with animation - demo stops here
   const handleCardSelection = (cardId: string, cardTitle: string) => {
     if (isCardSelecting) return; // Prevent multiple selections
 
     setIsCardSelecting(true);
     setSelectedCardId(cardId);
 
-    // After selection animation, transition to selection step
-    setTimeout(() => {
-      setDemoStep("selection");
-
-      // Trigger dashboard transition for campaign plan
-      onDashboardTransition("show-campaign", {
-        title: "New Homeowner Welcome Campaign",
-        type: "home-buyers",
-      });
-    }, 1000); // Wait for selection animation to complete
+    // Demo stops after card selection - no further logic
+    console.log(`🎯 Card selected: ${cardId} - ${cardTitle}`);
+    console.log("✅ Demo stops here - ready for Scene 2 rebuild");
   };
 
   useEffect(() => {
@@ -461,76 +303,6 @@ export function ABCFIDemoChat({
             JOURNEY_OPPORTUNITIES
           );
           onDashboardTransition("show-opportunities", JOURNEY_OPPORTUNITIES);
-        } else if (
-          (demoStep === "opportunities" || demoStep === "selection") &&
-          (textToSend.toLowerCase().includes("home") ||
-            textToSend.toLowerCase().includes("mortgage"))
-        ) {
-          // Scene 2: AI-Powered Campaign Co-Creation - Clean Flow
-          console.log(
-            "🔥 SCENE 2 TRIGGER: Starting clean campaign creation flow"
-          );
-          aiResponse =
-            "Excellent choice. That aligns perfectly with the mortgage team's goals. Based on our network data, new homeowners are highly receptive to welcome offers. Here is a campaign plan I've drafted.";
-          nextStep = "campaign";
-          setScene2Step("plan");
-
-          // Show campaign plan first, then start step-by-step configuration
-          setTimeout(() => {
-            const campaignPlanMessage: Message = {
-              id: (Date.now() + 2).toString(),
-              text: "",
-              sender: "ai",
-              timestamp: new Date(),
-              component: "campaign-plan",
-              data: { title: "New Homeowner Welcome Campaign" },
-            };
-            setMessages((prev) => [...prev, campaignPlanMessage]);
-
-            // Start step-by-step configuration
-            setTimeout(() => {
-              setScene2Step("gift");
-              const giftConfigMessage: Message = {
-                id: (Date.now() + 3).toString(),
-                text: "Let's configure this campaign step by step. First, let's set up the welcome gift amount and options:",
-                sender: "ai",
-                timestamp: new Date(),
-                component: "gift-selection",
-                data: {},
-              };
-              setMessages((prev) => [...prev, giftConfigMessage]);
-            }, 2000);
-          }, 1500);
-        } else if (
-          demoStep === "campaign" &&
-          (textToSend.toLowerCase().includes("cost") ||
-            textToSend.toLowerCase().includes("revenue") ||
-            textToSend.toLowerCase().includes("incremental"))
-        ) {
-          // Scene 4: The Instant Business Case - ROI Model
-          aiResponse =
-            "Great question. Let me pull together a simple model quickly.";
-          nextStep = "roi-model";
-          // Trigger dashboard transition to show ROI model
-          onDashboardTransition("show-roi-model", {
-            title: "Projected Monthly ROI: New Homeowner Campaign",
-            type: "roi-calculator",
-            segment: "home-buyers",
-          });
-        } else if (
-          demoStep === "campaign" &&
-          textToSend.toLowerCase().includes("customer")
-        ) {
-          // Scene 3: Visualizing the End-Customer Experience
-          aiResponse =
-            "Absolutely! Let me show you exactly what Sarah will see on her phone when she receives this campaign.";
-          nextStep = "mobile-experience";
-          // Trigger dashboard transition to show mobile experience
-          onDashboardTransition("show-mobile-experience", {
-            title: "Customer Mobile Experience",
-            type: "mobile-mockup",
-            segment: "home-buyers",
-          });
         } else {
           aiResponse =
             "I understand. Could you tell me more about what you'd like to focus on?";
@@ -660,58 +432,13 @@ export function ABCFIDemoChat({
                 </div>
               )}
 
-              {/* Render UI Component if present - Full width below message */}
+              {/* Scene 2 UI components removed - clean slate for rebuild */}
               {message.component && (
                 <div className="mt-4 w-full animate-in slide-in-from-left-2 fade-in duration-500">
-                  {message.component === "campaign-plan" && (
-                    <div className="w-full">
-                      <CampaignPlanCard
-                        title={
-                          message.data?.title ||
-                          "New Homeowner Welcome Campaign"
-                        }
-                        isCompact={false}
-                        className="w-full"
-                      />
-                    </div>
-                  )}
-
-                  {message.component === "gift-selection" && (
-                    <div className="w-full">
-                      <GiftSelectionUI
-                        onGiftSelect={handleGiftSelection}
-                        className="w-full"
-                      />
-                    </div>
-                  )}
-
-                  {message.component === "customer-journey" && (
-                    <div className="w-full">
-                      <CustomerJourneyUI
-                        selectedGift={
-                          message.data?.selectedGift || campaignConfig.gift
-                        }
-                        giftAmount={
-                          message.data?.giftAmount || campaignConfig.giftAmount
-                        }
-                        onJourneyConfirm={handleJourneyConfiguration}
-                        className="w-full"
-                      />
-                    </div>
-                  )}
-
-                  {message.component === "partner-network" && (
-                    <div className="w-full">
-                      <PartnerNetworkUI
-                        selectedGift={
-                          message.data?.selectedGift || campaignConfig.gift
-                        }
-                        giftAmount={
-                          message.data?.giftAmount || campaignConfig.giftAmount
-                        }
-                        onNetworkConfirm={handleNetworkConfiguration}
-                        className="w-full"
-                      />
+                  {/* All Scene 2 components removed - will be rebuilt from scratch */}
+                  {message.component === "placeholder" && (
+                    <div className="w-full p-4 bg-gray-100 rounded-lg text-center text-gray-500">
+                      Scene 2 components will be rebuilt here
                     </div>
                   )}
                 </div>
@@ -743,265 +470,206 @@ export function ABCFIDemoChat({
             </div>
           )}
 
-          {/* Journey Cards Carousel - Show after AI mentions the 5 journeys */}
-          {(demoStep === "opportunities" ||
-            demoStep === "selection" ||
-            demoStep === "campaign") &&
-            (console.log("🔥 CAROUSEL RENDERING: demoStep is", demoStep),
-            (
-              <div className="animate-in slide-in-from-left-2 fade-in duration-500 mt-8 mb-8">
-                <div className="relative">
-                  {/* Navigation Arrows - Hide during selection */}
-                  {!isCardSelecting && (
-                    <>
-                      <button
-                        onClick={scrollCardsLeft}
-                        disabled={cardScrollIndex === 0}
-                        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white/90 backdrop-blur-sm border border-white/20 rounded-full shadow-lg hover:bg-white/95 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center"
+          {/* Journey Cards Carousel - Show only in opportunities step */}
+          {demoStep === "opportunities" && (
+            <div className="animate-in slide-in-from-left-2 fade-in duration-500 mt-8 mb-8">
+              <div className="relative">
+                {/* Navigation Arrows - Hide during selection */}
+                {!isCardSelecting && (
+                  <>
+                    <button
+                      onClick={scrollCardsLeft}
+                      disabled={cardScrollIndex === 0}
+                      className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white/90 backdrop-blur-sm border border-white/20 rounded-full shadow-lg hover:bg-white/95 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center"
+                    >
+                      <ChevronLeft className="w-4 h-4 text-gray-700" />
+                    </button>
+
+                    <button
+                      onClick={scrollCardsRight}
+                      disabled={
+                        cardScrollIndex >= JOURNEY_OPPORTUNITIES.length - 3
+                      }
+                      className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white/90 backdrop-blur-sm border border-white/20 rounded-full shadow-lg hover:bg-white/95 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center"
+                    >
+                      <ChevronRight className="w-4 h-4 text-gray-700" />
+                    </button>
+                  </>
+                )}
+
+                {/* Cards Container */}
+                <div
+                  ref={cardsScrollRef}
+                  className={`flex gap-4 scroll-smooth transition-all duration-1000 ${
+                    isCardSelecting
+                      ? "justify-center px-0"
+                      : "overflow-x-hidden px-10"
+                  }`}
+                  style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                >
+                  {/* Show journey cards - simplified logic */}
+                  {JOURNEY_OPPORTUNITIES.filter(
+                    (card) => !isCardSelecting || card.id === selectedCardId
+                  ).map((card, index) => {
+                    const IconComponent = card.icon;
+                    const isSelected = selectedCardId === card.id;
+
+                    return (
+                      <div
+                        key={card.id}
+                        className={`group cursor-pointer transition-all duration-1000 ease-out animate-in fade-in flex-shrink-0 ${
+                          isSelected && isCardSelecting
+                            ? "scale-110 opacity-100 transform translate-x-0"
+                            : "hover:scale-105 opacity-100"
+                        }`}
+                        style={{
+                          animationDelay: `${index * 100}ms`,
+                          width:
+                            isCardSelecting && isSelected ? "320px" : "260px",
+                        }}
+                        onClick={() => {
+                          if (!isCardSelecting) {
+                            handleCardSelection(card.id, card.title);
+                          }
+                        }}
                       >
-                        <ChevronLeft className="w-4 h-4 text-gray-700" />
-                      </button>
-
-                      <button
-                        onClick={scrollCardsRight}
-                        disabled={
-                          cardScrollIndex >= JOURNEY_OPPORTUNITIES.length - 3
-                        }
-                        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white/90 backdrop-blur-sm border border-white/20 rounded-full shadow-lg hover:bg-white/95 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center"
-                      >
-                        <ChevronRight className="w-4 h-4 text-gray-700" />
-                      </button>
-                    </>
-                  )}
-
-                  {/* Cards Container */}
-                  <div
-                    ref={cardsScrollRef}
-                    className={`flex gap-4 scroll-smooth transition-all duration-1000 ${
-                      isCardSelecting
-                        ? "justify-center px-0"
-                        : "overflow-x-hidden px-10"
-                    }`}
-                    style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-                  >
-                    {/* Show journey cards in opportunities/selection, show campaign card in campaign step */}
-                    {(console.log(
-                      "🔥 CARD LOGIC: demoStep is",
-                      demoStep,
-                      "showing",
-                      demoStep === "campaign"
-                        ? "CAMPAIGN_PLAN_CARD"
-                        : "JOURNEY_OPPORTUNITIES"
-                    ),
-                    demoStep === "campaign"
-                      ? [CAMPAIGN_PLAN_CARD]
-                      : JOURNEY_OPPORTUNITIES.filter(
-                          (card) =>
-                            !isCardSelecting || card.id === selectedCardId
-                        )).map((card, index) => {
-                      const IconComponent = card.icon;
-                      const isSelected = selectedCardId === card.id;
-
-                      return (
+                        {/* Enhanced Glassmorphic Card */}
                         <div
-                          key={card.id}
-                          className={`group cursor-pointer transition-all duration-1000 ease-out animate-in fade-in flex-shrink-0 ${
-                            isSelected && isCardSelecting
-                              ? "scale-110 opacity-100 transform translate-x-0"
-                              : "hover:scale-105 opacity-100"
+                          className={`backdrop-blur-md rounded-2xl p-4 shadow-xl transition-all duration-1000 h-full ${
+                            isSelected
+                              ? "bg-white/90 border-2 border-indigo-400 shadow-2xl ring-4 ring-indigo-200/50"
+                              : "bg-white/70 border border-white/30 hover:shadow-2xl hover:bg-white/80"
                           }`}
-                          style={{
-                            animationDelay: `${index * 100}ms`,
-                            width:
-                              isCardSelecting && isSelected ? "320px" : "260px",
-                          }}
-                          onClick={() => {
-                            if (!isCardSelecting) {
-                              handleCardSelection(card.id, card.title);
-                            }
-                          }}
                         >
-                          {/* Enhanced Glassmorphic Card */}
-                          <div
-                            className={`backdrop-blur-md rounded-2xl p-4 shadow-xl transition-all duration-1000 h-full ${
-                              isSelected
-                                ? "bg-white/90 border-2 border-indigo-400 shadow-2xl ring-4 ring-indigo-200/50"
-                                : "bg-white/70 border border-white/30 hover:shadow-2xl hover:bg-white/80"
-                            }`}
-                          >
-                            {/* Campaign Plan Content */}
-                            {card.id === "campaign-plan" ? (
-                              <CampaignPlanCard
-                                title={card.title}
-                                isCompact={true}
-                                className="h-full"
-                              />
-                            ) : (
-                              /* Regular Journey Card Content */
-                              <div>
-                                {/* Header with Icon and Trend */}
-                                <div className="flex items-start justify-between mb-3">
+                          {/* Regular Journey Card Content */}
+                          <div>
+                            {/* Header with Icon and Trend */}
+                            <div className="flex items-start justify-between mb-3">
+                              <div
+                                className={`w-10 h-10 rounded-xl ${card.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-200 shadow-lg`}
+                              >
+                                <IconComponent className="w-5 h-5 text-white" />
+                              </div>
+
+                              {/* Mini Trend Chart */}
+                              {card.trendData && card.trendData.length > 0 && (
+                                <div className="flex flex-col items-end">
+                                  <div className="flex items-end gap-0.5 h-6 w-12">
+                                    {card.trendData
+                                      .slice(-8)
+                                      .map((value, idx) => {
+                                        const trendSlice =
+                                          card.trendData!.slice(-8);
+                                        const max = Math.max(...trendSlice);
+                                        const min = Math.min(...trendSlice);
+                                        const range = max - min;
+                                        const height =
+                                          range === 0
+                                            ? 50
+                                            : ((value - min) / range) * 100;
+                                        return (
+                                          <div
+                                            key={idx}
+                                            className={`${card.color.replace("bg-", "bg-").replace("-500", "-400")} rounded-sm opacity-70 transition-all duration-300 group-hover:opacity-100`}
+                                            style={{
+                                              height: `${Math.max(height, 15)}%`,
+                                              width: "10px",
+                                            }}
+                                          />
+                                        );
+                                      })}
+                                  </div>
+                                  {card.growthRate && (
+                                    <div className="flex items-center gap-1 mt-1">
+                                      <TrendingUp className="w-3 h-3 text-green-600" />
+                                      <span className="text-xs text-green-600 font-medium">
+                                        {card.growthRate}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Title */}
+                            <h3 className="font-semibold text-gray-900 mb-3 text-sm leading-tight">
+                              {card.title}
+                            </h3>
+
+                            {/* Metrics */}
+                            <div className="space-y-2 mb-3">
+                              <div className="flex items-center gap-2">
+                                <Users className="w-3 h-3 text-blue-600" />
+                                <div className="flex-1">
+                                  <p className="text-xs text-gray-500">
+                                    Volume
+                                  </p>
+                                  <p className="text-xs font-medium text-gray-900">
+                                    {card.customerVolume}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <DollarSign className="w-3 h-3 text-green-600" />
+                                <div className="flex-1">
+                                  <p className="text-xs text-gray-500">
+                                    Revenue Potential
+                                  </p>
+                                  <p className="text-xs font-medium text-gray-900">
+                                    {card.revenuePotential}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Confidence Score */}
+                            {card.confidence && (
+                              <div className="flex items-center gap-2">
+                                <div className="flex-1 bg-gray-200/50 rounded-full h-1.5">
                                   <div
-                                    className={`w-10 h-10 rounded-xl ${card.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-200 shadow-lg`}
-                                  >
-                                    <IconComponent className="w-5 h-5 text-white" />
-                                  </div>
-
-                                  {/* Mini Trend Chart */}
-                                  {card.trendData &&
-                                    card.trendData.length > 0 && (
-                                      <div className="flex flex-col items-end">
-                                        <div className="flex items-end gap-0.5 h-6 w-12">
-                                          {card.trendData
-                                            .slice(-8)
-                                            .map((value, idx) => {
-                                              const trendSlice =
-                                                card.trendData!.slice(-8);
-                                              const max = Math.max(
-                                                ...trendSlice
-                                              );
-                                              const min = Math.min(
-                                                ...trendSlice
-                                              );
-                                              const range = max - min;
-                                              const height =
-                                                range === 0
-                                                  ? 50
-                                                  : ((value - min) / range) *
-                                                    100;
-                                              return (
-                                                <div
-                                                  key={idx}
-                                                  className={`${card.color.replace("bg-", "bg-").replace("-500", "-400")} rounded-sm opacity-70 transition-all duration-300 group-hover:opacity-100`}
-                                                  style={{
-                                                    height: `${Math.max(height, 15)}%`,
-                                                    width: "10px",
-                                                  }}
-                                                />
-                                              );
-                                            })}
-                                        </div>
-                                        {card.growthRate && (
-                                          <div className="flex items-center gap-1 mt-1">
-                                            <TrendingUp className="w-3 h-3 text-green-600" />
-                                            <span className="text-xs text-green-600 font-medium">
-                                              {card.growthRate}
-                                            </span>
-                                          </div>
-                                        )}
-                                      </div>
-                                    )}
+                                    className="bg-indigo-600 h-1.5 rounded-full transition-all duration-500"
+                                    style={{ width: `${card.confidence}%` }}
+                                  />
                                 </div>
-
-                                {/* Title */}
-                                <h3 className="font-semibold text-gray-900 mb-3 text-sm leading-tight">
-                                  {card.title}
-                                </h3>
-
-                                {/* Metrics */}
-                                <div className="space-y-2 mb-3">
-                                  <div className="flex items-center gap-2">
-                                    <Users className="w-3 h-3 text-blue-600" />
-                                    <div className="flex-1">
-                                      <p className="text-xs text-gray-500">
-                                        Volume
-                                      </p>
-                                      <p className="text-xs font-medium text-gray-900">
-                                        {card.customerVolume}
-                                      </p>
-                                    </div>
-                                  </div>
-
-                                  <div className="flex items-center gap-2">
-                                    <DollarSign className="w-3 h-3 text-green-600" />
-                                    <div className="flex-1">
-                                      <p className="text-xs text-gray-500">
-                                        Revenue Potential
-                                      </p>
-                                      <p className="text-xs font-medium text-gray-900">
-                                        {card.revenuePotential}
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {/* Confidence Score */}
-                                {card.confidence && (
-                                  <div className="flex items-center gap-2">
-                                    <div className="flex-1 bg-gray-200/50 rounded-full h-1.5">
-                                      <div
-                                        className="bg-indigo-600 h-1.5 rounded-full transition-all duration-500"
-                                        style={{ width: `${card.confidence}%` }}
-                                      />
-                                    </div>
-                                    <span className="text-xs font-medium text-gray-900">
-                                      {card.confidence}%
-                                    </span>
-                                  </div>
-                                )}
+                                <span className="text-xs font-medium text-gray-900">
+                                  {card.confidence}%
+                                </span>
                               </div>
                             )}
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Scroll Indicators - Hide during selection */}
-                  {!isCardSelecting && (
-                    <div className="flex justify-center mt-4 gap-2">
-                      {Array.from({
-                        length: Math.max(1, JOURNEY_OPPORTUNITIES.length - 2),
-                      }).map((_, index) => (
-                        <button
-                          key={index}
-                          onClick={() => {
-                            setCardScrollIndex(index);
-                            scrollToCardIndex(index);
-                          }}
-                          className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                            cardScrollIndex === index
-                              ? "bg-indigo-600"
-                              : "bg-white/50 hover:bg-white/70"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  )}
-
-                  {/* AI Response below carousel - Show in selection step */}
-                  {demoStep === "selection" && (
-                    <div
-                      className="mt-8 mb-6 animate-in slide-in-from-left-2 fade-in duration-500"
-                      style={{ animationDelay: "1500ms" }}
-                    >
-                      <div className="flex items-start gap-3">
-                        {/* AI Avatar */}
-                        <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center shadow-sm flex-shrink-0">
-                          <Bot className="w-4 h-4 text-white" />
-                        </div>
-
-                        {/* AI Response Bubble */}
-                        <div className="bg-white/95 px-4 py-3 rounded-2xl shadow-lg border border-gray-200/50 max-w-md transition-all duration-500 ease-out transform animate-in slide-in-from-left-2 fade-in">
-                          <p className="text-sm leading-relaxed">
-                            Excellent choice. That aligns perfectly with the
-                            mortgage team's goals. Based on our network data,
-                            new homeowners are highly receptive to welcome
-                            offers. Here is a campaign plan I've drafted.
-                          </p>
-                          <p className="text-xs opacity-70 mt-2">
-                            {new Date().toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </p>
-                        </div>
                       </div>
-                    </div>
-                  )}
+                    );
+                  })}
                 </div>
+
+                {/* Scroll Indicators - Hide during selection */}
+                {!isCardSelecting && (
+                  <div className="flex justify-center mt-4 gap-2">
+                    {Array.from({
+                      length: Math.max(1, JOURNEY_OPPORTUNITIES.length - 2),
+                    }).map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          setCardScrollIndex(index);
+                          scrollToCardIndex(index);
+                        }}
+                        className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                          cardScrollIndex === index
+                            ? "bg-indigo-600"
+                            : "bg-white/50 hover:bg-white/70"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* AI Response removed - demo stops after card selection */}
               </div>
-            ))}
+            </div>
+          )}
 
           <div ref={messagesEndRef} />
         </div>
@@ -1066,15 +734,7 @@ export function ABCFIDemoChat({
               <div
                 className={`w-2 h-2 rounded-full ${demoStep === "opportunities" ? "bg-white" : "bg-white/30"}`}
               ></div>
-              <div
-                className={`w-2 h-2 rounded-full ${demoStep === "selection" ? "bg-white" : "bg-white/30"}`}
-              ></div>
-              <div
-                className={`w-2 h-2 rounded-full ${demoStep === "campaign" ? "bg-white" : "bg-white/30"}`}
-              ></div>
-              <div
-                className={`w-2 h-2 rounded-full ${demoStep === "mobile-experience" || demoStep === "roi-model" ? "bg-white" : "bg-white/30"}`}
-              ></div>
+              {/* Removed extra progress indicators - demo stops after opportunities */}
             </div>
             <span className="text-xs text-white/70 ml-2">
               Demo Progress:{" "}
@@ -1082,15 +742,7 @@ export function ABCFIDemoChat({
                 ? "Getting Started"
                 : demoStep === "opportunities"
                   ? "Exploring Opportunities"
-                  : demoStep === "selection"
-                    ? "Journey Selected"
-                    : demoStep === "campaign"
-                      ? "Campaign Planning"
-                      : demoStep === "mobile-experience"
-                        ? "Customer Experience"
-                        : demoStep === "roi-model"
-                          ? "ROI Analysis"
-                          : "Campaign Planning"}
+                  : "Complete"}
             </span>
           </div>
         </div>
