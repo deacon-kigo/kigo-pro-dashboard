@@ -4,6 +4,9 @@ import { useState, useEffect, useRef } from "react";
 import { Card } from "./ui/Card";
 import { Button } from "./ui/Button";
 import { MobileLayout } from "./MobileLayout";
+import { InlineTravelAnimation } from "@/components/features/demo/InlineTravelAnimation";
+import { DenverHomeLocation } from "@/components/features/demo/DenverHomeLocation";
+import { MerchantLocationMap } from "@/components/features/demo/MerchantLocationMap";
 
 interface AIChatInterfaceProps {
   onChatComplete: () => void;
@@ -24,7 +27,12 @@ interface UIComponent {
     | "travel-offers"
     | "home-setup-offers"
     | "local-discovery"
-    | "loyalty-links";
+    | "loyalty-links"
+    | "denver-map"
+    | "inline-travel-animation"
+    | "denver-home-location"
+    | "merchant-location-map"
+    | "single-offer";
   data: any;
 }
 
@@ -54,6 +62,17 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
     useState(false);
   const [savedOffers, setSavedOffers] = useState<string[]>([]);
   const [totalSavings, setTotalSavings] = useState(0);
+  const [movingConversationStep, setMovingConversationStep] =
+    useState<number>(0);
+  const [movingAnswers, setMovingAnswers] = useState<{
+    moveDate?: string;
+    currentLocation?: string;
+    travelMethod?: string;
+    needsStorage?: string;
+  }>({});
+  const [animationCompleted, setAnimationCompleted] = useState(false);
+  const [homeLocationShown, setHomeLocationShown] = useState(false);
+  const [offerSequenceStep, setOfferSequenceStep] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -211,12 +230,16 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
   const startMovingPlanningSequence = () => {
     setIsTyping(true);
     setConversationSequenceComplete(false);
+    setMovingConversationStep(1);
+    setAnimationCompleted(false); // Reset animation flag
+    setHomeLocationShown(false); // Reset home location flag
+    setOfferSequenceStep(0); // Reset offer sequence
 
-    // Step 1: Initial acknowledgment
+    // Step 1: Initial acknowledgment and first question
     setTimeout(() => {
       const acknowledgmentMessage: Message = {
         id: "planning-ack",
-        text: "Of course! Let me help you plan your move.",
+        text: "I'd love to help you with your move to Denver! Let me ask a few questions to find the perfect offers for you.",
         sender: "ai",
         timestamp: new Date(),
       };
@@ -225,89 +248,339 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
       setIsTyping(false);
       scrollToLatestContent();
 
-      // Step 2: Show thinking process
+      // Step 2: Ask about move date
       setTimeout(() => {
         setIsTyping(true);
         setTimeout(() => {
-          const thinkingMessage: Message = {
-            id: "planning-thinking",
-            text: "🤔 Let me analyze your specific situation... Kansas City to Denver with Emma and Jake...",
+          const moveDateMessage: Message = {
+            id: "move-date-question",
+            text: "When are you planning to move?",
             sender: "ai",
             timestamp: new Date(),
           };
 
-          setMessages((prev) => [...prev, thinkingMessage]);
+          setMessages((prev) => [...prev, moveDateMessage]);
           setIsTyping(false);
           scrollToLatestContent();
+          setConversationSequenceComplete(true); // Allow user to respond
+        }, 1000);
+      }, 1500);
+    }, 1000);
+  };
 
-          // Step 3: Show analysis process
-          setTimeout(() => {
-            setIsTyping(true);
-            setTimeout(() => {
-              const analysisMessage: Message = {
-                id: "planning-analysis",
-                text: "📊 I'm checking the best moving options for families... cross-state logistics... timing considerations...",
-                sender: "ai",
-                timestamp: new Date(),
-              };
+  const handleTravelAnimationComplete = () => {
+    // Prevent multiple calls
+    if (animationCompleted) return;
+    setAnimationCompleted(true);
 
-              setMessages((prev) => [...prev, analysisMessage]);
-              setIsTyping(false);
-              scrollToLatestContent();
+    // Show Denver home location after animation completes
+    setTimeout(() => {
+      const homeLocationMessage: Message = {
+        id: "denver-home-location",
+        text: "Great! Now let me show you your new Denver home location:",
+        sender: "ai",
+        timestamp: new Date(),
+        uiComponent: {
+          type: "denver-home-location",
+          data: {
+            address: "4988 Valentia Ct, Denver, CO 80238",
+            neighborhood: "Stapleton",
+          },
+        },
+      };
 
-              // Step 4: Show curation process
-              setTimeout(() => {
-                setIsTyping(true);
-                setTimeout(() => {
-                  const curationMessage: Message = {
-                    id: "planning-curation",
-                    text: "✨ Perfect! I found some excellent options that match your family's needs and timeline.",
-                    sender: "ai",
-                    timestamp: new Date(),
-                  };
+      // Use functional state update to check for duplicates with current state
+      setMessages((prev) => {
+        const hasHomeLocationMessage = prev.some(
+          (msg) => msg.id === "denver-home-location"
+        );
+        if (hasHomeLocationMessage) return prev; // Return unchanged if duplicate
+        return [...prev, homeLocationMessage];
+      });
+    }, 1000);
+  };
 
-                  setMessages((prev) => [...prev, curationMessage]);
-                  setIsTyping(false);
-                  scrollToLatestContent();
+  const handleHomeLocationShown = () => {
+    // Prevent multiple calls
+    if (homeLocationShown) return;
+    setHomeLocationShown(true);
 
-                  // Step 5: Present the offers
-                  setTimeout(() => {
-                    setIsTyping(true);
-                    setTimeout(() => {
-                      const offersMessage: Message = {
-                        id: "planning-offers",
-                        text: "Here are the best offers I've curated for your Kansas City to Denver move:",
-                        sender: "ai",
-                        timestamp: new Date(),
-                        uiComponent: getMovingJourneyBundle(),
-                      };
+    // Start the new offer sequence: U-Haul → Map → Hotel → Map → Storage
+    setTimeout(() => {
+      startOfferSequence();
+    }, 1000);
+  };
 
-                      setMessages((prev) => [...prev, offersMessage]);
-                      setIsTyping(false);
-                      scrollToLatestContent();
+  const startOfferSequence = () => {
+    setOfferSequenceStep(1);
 
-                      // Start progressive reveal of offers
-                      setTimeout(() => {
-                        setVisibleOffers(1);
-                        setTimeout(() => {
-                          setVisibleOffers(2);
-                          setTimeout(() => {
-                            setVisibleOffers(3);
-                            // Mark sequence complete after offers are shown
-                            setTimeout(() => {
-                              setConversationSequenceComplete(true);
-                            }, 500);
-                          }, 800);
-                        }, 800);
-                      }, 1000);
-                    }, 1500);
-                  }, 1000);
-                }, 2000);
-              }, 1500);
-            }, 2000);
-          }, 1500);
-        }, 2000);
-      }, 1000);
+    // Step 1: Show U-Haul offer
+    const uHaulMessage: Message = {
+      id: "uhaul-offer",
+      text: "Perfect! Let me start with your moving logistics:",
+      sender: "ai",
+      timestamp: new Date(),
+      uiComponent: {
+        type: "single-offer",
+        data: {
+          offer: {
+            id: "uhaul-bundle",
+            title: "U-Haul Complete Moving Package",
+            merchant: "U-Haul",
+            logo: "/logos/U-Haul-logo.png",
+            price: "$450",
+            savings: "Save $200",
+            description: "Truck rental + moving supplies for KC→Denver",
+            category: "Moving Logistics",
+            address: "Multiple locations near you",
+          },
+        },
+      },
+    };
+
+    // Use functional state update to check for duplicates with current state
+    setMessages((prev) => {
+      const hasUHaulMessage = prev.some((msg) => msg.id === "uhaul-offer");
+      if (hasUHaulMessage) return prev; // Return unchanged if duplicate
+      return [...prev, uHaulMessage];
+    });
+
+    // Continue sequence after delay - pass step 1 directly
+    setTimeout(() => {
+      continueOfferSequence(1);
+    }, 3000);
+  };
+
+  const continueOfferSequence = (currentStep?: number) => {
+    const step = currentStep || offerSequenceStep;
+
+    if (step === 1) {
+      // Step 2: Show Staybridge map (different coordinates from home)
+      showMerchantMap(
+        "staybridge",
+        "Staybridge Suites",
+        "8101 E Northfield Blvd, Denver, CO 80238",
+        { lat: 39.785, lng: -104.895 }
+      );
+    } else if (step === 2) {
+      // Step 3: Show Staybridge offer
+      showStaybridgeOffer();
+    } else if (step === 3) {
+      // Step 4: Show Storage map (different coordinates from home)
+      showMerchantMap(
+        "storage",
+        "Extra Space Storage",
+        "5062 Central Park Blvd, Denver, CO 80238",
+        { lat: 39.778, lng: -104.885 }
+      );
+    } else if (step === 4) {
+      // Step 5: Show Storage offer
+      showStorageOffer();
+    }
+  };
+
+  const showMerchantMap = (
+    merchantType: string,
+    merchantName: string,
+    merchantAddress: string,
+    merchantCoords: { lat: number; lng: number }
+  ) => {
+    const mapId = `${merchantType}-map`;
+
+    const mapMessage: Message = {
+      id: mapId,
+      text: `Here's how close ${merchantName} is to your home:`,
+      sender: "ai",
+      timestamp: new Date(),
+      uiComponent: {
+        type: "merchant-location-map",
+        data: {
+          homeAddress: "4988 Valentia Ct, Denver, CO 80238",
+          homeCoordinates: { lat: 39.7817, lng: -104.8897 },
+          merchantName,
+          merchantAddress,
+          merchantCoordinates: merchantCoords,
+        },
+      },
+    };
+
+    // Use functional state update to check for duplicates with current state
+    setMessages((prev) => {
+      const hasMapMessage = prev.some((msg) => msg.id === mapId);
+      if (hasMapMessage) return prev; // Return unchanged if duplicate
+      return [...prev, mapMessage];
+    });
+
+    const nextStep = offerSequenceStep + 1;
+    setOfferSequenceStep(nextStep);
+
+    setTimeout(() => {
+      continueOfferSequence(nextStep);
+    }, 4000);
+  };
+
+  const showStaybridgeOffer = () => {
+    const nextStep = offerSequenceStep + 1;
+    setOfferSequenceStep(nextStep);
+
+    const hotelMessage: Message = {
+      id: "staybridge-offer",
+      text: "Perfect for your moving period:",
+      sender: "ai",
+      timestamp: new Date(),
+      uiComponent: {
+        type: "single-offer",
+        data: {
+          offer: {
+            id: "staybridge-hotel",
+            title: "Staybridge Suites Denver",
+            merchant: "Staybridge Suites",
+            logo: "/logos/staybridge-logo.png",
+            price: "$129/night",
+            savings: "Save $70/night",
+            description: "Extended stay hotel for your moving period",
+            category: "Accommodation",
+            address: "8101 E Northfield Blvd, Denver, CO 80238",
+          },
+        },
+      },
+    };
+
+    // Use functional state update to check for duplicates with current state
+    setMessages((prev) => {
+      const hasOfferMessage = prev.some((msg) => msg.id === "staybridge-offer");
+      if (hasOfferMessage) return prev; // Return unchanged if duplicate
+      return [...prev, hotelMessage];
+    });
+
+    setTimeout(() => {
+      continueOfferSequence(nextStep);
+    }, 3000);
+  };
+
+  const showStorageOffer = () => {
+    const nextStep = offerSequenceStep + 1;
+    setOfferSequenceStep(nextStep);
+
+    const storageMessage: Message = {
+      id: "storage-offer",
+      text: "And finally, secure storage for your belongings:",
+      sender: "ai",
+      timestamp: new Date(),
+      uiComponent: {
+        type: "single-offer",
+        data: {
+          offer: {
+            id: "extra-space-storage",
+            title: "Extra Space Storage",
+            merchant: "Extra Space Storage",
+            logo: "/logos/extra-space-storage-logo.png",
+            price: "$89/month",
+            savings: "First month FREE",
+            description: "Secure storage near your new Denver home",
+            category: "Storage",
+            address: "5062 Central Park Blvd, Denver, CO 80238",
+          },
+        },
+      },
+    };
+
+    // Use functional state update to check for duplicates with current state
+    setMessages((prev) => {
+      const hasOfferMessage = prev.some((msg) => msg.id === "storage-offer");
+      if (hasOfferMessage) return prev; // Return unchanged if duplicate
+      return [...prev, storageMessage];
+    });
+
+    setTimeout(() => {
+      setConversationSequenceComplete(true);
+    }, 2000);
+  };
+
+  const handleMovingAnswer = (answer: string, questionType: string) => {
+    // Add user message
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: answer,
+      sender: "user",
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, userMessage]);
+
+    // Save the answer
+    setMovingAnswers((prev) => ({
+      ...prev,
+      [questionType]: answer,
+    }));
+
+    setConversationSequenceComplete(false);
+    setIsTyping(true);
+
+    // Continue conversation based on step
+    setTimeout(() => {
+      if (movingConversationStep === 1) {
+        // After move date, confirm current location
+        const locationMessage: Message = {
+          id: "location-question",
+          text: "I see you're currently in Kansas City, MO - is that correct?",
+          sender: "ai",
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, locationMessage]);
+        setMovingConversationStep(2);
+      } else if (movingConversationStep === 2) {
+        // After location, ask about travel method
+        const travelMessage: Message = {
+          id: "travel-question",
+          text: "How are you planning to travel to Denver?",
+          sender: "ai",
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, travelMessage]);
+        setMovingConversationStep(3);
+      } else if (movingConversationStep === 3) {
+        // After travel method, ask about storage
+        const storageMessage: Message = {
+          id: "storage-question",
+          text: "Do you need temporary storage?",
+          sender: "ai",
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, storageMessage]);
+        setMovingConversationStep(4);
+      } else if (movingConversationStep === 4) {
+        // After storage, show inline travel animation (only if not already shown)
+        const travelMessage: Message = {
+          id: "travel-animation",
+          text: "Perfect! Let me show your journey:",
+          sender: "ai",
+          timestamp: new Date(),
+          uiComponent: {
+            type: "inline-travel-animation",
+            data: {
+              fromCity: "Kansas City, MO",
+              toCity: "Denver, CO",
+            },
+          },
+        };
+
+        // Use functional state update to check for duplicates with current state
+        setMessages((prev) => {
+          const hasAnimationMessage = prev.some(
+            (msg) => msg.id === "travel-animation"
+          );
+          if (hasAnimationMessage) return prev; // Return unchanged if duplicate
+          return [...prev, travelMessage];
+        });
+
+        setMovingConversationStep(5);
+      }
+
+      setIsTyping(false);
+      scrollToLatestContent();
+      if (movingConversationStep < 4) {
+        setConversationSequenceComplete(true); // Allow next response
+      }
     }, 1500);
   };
 
@@ -473,6 +746,37 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
   };
 
   const getPhaseReplies = () => {
+    // If we're in moving conversation flow, return context-specific suggestions
+    if (movingConversationStep > 0 && movingConversationStep < 5) {
+      switch (movingConversationStep) {
+        case 1: // Move date question
+          return [
+            "We need to arrive in Denver by October 25th",
+            "In 2-3 weeks",
+            "Next month",
+            "I'm flexible",
+          ];
+        case 2: // Current location confirmation
+          return [
+            "Yes, that's correct",
+            "Actually, I'm in a different city",
+            "Close, but not exactly",
+          ];
+        case 3: // Travel method question
+          return [
+            "Driving",
+            "Air travel",
+            "Combination of both",
+            "Haven't decided yet",
+          ];
+        case 4: // Storage question
+          return ["Yes, definitely", "Maybe", "No, direct move"];
+        default:
+          return [];
+      }
+    }
+
+    // Default phase-based suggestions
     switch (currentPhase) {
       case "gift-selection":
         return [
@@ -664,26 +968,29 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
             savings: "Save $200",
             description: "Truck rental + moving supplies for KC→Denver",
             category: "Moving Logistics",
+            address: "Near your location",
           },
           {
-            id: "public-storage-bundle",
-            title: "Public Storage Denver",
-            merchant: "Public Storage",
-            logo: "/logos/public-storage-logo.png",
+            id: "staybridge-hotel",
+            title: "Staybridge Suites Denver",
+            merchant: "Staybridge Suites",
+            logo: "/logos/staybridge-logo.png",
+            price: "$129/night",
+            savings: "Save $70/night",
+            description: "Extended stay hotel for your moving period",
+            category: "Accommodation",
+            address: "8101 E Northfield Blvd, Denver, CO 80238",
+          },
+          {
+            id: "extra-space-storage",
+            title: "Extra Space Storage",
+            merchant: "Extra Space Storage",
+            logo: "/logos/extra-space-storage-logo.png",
             price: "$89/month",
             savings: "First month FREE",
             description: "Secure storage near your new Denver home",
             category: "Storage",
-          },
-          {
-            id: "hilton-bundle",
-            title: "Hilton Denver Downtown",
-            merchant: "Hilton",
-            logo: "/logos/hilton-honor-logo.png",
-            price: "$129/night",
-            savings: "Save $70/night",
-            description: "Family suite for your moving weekend",
-            category: "Accommodation",
+            address: "5062 Central Park Blvd, Denver, CO 80238",
           },
         ],
       },
@@ -832,7 +1139,7 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
             <div
               key={item.id}
               onClick={handleClick}
-              className={`rounded-2xl shadow-sm p-4 transition-all duration-500 border relative ${
+              className={`rounded-2xl shadow-sm p-6 transition-all duration-500 border relative ${
                 isSelected
                   ? "bg-green-50 border-green-200 cursor-default"
                   : "bg-white border-gray-100 cursor-pointer hover:shadow-md hover:border-blue-200 active:scale-[0.98]"
@@ -845,73 +1152,19 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                 transitionDelay: `${index * 100}ms`,
               }}
             >
-              {/* Selected State Indicator */}
-              {isSelected && (
-                <div className="absolute top-3 right-3 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
-                  <svg
-                    className="w-4 h-4"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-              )}
-
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center p-2">
+              {/* Top Row: Logo (left) and Heart (right) */}
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-16 h-16 bg-gray-50 rounded-xl flex items-center justify-center p-3 shadow-sm">
                   <img
                     src={item.logo}
                     alt={item.merchant || item.title}
                     className="w-full h-full object-contain"
                   />
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-medium text-sm text-gray-900">
-                        {item.title}
-                      </h4>
-                      <span className="text-xs text-gray-500">
-                        {item.merchant}
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-sm text-blue-600">
-                        {item.value || item.price}
-                      </p>
-                      {item.savings && (
-                        <p className="text-xs text-green-600 font-medium">
-                          {item.savings}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <p className="text-xs mb-2 text-gray-600">
-                    {item.description}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
-                      {isGiftType ? (
-                        <>
-                          {item.category === "restaurant" && "Dining"}
-                          {item.category === "home-goods" && "Home & Kitchen"}
-                          {item.category === "local-service" && "Local Service"}
-                        </>
-                      ) : (
-                        item.category
-                      )}
-                    </span>
-                  </div>
-                </div>
 
                 {/* Heart action button */}
                 <div
-                  className={`w-8 h-8 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all ${
+                  className={`w-10 h-10 rounded-xl border-2 flex items-center justify-center cursor-pointer transition-all ${
                     isSelected
                       ? "border-red-200 bg-red-50"
                       : "border-gray-200 hover:border-red-200 hover:bg-red-50"
@@ -928,7 +1181,7 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                   }}
                 >
                   <svg
-                    className={`w-4 h-4 transition-colors ${
+                    className={`w-5 h-5 transition-colors ${
                       isSelected
                         ? "text-red-500"
                         : "text-gray-400 hover:text-red-500"
@@ -944,6 +1197,51 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                       d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                     />
                   </svg>
+                </div>
+              </div>
+
+              {/* Bottom Section: Offer Details */}
+              <div className="space-y-3">
+                {/* Title and Price Row */}
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-base text-gray-900 mb-1">
+                      {item.title}
+                    </h4>
+                    <span className="text-sm text-gray-500">
+                      {item.merchant}
+                    </span>
+                  </div>
+                  <div className="text-right ml-4">
+                    <p className="font-bold text-lg text-blue-600">
+                      {item.value || item.price}
+                    </p>
+                    {item.savings && (
+                      <p className="text-sm text-green-600 font-medium">
+                        {item.savings}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Description */}
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {item.description}
+                </p>
+
+                {/* Category Badge */}
+                <div className="flex items-center">
+                  <span className="px-3 py-1.5 text-sm font-medium rounded-full bg-blue-100 text-blue-700">
+                    {isGiftType ? (
+                      <>
+                        {item.category === "restaurant" && "Dining"}
+                        {item.category === "home-goods" && "Home & Kitchen"}
+                        {item.category === "local-service" && "Local Service"}
+                      </>
+                    ) : (
+                      item.category
+                    )}
+                  </span>
                 </div>
               </div>
             </div>
@@ -1007,6 +1305,93 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                 </div>
               </div>
             ))}
+          </div>
+        );
+
+      case "denver-map":
+        return (
+          <div className="mt-3 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-4">
+              <h4 className="font-semibold text-gray-900 mb-3">
+                Your Move: Kansas City → Denver
+              </h4>
+              <div className="bg-gradient-to-br from-blue-50 to-green-50 rounded-xl p-6 text-center">
+                <div className="flex items-center justify-center gap-4 mb-4">
+                  <div className="text-center">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full mx-auto mb-1"></div>
+                    <p className="text-xs font-medium text-gray-700">
+                      Kansas City, MO
+                    </p>
+                  </div>
+                  <div className="flex-1 h-0.5 bg-gradient-to-r from-blue-500 to-green-500 relative">
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xs">
+                      🚗
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="w-3 h-3 bg-green-500 rounded-full mx-auto mb-1"></div>
+                    <p className="text-xs font-medium text-gray-700">
+                      Denver, CO
+                    </p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 text-xs text-gray-600">
+                  <div>
+                    <p className="font-medium">Distance</p>
+                    <p>~600 miles</p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Drive Time</p>
+                    <p>~9 hours</p>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-3 text-xs text-gray-500 text-center">
+                🎯 Finding personalized offers for your move...
+              </div>
+            </div>
+          </div>
+        );
+
+      case "inline-travel-animation":
+        return (
+          <div className="mt-3">
+            <InlineTravelAnimation
+              fromCity={component.data.fromCity}
+              toCity={component.data.toCity}
+              onAnimationComplete={handleTravelAnimationComplete}
+            />
+          </div>
+        );
+
+      case "denver-home-location":
+        return (
+          <div className="mt-3">
+            <DenverHomeLocation
+              address={component.data.address}
+              neighborhood={component.data.neighborhood}
+              onLocationShown={handleHomeLocationShown}
+            />
+          </div>
+        );
+
+      case "merchant-location-map":
+        return (
+          <div className="mt-3">
+            <MerchantLocationMap
+              homeAddress={component.data.homeAddress}
+              homeCoordinates={component.data.homeCoordinates}
+              merchantName={component.data.merchantName}
+              merchantAddress={component.data.merchantAddress}
+              merchantCoordinates={component.data.merchantCoordinates}
+            />
+          </div>
+        );
+
+      case "single-offer":
+        return (
+          <div className="mt-3">
+            {renderOfferCards([component.data.offer], "offers", 1)}
           </div>
         );
 
@@ -1190,7 +1575,25 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                       {quickReplies.map((reply, index) => (
                         <button
                           key={index}
-                          onClick={() => sendMessage(reply)}
+                          onClick={() => {
+                            // Handle moving conversation flow
+                            if (
+                              movingConversationStep > 0 &&
+                              movingConversationStep < 5
+                            ) {
+                              const questionTypes = [
+                                "moveDate",
+                                "currentLocation",
+                                "travelMethod",
+                                "needsStorage",
+                              ];
+                              const questionType =
+                                questionTypes[movingConversationStep - 1];
+                              handleMovingAnswer(reply, questionType);
+                            } else {
+                              sendMessage(reply);
+                            }
+                          }}
                           className="px-3 py-1 bg-white hover:bg-blue-50 text-gray-700 text-xs rounded-full transition-all duration-200 shadow-sm border border-gray-200 hover:border-blue-300 hover:scale-105"
                         >
                           {reply}
