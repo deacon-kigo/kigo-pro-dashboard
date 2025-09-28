@@ -7,7 +7,7 @@
     "silent": true
   },
   "functions": {
-    "app/api/copilot/route.ts": {
+    "app/api/copilotkit/route.ts": {
       "maxDuration": 30
     }
   },
