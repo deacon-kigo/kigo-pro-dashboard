@@ -37,6 +37,13 @@ import RevenueProjectionCharts from "./components/RevenueProjectionCharts";
 import CustomerBehaviorAnalytics from "./components/CustomerBehaviorAnalytics";
 import AICopilotDemo from "./components/AICopilotDemo";
 
+// Import demo components
+import { ABCFIDemoTrigger } from "../demo/ABCFIDemoTrigger";
+import { JourneyOpportunityCards } from "../demo/JourneyOpportunityCards";
+import { CampaignPlanView } from "../demo/CampaignPlanView";
+import { ROIModelView } from "../demo/ROIModelView";
+import { MobileExperienceView } from "../demo/MobileExperienceView";
+
 // AI Insight Notification - Proactive suggestion for Q4 opportunity
 interface AIInsightNotificationProps {
   onDismiss: () => void;
@@ -172,6 +179,67 @@ export default function MarketingInsightsView() {
   const [selectedJourney, setSelectedJourney] = useState<string | null>(null);
   const [showAIInsight, setShowAIInsight] = useState(false);
 
+  // Demo state management
+  const [demoView, setDemoView] = useState<
+    | "dashboard"
+    | "opportunities"
+    | "campaign"
+    | "roi-model"
+    | "mobile-experience"
+  >("dashboard");
+  const [demoData, setDemoData] = useState<any>(null);
+
+  // Debug: Log state changes
+  useEffect(() => {
+    console.log("🎯 MarketingInsightsView - demoView changed to:", demoView);
+    console.log("🎯 MarketingInsightsView - demoData:", demoData);
+  }, [demoView, demoData]);
+
+  // Demo transition handler
+  const handleDashboardTransition = (step: string, data?: any) => {
+    console.log("🎯 Demo transition called:", step, data);
+    console.log("🎯 Current demoView:", demoView);
+
+    switch (step) {
+      case "show-opportunities":
+        console.log("🎯 Setting demoView to opportunities with data:", data);
+        setDemoView("opportunities");
+        setDemoData(data);
+        break;
+      case "show-campaign":
+        console.log("🎯 Setting demoView to campaign");
+        setDemoView("campaign");
+        setDemoData(data);
+        break;
+      case "show-campaign-plan":
+        console.log(
+          "🎯 Setting demoView to campaign plan with detailed data:",
+          data
+        );
+        setDemoView("campaign");
+        setDemoData(data);
+        break;
+      case "show-roi-model":
+        console.log("🎯 Setting demoView to ROI model:", data);
+        setDemoView("roi-model");
+        setDemoData(data);
+        break;
+      case "show-mobile-experience":
+        console.log("🎯 Setting demoView to mobile experience:", data);
+        setDemoView("mobile-experience");
+        setDemoData(data);
+        break;
+      case "reset":
+        console.log("🎯 Resetting demoView to dashboard");
+        setDemoView("dashboard");
+        setDemoData(null);
+        break;
+      default:
+        console.log("🎯 Unknown step:", step);
+        break;
+    }
+  };
+
   // Show AI insight when user selects the home-purchase journey
   const handleJourneySelection = (journeyId: string) => {
     setSelectedJourney(journeyId);
@@ -234,6 +302,12 @@ export default function MarketingInsightsView() {
 
   return (
     <>
+      {/* Debug State Display */}
+      <div className="fixed top-4 left-4 z-50 bg-black text-white p-2 rounded text-xs">
+        DEBUG: demoView={demoView} | hasData={!!demoData} | dataLength=
+        {demoData?.length || 0}
+      </div>
+
       <style jsx>{`
         .tabs-trigger-active[data-state="active"] {
           background: #2563eb !important;
@@ -620,6 +694,29 @@ export default function MarketingInsightsView() {
           <AICopilotDemo />
         </div>
       </div>
+
+      {/* Remove the overlay - cards will be inside chat now */}
+
+      {demoView === "campaign" && (
+        <div className="fixed inset-0 bg-white z-30">
+          <CampaignPlanView isVisible={true} campaignData={demoData} />
+        </div>
+      )}
+
+      {demoView === "roi-model" && (
+        <div className="fixed inset-0 bg-white z-30">
+          <ROIModelView isVisible={true} campaignData={demoData} />
+        </div>
+      )}
+
+      {demoView === "mobile-experience" && (
+        <div className="fixed inset-0 bg-white z-30">
+          <MobileExperienceView isVisible={true} campaignData={demoData} />
+        </div>
+      )}
+
+      {/* ABC FI Demo Trigger */}
+      <ABCFIDemoTrigger onDashboardTransition={handleDashboardTransition} />
     </>
   );
 }
