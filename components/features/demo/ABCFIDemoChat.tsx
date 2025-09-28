@@ -29,6 +29,10 @@ import {
   CheckCircle,
   UtensilsCrossed,
 } from "lucide-react";
+import { CampaignPlanCard } from "./CampaignPlanCard";
+import { GiftSelectionUI } from "./GiftSelectionUI";
+import { CustomerJourneyUI } from "./CustomerJourneyUI";
+import { PartnerNetworkUI } from "./PartnerNetworkUI";
 
 interface ABCFIDemoChatProps {
   isOpen: boolean;
@@ -41,7 +45,13 @@ interface Message {
   text: string;
   sender: "ai" | "user";
   timestamp: Date;
-  component?: "campaign-plan" | "mobile-experience" | "roi-model";
+  component?:
+    | "campaign-plan"
+    | "gift-selection"
+    | "customer-journey"
+    | "partner-network"
+    | "mobile-experience"
+    | "roi-model";
   data?: any;
 }
 
@@ -147,6 +157,20 @@ export function ABCFIDemoChat({
   const [cardScrollIndex, setCardScrollIndex] = useState(0);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [isCardSelecting, setIsCardSelecting] = useState(false);
+
+  // Clean Scene 2 Flow State
+  const [scene2Step, setScene2Step] = useState<
+    "plan" | "gift" | "journey" | "network" | "complete"
+  >("plan");
+  const [campaignConfig, setCampaignConfig] = useState({
+    gift: "home-depot",
+    giftAmount: 100,
+    notification: "congratulatory",
+    followupDays: 30,
+    partners: ["home-depot", "taskrabbit", "best-buy"] as string[],
+    projectedRevenue: 127,
+  });
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const cardsScrollRef = useRef<HTMLDivElement>(null);
   const mainContainerRef = useRef<HTMLDivElement>(null);
@@ -208,18 +232,29 @@ export function ABCFIDemoChat({
         },
       ];
     } else if (demoStep === "campaign") {
-      // Scene 3 & 4 - After campaign plan is shown
-      return [
-        {
-          text: "This is great. What will this cost and how much incremental revenue will it generate for us?",
-          action: "show_roi",
-        },
-        {
-          text: "Show me what the customer will see on their phone",
-          action: "show_mobile",
-        },
-        { text: "How do we launch this campaign?", action: "launch_campaign" },
-      ];
+      // Scene 2 - Simple progression suggestions
+      if (scene2Step === "complete") {
+        return [
+          {
+            text: "This is great. What will this cost and how much incremental revenue will it generate for us?",
+            action: "show_roi",
+          },
+          {
+            text: "Show me what the customer will see on their phone",
+            action: "show_mobile",
+          },
+          {
+            text: "How do we launch this campaign?",
+            action: "launch_campaign",
+          },
+        ];
+      } else {
+        return [
+          { text: "This looks good, let's continue", action: "continue_flow" },
+          { text: "What's the expected ROI?", action: "show_roi_preview" },
+          { text: "Show me the mobile experience", action: "show_mobile" },
+        ];
+      }
     } else {
       return [
         { text: "How do I launch this campaign?", action: "launch_campaign" },
@@ -239,6 +274,67 @@ export function ABCFIDemoChat({
     setTimeout(() => {
       handleSendMessage(suggestionText);
     }, 100);
+  };
+
+  // Clean Scene 2 Step-by-Step Handlers
+  const handleGiftSelection = (giftId: string, giftAmount: number) => {
+    setCampaignConfig((prev) => ({ ...prev, gift: giftId, giftAmount }));
+    setScene2Step("journey");
+
+    // Move to next step: Customer Journey
+    const aiMessage: Message = {
+      id: Date.now().toString(),
+      text: `Perfect! $${giftAmount} ${giftId.replace("-", " ")} gift configured. Now let's set up the customer journey:`,
+      sender: "ai",
+      timestamp: new Date(),
+      component: "customer-journey",
+      data: { selectedGift: giftId, giftAmount },
+    };
+    setMessages((prev) => [...prev, aiMessage]);
+  };
+
+  const handleJourneyConfiguration = (journeyConfig: any) => {
+    setCampaignConfig((prev) => ({
+      ...prev,
+      notification: journeyConfig.notification,
+      followupDays: journeyConfig.followupDays,
+    }));
+    setScene2Step("network");
+
+    // Move to final step: Partner Network
+    const aiMessage: Message = {
+      id: Date.now().toString(),
+      text: `Great! Customer journey configured with ${journeyConfig.followupDays}-day follow-up. Finally, let's optimize the partner network:`,
+      sender: "ai",
+      timestamp: new Date(),
+      component: "partner-network",
+      data: {
+        selectedGift: campaignConfig.gift,
+        giftAmount: campaignConfig.giftAmount,
+      },
+    };
+    setMessages((prev) => [...prev, aiMessage]);
+  };
+
+  const handleNetworkConfiguration = (
+    selectedPartners: string[],
+    projectedRevenue: number
+  ) => {
+    setCampaignConfig((prev) => ({
+      ...prev,
+      partners: selectedPartners,
+      projectedRevenue,
+    }));
+    setScene2Step("complete");
+
+    // Campaign complete
+    const aiMessage: Message = {
+      id: Date.now().toString(),
+      text: `🎉 Campaign configured successfully! Your "New Homeowner Welcome Campaign" is ready with ${selectedPartners.length} partners and $${projectedRevenue} projected revenue per customer.`,
+      sender: "ai",
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, aiMessage]);
   };
 
   // Update demo step based on user input
@@ -370,17 +466,41 @@ export function ABCFIDemoChat({
           (textToSend.toLowerCase().includes("home") ||
             textToSend.toLowerCase().includes("mortgage"))
         ) {
-          // Scene 2: AI-Powered Campaign Co-Creation
+          // Scene 2: AI-Powered Campaign Co-Creation - Clean Flow
           console.log(
-            "🔥 CAMPAIGN TRIGGER: Current demoStep:",
-            demoStep,
-            "Setting nextStep to campaign"
+            "🔥 SCENE 2 TRIGGER: Starting clean campaign creation flow"
           );
           aiResponse =
             "Excellent choice. That aligns perfectly with the mortgage team's goals. Based on our network data, new homeowners are highly receptive to welcome offers. Here is a campaign plan I've drafted.";
           nextStep = "campaign";
+          setScene2Step("plan");
 
-          // Campaign plan will be shown inline with the cards, no separate message needed
+          // Show campaign plan first, then start step-by-step configuration
+          setTimeout(() => {
+            const campaignPlanMessage: Message = {
+              id: (Date.now() + 2).toString(),
+              text: "",
+              sender: "ai",
+              timestamp: new Date(),
+              component: "campaign-plan",
+              data: { title: "New Homeowner Welcome Campaign" },
+            };
+            setMessages((prev) => [...prev, campaignPlanMessage]);
+
+            // Start step-by-step configuration
+            setTimeout(() => {
+              setScene2Step("gift");
+              const giftConfigMessage: Message = {
+                id: (Date.now() + 3).toString(),
+                text: "Let's configure this campaign step by step. First, let's set up the welcome gift amount and options:",
+                sender: "ai",
+                timestamp: new Date(),
+                component: "gift-selection",
+                data: {},
+              };
+              setMessages((prev) => [...prev, giftConfigMessage]);
+            }, 2000);
+          }, 1500);
         } else if (
           demoStep === "campaign" &&
           (textToSend.toLowerCase().includes("cost") ||
@@ -522,21 +642,80 @@ export function ABCFIDemoChat({
               </div>
 
               {/* Message Bubble */}
-              <div
-                className={`max-w-md px-4 py-3 rounded-2xl transition-all duration-500 ease-out transform ${
-                  message.sender === "ai"
-                    ? "bg-white/95 text-gray-800 shadow-lg border border-gray-200/50 animate-in slide-in-from-left-2 fade-in"
-                    : "bg-gray-800/80 text-white backdrop-blur-sm shadow-lg border border-white/20"
-                }`}
-              >
-                <p className="text-sm leading-relaxed">{message.text}</p>
-                <p className="text-xs opacity-70 mt-2">
-                  {message.timestamp.toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
-              </div>
+              {message.text && (
+                <div
+                  className={`max-w-md px-4 py-3 rounded-2xl transition-all duration-500 ease-out transform ${
+                    message.sender === "ai"
+                      ? "bg-white/95 text-gray-800 shadow-lg border border-gray-200/50 animate-in slide-in-from-left-2 fade-in"
+                      : "bg-gray-800/80 text-white backdrop-blur-sm shadow-lg border border-white/20"
+                  }`}
+                >
+                  <p className="text-sm leading-relaxed">{message.text}</p>
+                  <p className="text-xs opacity-70 mt-2">
+                    {message.timestamp.toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                </div>
+              )}
+
+              {/* Render UI Component if present - Full width below message */}
+              {message.component && (
+                <div className="mt-4 w-full animate-in slide-in-from-left-2 fade-in duration-500">
+                  {message.component === "campaign-plan" && (
+                    <div className="w-full">
+                      <CampaignPlanCard
+                        title={
+                          message.data?.title ||
+                          "New Homeowner Welcome Campaign"
+                        }
+                        isCompact={false}
+                        className="w-full"
+                      />
+                    </div>
+                  )}
+
+                  {message.component === "gift-selection" && (
+                    <div className="w-full">
+                      <GiftSelectionUI
+                        onGiftSelect={handleGiftSelection}
+                        className="w-full"
+                      />
+                    </div>
+                  )}
+
+                  {message.component === "customer-journey" && (
+                    <div className="w-full">
+                      <CustomerJourneyUI
+                        selectedGift={
+                          message.data?.selectedGift || campaignConfig.gift
+                        }
+                        giftAmount={
+                          message.data?.giftAmount || campaignConfig.giftAmount
+                        }
+                        onJourneyConfirm={handleJourneyConfiguration}
+                        className="w-full"
+                      />
+                    </div>
+                  )}
+
+                  {message.component === "partner-network" && (
+                    <div className="w-full">
+                      <PartnerNetworkUI
+                        selectedGift={
+                          message.data?.selectedGift || campaignConfig.gift
+                        }
+                        giftAmount={
+                          message.data?.giftAmount || campaignConfig.giftAmount
+                        }
+                        onNetworkConfirm={handleNetworkConfiguration}
+                        className="w-full"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ))}
 
@@ -652,106 +831,11 @@ export function ABCFIDemoChat({
                           >
                             {/* Campaign Plan Content */}
                             {card.id === "campaign-plan" ? (
-                              <div>
-                                {/* Header */}
-                                <div className="text-center mb-4">
-                                  <div
-                                    className={`w-10 h-10 rounded-xl ${card.color} flex items-center justify-center mx-auto mb-2 shadow-lg`}
-                                  >
-                                    <IconComponent className="w-5 h-5 text-white" />
-                                  </div>
-                                  <h3 className="text-lg font-bold text-gray-900 mb-1">
-                                    {card.title}
-                                  </h3>
-                                  <div className="flex justify-center gap-2">
-                                    <Badge className="bg-green-100 text-green-700 text-xs px-2 py-1">
-                                      Ready to Launch
-                                    </Badge>
-                                    <Badge className="bg-blue-100 text-blue-700 text-xs px-2 py-1">
-                                      High ROI
-                                    </Badge>
-                                  </div>
-                                </div>
-
-                                {/* Compact Campaign Sections */}
-                                <div className="space-y-3">
-                                  {/* The Offer */}
-                                  <div>
-                                    <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2 text-sm">
-                                      <Gift className="w-3 h-3 text-purple-600" />
-                                      $100 Gift Options
-                                    </h4>
-                                    <div className="grid grid-cols-3 gap-1">
-                                      <div className="bg-gray-50 rounded p-1 text-center">
-                                        <div className="text-sm">🏠</div>
-                                        <p className="text-xs">Home Depot</p>
-                                      </div>
-                                      <div className="bg-gray-50 rounded p-1 text-center">
-                                        <div className="text-sm">✨</div>
-                                        <p className="text-xs">Cleaning</p>
-                                      </div>
-                                      <div className="bg-gray-50 rounded p-1 text-center">
-                                        <div className="text-sm">🍽️</div>
-                                        <p className="text-xs">Dining</p>
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  {/* Customer Journey */}
-                                  <div>
-                                    <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2 text-sm">
-                                      <Users className="w-3 h-3 text-blue-600" />
-                                      Customer Journey
-                                    </h4>
-                                    <div className="flex items-center justify-between gap-1">
-                                      <div className="flex-1 text-center">
-                                        <div className="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-1">
-                                          <Gift className="w-3 h-3 text-white" />
-                                        </div>
-                                        <p className="text-xs">Select</p>
-                                      </div>
-                                      <div className="text-xs text-gray-400">
-                                        →
-                                      </div>
-                                      <div className="flex-1 text-center">
-                                        <div className="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-1">
-                                          <Sparkles className="w-3 h-3 text-white" />
-                                        </div>
-                                        <p className="text-xs">Deliver</p>
-                                      </div>
-                                      <div className="text-xs text-gray-400">
-                                        →
-                                      </div>
-                                      <div className="flex-1 text-center">
-                                        <div className="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-1">
-                                          <TrendingUp className="w-3 h-3 text-white" />
-                                        </div>
-                                        <p className="text-xs">Follow-up</p>
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  {/* Partners */}
-                                  <div>
-                                    <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2 text-sm">
-                                      <Target className="w-3 h-3 text-green-600" />
-                                      Partners
-                                    </h4>
-                                    <div className="flex justify-center gap-1">
-                                      {["🏠", "🔨", "📱", "🛋️", "🔧", "⭐"].map(
-                                        (logo, idx) => (
-                                          <div
-                                            key={idx}
-                                            className="w-5 h-5 bg-white rounded shadow-sm flex items-center justify-center text-xs"
-                                          >
-                                            {logo}
-                                          </div>
-                                        )
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
+                              <CampaignPlanCard
+                                title={card.title}
+                                isCompact={true}
+                                className="h-full"
+                              />
                             ) : (
                               /* Regular Journey Card Content */
                               <div>

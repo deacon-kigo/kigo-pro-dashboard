@@ -72,7 +72,6 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
   }>({});
   const [animationCompleted, setAnimationCompleted] = useState(false);
   const [homeLocationShown, setHomeLocationShown] = useState(false);
-  const [offerSequenceStep, setOfferSequenceStep] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -233,7 +232,6 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
     setMovingConversationStep(1);
     setAnimationCompleted(false); // Reset animation flag
     setHomeLocationShown(false); // Reset home location flag
-    setOfferSequenceStep(0); // Reset offer sequence
 
     // Step 1: Initial acknowledgment and first question
     setTimeout(() => {
@@ -305,16 +303,14 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
     if (homeLocationShown) return;
     setHomeLocationShown(true);
 
-    // Start the new offer sequence: U-Haul → Map → Hotel → Map → Storage
+    // Start the modular offer sequence
     setTimeout(() => {
-      startOfferSequence();
+      showUHaulOffer();
     }, 1000);
   };
 
-  const startOfferSequence = () => {
-    setOfferSequenceStep(1);
-
-    // Step 1: Show U-Haul offer
+  // Step 1: Show U-Haul offer
+  const showUHaulOffer = () => {
     const uHaulMessage: Message = {
       id: "uhaul-offer",
       text: "Perfect! Let me start with your moving logistics:",
@@ -324,7 +320,7 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
         type: "single-offer",
         data: {
           offer: {
-            id: "uhaul-bundle",
+            id: "uhaul-moving-package",
             title: "U-Haul Complete Moving Package",
             merchant: "U-Haul",
             logo: "/logos/U-Haul-logo.png",
@@ -338,94 +334,81 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
       },
     };
 
-    // Use functional state update to check for duplicates with current state
     setMessages((prev) => {
-      const hasUHaulMessage = prev.some((msg) => msg.id === "uhaul-offer");
-      if (hasUHaulMessage) return prev; // Return unchanged if duplicate
+      const hasMessage = prev.some((msg) => msg.id === "uhaul-offer");
+      if (hasMessage) return prev;
       return [...prev, uHaulMessage];
     });
 
-    // Continue sequence after delay - pass step 1 directly
+    // Add AI prompt to save the offer after a delay
     setTimeout(() => {
-      continueOfferSequence(1);
-    }, 3000);
+      showUHaulPrompt();
+    }, 2000);
   };
 
-  const continueOfferSequence = (currentStep?: number) => {
-    const step = currentStep || offerSequenceStep;
-
-    if (step === 1) {
-      // Step 2: Show Staybridge map (different coordinates from home)
-      showMerchantMap(
-        "staybridge",
-        "Staybridge Suites",
-        "8101 E Northfield Blvd, Denver, CO 80238",
-        { lat: 39.785, lng: -104.895 }
-      );
-    } else if (step === 2) {
-      // Step 3: Show Staybridge offer
-      showStaybridgeOffer();
-    } else if (step === 3) {
-      // Step 4: Show Storage map (different coordinates from home)
-      showMerchantMap(
-        "storage",
-        "Extra Space Storage",
-        "5062 Central Park Blvd, Denver, CO 80238",
-        { lat: 39.778, lng: -104.885 }
-      );
-    } else if (step === 4) {
-      // Step 5: Show Storage offer
-      showStorageOffer();
-    }
-  };
-
-  const showMerchantMap = (
-    merchantType: string,
-    merchantName: string,
-    merchantAddress: string,
-    merchantCoords: { lat: number; lng: number }
-  ) => {
-    const mapId = `${merchantType}-map`;
-
-    const mapMessage: Message = {
-      id: mapId,
-      text: `Here's how close ${merchantName} is to your home:`,
+  // Step 1.5: AI prompt to save U-Haul offer
+  const showUHaulPrompt = () => {
+    const promptMessage: Message = {
+      id: "uhaul-prompt",
+      text: "This moving package could save you $200 on your Kansas City to Denver move! Would you like me to save this to your Kigo Hub?",
       sender: "ai",
       timestamp: new Date(),
-      uiComponent: {
-        type: "merchant-location-map",
-        data: {
-          homeAddress: "4988 Valentia Ct, Denver, CO 80238",
-          homeCoordinates: { lat: 39.7817, lng: -104.8897 },
-          merchantName,
-          merchantAddress,
-          merchantCoordinates: merchantCoords,
-        },
-      },
     };
 
-    // Use functional state update to check for duplicates with current state
     setMessages((prev) => {
-      const hasMapMessage = prev.some((msg) => msg.id === mapId);
-      if (hasMapMessage) return prev; // Return unchanged if duplicate
-      return [...prev, mapMessage];
+      const hasMessage = prev.some((msg) => msg.id === "uhaul-prompt");
+      if (hasMessage) return prev;
+      return [...prev, promptMessage];
     });
-
-    const nextStep = offerSequenceStep + 1;
-    setOfferSequenceStep(nextStep);
-
-    setTimeout(() => {
-      continueOfferSequence(nextStep);
-    }, 4000);
   };
 
-  const showStaybridgeOffer = () => {
-    const nextStep = offerSequenceStep + 1;
-    setOfferSequenceStep(nextStep);
+  // Step 2: Handle U-Haul offer save and show savings update
+  const handleUHaulSave = () => {
+    const savingsMessage: Message = {
+      id: "uhaul-savings",
+      text: "Great choice! You've saved $200 on your moving logistics.",
+      sender: "ai",
+      timestamp: new Date(),
+    };
 
-    const hotelMessage: Message = {
+    setMessages((prev) => {
+      const hasMessage = prev.some((msg) => msg.id === "uhaul-savings");
+      if (hasMessage) return prev;
+      return [...prev, savingsMessage];
+    });
+
+    // Move to next step after delay
+    setTimeout(() => {
+      showStaybridgeTransition();
+    }, 2000);
+  };
+
+  // Step 2.5: Natural transition to Staybridge
+  const showStaybridgeTransition = () => {
+    const transitionMessage: Message = {
+      id: "staybridge-transition",
+      text: "Now, for your moving period, you'll need a comfortable place to stay while you get settled. Here's a perfect option for you:",
+      sender: "ai",
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => {
+      const hasMessage = prev.some((msg) => msg.id === "staybridge-transition");
+      if (hasMessage) return prev;
+      return [...prev, transitionMessage];
+    });
+
+    // Show Staybridge offer after delay
+    setTimeout(() => {
+      showStaybridgeOffer();
+    }, 2000);
+  };
+
+  // Step 3: Show Staybridge offer
+  const showStaybridgeOffer = () => {
+    const staybridgeMessage: Message = {
       id: "staybridge-offer",
-      text: "Perfect for your moving period:",
+      text: "",
       sender: "ai",
       timestamp: new Date(),
       uiComponent: {
@@ -435,7 +418,7 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
             id: "staybridge-hotel",
             title: "Staybridge Suites Denver",
             merchant: "Staybridge Suites",
-            logo: "/logos/staybridge-logo.png",
+            logo: "/logos/staybridge_logo_english.png",
             price: "$129/night",
             savings: "Save $70/night",
             description: "Extended stay hotel for your moving period",
@@ -446,25 +429,80 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
       },
     };
 
-    // Use functional state update to check for duplicates with current state
     setMessages((prev) => {
-      const hasOfferMessage = prev.some((msg) => msg.id === "staybridge-offer");
-      if (hasOfferMessage) return prev; // Return unchanged if duplicate
-      return [...prev, hotelMessage];
+      const hasMessage = prev.some((msg) => msg.id === "staybridge-offer");
+      if (hasMessage) return prev;
+      return [...prev, staybridgeMessage];
     });
 
+    // Automatically show map after displaying the offer
     setTimeout(() => {
-      continueOfferSequence(nextStep);
+      showStaybridgeMap();
     }, 3000);
   };
 
-  const showStorageOffer = () => {
-    const nextStep = offerSequenceStep + 1;
-    setOfferSequenceStep(nextStep);
+  // Step 4: Handle Staybridge offer save (map already shown)
+  const handleStaybridgeSave = () => {
+    // Map is already displayed, just continue to storage
+    setTimeout(() => {
+      showStorageTransition();
+    }, 1000);
+  };
 
+  // Step 5: Show Staybridge map
+  const showStaybridgeMap = () => {
+    const mapMessage: Message = {
+      id: "staybridge-map",
+      text: "Here's how close Staybridge Suites is to your new home:",
+      sender: "ai",
+      timestamp: new Date(),
+      uiComponent: {
+        type: "merchant-location-map",
+        data: {
+          homeAddress: "4988 Valentia Ct, Denver, CO 80238",
+          homeCoordinates: { lat: 39.7817, lng: -104.8897 },
+          merchantName: "Staybridge Suites",
+          merchantAddress: "8101 E Northfield Blvd, Denver, CO 80238",
+          merchantCoordinates: { lat: 39.785, lng: -104.895 },
+        },
+      },
+    };
+
+    setMessages((prev) => {
+      const hasMessage = prev.some((msg) => msg.id === "staybridge-map");
+      if (hasMessage) return prev;
+      return [...prev, mapMessage];
+    });
+
+    // Map is now displayed, waiting for user to save the offer
+  };
+
+  // Step 5.5: Natural transition to Storage
+  const showStorageTransition = () => {
+    const transitionMessage: Message = {
+      id: "storage-transition",
+      text: "Finally, you'll need secure storage for your belongings during the move. Here's a great option near your new home:",
+      sender: "ai",
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => {
+      const hasMessage = prev.some((msg) => msg.id === "storage-transition");
+      if (hasMessage) return prev;
+      return [...prev, transitionMessage];
+    });
+
+    // Show Storage offer after delay
+    setTimeout(() => {
+      showStorageOffer();
+    }, 2000);
+  };
+
+  // Step 6: Show Storage offer
+  const showStorageOffer = () => {
     const storageMessage: Message = {
       id: "storage-offer",
-      text: "And finally, secure storage for your belongings:",
+      text: "",
       sender: "ai",
       timestamp: new Date(),
       uiComponent: {
@@ -474,7 +512,7 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
             id: "extra-space-storage",
             title: "Extra Space Storage",
             merchant: "Extra Space Storage",
-            logo: "/logos/extra-space-storage-logo.png",
+            logo: "/logos/extra_space_storage_logo.png",
             price: "$89/month",
             savings: "First month FREE",
             description: "Secure storage near your new Denver home",
@@ -485,16 +523,127 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
       },
     };
 
-    // Use functional state update to check for duplicates with current state
     setMessages((prev) => {
-      const hasOfferMessage = prev.some((msg) => msg.id === "storage-offer");
-      if (hasOfferMessage) return prev; // Return unchanged if duplicate
+      const hasMessage = prev.some((msg) => msg.id === "storage-offer");
+      if (hasMessage) return prev;
       return [...prev, storageMessage];
     });
 
+    // Automatically show map after displaying the offer
     setTimeout(() => {
-      setConversationSequenceComplete(true);
-    }, 2000);
+      showStorageMap();
+    }, 3000);
+  };
+
+  // Step 7: Handle Storage offer save (map already shown)
+  const handleStorageSave = () => {
+    // Map is already displayed, show final wrap-up
+    setTimeout(() => {
+      showFinalWrapUp();
+    }, 1000);
+  };
+
+  // Step 8: Final wrap-up conversation
+  const showFinalWrapUp = () => {
+    const anythingElseMessage: Message = {
+      id: "anything-else",
+      text: "Anything else I can help you with?",
+      sender: "ai",
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => {
+      const hasMessage = prev.some((msg) => msg.id === "anything-else");
+      if (hasMessage) return prev;
+      return [...prev, anythingElseMessage];
+    });
+
+    // Add user response after delay
+    setTimeout(() => {
+      const userResponse: Message = {
+        id: "user-move-response",
+        text: "Yes the move...",
+        sender: "user",
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => {
+        const hasMessage = prev.some((msg) => msg.id === "user-move-response");
+        if (hasMessage) return prev;
+        return [...prev, userResponse];
+      });
+
+      // Show final savings summary
+      setTimeout(() => {
+        showFinalSavingsSummary();
+      }, 2000);
+    }, 3000);
+  };
+
+  // Step 9: Final savings summary
+  const showFinalSavingsSummary = () => {
+    const totalSavingsAmount = 200 + 70 + 89; // U-Haul + Hotel + Storage savings
+    const finalMessage: Message = {
+      id: "final-savings-summary",
+      text: `Looks like you've got most of the bases covered for planning your move. You're expected to save $${totalSavingsAmount}.00 and earn 10,000 points once you book the U-haul, storage and hotel with your ABC FI rewards credit card.\n\nIs there anything else I can help you with today?`,
+      sender: "ai",
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => {
+      const hasMessage = prev.some((msg) => msg.id === "final-savings-summary");
+      if (hasMessage) return prev;
+      return [...prev, finalMessage];
+    });
+
+    // Add final user response
+    setTimeout(() => {
+      const finalUserResponse: Message = {
+        id: "final-user-response",
+        text: "Wow! You made this so easy. Thanks. I think that's it for now.",
+        sender: "user",
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => {
+        const hasMessage = prev.some((msg) => msg.id === "final-user-response");
+        if (hasMessage) return prev;
+        return [...prev, finalUserResponse];
+      });
+
+      // Complete the sequence
+      setTimeout(() => {
+        setConversationSequenceComplete(true);
+      }, 2000);
+    }, 4000);
+  };
+
+  // Step 8: Show Storage map and complete sequence
+  const showStorageMap = () => {
+    const mapMessage: Message = {
+      id: "storage-map",
+      text: "Here's how close Extra Space Storage is to your new home:",
+      sender: "ai",
+      timestamp: new Date(),
+      uiComponent: {
+        type: "merchant-location-map",
+        data: {
+          homeAddress: "4988 Valentia Ct, Denver, CO 80238",
+          homeCoordinates: { lat: 39.7817, lng: -104.8897 },
+          merchantName: "Extra Space Storage",
+          merchantAddress: "5062 Central Park Blvd, Denver, CO 80238",
+          merchantCoordinates: { lat: 39.778, lng: -104.885 },
+        },
+      },
+    };
+
+    setMessages((prev) => {
+      const hasMessage = prev.some((msg) => msg.id === "storage-map");
+      if (hasMessage) return prev;
+      return [...prev, mapMessage];
+    });
+
+    // Map is now displayed, waiting for user to save the offer
   };
 
   const handleMovingAnswer = (answer: string, questionType: string) => {
@@ -900,21 +1049,30 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
     const savingsAmount = parseInt(offer.savings.replace(/[^0-9]/g, ""));
     setTotalSavings((prev) => prev + savingsAmount);
 
-    // Add a confirmation message
-    const confirmationMessage: Message = {
-      id: Date.now().toString(),
-      text: `✅ Great choice! I've saved the ${offer.title} deal to your Kigo Hub. You'll save ${offer.savings}!`,
-      sender: "ai",
-      timestamp: new Date(),
-    };
+    // Handle specific offer flows based on offer ID
+    if (offer.id === "uhaul-moving-package") {
+      handleUHaulSave();
+    } else if (offer.id === "staybridge-hotel") {
+      handleStaybridgeSave();
+    } else if (offer.id === "extra-space-storage") {
+      handleStorageSave();
+    } else {
+      // Default confirmation message for other offers
+      const confirmationMessage: Message = {
+        id: Date.now().toString(),
+        text: `✅ Great choice! I've saved the ${offer.title} deal to your Kigo Hub. You'll save ${offer.savings}!`,
+        sender: "ai",
+        timestamp: new Date(),
+      };
 
-    setMessages((prev) => [...prev, confirmationMessage]);
+      setMessages((prev) => [...prev, confirmationMessage]);
 
-    // Progress to next phase if enough offers saved
-    if (savedOffers.length >= 2) {
-      setTimeout(() => {
-        progressToNextPhase();
-      }, 1500);
+      // Progress to next phase if enough offers saved
+      if (savedOffers.length >= 2) {
+        setTimeout(() => {
+          progressToNextPhase();
+        }, 1500);
+      }
     }
   };
 
