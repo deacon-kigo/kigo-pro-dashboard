@@ -72,18 +72,61 @@ const stateColors: { [key: string]: string } = {
   "16": "#93c5fd", // Idaho
 };
 
-// Major cities with partner presence
+// Major cities with MASSIVE partner presence - showing serious network scale
 const majorCities = [
-  { name: "New York", coordinates: [-74.006, 40.7128], partners: 1200 },
-  { name: "Los Angeles", coordinates: [-118.2437, 34.0522], partners: 980 },
-  { name: "Chicago", coordinates: [-87.6298, 41.8781], partners: 750 },
-  { name: "Houston", coordinates: [-95.3698, 29.7604], partners: 650 },
-  { name: "Phoenix", coordinates: [-112.074, 33.4484], partners: 420 },
-  { name: "Philadelphia", coordinates: [-75.1652, 39.9526], partners: 580 },
-  { name: "San Antonio", coordinates: [-98.4936, 29.4241], partners: 380 },
-  { name: "San Diego", coordinates: [-117.1611, 32.7157], partners: 450 },
-  { name: "Dallas", coordinates: [-96.797, 32.7767], partners: 520 },
-  { name: "San Jose", coordinates: [-121.8863, 37.3382], partners: 340 },
+  { name: "New York", coordinates: [-74.006, 40.7128], partners: 4200 },
+  { name: "Los Angeles", coordinates: [-118.2437, 34.0522], partners: 3800 },
+  { name: "Chicago", coordinates: [-87.6298, 41.8781], partners: 2850 },
+  { name: "Houston", coordinates: [-95.3698, 29.7604], partners: 2420 },
+  { name: "Phoenix", coordinates: [-112.074, 33.4484], partners: 1950 },
+  { name: "Philadelphia", coordinates: [-75.1652, 39.9526], partners: 2180 },
+  { name: "San Antonio", coordinates: [-98.4936, 29.4241], partners: 1620 },
+  { name: "San Diego", coordinates: [-117.1611, 32.7157], partners: 1580 },
+  { name: "Dallas", coordinates: [-96.797, 32.7767], partners: 2690 },
+  { name: "San Jose", coordinates: [-121.8863, 37.3382], partners: 1840 },
+  { name: "Austin", coordinates: [-97.7431, 30.2672], partners: 1650 },
+  { name: "Jacksonville", coordinates: [-81.6557, 30.3322], partners: 980 },
+  { name: "Fort Worth", coordinates: [-97.3208, 32.7555], partners: 1420 },
+  { name: "Columbus", coordinates: [-82.9988, 39.9612], partners: 1180 },
+  { name: "Charlotte", coordinates: [-80.8431, 35.2271], partners: 1350 },
+  { name: "San Francisco", coordinates: [-122.4194, 37.7749], partners: 2200 },
+  { name: "Indianapolis", coordinates: [-86.1581, 39.7684], partners: 1050 },
+  { name: "Seattle", coordinates: [-122.3321, 47.6062], partners: 1890 },
+  { name: "Denver", coordinates: [-104.9903, 39.7392], partners: 1720 },
+  { name: "Washington DC", coordinates: [-77.0369, 38.9072], partners: 2100 },
+  { name: "Boston", coordinates: [-71.0589, 42.3601], partners: 1950 },
+  { name: "El Paso", coordinates: [-106.485, 31.7619], partners: 680 },
+  { name: "Detroit", coordinates: [-83.0458, 42.3314], partners: 1240 },
+  { name: "Nashville", coordinates: [-86.7816, 36.1627], partners: 1150 },
+  { name: "Portland", coordinates: [-122.6784, 45.5152], partners: 1380 },
+  { name: "Oklahoma City", coordinates: [-97.5164, 35.4676], partners: 820 },
+  { name: "Las Vegas", coordinates: [-115.1398, 36.1699], partners: 1450 },
+  { name: "Louisville", coordinates: [-85.7585, 38.2527], partners: 750 },
+  { name: "Baltimore", coordinates: [-76.6122, 39.2904], partners: 1180 },
+  { name: "Milwaukee", coordinates: [-87.9065, 43.0389], partners: 890 },
+  { name: "Albuquerque", coordinates: [-106.6504, 35.0844], partners: 620 },
+  { name: "Tucson", coordinates: [-110.9265, 32.2226], partners: 580 },
+  { name: "Fresno", coordinates: [-119.7871, 36.7378], partners: 520 },
+  { name: "Sacramento", coordinates: [-121.4686, 38.5816], partners: 780 },
+  { name: "Kansas City", coordinates: [-94.5786, 39.0997], partners: 920 },
+  { name: "Mesa", coordinates: [-111.8315, 33.4152], partners: 650 },
+  { name: "Atlanta", coordinates: [-84.388, 33.749], partners: 2180 },
+  {
+    name: "Colorado Springs",
+    coordinates: [-104.8214, 38.8339],
+    partners: 580,
+  },
+  { name: "Raleigh", coordinates: [-78.6382, 35.7796], partners: 920 },
+  { name: "Omaha", coordinates: [-95.998, 41.2524], partners: 480 },
+  { name: "Miami", coordinates: [-80.1918, 25.7617], partners: 1850 },
+  { name: "Long Beach", coordinates: [-118.1937, 33.7701], partners: 720 },
+  { name: "Virginia Beach", coordinates: [-75.978, 36.8529], partners: 650 },
+  { name: "Oakland", coordinates: [-122.2711, 37.8044], partners: 890 },
+  { name: "Minneapolis", coordinates: [-93.265, 44.9778], partners: 1320 },
+  { name: "Tulsa", coordinates: [-95.9928, 36.154], partners: 520 },
+  { name: "Tampa", coordinates: [-82.4572, 27.9506], partners: 1180 },
+  { name: "Arlington", coordinates: [-97.1081, 32.7357], partners: 680 },
+  { name: "New Orleans", coordinates: [-90.0715, 29.9511], partners: 850 },
 ];
 
 interface USCoverageMapProps {
@@ -196,7 +239,7 @@ export function USCoverageMap({ className = "" }: USCoverageMapProps) {
                 className="w-2 h-2 rounded-full"
                 style={{ backgroundColor: "#ef4444" }}
               ></div>
-              <span className="text-gray-700">Partner Hubs</span>
+              <span className="text-gray-700">50K+ Partner Locations</span>
             </div>
           </div>
         </div>

@@ -264,12 +264,20 @@ export function CampaignPlanCard({
               { name: "Lowe's", logo: "🔨" },
               { name: "Best Buy", logo: "📱" },
               { name: "Wayfair", logo: "🛋️" },
-              { name: "TaskRabbit", logo: "🔧" },
+              { name: "TaskRabbit", logo: "/logos/task-rabbit_logo.svg" },
               { name: "Yelp", logo: "⭐" },
             ].map((partner, idx) => (
               <div key={idx} className="text-center">
                 <div className="w-16 h-16 bg-white rounded-xl shadow-sm flex items-center justify-center mx-auto mb-2 text-2xl">
-                  {partner.logo}
+                  {partner.logo.startsWith("/logos/") ? (
+                    <img
+                      src={partner.logo}
+                      alt={partner.name}
+                      className="w-12 h-8 object-contain"
+                    />
+                  ) : (
+                    partner.logo
+                  )}
                 </div>
                 <p className="text-xs font-medium text-gray-700">
                   {partner.name}

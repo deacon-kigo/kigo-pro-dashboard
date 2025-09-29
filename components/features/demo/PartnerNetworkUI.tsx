@@ -84,7 +84,7 @@ const PARTNER_NETWORK: Partner[] = [
     id: "taskrabbit",
     name: "TaskRabbit",
     category: "Home Services",
-    logo: "🔧",
+    logo: "/logos/task-rabbit_logo.svg",
     revenuePerCustomer: "$25-45",
     conversionRate: "82%",
     tier: "standard",

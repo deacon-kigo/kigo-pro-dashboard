@@ -130,7 +130,7 @@ export default function ABCFIDemo() {
         <div className="bg-black rounded-[2.5rem] p-2 shadow-2xl">
           <div className="bg-white rounded-[2rem] overflow-hidden h-[800px] relative">
             {/* Demo Navigation - Inside Phone */}
-            <div className="absolute top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 p-2">
+            <div className="absolute top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 p-2 hidden">
               <div className="flex gap-1 overflow-x-auto scrollbar-hide">
                 {demoSteps.map((step, index) => (
                   <button
@@ -153,7 +153,7 @@ export default function ABCFIDemo() {
 
             {/* Dismissible Notification Overlay */}
             {showNotification && (
-              <div className="absolute top-16 left-4 right-4 z-40">
+              <div className="absolute top-16 left-4 right-4 z-40 hidden">
                 <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4">
                   <div className="flex items-start gap-3">
                     {/* ABC FI Logo */}

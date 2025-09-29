@@ -90,7 +90,7 @@ export function CampaignPlanView({
     { name: "Lowe's", logo: "🔨" },
     { name: "Best Buy", logo: "📱" },
     { name: "Wayfair", logo: "🛋️" },
-    { name: "TaskRabbit", logo: "🔧" },
+    { name: "TaskRabbit", logo: "/logos/task-rabbit_logo.svg" },
     { name: "Yelp", logo: "⭐" },
   ];
 
