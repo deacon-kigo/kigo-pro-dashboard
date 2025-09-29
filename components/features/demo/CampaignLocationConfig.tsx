@@ -1,7 +1,16 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { MapPin, Target, Zap, CheckCircle, ArrowRight } from "lucide-react";
+import {
+  MapPin,
+  Target,
+  Zap,
+  CheckCircle,
+  ArrowRight,
+  Users,
+  Globe,
+  Settings,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DenverHomeLocation } from "./DenverHomeLocation";
 import { MerchantLocationMap } from "./MerchantLocationMap";
@@ -18,6 +27,8 @@ interface ConfigStep {
   title: string;
   description: string;
   status: "pending" | "configuring" | "completed";
+  icon: React.ComponentType<{ className?: string }>;
+  color: string;
 }
 
 export function CampaignLocationConfig({
@@ -36,18 +47,24 @@ export function CampaignLocationConfig({
       description:
         "AI analyzing new homeowner behavior patterns across all markets",
       status: "configuring",
+      icon: Users,
+      color: "blue",
     },
     {
       id: "location-mapping",
       title: "Partner Network Mapping",
       description: "Mapping nationwide merchant partner network",
       status: "pending",
+      icon: Globe,
+      color: "green",
     },
     {
       id: "offer-optimization",
       title: "Hyper-Local Personalization",
       description: "Configuring location-based offer personalization engine",
       status: "pending",
+      icon: Settings,
+      color: "purple",
     },
   ]);
 
@@ -186,22 +203,26 @@ export function CampaignLocationConfig({
             {/* Status Icon */}
             <div
               className={`
-              w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
+              w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0
               ${
                 step.status === "completed"
                   ? "bg-green-500"
                   : step.status === "configuring"
-                    ? "bg-blue-500"
+                    ? step.color === "blue"
+                      ? "bg-blue-500"
+                      : step.color === "green"
+                        ? "bg-green-500"
+                        : "bg-purple-500"
                     : "bg-gray-300"
               }
             `}
             >
               {step.status === "completed" ? (
-                <CheckCircle className="w-4 h-4 text-white" />
+                <CheckCircle className="w-5 h-5 text-white" />
               ) : step.status === "configuring" ? (
-                <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
+                <step.icon className={`w-5 h-5 text-white animate-pulse`} />
               ) : (
-                <div className="w-3 h-3 bg-white rounded-full opacity-50" />
+                <step.icon className="w-5 h-5 text-gray-500" />
               )}
             </div>
 
