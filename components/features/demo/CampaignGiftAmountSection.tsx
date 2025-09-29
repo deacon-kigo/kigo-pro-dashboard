@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { Gift, DollarSign, CheckCircle, Sparkles } from "lucide-react";
+import {
+  Gift,
+  DollarSign,
+  CheckCircle,
+  Sparkles,
+  UtensilsCrossed,
+} from "lucide-react";
 
 interface CampaignGiftAmountSectionProps {
   onAmountSet: (amount: number) => void;
@@ -101,51 +107,102 @@ export function CampaignGiftAmountSection({
         </div>
       </div>
 
-      {/* Gift Preview */}
+      {/* Gift Preview with AI Insights */}
       <div className="mb-4 p-4 bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 rounded-xl border border-purple-200 shadow-sm">
         <h4 className="font-semibold text-purple-900 text-sm mb-3 flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-purple-600" />
-          Customer Will Choose From
+          AI-Recommended Gift Options
         </h4>
-        <div className="grid grid-cols-3 gap-3 text-xs">
-          <div className="text-center p-2 bg-white rounded-lg shadow-sm border border-orange-100">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-2 shadow-md"
-              style={{ backgroundColor: "#f97316" }}
-            >
-              <Gift className="w-5 h-5 text-white" />
+        <div className="space-y-3">
+          <div className="p-3 bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="flex items-start gap-3">
+              <div className="w-14 h-14 rounded-xl flex items-center justify-center shadow-md flex-shrink-0 bg-white border border-gray-100">
+                <img
+                  src="/logos/home-depot-logo.png"
+                  alt="Home Depot"
+                  className="w-12 h-12 object-contain"
+                />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-start justify-between mb-1">
+                  <div className="font-semibold text-gray-900 text-sm">
+                    ${giftAmount} Home Depot Gift Card
+                  </div>
+                  <div className="text-right">
+                    <div className="text-orange-600 font-bold text-lg">78%</div>
+                    <div className="text-xs text-gray-500">adoption rate</div>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-600 mb-2">
+                  Perfect for home improvement needs
+                </div>
+                <div className="text-xs text-blue-800 bg-gradient-to-r from-blue-50 to-indigo-50 rounded px-2 py-1 border border-blue-200">
+                  <strong>AI Insight:</strong> 78% of new homeowners visit a
+                  home improvement store within 30 days of moving
+                </div>
+              </div>
             </div>
-            <div className="font-semibold text-gray-900 text-sm">
-              ${giftAmount} Home Depot
-            </div>
-            <div className="text-gray-600">Gift Card</div>
-            <div className="text-orange-600 font-medium mt-1">🏠 78%</div>
           </div>
-          <div className="text-center p-2 bg-white rounded-lg shadow-sm border border-blue-100">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-2 shadow-md"
-              style={{ backgroundColor: "#3b82f6" }}
-            >
-              <Sparkles className="w-5 h-5 text-white" />
+
+          <div className="p-3 bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="flex items-start gap-3">
+              <div className="w-14 h-14 rounded-xl flex items-center justify-center shadow-md flex-shrink-0 bg-white border border-gray-100">
+                <img
+                  src="/logos/williams_sonoma_logo.svg"
+                  alt="Williams Sonoma"
+                  className="w-12 h-12 object-contain"
+                />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-start justify-between mb-1">
+                  <div className="font-semibold text-gray-900 text-sm">
+                    ${giftAmount} Williams Sonoma Gift Card
+                  </div>
+                  <div className="text-right">
+                    <div className="text-blue-600 font-bold text-lg">65%</div>
+                    <div className="text-xs text-gray-500">adoption rate</div>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-600 mb-2">
+                  Premium kitchen and home essentials
+                </div>
+                <div className="text-xs text-blue-800 bg-gradient-to-r from-blue-50 to-indigo-50 rounded px-2 py-1 border border-blue-200">
+                  <strong>AI Insight:</strong> 65% of relocating families hire a
+                  cleaning service within their first month
+                </div>
+              </div>
             </div>
-            <div className="font-semibold text-gray-900 text-sm">
-              ${giftAmount} Cleaning
-            </div>
-            <div className="text-gray-600">Service</div>
-            <div className="text-blue-600 font-medium mt-1">✨ 65%</div>
           </div>
-          <div className="text-center p-2 bg-white rounded-lg shadow-sm border border-green-100">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-2 shadow-md"
-              style={{ backgroundColor: "#10b981" }}
-            >
-              <DollarSign className="w-5 h-5 text-white" />
+
+          <div className="p-3 bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="flex items-start gap-3">
+              <div className="w-14 h-14 rounded-xl flex items-center justify-center shadow-md flex-shrink-0 bg-white border border-gray-100">
+                <div
+                  className="w-12 h-12 rounded-lg flex items-center justify-center"
+                  style={{ backgroundColor: "#10b981" }}
+                >
+                  <UtensilsCrossed className="w-8 h-8 text-white" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-start justify-between mb-1">
+                  <div className="font-semibold text-gray-900 text-sm">
+                    ${giftAmount} Local Dining Experience
+                  </div>
+                  <div className="text-right">
+                    <div className="text-green-600 font-bold text-lg">84%</div>
+                    <div className="text-xs text-gray-500">adoption rate</div>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-600 mb-2">
+                  Explore local dining options
+                </div>
+                <div className="text-xs text-blue-800 bg-gradient-to-r from-blue-50 to-indigo-50 rounded px-2 py-1 border border-blue-200">
+                  <strong>AI Insight:</strong> 84% of new residents explore
+                  local dining options within the first two weeks
+                </div>
+              </div>
             </div>
-            <div className="font-semibold text-gray-900 text-sm">
-              ${giftAmount} Dining
-            </div>
-            <div className="text-gray-600">Experience</div>
-            <div className="text-green-600 font-medium mt-1">🍽️ 84%</div>
           </div>
         </div>
       </div>

@@ -245,7 +245,15 @@ export default function JourneyDiscoveryDashboard({
                       tickLine={false}
                       tick={{ fontSize: 11, fill: "#64748b" }}
                     />
-                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          className="bg-white border border-gray-200 shadow-lg rounded-lg p-3"
+                          labelClassName="text-gray-900 font-medium"
+                          valueClassName="text-gray-700"
+                        />
+                      }
+                    />
                     <Area
                       type="monotone"
                       dataKey="triggers"
@@ -270,6 +278,22 @@ export default function JourneyDiscoveryDashboard({
                   </AreaChart>
                 </ResponsiveContainer>
               </ChartContainer>
+
+              {/* Chart Legend */}
+              <div className="flex justify-center gap-6 mt-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                  <span className="text-xs text-gray-600">Triggers</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <span className="text-xs text-gray-600">Engagement</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+                  <span className="text-xs text-gray-600">Conversion</span>
+                </div>
+              </div>
             </div>
 
             {/* Key Metrics Sidebar - Fixed Width */}
@@ -278,28 +302,28 @@ export default function JourneyDiscoveryDashboard({
               <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-3 border border-blue-200">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-medium text-blue-700">
-                    Peak Week
+                    Redemptions peak at 755K in week 5
                   </span>
                   <Badge className="bg-blue-600 text-white text-xs">
-                    Week 7
+                    Week 5
                   </Badge>
                 </div>
                 <div className="text-lg font-bold text-blue-900">178</div>
                 <div className="text-xs text-blue-600">triggers generated</div>
               </div>
 
-              {/* Conversion Rate */}
+              {/* Avg Weekly Redemptions */}
               <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-3 border border-green-200">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-medium text-green-700">
                     Avg Weekly Redemptions
                   </span>
                   <Badge className="bg-green-600 text-white text-xs">
-                    37.6%
+                    +12%
                   </Badge>
                 </div>
-                <div className="text-lg font-bold text-green-900">67</div>
-                <div className="text-xs text-green-600">weekly conversions</div>
+                <div className="text-lg font-bold text-green-900">700K</div>
+                <div className="text-xs text-green-600">Trailing 90 Days</div>
               </div>
 
               {/* Growth Trend */}

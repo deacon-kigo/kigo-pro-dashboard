@@ -1644,16 +1644,16 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
 
       case "scheduled-message-indicator":
         return (
-          <div className="mt-4 relative">
-            {/* Decorative background pattern */}
-            <div className="absolute inset-0 bg-gradient-to-br from-coral/10 to-purple/10 rounded-2xl transform rotate-1"></div>
-            <div className="relative bg-white border-2 border-coral/20 rounded-2xl p-5 shadow-lg">
+          <div className="mt-3 relative">
+            {/* Subtle decorative background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 rounded-xl transform rotate-0.5"></div>
+            <div className="relative bg-white border border-blue-100 rounded-xl p-4 shadow-sm">
               {/* Header with icon and title */}
               <div className="flex items-center space-x-3 mb-3">
                 <div className="relative">
-                  <div className="w-12 h-12 bg-gradient-to-br from-coral to-red rounded-xl flex items-center justify-center shadow-md">
+                  <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
                     <svg
-                      className="w-6 h-6 text-white"
+                      className="w-5 h-5 text-blue-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -1666,18 +1666,17 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                       />
                     </svg>
                   </div>
-                  {/* Animated pulse ring */}
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-ping"></div>
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full"></div>
+                  {/* Subtle pulse indicator */}
+                  <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center space-x-2 mb-1">
-                    <h4 className="text-base font-bold text-gray-900">
+                    <h4 className="text-sm font-semibold text-gray-800">
                       📅 Follow-up Scheduled
                     </h4>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-gradient-to-r from-coral to-red text-white shadow-sm">
+                    <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
                       {component.data.scheduledDate}
                     </span>
                     <span className="text-xs text-gray-500">
@@ -1688,23 +1687,19 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
               </div>
 
               {/* Message content */}
-              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                <p className="text-sm text-gray-700 font-medium">
+              <div className="bg-gray-50/70 rounded-lg p-3 border border-gray-100/50">
+                <p className="text-sm text-gray-700">
                   {component.data.message}
                 </p>
               </div>
 
-              {/* Bottom status indicator */}
-              <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+              {/* Simple bottom status */}
+              <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-100/50">
                 <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-xs font-medium text-green-600">
-                    Active
-                  </span>
+                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-xs text-green-600">Active</span>
                 </div>
-                <div className="text-xs text-gray-400">
-                  ✨ Powered by AI Assistant
-                </div>
+                <div className="text-xs text-gray-400">AI Assistant</div>
               </div>
             </div>
           </div>
