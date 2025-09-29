@@ -14,6 +14,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { DenverHomeLocation } from "./DenverHomeLocation";
 import { MerchantLocationMap } from "./MerchantLocationMap";
+import { USCoverageMap } from "./USCoverageMap";
 
 interface CampaignLocationConfigProps {
   giftAmount: number;
@@ -292,29 +293,16 @@ export function CampaignLocationConfig({
           </div>
         </div>
 
-        {/* Coverage Metrics */}
+        {/* Coverage Map */}
         {showHomeLocation && (
           <div className="animate-in slide-in-from-bottom-2 fade-in">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-3">
               <MapPin className="w-4 h-4 text-green-600" />
               <span className="text-sm font-medium text-gray-900">
                 Nationwide Coverage
               </span>
             </div>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="text-center bg-white rounded-lg p-3 border border-gray-200">
-                <div className="text-lg font-bold text-blue-600">98%</div>
-                <div className="text-xs text-gray-600">Market Coverage</div>
-              </div>
-              <div className="text-center bg-white rounded-lg p-3 border border-gray-200">
-                <div className="text-lg font-bold text-green-600">50</div>
-                <div className="text-xs text-gray-600">States</div>
-              </div>
-              <div className="text-center bg-white rounded-lg p-3 border border-gray-200">
-                <div className="text-lg font-bold text-purple-600">567</div>
-                <div className="text-xs text-gray-600">Monthly Volume</div>
-              </div>
-            </div>
+            <USCoverageMap />
           </div>
         )}
       </div>
