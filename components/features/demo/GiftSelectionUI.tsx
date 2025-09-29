@@ -37,7 +37,7 @@ const GIFT_OPTIONS: GiftOption[] = [
     insight:
       "78% of new homeowners visit a home improvement store within 30 days of moving.",
     icon: Home,
-    color: "bg-orange-500",
+    color: "#f97316",
     emoji: "🏠",
     percentage: "78%",
   },
@@ -48,7 +48,7 @@ const GIFT_OPTIONS: GiftOption[] = [
     insight:
       "65% of relocating families hire a cleaning service within their first month.",
     icon: Sparkles,
-    color: "bg-blue-500",
+    color: "#3b82f6",
     emoji: "✨",
     percentage: "65%",
   },
@@ -59,7 +59,7 @@ const GIFT_OPTIONS: GiftOption[] = [
     insight:
       "84% of new residents explore local dining options within the first two weeks.",
     icon: UtensilsCrossed,
-    color: "bg-green-500",
+    color: "#10b981",
     emoji: "🍽️",
     percentage: "84%",
   },
@@ -124,17 +124,15 @@ export function GiftSelectionUI({
               <button
                 key={amount}
                 onClick={() => handleAmountSelect(amount)}
-                className={`p-4 rounded-xl border-2 transition-all duration-200 hover:scale-105 ${
+                className={`p-4 rounded-lg border transition-all duration-200 shadow-sm ${
                   selectedAmount === amount
-                    ? "border-purple-500 bg-purple-50 shadow-md"
-                    : "border-gray-200 hover:border-purple-300 hover:bg-purple-50"
+                    ? "bg-purple-600 border-purple-600 text-white shadow-md"
+                    : "bg-white border-gray-200 hover:border-purple-300 hover:bg-purple-50"
                 }`}
               >
                 <div className="text-center">
-                  <div className="text-lg font-bold text-gray-900">
-                    ${amount}
-                  </div>
-                  <div className="text-xs text-gray-500">Gift Value</div>
+                  <div className="text-lg font-bold">${amount}</div>
+                  <div className="text-xs opacity-80">Gift Value</div>
                 </div>
               </button>
             ))}
@@ -190,7 +188,8 @@ export function GiftSelectionUI({
                       {/* Icon and Emoji */}
                       <div className="flex flex-col items-center gap-2">
                         <div
-                          className={`w-12 h-12 rounded-xl ${option.color} flex items-center justify-center shadow-md`}
+                          className="w-12 h-12 rounded-xl flex items-center justify-center shadow-md"
+                          style={{ backgroundColor: option.color }}
                         >
                           <IconComponent className="w-6 h-6 text-white" />
                         </div>

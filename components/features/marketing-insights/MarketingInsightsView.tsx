@@ -35,7 +35,6 @@ import {
 import JourneyDiscoveryDashboard from "./components/JourneyDiscoveryDashboard";
 import RevenueProjectionCharts from "./components/RevenueProjectionCharts";
 import CustomerBehaviorAnalytics from "./components/CustomerBehaviorAnalytics";
-import AICopilotDemo from "./components/AICopilotDemo";
 
 // Import demo components
 import { ABCFIDemoTrigger } from "../demo/ABCFIDemoTrigger";
@@ -189,53 +188,34 @@ export default function MarketingInsightsView() {
   >("dashboard");
   const [demoData, setDemoData] = useState<any>(null);
 
-  // Debug: Log state changes
-  useEffect(() => {
-    console.log("🎯 MarketingInsightsView - demoView changed to:", demoView);
-    console.log("🎯 MarketingInsightsView - demoData:", demoData);
-  }, [demoView, demoData]);
-
   // Demo transition handler
   const handleDashboardTransition = (step: string, data?: any) => {
-    console.log("🎯 Demo transition called:", step, data);
-    console.log("🎯 Current demoView:", demoView);
-
     switch (step) {
       case "show-opportunities":
-        console.log("🎯 Setting demoView to opportunities with data:", data);
         setDemoView("opportunities");
         setDemoData(data);
         break;
       case "show-campaign":
-        console.log("🎯 Setting demoView to campaign");
         setDemoView("campaign");
         setDemoData(data);
         break;
       case "show-campaign-plan":
-        console.log(
-          "🎯 Setting demoView to campaign plan with detailed data:",
-          data
-        );
         setDemoView("campaign");
         setDemoData(data);
         break;
       case "show-roi-model":
-        console.log("🎯 Setting demoView to ROI model:", data);
         setDemoView("roi-model");
         setDemoData(data);
         break;
       case "show-mobile-experience":
-        console.log("🎯 Setting demoView to mobile experience:", data);
         setDemoView("mobile-experience");
         setDemoData(data);
         break;
       case "reset":
-        console.log("🎯 Resetting demoView to dashboard");
         setDemoView("dashboard");
         setDemoData(null);
         break;
       default:
-        console.log("🎯 Unknown step:", step);
         break;
     }
   };
@@ -302,12 +282,6 @@ export default function MarketingInsightsView() {
 
   return (
     <>
-      {/* Debug State Display */}
-      <div className="fixed top-4 left-4 z-50 bg-black text-white p-2 rounded text-xs">
-        DEBUG: demoView={demoView} | hasData={!!demoData} | dataLength=
-        {demoData?.length || 0}
-      </div>
-
       <style jsx>{`
         .tabs-trigger-active[data-state="active"] {
           background: #2563eb !important;
@@ -350,11 +324,11 @@ export default function MarketingInsightsView() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Badge className="bg-pastel-green border border-green-200 text-green-700 px-3 py-1 text-sm font-medium">
+              <Badge className="bg-green-100 border border-green-200 text-green-700 px-3 py-1 text-sm font-medium">
                 <Zap className="w-4 h-4 mr-2" />
                 AI Active
               </Badge>
-              <Button className="bg-primary hover:bg-primary/90 text-white border-0 px-4 py-2 text-sm font-medium shadow-sm">
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white border-0 px-4 py-2 text-sm font-medium shadow-sm">
                 <Target className="w-4 h-4 mr-2" />
                 Generate Campaign
               </Button>
@@ -369,18 +343,18 @@ export default function MarketingInsightsView() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-2">
-                    Active Members
+                    Active Cardholders
                   </p>
                   <p className="text-2xl font-bold text-gray-900 mb-2">1.2M</p>
                   <div className="flex items-center">
                     <div className="w-2 h-2 rounded-full mr-2 bg-green-500" />
                     <p className="text-sm font-medium text-green-600">
-                      +8% vs last month
+                      +8% MoM
                     </p>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-pastel-blue border border-gray-200">
-                  <Users className="w-5 h-5 text-primary" />
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-100 border border-gray-200">
+                  <Users className="w-5 h-5 text-blue-600" />
                 </div>
               </div>
             </CardContent>
@@ -391,17 +365,17 @@ export default function MarketingInsightsView() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-2">
-                    Monthly Engagement Rate
+                    Total Card Spend
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 mb-2">34%</p>
+                  <p className="text-2xl font-bold text-gray-900 mb-2">$1.2B</p>
                   <div className="flex items-center">
                     <div className="w-2 h-2 rounded-full mr-2 bg-green-500" />
                     <p className="text-sm font-medium text-green-600">
-                      +5% vs last month
+                      +4.7% MoM
                     </p>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-pastel-purple border border-gray-200">
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-purple-100 border border-gray-200">
                   <TrendingUp className="w-5 h-5 text-purple-600" />
                 </div>
               </div>
@@ -413,19 +387,17 @@ export default function MarketingInsightsView() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-2">
-                    Offers Redeemed (MTD)
+                    Total Redemptions
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 mb-2">
-                    89,543
-                  </p>
+                  <p className="text-2xl font-bold text-gray-900 mb-2">8.4M</p>
                   <div className="flex items-center">
                     <div className="w-2 h-2 rounded-full mr-2 bg-green-500" />
                     <p className="text-sm font-medium text-green-600">
-                      +12% vs last month
+                      +12% MoM
                     </p>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-pastel-orange border border-gray-200">
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-orange-100 border border-gray-200">
                   <Gift className="w-5 h-5 text-orange-600" />
                 </div>
               </div>
@@ -437,19 +409,17 @@ export default function MarketingInsightsView() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-2">
-                    Partner-Funded Value (MTD)
+                    Incremental Value Generated
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 mb-2">
-                    $215,780
-                  </p>
+                  <p className="text-2xl font-bold text-gray-900 mb-2">$4.2M</p>
                   <div className="flex items-center">
                     <div className="w-2 h-2 rounded-full mr-2 bg-green-500" />
                     <p className="text-sm font-medium text-green-600">
-                      +18% vs last month
+                      +18% MoM
                     </p>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-pastel-green border border-gray-200">
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-green-100 border border-gray-200">
                   <DollarSign className="w-5 h-5 text-green-600" />
                 </div>
               </div>
@@ -497,13 +467,13 @@ export default function MarketingInsightsView() {
 
               <div className="p-4">
                 <TabsContent value="overview" className="mt-0">
-                  <div className="grid grid-cols-2 gap-4">
-                    {/* Mini Journey Timeline */}
+                  <div className="grid grid-cols-3 gap-4">
+                    {/* Program Performance Chart */}
                     <Card className="bg-white border border-gray-200 shadow-sm">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                          <TrendingUp className="w-4 h-4 text-primary" />
-                          Journey Timeline
+                          <TrendingUp className="w-4 h-4 text-blue-600" />
+                          Program Performance Trailing 90 Days
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="pt-0">
@@ -512,7 +482,7 @@ export default function MarketingInsightsView() {
                             (value, index) => (
                               <div
                                 key={index}
-                                className="bg-primary/20 rounded-t-sm flex-1"
+                                className="bg-blue-200 rounded-t-sm flex-1"
                                 style={{
                                   height: `${(value / 178) * 100}%`,
                                   minHeight: "4px",
@@ -558,96 +528,45 @@ export default function MarketingInsightsView() {
                       </CardContent>
                     </Card>
 
-                    {/* Engagement Phases */}
+                    {/* Top performing offer categories */}
                     <Card className="bg-white border border-gray-200 shadow-sm">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium text-gray-700 flex items-center gap-2">
                           <Users className="w-4 h-4 text-purple-600" />
-                          Engagement Phases
+                          Top performing offer categories
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="pt-0">
                         <div className="space-y-2">
                           {[
                             {
-                              phase: "Discovery",
-                              rate: 94,
+                              category: "Dining & Restaurants",
+                              value: "$1.1M",
                               color: "bg-blue-200",
                             },
                             {
-                              phase: "Consideration",
-                              rate: 89,
+                              category: "Home & Garden",
+                              value: "$850K",
                               color: "bg-green-200",
                             },
                             {
-                              phase: "Decision",
-                              rate: 96,
+                              category: "Travel & Experiences",
+                              value: "$670K",
                               color: "bg-purple-200",
                             },
                             {
-                              phase: "Integration",
-                              rate: 91,
+                              category: "Health & Wellness",
+                              value: "$550K",
                               color: "bg-yellow-200",
+                            },
+                            {
+                              category: "Apparel & Accessories",
+                              value: "$480K",
+                              color: "bg-red-200",
                             },
                           ].map((item) => (
                             <div
-                              key={item.phase}
-                              className="flex items-center justify-between"
-                            >
-                              <span className="text-xs text-gray-600 w-20">
-                                {item.phase}
-                              </span>
-                              <div className="flex-1 mx-2 bg-gray-100 rounded-full h-1.5">
-                                <div
-                                  className={`h-1.5 rounded-full ${item.color}`}
-                                  style={{
-                                    width: `${item.rate}%`,
-                                  }}
-                                />
-                              </div>
-                              <span className="text-xs font-medium text-gray-700 w-8">
-                                {item.rate}%
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Geographic Distribution */}
-                    <Card className="bg-white border border-gray-200 shadow-sm">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                          <Target className="w-4 h-4 text-blue-600" />
-                          Top Markets
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="pt-0">
-                        <div className="space-y-2">
-                          {[
-                            {
-                              market: "Denver",
-                              value: 2847,
-                              color: "bg-blue-200",
-                            },
-                            {
-                              market: "Austin",
-                              value: 2156,
-                              color: "bg-green-200",
-                            },
-                            {
-                              market: "Seattle",
-                              value: 1923,
-                              color: "bg-purple-200",
-                            },
-                            {
-                              market: "Charleston",
-                              value: 1654,
-                              color: "bg-yellow-200",
-                            },
-                          ].map((item) => (
-                            <div
-                              key={item.market}
+                              key={item.category}
                               className="flex items-center justify-between"
                             >
                               <div className="flex items-center gap-2">
@@ -655,14 +574,95 @@ export default function MarketingInsightsView() {
                                   className={`w-2 h-2 rounded-full ${item.color}`}
                                 />
                                 <span className="text-xs text-gray-600">
-                                  {item.market}
+                                  {item.category}
                                 </span>
                               </div>
                               <span className="text-xs font-medium text-gray-700">
-                                {item.value.toLocaleString()}
+                                {item.value}
                               </span>
                             </div>
                           ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Audience Spotlight */}
+                    <Card className="bg-white border border-gray-200 shadow-sm">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                          <Target className="w-4 h-4 text-blue-600" />
+                          Audience Spotlight
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <div className="space-y-2">
+                          {[
+                            {
+                              audience: "High Earners",
+                              description: "Premium segment",
+                              color: "bg-blue-200",
+                            },
+                            {
+                              audience: "New Movers",
+                              description: "Relocation journey",
+                              color: "bg-green-200",
+                            },
+                            {
+                              audience: "Families w/ Kids",
+                              description: "Family-focused",
+                              color: "bg-purple-200",
+                            },
+                          ].map((item) => (
+                            <div
+                              key={item.audience}
+                              className="flex items-center justify-between"
+                            >
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className={`w-2 h-2 rounded-full ${item.color}`}
+                                />
+                                <span className="text-xs text-gray-600">
+                                  {item.audience}
+                                </span>
+                              </div>
+                              <span className="text-xs font-medium text-gray-500">
+                                {item.description}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Key Metrics */}
+                    <Card className="bg-white border border-gray-200 shadow-sm">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                          <TrendingUp className="w-4 h-4 text-green-600" />
+                          Key Metrics
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <div className="space-y-3">
+                          <div className="text-center p-3 bg-blue-50 rounded-lg">
+                            <div className="text-lg font-bold text-blue-900">
+                              700K
+                            </div>
+                            <div className="text-xs text-blue-600">
+                              Avg Weekly Redemptions
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Trailing 90 Days
+                            </div>
+                          </div>
+                          <div className="text-center p-3 bg-green-50 rounded-lg">
+                            <div className="text-lg font-bold text-green-900">
+                              94.2%
+                            </div>
+                            <div className="text-xs text-green-600">
+                              Redemption Rate
+                            </div>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -687,11 +687,6 @@ export default function MarketingInsightsView() {
               </div>
             </Tabs>
           </div>
-        </div>
-
-        {/* AI Co-pilot Demo Section */}
-        <div className="mt-6">
-          <AICopilotDemo />
         </div>
       </div>
 

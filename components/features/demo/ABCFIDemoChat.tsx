@@ -681,7 +681,7 @@ export function ABCFIDemoChat({
 
       {/* Messages - Centered and wider with better spacing */}
       <div className="flex flex-col justify-start items-center px-8 py-20 pb-40">
-        <div className="w-full max-w-4xl space-y-6 mb-8">
+        <div className="w-full max-w-6xl space-y-6 mb-8">
           {messages.map((message) => (
             <div
               key={message.id}
@@ -723,11 +723,11 @@ export function ABCFIDemoChat({
               {message.component && (
                 <div className="mt-4 w-full animate-in slide-in-from-left-2 fade-in duration-500">
                   {message.component === "journey-carousel" && (
-                    <div className="w-full">
+                    <div className="w-full overflow-visible">
                       {/* Journey Cards Carousel in Messages */}
-                      <div className="relative py-4">
+                      <div className="relative py-6 px-2 overflow-visible">
                         <div
-                          className="flex gap-4 overflow-x-auto px-6 pb-6"
+                          className="flex gap-6 overflow-x-auto px-4 pb-8"
                           style={{
                             scrollbarWidth: "none",
                             msOverflowStyle: "none",
@@ -740,7 +740,7 @@ export function ABCFIDemoChat({
                             return (
                               <div
                                 key={card.id}
-                                className={`group cursor-pointer transition-all duration-500 ease-out flex-shrink-0 w-64 ${
+                                className={`group cursor-pointer transition-all duration-500 ease-out flex-shrink-0 w-64 p-2 ${
                                   isSelected
                                     ? "scale-105 opacity-100"
                                     : "hover:scale-105 opacity-100"
@@ -760,14 +760,22 @@ export function ABCFIDemoChat({
                                 >
                                   <div className="flex items-start justify-between mb-3">
                                     <div
-                                      className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${
-                                        card.id === "home-purchase" ? "bg-blue-500" :
-                                        card.id === "life-transitions" ? "bg-pink-500" :
-                                        card.id === "back-to-school" ? "bg-green-500" :
-                                        card.id === "home-improvement" ? "bg-orange-500" :
-                                        card.id === "travel-vacation" ? "bg-purple-500" :
-                                        "bg-gray-500"
-                                      }`}
+                                      className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg"
+                                      style={{
+                                        backgroundColor:
+                                          card.id === "home-purchase"
+                                            ? "#3b82f6"
+                                            : card.id === "life-transitions"
+                                              ? "#ec4899"
+                                              : card.id === "back-to-school"
+                                                ? "#10b981"
+                                                : card.id === "home-improvement"
+                                                  ? "#f97316"
+                                                  : card.id ===
+                                                      "travel-vacation"
+                                                    ? "#8b5cf6"
+                                                    : "#6b7280",
+                                      }}
                                     >
                                       <IconComponent className="w-5 h-5 text-white" />
                                     </div>
@@ -800,21 +808,75 @@ export function ABCFIDemoChat({
                                         </p>
                                       </div>
                                     </div>
+                                    <div className="flex items-center gap-2">
+                                      <Target className="w-3 h-3 text-purple-600" />
+                                      <div className="flex-1">
+                                        <p className="text-xs text-gray-500">
+                                          Total Value Potential
+                                        </p>
+                                        <p className="text-xs font-medium text-gray-900">
+                                          {(() => {
+                                            // Parse volume numbers
+                                            const volumeMatch =
+                                              card.customerVolume.match(
+                                                /[\d,]+/
+                                              );
+                                            const volume = volumeMatch
+                                              ? parseInt(
+                                                  volumeMatch[0].replace(
+                                                    ",",
+                                                    ""
+                                                  )
+                                                )
+                                              : 0;
+
+                                            // Parse revenue range
+                                            const revenueMatch =
+                                              card.revenuePotential.match(
+                                                /\$(\d+)-(\d+)/
+                                              );
+                                            if (revenueMatch) {
+                                              const minRevenue = parseInt(
+                                                revenueMatch[1]
+                                              );
+                                              const maxRevenue = parseInt(
+                                                revenueMatch[2]
+                                              );
+                                              const minTotal = (
+                                                (volume * minRevenue) /
+                                                1000
+                                              ).toFixed(0);
+                                              const maxTotal = (
+                                                (volume * maxRevenue) /
+                                                1000
+                                              ).toFixed(0);
+                                              return `$${minTotal}K-${maxTotal}K/month`;
+                                            }
+                                            return "Calculating...";
+                                          })()}
+                                        </p>
+                                      </div>
+                                    </div>
                                   </div>
 
                                   {card.confidence && (
-                                    <div className="flex items-center gap-2">
-                                      <div className="flex-1 bg-gray-200/50 rounded-full h-1.5">
-                                        <div
-                                          className="bg-indigo-600 h-1.5 rounded-full transition-all duration-500"
-                                          style={{
-                                            width: `${card.confidence}%`,
-                                          }}
-                                        />
+                                    <div className="space-y-1">
+                                      <p className="text-xs text-gray-500">
+                                        Confidence Score
+                                      </p>
+                                      <div className="flex items-center gap-2">
+                                        <div className="flex-1 bg-gray-200/50 rounded-full h-1.5">
+                                          <div
+                                            className="bg-indigo-600 h-1.5 rounded-full transition-all duration-500"
+                                            style={{
+                                              width: `${card.confidence}%`,
+                                            }}
+                                          />
+                                        </div>
+                                        <span className="text-xs font-medium text-gray-900">
+                                          {card.confidence}%
+                                        </span>
                                       </div>
-                                      <span className="text-xs font-medium text-gray-900">
-                                        {card.confidence}%
-                                      </span>
                                     </div>
                                   )}
                                 </div>
@@ -1007,14 +1069,21 @@ export function ABCFIDemoChat({
                             {/* Header with Icon and Trend */}
                             <div className="flex items-start justify-between mb-3">
                               <div
-                                className={`w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200 shadow-lg ${
-                                  card.id === "home-purchase" ? "bg-blue-500" :
-                                  card.id === "life-transitions" ? "bg-pink-500" :
-                                  card.id === "back-to-school" ? "bg-green-500" :
-                                  card.id === "home-improvement" ? "bg-orange-500" :
-                                  card.id === "travel-vacation" ? "bg-purple-500" :
-                                  "bg-gray-500"
-                                }`}
+                                className="w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200 shadow-lg"
+                                style={{
+                                  backgroundColor:
+                                    card.id === "home-purchase"
+                                      ? "#3b82f6"
+                                      : card.id === "life-transitions"
+                                        ? "#ec4899"
+                                        : card.id === "back-to-school"
+                                          ? "#10b981"
+                                          : card.id === "home-improvement"
+                                            ? "#f97316"
+                                            : card.id === "travel-vacation"
+                                              ? "#8b5cf6"
+                                              : "#6b7280",
+                                }}
                               >
                                 <IconComponent className="w-5 h-5 text-white" />
                               </div>
@@ -1089,20 +1158,70 @@ export function ABCFIDemoChat({
                                   </p>
                                 </div>
                               </div>
+
+                              <div className="flex items-center gap-2">
+                                <Target className="w-3 h-3 text-purple-600" />
+                                <div className="flex-1">
+                                  <p className="text-xs text-gray-500">
+                                    Total Value Potential
+                                  </p>
+                                  <p className="text-xs font-medium text-gray-900">
+                                    {(() => {
+                                      // Parse volume numbers
+                                      const volumeMatch =
+                                        card.customerVolume.match(/[\d,]+/);
+                                      const volume = volumeMatch
+                                        ? parseInt(
+                                            volumeMatch[0].replace(",", "")
+                                          )
+                                        : 0;
+
+                                      // Parse revenue range
+                                      const revenueMatch =
+                                        card.revenuePotential.match(
+                                          /\$(\d+)-(\d+)/
+                                        );
+                                      if (revenueMatch) {
+                                        const minRevenue = parseInt(
+                                          revenueMatch[1]
+                                        );
+                                        const maxRevenue = parseInt(
+                                          revenueMatch[2]
+                                        );
+                                        const minTotal = (
+                                          (volume * minRevenue) /
+                                          1000
+                                        ).toFixed(0);
+                                        const maxTotal = (
+                                          (volume * maxRevenue) /
+                                          1000
+                                        ).toFixed(0);
+                                        return `$${minTotal}K-${maxTotal}K/month`;
+                                      }
+                                      return "Calculating...";
+                                    })()}
+                                  </p>
+                                </div>
+                              </div>
                             </div>
 
                             {/* Confidence Score */}
                             {card.confidence && (
-                              <div className="flex items-center gap-2">
-                                <div className="flex-1 bg-gray-200/50 rounded-full h-1.5">
-                                  <div
-                                    className="bg-indigo-600 h-1.5 rounded-full transition-all duration-500"
-                                    style={{ width: `${card.confidence}%` }}
-                                  />
+                              <div className="space-y-1">
+                                <p className="text-xs text-gray-500">
+                                  Confidence Score
+                                </p>
+                                <div className="flex items-center gap-2">
+                                  <div className="flex-1 bg-gray-200/50 rounded-full h-1.5">
+                                    <div
+                                      className="bg-indigo-600 h-1.5 rounded-full transition-all duration-500"
+                                      style={{ width: `${card.confidence}%` }}
+                                    />
+                                  </div>
+                                  <span className="text-xs font-medium text-gray-900">
+                                    {card.confidence}%
+                                  </span>
                                 </div>
-                                <span className="text-xs font-medium text-gray-900">
-                                  {card.confidence}%
-                                </span>
                               </div>
                             )}
                           </div>
@@ -1188,7 +1307,7 @@ export function ABCFIDemoChat({
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Type your message to continue the ABC FI demo..."
+                placeholder="Ask me about customer insights, campaign opportunities, or revenue optimization..."
                 className="flex-1 py-3 pr-4 bg-transparent border-0 focus:outline-none text-gray-800 placeholder-gray-500"
                 disabled={isTyping}
               />
@@ -1206,7 +1325,7 @@ export function ABCFIDemoChat({
             </div>
           </div>
 
-          {/* Simple Demo Progress */}
+          {/* Session Progress */}
           <div className="mt-3 flex justify-center">
             <div className="flex items-center gap-1">
               <div
@@ -1215,14 +1334,13 @@ export function ABCFIDemoChat({
               <div
                 className={`w-2 h-2 rounded-full ${demoStep === "opportunities" ? "bg-white" : "bg-white/30"}`}
               ></div>
-              {/* Removed extra progress indicators - demo stops after opportunities */}
             </div>
             <span className="text-xs text-white/70 ml-2">
-              Demo Progress:{" "}
+              Session:{" "}
               {demoStep === "initial"
                 ? "Getting Started"
                 : demoStep === "opportunities"
-                  ? "Exploring Opportunities"
+                  ? "Analyzing Opportunities"
                   : "Complete"}
             </span>
           </div>

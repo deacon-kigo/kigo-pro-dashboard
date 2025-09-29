@@ -53,62 +53,42 @@ On-Screen Elements:
 Header: "ABC FI Rewards Growth Advisor"
 Key Metric Cards (Visually prominent):
 Active Cardholders: 1.2M +8% MoM
-Total Card Spend: $1.2B +4.7% MoM
-Total Redemptions: 8.4M +12% MoM
+Total Spend: $1.2M +4.3% MoM
+Total Offer and Reward Redemptions: 8.4M +12% MoM
 Incremental Value Generated: $4.2M +18% MoM
-Main Visual: A line chart titled "Program Performance Trailing 90 Days" showing three different lines for 1) Active Members (starting at 1.15M in week 0 and ending in 1.2M in week 12), 2) Total Redemptions (starting at 655K in week 0 and ending at 680K in week 12, with redemptions peak at 755K in week 5), 3) Incremental Value Generated (starting at $310K in week 0 and ending at $335K in week 12).
-
-Additional Dashboard Sections:
-Top performing offer categories:
-
-- Dining & Restaurants: $1.1M
-- Home & Garden: $850K
-- Travel & Experiences: $670K
-- Health & Wellness: $550K
-- Apparel & Accessories: $480K
-
-Audience Spotlight:
-
-- Card 1: High Earners
-- Card 2: New Movers
-- Card 3: Families w/ Kids
-
-Key Metrics:
-
-- Avg Weekly Redemptions: 700K (Trailing 90 Days)
-- Redemption Rate: [Current rate display]
-  Floating Action Button (FAB): A distinct, clickable chat icon in the lothiwer right corner.
-  Step 1.2: Engaging the AI Agent
-  User Action: Tucker clicks the chat FAB.
-  UI State: A chat window slides open from the right side of the screen, overlaying a portion of the dashboard.
-  On-Screen Script (in Chat Window):
-  Kigo Agent: "Good morning, Tucker! How can I help?"
-  Tucker (User types): Tucker: “Increase engagement among key segments”
-  Step 1.3: Surfacing the Opportunity
-  UI State: As the agent responds, the main dashboard view (left of the chat) smoothly transitions away, replaced by five distinct, visually appealing cards.
-  On-Screen Script (in Chat Window):
-  Agent: “Here are 5 high-value customer journeys i’m seeing in the last 90 days. Is there one you’d like to focus on?”
-  NOTE: Change “Home Purchase + Relocation Journey” to “Home Buying and Moving”
-  On-Screen Elements (Main View - 5 Cards): Each card must display the following information clearly:
-  Card Title: Home Purchase + Relocation Journey
-  Customer Volume: 567 customers/month
-  Revenue Potential: $127-245 per customer
-  Card Title: Life Event Transitions
-  Customer Volume: ~800 customers/month
-  Revenue Potential: $89-156 per customer
-  Card Title: Back-to-School Prep
-  Customer Volume: 2,890 families/month
-  Revenue Potential: $45-89 per customer
-  Card Title: Home Improvement & DIY
-  Customer Volume: 1,240 customers/month
-  Revenue Potential: $85-156 per customer
-  Card Title: Travel & Vacation Planning
-  Customer Volume: 3,200+ customers/month
-  Revenue Potential: $65-134 per customer
-  Step 1.4: Selecting the Path
-  User Action: Tucker types his response in the chat.
-  On-Screen Script (in Chat Window):
-  Tucker: "Home buyers. I met with the mortgage team yesterday and they’re looking for significant incremental revenue opportunities.”
+Main Visual: A line chart titled "Key KPIs" showing a 90-day trend.
+Floating Action Button (FAB): A distinct, clickable chat icon in the lothiwer right corner.
+Step 1.2: Engaging the AI Agent
+User Action: Tucker clicks the chat FAB.
+UI State: A chat window slides open from the right side of the screen, overlaying a portion of the dashboard.
+On-Screen Script (in Chat Window):
+Kigo Agent: "Good morning, Tucker! How can I help?"
+Tucker (User types): Tucker: “Increase engagement among key segments”
+Step 1.3: Surfacing the Opportunity
+UI State: As the agent responds, the main dashboard view (left of the chat) smoothly transitions away, replaced by five distinct, visually appealing cards.
+On-Screen Script (in Chat Window):
+Agent: “Here are 5 high-value customer journeys i’m seeing in the last 90 days. Is there one you’d like to focus on?”
+NOTE: Change “Home Purchase + Relocation Journey” to “Home Buying and Moving”
+On-Screen Elements (Main View - 5 Cards): Each card must display the following information clearly:
+Card Title: Home Purchase + Relocation Journey
+Customer Volume: 567 customers/month
+Revenue Potential: $127-245 per customer
+Card Title: Life Event Transitions
+Customer Volume: ~800 customers/month
+Revenue Potential: $89-156 per customer
+Card Title: Back-to-School Prep
+Customer Volume: 2,890 families/month
+Revenue Potential: $45-89 per customer
+Card Title: Home Improvement & DIY
+Customer Volume: 1,240 customers/month
+Revenue Potential: $85-156 per customer
+Card Title: Travel & Vacation Planning
+Customer Volume: 3,200+ customers/month
+Revenue Potential: $65-134 per customer
+Step 1.4: Selecting the Path
+User Action: Tucker types his response in the chat.
+On-Screen Script (in Chat Window):
+Tucker: "Home buyers. I met with the mortgage team yesterday and they’re looking for significant incremental revenue opportunities.”
 
 Scene 2: AI-Powered Campaign Co-Creation
 Goal: To showcase the AI agent's ability to instantly build a complete, ready-to-launch campaign strategy based on the user's selection.
@@ -132,7 +112,7 @@ Icon 3 (Tools): On-Demand Offers: "A complete toolkit of moving and local offers
 Agent: "The welcome gift is an effective way to drive engagement and savings among new home buyers.”
 Agent: “To drive continuous engagement and top of wallet spend, I suggest including a full suite of partner-funded offers for essential moving and home setup services. These will be immediately available to the new home owner, ready for them to use during their move and as they get settled. Here are partner brands and offers relevant to new home buyers and relocation services"
 Section 3: Our Brand Partnership Network
-A visually appealing section showcasing featured offers
+A visually appealing section showcasing featured offers from brand sponsors
 Logos and offers to include:
 Card 1 (Moving): U-Haul: 20% off any truck rental and 2X points
 Card 2 (Moving): Two Men and a Truck: Free box kit ($50 value) with any booked move.
@@ -147,13 +127,12 @@ User Action: Tucker types a new, nuanced request into the chat, showcasing a mor
 On-Screen Script (in Chat Window):
 Tucker: "Include local offers to welcome them to their new neighborhood"
 Agent: "A great thought. Integrating new homeowners into their local community drives significant long-term loyalty. I will offer to follow up with a 'Welcome to the Neighborhood' package of hyper local offers once they’ve relocated."
-NOTE: We could show the PRO example of Sarah’s experience at this point before Tucker asks to see the ROI?
 Scene 3: The Instant Business Case
 Goal: To clearly and simply demonstrate the financial value and business case for the campaign, closing the loop for Tucker.
 Step 4.1: The Critical Question
 User Action: Tucker types his final question into the chat.
 On-Screen Script (in Chat Window):
-Tucker: "This is great. What will this cost and how much incremental revenue will it generate for us?"
+Tucker: "This looks great. What will this campaign cost and how much incremental revenue will it generate for us?"
 Step 4.2: The ROI Model
 UI State: The campaign plan view transitions to a final, clean, and simple financial model/calculator. The numbers should be pre-populated and calculate automatically.
 On-Screen Script (in Chat Window):

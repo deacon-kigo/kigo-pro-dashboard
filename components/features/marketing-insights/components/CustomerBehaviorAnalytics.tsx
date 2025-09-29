@@ -170,7 +170,7 @@ export default function CustomerBehaviorAnalytics({
       color: "#10b981",
     },
     conversion: {
-      label: "Conversion Rate",
+      label: "Redemption Rate",
       color: "#8b5cf6",
     },
     dropoff: {

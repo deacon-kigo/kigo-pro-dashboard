@@ -81,7 +81,7 @@ export default function AIQueryTrigger({
         {/* Main Button */}
         <Button
           onClick={() => setIsOpen(true)}
-          className="h-14 w-14 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-200 p-0 group"
+          className="h-14 w-14 rounded-full bg-gradient-to-br from-[#2563eb] to-[#9333ea] hover:from-[#1d4ed8] hover:to-[#7c3aed] shadow-lg hover:shadow-xl transition-all duration-200 p-0 group"
           aria-label="Open AI Command Center"
         >
           <div className="relative">

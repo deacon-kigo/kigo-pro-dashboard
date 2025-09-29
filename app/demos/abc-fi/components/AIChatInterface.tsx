@@ -177,7 +177,7 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                     },
                     {
                       id: "danford-cleaning-1",
-                      title: "Danford Cleaning Company",
+                      title: "Denver Cleaning Company",
                       merchant: "Professional Cleaning Service",
                       logo: "/logos/denver_cleaning_co_logo.png",
                       value: "$100",
@@ -1407,8 +1407,8 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                 <div
                   className={`w-10 h-10 rounded-xl border-2 flex items-center justify-center cursor-pointer transition-all ${
                     isSelected
-                      ? "border-red-200 bg-red-50"
-                      : "border-gray-200 hover:border-red-200 hover:bg-red-50"
+                      ? "border-coral/30 bg-coral/10"
+                      : "border-gray-200 hover:border-coral/30 hover:bg-coral/10"
                   }`}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -1424,8 +1424,8 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                   <svg
                     className={`w-5 h-5 transition-colors ${
                       isSelected
-                        ? "text-red-500"
-                        : "text-gray-400 hover:text-red-500"
+                        ? "text-coral"
+                        : "text-gray-400 hover:text-coral"
                     }`}
                     fill={isSelected ? "currentColor" : "none"}
                     stroke="currentColor"
@@ -1565,7 +1565,13 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                     </p>
                   </div>
                   <div className="flex-1 h-0.5 bg-gradient-to-r from-blue-500 to-green-500 relative">
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xs">
+                    <div
+                      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xs"
+                      style={{
+                        transform:
+                          "translateX(-50%) translateY(-50%) scaleX(-1)",
+                      }}
+                    >
                       🚗
                     </div>
                   </div>
@@ -1638,40 +1644,67 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
 
       case "scheduled-message-indicator":
         return (
-          <div className="mt-3 p-4 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg">
-            <div className="flex items-center space-x-3">
-              <div className="flex-shrink-0">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5 text-blue-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
+          <div className="mt-4 relative">
+            {/* Decorative background pattern */}
+            <div className="absolute inset-0 bg-gradient-to-br from-coral/10 to-purple/10 rounded-2xl transform rotate-1"></div>
+            <div className="relative bg-white border-2 border-coral/20 rounded-2xl p-5 shadow-lg">
+              {/* Header with icon and title */}
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="relative">
+                  <div className="w-12 h-12 bg-gradient-to-br from-coral to-red rounded-xl flex items-center justify-center shadow-md">
+                    <svg
+                      className="w-6 h-6 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                  {/* Animated pulse ring */}
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-ping"></div>
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full"></div>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <h4 className="text-base font-bold text-gray-900">
+                      📅 Follow-up Scheduled
+                    </h4>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-gradient-to-r from-coral to-red text-white shadow-sm">
+                      {component.data.scheduledDate}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      • Automatic reminder
+                    </span>
+                  </div>
                 </div>
               </div>
-              <div className="flex-1">
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium text-blue-900">
-                    Message Scheduled
-                  </span>
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    {component.data.scheduledDate}
-                  </span>
-                </div>
-                <p className="text-sm text-blue-700 mt-1">
+
+              {/* Message content */}
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                <p className="text-sm text-gray-700 font-medium">
                   {component.data.message}
                 </p>
               </div>
-              <div className="flex-shrink-0">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+
+              {/* Bottom status indicator */}
+              <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-xs font-medium text-green-600">
+                    Active
+                  </span>
+                </div>
+                <div className="text-xs text-gray-400">
+                  ✨ Powered by AI Assistant
+                </div>
               </div>
             </div>
           </div>
@@ -1790,6 +1823,7 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                   {message.timestamp.toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",
+                    hour12: false,
                   })}
                 </p>
               </div>

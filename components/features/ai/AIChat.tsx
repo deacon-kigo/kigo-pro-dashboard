@@ -85,7 +85,7 @@ export default function AIChat() {
       {/* Chat button */}
       <button
         onClick={handleToggle}
-        className="fixed bottom-6 right-6 bg-primary text-white p-3 rounded-full shadow-lg hover:bg-primary-dark transition-colors z-30"
+        className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition-colors z-30"
         aria-label="Open AI Chat"
       >
         {isOpen ? (
@@ -99,7 +99,7 @@ export default function AIChat() {
       {isOpen && (
         <div className="fixed bottom-20 right-6 w-96 h-[500px] bg-white rounded-lg shadow-xl border border-gray-200 flex flex-col z-30 overflow-hidden">
           {/* Header */}
-          <div className="px-4 py-3 bg-primary text-white flex justify-between items-center">
+          <div className="px-4 py-3 bg-blue-600 text-white flex justify-between items-center">
             <h3 className="font-semibold">Kigo AI Assistant</h3>
             <button
               onClick={handleToggle}
