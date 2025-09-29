@@ -176,7 +176,7 @@ export function ABCFIDemoChat({
       // Step 1.2 - Initial response options
       return [
         {
-          text: "one of my goals this quarter is to increase engagement among key customer segments",
+          text: "Increase engagement among key segments",
           action: "start_demo",
         },
         {
