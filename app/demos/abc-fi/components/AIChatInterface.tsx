@@ -122,7 +122,7 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
     setTimeout(() => {
       const congratsMessage: Message = {
         id: "congrats",
-        text: "🏡 Congratulations on your new home in Denver, Sarah!",
+        text: "Congratulations again on your new home in Denver!",
         sender: "ai",
         timestamp: new Date(),
       };
@@ -131,37 +131,24 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
       setIsTyping(false);
 
       // Step 2: Gift announcement
+      // Step 2: Personalization explanation (skip gift announce message)
       setTimeout(() => {
         setIsTyping(true);
         setTimeout(() => {
-          const giftMessage: Message = {
-            id: "gift-announce",
-            text: "I have a special $100 housewarming gift for you! 🎁",
+          const personalizationMessage: Message = {
+            id: "personalization",
+            text: "As a housewarming gift, please choose one of following gift card options we hope you'll find useful getting settled in your new home.",
             sender: "ai",
             timestamp: new Date(),
           };
 
-          setMessages((prev) => [...prev, giftMessage]);
+          setMessages((prev) => [...prev, personalizationMessage]);
           setIsTyping(false);
 
-          // Step 3: Personalization explanation
+          // Step 3: Show gift options with progressive reveal
           setTimeout(() => {
-            setIsTyping(true);
-            setTimeout(() => {
-              const personalizationMessage: Message = {
-                id: "personalization",
-                text: "I've selected these options specifically for your family and your new Denver location:",
-                sender: "ai",
-                timestamp: new Date(),
-              };
-
-              setMessages((prev) => [...prev, personalizationMessage]);
-              setIsTyping(false);
-
-              // Step 4: Show gift options with progressive reveal
-              setTimeout(() => {
-                const giftOptionsMessage: Message = {
-                  id: "gift-options",
+            const giftOptionsMessage: Message = {
+              id: "gift-options",
                   text: "", // Empty text since we're just showing the component
                   sender: "ai",
                   timestamp: new Date(),
@@ -221,7 +208,7 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                 }, 500);
               }, 1000);
             }, 1500);
-          }, 1000);
+          }, 1500);
         }, 1500);
       }, 1500);
     }, 2000);

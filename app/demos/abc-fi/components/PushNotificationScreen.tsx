@@ -89,12 +89,11 @@ export function PushNotificationScreen({
               </div>
 
               <h4 className="font-medium text-gray-900 text-sm mb-1">
-                🏡 Congratulations on your new Denver home!
+                Congratulations on your new home purchase, Sarah!
               </h4>
 
               <p className="text-xs text-gray-600 leading-relaxed">
-                We've found everything you need for your Kansas City to Denver
-                move.
+                We have a housewarming gift for you.
               </p>
             </div>
           </div>
