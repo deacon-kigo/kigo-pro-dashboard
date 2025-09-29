@@ -11,13 +11,13 @@ import {
 } from "lucide-react";
 
 interface CampaignJourneySectionProps {
-  selectedOffer?: string;
+  giftAmount?: number;
   onJourneyConfirm: (journeyData: any) => void;
   className?: string;
 }
 
 export function CampaignJourneySection({
-  selectedOffer = "home-depot",
+  giftAmount = 100,
   onJourneyConfirm,
   className = "",
 }: CampaignJourneySectionProps) {
@@ -65,7 +65,7 @@ export function CampaignJourneySection({
       onJourneyConfirm({
         timeline: selectedTimeline,
         steps: journeySteps,
-        selectedOffer,
+        giftAmount,
         needsLocationConfig: selectedTimeline === "30-days", // Trigger location config for 30-day timeline
       });
     }, 500);
