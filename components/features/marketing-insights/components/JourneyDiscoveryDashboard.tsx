@@ -54,12 +54,28 @@ export default function JourneyDiscoveryDashboard({
     { week: "Week 12", triggers: 234, engagement: 178, conversion: 124 },
   ];
 
-  // Mock data for engagement phases
+  // Mock data for top performing offer categories
   const engagementPhasesData = [
-    { phase: "Discovery", rate: 94, color: "#3b82f6" },
-    { phase: "Consideration", rate: 89, color: "#10b981" },
-    { phase: "Decision", rate: 96, color: "#f59e0b" },
-    { phase: "Integration", rate: 91, color: "#8b5cf6" },
+    {
+      phase: "Dining & Restaurants",
+      rate: 94,
+      color: "#3b82f6",
+      value: "$1.1M",
+    },
+    { phase: "Home & Garden", rate: 89, color: "#10b981", value: "$850K" },
+    {
+      phase: "Travel & Experiences",
+      rate: 96,
+      color: "#f59e0b",
+      value: "$670K",
+    },
+    { phase: "Health & Wellness", rate: 91, color: "#8b5cf6", value: "$550K" },
+    {
+      phase: "Apparel & Accessories",
+      rate: 87,
+      color: "#ef4444",
+      value: "$480K",
+    },
   ];
 
   // Mock data for geographic distribution
@@ -71,20 +87,32 @@ export default function JourneyDiscoveryDashboard({
     { region: "Other Markets", customers: 78, percentage: 14 },
   ];
 
-  // Mock data for seasonal patterns
+  // Mock data for audience spotlight
   const seasonalData = [
-    { month: "Jan", volume: 45, confidence: 82 },
-    { month: "Feb", volume: 52, confidence: 85 },
-    { month: "Mar", volume: 78, confidence: 89 },
-    { month: "Apr", volume: 134, confidence: 92 },
-    { month: "May", volume: 189, confidence: 94 },
-    { month: "Jun", volume: 234, confidence: 96 },
-    { month: "Jul", volume: 267, confidence: 94 },
-    { month: "Aug", volume: 298, confidence: 91 },
-    { month: "Sep", volume: 234, confidence: 89 },
-    { month: "Oct", volume: 178, confidence: 87 },
-    { month: "Nov", volume: 123, confidence: 84 },
-    { month: "Dec", volume: 89, confidence: 82 },
+    {
+      month: "High Earners",
+      volume: 245,
+      confidence: 94,
+      description: "Premium segment",
+    },
+    {
+      month: "New Movers",
+      volume: 189,
+      confidence: 92,
+      description: "Relocation journey",
+    },
+    {
+      month: "Families w/ Kids",
+      volume: 167,
+      confidence: 89,
+      description: "Family-focused",
+    },
+    {
+      month: "Young Professionals",
+      volume: 134,
+      confidence: 85,
+      description: "Career-driven",
+    },
   ];
 
   const chartConfig = {
@@ -264,7 +292,7 @@ export default function JourneyDiscoveryDashboard({
               <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-3 border border-green-200">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-medium text-green-700">
-                    Avg Conversion
+                    Avg Weekly Redemptions
                   </span>
                   <Badge className="bg-green-600 text-white text-xs">
                     37.6%
@@ -325,7 +353,7 @@ export default function JourneyDiscoveryDashboard({
               </div>
               <div className="text-center">
                 <div className="text-xs text-gray-500 mb-1">
-                  Conversion Rate
+                  Redemption Rate
                 </div>
                 <div className="text-lg font-bold text-gray-900">37.6%</div>
                 <div className="text-xs text-green-600">+12.1% improvement</div>
@@ -347,7 +375,7 @@ export default function JourneyDiscoveryDashboard({
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold text-gray-900 flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-green-600" />
-              Journey Phases
+              Top performing offer categories
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
@@ -411,7 +439,7 @@ export default function JourneyDiscoveryDashboard({
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold text-gray-900 flex items-center gap-2">
               <Clock className="w-4 h-4 text-orange-600" />
-              Seasonal Trends
+              Audience Spotlight
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0">

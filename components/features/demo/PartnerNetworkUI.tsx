@@ -197,7 +197,7 @@ export function PartnerNetworkUI({
               </div>
               <div>
                 <div className="text-lg font-semibold text-gray-900">74%</div>
-                <p className="text-xs text-gray-600">Avg Conversion</p>
+                <p className="text-xs text-gray-600">Avg Weekly Redemptions</p>
               </div>
               <div>
                 <div className="text-lg font-semibold text-gray-900">+33%</div>

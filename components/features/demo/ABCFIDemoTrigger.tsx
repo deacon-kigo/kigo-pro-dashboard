@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Sparkles } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { ABCFIDemoChat } from "./ABCFIDemoChat";
 
 interface ABCFIDemoTriggerProps {
@@ -35,7 +35,7 @@ export function ABCFIDemoTrigger({
         {/* Tooltip */}
         {showTooltip && !isChatOpen && (
           <div className="absolute bottom-full mb-2 right-0 bg-gray-900 text-white text-xs px-3 py-2 rounded-lg whitespace-nowrap">
-            Start ABC FI Demo
+            Kigo AI Assistant
             <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
           </div>
         )}
@@ -46,9 +46,9 @@ export function ABCFIDemoTrigger({
           className={`h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 p-0 group ${
             isChatOpen
               ? "bg-red-500 hover:bg-red-600"
-              : "bg-gradient-to-br from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              : "bg-gradient-to-br from-[#2563eb] to-[#9333ea] hover:from-[#1d4ed8] hover:to-[#7c3aed]"
           }`}
-          aria-label={isChatOpen ? "Close ABC FI Demo" : "Start ABC FI Demo"}
+          aria-label={isChatOpen ? "Close AI Assistant" : "Open AI Assistant"}
         >
           {isChatOpen ? (
             <div className="relative">

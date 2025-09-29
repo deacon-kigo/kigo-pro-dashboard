@@ -102,7 +102,7 @@ export default function AIChat() {
       {/* Floating button */}
       <button
         onClick={toggleChat}
-        className={`fixed bottom-6 right-6 w-14 h-14 rounded-full ${isOpen ? "bg-red-500 hover:bg-red-600" : "bg-primary hover:bg-primary/90"} shadow-lg flex items-center justify-center text-white z-50 transition-all duration-300`}
+        className={`fixed bottom-6 right-6 w-14 h-14 rounded-full ${isOpen ? "bg-red-500 hover:bg-red-600" : "bg-blue-600 hover:bg-blue-700"} shadow-lg flex items-center justify-center text-white z-50 transition-all duration-300`}
       >
         {isOpen ? (
           <XMarkIcon className="w-6 h-6" />
@@ -121,7 +121,7 @@ export default function AIChat() {
         style={{ maxHeight: "calc(100vh - 150px)" }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-primary text-white">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-blue-600 text-white">
           <div className="flex items-center">
             <SparklesIcon className="w-5 h-5 mr-2" />
             <h3 className="font-semibold">Kigo AI Assistant</h3>
