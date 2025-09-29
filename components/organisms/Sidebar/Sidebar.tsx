@@ -150,11 +150,13 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
           pathname.includes("cvs-dashboard") ||
           pathname.includes("/campaign-manager"))
       ) {
-        // Don't highlight dashboard when on campaign creation pages
+        // Don't highlight dashboard when on campaign creation pages or AI insights
         if (
           pathname.includes("/campaign-manager/ads-create") ||
           pathname.includes("/campaign-manager/ai-create") ||
-          pathname.includes("/campaign-manager/campaign-create")
+          pathname.includes("/campaign-manager/campaign-create") ||
+          pathname.includes("/campaign-manager/ai-insights") ||
+          pathname.includes("/campaign-manager/analytics")
         ) {
           return false;
         }
