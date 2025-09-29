@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 // Scene 2 UI components
 import { CampaignPlanUI } from "./CampaignPlanUI";
+import { ComprehensiveCampaignSummary } from "./ComprehensiveCampaignSummary";
 import { CampaignGiftAmountSection } from "./CampaignGiftAmountSection";
 import { CampaignJourneySection } from "./CampaignJourneySection";
 import { CampaignLocationConfig } from "./CampaignLocationConfig";
@@ -54,6 +55,7 @@ interface Message {
     | "campaign-journey-section"
     | "campaign-location-config"
     | "campaign-plan"
+    | "comprehensive-campaign-summary"
     | "mobile-experience"
     | "roi-model"
     | "placeholder"; // Scene 2 components
@@ -352,12 +354,12 @@ export function ABCFIDemoChat({
             text: "",
             sender: "ai",
             timestamp: new Date(),
-            component: "campaign-plan",
+            component: "comprehensive-campaign-summary",
             data: {
               title: "New Homeowner Welcome Campaign",
-              isCompact: true,
               giftAmount: journeyData.giftAmount,
               timeline: journeyData.timeline,
+              isEnhanced: false,
             },
           };
 
@@ -389,10 +391,9 @@ export function ABCFIDemoChat({
           text: "",
           sender: "ai",
           timestamp: new Date(),
-          component: "campaign-plan",
+          component: "comprehensive-campaign-summary",
           data: {
             title: "New Homeowner Welcome Campaign",
-            isCompact: true,
             giftAmount: configData.giftAmount,
             timeline: configData.timeline,
             locationData: configData,
@@ -778,6 +779,22 @@ export function ABCFIDemoChat({
                           message.data?.title ||
                           "New Homeowner Welcome Campaign"
                         }
+                        className="w-full"
+                      />
+                    </div>
+                  )}
+
+                  {message.component === "comprehensive-campaign-summary" && (
+                    <div className="w-full">
+                      <ComprehensiveCampaignSummary
+                        title={
+                          message.data?.title ||
+                          "New Homeowner Welcome Campaign"
+                        }
+                        giftAmount={message.data?.giftAmount || 100}
+                        timeline={message.data?.timeline || "30-days"}
+                        locationData={message.data?.locationData}
+                        isEnhanced={message.data?.isEnhanced || false}
                         className="w-full"
                       />
                     </div>
