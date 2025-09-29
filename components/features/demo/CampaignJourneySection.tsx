@@ -5,7 +5,7 @@ import {
   TrendingUp,
   Gift,
   Mail,
-  BarChart3,
+  Wrench,
   CheckCircle,
   Clock,
 } from "lucide-react";
@@ -35,22 +35,25 @@ export function CampaignJourneySection({
       id: "notification",
       icon: Gift,
       title: "Gift Selection",
-      description: "Customer receives in-app notification to select their gift",
-      color: "from-purple-500 to-purple-600",
+      description:
+        "Customer receives an in-app notification to select their gift.",
+      hexColor: "#8b5cf6",
     },
     {
       id: "delivery",
       icon: Mail,
       title: "Gift Delivery",
-      description: "Digital gift card delivered instantly to Kigo Hub",
-      color: "from-blue-500 to-blue-600",
+      description:
+        "The digital gift card is delivered instantly to their Rewards Hub.",
+      hexColor: "#3b82f6",
     },
     {
       id: "followup",
-      icon: BarChart3,
-      title: "Follow-Up",
-      description: `After ${selectedTimeline.split("-")[0]} days, present relevant home services offers`,
-      color: "from-green-500 to-green-600",
+      icon: Wrench,
+      title: "On-Demand Offers",
+      description:
+        "A complete toolkit of moving and local offers is also unlocked, available in the Hub for the customer to use whenever they need them.",
+      hexColor: "#10b981",
     },
   ];
 
@@ -103,8 +106,8 @@ export function CampaignJourneySection({
                 p-2 rounded-lg border text-center transition-all duration-200
                 ${
                   selectedTimeline === option.id
-                    ? "bg-blue-50 border-blue-300 text-blue-700"
-                    : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
+                    ? "bg-indigo-600 border-indigo-600 text-white"
+                    : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-indigo-50"
                 }
               `}
             >
@@ -117,35 +120,42 @@ export function CampaignJourneySection({
 
       {/* Journey Steps Timeline */}
       <div className="mb-4">
-        <h4 className="text-sm font-medium text-gray-900 mb-3">
+        <h4 className="text-sm font-medium text-gray-900 mb-4">
           Customer Journey
         </h4>
-        <div className="space-y-3">
+        <div className="relative">
           {journeySteps.map((step, index) => {
             const IconComponent = step.icon;
 
             return (
-              <div key={step.id} className="flex items-start gap-3">
-                {/* Step Icon */}
-                <div
-                  className={`w-10 h-10 bg-gradient-to-br ${step.color} rounded-full flex items-center justify-center flex-shrink-0 shadow-sm`}
-                >
-                  <IconComponent className="w-5 h-5 text-white" />
+              <div key={step.id} className="relative">
+                <div className="flex items-start gap-4">
+                  {/* Step Icon with Hex Color */}
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg border-2 border-white relative z-10"
+                    style={{ backgroundColor: step.hexColor }}
+                  >
+                    <IconComponent className="w-6 h-6 text-white" />
+                  </div>
+
+                  {/* Step Content */}
+                  <div className="flex-1 min-w-0 pb-6">
+                    <div className="bg-gradient-to-r from-gray-50 to-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                      <h5 className="font-semibold text-gray-900 text-sm mb-2">
+                        {step.title}
+                      </h5>
+                      <p className="text-xs text-gray-600 leading-relaxed">
+                        {step.description}
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Step Content */}
-                <div className="flex-1 min-w-0">
-                  <h5 className="font-medium text-gray-900 text-sm">
-                    {step.title}
-                  </h5>
-                  <p className="text-xs text-gray-600 mt-1">
-                    {step.description}
-                  </p>
-                </div>
-
-                {/* Connection Line */}
+                {/* Animated Connection Line */}
                 {index < journeySteps.length - 1 && (
-                  <div className="absolute left-[1.25rem] mt-10 w-0.5 h-6 bg-gray-200"></div>
+                  <div className="absolute left-6 top-12 w-0.5 h-8 bg-gradient-to-b from-gray-300 to-gray-200 z-0">
+                    <div className="w-full h-full bg-gradient-to-b from-indigo-400 to-indigo-300 animate-pulse"></div>
+                  </div>
                 )}
               </div>
             );
@@ -157,7 +167,7 @@ export function CampaignJourneySection({
       {!isConfigured ? (
         <button
           onClick={handleConfirm}
-          className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 px-4 rounded-lg font-medium text-sm hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
+          className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium text-sm hover:bg-indigo-700 transition-all duration-200 shadow-sm hover:shadow-md"
         >
           Configure Customer Journey
         </button>
