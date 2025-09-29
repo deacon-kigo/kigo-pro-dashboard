@@ -9,6 +9,7 @@ import { LightningDeals } from "./components/LightningDeals";
 import { AIChatInterface } from "./components/AIChatInterface";
 import { ReceiptScanning } from "./components/ReceiptScanning";
 import { ValueSummary } from "./components/ValueSummary";
+import { WavyBackground } from "@/components/ui/wavy-background";
 
 type DemoStep =
   | "banking-dashboard"
@@ -113,7 +114,16 @@ export default function ABCFIDemo() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center p-4">
+    <WavyBackground
+      className="min-h-screen flex items-center justify-center p-4"
+      containerClassName="min-h-screen"
+      colors={["#3b82f6", "#1e40af", "#1d4ed8", "#2563eb", "#60a5fa"]}
+      waveWidth={60}
+      backgroundFill="rgb(243, 244, 246)"
+      blur={15}
+      speed="slow"
+      waveOpacity={0.3}
+    >
       {/* Mobile Container - Centered on Web */}
       <div className="w-full max-w-sm mx-auto">
         {/* Phone Mockup Container */}
@@ -253,6 +263,6 @@ export default function ABCFIDemo() {
           </div>
         </div>
       </div>
-    </div>
+    </WavyBackground>
   );
 }
