@@ -342,7 +342,7 @@ export default function MarketingInsightsView() {
               </div>
               <div>
                 <h1 className="text-2xl font-semibold text-gray-900">
-                  ABC FI Rewards Program
+                  ABC FI Rewards Growth Advisor
                 </h1>
                 <p className="text-gray-600 text-sm mt-1">
                   Customer engagement and loyalty dashboard
