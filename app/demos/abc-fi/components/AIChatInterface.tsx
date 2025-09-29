@@ -149,67 +149,65 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
           setTimeout(() => {
             const giftOptionsMessage: Message = {
               id: "gift-options",
-                  text: "", // Empty text since we're just showing the component
-                  sender: "ai",
-                  timestamp: new Date(),
-                  uiComponent: {
-                    type: "gift-selection",
-                    data: {
-                      gifts: [
-                        {
-                          id: "home-depot-1",
-                          title: "Home Depot Gift Card",
-                          merchant: "The Home Depot",
-                          logo: "/logos/home-depot-logo.png",
-                          value: "$100",
-                          description:
-                            "Perfect for all your home improvement needs",
-                          category: "home-goods",
-                        },
-                        {
-                          id: "williams-sonoma-1",
-                          title: "Williams Sonoma",
-                          merchant: "Home & Kitchen",
-                          logo: "/logos/williams_sonoma_logo.svg",
-                          value: "$100",
-                          description: "Premium kitchen and home essentials",
-                          category: "home-goods",
-                        },
-                        {
-                          id: "danford-cleaning-1",
-                          title: "Danford Cleaning Company",
-                          merchant: "Professional Cleaning Service",
-                          logo: "/logos/denver_cleaning_co_logo.png",
-                          value: "$100",
-                          description:
-                            "Professional home cleaning for your new place",
-                          category: "local-service",
-                        },
-                      ],
+              text: "", // Empty text since we're just showing the component
+              sender: "ai",
+              timestamp: new Date(),
+              uiComponent: {
+                type: "gift-selection",
+                data: {
+                  gifts: [
+                    {
+                      id: "home-depot-1",
+                      title: "Home Depot Gift Card",
+                      merchant: "The Home Depot",
+                      logo: "/logos/home-depot-logo.png",
+                      value: "$100",
+                      description:
+                        "Perfect for all your home improvement needs",
+                      category: "home-goods",
                     },
-                  },
-                };
+                    {
+                      id: "williams-sonoma-1",
+                      title: "Williams Sonoma",
+                      merchant: "Home & Kitchen",
+                      logo: "/logos/williams_sonoma_logo.svg",
+                      value: "$100",
+                      description: "Premium kitchen and home essentials",
+                      category: "home-goods",
+                    },
+                    {
+                      id: "danford-cleaning-1",
+                      title: "Danford Cleaning Company",
+                      merchant: "Professional Cleaning Service",
+                      logo: "/logos/denver_cleaning_co_logo.png",
+                      value: "$100",
+                      description:
+                        "Professional home cleaning for your new place",
+                      category: "local-service",
+                    },
+                  ],
+                },
+              },
+            };
 
-                setMessages((prev) => [...prev, giftOptionsMessage]);
+            setMessages((prev) => [...prev, giftOptionsMessage]);
 
-                // Start progressive reveal of gift options
+            // Start progressive reveal of gift options
+            setTimeout(() => {
+              setVisibleGifts(1);
+              setTimeout(() => {
+                setVisibleGifts(2);
                 setTimeout(() => {
-                  setVisibleGifts(1);
+                  setVisibleGifts(3);
+                  // Mark conversation sequence as complete after all gifts are shown
                   setTimeout(() => {
-                    setVisibleGifts(2);
-                    setTimeout(() => {
-                      setVisibleGifts(3);
-                      // Mark conversation sequence as complete after all gifts are shown
-                      setTimeout(() => {
-                        setConversationSequenceComplete(true);
-                      }, 500);
-                    }, 800);
-                  }, 800);
-                }, 500);
+                    setConversationSequenceComplete(true);
+                  }, 500);
+                }, 800);
               }, 1000);
             }, 1500);
-          }, 1500);
-        }, 1500);
+          }, 2000);
+        }, 2000);
       }, 1500);
     }, 2000);
   };
