@@ -725,9 +725,9 @@ export function ABCFIDemoChat({
                   {message.component === "journey-carousel" && (
                     <div className="w-full">
                       {/* Journey Cards Carousel in Messages */}
-                      <div className="relative py-2">
+                      <div className="relative py-4">
                         <div
-                          className="flex gap-4 overflow-x-auto px-4 pb-4"
+                          className="flex gap-4 overflow-x-auto px-6 pb-6"
                           style={{
                             scrollbarWidth: "none",
                             msOverflowStyle: "none",
@@ -760,19 +760,7 @@ export function ABCFIDemoChat({
                                 >
                                   <div className="flex items-start justify-between mb-3">
                                     <div
-                                      className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${
-                                        card.id === "home-purchase"
-                                          ? "bg-blue-500"
-                                          : card.id === "life-transitions"
-                                            ? "bg-pink-500"
-                                            : card.id === "back-to-school"
-                                              ? "bg-green-500"
-                                              : card.id === "home-improvement"
-                                                ? "bg-orange-500"
-                                                : card.id === "travel-vacation"
-                                                  ? "bg-purple-500"
-                                                  : "bg-gray-500"
-                                      }`}
+                                      className={`w-10 h-10 rounded-xl ${card.color} flex items-center justify-center shadow-lg`}
                                     >
                                       <IconComponent className="w-5 h-5 text-white" />
                                     </div>
@@ -969,7 +957,7 @@ export function ABCFIDemoChat({
                   className={`flex gap-4 scroll-smooth transition-all duration-1000 ${
                     isCardSelecting
                       ? "justify-center px-0"
-                      : "overflow-x-auto px-4 pb-4"
+                      : "overflow-x-auto px-6 pb-8"
                   }`}
                   style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
                 >
@@ -1012,19 +1000,7 @@ export function ABCFIDemoChat({
                             {/* Header with Icon and Trend */}
                             <div className="flex items-start justify-between mb-3">
                               <div
-                                className={`w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200 shadow-lg ${
-                                  card.id === "home-purchase"
-                                    ? "bg-blue-500"
-                                    : card.id === "life-transitions"
-                                      ? "bg-pink-500"
-                                      : card.id === "back-to-school"
-                                        ? "bg-green-500"
-                                        : card.id === "home-improvement"
-                                          ? "bg-orange-500"
-                                          : card.id === "travel-vacation"
-                                            ? "bg-purple-500"
-                                            : "bg-gray-500"
-                                }`}
+                                className={`w-10 h-10 rounded-xl ${card.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-200 shadow-lg`}
                               >
                                 <IconComponent className="w-5 h-5 text-white" />
                               </div>
