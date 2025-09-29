@@ -31,10 +31,10 @@ import {
 } from "lucide-react";
 // Scene 2 UI components
 import { CampaignPlanUI } from "./CampaignPlanUI";
+import { CampaignOfferSection } from "./CampaignOfferSection";
+import { CampaignJourneySection } from "./CampaignJourneySection";
+import { CampaignLocationConfig } from "./CampaignLocationConfig";
 // Additional components will be added as needed
-// import { GiftSelectionUI } from "./GiftSelectionUI";
-// import { CustomerJourneyUI } from "./CustomerJourneyUI";
-// import { PartnerNetworkUI } from "./PartnerNetworkUI";
 
 interface ABCFIDemoChatProps {
   isOpen: boolean;
@@ -48,6 +48,10 @@ interface Message {
   sender: "ai" | "user";
   timestamp: Date;
   component?:
+    | "journey-carousel"
+    | "campaign-offer-section"
+    | "campaign-journey-section"
+    | "campaign-location-config"
     | "campaign-plan"
     | "mobile-experience"
     | "roi-model"
@@ -210,7 +214,7 @@ export function ABCFIDemoChat({
 
   // Scene 2 handlers removed - will be rebuilt from scratch
 
-  // Scene 2: AI-Powered Campaign Co-Creation
+  // Scene 2: AI-Powered Campaign Co-Creation - Interactive Flow
   const startScene2Flow = () => {
     setIsTyping(true);
 
@@ -218,7 +222,7 @@ export function ABCFIDemoChat({
     setTimeout(() => {
       const aiMessage: Message = {
         id: Date.now().toString(),
-        text: "Excellent choice. That aligns perfectly with the mortgage team's goals. Based on our network data, new homeowners are highly receptive to welcome offers. Here is a campaign plan I've drafted.",
+        text: "Excellent choice. That aligns perfectly with the mortgage team's goals. Based on our network data, new homeowners are highly receptive to welcome offers.",
         sender: "ai",
         timestamp: new Date(),
       };
@@ -226,18 +230,176 @@ export function ABCFIDemoChat({
       setMessages((prev) => [...prev, aiMessage]);
       setIsTyping(false);
 
-      // Show campaign plan UI after AI message
+      // Start interactive campaign creation
       setTimeout(() => {
-        const campaignPlanMessage: Message = {
+        startOfferConfiguration();
+      }, 1000);
+    }, 1000);
+  };
+
+  // Step 2.2: Offer Configuration
+  const startOfferConfiguration = () => {
+    setIsTyping(true);
+
+    setTimeout(() => {
+      const offerMessage: Message = {
+        id: Date.now().toString(),
+        text: "Let's start by configuring the welcome gift. I recommend a $100 congratulatory gift with three personalized options based on new homeowner behavior:",
+        sender: "ai",
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, offerMessage]);
+      setIsTyping(false);
+
+      // Show offer selection component
+      setTimeout(() => {
+        const offerComponentMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          text: "",
+          sender: "ai",
+          timestamp: new Date(),
+          component: "campaign-offer-section",
+          data: {},
+        };
+
+        setMessages((prev) => [...prev, offerComponentMessage]);
+      }, 500);
+    }, 1000);
+  };
+
+  // Handle offer selection
+  const handleOfferSelection = (offerId: string, offerData: any) => {
+    setIsTyping(true);
+
+    setTimeout(() => {
+      const confirmMessage: Message = {
+        id: Date.now().toString(),
+        text: `Perfect! ${offerData.title} is an excellent choice. ${offerData.insight} Now let's configure the customer journey and timing.`,
+        sender: "ai",
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, confirmMessage]);
+      setIsTyping(false);
+
+      // Show journey configuration
+      setTimeout(() => {
+        const journeyComponentMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          text: "",
+          sender: "ai",
+          timestamp: new Date(),
+          component: "campaign-journey-section",
+          data: { selectedOffer: offerId },
+        };
+
+        setMessages((prev) => [...prev, journeyComponentMessage]);
+      }, 500);
+    }, 800);
+  };
+
+  // Handle journey configuration
+  const handleJourneyConfiguration = (journeyData: any) => {
+    setIsTyping(true);
+
+    setTimeout(() => {
+      if (journeyData.needsLocationConfig) {
+        // Start AI-native location configuration for 30-day timeline
+        const locationConfigMessage: Message = {
+          id: Date.now().toString(),
+          text: `Perfect! ${journeyData.timeline.split("-")[0]}-day follow-up selected. Now let me configure location-based personalization using AI to optimize merchant offers for your target customer profile.`,
+          sender: "ai",
+          timestamp: new Date(),
+        };
+
+        setMessages((prev) => [...prev, locationConfigMessage]);
+        setIsTyping(false);
+
+        // Show AI location configuration
+        setTimeout(() => {
+          const configComponentMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            text: "",
+            sender: "ai",
+            timestamp: new Date(),
+            component: "campaign-location-config",
+            data: {
+              selectedOffer: journeyData.selectedOffer,
+              timeline: journeyData.timeline,
+            },
+          };
+
+          setMessages((prev) => [...prev, configComponentMessage]);
+        }, 1000);
+      } else {
+        // Standard flow without location config
+        const finalMessage: Message = {
+          id: Date.now().toString(),
+          text: `Excellent! Your "New Homeowner Welcome Campaign" is now configured with ${journeyData.timeline.split("-")[0]}-day follow-up timing. Here's your complete campaign overview:`,
+          sender: "ai",
+          timestamp: new Date(),
+        };
+
+        setMessages((prev) => [...prev, finalMessage]);
+        setIsTyping(false);
+
+        // Show final campaign summary
+        setTimeout(() => {
+          const summaryMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            text: "",
+            sender: "ai",
+            timestamp: new Date(),
+            component: "campaign-plan",
+            data: {
+              title: "New Homeowner Welcome Campaign",
+              isCompact: true,
+              configuredOffer: journeyData.selectedOffer,
+              timeline: journeyData.timeline,
+            },
+          };
+
+          setMessages((prev) => [...prev, summaryMessage]);
+        }, 1000);
+      }
+    }, 800);
+  };
+
+  // Handle location configuration completion
+  const handleLocationConfigComplete = (configData: any) => {
+    setIsTyping(true);
+
+    setTimeout(() => {
+      const completionMessage: Message = {
+        id: Date.now().toString(),
+        text: `🎯 AI configuration complete! Campaign optimized for ${configData.customerData.address} with ${configData.aiInsights.proximityScore}% proximity match to ${configData.merchantData.name}. Here's your personalized campaign:`,
+        sender: "ai",
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, completionMessage]);
+      setIsTyping(false);
+
+      // Show enhanced campaign summary with location data
+      setTimeout(() => {
+        const enhancedSummaryMessage: Message = {
           id: (Date.now() + 1).toString(),
           text: "",
           sender: "ai",
           timestamp: new Date(),
           component: "campaign-plan",
-          data: { title: "New Homeowner Welcome Campaign" },
+          data: {
+            title: "New Homeowner Welcome Campaign",
+            isCompact: true,
+            configuredOffer: configData.selectedOffer,
+            timeline: configData.timeline,
+            locationData: configData,
+            isEnhanced: true,
+          },
         };
 
-        setMessages((prev) => [...prev, campaignPlanMessage]);
+        setMessages((prev) => [...prev, enhancedSummaryMessage]);
       }, 1000);
     }, 1000);
   };
@@ -336,13 +498,19 @@ export function ABCFIDemoChat({
           aiResponse =
             "That's right. Here are 5 high-value customer journeys I'm seeing in the last 90 days:";
           nextStep = "opportunities";
-          // Trigger dashboard transition to show journey cards
-          console.log(
-            "🚀 Calling onDashboardTransition with:",
-            "show-opportunities",
-            JOURNEY_OPPORTUNITIES
-          );
-          onDashboardTransition("show-opportunities", JOURNEY_OPPORTUNITIES);
+
+          // Add carousel as a message component
+          setTimeout(() => {
+            const carouselMessage: Message = {
+              id: (Date.now() + 1).toString(),
+              text: "",
+              sender: "ai",
+              timestamp: new Date(),
+              component: "journey-carousel",
+              data: { journeys: JOURNEY_OPPORTUNITIES },
+            };
+            setMessages((prev) => [...prev, carouselMessage]);
+          }, 500);
         } else {
           aiResponse =
             "I understand. Could you tell me more about what you'd like to focus on?";
@@ -475,6 +643,135 @@ export function ABCFIDemoChat({
               {/* Scene 2 UI components */}
               {message.component && (
                 <div className="mt-4 w-full animate-in slide-in-from-left-2 fade-in duration-500">
+                  {message.component === "journey-carousel" && (
+                    <div className="w-full">
+                      {/* Journey Cards Carousel in Messages */}
+                      <div className="relative">
+                        <div
+                          className="flex gap-4 overflow-x-auto px-4 py-2"
+                          style={{
+                            scrollbarWidth: "none",
+                            msOverflowStyle: "none",
+                          }}
+                        >
+                          {JOURNEY_OPPORTUNITIES.map((card, index) => {
+                            const IconComponent = card.icon;
+                            const isSelected = selectedCardId === card.id;
+
+                            return (
+                              <div
+                                key={card.id}
+                                className={`group cursor-pointer transition-all duration-500 ease-out flex-shrink-0 w-64 ${
+                                  isSelected
+                                    ? "scale-105 opacity-100"
+                                    : "hover:scale-105 opacity-100"
+                                }`}
+                                onClick={() => {
+                                  if (!isCardSelecting) {
+                                    handleCardSelection(card.id, card.title);
+                                  }
+                                }}
+                              >
+                                <div
+                                  className={`backdrop-blur-md rounded-2xl p-4 shadow-xl transition-all duration-500 h-full ${
+                                    isSelected
+                                      ? "bg-white/90 border-2 border-indigo-400 shadow-2xl ring-4 ring-indigo-200/50"
+                                      : "bg-white/70 border border-white/30 hover:shadow-2xl hover:bg-white/80"
+                                  }`}
+                                >
+                                  <div className="flex items-start justify-between mb-3">
+                                    <div
+                                      className={`w-10 h-10 rounded-xl ${card.color} flex items-center justify-center shadow-lg`}
+                                    >
+                                      <IconComponent className="w-5 h-5 text-white" />
+                                    </div>
+                                  </div>
+
+                                  <h3 className="font-semibold text-gray-900 mb-3 text-sm leading-tight">
+                                    {card.title}
+                                  </h3>
+
+                                  <div className="space-y-2 mb-3">
+                                    <div className="flex items-center gap-2">
+                                      <Users className="w-3 h-3 text-blue-600" />
+                                      <div className="flex-1">
+                                        <p className="text-xs text-gray-500">
+                                          Volume
+                                        </p>
+                                        <p className="text-xs font-medium text-gray-900">
+                                          {card.customerVolume}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <DollarSign className="w-3 h-3 text-green-600" />
+                                      <div className="flex-1">
+                                        <p className="text-xs text-gray-500">
+                                          Revenue Potential
+                                        </p>
+                                        <p className="text-xs font-medium text-gray-900">
+                                          {card.revenuePotential}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {card.confidence && (
+                                    <div className="flex items-center gap-2">
+                                      <div className="flex-1 bg-gray-200/50 rounded-full h-1.5">
+                                        <div
+                                          className="bg-indigo-600 h-1.5 rounded-full transition-all duration-500"
+                                          style={{
+                                            width: `${card.confidence}%`,
+                                          }}
+                                        />
+                                      </div>
+                                      <span className="text-xs font-medium text-gray-900">
+                                        {card.confidence}%
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {message.component === "campaign-offer-section" && (
+                    <div className="w-full">
+                      <CampaignOfferSection
+                        onOfferSelect={handleOfferSelection}
+                        className="w-full"
+                      />
+                    </div>
+                  )}
+
+                  {message.component === "campaign-journey-section" && (
+                    <div className="w-full">
+                      <CampaignJourneySection
+                        selectedOffer={message.data?.selectedOffer}
+                        onJourneyConfirm={handleJourneyConfiguration}
+                        className="w-full"
+                      />
+                    </div>
+                  )}
+
+                  {message.component === "campaign-location-config" && (
+                    <div className="w-full">
+                      <CampaignLocationConfig
+                        selectedOffer={
+                          message.data?.selectedOffer || "home-depot"
+                        }
+                        timeline={message.data?.timeline || "30-days"}
+                        onConfigComplete={handleLocationConfigComplete}
+                        className="w-full"
+                      />
+                    </div>
+                  )}
+
                   {message.component === "campaign-plan" && (
                     <div className="w-full">
                       <CampaignPlanUI
@@ -524,7 +821,7 @@ export function ABCFIDemoChat({
           )}
 
           {/* Journey Cards Carousel - Show only in opportunities step */}
-          {demoStep === "opportunities" && (
+          {false && (
             <div className="animate-in slide-in-from-left-2 fade-in duration-500 mt-8 mb-8">
               <div className="relative">
                 {/* Navigation Arrows - Hide during selection */}
