@@ -31,9 +31,10 @@ import {
 } from "lucide-react";
 // Scene 2 UI components
 import { CampaignPlanUI } from "./CampaignPlanUI";
-import { CampaignOfferSection } from "./CampaignOfferSection";
+import { CampaignGiftAmountSection } from "./CampaignGiftAmountSection";
 import { CampaignJourneySection } from "./CampaignJourneySection";
 import { CampaignLocationConfig } from "./CampaignLocationConfig";
+// Updated interface
 // Additional components will be added as needed
 
 interface ABCFIDemoChatProps {
@@ -49,7 +50,7 @@ interface Message {
   timestamp: Date;
   component?:
     | "journey-carousel"
-    | "campaign-offer-section"
+    | "campaign-gift-amount"
     | "campaign-journey-section"
     | "campaign-location-config"
     | "campaign-plan"
@@ -232,50 +233,50 @@ export function ABCFIDemoChat({
 
       // Start interactive campaign creation
       setTimeout(() => {
-        startOfferConfiguration();
+        startGiftAmountConfiguration();
       }, 1000);
     }, 1000);
   };
 
-  // Step 2.2: Offer Configuration
-  const startOfferConfiguration = () => {
+  // Step 2.2: Gift Amount Configuration
+  const startGiftAmountConfiguration = () => {
     setIsTyping(true);
 
     setTimeout(() => {
-      const offerMessage: Message = {
+      const giftMessage: Message = {
         id: Date.now().toString(),
-        text: "Let's start by configuring the welcome gift. I recommend a $100 congratulatory gift with three personalized options based on new homeowner behavior:",
+        text: "Let's start by setting the congratulatory gift budget. The customer will then choose from three personalized options:",
         sender: "ai",
         timestamp: new Date(),
       };
 
-      setMessages((prev) => [...prev, offerMessage]);
+      setMessages((prev) => [...prev, giftMessage]);
       setIsTyping(false);
 
-      // Show offer selection component
+      // Show gift amount configuration component
       setTimeout(() => {
-        const offerComponentMessage: Message = {
+        const giftComponentMessage: Message = {
           id: (Date.now() + 1).toString(),
           text: "",
           sender: "ai",
           timestamp: new Date(),
-          component: "campaign-offer-section",
+          component: "campaign-gift-amount",
           data: {},
         };
 
-        setMessages((prev) => [...prev, offerComponentMessage]);
+        setMessages((prev) => [...prev, giftComponentMessage]);
       }, 500);
     }, 1000);
   };
 
-  // Handle offer selection
-  const handleOfferSelection = (offerId: string, offerData: any) => {
+  // Handle gift amount setting
+  const handleGiftAmountSet = (amount: number) => {
     setIsTyping(true);
 
     setTimeout(() => {
       const confirmMessage: Message = {
         id: Date.now().toString(),
-        text: `Perfect! ${offerData.title} is an excellent choice. ${offerData.insight} Now let's configure the customer journey and timing.`,
+        text: `Perfect! $${amount} gift budget set. Customers will choose from Home Depot gift card, cleaning service, or dining experience. Now let's configure the customer journey and timing.`,
         sender: "ai",
         timestamp: new Date(),
       };
@@ -291,7 +292,7 @@ export function ABCFIDemoChat({
           sender: "ai",
           timestamp: new Date(),
           component: "campaign-journey-section",
-          data: { selectedOffer: offerId },
+          data: { giftAmount: amount },
         };
 
         setMessages((prev) => [...prev, journeyComponentMessage]);
@@ -325,7 +326,7 @@ export function ABCFIDemoChat({
             timestamp: new Date(),
             component: "campaign-location-config",
             data: {
-              selectedOffer: journeyData.selectedOffer,
+              giftAmount: journeyData.giftAmount,
               timeline: journeyData.timeline,
             },
           };
@@ -355,7 +356,7 @@ export function ABCFIDemoChat({
             data: {
               title: "New Homeowner Welcome Campaign",
               isCompact: true,
-              configuredOffer: journeyData.selectedOffer,
+              giftAmount: journeyData.giftAmount,
               timeline: journeyData.timeline,
             },
           };
@@ -373,7 +374,7 @@ export function ABCFIDemoChat({
     setTimeout(() => {
       const completionMessage: Message = {
         id: Date.now().toString(),
-        text: `🎯 AI configuration complete! Campaign optimized for ${configData.customerData.address} with ${configData.aiInsights.proximityScore}% proximity match to ${configData.merchantData.name}. Here's your personalized campaign:`,
+        text: `🎯 AI configuration complete! Campaign optimized for ${configData.customerData.name} at ${configData.customerData.address} with ${configData.nearbyMerchants.length} nearby partners. Here's your personalized campaign:`,
         sender: "ai",
         timestamp: new Date(),
       };
@@ -392,7 +393,7 @@ export function ABCFIDemoChat({
           data: {
             title: "New Homeowner Welcome Campaign",
             isCompact: true,
-            configuredOffer: configData.selectedOffer,
+            giftAmount: configData.giftAmount,
             timeline: configData.timeline,
             locationData: configData,
             isEnhanced: true,
@@ -740,10 +741,10 @@ export function ABCFIDemoChat({
                     </div>
                   )}
 
-                  {message.component === "campaign-offer-section" && (
+                  {message.component === "campaign-gift-amount" && (
                     <div className="w-full">
-                      <CampaignOfferSection
-                        onOfferSelect={handleOfferSelection}
+                      <CampaignGiftAmountSection
+                        onAmountSet={handleGiftAmountSet}
                         className="w-full"
                       />
                     </div>
@@ -752,7 +753,7 @@ export function ABCFIDemoChat({
                   {message.component === "campaign-journey-section" && (
                     <div className="w-full">
                       <CampaignJourneySection
-                        selectedOffer={message.data?.selectedOffer}
+                        giftAmount={message.data?.giftAmount}
                         onJourneyConfirm={handleJourneyConfiguration}
                         className="w-full"
                       />
@@ -762,9 +763,7 @@ export function ABCFIDemoChat({
                   {message.component === "campaign-location-config" && (
                     <div className="w-full">
                       <CampaignLocationConfig
-                        selectedOffer={
-                          message.data?.selectedOffer || "home-depot"
-                        }
+                        giftAmount={message.data?.giftAmount || 100}
                         timeline={message.data?.timeline || "30-days"}
                         onConfigComplete={handleLocationConfigComplete}
                         className="w-full"

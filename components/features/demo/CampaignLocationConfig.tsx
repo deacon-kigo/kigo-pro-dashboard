@@ -6,7 +6,7 @@ import { DenverHomeLocation } from "./DenverHomeLocation";
 import { MerchantLocationMap } from "./MerchantLocationMap";
 
 interface CampaignLocationConfigProps {
-  selectedOffer: string;
+  giftAmount: number;
   timeline: string;
   onConfigComplete: (configData: any) => void;
   className?: string;
@@ -20,7 +20,7 @@ interface ConfigStep {
 }
 
 export function CampaignLocationConfig({
-  selectedOffer,
+  giftAmount,
   timeline,
   onConfigComplete,
   className = "",
@@ -49,54 +49,50 @@ export function CampaignLocationConfig({
     },
   ]);
 
-  // Sarah's Denver home coordinates and address
+  // Customer Denver home coordinates and address
   const customerData = {
+    name: "Sarah Martinez",
     address: "4988 Valentia Ct, Denver, CO 80238",
     neighborhood: "Stapleton",
     coordinates: { lat: 39.7817, lng: -104.8897 },
     profile: {
-      familySize: 4,
-      children: ["Emma (8)", "Jake (5)"],
       moveFrom: "Kansas City, MO",
       homeValue: "$650K",
+      customerType: "New Homeowner",
     },
   };
 
-  // Relevant merchants based on selected offer
-  const getMerchantData = () => {
-    switch (selectedOffer) {
-      case "home-depot":
-        return {
-          name: "The Home Depot",
-          address: "8500 E Northfield Blvd, Denver, CO 80238",
-          coordinates: { lat: 39.7856, lng: -104.8934 },
-          category: "Home Improvement",
-        };
-      case "cleaning-service":
-        return {
-          name: "Danford Cleaning Company",
-          address: "Central Park Blvd, Denver, CO 80238",
-          coordinates: { lat: 39.7789, lng: -104.8823 },
-          category: "Home Services",
-        };
-      case "dining-experience":
-        return {
-          name: "Snooze A.M. Eatery",
-          address: "7280 E 29th Ave, Denver, CO 80238",
-          coordinates: { lat: 39.7612, lng: -104.8945 },
-          category: "Local Dining",
-        };
-      default:
-        return {
-          name: "The Home Depot",
-          address: "8500 E Northfield Blvd, Denver, CO 80238",
-          coordinates: { lat: 39.7856, lng: -104.8934 },
-          category: "Home Improvement",
-        };
-    }
-  };
-
-  const merchantData = getMerchantData();
+  // Diverse merchant partners near Denver location (like Sarah's demo)
+  const nearbyMerchants = [
+    {
+      name: "The Home Depot",
+      address: "8500 E Northfield Blvd, Denver, CO 80238",
+      coordinates: { lat: 39.7856, lng: -104.8934 },
+      category: "Home Improvement",
+      logo: "/logos/home-depot-logo.png",
+    },
+    {
+      name: "U-Haul Storage",
+      address: "7290 E 36th Ave, Denver, CO 80238",
+      coordinates: { lat: 39.7698, lng: -104.8912 },
+      category: "Storage",
+      logo: "/logos/U-Haul-logo.png",
+    },
+    {
+      name: "Hilton Denver Airport",
+      address: "8500 Peña Blvd, Denver, CO 80249",
+      coordinates: { lat: 39.8561, lng: -104.6737 },
+      category: "Hotel",
+      logo: "/logos/hilton-honor-logo.png",
+    },
+    {
+      name: "Two Men and a Truck",
+      address: "4155 E Jewell Ave, Denver, CO 80222",
+      coordinates: { lat: 39.6897, lng: -104.9234 },
+      category: "Moving Services",
+      logo: "/logos/two-men-and-truck.jpg",
+    },
+  ];
 
   useEffect(() => {
     // Simulate AI configuration process
@@ -125,13 +121,14 @@ export function CampaignLocationConfig({
       setTimeout(() => {
         onConfigComplete({
           customerData,
-          merchantData,
-          selectedOffer,
+          nearbyMerchants,
+          giftAmount,
           timeline,
           aiInsights: {
             proximityScore: 95,
             relevanceScore: 88,
             expectedEngagement: "High",
+            merchantCount: nearbyMerchants.length,
           },
         });
       }, 1000);
@@ -240,8 +237,8 @@ export function CampaignLocationConfig({
         </h4>
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div>
-            <span className="text-gray-500">Family:</span>
-            <span className="ml-1 text-gray-900">Sarah + Michael + 2 kids</span>
+            <span className="text-gray-500">Customer:</span>
+            <span className="ml-1 text-gray-900">{customerData.name}</span>
           </div>
           <div>
             <span className="text-gray-500">Move:</span>
@@ -274,19 +271,45 @@ export function CampaignLocationConfig({
         </div>
       )}
 
-      {/* Merchant Location Map */}
+      {/* Nearby Merchant Partners */}
       {showMerchantMap && (
         <div className="mb-4 animate-in slide-in-from-bottom-2 fade-in">
-          <h4 className="font-medium text-gray-900 text-sm mb-2 flex items-center gap-2">
+          <h4 className="font-medium text-gray-900 text-sm mb-3 flex items-center gap-2">
             <MapPin className="w-4 h-4 text-blue-600" />
-            Nearby Partner: {merchantData.name}
+            Nearby Partner Network
           </h4>
+
+          {/* Merchant Grid */}
+          <div className="grid grid-cols-2 gap-2 mb-3">
+            {nearbyMerchants.map((merchant, index) => (
+              <div
+                key={merchant.name}
+                className="bg-gray-50 rounded-lg p-2 flex items-center gap-2"
+              >
+                <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                  <img
+                    src={merchant.logo}
+                    alt={merchant.name}
+                    className="w-6 h-4 object-contain"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-gray-900 truncate">
+                    {merchant.name}
+                  </p>
+                  <p className="text-xs text-gray-500">{merchant.category}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Show map for primary merchant */}
           <MerchantLocationMap
             homeAddress={customerData.address}
             homeCoordinates={customerData.coordinates}
-            merchantName={merchantData.name}
-            merchantAddress={merchantData.address}
-            merchantCoordinates={merchantData.coordinates}
+            merchantName={nearbyMerchants[0].name}
+            merchantAddress={nearbyMerchants[0].address}
+            merchantCoordinates={nearbyMerchants[0].coordinates}
           />
         </div>
       )}
