@@ -108,11 +108,10 @@ export function SarahBankingDashboard({
               {/* Content */}
               <div className="flex-1">
                 <h3 className="font-semibold text-blue-900 text-sm">
-                  🏡 Welcome to Denver, Sarah!
+                  Congratulations on your new home purchase, Sarah!
                 </h3>
                 <p className="text-blue-700 text-xs mt-1">
-                  We've curated personalized moving gifts and local offers just
-                  for you
+                  We have a housewarming gift for you.
                 </p>
               </div>
 
@@ -312,7 +311,7 @@ export function SarahBankingDashboard({
         <div className="px-6 mb-8">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-xl font-bold text-gray-900">
-              Spendings in April
+              Open an account
             </h3>
             <button className="text-blue-600 font-semibold text-sm px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors">
               All

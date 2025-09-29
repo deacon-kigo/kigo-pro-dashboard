@@ -167,8 +167,7 @@ export default function ABCFIDemo() {
                       </div>
 
                       <h4 className="font-medium text-gray-900 text-sm mb-1">
-                        🏡 Congratulations on the purchase of your new home in
-                        Denver!
+                        Congratulations on your new home purchase, Sarah!
                       </h4>
 
                       <p className="text-xs text-gray-600 leading-relaxed mb-3">
