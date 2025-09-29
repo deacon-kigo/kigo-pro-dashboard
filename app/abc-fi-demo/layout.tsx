@@ -16,36 +16,34 @@ export default function ABCFIDemoLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <head>
-        <style
-          dangerouslySetInnerHTML={{
-            __html: `
-            /* Hide scrollbars globally for ABC FI demo */
-            * {
-              scrollbar-width: none !important;
-              -ms-overflow-style: none !important;
-            }
-            *::-webkit-scrollbar {
-              display: none !important;
-            }
-            /* Ensure content is still scrollable */
-            .abc-fi-scrollable {
-              overflow-y: scroll;
-              scrollbar-width: none;
-              -ms-overflow-style: none;
-            }
-            .abc-fi-scrollable::-webkit-scrollbar {
-              display: none;
-            }
-          `,
-          }}
-        />
-      </head>
-      <body className={`${inter.className} antialiased`}>
+    <>
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+          /* Hide scrollbars globally for ABC FI demo */
+          * {
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+          }
+          *::-webkit-scrollbar {
+            display: none !important;
+          }
+          /* Ensure content is still scrollable */
+          .abc-fi-scrollable {
+            overflow-y: scroll;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+          }
+          .abc-fi-scrollable::-webkit-scrollbar {
+            display: none;
+          }
+        `,
+        }}
+      />
+      <div className={`${inter.className} antialiased`}>
         {/* Standalone layout - no CopilotKit or global providers */}
         {children}
-      </body>
-    </html>
+      </div>
+    </>
   );
 }
