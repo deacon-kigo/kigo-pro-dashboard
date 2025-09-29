@@ -76,18 +76,7 @@ interface JourneyCard {
   confidence?: number;
 }
 
-// Color mapping to ensure Tailwind classes are properly included
-// Safelist: bg-blue-500 bg-pink-500 bg-green-500 bg-orange-500 bg-purple-500 bg-gray-500
-const getCardIconColor = (cardId: string) => {
-  const colors = {
-    "home-purchase": "bg-blue-500",
-    "life-transitions": "bg-pink-500",
-    "back-to-school": "bg-green-500",
-    "home-improvement": "bg-orange-500",
-    "travel-vacation": "bg-purple-500",
-  };
-  return colors[cardId as keyof typeof colors] || "bg-gray-500";
-};
+// Journey card colors are now applied inline to ensure Tailwind includes them
 
 const JOURNEY_OPPORTUNITIES: JourneyCard[] = [
   {
@@ -771,7 +760,19 @@ export function ABCFIDemoChat({
                                 >
                                   <div className="flex items-start justify-between mb-3">
                                     <div
-                                      className={`w-10 h-10 rounded-xl ${getCardIconColor(card.id)} flex items-center justify-center shadow-lg`}
+                                      className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${
+                                        card.id === "home-purchase"
+                                          ? "bg-blue-500"
+                                          : card.id === "life-transitions"
+                                            ? "bg-pink-500"
+                                            : card.id === "back-to-school"
+                                              ? "bg-green-500"
+                                              : card.id === "home-improvement"
+                                                ? "bg-orange-500"
+                                                : card.id === "travel-vacation"
+                                                  ? "bg-purple-500"
+                                                  : "bg-gray-500"
+                                      }`}
                                     >
                                       <IconComponent className="w-5 h-5 text-white" />
                                     </div>
@@ -1011,7 +1012,19 @@ export function ABCFIDemoChat({
                             {/* Header with Icon and Trend */}
                             <div className="flex items-start justify-between mb-3">
                               <div
-                                className={`w-10 h-10 rounded-xl ${getCardIconColor(card.id)} flex items-center justify-center group-hover:scale-110 transition-transform duration-200 shadow-lg`}
+                                className={`w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200 shadow-lg ${
+                                  card.id === "home-purchase"
+                                    ? "bg-blue-500"
+                                    : card.id === "life-transitions"
+                                      ? "bg-pink-500"
+                                      : card.id === "back-to-school"
+                                        ? "bg-green-500"
+                                        : card.id === "home-improvement"
+                                          ? "bg-orange-500"
+                                          : card.id === "travel-vacation"
+                                            ? "bg-purple-500"
+                                            : "bg-gray-500"
+                                }`}
                               >
                                 <IconComponent className="w-5 h-5 text-white" />
                               </div>
