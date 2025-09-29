@@ -116,11 +116,11 @@ export function CampaignGiftAmountSection({
         <div className="space-y-3">
           <div className="p-3 bg-white rounded-lg shadow-sm border border-gray-200">
             <div className="flex items-start gap-3">
-              <div className="w-14 h-14 rounded-xl flex items-center justify-center shadow-md flex-shrink-0 bg-white border border-gray-100">
+              <div className="w-20 h-20 rounded-xl flex items-center justify-center shadow-md flex-shrink-0 bg-white border border-gray-100 p-2">
                 <img
                   src="/logos/home-depot-logo.png"
                   alt="Home Depot"
-                  className="w-12 h-12 object-contain"
+                  className="w-full h-full object-contain"
                 />
               </div>
               <div className="flex-1">
@@ -146,11 +146,11 @@ export function CampaignGiftAmountSection({
 
           <div className="p-3 bg-white rounded-lg shadow-sm border border-gray-200">
             <div className="flex items-start gap-3">
-              <div className="w-14 h-14 rounded-xl flex items-center justify-center shadow-md flex-shrink-0 bg-white border border-gray-100">
+              <div className="w-20 h-20 rounded-xl flex items-center justify-center shadow-md flex-shrink-0 bg-white border border-gray-100 p-1">
                 <img
                   src="/logos/williams_sonoma_logo.svg"
                   alt="Williams Sonoma"
-                  className="w-12 h-12 object-contain"
+                  className="w-full h-full object-contain"
                 />
               </div>
               <div className="flex-1">
@@ -176,30 +176,30 @@ export function CampaignGiftAmountSection({
 
           <div className="p-3 bg-white rounded-lg shadow-sm border border-gray-200">
             <div className="flex items-start gap-3">
-              <div className="w-14 h-14 rounded-xl flex items-center justify-center shadow-md flex-shrink-0 bg-white border border-gray-100">
+              <div className="w-16 h-16 rounded-xl flex items-center justify-center shadow-md flex-shrink-0 bg-white border border-gray-100">
                 <div
                   className="w-12 h-12 rounded-lg flex items-center justify-center"
-                  style={{ backgroundColor: "#10b981" }}
+                  style={{ backgroundColor: "#3b82f6" }}
                 >
-                  <UtensilsCrossed className="w-8 h-8 text-white" />
+                  <Sparkles className="w-6 h-6 text-white" />
                 </div>
               </div>
               <div className="flex-1">
                 <div className="flex items-start justify-between mb-1">
                   <div className="font-semibold text-gray-900 text-sm">
-                    ${giftAmount} Local Dining Experience
+                    ${giftAmount} Professional Cleaning Service
                   </div>
                   <div className="text-right">
-                    <div className="text-green-600 font-bold text-lg">84%</div>
+                    <div className="text-blue-600 font-bold text-lg">65%</div>
                     <div className="text-xs text-gray-500">adoption rate</div>
                   </div>
                 </div>
                 <div className="text-xs text-gray-600 mb-2">
-                  Explore local dining options
+                  Professional cleaning for your new place
                 </div>
                 <div className="text-xs text-blue-800 bg-gradient-to-r from-blue-50 to-indigo-50 rounded px-2 py-1 border border-blue-200">
-                  <strong>AI Insight:</strong> 84% of new residents explore
-                  local dining options within the first two weeks
+                  <strong>AI Insight:</strong> 65% of relocating families hire a
+                  cleaning service within their first month
                 </div>
               </div>
             </div>

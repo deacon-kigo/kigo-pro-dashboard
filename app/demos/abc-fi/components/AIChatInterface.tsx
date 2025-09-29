@@ -1393,51 +1393,14 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                 transitionDelay: `${index * 100}ms`,
               }}
             >
-              {/* Top Row: Logo (left) and Heart (right) */}
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-16 h-16 bg-gray-50 rounded-xl flex items-center justify-center p-3 shadow-sm">
+              {/* Full-width Logo Section */}
+              <div className="mb-4">
+                <div className="w-full h-20 bg-gray-50 rounded-xl flex items-center justify-center p-4 shadow-sm">
                   <img
                     src={item.logo}
                     alt={item.merchant || item.title}
-                    className="w-full h-full object-contain"
+                    className="max-w-full max-h-full object-contain"
                   />
-                </div>
-
-                {/* Heart action button */}
-                <div
-                  className={`w-10 h-10 rounded-xl border-2 flex items-center justify-center cursor-pointer transition-all ${
-                    isSelected
-                      ? "border-coral/30 bg-coral/10"
-                      : "border-gray-200 hover:border-coral/30 hover:bg-coral/10"
-                  }`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (!isSelected) {
-                      if (isGiftType) {
-                        handleGiftSelection(item);
-                      } else {
-                        handleOfferClick(item);
-                      }
-                    }
-                  }}
-                >
-                  <svg
-                    className={`w-5 h-5 transition-colors ${
-                      isSelected
-                        ? "text-coral"
-                        : "text-gray-400 hover:text-coral"
-                    }`}
-                    fill={isSelected ? "currentColor" : "none"}
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                    />
-                  </svg>
                 </div>
               </div>
 
@@ -1470,8 +1433,8 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                   {item.description}
                 </p>
 
-                {/* Category Badge */}
-                <div className="flex items-center">
+                {/* Category Badge and Heart Button */}
+                <div className="flex items-center justify-between">
                   <span className="px-3 py-1.5 text-sm font-medium rounded-full bg-blue-100 text-blue-700">
                     {isGiftType ? (
                       <>
@@ -1483,6 +1446,43 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                       item.category
                     )}
                   </span>
+
+                  {/* Heart action button - moved to bottom right */}
+                  <div
+                    className={`w-10 h-10 rounded-xl border-2 flex items-center justify-center cursor-pointer transition-all ${
+                      isSelected
+                        ? "border-coral/30 bg-coral/10"
+                        : "border-gray-200 hover:border-coral/30 hover:bg-coral/10"
+                    }`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!isSelected) {
+                        if (isGiftType) {
+                          handleGiftSelection(item);
+                        } else {
+                          handleOfferClick(item);
+                        }
+                      }
+                    }}
+                  >
+                    <svg
+                      className={`w-5 h-5 transition-colors ${
+                        isSelected
+                          ? "text-coral"
+                          : "text-gray-400 hover:text-coral"
+                      }`}
+                      fill={isSelected ? "currentColor" : "none"}
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                      />
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>

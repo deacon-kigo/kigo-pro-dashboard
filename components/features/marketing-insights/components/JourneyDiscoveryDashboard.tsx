@@ -38,20 +38,116 @@ interface JourneyDiscoveryDashboardProps {
 export default function JourneyDiscoveryDashboard({
   selectedJourney,
 }: JourneyDiscoveryDashboardProps) {
-  // Mock data for journey timeline
+  // Realistic data for journey timeline - showing the story progression
   const journeyTimelineData = [
-    { week: "Week 1", triggers: 45, engagement: 12, conversion: 3 },
-    { week: "Week 2", triggers: 67, engagement: 28, conversion: 8 },
-    { week: "Week 3", triggers: 89, engagement: 52, conversion: 18 },
-    { week: "Week 4", triggers: 123, engagement: 78, conversion: 32 },
-    { week: "Week 5", triggers: 156, engagement: 98, conversion: 45 },
-    { week: "Week 6", triggers: 134, engagement: 89, conversion: 52 },
-    { week: "Week 7", triggers: 178, engagement: 124, conversion: 67 },
-    { week: "Week 8", triggers: 145, engagement: 102, conversion: 58 },
-    { week: "Week 9", triggers: 167, engagement: 118, conversion: 71 },
-    { week: "Week 10", triggers: 189, engagement: 142, conversion: 89 },
-    { week: "Week 11", triggers: 201, engagement: 156, conversion: 98 },
-    { week: "Week 12", triggers: 234, engagement: 178, conversion: 124 },
+    {
+      week: "Week 1",
+      activeMembers: 1150,
+      totalRedemptions: 655,
+      incrementalValue: 310,
+      triggers: 45,
+      engagement: 12,
+      conversion: 3,
+    },
+    {
+      week: "Week 2",
+      activeMembers: 1155,
+      totalRedemptions: 670,
+      incrementalValue: 315,
+      triggers: 50,
+      engagement: 18,
+      conversion: 8,
+    },
+    {
+      week: "Week 3",
+      activeMembers: 1160,
+      totalRedemptions: 660,
+      incrementalValue: 312,
+      triggers: 48,
+      engagement: 15,
+      conversion: 6,
+    },
+    {
+      week: "Week 4",
+      activeMembers: 1165,
+      totalRedemptions: 690,
+      incrementalValue: 330,
+      triggers: 65,
+      engagement: 35,
+      conversion: 18,
+    },
+    {
+      week: "Week 5",
+      activeMembers: 1170,
+      totalRedemptions: 710,
+      incrementalValue: 345,
+      triggers: 75,
+      engagement: 45,
+      conversion: 25,
+    },
+    {
+      week: "Week 6",
+      activeMembers: 1175,
+      totalRedemptions: 705,
+      incrementalValue: 340,
+      triggers: 72,
+      engagement: 42,
+      conversion: 22,
+    },
+    {
+      week: "Week 7",
+      activeMembers: 1180,
+      totalRedemptions: 725,
+      incrementalValue: 355,
+      triggers: 85,
+      engagement: 55,
+      conversion: 32,
+    },
+    {
+      week: "Week 8",
+      activeMembers: 1185,
+      totalRedemptions: 740,
+      incrementalValue: 365,
+      triggers: 92,
+      engagement: 62,
+      conversion: 38,
+    },
+    {
+      week: "Week 9",
+      activeMembers: 1190,
+      totalRedemptions: 755,
+      incrementalValue: 380,
+      triggers: 98,
+      engagement: 68,
+      conversion: 45,
+    },
+    {
+      week: "Week 10",
+      activeMembers: 1195,
+      totalRedemptions: 720,
+      incrementalValue: 360,
+      triggers: 85,
+      engagement: 50,
+      conversion: 28,
+    },
+    {
+      week: "Week 11",
+      activeMembers: 1200,
+      totalRedemptions: 695,
+      incrementalValue: 340,
+      triggers: 75,
+      engagement: 38,
+      conversion: 18,
+    },
+    {
+      week: "Week 12",
+      activeMembers: 1205,
+      totalRedemptions: 680,
+      incrementalValue: 335,
+      triggers: 68,
+      engagement: 32,
+      conversion: 12,
+    },
   ];
 
   // Mock data for top performing offer categories
@@ -116,6 +212,18 @@ export default function JourneyDiscoveryDashboard({
   ];
 
   const chartConfig = {
+    activeMembers: {
+      label: "Active Members",
+      color: "#3b82f6",
+    },
+    totalRedemptions: {
+      label: "Total Redemptions",
+      color: "#10b981",
+    },
+    incrementalValue: {
+      label: "Incremental Value Generated",
+      color: "#f59e0b",
+    },
     triggers: {
       label: "Triggers",
       color: "#3b82f6",
@@ -256,21 +364,21 @@ export default function JourneyDiscoveryDashboard({
                     />
                     <Area
                       type="monotone"
-                      dataKey="triggers"
+                      dataKey="activeMembers"
                       stroke="#3b82f6"
                       strokeWidth={2}
                       fill="url(#triggersGradient)"
                     />
                     <Area
                       type="monotone"
-                      dataKey="engagement"
+                      dataKey="totalRedemptions"
                       stroke="#10b981"
                       strokeWidth={2}
                       fill="url(#engagementGradient)"
                     />
                     <Area
                       type="monotone"
-                      dataKey="conversion"
+                      dataKey="incrementalValue"
                       stroke="#f59e0b"
                       strokeWidth={2}
                       fill="url(#conversionGradient)"
@@ -282,16 +390,29 @@ export default function JourneyDiscoveryDashboard({
               {/* Chart Legend */}
               <div className="flex justify-center gap-6 mt-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                  <span className="text-xs text-gray-600">Triggers</span>
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: "#3b82f6" }}
+                  ></div>
+                  <span className="text-xs text-gray-600">Active Members</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  <span className="text-xs text-gray-600">Engagement</span>
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: "#10b981" }}
+                  ></div>
+                  <span className="text-xs text-gray-600">
+                    Total Redemptions
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-                  <span className="text-xs text-gray-600">Conversion</span>
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: "#f59e0b" }}
+                  ></div>
+                  <span className="text-xs text-gray-600">
+                    Incremental Value
+                  </span>
                 </div>
               </div>
             </div>
@@ -301,57 +422,95 @@ export default function JourneyDiscoveryDashboard({
               {/* Peak Performance */}
               <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-3 border border-blue-200">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-blue-700">
-                    Redemptions peak at 755K in week 5
+                  <span
+                    className="text-xs font-medium"
+                    style={{ color: "#1d4ed8" }}
+                  >
+                    Redemptions peak at 755K in week 9
                   </span>
-                  <Badge className="bg-blue-600 text-white text-xs">
-                    Week 5
+                  <Badge
+                    className="text-white text-xs"
+                    style={{ backgroundColor: "#2563eb" }}
+                  >
+                    Week 9
                   </Badge>
                 </div>
-                <div className="text-lg font-bold text-blue-900">178</div>
-                <div className="text-xs text-blue-600">triggers generated</div>
+                <div className="text-lg font-bold" style={{ color: "#1e3a8a" }}>
+                  178
+                </div>
+                <div className="text-xs" style={{ color: "#2563eb" }}>
+                  triggers generated
+                </div>
               </div>
 
               {/* Avg Weekly Redemptions */}
               <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-3 border border-green-200">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-green-700">
+                  <span
+                    className="text-xs font-medium"
+                    style={{ color: "#15803d" }}
+                  >
                     Avg Weekly Redemptions
                   </span>
-                  <Badge className="bg-green-600 text-white text-xs">
+                  <Badge
+                    className="text-white text-xs"
+                    style={{ backgroundColor: "#16a34a" }}
+                  >
                     +12%
                   </Badge>
                 </div>
-                <div className="text-lg font-bold text-green-900">700K</div>
-                <div className="text-xs text-green-600">Trailing 90 Days</div>
+                <div className="text-lg font-bold" style={{ color: "#14532d" }}>
+                  700K
+                </div>
+                <div className="text-xs" style={{ color: "#16a34a" }}>
+                  Trailing 90 Days
+                </div>
               </div>
 
               {/* Growth Trend */}
               <div className="bg-gradient-to-r from-amber-50 to-amber-100 rounded-lg p-3 border border-amber-200">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-amber-700">
+                  <span
+                    className="text-xs font-medium"
+                    style={{ color: "#b45309" }}
+                  >
                     Growth Rate
                   </span>
-                  <Badge className="bg-amber-600 text-white text-xs">
+                  <Badge
+                    className="text-white text-xs"
+                    style={{ backgroundColor: "#d97706" }}
+                  >
                     +295%
                   </Badge>
                 </div>
-                <div className="text-lg font-bold text-amber-900">8 Weeks</div>
-                <div className="text-xs text-amber-600">sustained growth</div>
+                <div className="text-lg font-bold" style={{ color: "#92400e" }}>
+                  8 Weeks
+                </div>
+                <div className="text-xs" style={{ color: "#d97706" }}>
+                  sustained growth
+                </div>
               </div>
 
               {/* Engagement Quality */}
               <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-3 border border-purple-200">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-purple-700">
+                  <span
+                    className="text-xs font-medium"
+                    style={{ color: "#7c3aed" }}
+                  >
                     Quality Score
                   </span>
-                  <Badge className="bg-purple-600 text-white text-xs">
+                  <Badge
+                    className="text-white text-xs"
+                    style={{ backgroundColor: "#9333ea" }}
+                  >
                     92/100
                   </Badge>
                 </div>
-                <div className="text-lg font-bold text-purple-900">High</div>
-                <div className="text-xs text-purple-600">
+                <div className="text-lg font-bold" style={{ color: "#581c87" }}>
+                  High
+                </div>
+                <div className="text-xs" style={{ color: "#9333ea" }}>
                   engagement quality
                 </div>
               </div>

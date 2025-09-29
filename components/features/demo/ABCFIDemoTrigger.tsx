@@ -35,7 +35,7 @@ export function ABCFIDemoTrigger({
         {/* Tooltip */}
         {showTooltip && !isChatOpen && (
           <div className="absolute bottom-full mb-2 right-0 bg-gray-900 text-white text-xs px-3 py-2 rounded-lg whitespace-nowrap">
-            Kigo AI Assistant
+            Reward AI Assistant
             <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
           </div>
         )}
