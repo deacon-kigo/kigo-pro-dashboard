@@ -12,6 +12,7 @@ import {
   Sparkles,
   UtensilsCrossed,
 } from "lucide-react";
+import { WavyBackground } from "@/components/ui/wavy-background";
 
 interface MobileExperienceViewProps {
   isVisible: boolean;
@@ -208,7 +209,16 @@ export function MobileExperienceView({
   ];
 
   return (
-    <div className="w-full h-full bg-gradient-to-br from-purple-50 to-pink-50 p-8 overflow-y-auto animate-in fade-in duration-500">
+    <WavyBackground
+      className="w-full h-full p-8 overflow-y-auto animate-in fade-in duration-500"
+      containerClassName="w-full h-full"
+      colors={["#a855f7", "#8b5cf6", "#7c3aed", "#6d28d9", "#c084fc"]}
+      waveWidth={50}
+      backgroundFill="rgb(250, 245, 255)"
+      blur={12}
+      speed="slow"
+      waveOpacity={0.2}
+    >
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -352,6 +362,6 @@ export function MobileExperienceView({
           </div>
         </div>
       </div>
-    </div>
+    </WavyBackground>
   );
 }

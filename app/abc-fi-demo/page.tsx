@@ -12,6 +12,7 @@ import { StarbucksGeofenceNotification } from "../demos/abc-fi/components/Starbu
 import { CoffeeConquestCampaign } from "../demos/abc-fi/components/CoffeeConquestCampaign";
 import { TransactionConfirmation } from "../demos/abc-fi/components/TransactionConfirmation";
 import { Confetti, type ConfettiRef } from "@/components/ui/confetti";
+import { WavyBackground } from "@/components/ui/wavy-background";
 
 type DemoStep =
   | "ios-homescreen"
@@ -158,12 +159,15 @@ export default function ABCFIDemoStandalone() {
   };
 
   return (
-    <div
-      className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center p-8"
-      style={{
-        scrollbarWidth: "none",
-        msOverflowStyle: "none",
-      }}
+    <WavyBackground
+      className="min-h-screen flex items-center justify-center p-8"
+      containerClassName="min-h-screen"
+      colors={["#3b82f6", "#1e40af", "#1d4ed8", "#2563eb", "#60a5fa"]}
+      waveWidth={60}
+      backgroundFill="rgb(243, 244, 246)"
+      blur={15}
+      speed="slow"
+      waveOpacity={0.3}
     >
       {/* Standalone Mobile Container */}
       <div className="relative flex items-center justify-center gap-8">
@@ -405,6 +409,6 @@ export default function ABCFIDemoStandalone() {
           </div>
         </div>
       </div>
-    </div>
+    </WavyBackground>
   );
 }

@@ -8,67 +8,68 @@ import {
   Marker,
 } from "react-simple-maps";
 
-const geoUrl = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-110m.json";
+// Use the working geography URL from the CodeSandbox example
+const geoUrl = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 
-// Coverage data with direct hex colors
+// Coverage data mapped by state ID/code for better matching
 const stateColors: { [key: string]: string } = {
   // High coverage states (90%+) - Green
-  California: "#10b981",
-  Texas: "#10b981",
-  "New York": "#10b981",
-  Illinois: "#10b981",
-  Florida: "#059669",
+  "06": "#10b981", // California
+  "48": "#10b981", // Texas
+  "36": "#10b981", // New York
+  "17": "#10b981", // Illinois
+  "12": "#059669", // Florida
 
   // Good coverage states (85%+) - Blue
-  Pennsylvania: "#3b82f6",
-  Ohio: "#2563eb",
-  Georgia: "#3b82f6",
-  "North Carolina": "#2563eb",
-  Michigan: "#3b82f6",
-  Virginia: "#2563eb",
-  Washington: "#3b82f6",
-  Arizona: "#2563eb",
-  Massachusetts: "#3b82f6",
-  Tennessee: "#2563eb",
-  Indiana: "#3b82f6",
-  Missouri: "#2563eb",
-  Maryland: "#3b82f6",
-  Wisconsin: "#2563eb",
-  Colorado: "#3b82f6",
-  Minnesota: "#2563eb",
+  "42": "#3b82f6", // Pennsylvania
+  "39": "#2563eb", // Ohio
+  "13": "#3b82f6", // Georgia
+  "37": "#2563eb", // North Carolina
+  "26": "#3b82f6", // Michigan
+  "51": "#2563eb", // Virginia
+  "53": "#3b82f6", // Washington
+  "04": "#2563eb", // Arizona
+  "25": "#3b82f6", // Massachusetts
+  "47": "#2563eb", // Tennessee
+  "18": "#3b82f6", // Indiana
+  "29": "#2563eb", // Missouri
+  "24": "#3b82f6", // Maryland
+  "55": "#2563eb", // Wisconsin
+  "08": "#3b82f6", // Colorado
+  "27": "#2563eb", // Minnesota
 
   // Standard coverage states - Light Blue
-  Alabama: "#93c5fd",
-  Arkansas: "#bfdbfe",
-  Connecticut: "#93c5fd",
-  Delaware: "#bfdbfe",
-  Iowa: "#93c5fd",
-  Kansas: "#bfdbfe",
-  Kentucky: "#93c5fd",
-  Louisiana: "#bfdbfe",
-  Maine: "#93c5fd",
-  Mississippi: "#bfdbfe",
-  Montana: "#93c5fd",
-  Nebraska: "#bfdbfe",
-  Nevada: "#93c5fd",
-  "New Hampshire": "#bfdbfe",
-  "New Jersey": "#93c5fd",
-  "New Mexico": "#bfdbfe",
-  "North Dakota": "#93c5fd",
-  Oklahoma: "#bfdbfe",
-  Oregon: "#93c5fd",
-  "Rhode Island": "#bfdbfe",
-  "South Carolina": "#93c5fd",
-  "South Dakota": "#bfdbfe",
-  Utah: "#93c5fd",
-  Vermont: "#bfdbfe",
-  "West Virginia": "#93c5fd",
-  Wyoming: "#bfdbfe",
+  "01": "#93c5fd", // Alabama
+  "05": "#bfdbfe", // Arkansas
+  "09": "#93c5fd", // Connecticut
+  "10": "#bfdbfe", // Delaware
+  "19": "#93c5fd", // Iowa
+  "20": "#bfdbfe", // Kansas
+  "21": "#93c5fd", // Kentucky
+  "22": "#bfdbfe", // Louisiana
+  "23": "#93c5fd", // Maine
+  "28": "#bfdbfe", // Mississippi
+  "30": "#93c5fd", // Montana
+  "31": "#bfdbfe", // Nebraska
+  "32": "#93c5fd", // Nevada
+  "33": "#bfdbfe", // New Hampshire
+  "34": "#93c5fd", // New Jersey
+  "35": "#bfdbfe", // New Mexico
+  "38": "#93c5fd", // North Dakota
+  "40": "#bfdbfe", // Oklahoma
+  "41": "#93c5fd", // Oregon
+  "44": "#bfdbfe", // Rhode Island
+  "45": "#93c5fd", // South Carolina
+  "46": "#bfdbfe", // South Dakota
+  "49": "#93c5fd", // Utah
+  "50": "#bfdbfe", // Vermont
+  "54": "#93c5fd", // West Virginia
+  "56": "#bfdbfe", // Wyoming
 
   // Special cases
-  Alaska: "#e5e7eb",
-  Hawaii: "#e5e7eb",
-  Idaho: "#93c5fd",
+  "02": "#e5e7eb", // Alaska
+  "15": "#e5e7eb", // Hawaii
+  "16": "#93c5fd", // Idaho
 };
 
 // Major cities with partner presence
@@ -90,9 +91,10 @@ interface USCoverageMapProps {
 }
 
 export function USCoverageMap({ className = "" }: USCoverageMapProps) {
-  const getCoverageColor = (stateName: string) => {
-    // Direct lookup using state name from geography data
-    const color = stateColors[stateName];
+  const getCoverageColor = (geo: any) => {
+    // Use the geography ID for lookup, similar to the CodeSandbox example
+    const stateId = geo.id;
+    const color = stateColors[stateId];
 
     if (color) {
       return color;
@@ -130,7 +132,7 @@ export function USCoverageMap({ className = "" }: USCoverageMapProps) {
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
-                  fill={getCoverageColor(geo.properties.name)}
+                  fill={getCoverageColor(geo)}
                   stroke="#ffffff"
                   strokeWidth={0.5}
                   style={{
