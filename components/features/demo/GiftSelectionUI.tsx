@@ -42,9 +42,9 @@ const GIFT_OPTIONS: GiftOption[] = [
     percentage: "78%",
   },
   {
-    id: "cleaning-service",
-    title: "Professional Home Cleaning Service",
-    description: "Professional cleaning for your new place",
+    id: "williams-sonoma",
+    title: "Williams Sonoma Gift Card",
+    description: "Premium kitchen and home essentials",
     insight:
       "65% of relocating families hire a cleaning service within their first month",
     icon: Sparkles,
@@ -53,15 +53,15 @@ const GIFT_OPTIONS: GiftOption[] = [
     percentage: "65%",
   },
   {
-    id: "dining-experience",
-    title: "Local Dining Experience",
-    description: "Explore local dining options",
+    id: "cleaning-service",
+    title: "Professional Cleaning Service",
+    description: "Professional cleaning for your new place",
     insight:
-      "84% of new residents explore local dining options within the first two weeks",
-    icon: UtensilsCrossed,
-    color: "#10b981",
-    emoji: "🍽️",
-    percentage: "84%",
+      "65% of relocating families hire a cleaning service within their first month",
+    icon: Sparkles,
+    color: "#3b82f6",
+    emoji: "✨",
+    percentage: "65%",
   },
 ];
 
@@ -187,11 +187,31 @@ export function GiftSelectionUI({
                     <div className="flex items-start gap-4">
                       {/* Icon and Emoji */}
                       <div className="flex flex-col items-center gap-2">
-                        <div
-                          className="w-12 h-12 rounded-xl flex items-center justify-center shadow-md"
-                          style={{ backgroundColor: option.color }}
-                        >
-                          <IconComponent className="w-6 h-6 text-white" />
+                        <div className="w-16 h-16 rounded-xl flex items-center justify-center shadow-md bg-white border border-gray-100">
+                          {option.id === "home-depot" ? (
+                            <div className="p-2 w-full h-full">
+                              <img
+                                src="/logos/home-depot-logo.png"
+                                alt="Home Depot"
+                                className="w-full h-full object-contain"
+                              />
+                            </div>
+                          ) : option.id === "williams-sonoma" ? (
+                            <div className="p-2 w-full h-full">
+                              <img
+                                src="/logos/williams_sonoma_logo.svg"
+                                alt="Williams Sonoma"
+                                className="w-full h-full object-contain"
+                              />
+                            </div>
+                          ) : (
+                            <div
+                              className="w-14 h-14 rounded-lg flex items-center justify-center"
+                              style={{ backgroundColor: option.color }}
+                            >
+                              <IconComponent className="w-8 h-8 text-white" />
+                            </div>
+                          )}
                         </div>
                         <div className="text-2xl">{option.emoji}</div>
                       </div>

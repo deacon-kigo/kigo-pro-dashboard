@@ -655,13 +655,15 @@ export function ABCFIDemoChat({
         <div className="bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-full px-6 py-3 shadow-lg">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center shadow-sm">
-              <Brain className="w-4 h-4 text-white" />
+              <Sparkles className="w-4 h-4 text-white" />
             </div>
             <div>
               <h3 className="text-sm font-semibold text-gray-900">
-                Kigo AI Assistant
+                Your Reward Assistant
               </h3>
-              <p className="text-xs text-gray-600">Financial Intelligence</p>
+              <p className="text-xs text-gray-600">
+                Personalized Rewards & Offers
+              </p>
             </div>
           </div>
         </div>
