@@ -176,13 +176,8 @@ export function CampaignGiftAmountSection({
 
           <div className="p-3 bg-white rounded-lg shadow-sm border border-gray-200">
             <div className="flex items-start gap-3">
-              <div className="w-16 h-16 rounded-xl flex items-center justify-center shadow-md flex-shrink-0 bg-white border border-gray-100">
-                <div
-                  className="w-12 h-12 rounded-lg flex items-center justify-center"
-                  style={{ backgroundColor: "#3b82f6" }}
-                >
-                  <Sparkles className="w-6 h-6 text-white" />
-                </div>
+              <div className="w-20 h-20 rounded-xl flex items-center justify-center shadow-md flex-shrink-0 bg-gray-50 border border-gray-100">
+                <div className="text-4xl">✨</div>
               </div>
               <div className="flex-1">
                 <div className="flex items-start justify-between mb-1">

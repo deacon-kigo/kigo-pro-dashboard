@@ -1565,14 +1565,8 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                     </p>
                   </div>
                   <div className="flex-1 h-0.5 bg-gradient-to-r from-blue-500 to-green-500 relative">
-                    <div
-                      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xs"
-                      style={{
-                        transform:
-                          "translateX(-50%) translateY(-50%) scaleX(-1)",
-                      }}
-                    >
-                      🚗
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xs">
+                      🚙
                     </div>
                   </div>
                   <div className="text-center">

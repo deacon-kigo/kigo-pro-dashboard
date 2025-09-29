@@ -651,7 +651,7 @@ export function ABCFIDemoChat({
       </div>
 
       {/* AI Chat Experience Header */}
-      <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-60">
+      <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-0">
         <div className="bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-full px-6 py-3 shadow-lg">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center shadow-sm">
