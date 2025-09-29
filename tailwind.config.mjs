@@ -6,6 +6,15 @@ export default {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  safelist: [
+    // Journey card icon colors
+    "bg-blue-500",
+    "bg-pink-500",
+    "bg-green-500",
+    "bg-orange-500",
+    "bg-purple-500",
+    "bg-gray-500",
+  ],
   theme: {
     extend: {
       colors: {

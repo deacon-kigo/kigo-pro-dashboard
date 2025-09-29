@@ -77,27 +77,22 @@ interface JourneyCard {
 }
 
 // Color mapping to ensure Tailwind classes are properly included
+// Safelist: bg-blue-500 bg-pink-500 bg-green-500 bg-orange-500 bg-purple-500 bg-gray-500
 const getCardIconColor = (cardId: string) => {
-  switch (cardId) {
-    case "home-purchase":
-      return "bg-blue-500";
-    case "life-transitions":
-      return "bg-pink-500";
-    case "back-to-school":
-      return "bg-green-500";
-    case "home-improvement":
-      return "bg-orange-500";
-    case "travel-vacation":
-      return "bg-purple-500";
-    default:
-      return "bg-gray-500";
-  }
+  const colors = {
+    "home-purchase": "bg-blue-500",
+    "life-transitions": "bg-pink-500",
+    "back-to-school": "bg-green-500",
+    "home-improvement": "bg-orange-500",
+    "travel-vacation": "bg-purple-500",
+  };
+  return colors[cardId as keyof typeof colors] || "bg-gray-500";
 };
 
 const JOURNEY_OPPORTUNITIES: JourneyCard[] = [
   {
     id: "home-purchase",
-    title: "Home Purchase + Relocation Journey",
+    title: "Home Buying and Moving",
     customerVolume: "567 customers/month",
     revenuePotential: "$127-245 per customer",
     icon: Home,
@@ -741,9 +736,9 @@ export function ABCFIDemoChat({
                   {message.component === "journey-carousel" && (
                     <div className="w-full">
                       {/* Journey Cards Carousel in Messages */}
-                      <div className="relative">
+                      <div className="relative py-2">
                         <div
-                          className="flex gap-4 overflow-x-auto px-4 py-2"
+                          className="flex gap-4 overflow-x-auto px-4 pb-4"
                           style={{
                             scrollbarWidth: "none",
                             msOverflowStyle: "none",
@@ -973,7 +968,7 @@ export function ABCFIDemoChat({
                   className={`flex gap-4 scroll-smooth transition-all duration-1000 ${
                     isCardSelecting
                       ? "justify-center px-0"
-                      : "overflow-x-hidden px-10"
+                      : "overflow-x-auto px-4 pb-4"
                   }`}
                   style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
                 >
