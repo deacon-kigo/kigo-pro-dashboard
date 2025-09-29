@@ -32,6 +32,7 @@ import {
 // Scene 2 UI components
 import { CampaignPlanUI } from "./CampaignPlanUI";
 import { ComprehensiveCampaignSummary } from "./ComprehensiveCampaignSummary";
+import { StreamingROIMetrics } from "./StreamingROIMetrics";
 import { CampaignGiftAmountSection } from "./CampaignGiftAmountSection";
 import { CampaignJourneySection } from "./CampaignJourneySection";
 import { CampaignLocationConfig } from "./CampaignLocationConfig";
@@ -56,6 +57,7 @@ interface Message {
     | "campaign-location-config"
     | "campaign-plan"
     | "comprehensive-campaign-summary"
+    | "streaming-roi-metrics"
     | "mobile-experience"
     | "roi-model"
     | "placeholder"; // Scene 2 components
@@ -149,6 +151,8 @@ export function ABCFIDemoChat({
   const [cardScrollIndex, setCardScrollIndex] = useState(0);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [isCardSelecting, setIsCardSelecting] = useState(false);
+  const [campaignData, setCampaignData] = useState<any>(null);
+  const [showROISuggestion, setShowROISuggestion] = useState(false);
 
   // Simplified state - no Scene 2 complexity
   // Scene 2 will be rebuilt from scratch
@@ -402,7 +406,78 @@ export function ABCFIDemoChat({
         };
 
         setMessages((prev) => [...prev, enhancedSummaryMessage]);
+
+        // Store campaign data and show ROI suggestion
+        setCampaignData({
+          giftAmount: configData.giftAmount,
+          timeline: configData.timeline,
+          locationData: configData,
+        });
+
+        // Show ROI suggestion pill after a delay
+        setTimeout(() => {
+          setShowROISuggestion(true);
+        }, 2000);
       }, 1000);
+    }, 1000);
+  };
+
+  // Handle ROI question from suggestion pill
+  const handleROIQuestion = () => {
+    setShowROISuggestion(false);
+    setIsTyping(true);
+
+    // Add Tucker's question to messages
+    const tuckerQuestion: Message = {
+      id: Date.now().toString(),
+      text: "What's the ROI impact of this campaign?",
+      sender: "user",
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, tuckerQuestion]);
+
+    setTimeout(() => {
+      const aiResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        text: "Great question! Let me analyze the ROI impact for your New Homeowner Welcome Campaign. I'll calculate the financial projections based on your configuration.",
+        sender: "ai",
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, aiResponse]);
+      setIsTyping(false);
+
+      // Show streaming ROI metrics
+      setTimeout(() => {
+        const roiMetricsMessage: Message = {
+          id: (Date.now() + 2).toString(),
+          text: "",
+          sender: "ai",
+          timestamp: new Date(),
+          component: "streaming-roi-metrics",
+          data: campaignData,
+        };
+
+        setMessages((prev) => [...prev, roiMetricsMessage]);
+      }, 1000);
+    }, 1000);
+  };
+
+  // Handle ROI analysis completion
+  const handleROIAnalysisComplete = () => {
+    setIsTyping(true);
+
+    setTimeout(() => {
+      const completionMessage: Message = {
+        id: Date.now().toString(),
+        text: "🎯 Analysis complete! Your campaign shows a strong +33% ROI with $45,360 projected incremental revenue. The co-op funding model reduces your net cost to just $34,020. Ready to launch this campaign?",
+        sender: "ai",
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, completionMessage]);
+      setIsTyping(false);
     }, 1000);
   };
 
@@ -800,6 +875,17 @@ export function ABCFIDemoChat({
                     </div>
                   )}
 
+                  {message.component === "streaming-roi-metrics" && (
+                    <div className="w-full">
+                      <StreamingROIMetrics
+                        giftAmount={message.data?.giftAmount || 100}
+                        timeline={message.data?.timeline || "30-days"}
+                        onAnalysisComplete={handleROIAnalysisComplete}
+                        className="w-full"
+                      />
+                    </div>
+                  )}
+
                   {message.component === "placeholder" && (
                     <div className="w-full p-4 bg-gray-100 rounded-lg text-center text-gray-500">
                       Scene 2 components will be rebuilt here
@@ -1057,6 +1143,21 @@ export function ABCFIDemoChat({
               ))}
             </div>
           </div>
+
+          {/* ROI Suggestion Pill */}
+          {showROISuggestion && (
+            <div className="mb-4">
+              <div className="flex justify-center">
+                <button
+                  onClick={handleROIQuestion}
+                  className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-lg hover:shadow-xl animate-in slide-in-from-bottom-2 fade-in flex items-center gap-2"
+                >
+                  <TrendingUp className="w-4 h-4" />
+                  What's the ROI impact of this campaign?
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="relative">
             <div className="flex items-center bg-white/95 backdrop-blur-sm border border-gray-200/50 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl focus-within:ring-2 focus-within:ring-blue-500/30 focus-within:border-blue-500/50">
