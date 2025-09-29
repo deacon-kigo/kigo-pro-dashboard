@@ -76,6 +76,24 @@ interface JourneyCard {
   confidence?: number;
 }
 
+// Color mapping to ensure Tailwind classes are properly included
+const getCardIconColor = (cardId: string) => {
+  switch (cardId) {
+    case "home-purchase":
+      return "bg-blue-500";
+    case "life-transitions":
+      return "bg-pink-500";
+    case "back-to-school":
+      return "bg-green-500";
+    case "home-improvement":
+      return "bg-orange-500";
+    case "travel-vacation":
+      return "bg-purple-500";
+    default:
+      return "bg-gray-500";
+  }
+};
+
 const JOURNEY_OPPORTUNITIES: JourneyCard[] = [
   {
     id: "home-purchase",
@@ -758,7 +776,7 @@ export function ABCFIDemoChat({
                                 >
                                   <div className="flex items-start justify-between mb-3">
                                     <div
-                                      className={`w-10 h-10 rounded-xl ${card.color} flex items-center justify-center shadow-lg`}
+                                      className={`w-10 h-10 rounded-xl ${getCardIconColor(card.id)} flex items-center justify-center shadow-lg`}
                                     >
                                       <IconComponent className="w-5 h-5 text-white" />
                                     </div>
@@ -998,7 +1016,7 @@ export function ABCFIDemoChat({
                             {/* Header with Icon and Trend */}
                             <div className="flex items-start justify-between mb-3">
                               <div
-                                className={`w-10 h-10 rounded-xl ${card.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-200 shadow-lg`}
+                                className={`w-10 h-10 rounded-xl ${getCardIconColor(card.id)} flex items-center justify-center group-hover:scale-110 transition-transform duration-200 shadow-lg`}
                               >
                                 <IconComponent className="w-5 h-5 text-white" />
                               </div>
