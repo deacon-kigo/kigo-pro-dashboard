@@ -1974,7 +1974,10 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
         </div>
 
         {/* Sticky Bottom Input Area - positioned within mobile container */}
-        <div className="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-lg">
+        <div
+          className="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-lg"
+          style={{ transform: "translateY(1px)" }}
+        >
           {/* Input Only */}
           <div className="px-4 py-2 bg-transparent">
             <div className="flex items-center gap-2">
@@ -1988,7 +1991,7 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                     inputText.trim() &&
                     sendMessage(inputText)
                   }
-                  placeholder="Ask about your move..."
+                  placeholder="Type your message..."
                   className="w-full px-4 py-2 bg-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm border border-gray-200 shadow-sm"
                 />
               </div>
@@ -2011,7 +2014,7 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                    d="M9 5l7 7-7 7"
                   />
                 </svg>
               </button>
