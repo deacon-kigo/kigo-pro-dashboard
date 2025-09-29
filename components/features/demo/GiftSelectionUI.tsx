@@ -35,7 +35,7 @@ const GIFT_OPTIONS: GiftOption[] = [
     title: "Home Depot Gift Card",
     description: "Perfect for home improvement needs",
     insight:
-      "78% of new homeowners visit a home improvement store within 30 days of moving.",
+      "78% of new homeowners visit a home improvement store within 30 days of moving",
     icon: Home,
     color: "#f97316",
     emoji: "🏠",
@@ -46,7 +46,7 @@ const GIFT_OPTIONS: GiftOption[] = [
     title: "Professional Home Cleaning Service",
     description: "Professional cleaning for your new place",
     insight:
-      "65% of relocating families hire a cleaning service within their first month.",
+      "65% of relocating families hire a cleaning service within their first month",
     icon: Sparkles,
     color: "#3b82f6",
     emoji: "✨",
@@ -57,7 +57,7 @@ const GIFT_OPTIONS: GiftOption[] = [
     title: "Local Dining Experience",
     description: "Explore local dining options",
     insight:
-      "84% of new residents explore local dining options within the first two weeks.",
+      "84% of new residents explore local dining options within the first two weeks",
     icon: UtensilsCrossed,
     color: "#10b981",
     emoji: "🍽️",
@@ -210,18 +210,18 @@ export function GiftSelectionUI({
                           {option.description}
                         </p>
 
-                        {/* Insight */}
-                        <div className="bg-gray-50 rounded-lg p-3">
-                          <div className="flex items-center gap-2 mb-1">
-                            <TrendingUp className="w-3 h-3 text-green-600" />
-                            <span className="text-xs font-medium text-gray-700">
-                              Data Insight
+                        {/* AI Insight */}
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 border border-blue-200">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Sparkles className="w-3 h-3 text-blue-600" />
+                            <span className="text-xs font-semibold text-blue-900">
+                              AI Insight
                             </span>
-                            <Badge className="bg-green-100 text-green-700 text-xs">
+                            <Badge className="bg-blue-100 text-blue-700 text-xs font-bold">
                               {option.percentage}
                             </Badge>
                           </div>
-                          <p className="text-xs text-gray-600">
+                          <p className="text-xs text-blue-800 font-medium">
                             {option.insight}
                           </p>
                         </div>

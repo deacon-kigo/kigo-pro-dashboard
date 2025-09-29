@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Sparkles } from "lucide-react";
 import { ABCFIDemoChat } from "./ABCFIDemoChat";
 
 interface ABCFIDemoTriggerProps {
