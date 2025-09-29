@@ -10,19 +10,66 @@ import {
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-110m.json";
 
-// Sample coverage data - states with high coverage
-const coverageData = [
-  { state: "CA", coverage: 98, color: "#10b981" },
-  { state: "TX", coverage: 95, color: "#10b981" },
-  { state: "FL", coverage: 92, color: "#3b82f6" },
-  { state: "NY", coverage: 97, color: "#10b981" },
-  { state: "PA", coverage: 89, color: "#3b82f6" },
-  { state: "IL", coverage: 94, color: "#10b981" },
-  { state: "OH", coverage: 87, color: "#3b82f6" },
-  { state: "GA", coverage: 91, color: "#3b82f6" },
-  { state: "NC", coverage: 88, color: "#3b82f6" },
-  { state: "MI", coverage: 86, color: "#3b82f6" },
-];
+// Coverage data with direct hex colors
+const stateColors: { [key: string]: string } = {
+  // High coverage states (90%+) - Green
+  California: "#10b981",
+  Texas: "#10b981",
+  "New York": "#10b981",
+  Illinois: "#10b981",
+  Florida: "#059669",
+
+  // Good coverage states (85%+) - Blue
+  Pennsylvania: "#3b82f6",
+  Ohio: "#2563eb",
+  Georgia: "#3b82f6",
+  "North Carolina": "#2563eb",
+  Michigan: "#3b82f6",
+  Virginia: "#2563eb",
+  Washington: "#3b82f6",
+  Arizona: "#2563eb",
+  Massachusetts: "#3b82f6",
+  Tennessee: "#2563eb",
+  Indiana: "#3b82f6",
+  Missouri: "#2563eb",
+  Maryland: "#3b82f6",
+  Wisconsin: "#2563eb",
+  Colorado: "#3b82f6",
+  Minnesota: "#2563eb",
+
+  // Standard coverage states - Light Blue
+  Alabama: "#93c5fd",
+  Arkansas: "#bfdbfe",
+  Connecticut: "#93c5fd",
+  Delaware: "#bfdbfe",
+  Iowa: "#93c5fd",
+  Kansas: "#bfdbfe",
+  Kentucky: "#93c5fd",
+  Louisiana: "#bfdbfe",
+  Maine: "#93c5fd",
+  Mississippi: "#bfdbfe",
+  Montana: "#93c5fd",
+  Nebraska: "#bfdbfe",
+  Nevada: "#93c5fd",
+  "New Hampshire": "#bfdbfe",
+  "New Jersey": "#93c5fd",
+  "New Mexico": "#bfdbfe",
+  "North Dakota": "#93c5fd",
+  Oklahoma: "#bfdbfe",
+  Oregon: "#93c5fd",
+  "Rhode Island": "#bfdbfe",
+  "South Carolina": "#93c5fd",
+  "South Dakota": "#bfdbfe",
+  Utah: "#93c5fd",
+  Vermont: "#bfdbfe",
+  "West Virginia": "#93c5fd",
+  Wyoming: "#bfdbfe",
+
+  // Special cases
+  Alaska: "#e5e7eb",
+  Hawaii: "#e5e7eb",
+  Idaho: "#93c5fd",
+};
 
 // Major cities with partner presence
 const majorCities = [
@@ -44,32 +91,15 @@ interface USCoverageMapProps {
 
 export function USCoverageMap({ className = "" }: USCoverageMapProps) {
   const getCoverageColor = (stateName: string) => {
-    // Simple logic to assign colors based on state
-    const stateAbbr = getStateAbbreviation(stateName);
-    const coverageInfo = coverageData.find((d) => d.state === stateAbbr);
+    // Direct lookup using state name from geography data
+    const color = stateColors[stateName];
 
-    if (coverageInfo) {
-      return coverageInfo.color;
+    if (color) {
+      return color;
     }
 
-    // Default colors for states not in our data
-    return "#e5e7eb"; // Light gray for lower coverage
-  };
-
-  const getStateAbbreviation = (stateName: string): string => {
-    const stateMap: { [key: string]: string } = {
-      California: "CA",
-      Texas: "TX",
-      Florida: "FL",
-      "New York": "NY",
-      Pennsylvania: "PA",
-      Illinois: "IL",
-      Ohio: "OH",
-      Georgia: "GA",
-      "North Carolina": "NC",
-      Michigan: "MI",
-    };
-    return stateMap[stateName] || "";
+    // Default color for any states not explicitly defined
+    return "#f3f4f6"; // Light gray for minimal coverage
   };
 
   return (
@@ -125,11 +155,11 @@ export function USCoverageMap({ className = "" }: USCoverageMapProps) {
           {majorCities.map((city) => (
             <Marker key={city.name} coordinates={city.coordinates}>
               <circle
-                r={Math.sqrt(city.partners) / 8}
+                r={Math.max(3, Math.sqrt(city.partners) / 12)}
                 fill="#ef4444"
-                fillOpacity={0.7}
+                fillOpacity={0.8}
                 stroke="#ffffff"
-                strokeWidth={1}
+                strokeWidth={1.5}
               />
             </Marker>
           ))}
@@ -139,15 +169,31 @@ export function USCoverageMap({ className = "" }: USCoverageMapProps) {
         <div className="absolute bottom-2 right-2 bg-white/90 backdrop-blur-sm rounded-lg p-2 border border-gray-200 text-xs">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-green-500 rounded"></div>
+              <div
+                className="w-3 h-3 rounded"
+                style={{ backgroundColor: "#10b981" }}
+              ></div>
               <span className="text-gray-700">High Coverage (90%+)</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-blue-500 rounded"></div>
+              <div
+                className="w-3 h-3 rounded"
+                style={{ backgroundColor: "#3b82f6" }}
+              ></div>
               <span className="text-gray-700">Good Coverage (85%+)</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+              <div
+                className="w-3 h-3 rounded"
+                style={{ backgroundColor: "#93c5fd" }}
+              ></div>
+              <span className="text-gray-700">Standard Coverage</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div
+                className="w-2 h-2 rounded-full"
+                style={{ backgroundColor: "#ef4444" }}
+              ></div>
               <span className="text-gray-700">Partner Hubs</span>
             </div>
           </div>
