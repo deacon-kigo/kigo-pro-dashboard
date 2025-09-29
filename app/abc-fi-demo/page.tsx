@@ -172,7 +172,7 @@ export default function ABCFIDemoStandalone() {
       {/* Standalone Mobile Container */}
       <div className="relative flex items-center justify-center gap-8">
         {/* Dev Navigation - Side Panel */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 hidden">
           {/* Dev Toggle */}
           <button
             onClick={() => setShowDevNav(!showDevNav)}
@@ -212,7 +212,7 @@ export default function ABCFIDemoStandalone() {
         {/* Phone Container */}
         <div className="relative">
           {/* Demo Progress Indicator */}
-          <div className="absolute -top-12 left-0 right-0 flex justify-center">
+          <div className="absolute -top-12 left-0 right-0 flex justify-center hidden">
             <div className="bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 shadow-sm border border-gray-200">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
@@ -372,7 +372,7 @@ export default function ABCFIDemoStandalone() {
               {currentStep !== "ios-homescreen" &&
                 currentStep !== "splash-screen" &&
                 currentStep !== "ai-chat" && (
-                  <div className="absolute bottom-20 right-4 z-40">
+                  <div className="absolute bottom-20 right-4 z-40 hidden">
                     <button
                       onClick={() => setCurrentStep("ai-chat")}
                       className="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:shadow-xl transition-all duration-200 active:scale-95"
@@ -401,7 +401,7 @@ export default function ABCFIDemoStandalone() {
           </div>
 
           {/* Phone Details */}
-          <div className="absolute -bottom-12 left-0 right-0 text-center">
+          <div className="absolute -bottom-12 left-0 right-0 text-center hidden">
             <p className="text-gray-600 text-sm font-medium">
               ABC FI Banking Demo
             </p>

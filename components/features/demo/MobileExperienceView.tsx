@@ -11,6 +11,9 @@ import {
   Home,
   Sparkles,
   UtensilsCrossed,
+  Signal,
+  Wifi,
+  BatteryMedium,
 } from "lucide-react";
 import { WavyBackground } from "@/components/ui/wavy-background";
 
@@ -72,10 +75,10 @@ export function MobileExperienceView({
           {/* Status Bar */}
           <div className="bg-black text-white text-xs px-4 py-1 flex justify-between items-center">
             <span>9:41</span>
-            <div className="flex gap-1">
-              <div className="w-4 h-2 bg-white rounded-sm"></div>
-              <div className="w-4 h-2 bg-white rounded-sm"></div>
-              <div className="w-4 h-2 bg-white rounded-sm"></div>
+            <div className="flex items-center gap-1">
+              <Signal className="w-3 h-3 text-white" />
+              <Wifi className="w-3 h-3 text-white" />
+              <BatteryMedium className="w-4 h-3 text-white" />
             </div>
           </div>
 
@@ -115,7 +118,14 @@ export function MobileExperienceView({
           {/* Status Bar */}
           <div className="bg-blue-600 text-white text-xs px-4 py-3 flex justify-between items-center">
             <span>← ABC FI</span>
-            <span>9:41</span>
+            <div className="flex items-center gap-2">
+              <span>9:41</span>
+              <div className="flex items-center gap-1">
+                <Signal className="w-3 h-3 text-white" />
+                <Wifi className="w-3 h-3 text-white" />
+                <BatteryMedium className="w-4 h-3 text-white" />
+              </div>
+            </div>
           </div>
 
           {/* Header */}
@@ -172,7 +182,14 @@ export function MobileExperienceView({
           {/* Status Bar */}
           <div className="bg-blue-600 text-white text-xs px-4 py-3 flex justify-between items-center">
             <span>← ABC FI</span>
-            <span>9:41</span>
+            <div className="flex items-center gap-2">
+              <span>9:41</span>
+              <div className="flex items-center gap-1">
+                <Signal className="w-3 h-3 text-white" />
+                <Wifi className="w-3 h-3 text-white" />
+                <BatteryMedium className="w-4 h-3 text-white" />
+              </div>
+            </div>
           </div>
 
           {/* Success Content */}
