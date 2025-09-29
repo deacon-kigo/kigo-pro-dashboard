@@ -18,6 +18,7 @@ import {
   TrendingUp,
   Users,
   DollarSign,
+  MapPin,
   Zap,
   Clock,
   Target,
@@ -155,6 +156,8 @@ export function ABCFIDemoChat({
   const [isCardSelecting, setIsCardSelecting] = useState(false);
   const [campaignData, setCampaignData] = useState<any>(null);
   const [showROISuggestion, setShowROISuggestion] = useState(false);
+  const [showLocalOffersSuggestion, setShowLocalOffersSuggestion] =
+    useState(false);
 
   // Simplified state - no Scene 2 complexity
   // Scene 2 will be rebuilt from scratch
@@ -382,7 +385,7 @@ export function ABCFIDemoChat({
     setTimeout(() => {
       const completionMessage: Message = {
         id: Date.now().toString(),
-        text: `🎯 AI configuration complete! Campaign optimized for ${configData.customerData.name} at ${configData.customerData.address} with ${configData.nearbyMerchants.length} nearby partners. Here's your personalized campaign:`,
+        text: `🎯 AI configuration complete! Nationwide program configured with ${configData.aiInsights.networkCoverage} market coverage and ${configData.aiInsights.partnerCount} partner locations. Here's your campaign overview:`,
         sender: "ai",
         timestamp: new Date(),
       };
@@ -409,16 +412,16 @@ export function ABCFIDemoChat({
 
         setMessages((prev) => [...prev, enhancedSummaryMessage]);
 
-        // Store campaign data and show ROI suggestion
+        // Store campaign data and show local offers suggestion
         setCampaignData({
           giftAmount: configData.giftAmount,
           timeline: configData.timeline,
           locationData: configData,
         });
 
-        // Show ROI suggestion pill after a delay
+        // Show local offers suggestion pill after a delay
         setTimeout(() => {
-          setShowROISuggestion(true);
+          setShowLocalOffersSuggestion(true);
         }, 2000);
       }, 1000);
     }, 1000);
@@ -463,6 +466,39 @@ export function ABCFIDemoChat({
 
         setMessages((prev) => [...prev, roiMetricsMessage]);
       }, 1000);
+    }, 1000);
+  };
+
+  // Handle local offers question from suggestion pill
+  const handleLocalOffersQuestion = () => {
+    setShowLocalOffersSuggestion(false);
+    setIsTyping(true);
+
+    // Add Tucker's question to messages
+    const tuckerQuestion: Message = {
+      id: Date.now().toString(),
+      text: "Include local offers to welcome them to their new neighborhood",
+      sender: "user",
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, tuckerQuestion]);
+
+    setTimeout(() => {
+      const aiResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        text: "A great thought. Integrating new homeowners into their local community drives significant long-term loyalty. I will offer to follow up with a 'Welcome to the Neighborhood' package of hyper local offers once they've relocated.",
+        sender: "ai",
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, aiResponse]);
+      setIsTyping(false);
+
+      // Show ROI suggestion after local offers discussion
+      setTimeout(() => {
+        setShowROISuggestion(true);
+      }, 2000);
     }, 1000);
   };
 
@@ -1280,6 +1316,21 @@ export function ABCFIDemoChat({
               ))}
             </div>
           </div>
+
+          {/* Local Offers Suggestion Pill */}
+          {showLocalOffersSuggestion && (
+            <div className="mb-4">
+              <div className="flex justify-center">
+                <button
+                  onClick={handleLocalOffersQuestion}
+                  className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:from-purple-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl animate-in slide-in-from-bottom-2 fade-in flex items-center gap-2"
+                >
+                  <MapPin className="w-4 h-4" />
+                  Include local offers to welcome them to their new neighborhood
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* ROI Suggestion Pill */}
           {showROISuggestion && (

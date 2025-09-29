@@ -325,14 +325,11 @@ export default function MarketingInsightsView() {
             </div>
             <div className="flex items-center gap-3">
               <Badge className="bg-green-100 border border-green-200 text-green-700 px-3 py-1 text-sm font-medium">
-                <Zap
-                  className="w-4 h-4 mr-2 text-green-700"
-                  style={{ color: "#15803d !important" }}
-                />
+                <Zap className="w-4 h-4 mr-2 text-green-700" />
                 AI Active
               </Badge>
               <Button className="bg-blue-600 hover:bg-blue-700 text-white border-0 px-4 py-2 text-sm font-medium shadow-sm">
-                <Target className="w-4 h-4 mr-2" style={{ color: "#ffffff" }} />
+                <Target className="w-4 h-4 mr-2 text-white" />
                 Generate Campaign
               </Button>
             </div>

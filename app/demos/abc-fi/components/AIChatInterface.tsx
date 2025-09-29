@@ -2014,7 +2014,13 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M9 5l7 7-7 7"
+                    d="m3 3 3 9-3 9 19-9Z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 12h16"
                   />
                 </svg>
               </button>

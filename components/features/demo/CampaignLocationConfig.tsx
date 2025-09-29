@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { MapPin, Target, Zap, CheckCircle, ArrowRight } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { DenverHomeLocation } from "./DenverHomeLocation";
 import { MerchantLocationMap } from "./MerchantLocationMap";
 
@@ -31,66 +32,67 @@ export function CampaignLocationConfig({
   const [configSteps, setConfigSteps] = useState<ConfigStep[]>([
     {
       id: "customer-profile",
-      title: "Customer Profile Analysis",
-      description: "AI analyzing new homeowner behavior patterns",
+      title: "Nationwide Segment Analysis",
+      description:
+        "AI analyzing new homeowner behavior patterns across all markets",
       status: "configuring",
     },
     {
       id: "location-mapping",
-      title: "Location Intelligence",
-      description: "Mapping Denver area merchant partners",
+      title: "Partner Network Mapping",
+      description: "Mapping nationwide merchant partner network",
       status: "pending",
     },
     {
       id: "offer-optimization",
-      title: "Offer Optimization",
-      description: "Personalizing offers based on proximity and preferences",
+      title: "Hyper-Local Personalization",
+      description: "Configuring location-based offer personalization engine",
       status: "pending",
     },
   ]);
 
-  // Customer Denver home coordinates and address
-  const customerData = {
-    name: "Sarah Martinez",
-    address: "4988 Valentia Ct, Denver, CO 80238",
-    neighborhood: "Stapleton",
-    coordinates: { lat: 39.7817, lng: -104.8897 },
+  // Nationwide program configuration data
+  const programData = {
+    campaignName: "New Homeowner Welcome Program",
+    targetSegment: "New Mortgage Customers",
+    scope: "Nationwide",
+    monthlyVolume: "567 customers/month",
     profile: {
-      moveFrom: "Kansas City, MO",
-      homeValue: "$650K",
+      averageHomeValue: "$450K-$750K",
       customerType: "New Homeowner",
+      demographics: "Families, 25-45 years old",
     },
   };
 
-  // Diverse merchant partners near Denver location (like Sarah's demo)
-  const nearbyMerchants = [
+  // Nationwide merchant partner network
+  const partnerNetwork = [
     {
       name: "The Home Depot",
-      address: "8500 E Northfield Blvd, Denver, CO 80238",
-      coordinates: { lat: 39.7856, lng: -104.8934 },
+      coverage: "2,300+ locations nationwide",
       category: "Home Improvement",
       logo: "/logos/home-depot-logo.png",
+      offer: "3X points on moving supplies",
     },
     {
-      name: "U-Haul Storage",
-      address: "7290 E 36th Ave, Denver, CO 80238",
-      coordinates: { lat: 39.7698, lng: -104.8912 },
-      category: "Storage",
-      logo: "/logos/U-Haul-logo.png",
-    },
-    {
-      name: "Hilton Denver Airport",
-      address: "8500 Peña Blvd, Denver, CO 80249",
-      coordinates: { lat: 39.8561, lng: -104.6737 },
-      category: "Hotel",
-      logo: "/logos/hilton-honor-logo.png",
-    },
-    {
-      name: "Two Men and a Truck",
-      address: "4155 E Jewell Ave, Denver, CO 80222",
-      coordinates: { lat: 39.6897, lng: -104.9234 },
+      name: "U-Haul",
+      coverage: "22,000+ locations nationwide",
       category: "Moving Services",
-      logo: "/logos/two-men-and-truck.jpg",
+      logo: "/logos/U-Haul-logo.png",
+      offer: "20% off truck rentals + 2X points",
+    },
+    {
+      name: "Hilton",
+      coverage: "6,800+ properties worldwide",
+      category: "Temporary Lodging",
+      logo: "/logos/hilton-honor-logo.png",
+      offer: "15% off 3-night stays + 2X points",
+    },
+    {
+      name: "TaskRabbit",
+      coverage: "140+ cities nationwide",
+      category: "Home Services",
+      logo: "/logos/taskrabbit-logo.png",
+      offer: "$50 off first task",
     },
   ];
 
@@ -102,7 +104,7 @@ export function CampaignLocationConfig({
       updateStepStatus(0, "completed");
       setCurrentStep(1);
 
-      // Step 2: Location Intelligence
+      // Step 2: Partner Network Mapping
       updateStepStatus(1, "configuring");
       setShowHomeLocation(true);
 
@@ -110,7 +112,7 @@ export function CampaignLocationConfig({
       updateStepStatus(1, "completed");
       setCurrentStep(2);
 
-      // Step 3: Offer Optimization
+      // Step 3: Hyper-Local Personalization
       updateStepStatus(2, "configuring");
       setShowMerchantMap(true);
 
@@ -120,15 +122,15 @@ export function CampaignLocationConfig({
       // Complete configuration
       setTimeout(() => {
         onConfigComplete({
-          customerData,
-          nearbyMerchants,
+          programData,
+          partnerNetwork,
           giftAmount,
           timeline,
           aiInsights: {
-            proximityScore: 95,
-            relevanceScore: 88,
+            networkCoverage: "98% of US markets",
+            partnerCount: "30,000+ locations",
             expectedEngagement: "High",
-            merchantCount: nearbyMerchants.length,
+            scalability: "Nationwide",
           },
         });
       }, 1000);
@@ -161,7 +163,7 @@ export function CampaignLocationConfig({
           </h3>
         </div>
         <p className="text-sm text-gray-600">
-          Optimizing campaign for new homeowner: Sarah Martinez
+          Configuring nationwide new homeowner welcome program
         </p>
       </div>
 
@@ -229,110 +231,189 @@ export function CampaignLocationConfig({
         ))}
       </div>
 
-      {/* Customer Profile Summary */}
-      <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-        <h4 className="font-medium text-gray-900 text-sm mb-2 flex items-center gap-2">
-          <Target className="w-4 h-4" />
-          Target Customer Profile
-        </h4>
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <div>
-            <span className="text-gray-500">Customer:</span>
-            <span className="ml-1 text-gray-900">{customerData.name}</span>
+      {/* Campaign Overview Card */}
+      <div className="mb-6 bg-gradient-to-br from-blue-50 via-white to-purple-50 rounded-xl border border-blue-200 p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Target className="w-5 h-5 text-blue-600" />
+          <h4 className="font-semibold text-gray-900 text-base">
+            Campaign Overview
+          </h4>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-600">Program:</span>
+              <span className="text-sm font-medium text-gray-900">
+                {programData.campaignName}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-600">Target:</span>
+              <span className="text-sm font-medium text-gray-900">
+                {programData.targetSegment}
+              </span>
+            </div>
           </div>
-          <div>
-            <span className="text-gray-500">Move:</span>
-            <span className="ml-1 text-gray-900">Kansas City → Denver</span>
-          </div>
-          <div>
-            <span className="text-gray-500">Home:</span>
-            <span className="ml-1 text-gray-900">$650K, Stapleton</span>
-          </div>
-          <div>
-            <span className="text-gray-500">Timeline:</span>
-            <span className="ml-1 text-gray-900">
-              {timeline.split("-")[0]} day follow-up
-            </span>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-600">Volume:</span>
+              <span className="text-sm font-medium text-gray-900">
+                {programData.monthlyVolume}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-600">Follow-up:</span>
+              <span className="text-sm font-medium text-gray-900">
+                {timeline.split("-")[0]} days
+              </span>
+            </div>
           </div>
         </div>
+
+        {/* Coverage Metrics */}
+        {showHomeLocation && (
+          <div className="animate-in slide-in-from-bottom-2 fade-in">
+            <div className="flex items-center gap-2 mb-2">
+              <MapPin className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-medium text-gray-900">
+                Nationwide Coverage
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="text-center bg-white rounded-lg p-3 border border-gray-200">
+                <div className="text-lg font-bold text-blue-600">98%</div>
+                <div className="text-xs text-gray-600">Market Coverage</div>
+              </div>
+              <div className="text-center bg-white rounded-lg p-3 border border-gray-200">
+                <div className="text-lg font-bold text-green-600">50</div>
+                <div className="text-xs text-gray-600">States</div>
+              </div>
+              <div className="text-center bg-white rounded-lg p-3 border border-gray-200">
+                <div className="text-lg font-bold text-purple-600">567</div>
+                <div className="text-xs text-gray-600">Monthly Volume</div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Denver Home Location */}
-      {showHomeLocation && (
-        <div className="mb-4 animate-in slide-in-from-bottom-2 fade-in">
-          <h4 className="font-medium text-gray-900 text-sm mb-2 flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-green-600" />
-            Customer Location: Denver Home
-          </h4>
-          <DenverHomeLocation
-            address={customerData.address}
-            neighborhood={customerData.neighborhood}
-          />
-        </div>
-      )}
-
-      {/* Nearby Merchant Partners */}
+      {/* Partner Network Card */}
       {showMerchantMap && (
-        <div className="mb-4 animate-in slide-in-from-bottom-2 fade-in">
-          <h4 className="font-medium text-gray-900 text-sm mb-3 flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-blue-600" />
-            Nearby Partner Network
-          </h4>
+        <div className="mb-6 bg-gradient-to-br from-green-50 via-white to-blue-50 rounded-xl border border-green-200 p-4 animate-in slide-in-from-bottom-2 fade-in">
+          <div className="flex items-center gap-2 mb-4">
+            <MapPin className="w-5 h-5 text-green-600" />
+            <h4 className="font-semibold text-gray-900 text-base">
+              Partner Network
+            </h4>
+            <Badge className="bg-green-100 text-green-700 text-xs px-2 py-1">
+              30,000+ Locations
+            </Badge>
+          </div>
 
-          {/* Merchant Grid */}
-          <div className="grid grid-cols-2 gap-2 mb-3">
-            {nearbyMerchants.map((merchant, index) => (
+          {/* Partner Grid */}
+          <div className="space-y-3 mb-4">
+            {partnerNetwork.map((partner, index) => (
               <div
-                key={merchant.name}
-                className="bg-gray-50 rounded-lg p-2 flex items-center gap-2"
+                key={partner.name}
+                className="bg-white rounded-lg p-3 border border-gray-200 hover:border-gray-300 transition-colors"
               >
-                <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm">
-                  <img
-                    src={merchant.logo}
-                    alt={merchant.name}
-                    className="w-6 h-4 object-contain"
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-gray-900 truncate">
-                    {merchant.name}
-                  </p>
-                  <p className="text-xs text-gray-500">{merchant.category}</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
+                    <img
+                      src={partner.logo}
+                      alt={partner.name}
+                      className="w-8 h-6 object-contain"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <h5 className="text-sm font-semibold text-gray-900">
+                        {partner.name}
+                      </h5>
+                      <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
+                        {partner.offer}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">
+                        {partner.category}
+                      </span>
+                      <span className="text-xs text-blue-600 font-medium">
+                        {partner.coverage}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Show map for primary merchant */}
-          <MerchantLocationMap
-            homeAddress={customerData.address}
-            homeCoordinates={customerData.coordinates}
-            merchantName={nearbyMerchants[0].name}
-            merchantAddress={nearbyMerchants[0].address}
-            merchantCoordinates={nearbyMerchants[0].coordinates}
-          />
+          {/* AI Personalization Info */}
+          <div className="bg-gradient-to-r from-purple-100 to-blue-100 rounded-lg p-3 border border-purple-200">
+            <div className="flex items-center gap-2 mb-2">
+              <Zap className="w-4 h-4 text-purple-600" />
+              <span className="text-sm font-medium text-purple-800">
+                AI Hyper-Local Engine
+              </span>
+            </div>
+            <p className="text-xs text-purple-700">
+              Automatically selects nearest partner locations and personalizes
+              offers based on customer geography, ensuring relevant local
+              experiences at scale.
+            </p>
+          </div>
         </div>
       )}
 
-      {/* AI Insights */}
+      {/* AI Optimization Results */}
       {currentStep >= 2 && (
-        <div className="mt-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 animate-in slide-in-from-bottom-2 fade-in">
-          <h4 className="font-medium text-blue-900 text-sm mb-2">
-            AI Optimization Insights
-          </h4>
-          <div className="grid grid-cols-3 gap-2 text-xs">
-            <div className="text-center">
-              <div className="font-bold text-blue-700">95%</div>
-              <div className="text-blue-600">Proximity Score</div>
+        <div className="bg-gradient-to-br from-indigo-50 via-white to-blue-50 rounded-xl border border-indigo-200 p-4 animate-in slide-in-from-bottom-2 fade-in">
+          <div className="flex items-center gap-2 mb-4">
+            <Zap className="w-5 h-5 text-indigo-600" />
+            <h4 className="font-semibold text-gray-900 text-base">
+              AI Optimization Complete
+            </h4>
+            <Badge className="bg-indigo-100 text-indigo-700 text-xs px-2 py-1">
+              Ready to Launch
+            </Badge>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div className="text-center bg-white rounded-lg p-4 border border-gray-200">
+              <div className="text-2xl font-bold text-indigo-600 mb-1">98%</div>
+              <div className="text-xs text-gray-600 font-medium">
+                Market Coverage
+              </div>
+              <div className="text-xs text-gray-500 mt-1">Nationwide reach</div>
             </div>
-            <div className="text-center">
-              <div className="font-bold text-blue-700">88%</div>
-              <div className="text-blue-600">Relevance</div>
+            <div className="text-center bg-white rounded-lg p-4 border border-gray-200">
+              <div className="text-2xl font-bold text-blue-600 mb-1">30K+</div>
+              <div className="text-xs text-gray-600 font-medium">
+                Partner Locations
+              </div>
+              <div className="text-xs text-gray-500 mt-1">Active network</div>
             </div>
-            <div className="text-center">
-              <div className="font-bold text-blue-700">High</div>
-              <div className="text-blue-600">Engagement</div>
+            <div className="text-center bg-white rounded-lg p-4 border border-gray-200">
+              <div className="text-2xl font-bold text-green-600 mb-1">High</div>
+              <div className="text-xs text-gray-600 font-medium">
+                Scalability
+              </div>
+              <div className="text-xs text-gray-500 mt-1">Enterprise ready</div>
             </div>
+          </div>
+
+          <div className="mt-4 bg-gradient-to-r from-green-100 to-blue-100 rounded-lg p-3 border border-green-200">
+            <div className="flex items-center gap-2 mb-1">
+              <CheckCircle className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-medium text-green-800">
+                Configuration Complete
+              </span>
+            </div>
+            <p className="text-xs text-green-700">
+              Your nationwide program is optimized and ready for deployment
+              across all markets with hyper-local personalization.
+            </p>
           </div>
         </div>
       )}

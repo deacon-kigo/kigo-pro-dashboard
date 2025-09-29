@@ -229,10 +229,10 @@ export default function Header() {
       <div
         className={`absolute inset-0 ${
           isDarkMode
-            ? "bg-gradient-to-r from-gray-900/90 via-gray-800/5 to-gray-700/10"
+            ? "bg-gradient-to-r from-gray-900/95 via-gray-800/90 to-gray-700/85"
             : isCVSContext
               ? "bg-gradient-to-r from-blue-50 via-blue-50/80 to-red-50/70 backdrop-blur-sm"
-              : "bg-gradient-to-r from-white/90 via-pastel-blue/5 to-pastel-purple/10"
+              : "bg-gradient-to-r from-white/95 via-white/90 to-white/85"
         } backdrop-blur-md`}
       ></div>
 
