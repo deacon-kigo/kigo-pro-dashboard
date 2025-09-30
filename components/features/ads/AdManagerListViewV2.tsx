@@ -1749,8 +1749,12 @@ const ActionDropdown = memo(function ActionDropdown({
                 <button
                   className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 flex items-center"
                   onClick={handleDeleteClick}
+                  style={{ color: "#dc2626" }}
                 >
-                  <TrashIcon className="mr-2 h-4 w-4 text-current" />
+                  <TrashIcon
+                    className="mr-2 h-4 w-4"
+                    style={{ color: "#dc2626" }}
+                  />
                   {deleteLabel}
                 </button>
               )}
