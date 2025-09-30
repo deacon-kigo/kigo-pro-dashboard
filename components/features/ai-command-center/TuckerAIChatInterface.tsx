@@ -370,7 +370,7 @@ export function TuckerAIChatInterface({
         onClick={onClose}
       />
 
-      <Card className="relative w-full h-full overflow-hidden shadow-2xl bg-white z-50">
+      <Card className="fixed inset-4 md:inset-8 lg:inset-16 overflow-hidden shadow-2xl bg-white z-50 max-w-4xl mx-auto">
         {/* Enhanced Header with Glassmorphic Design */}
         <div
           className="border-b border-purple-200/50"
@@ -417,10 +417,17 @@ export function TuckerAIChatInterface({
                 AI Active
               </div>
               <Button
-                onClick={onClose}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log("Close button clicked");
+                  onClose();
+                }}
                 variant="ghost"
                 size="sm"
-                className="p-2 hover:bg-gray-100 rounded-lg"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                type="button"
+                aria-label="Close chat"
               >
                 <X className="w-4 h-4" />
               </Button>

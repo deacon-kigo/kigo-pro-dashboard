@@ -37,14 +37,12 @@ export default function AICommandCenterView() {
   console.log("AICommandCenterView - Using initial prompt:", initialPrompt);
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center">
-      <TuckerAIChatInterface
-        onClose={() => {
-          // Navigate back to previous page or dashboard
-          window.history.back();
-        }}
-        initialPrompt={initialPrompt}
-      />
-    </div>
+    <TuckerAIChatInterface
+      onClose={() => {
+        // Navigate back to previous page or dashboard
+        window.history.back();
+      }}
+      initialPrompt={initialPrompt}
+    />
   );
 }

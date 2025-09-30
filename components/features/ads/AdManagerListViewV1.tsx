@@ -41,7 +41,7 @@ import { Ad, formatDate, formatDateTime, formatChannels } from "./adColumns";
 import { AdSearchBar, SearchField } from "./AdSearchBar";
 import { StatusChangeDialog } from "./StatusChangeDialog";
 import { AdDetailModal } from "./AdDetailModal";
-import { FloatingSelectionToolbar } from "./FloatingSelectionToolbar";
+import { InlineBulkActions } from "./InlineBulkActions";
 import { useDispatch } from "react-redux";
 import { clearAllDropdowns } from "@/lib/redux/slices/uiSlice";
 import { ColumnDef } from "@tanstack/react-table";
@@ -611,13 +611,33 @@ export default function AdManagerListView() {
       )}
 
       {/* Search and Filter Bar */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center gap-4">
         <div className="flex-1">
           <AdSearchBar
             onSearch={(query, field) => setSearchQuery(query)}
             placeholder={getContextProps.searchPlaceholder}
           />
         </div>
+
+        {/* Inline Bulk Actions (when items are selected) */}
+        <InlineBulkActions
+          selectedCounts={{
+            campaigns: 0,
+            adSets: Object.keys(selectedAdGroups).length,
+            ads: Object.keys(selectedAds).length,
+            total:
+              Object.keys(selectedAdGroups).length +
+              Object.keys(selectedAds).length,
+          }}
+          currentLevel={currentLevel === "adgroups" ? "adsets" : "ads"}
+          onClearSelection={() => {
+            setSelectedAdGroups({});
+            setSelectedAds({});
+          }}
+          onBulkDelete={() => {
+            console.log("Bulk delete");
+          }}
+        />
 
         {/* Filter Button - only show when viewing ads */}
         {currentLevel === "ads" && (
@@ -805,35 +825,6 @@ export default function AdManagerListView() {
           }))
         }
         ad={modalState.adDetail.ad}
-      />
-
-      {/* Floating Selection Toolbar */}
-      <FloatingSelectionToolbar
-        selectedCounts={{
-          campaigns: 0,
-          adSets: Object.keys(selectedAdGroups).length,
-          ads: Object.keys(selectedAds).length,
-          total:
-            Object.keys(selectedAdGroups).length +
-            Object.keys(selectedAds).length,
-        }}
-        currentLevel={currentLevel === "adgroups" ? "adsets" : "ads"}
-        onClearSelection={() => {
-          setSelectedAdGroups({});
-          setSelectedAds({});
-        }}
-        onBulkActivate={() => {
-          console.log("Bulk activate");
-        }}
-        onBulkPause={() => {
-          console.log("Bulk pause");
-        }}
-        onBulkDuplicate={() => {
-          console.log("Bulk duplicate");
-        }}
-        onBulkDelete={() => {
-          console.log("Bulk delete");
-        }}
       />
     </div>
   );
