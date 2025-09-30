@@ -2411,7 +2411,8 @@ export default function AdManagerListView() {
     handleClearSelection();
   }, [selectedCampaigns, selectedAdSets, selectedAds, handleClearSelection]);
 
-  const handleBulkDelete = useCallback(() => {
+  // Get selected items with their details for bulk operations
+  const getSelectedItemsData = useCallback(() => {
     const campaignIds = Object.keys(selectedCampaigns || {}).filter(
       (id) => selectedCampaigns[id]
     );
@@ -2422,15 +2423,68 @@ export default function AdManagerListView() {
       (id) => selectedAds[id]
     );
 
-    console.log("Bulk Delete:", {
-      campaigns: campaignIds,
-      adSets: adSetIds,
-      ads: adIds,
+    // Get campaign details
+    const selectedCampaignItems = campaignIds.map((id) => {
+      const campaign = campaignsData.find((c) => c.id === id);
+      return {
+        id,
+        name: campaign?.name || `Campaign ${id}`,
+        status: campaign?.status || "unknown",
+      };
     });
+
+    // Get ad set details
+    const selectedAdSetItems = adSetIds.map((id) => {
+      let foundAdSet: any = null;
+      for (const campaign of campaignsData) {
+        const adSet = campaign.adSets?.find((as) => as.id === id);
+        if (adSet) {
+          foundAdSet = adSet;
+          break;
+        }
+      }
+      return {
+        id,
+        name: foundAdSet?.name || `Ad Group ${id}`,
+        status: foundAdSet?.status || "unknown",
+      };
+    });
+
+    // Get ad details
+    const selectedAdItems = adIds.map((id) => {
+      let foundAd: any = null;
+      for (const campaign of campaignsData) {
+        for (const adSet of campaign.adSets || []) {
+          const ad = adSet.ads?.find((a) => a.id === id);
+          if (ad) {
+            foundAd = ad;
+            break;
+          }
+        }
+        if (foundAd) break;
+      }
+      return {
+        id,
+        name: foundAd?.name || `Ad ${id}`,
+        status: foundAd?.status || "unknown",
+      };
+    });
+
+    return {
+      campaigns: selectedCampaignItems,
+      adSets: selectedAdSetItems,
+      ads: selectedAdItems,
+    };
+  }, [selectedCampaigns, selectedAdSets, selectedAds, campaignsData]);
+
+  const handleBulkDelete = useCallback(() => {
+    const selectedItemsData = getSelectedItemsData();
+
+    console.log("Bulk Delete:", selectedItemsData);
     // TODO: Implement actual bulk delete logic
-    // Show confirmation dialog first
+    // The confirmation modal will handle this
     handleClearSelection();
-  }, [selectedCampaigns, selectedAdSets, selectedAds, handleClearSelection]);
+  }, [getSelectedItemsData, handleClearSelection]);
 
   // Get the total selected count across all levels
   const selectedCounts = useMemo(() => {
@@ -2574,6 +2628,7 @@ export default function AdManagerListView() {
             currentLevel={currentLevel}
             onClearSelection={handleClearSelection}
             onBulkDelete={handleBulkDelete}
+            selectedItems={getSelectedItemsData()}
           />
 
           {/* Center: Universal Filter Button - Available on all levels */}

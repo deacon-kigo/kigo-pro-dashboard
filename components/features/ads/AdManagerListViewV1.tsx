@@ -637,6 +637,36 @@ export default function AdManagerListView() {
           onBulkDelete={() => {
             console.log("Bulk delete");
           }}
+          selectedItems={{
+            campaigns: [],
+            adSets: Object.keys(selectedAdGroups)
+              .filter((id) => selectedAdGroups[id])
+              .map((id) => {
+                const adGroup = mockAdGroups.find((ag) => ag.id === id);
+                return {
+                  id,
+                  name: adGroup?.name || `Ad Group ${id}`,
+                  status: adGroup?.status || "unknown",
+                };
+              }),
+            ads: Object.keys(selectedAds)
+              .filter((id) => selectedAds[id])
+              .map((id) => {
+                let foundAd: any = null;
+                for (const adGroup of mockAdGroups) {
+                  const ad = adGroup.ads.find((a) => a.id === id);
+                  if (ad) {
+                    foundAd = ad;
+                    break;
+                  }
+                }
+                return {
+                  id,
+                  name: foundAd?.name || `Ad ${id}`,
+                  status: foundAd?.status || "unknown",
+                };
+              }),
+          }}
         />
 
         {/* Filter Button - only show when viewing ads */}
