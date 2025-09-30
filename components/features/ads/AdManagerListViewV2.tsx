@@ -42,6 +42,7 @@ import { AdSearchBar, SearchField } from "./AdSearchBar";
 import { StatusChangeDialog } from "./StatusChangeDialog";
 import { AdDetailModal } from "./AdDetailModal";
 import { InlineBulkActions } from "./InlineBulkActions";
+import AdGroupDeleteConfirmModal from "./modals/AdGroupDeleteConfirmModal";
 import { useDispatch } from "react-redux";
 import { clearAllDropdowns } from "@/lib/redux/slices/uiSlice";
 import { ColumnDef } from "@tanstack/react-table";
@@ -75,6 +76,10 @@ interface ModalState {
     isOpen: boolean;
     ad: Ad | null;
   };
+  adGroupDelete: {
+    isOpen: boolean;
+    adSet: AdSet | null;
+  };
 }
 
 // Type for navigation levels
@@ -94,6 +99,10 @@ const CLOSED_MODAL_STATE: ModalState = {
   adDetail: {
     isOpen: false,
     ad: null,
+  },
+  adGroupDelete: {
+    isOpen: false,
+    adSet: null,
   },
 };
 
@@ -337,7 +346,8 @@ const createCampaignColumns = (
 
 // Ad Set columns definition
 const createAdSetColumns = (
-  onAdSetSelect: (adSet: AdSet) => void
+  onAdSetSelect: (adSet: AdSet) => void,
+  onDeleteAdSet?: (adSet: AdSet) => void
 ): ColumnDef<AdSet>[] => [
   {
     id: "select",
@@ -458,8 +468,12 @@ const createAdSetColumns = (
         <ActionDropdown
           onViewClick={() => {}} // No-op since view is now handled by name click
           onEditClick={() => console.log("Edit ads group", row.original.id)}
+          onDeleteClick={
+            onDeleteAdSet ? () => onDeleteAdSet(row.original) : undefined
+          }
           viewLabel="" // Hide view action
           editLabel="Edit Ads Group"
+          deleteLabel="Delete Ad Group"
           hideViewAction={true} // Pass flag to hide view action
         />
       </div>
@@ -648,6 +662,7 @@ const CampaignTable = memo(function CampaignTable({
 const AdSetTable = memo(function AdSetTable({
   data,
   onAdSetSelect,
+  onDeleteAdSet,
   className,
   rowSelection = {},
   onRowSelectionChange,
@@ -658,6 +673,7 @@ const AdSetTable = memo(function AdSetTable({
 }: {
   data: AdSet[];
   onAdSetSelect: (adSet: AdSet) => void;
+  onDeleteAdSet?: (adSet: AdSet) => void;
   className?: string;
   rowSelection?: SelectedRows;
   onRowSelectionChange?: (selection: SelectedRows) => void;
@@ -728,9 +744,9 @@ const AdSetTable = memo(function AdSetTable({
 
   // Create columns
   const columns = useMemo(() => {
-    const adSetColumns = createAdSetColumns(onAdSetSelect);
+    const adSetColumns = createAdSetColumns(onAdSetSelect, onDeleteAdSet);
     return (adSetColumns || []) as unknown as ColumnDef<unknown, unknown>[];
-  }, [onAdSetSelect]);
+  }, [onAdSetSelect, onDeleteAdSet]);
 
   // Selection count
   const selectionCount = useMemo(
@@ -1614,14 +1630,18 @@ const CreateButtonCustom = memo(function CreateButtonCustom() {
 const ActionDropdown = memo(function ActionDropdown({
   onViewClick,
   onEditClick,
+  onDeleteClick,
   viewLabel,
   editLabel,
+  deleteLabel,
   hideViewAction = false,
 }: {
   onViewClick: () => void;
   onEditClick: () => void;
+  onDeleteClick?: () => void;
   viewLabel: string;
   editLabel: string;
+  deleteLabel?: string;
   hideViewAction?: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -1674,6 +1694,13 @@ const ActionDropdown = memo(function ActionDropdown({
     setIsOpen(false);
   }, [onEditClick]);
 
+  const handleDeleteClick = useCallback(() => {
+    if (onDeleteClick) {
+      onDeleteClick();
+      setIsOpen(false);
+    }
+  }, [onDeleteClick]);
+
   return (
     <>
       <Button
@@ -1718,6 +1745,15 @@ const ActionDropdown = memo(function ActionDropdown({
                 <PencilIcon className="mr-2 h-4 w-4" />
                 {editLabel}
               </button>
+              {onDeleteClick && deleteLabel && (
+                <button
+                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 flex items-center"
+                  onClick={handleDeleteClick}
+                >
+                  <TrashIcon className="mr-2 h-4 w-4" />
+                  {deleteLabel}
+                </button>
+              )}
             </div>
           </div>
         </>
@@ -1991,6 +2027,10 @@ export default function AdManagerListView() {
     adDetail: {
       isOpen: false,
       ad: null,
+    },
+    adGroupDelete: {
+      isOpen: false,
+      adSet: null,
     },
   }));
 
@@ -2324,6 +2364,34 @@ export default function AdManagerListView() {
   const handleModalClose = useCallback(() => {
     setModalState(CLOSED_MODAL_STATE);
   }, []);
+
+  // Handle ad group delete
+  const handleAdSetDelete = useCallback((adSet: AdSet) => {
+    setModalState((prev) => ({
+      ...prev,
+      adGroupDelete: {
+        isOpen: true,
+        adSet,
+      },
+    }));
+  }, []);
+
+  // Handle confirmed ad group delete
+  const handleConfirmAdSetDelete = useCallback(() => {
+    const adSet = modalState.adGroupDelete.adSet;
+    if (adSet) {
+      console.log("Deleting ad group:", adSet.id);
+      // TODO: Implement actual delete logic
+      // Remove from mockCampaigns (V2 uses mockCampaigns instead of campaignsData)
+      // For now, just clear selection if deleted item was selected
+      setSelectedAdSets((prev) => {
+        const newSelection = { ...prev };
+        delete newSelection[adSet.id];
+        return newSelection;
+      });
+    }
+    handleModalClose();
+  }, [modalState.adGroupDelete.adSet, handleModalClose]);
 
   // Handle row selection change - route to appropriate state based on current level
   const handleRowSelectionChange = useCallback(
@@ -2669,6 +2737,7 @@ export default function AdManagerListView() {
           <AdSetTable
             data={getCurrentData as AdSet[]}
             onAdSetSelect={handleAdSetSelect}
+            onDeleteAdSet={handleAdSetDelete}
             className="border-rounded"
             rowSelection={selectedAdSets}
             onRowSelectionChange={handleRowSelectionChange}
@@ -2710,6 +2779,15 @@ export default function AdManagerListView() {
         isOpen={modalState.adDetail.isOpen}
         onClose={handleModalClose}
         ad={modalState.adDetail.ad}
+      />
+
+      <AdGroupDeleteConfirmModal
+        isOpen={modalState.adGroupDelete.isOpen}
+        onClose={handleModalClose}
+        onConfirmDelete={handleConfirmAdSetDelete}
+        adGroupName={modalState.adGroupDelete.adSet?.name || ""}
+        adGroupStatus={modalState.adGroupDelete.adSet?.status || ""}
+        adsCount={modalState.adGroupDelete.adSet?.ads?.length || 0}
       />
     </div>
   );
