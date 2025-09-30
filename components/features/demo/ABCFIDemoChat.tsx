@@ -165,6 +165,7 @@ export function ABCFIDemoChat({
   const [showROISuggestion, setShowROISuggestion] = useState(false);
   const [showLocalOffersSuggestion, setShowLocalOffersSuggestion] =
     useState(false);
+  const [pauseAutoScroll, setPauseAutoScroll] = useState(false);
 
   // Simplified state - no Scene 2 complexity
   // Scene 2 will be rebuilt from scratch
@@ -351,6 +352,9 @@ export function ABCFIDemoChat({
 
         // Show AI location configuration
         setTimeout(() => {
+          // Pause auto-scroll when AI Optimized Campaign Configuration starts
+          setPauseAutoScroll(true);
+
           const configComponentMessage: Message = {
             id: (Date.now() + 1).toString(),
             text: "",
@@ -379,6 +383,9 @@ export function ABCFIDemoChat({
 
         // Show final campaign summary
         setTimeout(() => {
+          // Pause auto-scroll when campaign configuration starts (standard flow without location config)
+          setPauseAutoScroll(true);
+
           const summaryMessage: Message = {
             id: (Date.now() + 1).toString(),
             text: "",
@@ -584,11 +591,13 @@ export function ABCFIDemoChat({
   };
 
   useEffect(() => {
-    // Scroll after messages update with proper delay for DOM update
-    setTimeout(() => {
-      scrollToBottom();
-    }, 300);
-  }, [messages]);
+    // Scroll after messages update with proper delay for DOM update, but only if not paused
+    if (!pauseAutoScroll) {
+      setTimeout(() => {
+        scrollToBottom();
+      }, 300);
+    }
+  }, [messages, pauseAutoScroll]);
 
   useEffect(() => {
     if (isOpen && !hasStarted) {
@@ -633,7 +642,7 @@ export function ABCFIDemoChat({
             textToSend.toLowerCase().includes("customer segments"))
         ) {
           aiResponse =
-            "That's right. Here are 5 high-value customer journeys I'm seeing in the last 90 days:";
+            "That's right. Here are 5 high-value customer journeys I'm seeing in the last 90 days. Is there one you'd like to focus on? Let's start by setting the congratulatory gift budget. A good place to start would be a choice of merchant-funded house warming gifts. Below are recommended gift card categories and brands based on spending patterns after a home purchase. Select a gift card value.";
           nextStep = "opportunities";
 
           // Add carousel as a message component
@@ -677,6 +686,8 @@ export function ABCFIDemoChat({
           aiResponse =
             "Excellent choice. Including local offers to welcome new homeowners to their neighborhood is a powerful strategy that builds community connection and long-term loyalty. This approach has shown significant success in driving customer engagement and retention.";
           nextStep = "local_offers_complete";
+          // Resume auto-scroll when user clicks "Include local offers"
+          setPauseAutoScroll(false);
         } else if (
           demoStep === "campaign_plan" &&
           textToSend.toLowerCase().includes("local offers")
@@ -684,6 +695,8 @@ export function ABCFIDemoChat({
           aiResponse =
             "A great thought. Integrating new homeowners into their local community drives significant long-term loyalty. I will offer to follow up with a 'Welcome to the Neighborhood' package of hyper local offers once they've relocated.";
           nextStep = "local_offers_complete";
+          // Resume auto-scroll when user clicks "Include local offers"
+          setPauseAutoScroll(false);
         } else if (
           (demoStep === "campaign_plan" ||
             demoStep === "local_offers_complete") &&
@@ -762,7 +775,7 @@ export function ABCFIDemoChat({
   return (
     <div
       ref={mainContainerRef}
-      className="fixed inset-0 z-50 flex flex-col animate-in fade-in duration-300 bg-white overflow-y-auto"
+      className="fixed inset-0 z-50 flex flex-col animate-in fade-in duration-700 bg-white overflow-y-auto"
     >
       {/* Aurora Background */}
       <div className="absolute inset-0 overflow-hidden">
@@ -860,7 +873,7 @@ export function ABCFIDemoChat({
 
               {/* Scene 2 UI components */}
               {message.component && (
-                <div className="mt-4 w-full animate-in slide-in-from-left-2 fade-in duration-500">
+                <div className="mt-4 w-full animate-in slide-in-from-left-2 fade-in duration-1000 ease-out">
                   {message.component === "journey-carousel" && (
                     <div className="w-full overflow-visible">
                       {/* Journey Cards Carousel in Messages */}
@@ -1121,7 +1134,7 @@ export function ABCFIDemoChat({
           ))}
 
           {isTyping && (
-            <div className="flex items-start gap-3 animate-in slide-in-from-left-2 fade-in duration-300">
+            <div className="flex items-start gap-3 animate-in slide-in-from-left-2 fade-in duration-800 ease-out">
               {/* AI Avatar */}
               <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center shadow-sm flex-shrink-0">
                 <Bot className="w-4 h-4 text-white" />
@@ -1146,7 +1159,7 @@ export function ABCFIDemoChat({
 
           {/* Journey Cards Carousel - Show only in opportunities step */}
           {false && (
-            <div className="animate-in slide-in-from-left-2 fade-in duration-500 mt-8 mb-8">
+            <div className="animate-in slide-in-from-left-2 fade-in duration-1200 ease-out mt-8 mb-8">
               <div className="relative">
                 {/* Navigation Arrows - Hide during selection */}
                 {!isCardSelecting && (
@@ -1197,7 +1210,7 @@ export function ABCFIDemoChat({
                             : "hover:scale-105 opacity-100"
                         }`}
                         style={{
-                          animationDelay: `${index * 100}ms`,
+                          animationDelay: `${index * 200}ms`,
                           width:
                             isCardSelecting && isSelected ? "320px" : "260px",
                         }}

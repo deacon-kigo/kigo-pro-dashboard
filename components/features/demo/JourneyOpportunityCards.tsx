@@ -108,8 +108,12 @@ export function JourneyOpportunityCards({
           return (
             <Card
               key={card.id}
-              className={`group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-2 hover:border-blue-300 animate-fade-in`}
-              style={{ animationDelay: `${index * 100}ms` }}
+              className={`group cursor-pointer transition-all duration-500 ease-out hover:shadow-xl hover:-translate-y-1 border-2 hover:border-blue-300 animate-fade-in opacity-0`}
+              style={{
+                animationDelay: `${index * 300}ms`,
+                animationDuration: "800ms",
+                animationFillMode: "forwards",
+              }}
               onClick={() => onCardSelect?.(card.id)}
             >
               <CardContent className="p-6">

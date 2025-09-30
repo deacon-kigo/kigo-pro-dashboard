@@ -353,8 +353,11 @@ export default function MarketingInsightsView() {
                     </p>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-100 border border-gray-200">
-                  <Users className="w-5 h-5 text-blue-600" />
+                <div
+                  className="w-10 h-10 rounded-lg flex items-center justify-center border border-gray-200"
+                  style={{ backgroundColor: "#dbeafe" }}
+                >
+                  <Users className="w-5 h-5" style={{ color: "#2563eb" }} />
                 </div>
               </div>
             </CardContent>
@@ -375,8 +378,14 @@ export default function MarketingInsightsView() {
                     </p>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-purple-100 border border-gray-200">
-                  <TrendingUp className="w-5 h-5 text-purple-600" />
+                <div
+                  className="w-10 h-10 rounded-lg flex items-center justify-center border border-gray-200"
+                  style={{ backgroundColor: "#f3e8ff" }}
+                >
+                  <TrendingUp
+                    className="w-5 h-5"
+                    style={{ color: "#9333ea" }}
+                  />
                 </div>
               </div>
             </CardContent>
@@ -397,8 +406,11 @@ export default function MarketingInsightsView() {
                     </p>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-orange-100 border border-gray-200">
-                  <Gift className="w-5 h-5 text-orange-600" />
+                <div
+                  className="w-10 h-10 rounded-lg flex items-center justify-center border border-gray-200"
+                  style={{ backgroundColor: "#fed7aa" }}
+                >
+                  <Gift className="w-5 h-5" style={{ color: "#ea580c" }} />
                 </div>
               </div>
             </CardContent>
@@ -419,8 +431,14 @@ export default function MarketingInsightsView() {
                     </p>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-green-100 border border-gray-200">
-                  <DollarSign className="w-5 h-5 text-green-600" />
+                <div
+                  className="w-10 h-10 rounded-lg flex items-center justify-center border border-gray-200"
+                  style={{ backgroundColor: "#dcfce7" }}
+                >
+                  <DollarSign
+                    className="w-5 h-5"
+                    style={{ color: "#16a34a" }}
+                  />
                 </div>
               </div>
             </CardContent>

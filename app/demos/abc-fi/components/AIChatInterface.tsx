@@ -86,24 +86,34 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
         behavior: "smooth",
         block: "nearest",
       });
-    }, 100);
+    }, 200);
   };
 
   useEffect(() => {
     scrollToLatestContent();
   }, [messages]);
 
-  // Scroll when gift options become visible
-  useEffect(() => {
-    if (visibleGifts > 0) {
-      scrollToLatestContent();
-    }
-  }, [visibleGifts]);
+  // Disabled scroll tracking for gifts - let them render naturally without auto-scroll
+  // User can manually scroll to see gifts, scroll tracking resumes after gift selection
 
-  // Scroll when offers become visible
+  // Scroll when offers become visible - scroll to the specific offer that just appeared
   useEffect(() => {
     if (visibleOffers > 0) {
-      scrollToLatestContent();
+      // Delay scroll to allow offer to render first
+      setTimeout(() => {
+        const offerElements = document.querySelectorAll("[data-offer-index]");
+        const targetOffer = offerElements[visibleOffers - 1] as HTMLElement;
+        if (targetOffer) {
+          targetOffer.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+            inline: "nearest",
+          });
+        } else {
+          // Fallback to general scroll
+          scrollToLatestContent();
+        }
+      }, 300);
     }
   }, [visibleOffers]);
 
@@ -202,10 +212,10 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                   // Mark conversation sequence as complete after all gifts are shown
                   setTimeout(() => {
                     setConversationSequenceComplete(true);
-                  }, 500);
-                }, 800);
-              }, 1000);
-            }, 1500);
+                  }, 800);
+                }, 1200);
+              }, 1200);
+            }, 1800);
           }, 2000);
         }, 2000);
       }, 1500);
@@ -373,7 +383,7 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
   const showStaybridgeTransition = () => {
     const transitionMessage: Message = {
       id: "staybridge-transition",
-      text: "Now, for your moving period, you'll need a comfortable place to stay while you get settled. Here's a perfect option for you:",
+      text: "Before you move in, you'll need a comfortable place to stay for a little bit. I've found a great offer on a highly rated hotel at a reasonable price:",
       sender: "ai",
       timestamp: new Date(),
     };
@@ -833,9 +843,9 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
             // Mark sequence complete after offers are shown
             setTimeout(() => {
               setConversationSequenceComplete(true);
-            }, 500);
-          }, 600);
-        }, 1000);
+            }, 800);
+          }, 1000);
+        }, 1200);
       } else if (
         text.toLowerCase().includes("moving") ||
         text.toLowerCase().includes("logistics")
@@ -920,16 +930,16 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
                   // Mark sequence complete after all offers are shown
                   setTimeout(() => {
                     setConversationSequenceComplete(true);
-                  }, 500);
-                }, 600);
+                  }, 800);
+                }, 1000);
               } else {
                 // Mark sequence complete for 2-item offers
                 setTimeout(() => {
                   setConversationSequenceComplete(true);
-                }, 500);
+                }, 800);
               }
-            }, 600);
-          }, 1000);
+            }, 1000);
+          }, 1200);
         } else {
           // No offers, mark sequence complete immediately
           setTimeout(() => {
@@ -948,7 +958,7 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
 
       setMessages((prev) => [...prev, aiMessage]);
       setIsTyping(false);
-    }, 2000);
+    }, 2500);
   };
 
   const getPhaseReplies = () => {
@@ -1055,7 +1065,7 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
     // Add confirmation message
     const confirmationMessage: Message = {
       id: Date.now().toString(),
-      text: `Perfect choice! I've added your ${gift.value} gift card for ${gift.title} to your Kigo Hub. 🎁`,
+      text: `Perfect choice! I've added your $100 Home Depot gift card to your rewards hub.`,
       sender: "ai",
       timestamp: new Date(),
     };
@@ -1366,9 +1376,12 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
     const isGiftType = type === "gifts";
     const selectedId = isGiftType ? selectedGift : null;
 
+    // Only render items that should be visible to prevent layout issues
+    const visibleItems = items.slice(0, visibleCount);
+
     return (
       <div className="mt-3 space-y-3">
-        {items.map((item: any, index: number) => {
+        {visibleItems.map((item: any, index: number) => {
           const isSelected = isGiftType
             ? selectedId === item.id
             : savedOffers.includes(item.id);
@@ -1380,17 +1393,16 @@ export function AIChatInterface({ onChatComplete }: AIChatInterfaceProps) {
             <div
               key={item.id}
               onClick={handleClick}
-              className={`rounded-2xl shadow-sm p-6 transition-all duration-500 border relative ${
+              data-gift-index={type === "gifts" ? index : undefined}
+              data-offer-index={type === "offers" ? index : undefined}
+              className={`rounded-2xl shadow-sm p-6 transition-all duration-700 border relative ${
                 isSelected
                   ? "bg-green-50 border-green-200 cursor-default"
                   : "bg-white border-gray-100 cursor-pointer hover:shadow-md hover:border-blue-200 active:scale-[0.98]"
-              } ${
-                index < visibleCount
-                  ? "opacity-100 translate-y-0"
-                  : "opacity-0 translate-y-4 pointer-events-none"
-              }`}
+              } animate-in slide-in-from-bottom-4 fade-in duration-700`}
               style={{
-                transitionDelay: `${index * 100}ms`,
+                transitionDelay:
+                  type === "gifts" ? `${index * 200}ms` : `${index * 100}ms`,
               }}
             >
               {/* Full-width Logo Section */}

@@ -9,16 +9,16 @@ interface CampaignLaunchConfirmationProps {
 }
 
 export function CampaignLaunchConfirmation({
-  campaignType = "New Homeowner Welcome Campaign",
+  campaignType = "New Home Buyer and Moving Campaign",
   className = "",
 }: CampaignLaunchConfirmationProps) {
   const [animationStep, setAnimationStep] = useState(0);
 
   useEffect(() => {
-    // Animation steps
-    const timer1 = setTimeout(() => setAnimationStep(1), 500);
-    const timer2 = setTimeout(() => setAnimationStep(2), 900);
-    const timer3 = setTimeout(() => setAnimationStep(3), 1300);
+    // Slower, smoother animation steps
+    const timer1 = setTimeout(() => setAnimationStep(1), 800);
+    const timer2 = setTimeout(() => setAnimationStep(2), 1600);
+    const timer3 = setTimeout(() => setAnimationStep(3), 2400);
 
     return () => {
       clearTimeout(timer1);
@@ -57,18 +57,20 @@ export function CampaignLaunchConfirmation({
         {/* Success Header */}
         <div className="text-center mb-6">
           <div
-            className={`inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-500 text-white mb-3 transition-all duration-1000 ${
-              animationStep >= 0 ? "scale-100 opacity-100" : "scale-0 opacity-0"
+            className={`inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-500 text-white mb-3 transition-all duration-1500 ease-out ${
+              animationStep >= 0
+                ? "scale-100 opacity-100"
+                : "scale-75 opacity-0"
             }`}
           >
             <CheckCircle className="w-8 h-8" />
           </div>
 
           <h2
-            className={`text-2xl font-bold text-gray-900 mb-2 transition-all duration-1000 delay-200 ${
+            className={`text-2xl font-bold text-gray-900 mb-2 transition-all duration-1200 ease-out delay-300 ${
               animationStep >= 1
                 ? "translate-y-0 opacity-100"
-                : "translate-y-4 opacity-0"
+                : "translate-y-6 opacity-0"
             }`}
           >
             🎉 Campaign Launched!

@@ -48,6 +48,7 @@ export function StreamingROIMetrics({
   className = "",
 }: StreamingROIMetricsProps) {
   const [currentStep, setCurrentStep] = useState(0);
+  const [visibleSection, setVisibleSection] = useState(0);
   const [animatedValues, setAnimatedValues] = useState({
     monthlyClosings: 0,
     totalCost: 0,
@@ -90,24 +91,35 @@ export function StreamingROIMetrics({
     {
       title: "Analyzing Monthly Mortgage Closings",
       description: "Processing historical closing data...",
-      duration: 2000,
+      duration: 3000,
     },
     {
       title: "Calculating Program Costs",
       description: "Computing gift costs and co-op funding...",
-      duration: 1500,
+      duration: 2500,
     },
     {
       title: "Projecting Revenue Impact",
       description: "Estimating incremental revenue from follow-up offers...",
-      duration: 2000,
+      duration: 3000,
     },
     {
       title: "Computing ROI Projections",
       description: "Finalizing return on investment calculations...",
-      duration: 1500,
+      duration: 2500,
     },
   ];
+
+  // Progressive section rendering
+  useEffect(() => {
+    const sectionTimers = [
+      setTimeout(() => setVisibleSection(1), 500), // Header
+      setTimeout(() => setVisibleSection(2), 1200), // Key metrics
+      setTimeout(() => setVisibleSection(3), 2000), // Analytics dashboard
+    ];
+
+    return () => sectionTimers.forEach(clearTimeout);
+  }, []);
 
   useEffect(() => {
     const runAnalysis = async () => {
@@ -216,7 +228,13 @@ export function StreamingROIMetrics({
       className={`bg-white rounded-2xl shadow-lg border border-gray-200 p-4 ${className}`}
     >
       {/* Header */}
-      <div className="text-center mb-4">
+      <div
+        className={`text-center mb-4 transition-all duration-800 ease-out ${
+          visibleSection >= 1
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-4"
+        }`}
+      >
         <div className="flex items-center justify-center gap-2 mb-2">
           <Activity className="w-5 h-5 text-blue-600" />
           <h3 className="text-lg font-bold text-gray-900">
@@ -258,7 +276,13 @@ export function StreamingROIMetrics({
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-2 gap-3 mb-4">
+      <div
+        className={`grid grid-cols-2 gap-3 mb-4 transition-all duration-800 ease-out ${
+          visibleSection >= 2
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-4"
+        }`}
+      >
         <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-3 border border-blue-200">
           <div className="flex items-center gap-2 mb-1">
             <Users className="w-4 h-4 text-blue-600" />
@@ -310,14 +334,20 @@ export function StreamingROIMetrics({
 
       {/* Enhanced Analytics Dashboard */}
       {currentStep >= 1 && (
-        <div className="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-4 border border-gray-200/50">
+        <div
+          className={`bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-4 border border-gray-200/50 transition-all duration-800 ease-out ${
+            visibleSection >= 3
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-4"
+          }`}
+        >
           <h4 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-blue-600" />
             Performance Analytics Dashboard
           </h4>
 
-          {/* Enhanced Row Layout */}
-          <div className="grid grid-cols-3 gap-4">
+          {/* Enhanced Full Width Layout */}
+          <div className="space-y-6">
             {/* Monthly Performance Projection */}
             <div className="bg-white rounded-lg p-4 border border-blue-100 shadow-sm">
               <div className="flex items-center justify-between mb-3">
@@ -331,7 +361,7 @@ export function StreamingROIMetrics({
                   +18% Growth
                 </span>
               </div>
-              <ChartContainer config={{}} className="h-20">
+              <ChartContainer config={{}} className="h-32">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={chartData.monthlyTrend}>
                     <CartesianGrid strokeDasharray="2 2" stroke="#e5e7eb" />
@@ -437,7 +467,7 @@ export function StreamingROIMetrics({
                     +33% Target
                   </span>
                 </div>
-                <ChartContainer config={{}} className="h-20">
+                <ChartContainer config={{}} className="h-32">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={chartData.roiProgression}>
                       <CartesianGrid strokeDasharray="2 2" stroke="#e5e7eb" />
