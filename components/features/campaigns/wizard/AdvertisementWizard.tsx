@@ -40,6 +40,7 @@ import {
   mockPartners,
 } from "@/components/features/campaigns/product-filters/AssignToProgramsPanel";
 import { Badge } from "@/components/atoms/Badge";
+import AdGroupCreationConfirmModal from "@/components/features/campaigns/modals/AdGroupCreationConfirmModal";
 
 import {
   resetCampaign,
@@ -584,13 +585,11 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
     [dispatch]
   );
 
-  // State for publish confirmation dialog
-  const [showPublishDialog, setShowPublishDialog] = useState(false);
-  const [createdAdGroupId, setCreatedAdGroupId] = useState<string | null>(null);
-  const [isPublishing, setIsPublishing] = useState(false);
+  // State for ad group creation confirmation dialog
+  const [showCreateConfirmDialog, setShowCreateConfirmDialog] = useState(false);
 
-  // Handle ad group creation
-  const handleCreateAdGroup = useCallback(async () => {
+  // Handle ad group creation button click - show confirmation modal
+  const handleCreateAdGroup = useCallback(() => {
     // Validation
     if (!adGroupName.trim()) {
       toast({
@@ -619,18 +618,24 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
       return;
     }
 
+    // Show confirmation modal
+    setShowCreateConfirmDialog(true);
+  }, [adGroupName, selectedAds, selectedPrograms, toast]);
+
+  // Handle creating ad group and publishing
+  const handleCreateAndPublishAdGroup = useCallback(async () => {
+    setShowCreateConfirmDialog(false);
     setIsCreatingAdGroup(true);
 
     try {
-      // Import the ad group service
       const { adGroupService } = await import("@/lib/services/adGroupService");
 
-      // Step 1: Create ad group (unpublished)
+      // Step 1: Create ad group
       const adGroupData = {
         name: adGroupName,
         description: adGroupDescription,
         selectedAds: selectedAds,
-        selectedPrograms: [], // Don't assign programs yet
+        selectedPrograms: [],
         merchantIds: selectedMerchant ? [selectedMerchant] : [],
       };
 
@@ -645,14 +650,7 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
         return;
       }
 
-      // Show success toast for creation
-      toast({
-        title: "✅ Ad Group Created",
-        description: `Ad group "${adGroupName}" created successfully`,
-        className: "!bg-green-100 !border-green-300 !text-green-800",
-      });
-
-      // Step 2: Assign to program campaigns
+      // Step 2: Assign to programs
       const assignResult = await adGroupService.assignToPrograms(
         createResult.adGroupId!,
         selectedPrograms
@@ -668,21 +666,54 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
         return;
       }
 
-      // Show success toast for assignment
+      // Step 3: Publish the ad group
+      const publishResult = await adGroupService.publishAdGroup(
+        createResult.adGroupId!
+      );
+
+      if (!publishResult.success) {
+        toast({
+          title: "Publishing Failed",
+          description: publishResult.error || "Failed to publish ad group",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Success - show toast and navigate
       toast({
-        title: "✅ Programs Assigned",
-        description: `Ad group assigned to ${assignResult.assignedPrograms} program campaigns`,
+        title: "🚀 Ad Group Published",
+        description: `Ad group "${adGroupName}" is now active and live`,
         className: "!bg-green-100 !border-green-300 !text-green-800",
       });
 
-      // Step 3: Store the created ad group ID and show publish confirmation
-      setCreatedAdGroupId(createResult.adGroupId!);
-      setShowPublishDialog(true);
+      // Reset form and navigate
+      setAdGroupName("");
+      setAdGroupDescription("");
+      setSelectedAds([]);
+      setSelectedMerchant("");
+      setSelectedPrograms([]);
+
+      setTimeout(() => {
+        const newAdGroupData = encodeURIComponent(
+          JSON.stringify({
+            id: createResult.adGroupId,
+            name: adGroupName,
+            description: adGroupDescription,
+            adsCount: selectedAds.length,
+            programsCount: selectedPrograms.length,
+            status: "active",
+          })
+        );
+        router.push(
+          `/campaigns?success=published&newAdGroup=${newAdGroupData}`
+        );
+      }, 1000);
     } catch (error) {
-      console.error("Error creating ad group:", error);
+      console.error("Error creating and publishing ad group:", error);
       toast({
         title: "Error",
-        description: "An unexpected error occurred while creating the ad group",
+        description: "An unexpected error occurred",
         variant: "destructive",
       });
     } finally {
@@ -695,104 +726,99 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
     selectedMerchant,
     selectedPrograms,
     toast,
+    router,
   ]);
 
-  // Handle publish confirmation
-  const handlePublishAdGroup = useCallback(async () => {
-    if (!createdAdGroupId) return;
-
-    setIsPublishing(true);
+  // Handle creating ad group without publishing
+  const handleCreateWithoutPublishAdGroup = useCallback(async () => {
+    setShowCreateConfirmDialog(false);
+    setIsCreatingAdGroup(true);
 
     try {
       const { adGroupService } = await import("@/lib/services/adGroupService");
 
-      const publishResult =
-        await adGroupService.publishAdGroup(createdAdGroupId);
+      // Step 1: Create ad group
+      const adGroupData = {
+        name: adGroupName,
+        description: adGroupDescription,
+        selectedAds: selectedAds,
+        selectedPrograms: [],
+        merchantIds: selectedMerchant ? [selectedMerchant] : [],
+      };
 
-      if (publishResult.success) {
+      const createResult = await adGroupService.createAdGroup(adGroupData);
+
+      if (!createResult.success) {
         toast({
-          title: "🚀 Ad Group Published",
-          description: `Ad group "${adGroupName}" is now active and live`,
-          className: "!bg-green-100 !border-green-300 !text-green-800",
-        });
-
-        // Reset form
-        setAdGroupName("");
-        setAdGroupDescription("");
-        setSelectedAds([]);
-        setSelectedMerchant("");
-        setSelectedPrograms([]);
-        setCreatedAdGroupId(null);
-
-        // Navigate back to Ad Manager with success feedback and new ad group data
-        setTimeout(() => {
-          const newAdGroupData = encodeURIComponent(
-            JSON.stringify({
-              id: createdAdGroupId,
-              name: adGroupName,
-              description: adGroupDescription,
-              adsCount: selectedAds.length,
-              programsCount: selectedPrograms.length,
-              status: "active",
-            })
-          );
-          router.push(
-            `/campaigns?success=published&newAdGroup=${newAdGroupData}`
-          );
-        }, 1000);
-      } else {
-        toast({
-          title: "Publishing Failed",
-          description: publishResult.error || "Failed to publish ad group",
+          title: "Creation Failed",
+          description: createResult.error || "Failed to create ad group",
           variant: "destructive",
         });
+        return;
       }
+
+      // Step 2: Assign to programs
+      const assignResult = await adGroupService.assignToPrograms(
+        createResult.adGroupId!,
+        selectedPrograms
+      );
+
+      if (!assignResult.success) {
+        toast({
+          title: "Assignment Failed",
+          description:
+            assignResult.error || "Failed to assign ad group to programs",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Success - show toast and navigate
+      toast({
+        title: "📝 Ad Group Created",
+        description: `Ad group "${adGroupName}" has been saved as inactive`,
+        className: "!bg-blue-100 !border-blue-300 !text-blue-800",
+      });
+
+      // Reset form and navigate
+      setAdGroupName("");
+      setAdGroupDescription("");
+      setSelectedAds([]);
+      setSelectedMerchant("");
+      setSelectedPrograms([]);
+
+      setTimeout(() => {
+        const newAdGroupData = encodeURIComponent(
+          JSON.stringify({
+            id: createResult.adGroupId,
+            name: adGroupName,
+            description: adGroupDescription,
+            adsCount: selectedAds.length,
+            programsCount: selectedPrograms.length,
+            status: "inactive",
+          })
+        );
+        router.push(`/campaigns?success=created&newAdGroup=${newAdGroupData}`);
+      }, 1000);
     } catch (error) {
-      console.error("Error publishing ad group:", error);
+      console.error("Error creating ad group:", error);
       toast({
         title: "Error",
-        description:
-          "An unexpected error occurred while publishing the ad group",
+        description: "An unexpected error occurred",
         variant: "destructive",
       });
     } finally {
-      setIsPublishing(false);
-      setShowPublishDialog(false);
+      setIsCreatingAdGroup(false);
     }
-  }, [createdAdGroupId, adGroupName, toast, router]);
-
-  // Handle creating without publishing
-  const handleCreateWithoutPublishing = useCallback(() => {
-    toast({
-      title: "📝 Ad Group Created",
-      description: `Ad group "${adGroupName}" created successfully (not published)`,
-      className: "!bg-blue-100 !border-blue-300 !text-blue-800",
-    });
-
-    // Reset form
-    setAdGroupName("");
-    setAdGroupDescription("");
-    setSelectedAds([]);
-    setSelectedMerchant("");
-    setSelectedPrograms([]);
-    setShowPublishDialog(false);
-    setCreatedAdGroupId(null);
-
-    // Navigate back to Ad Manager with new ad group data
-    setTimeout(() => {
-      const newAdGroupData = encodeURIComponent(
-        JSON.stringify({
-          id: createdAdGroupId,
-          name: adGroupName,
-          description: adGroupDescription,
-          adsCount: selectedAds.length,
-          programsCount: selectedPrograms.length,
-          status: "inactive",
-        })
-      );
-      router.push(`/campaigns?success=created&newAdGroup=${newAdGroupData}`);
-    }, 1000);
-  }, [adGroupName, toast, router]);
+  }, [
+    adGroupName,
+    adGroupDescription,
+    selectedAds,
+    selectedMerchant,
+    selectedPrograms,
+    toast,
+    router,
+  ]);
 
   // Create back button
   const backButton = (
@@ -1702,61 +1728,16 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Publish Confirmation Dialog */}
-      <AlertDialog open={showPublishDialog} onOpenChange={setShowPublishDialog}>
-        <AlertDialogContent className="sm:max-w-lg">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-xl font-semibold text-gray-900">
-              Publish Ad Group?
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-base text-gray-700 leading-relaxed mt-3">
-              Your ad group{" "}
-              <span className="font-medium text-gray-900">"{adGroupName}"</span>{" "}
-              has been created successfully and assigned to{" "}
-              {selectedPrograms.length} program campaigns.
-              <br />
-              <br />
-              <span className="font-medium">Choose what to do next:</span>
-              <div className="mt-4 space-y-3">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <div className="font-medium text-blue-900 text-sm">
-                    📝 Create Without Publishing
-                  </div>
-                  <div className="text-blue-700 text-sm mt-1">
-                    Save the ad group as inactive. You can review and publish it
-                    later from the Ad Manager.
-                  </div>
-                </div>
-                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                  <div className="font-medium text-green-900 text-sm">
-                    🚀 Publish & Activate
-                  </div>
-                  <div className="text-green-700 text-sm mt-1">
-                    Make the ad group live immediately. It will start delivering
-                    ads to customers right away.
-                  </div>
-                </div>
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex-col sm:flex-row gap-3 mt-6">
-            <AlertDialogCancel
-              onClick={handleCreateWithoutPublishing}
-              disabled={isPublishing}
-              className="w-full sm:w-auto text-base py-3 px-6 border-gray-300 text-gray-700 hover:bg-gray-50 font-medium"
-            >
-              Create Without Publishing
-            </AlertDialogCancel>
-            <Button
-              onClick={handlePublishAdGroup}
-              disabled={isPublishing}
-              className="w-full sm:w-auto text-base py-3 px-6 font-medium"
-            >
-              {isPublishing ? "Publishing..." : "Publish & Activate"}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Ad Group Creation Confirmation Modal */}
+      <AdGroupCreationConfirmModal
+        isOpen={showCreateConfirmDialog}
+        onClose={() => setShowCreateConfirmDialog(false)}
+        onCreateAndPublish={handleCreateAndPublishAdGroup}
+        onCreateWithoutPublish={handleCreateWithoutPublishAdGroup}
+        adGroupName={adGroupName}
+        selectedAdsCount={selectedAds.length}
+        assignedProgramsCount={selectedPrograms.length}
+      />
     </div>
   );
 };

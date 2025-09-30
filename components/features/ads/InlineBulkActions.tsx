@@ -1,8 +1,9 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { TrashIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import BulkDeleteConfirmModal from "./modals/BulkDeleteConfirmModal";
 
 interface SelectedCounts {
   campaigns: number;
@@ -11,11 +12,22 @@ interface SelectedCounts {
   total: number;
 }
 
+interface SelectedItem {
+  id: string;
+  name: string;
+  status: string;
+}
+
 interface InlineBulkActionsProps {
   selectedCounts: SelectedCounts;
   currentLevel: "campaigns" | "adsets" | "ads";
   onClearSelection: () => void;
   onBulkDelete: () => void;
+  selectedItems: {
+    campaigns: SelectedItem[];
+    adSets: SelectedItem[];
+    ads: SelectedItem[];
+  };
 }
 
 export const InlineBulkActions = memo(function InlineBulkActions({
@@ -23,7 +35,18 @@ export const InlineBulkActions = memo(function InlineBulkActions({
   currentLevel,
   onClearSelection,
   onBulkDelete,
+  selectedItems,
 }: InlineBulkActionsProps) {
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = () => {
+    setShowDeleteModal(false);
+    onBulkDelete();
+  };
   if (selectedCounts.total === 0) return null;
 
   // Create a comprehensive display of selected items
@@ -71,7 +94,7 @@ export const InlineBulkActions = memo(function InlineBulkActions({
             variant="destructive"
             size="sm"
             className="flex items-center gap-1"
-            onClick={onBulkDelete}
+            onClick={handleDeleteClick}
             title="Delete selected items"
           >
             <TrashIcon className="h-3.5 w-3.5" />
@@ -90,6 +113,13 @@ export const InlineBulkActions = memo(function InlineBulkActions({
           </Button>
         </div>
       </div>
+
+      <BulkDeleteConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirmDelete={handleConfirmDelete}
+        selectedItems={selectedItems}
+      />
     </div>
   );
 });
