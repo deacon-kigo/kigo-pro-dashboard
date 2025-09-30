@@ -29,12 +29,22 @@ const BulkDeleteConfirmModal: React.FC<BulkDeleteConfirmModalProps> = ({
   onConfirmDelete,
   selectedItems,
 }) => {
-  // Get all active items
+  // Get all active items - check for both "active" and "Active" status
   const activeItems = [
-    ...selectedItems.campaigns.filter((item) => item.status === "active"),
-    ...selectedItems.adSets.filter((item) => item.status === "active"),
-    ...selectedItems.ads.filter((item) => item.status === "active"),
+    ...selectedItems.campaigns.filter(
+      (item) => item.status === "active" || item.status === "Active"
+    ),
+    ...selectedItems.adSets.filter(
+      (item) => item.status === "active" || item.status === "Active"
+    ),
+    ...selectedItems.ads.filter(
+      (item) => item.status === "active" || item.status === "Active"
+    ),
   ];
+
+  // Debug logging
+  console.log("BulkDeleteConfirmModal - selectedItems:", selectedItems);
+  console.log("BulkDeleteConfirmModal - activeItems:", activeItems);
 
   // Get total count
   const totalCount =
@@ -84,11 +94,36 @@ const BulkDeleteConfirmModal: React.FC<BulkDeleteConfirmModalProps> = ({
                   deleting them will discontinue their attributes:
                 </p>
                 <ul className="text-sm text-amber-700 space-y-1 max-h-32 overflow-y-auto">
-                  {activeItems.map((item, index) => (
-                    <li key={index} className="truncate">
-                      • {item.name} (Active)
-                    </li>
-                  ))}
+                  {selectedItems.campaigns
+                    .filter(
+                      (item) =>
+                        item.status === "active" || item.status === "Active"
+                    )
+                    .map((item, index) => (
+                      <li key={`campaign-${index}`} className="truncate">
+                        • Campaign: {item.name} (Active)
+                      </li>
+                    ))}
+                  {selectedItems.adSets
+                    .filter(
+                      (item) =>
+                        item.status === "active" || item.status === "Active"
+                    )
+                    .map((item, index) => (
+                      <li key={`adset-${index}`} className="truncate">
+                        • Ad Group: {item.name} (Active)
+                      </li>
+                    ))}
+                  {selectedItems.ads
+                    .filter(
+                      (item) =>
+                        item.status === "active" || item.status === "Active"
+                    )
+                    .map((item, index) => (
+                      <li key={`ad-${index}`} className="truncate">
+                        • Ad: {item.name} (Active)
+                      </li>
+                    ))}
                 </ul>
                 <p className="text-sm text-amber-700 mt-2">
                   These active items will be immediately removed from all live
@@ -102,7 +137,12 @@ const BulkDeleteConfirmModal: React.FC<BulkDeleteConfirmModalProps> = ({
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirmDelete}
-            className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            style={{
+              backgroundColor: "#dc2626",
+              color: "white",
+              border: "none",
+            }}
+            className="hover:bg-red-700 focus:ring-red-600"
           >
             Delete {totalCount} {totalCount === 1 ? "Item" : "Items"}
           </AlertDialogAction>
