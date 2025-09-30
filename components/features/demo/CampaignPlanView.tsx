@@ -52,7 +52,7 @@ export function CampaignPlanView({
     },
     {
       id: "dining",
-      title: "Local Dining Experience",
+      title: "$100 Williams Sonoma",
       insight:
         "84% of new residents explore local dining options within the first two weeks.",
       icon: UtensilsCrossed,
@@ -90,7 +90,7 @@ export function CampaignPlanView({
     { name: "Lowe's", logo: "🔨" },
     { name: "Best Buy", logo: "📱" },
     { name: "Wayfair", logo: "🛋️" },
-    { name: "TaskRabbit", logo: "/logos/task-rabbit_logo.svg" },
+    { name: "Staybridge Suites", logo: "🏨" },
     { name: "Yelp", logo: "⭐" },
   ];
 

@@ -62,7 +62,7 @@ export function CampaignPlanUI({
             </p>
           </div>
 
-          {/* Option C: Local Dining Experience */}
+          {/* Option C: $100 Williams Sonoma */}
           <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3 border border-green-200">
             <div className="flex items-center justify-center mb-2">
               <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
@@ -70,7 +70,7 @@ export function CampaignPlanUI({
               </div>
             </div>
             <h4 className="font-medium text-gray-900 text-center mb-1 text-sm">
-              Option C: Local Dining Experience
+              Option C: $100 Williams Sonoma
             </h4>
             <p className="text-xs text-gray-600 text-center">
               <strong>Insight:</strong> 84% explore local dining within two

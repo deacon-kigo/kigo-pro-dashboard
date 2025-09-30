@@ -363,117 +363,194 @@ export function TuckerAIChatInterface({
   };
 
   return (
-    <Card className="w-full h-full overflow-hidden shadow-2xl bg-white">
-      {/* Enhanced Header with Glassmorphic Design */}
+    <>
+      {/* Dark overlay for background content */}
       <div
-        className="border-b border-purple-200/50"
-        style={{
-          background:
-            "linear-gradient(135deg, rgba(249, 250, 251, 0.9) 0%, rgba(243, 244, 246, 0.8) 100%)",
-          backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)",
-        }}
-      >
-        <div className="flex items-center justify-between p-6">
-          <div className="flex items-center gap-4">
-            <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg"
-              style={{
-                background:
-                  "linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%)",
-                border: "1px solid rgba(255, 255, 255, 0.3)",
-              }}
-            >
-              <Brain className="w-6 h-6 text-indigo-600" />
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+        onClick={onClose}
+      />
+
+      <Card className="relative w-full h-full overflow-hidden shadow-2xl bg-white z-50">
+        {/* Enhanced Header with Glassmorphic Design */}
+        <div
+          className="border-b border-purple-200/50"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(249, 250, 251, 0.9) 0%, rgba(243, 244, 246, 0.8) 100%)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+          }}
+        >
+          <div className="flex items-center justify-between p-6">
+            <div className="flex items-center gap-4">
+              <div
+                className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg"
+                style={{
+                  background:
+                    "linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%)",
+                  border: "1px solid rgba(255, 255, 255, 0.3)",
+                }}
+              >
+                <Brain className="w-6 h-6 text-indigo-600" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">
+                  AI Command Center
+                </h2>
+                <p className="text-sm text-gray-600 flex items-center gap-1">
+                  <Sparkles className="w-4 h-4 text-purple-500" />
+                  Tucker's New Mover Journey Campaign
+                </p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">
-                AI Command Center
-              </h2>
-              <p className="text-sm text-gray-600 flex items-center gap-1">
-                <Sparkles className="w-4 h-4 text-purple-500" />
-                Tucker's New Mover Journey Campaign
-              </p>
+            <div className="flex items-center gap-3">
+              <div
+                className="px-4 py-2 rounded-full text-sm font-medium"
+                style={{
+                  background:
+                    "linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.1) 100%)",
+                  border: "1px solid rgba(34, 197, 94, 0.2)",
+                  color: "#166534",
+                }}
+              >
+                <Zap className="w-4 h-4 mr-2 inline" />
+                AI Active
+              </div>
+              <Button
+                onClick={onClose}
+                variant="ghost"
+                size="sm"
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <X className="w-4 h-4" />
+              </Button>
             </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div
-              className="px-4 py-2 rounded-full text-sm font-medium"
-              style={{
-                background:
-                  "linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.1) 100%)",
-                border: "1px solid rgba(34, 197, 94, 0.2)",
-                color: "#166534",
-              }}
-            >
-              <Zap className="w-4 h-4 mr-2 inline" />
-              AI Active
-            </div>
-            <Button
-              onClick={onClose}
-              variant="ghost"
-              size="sm"
-              className="p-2 hover:bg-gray-100 rounded-lg"
-            >
-              <X className="w-4 h-4" />
-            </Button>
           </div>
         </div>
-      </div>
 
-      {/* Chat Content */}
-      <div className="flex flex-col h-[calc(100vh-200px)]">
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {messages.length === 0 && !hasStarted && (
-            <div className="flex flex-col items-center justify-center h-full text-center">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center mb-4">
-                <Sparkles className="w-8 h-8 text-blue-600" />
+        {/* Chat Content */}
+        <div className="flex flex-col h-[calc(100vh-200px)]">
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            {messages.length === 0 && !hasStarted && (
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center mb-4">
+                  <Sparkles className="w-8 h-8 text-blue-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  AI Command Center
+                </h3>
+                <p className="text-gray-600 max-w-md">
+                  Starting your AI-powered campaign creation journey...
+                </p>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                AI Command Center
-              </h3>
-              <p className="text-gray-600 max-w-md">
-                Starting your AI-powered campaign creation journey...
-              </p>
-            </div>
-          )}
+            )}
 
-          {messages.map((message) => (
-            <div key={message.id} className="flex items-start gap-4">
-              {/* Enhanced Avatar */}
-              <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg ${
-                  message.sender === "user"
-                    ? "bg-blue-100 border border-blue-200"
-                    : ""
-                }`}
-                style={
-                  message.sender === "ai"
-                    ? {
-                        background:
-                          "linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%)",
-                        border: "1px solid rgba(255, 255, 255, 0.3)",
-                      }
-                    : {}
-                }
-              >
-                {message.sender === "user" ? (
-                  <User className="w-5 h-5 text-blue-600" />
-                ) : (
-                  <Sparkles className="w-5 h-5 text-indigo-600" />
-                )}
+            {messages.map((message) => (
+              <div key={message.id} className="flex items-start gap-4">
+                {/* Enhanced Avatar */}
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg ${
+                    message.sender === "user"
+                      ? "bg-blue-100 border border-blue-200"
+                      : ""
+                  }`}
+                  style={
+                    message.sender === "ai"
+                      ? {
+                          background:
+                            "linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%)",
+                          border: "1px solid rgba(255, 255, 255, 0.3)",
+                        }
+                      : {}
+                  }
+                >
+                  {message.sender === "user" ? (
+                    <User className="w-5 h-5 text-blue-600" />
+                  ) : (
+                    <Sparkles className="w-5 h-5 text-indigo-600" />
+                  )}
+                </div>
+
+                {/* Enhanced Message Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-sm font-semibold text-gray-900">
+                      {message.sender === "user"
+                        ? "Tucker"
+                        : "AI Marketing Co-pilot"}
+                    </span>
+                    {message.sender === "ai" && (
+                      <div
+                        className="px-2 py-1 rounded-full text-xs font-medium"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)",
+                          border: "1px solid rgba(168, 85, 247, 0.2)",
+                          color: "#7c3aed",
+                        }}
+                      >
+                        AI Assistant
+                      </div>
+                    )}
+                    <span className="text-xs text-gray-500">
+                      {message.timestamp.toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </div>
+
+                  {/* Enhanced Message Bubble */}
+                  <div
+                    className={`rounded-xl p-4 shadow-sm border ${
+                      message.sender === "user"
+                        ? "border-blue-200 bg-blue-50"
+                        : "border-gray-200 bg-white"
+                    }`}
+                    style={
+                      message.sender === "ai"
+                        ? {
+                            background:
+                              "linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%)",
+                            backdropFilter: "blur(8px)",
+                          }
+                        : {}
+                    }
+                  >
+                    <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+                      {message.text}
+                    </div>
+                  </div>
+
+                  {/* UI Component */}
+                  {message.uiComponent && (
+                    <div className="mt-4">
+                      {renderUIComponent(message.uiComponent)}
+                    </div>
+                  )}
+                </div>
               </div>
+            ))}
 
-              {/* Enhanced Message Content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-semibold text-gray-900">
-                    {message.sender === "user"
-                      ? "Tucker"
-                      : "AI Marketing Co-pilot"}
-                  </span>
-                  {message.sender === "ai" && (
+            {/* Enhanced AI Thinking Indicator */}
+            {isTyping && (
+              <div className="flex items-start gap-4 animate-fade-in">
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%)",
+                    border: "1px solid rgba(255, 255, 255, 0.3)",
+                  }}
+                >
+                  <Sparkles className="w-5 h-5 text-indigo-600 animate-pulse" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-sm font-semibold text-gray-900">
+                      AI Marketing Co-pilot
+                    </span>
                     <div
                       className="px-2 py-1 rounded-full text-xs font-medium"
                       style={{
@@ -483,215 +560,149 @@ export function TuckerAIChatInterface({
                         color: "#7c3aed",
                       }}
                     >
-                      AI Assistant
+                      Thinking...
                     </div>
-                  )}
-                  <span className="text-xs text-gray-500">
-                    {message.timestamp.toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
-                </div>
-
-                {/* Enhanced Message Bubble */}
-                <div
-                  className={`rounded-xl p-4 shadow-sm border ${
-                    message.sender === "user"
-                      ? "border-blue-200 bg-blue-50"
-                      : "border-gray-200 bg-white"
-                  }`}
-                  style={
-                    message.sender === "ai"
-                      ? {
-                          background:
-                            "linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%)",
-                          backdropFilter: "blur(8px)",
-                        }
-                      : {}
-                  }
-                >
-                  <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
-                    {message.text}
+                    {campaignStep !== "analysis" && (
+                      <div className="flex items-center gap-1">
+                        <div
+                          className={`w-2 h-2 rounded-full ${campaignStep === "step1" || campaignStep === "step2" || campaignStep === "step3" || campaignStep === "complete" ? "bg-blue-500" : "bg-gray-300"}`}
+                        ></div>
+                        <div
+                          className={`w-2 h-2 rounded-full ${campaignStep === "step2" || campaignStep === "step3" || campaignStep === "complete" ? "bg-blue-500" : "bg-gray-300"}`}
+                        ></div>
+                        <div
+                          className={`w-2 h-2 rounded-full ${campaignStep === "step3" || campaignStep === "complete" ? "bg-blue-500" : "bg-gray-300"}`}
+                        ></div>
+                        <span className="text-xs text-gray-500 ml-1">
+                          Step{" "}
+                          {campaignStep === "step1"
+                            ? "1"
+                            : campaignStep === "step2"
+                              ? "2"
+                              : campaignStep === "step3"
+                                ? "3"
+                                : campaignStep === "complete"
+                                  ? "✓"
+                                  : "0"}
+                          /3
+                        </span>
+                      </div>
+                    )}
                   </div>
-                </div>
 
-                {/* UI Component */}
-                {message.uiComponent && (
-                  <div className="mt-4">
-                    {renderUIComponent(message.uiComponent)}
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-
-          {/* Enhanced AI Thinking Indicator */}
-          {isTyping && (
-            <div className="flex items-start gap-4 animate-fade-in">
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg"
-                style={{
-                  background:
-                    "linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%)",
-                  border: "1px solid rgba(255, 255, 255, 0.3)",
-                }}
-              >
-                <Sparkles className="w-5 h-5 text-indigo-600 animate-pulse" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-semibold text-gray-900">
-                    AI Marketing Co-pilot
-                  </span>
+                  {/* Enhanced thinking indicator with glassmorphic design */}
                   <div
-                    className="px-2 py-1 rounded-full text-xs font-medium"
+                    className="rounded-xl p-4 border border-gray-200 shadow-sm"
                     style={{
                       background:
-                        "linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)",
-                      border: "1px solid rgba(168, 85, 247, 0.2)",
-                      color: "#7c3aed",
+                        "linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%)",
+                      backdropFilter: "blur(8px)",
                     }}
                   >
-                    Thinking...
-                  </div>
-                  {campaignStep !== "analysis" && (
-                    <div className="flex items-center gap-1">
-                      <div
-                        className={`w-2 h-2 rounded-full ${campaignStep === "step1" || campaignStep === "step2" || campaignStep === "step3" || campaignStep === "complete" ? "bg-blue-500" : "bg-gray-300"}`}
-                      ></div>
-                      <div
-                        className={`w-2 h-2 rounded-full ${campaignStep === "step2" || campaignStep === "step3" || campaignStep === "complete" ? "bg-blue-500" : "bg-gray-300"}`}
-                      ></div>
-                      <div
-                        className={`w-2 h-2 rounded-full ${campaignStep === "step3" || campaignStep === "complete" ? "bg-blue-500" : "bg-gray-300"}`}
-                      ></div>
-                      <span className="text-xs text-gray-500 ml-1">
-                        Step{" "}
-                        {campaignStep === "step1"
-                          ? "1"
-                          : campaignStep === "step2"
-                            ? "2"
-                            : campaignStep === "step3"
-                              ? "3"
-                              : campaignStep === "complete"
-                                ? "✓"
-                                : "0"}
-                        /3
+                    {/* Progress section for analysis */}
+                    {isAnalyzing && (campaignProgress > 0 || currentTask) && (
+                      <div className="mb-4">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div
+                            className="w-8 h-8 rounded-lg flex items-center justify-center"
+                            style={{
+                              background:
+                                "linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%)",
+                              border: "1px solid rgba(99, 102, 241, 0.2)",
+                            }}
+                          >
+                            <TrendingUp className="w-4 h-4 text-indigo-600 animate-pulse" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm font-semibold text-gray-900">
+                                Analyzing ABC FI's Q4 Objectives
+                              </span>
+                              <span className="text-xs text-gray-500 font-medium">
+                                {campaignProgress}%
+                              </span>
+                            </div>
+                            <Progress
+                              value={campaignProgress}
+                              className="h-2"
+                            />
+                          </div>
+                        </div>
+                        {currentTask && (
+                          <div
+                            className="flex items-center gap-3 text-sm text-gray-700 rounded-lg p-3"
+                            style={{
+                              background:
+                                "linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(22, 163, 74, 0.05) 100%)",
+                              border: "1px solid rgba(34, 197, 94, 0.1)",
+                            }}
+                          >
+                            <Target className="w-4 h-4 text-green-600 animate-spin" />
+                            <span>{currentTask}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Enhanced thinking animation */}
+                    <div className="flex items-center gap-3 text-sm text-gray-600">
+                      <div className="flex gap-1">
+                        <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div>
+                        <div
+                          className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"
+                          style={{ animationDelay: "0.1s" }}
+                        ></div>
+                        <div
+                          className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"
+                          style={{ animationDelay: "0.2s" }}
+                        ></div>
+                      </div>
+                      <span className="ml-2">
+                        {isAnalyzing
+                          ? "Building your campaign..."
+                          : `Configuring ${
+                              campaignStep === "step1"
+                                ? "gift settings"
+                                : campaignStep === "step2"
+                                  ? "follow-up question"
+                                  : campaignStep === "step3"
+                                    ? "journey bundle"
+                                    : campaignStep === "complete"
+                                      ? "final review"
+                                      : "campaign"
+                            }...`}
                       </span>
                     </div>
-                  )}
-                </div>
-
-                {/* Enhanced thinking indicator with glassmorphic design */}
-                <div
-                  className="rounded-xl p-4 border border-gray-200 shadow-sm"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%)",
-                    backdropFilter: "blur(8px)",
-                  }}
-                >
-                  {/* Progress section for analysis */}
-                  {isAnalyzing && (campaignProgress > 0 || currentTask) && (
-                    <div className="mb-4">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div
-                          className="w-8 h-8 rounded-lg flex items-center justify-center"
-                          style={{
-                            background:
-                              "linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%)",
-                            border: "1px solid rgba(99, 102, 241, 0.2)",
-                          }}
-                        >
-                          <TrendingUp className="w-4 h-4 text-indigo-600 animate-pulse" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-semibold text-gray-900">
-                              Analyzing ABC FI's Q4 Objectives
-                            </span>
-                            <span className="text-xs text-gray-500 font-medium">
-                              {campaignProgress}%
-                            </span>
-                          </div>
-                          <Progress value={campaignProgress} className="h-2" />
-                        </div>
-                      </div>
-                      {currentTask && (
-                        <div
-                          className="flex items-center gap-3 text-sm text-gray-700 rounded-lg p-3"
-                          style={{
-                            background:
-                              "linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(22, 163, 74, 0.05) 100%)",
-                            border: "1px solid rgba(34, 197, 94, 0.1)",
-                          }}
-                        >
-                          <Target className="w-4 h-4 text-green-600 animate-spin" />
-                          <span>{currentTask}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Enhanced thinking animation */}
-                  <div className="flex items-center gap-3 text-sm text-gray-600">
-                    <div className="flex gap-1">
-                      <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div>
-                      <div
-                        className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"
-                        style={{ animationDelay: "0.1s" }}
-                      ></div>
-                      <div
-                        className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"
-                        style={{ animationDelay: "0.2s" }}
-                      ></div>
-                    </div>
-                    <span className="ml-2">
-                      {isAnalyzing
-                        ? "Building your campaign..."
-                        : `Configuring ${
-                            campaignStep === "step1"
-                              ? "gift settings"
-                              : campaignStep === "step2"
-                                ? "follow-up question"
-                                : campaignStep === "step3"
-                                  ? "journey bundle"
-                                  : campaignStep === "complete"
-                                    ? "final review"
-                                    : "campaign"
-                          }...`}
-                    </span>
                   </div>
                 </div>
               </div>
+            )}
+
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input Area */}
+          <div className="border-t border-gray-200 p-4">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                placeholder="Ask me about campaigns, insights, analytics..."
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <Button
+                onClick={handleSendMessage}
+                disabled={!inputText.trim() || isTyping}
+                className="px-6"
+              >
+                Send
+              </Button>
             </div>
-          )}
-
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* Input Area */}
-        <div className="border-t border-gray-200 p-4">
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-              placeholder="Ask me about campaigns, insights, analytics..."
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            <Button
-              onClick={handleSendMessage}
-              disabled={!inputText.trim() || isTyping}
-              className="px-6"
-            >
-              Send
-            </Button>
           </div>
         </div>
-      </div>
-    </Card>
+      </Card>
+    </>
   );
 }

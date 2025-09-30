@@ -372,7 +372,7 @@ export default function ABCFIDemoStandalone() {
               {currentStep !== "ios-homescreen" &&
                 currentStep !== "splash-screen" &&
                 currentStep !== "ai-chat" && (
-                  <div className="absolute bottom-20 right-4 z-40 hidden">
+                  <div className="absolute bottom-20 right-4 z-40">
                     <button
                       onClick={() => setCurrentStep("ai-chat")}
                       className="w-12 h-12 bg-white rounded-full flex items-center justify-center hover:shadow-xl transition-all duration-200 active:scale-95"

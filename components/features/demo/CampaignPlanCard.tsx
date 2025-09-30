@@ -19,14 +19,14 @@ interface CampaignPlanCardProps {
 }
 
 export function CampaignPlanCard({
-  title = "New Homeowner Welcome Campaign",
+  title = "New Home Buyer and Moving Campaign",
   className = "",
   isCompact = false,
 }: CampaignPlanCardProps) {
   if (isCompact) {
     return (
       <div
-        className={`bg-white/90 backdrop-blur-md rounded-2xl p-4 shadow-xl border border-white/30 ${className}`}
+        className={`bg-white rounded-2xl p-4 shadow-xl border border-gray-200 ${className}`}
       >
         {/* Header */}
         <div className="text-center mb-4">
@@ -188,7 +188,7 @@ export function CampaignPlanCard({
               </div>
               <div>
                 <h4 className="font-semibold text-gray-900">Option C</h4>
-                <p className="text-sm text-gray-600">Local Dining Experience</p>
+                <p className="text-sm text-gray-600">$100 Williams Sonoma</p>
               </div>
             </div>
             <p className="text-sm text-gray-700">
@@ -264,7 +264,7 @@ export function CampaignPlanCard({
               { name: "Lowe's", logo: "🔨" },
               { name: "Best Buy", logo: "📱" },
               { name: "Wayfair", logo: "🛋️" },
-              { name: "TaskRabbit", logo: "/logos/task-rabbit_logo.svg" },
+              { name: "Staybridge Suites", logo: "🏨" },
               { name: "Yelp", logo: "⭐" },
             ].map((partner, idx) => (
               <div key={idx} className="text-center">
