@@ -80,15 +80,20 @@ const BulkDeleteConfirmModal: React.FC<BulkDeleteConfirmModalProps> = ({
             {activeItems.length > 0 && (
               <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
                 <p className="text-sm font-medium text-amber-800 mb-2">
-                  ⚠️ Warning: The following active items will be deleted:
+                  ⚠️ Warning: The following items have active status and
+                  deleting them will discontinue their attributes:
                 </p>
                 <ul className="text-sm text-amber-700 space-y-1 max-h-32 overflow-y-auto">
                   {activeItems.map((item, index) => (
                     <li key={index} className="truncate">
-                      • {item.name}
+                      • {item.name} (Active)
                     </li>
                   ))}
                 </ul>
+                <p className="text-sm text-amber-700 mt-2">
+                  These active items will be immediately removed from all live
+                  campaigns and their performance will be discontinued.
+                </p>
               </div>
             )}
           </AlertDialogDescription>
