@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/atoms/Button";
 import { TrashIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import BulkDeleteConfirmModal from "./modals/BulkDeleteConfirmModal";
 
@@ -97,7 +97,7 @@ export const InlineBulkActions = memo(function InlineBulkActions({
             onClick={handleDeleteClick}
             title="Delete selected items"
           >
-            <TrashIcon className="h-3.5 w-3.5" />
+            <TrashIcon className="h-3.5 w-3.5 text-white" />
             Delete
           </Button>
 
