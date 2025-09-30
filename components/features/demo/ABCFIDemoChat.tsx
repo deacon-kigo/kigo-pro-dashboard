@@ -252,11 +252,11 @@ export function ABCFIDemoChat({
   const startScene2Flow = () => {
     setIsTyping(true);
 
-    // Step 2.1: AI Response - "Excellent choice" message from documentation
+    // Step 2.1: AI Response - Consolidated message
     setTimeout(() => {
       const aiMessage: Message = {
         id: Date.now().toString(),
-        text: "Excellent choice. The Home Buying and Moving journey represents a high-value opportunity. Based on our network data, new homeowners are highly receptive to welcome offers.",
+        text: "A good place to start would be a choice of merchant-funded house warming gifts. Below are recommended gift card categories and brands based on spending patterns after a home purchase. Select a gift card value.",
         sender: "ai",
         timestamp: new Date(),
       };
@@ -273,33 +273,19 @@ export function ABCFIDemoChat({
 
   // Step 2.2: Gift Amount Configuration
   const startGiftAmountConfiguration = () => {
-    setIsTyping(true);
-
+    // Show gift amount configuration component directly
     setTimeout(() => {
-      const giftMessage: Message = {
-        id: Date.now().toString(),
-        text: "Let's start by setting the congratulatory gift budget. The customer will then choose from three personalized options:",
+      const giftComponentMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: "",
         sender: "ai",
         timestamp: new Date(),
+        component: "campaign-gift-amount",
+        data: {},
       };
 
-      setMessages((prev) => [...prev, giftMessage]);
-      setIsTyping(false);
-
-      // Show gift amount configuration component
-      setTimeout(() => {
-        const giftComponentMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          text: "",
-          sender: "ai",
-          timestamp: new Date(),
-          component: "campaign-gift-amount",
-          data: {},
-        };
-
-        setMessages((prev) => [...prev, giftComponentMessage]);
-      }, 500);
-    }, 1000);
+      setMessages((prev) => [...prev, giftComponentMessage]);
+    }, 500);
   };
 
   // Handle gift amount setting
@@ -642,7 +628,7 @@ export function ABCFIDemoChat({
             textToSend.toLowerCase().includes("customer segments"))
         ) {
           aiResponse =
-            "That's right. Here are 5 high-value customer journeys I'm seeing in the last 90 days. Is there one you'd like to focus on? Let's start by setting the congratulatory gift budget. A good place to start would be a choice of merchant-funded house warming gifts. Below are recommended gift card categories and brands based on spending patterns after a home purchase. Select a gift card value.";
+            "Here are 5 high-value customer journeys i'm seeing emerge in the last 90 days. Is there one you'd like to focus on?";
           nextStep = "opportunities";
 
           // Add carousel as a message component
