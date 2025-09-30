@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Gift,
   MapPin,
@@ -53,6 +53,21 @@ export function ComprehensiveCampaignSummary({
   className = "",
 }: ComprehensiveCampaignSummaryProps) {
   const [activeTab, setActiveTab] = useState("overview");
+  const [visibleSection, setVisibleSection] = useState(0);
+
+  // Progressive rendering effect
+  useEffect(() => {
+    const timers = [
+      setTimeout(() => setVisibleSection(1), 400), // Header
+      setTimeout(() => setVisibleSection(2), 900), // Gift Configuration
+      setTimeout(() => setVisibleSection(3), 1500), // Customer Journey
+      setTimeout(() => setVisibleSection(4), 2200), // Performance Chart
+      setTimeout(() => setVisibleSection(5), 2900), // Gift Distribution
+      setTimeout(() => setVisibleSection(6), 3600), // ROI Model Tab
+    ];
+
+    return () => timers.forEach(clearTimeout);
+  }, []);
 
   // Scene 4 ROI Model Data (from documentation)
   const roiData = {
@@ -95,7 +110,13 @@ export function ComprehensiveCampaignSummary({
       }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div
+        className={`flex items-center justify-between mb-4 transition-all duration-800 ease-out ${
+          visibleSection >= 1
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-4"
+        }`}
+      >
         <div>
           <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
             <Target className="w-5 h-5 text-blue-600" />

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Gift,
   DollarSign,
@@ -20,8 +20,21 @@ export function CampaignGiftAmountSection({
 }: CampaignGiftAmountSectionProps) {
   const [giftAmount, setGiftAmount] = useState<number>(100);
   const [isAmountSet, setIsAmountSet] = useState(false);
+  const [visibleSection, setVisibleSection] = useState(0);
 
   const presetAmounts = [50, 100, 150, 200];
+
+  // Progressive rendering effect
+  useEffect(() => {
+    const timers = [
+      setTimeout(() => setVisibleSection(1), 300), // Header
+      setTimeout(() => setVisibleSection(2), 800), // Amount selection
+      setTimeout(() => setVisibleSection(3), 1400), // Preview section
+      setTimeout(() => setVisibleSection(4), 2000), // Action button
+    ];
+
+    return () => timers.forEach(clearTimeout);
+  }, []);
 
   const handleAmountChange = (amount: number) => {
     setGiftAmount(amount);
@@ -47,7 +60,13 @@ export function CampaignGiftAmountSection({
       className={`bg-white rounded-2xl shadow-lg border border-gray-200 p-4 ${className}`}
     >
       {/* Header */}
-      <div className="text-center mb-4">
+      <div
+        className={`text-center mb-4 transition-all duration-800 ease-out ${
+          visibleSection >= 1
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-4"
+        }`}
+      >
         <div className="flex items-center justify-center gap-2 mb-2">
           <Gift className="w-5 h-5 text-blue-600" />
           <h3 className="text-lg font-bold text-gray-900">
@@ -60,7 +79,13 @@ export function CampaignGiftAmountSection({
       </div>
 
       {/* Amount Selection */}
-      <div className="mb-4">
+      <div
+        className={`mb-4 transition-all duration-800 ease-out ${
+          visibleSection >= 2
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-4"
+        }`}
+      >
         <h4 className="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
           <DollarSign className="w-4 h-4" />
           Gift Budget
@@ -108,7 +133,13 @@ export function CampaignGiftAmountSection({
       </div>
 
       {/* Gift Preview with AI Insights */}
-      <div className="mb-4 p-4 bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 rounded-xl border border-purple-200 shadow-sm">
+      <div
+        className={`mb-4 p-4 bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 rounded-xl border border-purple-200 shadow-sm transition-all duration-800 ease-out ${
+          visibleSection >= 3
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-4"
+        }`}
+      >
         <h4 className="font-semibold text-purple-900 text-sm mb-3 flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-purple-600" />
           AI-Recommended Gift Options
@@ -203,24 +234,32 @@ export function CampaignGiftAmountSection({
       </div>
 
       {/* Set Amount Button */}
-      {!isAmountSet ? (
-        <button
-          onClick={handleSetAmount}
-          disabled={giftAmount <= 0}
-          className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium text-sm hover:bg-indigo-700 transition-colors duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Set ${giftAmount} Gift Budget
-        </button>
-      ) : (
-        <div className="w-full p-3 bg-green-50 border border-green-200 rounded-lg animate-in slide-in-from-bottom-2 fade-in">
-          <div className="flex items-center justify-center gap-2">
-            <CheckCircle className="w-4 h-4 text-green-600" />
-            <span className="text-sm font-medium text-green-800">
-              ${giftAmount} gift budget configured
-            </span>
+      <div
+        className={`transition-all duration-800 ease-out ${
+          visibleSection >= 4
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-4"
+        }`}
+      >
+        {!isAmountSet ? (
+          <button
+            onClick={handleSetAmount}
+            disabled={giftAmount <= 0}
+            className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium text-sm hover:bg-indigo-700 transition-colors duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Set ${giftAmount} Gift Budget
+          </button>
+        ) : (
+          <div className="w-full p-3 bg-green-50 border border-green-200 rounded-lg animate-in slide-in-from-bottom-2 fade-in">
+            <div className="flex items-center justify-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-medium text-green-800">
+                ${giftAmount} gift budget configured
+              </span>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
