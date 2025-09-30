@@ -347,21 +347,21 @@ export function StreamingROIMetrics({
           </h4>
 
           {/* Enhanced Full Width Layout */}
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Monthly Performance Projection */}
-            <div className="bg-white rounded-lg p-4 border border-blue-100 shadow-sm">
-              <div className="flex items-center justify-between mb-3">
+            <div className="bg-white rounded-lg p-6 border border-blue-100 shadow-sm flex flex-col items-center">
+              <div className="flex items-center justify-between mb-4 w-full">
                 <div className="flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4 text-blue-600" />
-                  <span className="text-sm font-medium text-blue-900">
+                  <BarChart3 className="w-5 h-5 text-blue-600" />
+                  <span className="text-base font-medium text-blue-900">
                     Monthly Performance
                   </span>
                 </div>
-                <span className="text-xs text-blue-600 font-medium">
+                <span className="text-sm text-blue-600 font-medium">
                   +18% Growth
                 </span>
               </div>
-              <ChartContainer config={{}} className="h-32">
+              <ChartContainer config={{}} className="h-48 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={chartData.monthlyTrend}>
                     <CartesianGrid strokeDasharray="2 2" stroke="#e5e7eb" />
@@ -387,8 +387,8 @@ export function StreamingROIMetrics({
                   </AreaChart>
                 </ResponsiveContainer>
               </ChartContainer>
-              <div className="mt-2 text-center">
-                <span className="text-xs text-gray-500">
+              <div className="mt-3 text-center">
+                <span className="text-sm text-gray-500 font-medium">
                   Revenue Projection
                 </span>
               </div>
@@ -396,29 +396,29 @@ export function StreamingROIMetrics({
 
             {/* Cost Structure Analysis */}
             {currentStep >= 2 && (
-              <div className="bg-white rounded-lg p-4 border border-orange-100 shadow-sm">
-                <div className="flex items-center justify-between mb-3">
+              <div className="bg-white rounded-lg p-6 border border-orange-100 shadow-sm flex flex-col items-center">
+                <div className="flex items-center justify-between mb-4 w-full">
                   <div className="flex items-center gap-2">
-                    <PieChart className="w-4 h-4 text-orange-600" />
-                    <span className="text-sm font-medium text-orange-900">
+                    <PieChart className="w-5 h-5 text-orange-600" />
+                    <span className="text-base font-medium text-orange-900">
                       Cost Structure
                     </span>
                   </div>
-                  <span className="text-xs text-orange-600 font-medium">
+                  <span className="text-sm text-orange-600 font-medium">
                     40% Co-funded
                   </span>
                 </div>
-                <div className="flex items-center justify-center">
+                <div className="flex items-center justify-center flex-1">
                   <div className="relative">
-                    <ChartContainer config={{}} className="h-16 w-16">
+                    <ChartContainer config={{}} className="h-32 w-32">
                       <ResponsiveContainer width="100%" height="100%">
                         <RechartsPieChart>
                           <Pie
                             data={chartData.costBreakdown}
                             cx="50%"
                             cy="50%"
-                            innerRadius={16}
-                            outerRadius={28}
+                            innerRadius={32}
+                            outerRadius={56}
                             dataKey="value"
                           >
                             {chartData.costBreakdown.map((entry, index) => (
@@ -455,19 +455,19 @@ export function StreamingROIMetrics({
 
             {/* ROI Growth Timeline */}
             {currentStep >= 3 && (
-              <div className="bg-white rounded-lg p-4 border border-green-100 shadow-sm">
-                <div className="flex items-center justify-between mb-3">
+              <div className="bg-white rounded-lg p-6 shadow-sm flex flex-col items-center">
+                <div className="flex items-center justify-between mb-4 w-full">
                   <div className="flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-green-600" />
-                    <span className="text-sm font-medium text-green-900">
+                    <Zap className="w-5 h-5 text-green-600" />
+                    <span className="text-base font-medium text-green-900">
                       ROI Growth
                     </span>
                   </div>
-                  <span className="text-xs text-green-600 font-medium">
+                  <span className="text-sm text-green-600 font-medium">
                     +33% Target
                   </span>
                 </div>
-                <ChartContainer config={{}} className="h-32">
+                <ChartContainer config={{}} className="h-48 w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={chartData.roiProgression}>
                       <CartesianGrid strokeDasharray="2 2" stroke="#e5e7eb" />
@@ -493,8 +493,10 @@ export function StreamingROIMetrics({
                     </LineChart>
                   </ResponsiveContainer>
                 </ChartContainer>
-                <div className="mt-2 text-center">
-                  <span className="text-xs text-gray-500">Weekly ROI %</span>
+                <div className="mt-3 text-center">
+                  <span className="text-sm text-gray-500 font-medium">
+                    Weekly ROI %
+                  </span>
                 </div>
               </div>
             )}
