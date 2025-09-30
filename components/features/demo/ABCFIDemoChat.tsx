@@ -34,6 +34,7 @@ import {
 import { CampaignPlanUI } from "./CampaignPlanUI";
 import { ComprehensiveCampaignSummary } from "./ComprehensiveCampaignSummary";
 import { StreamingROIMetrics } from "./StreamingROIMetrics";
+import { CampaignLaunchConfirmation } from "./CampaignLaunchConfirmation";
 import { CampaignGiftAmountSection } from "./CampaignGiftAmountSection";
 import { CampaignJourneySection } from "./CampaignJourneySection";
 import { CampaignLocationConfig } from "./CampaignLocationConfig";
@@ -61,6 +62,7 @@ interface Message {
     | "streaming-roi-metrics"
     | "mobile-experience"
     | "roi-model"
+    | "campaign-launch-confirmation"
     | "placeholder"; // Scene 2 components
   data?: any;
 }
@@ -147,9 +149,14 @@ export function ABCFIDemoChat({
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [demoStep, setDemoStep] = useState<"initial" | "opportunities">(
-    "initial"
-  );
+  const [demoStep, setDemoStep] = useState<
+    | "initial"
+    | "opportunities"
+    | "campaign_plan"
+    | "roi_discussion"
+    | "local_offers_complete"
+    | "campaign_launched"
+  >("initial");
   const [hasStarted, setHasStarted] = useState(false);
   const [cardScrollIndex, setCardScrollIndex] = useState(0);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
@@ -191,23 +198,37 @@ export function ABCFIDemoChat({
         { text: "What are high-value segments?", action: "show_segments" },
       ];
     } else if (demoStep === "opportunities") {
-      // Step 1.4 - After seeing the 5 journey cards - simplified
+      // Step 1.4 - After seeing the 5 journey cards - no suggestions yet
+      return [];
+    } else if (demoStep === "campaign_plan") {
+      // Step 4.1 - After campaign plan is shown, suggest local offers ONLY
       return [
         {
-          text: "Tell me more about Life Event Transitions",
-          action: "life_events",
-        },
-        {
-          text: "Which journey has the highest potential?",
-          action: "highest_potential",
-        },
-        {
-          text: "Show me the Back-to-School segment",
-          action: "back_to_school",
+          text: "Include local offers to welcome them to the new neighborhood",
+          action: "local_offers",
         },
       ];
+    } else if (demoStep === "local_offers_complete") {
+      // After local offers response, show ROI question
+      return [
+        {
+          text: "This looks great. What will this campaign cost and how much incremental revenue will it generate for us?",
+          action: "roi_question",
+        },
+      ];
+    } else if (demoStep === "roi_discussion") {
+      // After ROI discussion - show launch campaign option
+      return [
+        {
+          text: "Ready to launch this campaign",
+          action: "launch_campaign",
+        },
+      ];
+    } else if (demoStep === "campaign_launched") {
+      // After campaign launch - no more suggestions needed
+      return [];
     } else {
-      // Demo stops after opportunities - no more suggestions
+      // Default - no suggestions
       return [];
     }
   };
@@ -234,7 +255,7 @@ export function ABCFIDemoChat({
     setTimeout(() => {
       const aiMessage: Message = {
         id: Date.now().toString(),
-        text: "Excellent choice. That aligns perfectly with the mortgage team's goals. Based on our network data, new homeowners are highly receptive to welcome offers.",
+        text: "Excellent choice. The Home Buying and Moving journey represents a high-value opportunity. Based on our network data, new homeowners are highly receptive to welcome offers.",
         sender: "ai",
         timestamp: new Date(),
       };
@@ -287,7 +308,7 @@ export function ABCFIDemoChat({
     setTimeout(() => {
       const confirmMessage: Message = {
         id: Date.now().toString(),
-        text: `Perfect! $${amount} gift budget set. Customers will choose from Home Depot gift card, cleaning service, or dining experience. Now let's configure the customer journey and timing.`,
+        text: `Excellent! $${amount} gift card gift budget set. That will drive a ton of engagement and goodwill with new home buyers. Customers will choose from Home Depot, Williams Sonoma, or an in-network local cleaning service. Now let's build the rest of the Home Buyer and Moving rewards journey.`,
         sender: "ai",
         timestamp: new Date(),
       };
@@ -320,7 +341,7 @@ export function ABCFIDemoChat({
         // Start AI-native location configuration for 30-day timeline
         const locationConfigMessage: Message = {
           id: Date.now().toString(),
-          text: `Perfect! ${journeyData.timeline.split("-")[0]}-day follow-up selected. Now let me configure location-based personalization using AI to optimize merchant offers for your target customer profile.`,
+          text: `Perfect! Now let me configure location-based personalization using AI to optimize merchant offers for each customer in the Homebuyer and Moving rewards journey.`,
           sender: "ai",
           timestamp: new Date(),
         };
@@ -385,7 +406,7 @@ export function ABCFIDemoChat({
     setTimeout(() => {
       const completionMessage: Message = {
         id: Date.now().toString(),
-        text: `🎯 AI configuration complete! Nationwide program configured with ${configData.aiInsights.networkCoverage} market coverage and ${configData.aiInsights.partnerCount} partner locations. Here's your campaign overview:`,
+        text: `Campaign optimization and configuration complete! Nationwide program configured with ${configData.aiInsights.networkCoverage} market coverage and over 30,000 partner locations. This campaign will deliver a highly personalized experience for each customer during an exciting (and sometimes stressful!) life transition. Here's your campaign overview:`,
         sender: "ai",
         timestamp: new Date(),
       };
@@ -421,6 +442,7 @@ export function ABCFIDemoChat({
 
         // Show local offers suggestion pill after a delay
         setTimeout(() => {
+          setDemoStep("campaign_plan");
           setShowLocalOffersSuggestion(true);
         }, 2000);
       }, 1000);
@@ -626,6 +648,85 @@ export function ABCFIDemoChat({
             };
             setMessages((prev) => [...prev, carouselMessage]);
           }, 500);
+        } else if (
+          demoStep === "opportunities" &&
+          (textToSend.toLowerCase().includes("home buying") ||
+            textToSend.toLowerCase().includes("home buyers") ||
+            textToSend.toLowerCase().includes("moving"))
+        ) {
+          aiResponse =
+            "Excellent choice. The Home Buying and Moving journey represents a high-value opportunity. Based on our network data, new homeowners are highly receptive to relevant rewards and offers during this major life transition.";
+          nextStep = "campaign_plan";
+
+          // Add campaign plan component
+          setTimeout(() => {
+            const campaignPlanMessage: Message = {
+              id: (Date.now() + 1).toString(),
+              text: "",
+              sender: "ai",
+              timestamp: new Date(),
+              component: "campaign-plan",
+              data: { campaignType: "New Home Buyer and Moving Campaign" },
+            };
+            setMessages((prev) => [...prev, campaignPlanMessage]);
+          }, 1000);
+        } else if (
+          demoStep === "opportunities" &&
+          textToSend.toLowerCase().includes("local offers")
+        ) {
+          aiResponse =
+            "Excellent choice. Including local offers to welcome new homeowners to their neighborhood is a powerful strategy that builds community connection and long-term loyalty. This approach has shown significant success in driving customer engagement and retention.";
+          nextStep = "local_offers_complete";
+        } else if (
+          demoStep === "campaign_plan" &&
+          textToSend.toLowerCase().includes("local offers")
+        ) {
+          aiResponse =
+            "A great thought. Integrating new homeowners into their local community drives significant long-term loyalty. I will offer to follow up with a 'Welcome to the Neighborhood' package of hyper local offers once they've relocated.";
+          nextStep = "local_offers_complete";
+        } else if (
+          (demoStep === "campaign_plan" ||
+            demoStep === "local_offers_complete") &&
+          (textToSend.toLowerCase().includes("cost") ||
+            textToSend.toLowerCase().includes("roi") ||
+            textToSend.toLowerCase().includes("revenue"))
+        ) {
+          aiResponse =
+            "Great question! Let me analyze the ROI impact for your New Homeowner Welcome Campaign. I'll calculate the financial projections based on your configuration.";
+          nextStep = "roi_discussion";
+
+          // Add ROI metrics component
+          setTimeout(() => {
+            const roiMessage: Message = {
+              id: (Date.now() + 1).toString(),
+              text: "",
+              sender: "ai",
+              timestamp: new Date(),
+              component: "streaming-roi-metrics",
+              data: { campaignType: "New Homeowner Welcome Campaign" },
+            };
+            setMessages((prev) => [...prev, roiMessage]);
+          }, 1000);
+        } else if (
+          demoStep === "roi_discussion" &&
+          textToSend.toLowerCase().includes("launch")
+        ) {
+          aiResponse =
+            "Excellent! Your New Homeowner Welcome Campaign is now ready for launch. The system has been configured and all partner integrations are active. Welcome to the future of customer engagement!";
+          nextStep = "campaign_launched";
+
+          // Add launch confirmation component with confetti
+          setTimeout(() => {
+            const launchMessage: Message = {
+              id: (Date.now() + 1).toString(),
+              text: "",
+              sender: "ai",
+              timestamp: new Date(),
+              component: "campaign-launch-confirmation",
+              data: { campaignType: "New Homeowner Welcome Campaign" },
+            };
+            setMessages((prev) => [...prev, launchMessage]);
+          }, 1000);
         } else {
           aiResponse =
             "I understand. Could you tell me more about what you'd like to focus on?";
@@ -718,7 +819,7 @@ export function ABCFIDemoChat({
       </div>
 
       {/* Messages - Centered and wider with better spacing */}
-      <div className="flex flex-col justify-start items-center px-8 py-20 pb-40">
+      <div className="flex flex-col justify-start items-center px-8 py-20 pb-40 relative z-10">
         <div className="w-full max-w-6xl space-y-6 mb-8">
           {messages.map((message) => (
             <div
@@ -990,6 +1091,18 @@ export function ABCFIDemoChat({
                         giftAmount={message.data?.giftAmount || 100}
                         timeline={message.data?.timeline || "30-days"}
                         onAnalysisComplete={handleROIAnalysisComplete}
+                        className="w-full"
+                      />
+                    </div>
+                  )}
+
+                  {message.component === "campaign-launch-confirmation" && (
+                    <div className="w-full">
+                      <CampaignLaunchConfirmation
+                        campaignType={
+                          message.data?.campaignType ||
+                          "New Homeowner Welcome Campaign"
+                        }
                         className="w-full"
                       />
                     </div>
@@ -1299,17 +1412,17 @@ export function ABCFIDemoChat({
       </div>
 
       {/* Floating Input at Bottom */}
-      <div className="fixed bottom-6 left-8 right-8 z-60">
-        <div className="max-w-4xl mx-auto">
+      <div className="fixed bottom-6 left-8 right-8 z-50">
+        <div className="max-w-4xl mx-auto relative pt-6">
           {/* Suggestion Pills */}
-          <div className="mb-8">
+          <div className="mb-4">
             <div className="flex flex-wrap gap-2 justify-center">
               {getSuggestionPills().map((suggestion, index) => (
                 <button
                   key={index}
                   onClick={() => handleSuggestionClick(suggestion.text)}
                   disabled={isTyping}
-                  className="px-4 py-2 bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-full text-sm text-gray-700 hover:bg-white/90 hover:border-gray-300/50 transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+                  className="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                 >
                   {suggestion.text}
                 </button>
@@ -1317,38 +1430,8 @@ export function ABCFIDemoChat({
             </div>
           </div>
 
-          {/* Local Offers Suggestion Pill */}
-          {showLocalOffersSuggestion && (
-            <div className="mb-4">
-              <div className="flex justify-center">
-                <button
-                  onClick={handleLocalOffersQuestion}
-                  className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:from-purple-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl animate-in slide-in-from-bottom-2 fade-in flex items-center gap-2"
-                >
-                  <MapPin className="w-4 h-4" />
-                  Include local offers to welcome them to their new neighborhood
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* ROI Suggestion Pill */}
-          {showROISuggestion && (
-            <div className="mb-4">
-              <div className="flex justify-center">
-                <button
-                  onClick={handleROIQuestion}
-                  className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-lg hover:shadow-xl animate-in slide-in-from-bottom-2 fade-in flex items-center gap-2"
-                >
-                  <TrendingUp className="w-4 h-4" />
-                  What's the ROI impact of this campaign?
-                </button>
-              </div>
-            </div>
-          )}
-
           <div className="relative">
-            <div className="flex items-center bg-white/95 backdrop-blur-sm border border-gray-200/50 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl focus-within:ring-2 focus-within:ring-blue-500/30 focus-within:border-blue-500/50">
+            <div className="flex items-center bg-white/95 backdrop-blur-lg border border-white/40 rounded-full shadow-xl transition-all duration-200 hover:shadow-2xl focus-within:ring-2 focus-within:ring-blue-500/40 focus-within:border-blue-500/60">
               {/* Message Icon */}
               <div className="pl-4 pr-2">
                 <MessageSquare className="w-5 h-5 text-gray-400" />
@@ -1387,6 +1470,12 @@ export function ABCFIDemoChat({
               <div
                 className={`w-2 h-2 rounded-full ${demoStep === "opportunities" ? "bg-white" : "bg-white/30"}`}
               ></div>
+              <div
+                className={`w-2 h-2 rounded-full ${demoStep === "campaign_plan" ? "bg-white" : "bg-white/30"}`}
+              ></div>
+              <div
+                className={`w-2 h-2 rounded-full ${demoStep === "roi_discussion" ? "bg-white" : "bg-white/30"}`}
+              ></div>
             </div>
             <span className="text-xs text-white/70 ml-2">
               Session:{" "}
@@ -1394,7 +1483,11 @@ export function ABCFIDemoChat({
                 ? "Getting Started"
                 : demoStep === "opportunities"
                   ? "Analyzing Opportunities"
-                  : "Complete"}
+                  : demoStep === "campaign_plan"
+                    ? "Building Campaign"
+                    : demoStep === "roi_discussion"
+                      ? "ROI Analysis"
+                      : "Complete"}
             </span>
           </div>
         </div>

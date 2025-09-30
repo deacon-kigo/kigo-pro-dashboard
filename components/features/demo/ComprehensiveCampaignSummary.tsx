@@ -76,7 +76,7 @@ export function ComprehensiveCampaignSummary({
   const giftDistributionData = [
     { name: "Home Depot", value: 45, color: "#f97316" },
     { name: "Cleaning Service", value: 30, color: "#10b981" },
-    { name: "Dining Experience", value: 25, color: "#8b5cf6" },
+    { name: "Williams Sonoma", value: 25, color: "#8b5cf6" },
   ];
 
   const merchantCategoryData = [
@@ -88,7 +88,11 @@ export function ComprehensiveCampaignSummary({
 
   return (
     <div
-      className={`bg-white rounded-2xl shadow-lg border border-gray-200 p-4 ${className}`}
+      className={`bg-white rounded-2xl shadow-lg shadow-black/10 border border-gray-200/50 p-6 backdrop-blur-sm ${className}`}
+      style={{
+        background:
+          "linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%)",
+      }}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
@@ -125,7 +129,7 @@ export function ComprehensiveCampaignSummary({
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-3">
           {/* Gift Configuration */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 border border-blue-200">
+          <div className="bg-gradient-to-r from-blue-50/80 to-indigo-50/80 rounded-xl p-4 border border-blue-200/50 backdrop-blur-sm shadow-sm">
             <h3 className="font-medium text-blue-900 text-sm mb-2 flex items-center gap-2">
               <Gift className="w-4 h-4" />
               Gift Configuration
@@ -146,7 +150,7 @@ export function ComprehensiveCampaignSummary({
           </div>
 
           {/* Customer Journey */}
-          <div className="bg-gray-50 rounded-lg p-3">
+          <div className="bg-gradient-to-r from-gray-50/80 to-slate-50/80 rounded-xl p-4 border border-gray-200/30 backdrop-blur-sm shadow-sm">
             <h3 className="font-medium text-gray-900 text-sm mb-2 flex items-center gap-2">
               <Clock className="w-4 h-4" />
               Customer Experience Timeline
@@ -170,30 +174,26 @@ export function ComprehensiveCampaignSummary({
                 <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mb-1">
                   <BarChart3 className="w-3 h-3 text-white" />
                 </div>
-                <div className="text-gray-600">
-                  {timeline.split("-")[0]}-day Follow-up
-                </div>
+                <div className="text-gray-600">On Demand Follow-up</div>
               </div>
             </div>
           </div>
 
           {/* Location Summary */}
           {isEnhanced && locationData && (
-            <div className="bg-green-50 rounded-lg p-3 border border-green-200">
+            <div className="bg-gradient-to-r from-green-50/80 to-emerald-50/80 rounded-xl p-4 border border-green-200/50 backdrop-blur-sm shadow-sm">
               <h3 className="font-medium text-green-900 text-sm mb-2 flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
                 Target Location: {locationData.customerData?.name}
               </h3>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <span className="text-gray-500">Address:</span>
-                  <span className="ml-1 text-gray-900">Stapleton, Denver</span>
+                  <span className="text-gray-500">Coverage:</span>
+                  <span className="ml-1 text-gray-900">Nationwide</span>
                 </div>
                 <div>
                   <span className="text-gray-500">Partners:</span>
-                  <span className="ml-1 text-gray-900">
-                    {locationData.nearbyMerchants?.length || 4} nearby
-                  </span>
+                  <span className="ml-1 text-gray-900">30,000+ locations</span>
                 </div>
               </div>
             </div>
@@ -203,7 +203,7 @@ export function ComprehensiveCampaignSummary({
         {/* Metrics Tab */}
         <TabsContent value="metrics" className="space-y-3">
           {/* Performance Chart */}
-          <div className="bg-white border border-gray-200 rounded-lg p-3">
+          <div className="bg-white/80 border border-gray-200/50 rounded-xl p-4 backdrop-blur-sm shadow-sm">
             <h3 className="font-medium text-gray-900 text-sm mb-3">
               Campaign Performance Projection
             </h3>
@@ -232,7 +232,7 @@ export function ComprehensiveCampaignSummary({
           </div>
 
           {/* Gift Preference Distribution */}
-          <div className="bg-white border border-gray-200 rounded-lg p-3">
+          <div className="bg-white/80 border border-gray-200/50 rounded-xl p-4 backdrop-blur-sm shadow-sm">
             <h3 className="font-medium text-gray-900 text-sm mb-3">
               Expected Gift Preferences
             </h3>
@@ -281,7 +281,7 @@ export function ComprehensiveCampaignSummary({
 
         {/* ROI Model Tab (Scene 4) */}
         <TabsContent value="roi" className="space-y-3">
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3 border border-green-200">
+          <div className="bg-gradient-to-r from-green-50/80 to-emerald-50/80 rounded-xl p-4 border border-green-200/50 backdrop-blur-sm shadow-sm">
             <h3 className="font-medium text-green-900 text-sm mb-3 flex items-center gap-2">
               <TrendingUp className="w-4 h-4" />
               Projected Monthly ROI Model
@@ -411,14 +411,6 @@ export function ComprehensiveCampaignSummary({
           )}
         </TabsContent>
       </Tabs>
-
-      {/* Launch Button */}
-      <div className="mt-4 pt-3 border-t border-gray-200">
-        <button className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-2 px-4 rounded-lg font-medium text-sm hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center gap-2">
-          <Target className="w-4 h-4" />
-          Launch New Homeowner Welcome Campaign
-        </button>
-      </div>
     </div>
   );
 }

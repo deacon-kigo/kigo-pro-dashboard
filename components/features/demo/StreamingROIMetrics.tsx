@@ -286,7 +286,9 @@ export function StreamingROIMetrics({
         <div className="bg-gradient-to-r from-red-50 to-red-100 rounded-lg p-3 border border-red-200">
           <div className="flex items-center gap-2 mb-1">
             <DollarSign className="w-4 h-4 text-red-600" />
-            <span className="text-sm font-medium text-red-900">Net Cost</span>
+            <span className="text-sm font-medium text-red-900">
+              Est. Net Cost
+            </span>
           </div>
           <div className="text-lg font-bold text-red-700">
             ${animatedValues.netCost.toLocaleString()}
@@ -297,7 +299,7 @@ export function StreamingROIMetrics({
           <div className="flex items-center gap-2 mb-1">
             <Target className="w-4 h-4 text-purple-600" />
             <span className="text-sm font-medium text-purple-900">
-              Est. Revenue
+              Est. Net Revenue
             </span>
           </div>
           <div className="text-lg font-bold text-purple-700">
@@ -306,110 +308,167 @@ export function StreamingROIMetrics({
         </div>
       </div>
 
-      {/* Charts */}
+      {/* Enhanced Analytics Dashboard */}
       {currentStep >= 1 && (
-        <div className="space-y-3">
-          {/* Monthly Trend Chart */}
-          <div className="bg-gray-50 rounded-lg p-3">
-            <h4 className="text-sm font-medium text-gray-900 mb-2 flex items-center gap-2">
-              <BarChart3 className="w-4 h-4" />
-              Monthly Performance Projection
-            </h4>
-            <ChartContainer config={{}} className="h-24">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData.monthlyTrend}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                  <YAxis tick={{ fontSize: 10 }} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Area
-                    type="monotone"
-                    dataKey="revenue"
-                    stroke="#3b82f6"
-                    fill="#3b82f6"
-                    fillOpacity={0.3}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </div>
+        <div className="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-4 border border-gray-200/50">
+          <h4 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 text-blue-600" />
+            Performance Analytics Dashboard
+          </h4>
 
-          {/* Cost Breakdown */}
-          {currentStep >= 2 && (
-            <div className="bg-gray-50 rounded-lg p-3">
-              <h4 className="text-sm font-medium text-gray-900 mb-2 flex items-center gap-2">
-                <PieChart className="w-4 h-4" />
-                Cost Structure Analysis
-              </h4>
-              <div className="flex items-center gap-4">
-                <div className="flex-1">
-                  <ChartContainer config={{}} className="h-20">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <RechartsPieChart>
-                        <Pie
-                          data={chartData.costBreakdown}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={12}
-                          outerRadius={30}
-                          dataKey="value"
-                        >
-                          {chartData.costBreakdown.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <ChartTooltip content={<ChartTooltipContent />} />
-                      </RechartsPieChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
+          {/* Enhanced Row Layout */}
+          <div className="grid grid-cols-3 gap-4">
+            {/* Monthly Performance Projection */}
+            <div className="bg-white rounded-lg p-4 border border-blue-100 shadow-sm">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4 text-blue-600" />
+                  <span className="text-sm font-medium text-blue-900">
+                    Monthly Performance
+                  </span>
                 </div>
-                <div className="flex-1 space-y-1">
+                <span className="text-xs text-blue-600 font-medium">
+                  +18% Growth
+                </span>
+              </div>
+              <ChartContainer config={{}} className="h-20">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData.monthlyTrend}>
+                    <CartesianGrid strokeDasharray="2 2" stroke="#e5e7eb" />
+                    <XAxis
+                      dataKey="month"
+                      tick={{ fontSize: 9 }}
+                      axisLine={false}
+                    />
+                    <YAxis tick={{ fontSize: 9 }} axisLine={false} />
+                    <ChartTooltip
+                      content={<ChartTooltipContent />}
+                      labelStyle={{ fontSize: "10px" }}
+                      contentStyle={{ fontSize: "10px" }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="#3b82f6"
+                      fill="#3b82f6"
+                      fillOpacity={0.2}
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+              <div className="mt-2 text-center">
+                <span className="text-xs text-gray-500">
+                  Revenue Projection
+                </span>
+              </div>
+            </div>
+
+            {/* Cost Structure Analysis */}
+            {currentStep >= 2 && (
+              <div className="bg-white rounded-lg p-4 border border-orange-100 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <PieChart className="w-4 h-4 text-orange-600" />
+                    <span className="text-sm font-medium text-orange-900">
+                      Cost Structure
+                    </span>
+                  </div>
+                  <span className="text-xs text-orange-600 font-medium">
+                    40% Co-funded
+                  </span>
+                </div>
+                <div className="flex items-center justify-center">
+                  <div className="relative">
+                    <ChartContainer config={{}} className="h-16 w-16">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <RechartsPieChart>
+                          <Pie
+                            data={chartData.costBreakdown}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={16}
+                            outerRadius={28}
+                            dataKey="value"
+                          >
+                            {chartData.costBreakdown.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <ChartTooltip content={<ChartTooltipContent />} />
+                        </RechartsPieChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
+                  </div>
+                </div>
+                <div className="mt-2 space-y-1">
                   {chartData.costBreakdown.map((item) => (
                     <div
                       key={item.name}
-                      className="flex items-center gap-2 text-xs"
+                      className="flex items-center justify-between text-xs"
                     >
-                      <div
-                        className="w-2 h-2 rounded-full"
-                        style={{ backgroundColor: item.color }}
-                      ></div>
-                      <span className="text-gray-600">{item.name}</span>
+                      <div className="flex items-center gap-1">
+                        <div
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: item.color }}
+                        ></div>
+                        <span className="text-gray-600">{item.name}</span>
+                      </div>
                       <span className="font-medium text-gray-900">
-                        ${item.value.toLocaleString()}
+                        ${(item.value / 1000).toFixed(0)}k
                       </span>
                     </div>
                   ))}
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* ROI Progression */}
-          {currentStep >= 3 && (
-            <div className="bg-gray-50 rounded-lg p-3">
-              <h4 className="text-sm font-medium text-gray-900 mb-2 flex items-center gap-2">
-                <Zap className="w-4 h-4" />
-                ROI Growth Timeline
-              </h4>
-              <ChartContainer config={{}} className="h-24">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData.roiProgression}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="week" tick={{ fontSize: 10 }} />
-                    <YAxis tick={{ fontSize: 10 }} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Line
-                      type="monotone"
-                      dataKey="roi"
-                      stroke="#10b981"
-                      strokeWidth={3}
-                      dot={{ fill: "#10b981", strokeWidth: 2, r: 4 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </div>
-          )}
+            {/* ROI Growth Timeline */}
+            {currentStep >= 3 && (
+              <div className="bg-white rounded-lg p-4 border border-green-100 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-green-600" />
+                    <span className="text-sm font-medium text-green-900">
+                      ROI Growth
+                    </span>
+                  </div>
+                  <span className="text-xs text-green-600 font-medium">
+                    +33% Target
+                  </span>
+                </div>
+                <ChartContainer config={{}} className="h-20">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData.roiProgression}>
+                      <CartesianGrid strokeDasharray="2 2" stroke="#e5e7eb" />
+                      <XAxis
+                        dataKey="week"
+                        tick={{ fontSize: 9 }}
+                        axisLine={false}
+                      />
+                      <YAxis tick={{ fontSize: 9 }} axisLine={false} />
+                      <ChartTooltip
+                        content={<ChartTooltipContent />}
+                        labelStyle={{ fontSize: "10px" }}
+                        contentStyle={{ fontSize: "10px" }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="roi"
+                        stroke="#10b981"
+                        strokeWidth={3}
+                        dot={{ fill: "#10b981", strokeWidth: 2, r: 3 }}
+                        activeDot={{ r: 4, stroke: "#10b981", strokeWidth: 2 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+                <div className="mt-2 text-center">
+                  <span className="text-xs text-gray-500">Weekly ROI %</span>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

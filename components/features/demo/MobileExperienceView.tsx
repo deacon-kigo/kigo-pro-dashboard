@@ -60,7 +60,7 @@ export function MobileExperienceView({
     },
     {
       id: "dining",
-      title: "Local Dining Experience",
+      title: "$100 Williams Sonoma",
       icon: "🍽️",
       color: "bg-green-500",
     },

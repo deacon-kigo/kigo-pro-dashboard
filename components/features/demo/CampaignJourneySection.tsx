@@ -8,6 +8,7 @@ import {
   Wrench,
   CheckCircle,
   Clock,
+  Zap,
 } from "lucide-react";
 
 interface CampaignJourneySectionProps {
@@ -21,38 +22,42 @@ export function CampaignJourneySection({
   onJourneyConfirm,
   className = "",
 }: CampaignJourneySectionProps) {
-  const [selectedTimeline, setSelectedTimeline] = useState<string>("30-days");
+  const [selectedTimeline, setSelectedTimeline] = useState<string>("on-demand");
   const [isConfigured, setIsConfigured] = useState(false);
 
   const timelineOptions = [
-    { id: "7-days", label: "7 days", description: "Quick follow-up" },
-    { id: "30-days", label: "30 days", description: "Standard timing" },
-    { id: "60-days", label: "60 days", description: "Extended period" },
+    { id: "instant", label: "Instant", description: "Immediate delivery" },
+    {
+      id: "on-demand",
+      label: "On-demand",
+      description: "Available when needed",
+    },
+    { id: "scheduled", label: "Scheduled", description: "Timed follow-up" },
   ];
 
   const journeySteps = [
     {
-      id: "notification",
+      id: "selection",
       icon: Gift,
       title: "Gift Selection",
       description:
-        "Customer receives an in-app notification to select their gift.",
+        "Customer receives an in-app notification to select their personalized gift.",
       hexColor: "#8b5cf6",
     },
     {
-      id: "delivery",
-      icon: Mail,
-      title: "Gift Delivery",
+      id: "instant_delivery",
+      icon: Zap,
+      title: "Instant Delivery",
       description:
-        "The digital gift card is delivered instantly to their Rewards Hub.",
+        "The digital gift card is delivered instantly to their Rewards Hub within seconds.",
       hexColor: "#3b82f6",
     },
     {
-      id: "followup",
+      id: "on_demand_offers",
       icon: Wrench,
       title: "On-Demand Offers",
       description:
-        "A complete toolkit of moving and local offers is also unlocked, available in the Hub for the customer to use whenever they need them.",
+        "A complete toolkit of moving and local offers is unlocked, available in the Hub for the customer to use whenever they need them.",
       hexColor: "#10b981",
     },
   ];
@@ -69,7 +74,7 @@ export function CampaignJourneySection({
         timeline: selectedTimeline,
         steps: journeySteps,
         giftAmount,
-        needsLocationConfig: selectedTimeline === "30-days", // Trigger location config for 30-day timeline
+        needsLocationConfig: selectedTimeline === "on-demand", // Trigger location config for on-demand timeline
       });
     }, 500);
   };
@@ -83,39 +88,12 @@ export function CampaignJourneySection({
         <div className="flex items-center justify-center gap-2 mb-2">
           <TrendingUp className="w-5 h-5 text-blue-600" />
           <h3 className="text-lg font-bold text-gray-900">
-            Section 2: Customer Experience
+            Configure Customer Experience
           </h3>
         </div>
         <p className="text-sm text-gray-600">
-          Configure the customer journey timeline
+          Review the customer journey steps
         </p>
-      </div>
-
-      {/* Timeline Selection */}
-      <div className="mb-4">
-        <h4 className="text-sm font-medium text-gray-900 mb-2 flex items-center gap-2">
-          <Clock className="w-4 h-4" />
-          Follow-up Timing
-        </h4>
-        <div className="grid grid-cols-3 gap-2">
-          {timelineOptions.map((option) => (
-            <button
-              key={option.id}
-              onClick={() => handleTimelineSelect(option.id)}
-              className={`
-                p-2 rounded-lg border text-center transition-all duration-200
-                ${
-                  selectedTimeline === option.id
-                    ? "bg-indigo-600 border-indigo-600 text-white"
-                    : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-indigo-50"
-                }
-              `}
-            >
-              <div className="text-sm font-medium">{option.label}</div>
-              <div className="text-xs opacity-75">{option.description}</div>
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Journey Steps Timeline */}
@@ -167,7 +145,7 @@ export function CampaignJourneySection({
       {!isConfigured ? (
         <button
           onClick={handleConfirm}
-          className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium text-sm hover:bg-indigo-700 transition-all duration-200 shadow-sm hover:shadow-md"
+          className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium text-sm hover:bg-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl border-0"
         >
           Configure Customer Journey
         </button>
@@ -176,8 +154,7 @@ export function CampaignJourneySection({
           <div className="flex items-center justify-center gap-2">
             <CheckCircle className="w-4 h-4 text-green-600" />
             <span className="text-sm font-medium text-green-800">
-              Customer journey configured with {selectedTimeline.split("-")[0]}
-              -day follow-up
+              Customer journey configured with {selectedTimeline} delivery
             </span>
           </div>
         </div>

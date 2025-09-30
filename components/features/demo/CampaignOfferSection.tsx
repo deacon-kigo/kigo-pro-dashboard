@@ -37,7 +37,7 @@ export function CampaignOfferSection({
     },
     {
       id: "dining-experience",
-      title: "Local Dining Experience",
+      title: "$100 Williams Sonoma",
       icon: Utensils,
       color: "from-green-50 to-green-100 border-green-200",
       iconBg: "bg-green-500",
