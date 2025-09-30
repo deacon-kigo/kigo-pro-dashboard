@@ -41,7 +41,7 @@ import { Ad, formatDate, formatDateTime, formatChannels } from "./adColumns";
 import { AdSearchBar, SearchField } from "./AdSearchBar";
 import { StatusChangeDialog } from "./StatusChangeDialog";
 import { AdDetailModal } from "./AdDetailModal";
-import { FloatingSelectionToolbar } from "./FloatingSelectionToolbar";
+import { InlineBulkActions } from "./InlineBulkActions";
 import { useDispatch } from "react-redux";
 import { clearAllDropdowns, addNotification } from "@/lib/redux/slices/uiSlice";
 import { ColumnDef } from "@tanstack/react-table";
@@ -2776,6 +2776,14 @@ export default function AdManagerListView() {
             />
           </div>
 
+          {/* Center: Inline Bulk Actions (when items are selected) */}
+          <InlineBulkActions
+            selectedCounts={selectedCounts}
+            currentLevel={currentLevel}
+            onClearSelection={handleClearSelection}
+            onBulkDelete={handleBulkDelete}
+          />
+
           {/* Center: Universal Filter Button - Available on all levels */}
           <div className="flex items-center">
             <CampaignFilterDropdown
@@ -2840,17 +2848,6 @@ export default function AdManagerListView() {
         isOpen={modalState.adDetail.isOpen}
         onClose={handleModalClose}
         ad={modalState.adDetail.ad}
-      />
-
-      {/* Floating Selection Toolbar */}
-      <FloatingSelectionToolbar
-        selectedCounts={selectedCounts}
-        currentLevel={currentLevel}
-        onClearSelection={handleClearSelection}
-        onBulkActivate={handleBulkActivate}
-        onBulkPause={handleBulkPause}
-        onBulkDuplicate={handleBulkDuplicate}
-        onBulkDelete={handleBulkDelete}
       />
     </div>
   );

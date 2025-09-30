@@ -806,12 +806,19 @@ export function ABCFIDemoChat({
       </div>
 
       {/* Simple close button */}
-      <div className="fixed top-4 right-4 z-60">
+      <div className="fixed top-4 right-4 z-[100]">
         <Button
-          onClick={onClose}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log("ABCFIDemoChat close button clicked");
+            onClose();
+          }}
           variant="ghost"
           size="sm"
-          className="p-2 hover:bg-white/20 rounded-full transition-colors text-gray-600 hover:text-gray-800"
+          className="p-3 hover:bg-white/80 rounded-full transition-colors text-gray-600 hover:text-gray-800 cursor-pointer bg-white/60 backdrop-blur-sm border border-gray-200/50 shadow-lg"
+          type="button"
+          aria-label="Close chat"
         >
           <X className="w-5 h-5" />
         </Button>
