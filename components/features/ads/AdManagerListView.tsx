@@ -45,6 +45,7 @@ import { InlineBulkActions } from "./InlineBulkActions";
 import AdGroupDeleteConfirmModal from "./modals/AdGroupDeleteConfirmModal";
 import { useDispatch } from "react-redux";
 import { clearAllDropdowns, addNotification } from "@/lib/redux/slices/uiSlice";
+import { useToast } from "@/lib/hooks/use-toast";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
@@ -2225,6 +2226,7 @@ const CampaignFilterDropdown = memo(function CampaignFilterDropdown({
  */
 export default function AdManagerListView() {
   const dispatch = useDispatch();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [currentLevel, setCurrentLevel] = useState<NavigationLevel>("adsets"); // Start with ad groups for V1
   // State for selected rows - separate for each level
@@ -2332,6 +2334,16 @@ export default function AdManagerListView() {
     (adSetId: string, newStatus: CampaignStatus) => {
       console.log(`Changing ad group ${adSetId} status to ${newStatus}`);
 
+      // Find the ad group name for the toast
+      let adGroupName = "";
+      for (const campaign of campaignsData) {
+        const adSet = campaign.adSets?.find((as) => as.id === adSetId);
+        if (adSet) {
+          adGroupName = adSet.name;
+          break;
+        }
+      }
+
       // Update the local campaigns data state (in real app, this would be an API call)
       setCampaignsData((currentData) => {
         return currentData.map((campaign) => ({
@@ -2342,15 +2354,28 @@ export default function AdManagerListView() {
         }));
       });
 
-      // Show a notification
-      dispatch(
-        addNotification({
-          message: `Ad group status changed to ${newStatus}`,
-          type: "success",
-        })
-      );
+      // Show toast notification based on status
+      if (newStatus === "Active") {
+        toast({
+          title: "✅ Ad Group Activated",
+          description: `"${adGroupName}" is now active and will start delivering ads`,
+          className: "!bg-green-100 !border-green-300 !text-green-800",
+        });
+      } else if (newStatus === "Paused") {
+        toast({
+          title: "⏸️ Ad Group Paused",
+          description: `"${adGroupName}" has been paused and will stop delivering ads`,
+          className: "!bg-yellow-100 !border-yellow-300 !text-yellow-800",
+        });
+      } else {
+        toast({
+          title: "📝 Ad Group Status Updated",
+          description: `"${adGroupName}" status changed to ${newStatus}`,
+          className: "!bg-blue-100 !border-blue-300 !text-blue-800",
+        });
+      }
     },
-    [dispatch]
+    [campaignsData, toast]
   );
 
   // Clear all filters
