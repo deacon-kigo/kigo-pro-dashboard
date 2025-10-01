@@ -8,6 +8,7 @@ import { Badge } from "@/components/atoms/Badge";
 import { Input } from "@/components/atoms/Input";
 import Card from "@/components/atoms/Card/Card";
 import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/lib/hooks/use-toast";
 import {
   Plus,
   Search,
@@ -87,6 +88,7 @@ const mockAdGroups: AdGroup[] = [
 
 export default function AdGroupsPage() {
   const searchParams = useSearchParams();
+  const { toast } = useToast();
   const [adGroups, setAdGroups] = useState<AdGroup[]>(mockAdGroups);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<
@@ -113,6 +115,10 @@ export default function AdGroupsPage() {
     adGroupId: string,
     newStatus: "active" | "paused"
   ) => {
+    // Find the ad group name for the toast
+    const adGroup = adGroups.find((ag) => ag.id === adGroupId);
+    const adGroupName = adGroup?.name || "Ad Group";
+
     setAdGroups((prev) =>
       prev.map((ag) =>
         ag.id === adGroupId
@@ -124,6 +130,21 @@ export default function AdGroupsPage() {
           : ag
       )
     );
+
+    // Show toast notification based on status
+    if (newStatus === "active") {
+      toast({
+        title: "✅ Ad Group Activated",
+        description: `"${adGroupName}" is now active and will start delivering ads`,
+        className: "!bg-green-100 !border-green-300 !text-green-800",
+      });
+    } else if (newStatus === "paused") {
+      toast({
+        title: "⏸️ Ad Group Paused",
+        description: `"${adGroupName}" has been paused and will stop delivering ads`,
+        className: "!bg-yellow-100 !border-yellow-300 !text-yellow-800",
+      });
+    }
   };
 
   const filteredAdGroups = adGroups.filter((ag) => {

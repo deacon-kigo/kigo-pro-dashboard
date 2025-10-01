@@ -44,6 +44,7 @@ import { AdDetailModal } from "./AdDetailModal";
 import { InlineBulkActions } from "./InlineBulkActions";
 import { useDispatch } from "react-redux";
 import { clearAllDropdowns } from "@/lib/redux/slices/uiSlice";
+import { useToast } from "@/lib/hooks/use-toast";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
@@ -407,6 +408,7 @@ const adGroupColumns: ColumnDef<SimpleAdGroup>[] = [
 export default function AdManagerListView() {
   const router = useRouter();
   const dispatch = useDispatch();
+  const { toast } = useToast();
 
   // Simplified state for v1
   const [currentLevel, setCurrentLevel] = useState<NavigationLevel>("adgroups");
@@ -837,6 +839,38 @@ export default function AdManagerListView() {
         }
         onConfirm={() => {
           // Handle status change confirmation
+          const ad = modalState.statusChange.ad;
+          const newStatus = modalState.statusChange.newStatus;
+
+          if (ad && newStatus) {
+            // Show toast notification based on status
+            if (newStatus === "Active") {
+              toast({
+                title: "✅ Ad Activated",
+                description: `"${ad.name}" is now active and will start delivering`,
+                className: "!bg-green-100 !border-green-300 !text-green-800",
+              });
+            } else if (newStatus === "Paused") {
+              toast({
+                title: "⏸️ Ad Paused",
+                description: `"${ad.name}" has been paused and will stop delivering`,
+                className: "!bg-yellow-100 !border-yellow-300 !text-yellow-800",
+              });
+            } else if (newStatus === "Ended") {
+              toast({
+                title: "🛑 Ad Ended",
+                description: `"${ad.name}" has been permanently ended`,
+                className: "!bg-red-100 !border-red-300 !text-red-800",
+              });
+            } else {
+              toast({
+                title: "📝 Ad Status Updated",
+                description: `"${ad.name}" status changed to ${newStatus}`,
+                className: "!bg-blue-100 !border-blue-300 !text-blue-800",
+              });
+            }
+          }
+
           setModalState((prev) => ({
             ...prev,
             statusChange: { ...CLOSED_MODAL_STATE.statusChange },
