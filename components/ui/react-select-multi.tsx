@@ -4,6 +4,12 @@ import React, { useRef, useState, useEffect } from "react";
 import Select, { MultiValue, StylesConfig, components } from "react-select";
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export interface Option {
   label: string;
@@ -78,13 +84,27 @@ export function ReactSelectMulti({
 
     // Only show the first effectiveMaxDisplayValues values
     if (index >= effectiveMaxDisplayValues) {
-      // For the last visible item, show a +X more indicator
+      // For the last visible item, show a +X more indicator with tooltip
       if (index === effectiveMaxDisplayValues) {
         const remaining = allValues.length - effectiveMaxDisplayValues;
+        const remainingItems = allValues.slice(effectiveMaxDisplayValues);
+        const tooltipContent = remainingItems
+          .map((item: any) => item.label)
+          .join(", ");
+
         return (
-          <div className="bg-[#e6f0ff] text-[#0052CC] px-1 py-0.5 m-0.5 rounded text-xs flex items-center font-medium truncate max-w-[60px]">
-            +{remaining} more
-          </div>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="bg-[#e6f0ff] text-[#0052CC] px-1 py-0.5 m-0.5 rounded text-xs flex items-center font-medium truncate max-w-[60px] cursor-help">
+                  +{remaining} more
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-xs">
+                <p className="text-sm">{tooltipContent}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         );
       }
       return null; // Hide other items

@@ -10,6 +10,8 @@ export const selectDescription = (state: RootState) =>
   state.productFilter.description;
 export const selectCriteria = (state: RootState) =>
   state.productFilter.criteria;
+export const selectSelectedSources = (state: RootState) =>
+  state.productFilter.selectedSources;
 export const selectIsGenerating = (state: RootState) =>
   state.productFilter.isGenerating;
 export const selectLastGeneratedFilter = (state: RootState) =>
@@ -42,12 +44,18 @@ export const selectMissingRequiredCriteria = createSelector(
 );
 
 export const selectIsFormValid = createSelector(
-  [selectFilterName, selectDescription, selectHasAllRequiredCriteria],
-  (filterName, description, hasAllRequiredCriteria) => {
+  [
+    selectFilterName,
+    selectDescription,
+    selectHasAllRequiredCriteria,
+    selectSelectedSources,
+  ],
+  (filterName, description, hasAllRequiredCriteria, selectedSources) => {
     return (
       filterName.trim() !== "" &&
       description.trim() !== "" &&
-      hasAllRequiredCriteria
+      hasAllRequiredCriteria &&
+      selectedSources.length > 0
     );
   }
 );
