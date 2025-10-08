@@ -30,20 +30,14 @@ import {
   ArrowLeftIcon,
   PlusIcon,
   CheckCircleIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-  SparklesIcon,
   ExclamationCircleIcon,
   InformationCircleIcon,
   XCircleIcon,
-  LightBulbIcon,
   FunnelIcon,
-  PencilIcon,
   UsersIcon,
   DocumentTextIcon,
   ClipboardDocumentListIcon,
   ChevronRightIcon,
-  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import {
@@ -56,9 +50,7 @@ import {
 import { Calendar } from "@/components/atoms/Calendar";
 import { PageHeader } from "@/components/molecules/PageHeader";
 import { addDays } from "date-fns";
-import { AIAssistantPanel } from "@/components/features/ai";
 import { useDispatch, useSelector } from "react-redux";
-import { setProductFilterContext } from "@/lib/redux/slices/ai-assistantSlice";
 import { Badge } from "@/components/atoms/Badge";
 import { Tooltip } from "@/components/atoms/Tooltip";
 import { cn } from "@/lib/utils";
@@ -70,9 +62,7 @@ import {
   addCriteria as addCriteriaAction,
   removeCriteria as removeCriteriaAction,
   setCriteria,
-  setIsGenerating,
-  setLastGeneratedFilter,
-  applyFilterUpdate,
+  setSelectedSources,
   FilterCriteria,
   setCoverageStats,
   resetFilter,
@@ -82,8 +72,7 @@ import {
   selectDescription,
   selectQueryViewName,
   selectCriteria,
-  selectIsGenerating,
-  selectLastGeneratedFilter,
+  selectSelectedSources,
   selectHasAllRequiredCriteria,
   selectIsFormValid,
   selectCoverageStats,
@@ -91,6 +80,7 @@ import {
 import { getFieldPlaceholder } from "@/services/ai/tools";
 import { generateFilterCoverageStats } from "@/services/ai/filterHandler";
 import FilterCoveragePanel from "./FilterCoveragePanel";
+import { CatalogSourceSelector } from "./CatalogSourceSelector";
 import { AssignToProgramsPanel, mockPartners } from "./AssignToProgramsPanel";
 import { AssignmentManager } from "./AssignmentManager";
 import { AssignmentItem } from "./BulkAssignmentProgress";
@@ -252,7 +242,7 @@ export default function ProductFilterCreationView({
   const description = useSelector(selectDescription);
   const queryViewName = useSelector(selectQueryViewName);
   const filterCriteria = useSelector(selectCriteria);
-  const lastGeneratedFilter = useSelector(selectLastGeneratedFilter);
+  const selectedSources = useSelector(selectSelectedSources);
   const isReduxFormValid = useSelector(selectIsFormValid);
   const hasRequiredCriteria = useSelector(selectHasAllRequiredCriteria);
 
@@ -327,7 +317,9 @@ export default function ProductFilterCreationView({
   const isFormValid = () => isReduxFormValid;
 
   const isBasicInfoComplete =
-    filterName.trim() !== "" && description.trim() !== "";
+    filterName.trim() !== "" &&
+    description.trim() !== "" &&
+    selectedSources.length > 0;
 
   const isCriteriaComplete = filterCriteria.length > 0;
 
@@ -416,11 +408,18 @@ export default function ProductFilterCreationView({
       filterName.trim() !== "" && description.trim() !== "";
 
     const hasFilterConditions = filterCriteria.length > 0;
+    const hasSourceSelection = selectedSources.length > 0;
 
     if (!isBasicInfoValid) {
       setValidationMessage(
         "Please fill in the required filter name and description fields"
       );
+      setTimeout(() => setValidationMessage(null), 5000);
+      return;
+    }
+
+    if (!hasSourceSelection) {
+      setValidationMessage("Please select at least one catalog source");
       setTimeout(() => setValidationMessage(null), 5000);
       return;
     }
@@ -441,6 +440,12 @@ export default function ProductFilterCreationView({
     try {
       // 1. First, make the POST call to create the filter
       console.log("📤 POST /api/filters - Creating filter...");
+      console.log("Filter data:", {
+        name: filterName,
+        description: description,
+        criteria: filterCriteria,
+        sources: selectedSources,
+      });
       setIsSubmitInProgress(true);
       console.log("🔒 Form disabled - isSubmitInProgress:", true);
 
@@ -509,16 +514,6 @@ export default function ProductFilterCreationView({
       setActiveTab("details");
     }
   };
-
-  useEffect(() => {
-    dispatch(
-      setProductFilterContext({
-        filterName,
-        filterDescription: description,
-        currentCriteria: filterCriteria,
-      })
-    );
-  }, [dispatch, filterName, description, filterCriteria]);
 
   useEffect(() => {
     if (filterId && (isEditMode || isViewMode)) {
@@ -595,167 +590,6 @@ export default function ProductFilterCreationView({
       }
     }
   }, [filterId, isEditMode, isViewMode, dispatch]);
-
-  const handleOptionSelected = (optionId: string) => {
-    console.log("Option selected:", optionId);
-
-    if (optionId.startsWith("apply_updates:")) {
-      dispatch(setIsGenerating(true));
-
-      try {
-        const updatesJson = optionId.replace("apply_updates:", "");
-        const updates = JSON.parse(updatesJson);
-
-        console.log("Parsed updates:", updates);
-
-        dispatch(
-          applyFilterUpdate({
-            filterName: updates.filterName,
-            criteriaToAdd: updates.criteriaToAdd,
-          })
-        );
-
-        dispatch(setLastGeneratedFilter("complete"));
-
-        setTimeout(() => {
-          dispatch(setIsGenerating(false));
-        }, 800);
-      } catch (error) {
-        console.error("Error applying updates:", error);
-        dispatch(setIsGenerating(false));
-      }
-    } else if (optionId.startsWith("suggest_name:")) {
-      dispatch(setIsGenerating(true));
-      const suggestedName = optionId.replace("suggest_name:", "");
-      setTimeout(() => {
-        dispatch(setFilterName(suggestedName));
-        dispatch(setLastGeneratedFilter("name"));
-        dispatch(setIsGenerating(false));
-      }, 800);
-    } else if (optionId.startsWith("suggest_criteria:")) {
-      try {
-        dispatch(setIsGenerating(true));
-        const criteriaData = JSON.parse(
-          optionId.replace("suggest_criteria:", "")
-        );
-        if (criteriaData.type && criteriaData.value) {
-          setTimeout(() => {
-            const rule = criteriaData.rule || "contains";
-            const andOr = criteriaData.and_or || "OR";
-            setCriteriaType(criteriaData.type);
-            setCriteriaValue(criteriaData.value);
-            setCriteriaAndOr(andOr);
-
-            const inclusion = criteriaData.inclusion || "Include";
-            const isRequired = inclusion === "Include";
-
-            dispatch(
-              addCriteriaAction({
-                type: criteriaData.type,
-                value: criteriaData.value,
-                rule,
-                and_or: andOr,
-                isRequired,
-              })
-            );
-
-            setCriteriaType("");
-            setCriteriaValue("");
-            setCriteriaAndOr("OR");
-            setCriteriaInclusion("Include");
-            dispatch(setLastGeneratedFilter("criteria"));
-            dispatch(setIsGenerating(false));
-          }, 1000);
-        }
-      } catch (e) {
-        console.error("Failed to parse criteria suggestion", e);
-        dispatch(setIsGenerating(false));
-      }
-    } else if (optionId.startsWith("suggest_multiple_criteria:")) {
-      try {
-        dispatch(setIsGenerating(true));
-        const criteriaList = JSON.parse(
-          optionId.replace("suggest_multiple_criteria:", "")
-        );
-        if (Array.isArray(criteriaList) && criteriaList.length > 0) {
-          setTimeout(() => {
-            const newCriteriaItems = criteriaList.map((criteriaItem) => {
-              const inclusion = criteriaItem.inclusion || "Include";
-              const isRequired = inclusion === "Include";
-
-              return {
-                type: criteriaItem.type || "UnknownType",
-                value: criteriaItem.value || "",
-                rule: criteriaItem.rule || "contains",
-                and_or: criteriaItem.and_or || "OR",
-                isRequired,
-              };
-            });
-
-            newCriteriaItems.forEach((criteria) => {
-              dispatch(addCriteriaAction(criteria));
-            });
-
-            setCriteriaType("");
-            setCriteriaValue("");
-            setCriteriaAndOr("OR");
-            setCriteriaInclusion("Include");
-            dispatch(setLastGeneratedFilter("multiple"));
-            dispatch(setIsGenerating(false));
-          }, 1200);
-        }
-      } catch (e) {
-        console.error("Failed to parse multiple criteria suggestions", e);
-        dispatch(setIsGenerating(false));
-      }
-    } else if (optionId.startsWith("suggest_complete_filter:")) {
-      try {
-        dispatch(setIsGenerating(true));
-        interface CompleteFilterData {
-          name?: string;
-          description?: string;
-          criteria?: Array<Partial<FilterCriteria> & { inclusion?: string }>;
-        }
-        const filterData: CompleteFilterData = JSON.parse(
-          optionId.replace("suggest_complete_filter:", "")
-        );
-        setTimeout(() => {
-          const update: any = {};
-
-          if (filterData.name) update.filterName = filterData.name;
-          if (filterData.description)
-            update.description = filterData.description;
-
-          if (
-            Array.isArray(filterData.criteria) &&
-            filterData.criteria.length > 0
-          ) {
-            const criteriaToAdd = filterData.criteria.map((criteriaItem) => {
-              const inclusion = criteriaItem.inclusion || "Include";
-              const isRequired = inclusion === "Include";
-
-              return {
-                type: criteriaItem.type || "UnknownType",
-                value: criteriaItem.value || "",
-                rule: criteriaItem.rule || "contains",
-                and_or: criteriaItem.and_or || "OR",
-                isRequired,
-              };
-            });
-
-            update.criteriaToAdd = criteriaToAdd;
-          }
-
-          dispatch(applyFilterUpdate(update));
-          dispatch(setLastGeneratedFilter("complete"));
-          dispatch(setIsGenerating(false));
-        }, 1500);
-      } catch (e) {
-        console.error("Failed to parse complete filter suggestion", e);
-        dispatch(setIsGenerating(false));
-      }
-    }
-  };
 
   const friendlyTypeNames: Record<string, string> = {
     MerchantKeyword: "Merchant Keyword",
@@ -943,6 +777,7 @@ export default function ProductFilterCreationView({
           disabled={
             !filterName.trim() ||
             !description.trim() ||
+            selectedSources.length === 0 ||
             filterCriteria.length === 0 ||
             isFormSubmitting ||
             isSubmitInProgress
@@ -1132,98 +967,10 @@ export default function ProductFilterCreationView({
         style={{ height: "calc(100vh - 160px)" }}
       >
         <div className="flex gap-3 h-full">
-          <div
-            className="w-[350px] flex-shrink-0"
-            style={{
-              position: "sticky",
-              top: "1rem",
-              height: "calc(100vh - 180px)",
-            }}
-          >
-            <Card className="p-0 h-full flex flex-col overflow-hidden">
-              <AIAssistantPanel
-                title="AI Filter Assistant"
-                description="Tell me what offers you want to filter"
-                requiredCriteriaTypes={[]}
-                onOptionSelected={handleOptionSelected}
-                className="h-full overflow-auto"
-              />
-              {useSelector(selectIsGenerating) && (
-                <div className="fixed inset-0 bg-black/5 backdrop-blur-sm flex items-center justify-center z-50">
-                  <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="bg-white p-4 rounded-lg shadow-lg flex flex-col items-center"
-                  >
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{
-                        duration: 1.5,
-                        repeat: Infinity,
-                        ease: "linear",
-                      }}
-                    >
-                      <SparklesIcon className="h-10 w-10 text-primary" />
-                    </motion.div>
-                    <p className="mt-3 text-sm font-medium">
-                      Generating filters...
-                    </p>
-                  </motion.div>
-                </div>
-              )}
-            </Card>
-          </div>
-
           <ResizablePanelGroup direction="horizontal" className="flex-1">
             <ResizablePanel defaultSize={100} minSize={60}>
               <div className="overflow-auto pb-6 h-full pr-4">
                 <div className="flex flex-col">
-                  {lastGeneratedFilter && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ duration: 0.3 }}
-                      className="mb-3 p-2 bg-primary/10 border border-primary/30 rounded-md flex items-center"
-                      onAnimationComplete={() => {
-                        setTimeout(
-                          () => dispatch(setLastGeneratedFilter(null)),
-                          5000
-                        );
-                      }}
-                    >
-                      <SparklesIcon className="h-5 w-5 text-primary mr-2" />
-                      <span className="text-sm">
-                        {lastGeneratedFilter === "name" &&
-                          "Filter name updated from AI suggestion"}
-                        {lastGeneratedFilter === "criteria" &&
-                          "New filter criteria added from AI suggestion"}
-                        {lastGeneratedFilter === "multiple" &&
-                          "Multiple filter criteria added from AI suggestions"}
-                        {lastGeneratedFilter === "complete" &&
-                          "Complete filter configuration applied from AI"}
-                      </span>
-                      <button
-                        onClick={() => dispatch(setLastGeneratedFilter(null))}
-                        className="ml-auto text-gray-500 hover:text-gray-700"
-                      >
-                        <svg
-                          className="h-4 w-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </button>
-                    </motion.div>
-                  )}
-
                   {validationMessage && (
                     <motion.div
                       initial={{ opacity: 0, y: -20 }}
@@ -1397,6 +1144,31 @@ export default function ProductFilterCreationView({
                                         Provide a detailed description of what
                                         this filter does. Max 250 characters.
                                       </p>
+                                    </div>
+
+                                    <div className="text-left">
+                                      <Label
+                                        htmlFor="catalog-sources"
+                                        className="text-sm"
+                                      >
+                                        Catalog Sources*
+                                        <span className="text-xs font-medium text-gray-600 ml-1">
+                                          (select data sources)
+                                        </span>
+                                      </Label>
+                                      <CatalogSourceSelector
+                                        selectedSources={selectedSources}
+                                        onSourcesChange={(sources) =>
+                                          dispatch(setSelectedSources(sources))
+                                        }
+                                        className="mt-1"
+                                        disabled={
+                                          isViewMode ||
+                                          isFormSubmitting ||
+                                          isSubmitInProgress
+                                        }
+                                        required={true}
+                                      />
                                     </div>
                                   </div>
                                 </AccordionContent>

@@ -24,6 +24,7 @@ export interface ProductFilterState {
   queryViewName: string;
   description: string;
   criteria: FilterCriteria[];
+  selectedSources: string[];
   isGenerating: boolean;
   lastGeneratedFilter: string | null;
   coverageStats: FilterCoverageStats | null;
@@ -35,6 +36,7 @@ const initialState: ProductFilterState = {
   queryViewName: "",
   description: "",
   criteria: [],
+  selectedSources: [], // No default selection - users must actively choose sources
   isGenerating: false,
   lastGeneratedFilter: null,
   coverageStats: null,
@@ -101,6 +103,9 @@ export const productFilterSlice = createSlice({
     },
     setCriteria: (state, action: PayloadAction<FilterCriteria[]>) => {
       state.criteria = action.payload;
+    },
+    setSelectedSources: (state, action: PayloadAction<string[]>) => {
+      state.selectedSources = action.payload;
     },
     setIsGenerating: (state, action: PayloadAction<boolean>) => {
       state.isGenerating = action.payload;
@@ -170,6 +175,7 @@ export const {
   addCriteria,
   removeCriteria,
   setCriteria,
+  setSelectedSources,
   setIsGenerating,
   setLastGeneratedFilter,
   resetFilter,
