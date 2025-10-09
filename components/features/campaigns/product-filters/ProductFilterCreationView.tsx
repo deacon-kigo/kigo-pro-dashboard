@@ -1081,9 +1081,6 @@ export default function ProductFilterCreationView({
                                         className="text-sm"
                                       >
                                         Filter Name*
-                                        <span className="text-sm font-medium text-gray-600 ml-1">
-                                          (required for draft)
-                                        </span>
                                       </Label>
                                       <Input
                                         id="filter-name"
@@ -1116,9 +1113,6 @@ export default function ProductFilterCreationView({
                                         className="text-sm"
                                       >
                                         Description*
-                                        <span className="text-sm font-medium text-gray-600 ml-1">
-                                          (required for publishing)
-                                        </span>
                                       </Label>
                                       <Textarea
                                         id="description"
@@ -1152,9 +1146,6 @@ export default function ProductFilterCreationView({
                                         className="text-sm"
                                       >
                                         Sources*
-                                        <span className="text-sm font-medium text-gray-600 ml-1">
-                                          (required for creation)
-                                        </span>
                                       </Label>
                                       <CatalogSourceSelector
                                         selectedSources={selectedSources}
