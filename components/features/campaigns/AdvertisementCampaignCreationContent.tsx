@@ -539,7 +539,7 @@ export default function AdvertisementCampaignCreationContent({
                                         className="mt-1"
                                         maxLength={50}
                                       />
-                                      <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                      <p className="mt-1.5 text-sm font-medium text-gray-600">
                                         Enter a unique name for your campaign
                                         (max 50 characters)
                                       </p>
@@ -563,7 +563,7 @@ export default function AdvertisementCampaignCreationContent({
                                         rows={3}
                                         maxLength={100}
                                       />
-                                      <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                      <p className="mt-1.5 text-sm font-medium text-gray-600">
                                         Describe your campaign in detail (max
                                         100 characters)
                                       </p>
@@ -589,7 +589,7 @@ export default function AdvertisementCampaignCreationContent({
                                           </SelectItem>
                                         </SelectContent>
                                       </Select>
-                                      <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                      <p className="mt-1.5 text-sm font-medium text-gray-600">
                                         Select the type of campaign you want to
                                         create
                                       </p>
@@ -669,7 +669,7 @@ export default function AdvertisementCampaignCreationContent({
                                               </Badge>
                                             ))}
                                           </div>
-                                          <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                          <p className="mt-1.5 text-sm font-medium text-gray-600">
                                             All channels are selected by default
                                           </p>
                                         </div>
@@ -701,7 +701,7 @@ export default function AdvertisementCampaignCreationContent({
                                               </Badge>
                                             ))}
                                           </div>
-                                          <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                          <p className="mt-1.5 text-sm font-medium text-gray-600">
                                             Select the programs for this
                                             campaign
                                           </p>
@@ -746,7 +746,7 @@ export default function AdvertisementCampaignCreationContent({
                                             }
                                             className="mt-1"
                                           />
-                                          <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                          <p className="mt-1.5 text-sm font-medium text-gray-600">
                                             The maximum budget allocated for
                                             this campaign
                                           </p>
@@ -801,7 +801,7 @@ export default function AdvertisementCampaignCreationContent({
                                               </Badge>
                                             ))}
                                           </div>
-                                          <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                          <p className="mt-1.5 text-sm font-medium text-gray-600">
                                             Select the types of media for this
                                             campaign
                                           </p>
@@ -834,7 +834,7 @@ export default function AdvertisementCampaignCreationContent({
                                                 />
                                               </label>
                                             </div>
-                                            <p className="text-xs text-gray-500 mt-1">
+                                            <p className="text-sm text-gray-500 mt-1">
                                               PNG, JPG, GIF up to 5MB
                                             </p>
                                           </div>
@@ -852,7 +852,7 @@ export default function AdvertisementCampaignCreationContent({
                                                       key={fileData.id}
                                                       className="relative bg-gray-100 rounded-md p-2"
                                                     >
-                                                      <div className="text-xs truncate max-w-[150px]">
+                                                      <div className="text-sm truncate max-w-[150px]">
                                                         {fileData.file.name}
                                                       </div>
                                                       <button
