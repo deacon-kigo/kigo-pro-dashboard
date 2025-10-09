@@ -1081,7 +1081,7 @@ export default function ProductFilterCreationView({
                                         className="text-sm"
                                       >
                                         Filter Name*
-                                        <span className="text-xs font-medium text-gray-600 ml-1">
+                                        <span className="text-sm font-medium text-gray-600 ml-1">
                                           (required for draft)
                                         </span>
                                       </Label>
@@ -1104,7 +1104,7 @@ export default function ProductFilterCreationView({
                                           isSubmitInProgress
                                         }
                                       />
-                                      <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                      <p className="mt-1.5 text-sm font-medium text-gray-600">
                                         Enter a unique, descriptive name for
                                         your filter. Max 50 characters.
                                       </p>
@@ -1116,7 +1116,7 @@ export default function ProductFilterCreationView({
                                         className="text-sm"
                                       >
                                         Description*
-                                        <span className="text-xs font-medium text-gray-600 ml-1">
+                                        <span className="text-sm font-medium text-gray-600 ml-1">
                                           (required for publishing)
                                         </span>
                                       </Label>
@@ -1140,7 +1140,7 @@ export default function ProductFilterCreationView({
                                           isSubmitInProgress
                                         }
                                       />
-                                      <p className="mt-1.5 text-xs font-medium text-gray-600">
+                                      <p className="mt-1.5 text-sm font-medium text-gray-600">
                                         Provide a detailed description of what
                                         this filter does. Max 250 characters.
                                       </p>
@@ -1152,7 +1152,7 @@ export default function ProductFilterCreationView({
                                         className="text-sm"
                                       >
                                         Sources*
-                                        <span className="text-xs font-medium text-gray-600 ml-1">
+                                        <span className="text-sm font-medium text-gray-600 ml-1">
                                           (required for creation)
                                         </span>
                                       </Label>
@@ -1318,7 +1318,7 @@ export default function ProductFilterCreationView({
                                                 ))}
                                               </SelectContent>
                                             </Select>
-                                            <span className="mt-1 text-xs font-medium text-gray-600 px-1">
+                                            <span className="mt-1 text-sm font-medium text-gray-600 px-1">
                                               Select what field to filter on
                                             </span>
                                           </div>
@@ -1347,7 +1347,7 @@ export default function ProductFilterCreationView({
                                                 </SelectItem>
                                               </SelectContent>
                                             </Select>
-                                            <span className="mt-1 text-xs font-medium text-gray-600 px-1">
+                                            <span className="mt-1 text-sm font-medium text-gray-600 px-1">
                                               Include or exclude matches
                                             </span>
                                           </div>
@@ -1390,7 +1390,7 @@ export default function ProductFilterCreationView({
                                                 }
                                               />
                                             )}
-                                            <span className="mt-1 text-xs font-medium text-gray-600 px-1">
+                                            <span className="mt-1 text-sm font-medium text-gray-600 px-1">
                                               {criteriaType === "OfferType"
                                                 ? "Select offer types to match"
                                                 : "Enter the value to match"}
@@ -1432,7 +1432,7 @@ export default function ProductFilterCreationView({
                                                 </SelectItem>
                                               </SelectContent>
                                             </Select>
-                                            <span className="mt-1 text-xs font-medium text-gray-600 px-1">
+                                            <span className="mt-1 text-sm font-medium text-gray-600 px-1">
                                               How to combine conditions
                                             </span>
                                           </div>
@@ -1461,7 +1461,7 @@ export default function ProductFilterCreationView({
                                         </div>
                                       </div>
 
-                                      <div className="mt-3 text-xs font-medium text-gray-600 bg-white p-2 rounded border border-gray-200">
+                                      <div className="mt-3 text-sm font-medium text-gray-600 bg-white p-2 rounded border border-gray-200">
                                         {criteriaType
                                           ? `${criteriaInclusion === "Include" ? "Include" : "Exclude"} conditions where ${friendlyTypeNames[criteriaType] || criteriaType} ${criteriaType === "OfferType" ? "is one of the selected types" : `contains "${criteriaValue}"`}.`
                                           : "Select a field to get started with building your filter condition."}
