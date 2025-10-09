@@ -1151,9 +1151,9 @@ export default function ProductFilterCreationView({
                                         htmlFor="catalog-sources"
                                         className="text-sm"
                                       >
-                                        Catalog Sources*
+                                        Sources*
                                         <span className="text-xs font-medium text-gray-600 ml-1">
-                                          (select data sources)
+                                          (required for creation)
                                         </span>
                                       </Label>
                                       <CatalogSourceSelector
