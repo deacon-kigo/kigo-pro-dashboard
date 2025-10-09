@@ -81,18 +81,11 @@ export function CatalogSourceSelector({
         options={options}
         values={selectedSources}
         onChange={onSourcesChange}
-        placeholder="Select catalog sources..."
+        placeholder="Select sources..."
         isDisabled={disabled}
         className="w-full"
         maxDisplayValues={2}
       />
-
-      {/* Validation helper text */}
-      {required && selectedSources.length === 0 && (
-        <p className="mt-1 text-xs text-destructive">
-          At least one catalog source is required
-        </p>
-      )}
     </div>
   );
 }
