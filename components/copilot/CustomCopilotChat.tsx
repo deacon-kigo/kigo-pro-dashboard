@@ -10,11 +10,8 @@ import { CopilotSidebar } from "@copilotkit/react-ui";
 /**
  * Custom Draggable Chat Window with CopilotSidebar
  *
- * Uses CopilotKit's battle-tested components with our custom layout integration:
- * - Draggable and resizable chat window
- * - Slides in from the right side
- * - Integrates with page layout (header and body responsiveness)
- * - Uses all of CopilotKit's built-in sub-components
+ * Uses CopilotSidebar as a standalone component with custom positioning
+ * and drag-to-resize functionality
  */
 export function CustomCopilotChat() {
   const dispatch = useAppDispatch();
@@ -90,61 +87,44 @@ export function CustomCopilotChat() {
         </Button>
       )}
 
-      {/* Draggable Chat Window - slides in from right, integrates with page layout */}
-      <div
-        ref={chatRef}
-        className={`fixed right-0 top-0 h-full bg-white shadow-2xl border-l border-gray-200 z-40 flex flex-col transition-transform duration-300 ease-in-out ${
-          chatOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-        style={{
-          width: `${chatWidth}px`,
-        }}
-      >
-        {/* Resize Handle */}
+      {/* CopilotSidebar with custom positioning and resize handle */}
+      {chatOpen && (
         <div
-          className="absolute left-0 top-0 w-1 h-full cursor-ew-resize bg-gray-300 hover:bg-blue-500 transition-colors z-10 group"
-          onMouseDown={handleMouseDown}
+          ref={chatRef}
+          className="fixed right-0 top-0 h-full z-40 flex transition-transform duration-300 ease-in-out"
+          style={{
+            width: `${chatWidth}px`,
+            transform: chatOpen ? "translateX(0)" : "translateX(100%)",
+          }}
         >
-          <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-12 bg-gray-400 group-hover:bg-blue-600 transition-colors" />
-        </div>
-
-        {/* Custom Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white flex-shrink-0">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-              <SparklesIcon className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">
-                Kigo Pro AI Assistant
-              </h2>
-            </div>
+          {/* Resize Handle */}
+          <div
+            className="w-1 h-full cursor-ew-resize bg-gray-300 hover:bg-blue-500 transition-colors z-10 group flex-shrink-0"
+            onMouseDown={handleMouseDown}
+          >
+            <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-12 bg-gray-400 group-hover:bg-blue-600 transition-colors" />
           </div>
 
-          <Button
-            onClick={handleToggle}
-            variant="ghost"
-            size="sm"
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            aria-label="Close AI Assistant"
-          >
-            <XMarkIcon className="h-5 w-5 text-gray-500" />
-          </Button>
+          {/* CopilotSidebar - standalone component */}
+          <div className="flex-1">
+            <CopilotSidebar
+              instructions="You are an AI assistant for Kigo Pro, a marketing campaign management platform. Help users with campaign creation, optimization, and insights."
+              labels={{
+                title: "Kigo Pro AI Assistant",
+                initial:
+                  "Hi! I'm your AI assistant. How can I help you with your campaigns today?",
+              }}
+              defaultOpen={chatOpen}
+              clickOutsideToClose={false}
+              onSetOpen={(open) => {
+                if (!open) {
+                  dispatch(toggleChat());
+                }
+              }}
+            />
+          </div>
         </div>
-
-        {/* CopilotSidebar - uses all built-in components */}
-        <div className="flex-1 overflow-hidden">
-          <CopilotSidebar
-            instructions="You are an AI assistant for Kigo Pro, a marketing campaign management platform. Help users with campaign creation, optimization, and insights."
-            labels={{
-              title: "Kigo Pro AI Assistant",
-              initial:
-                "Hi! I'm your AI assistant. How can I help you with your campaigns today?",
-            }}
-            className="h-full"
-          />
-        </div>
-      </div>
+      )}
     </>
   );
 }
