@@ -13,10 +13,7 @@ import {
   toggleChat,
   setChatWidth,
 } from "@/lib/redux/slices/uiSlice";
-import {
-  useCopilotChatHeadless_c,
-  useCopilotChatSuggestions,
-} from "@copilotkit/react-core";
+import { useCopilotChatHeadless_c } from "@copilotkit/react-core";
 
 // Import our modular components
 import { ChatWindow } from "./components/ChatWindow";
@@ -57,13 +54,6 @@ export function CustomCopilotChat() {
     reloadMessages,
   } = useCopilotChatHeadless_c();
 
-  // Configure suggestions for the chat
-  useCopilotChatSuggestions({
-    instructions:
-      "Suggest helpful actions for campaign management, optimization, and insights based on the current context in Kigo Pro.",
-    maxSuggestions: 4,
-  });
-
   // Local state for input
   const [input, setInput] = useState("");
 
@@ -87,9 +77,28 @@ export function CustomCopilotChat() {
   // Generate initial suggestions when chat opens
   useEffect(() => {
     if (chatOpen && suggestions.length === 0 && !isLoadingSuggestions) {
-      generateSuggestions();
+      // Set manual suggestions for campaign management
+      setSuggestions([
+        {
+          title: "Campaign Performance",
+          message: "Show me the performance metrics for my current campaigns",
+        },
+        {
+          title: "Optimize Campaigns",
+          message:
+            "How can I optimize my campaign targeting and budget allocation?",
+        },
+        {
+          title: "Create New Campaign",
+          message: "Help me create a new marketing campaign for my product",
+        },
+        {
+          title: "Audience Insights",
+          message: "What insights can you provide about my target audience?",
+        },
+      ]);
     }
-  }, [chatOpen, suggestions.length, isLoadingSuggestions, generateSuggestions]);
+  }, [chatOpen, suggestions.length, isLoadingSuggestions, setSuggestions]);
 
   // Handle toggle
   const handleToggle = useCallback(() => {
