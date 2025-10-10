@@ -8,7 +8,7 @@ This supervisor analyzes user intent and routes to appropriate specialist agents
 from typing import Annotated, List, Any, Optional
 from langgraph.graph import StateGraph, START, END
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage
-from langchain_openai import ChatOpenAI
+from langchain_anthropic import ChatAnthropic
 from langchain_core.runnables import RunnableConfig
 import asyncio
 import os
@@ -29,13 +29,14 @@ except ImportError:
     
     COPILOTKIT_AVAILABLE = False
 
-# Lazy initialization of OpenAI model
+# Lazy initialization of Claude model
 def get_llm():
-    """Get ChatOpenAI instance with proper environment loading"""
-    return ChatOpenAI(
-        model="gpt-4-turbo",
+    """Get ChatAnthropic instance with proper environment loading"""
+    return ChatAnthropic(
+        model="claude-3-5-sonnet-20241022",  # Claude 4 Sonnet latest version
         temperature=0.7,
         max_tokens=1000,
+        api_key=os.getenv("ANTHROPIC_API_KEY")
     )
 
 # State definition following CopilotKit pattern
