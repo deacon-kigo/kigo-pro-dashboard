@@ -250,26 +250,10 @@ const AIInsightNotification = ({ onDismiss }: AIInsightNotificationProps) => {
 
 // The main Campaign Manager dashboard component
 export default function CampaignManagerView() {
-  const [showAIInsight, setShowAIInsight] = useState(false);
-
-  // Show AI insight after user has been on dashboard for a few seconds (simulating Tucker working on Q4 objectives)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowAIInsight(true);
-    }, 4000); // Show after 4 seconds
-
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
     <div className="space-y-4">
       {/* Personalized greeting header */}
       <GreetingHeader />
-
-      {/* Proactive AI Insight - appears while Tucker is working */}
-      {showAIInsight && (
-        <AIInsightNotification onDismiss={() => setShowAIInsight(false)} />
-      )}
 
       {/* PowerBI dashboard embed - direct without Card container */}
       <PowerBIEmbed />

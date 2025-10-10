@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import Header from "@/components/organisms/Header/Header";
 import Sidebar from "@/components/organisms/Sidebar/Sidebar";
 import { useAppSelector } from "@/lib/redux/hooks";
+import { ChatAwareLayout } from "@/components/layout/ChatAwareLayout";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -90,7 +91,7 @@ function AppLayoutContent({ children, customBreadcrumb }: AppLayoutProps) {
   // Determine the layout based on whether the panel is open
   if (!isPanelOpen) {
     return (
-      <div className="flex min-h-screen bg-bg-light">
+      <ChatAwareLayout className="flex min-h-screen bg-bg-light">
         <Sidebar />
         <div className="flex-1 flex flex-col w-full overflow-hidden">
           <Header />
@@ -104,13 +105,13 @@ function AppLayoutContent({ children, customBreadcrumb }: AppLayoutProps) {
             </div>
           </main>
         </div>
-      </div>
+      </ChatAwareLayout>
     );
   }
 
   // Layout with resizable panel
   return (
-    <div className="flex min-h-screen bg-bg-light">
+    <ChatAwareLayout className="flex min-h-screen bg-bg-light">
       <Sidebar />
       <div className="flex-1 flex flex-col w-full overflow-hidden">
         <Header />
@@ -144,7 +145,7 @@ function AppLayoutContent({ children, customBreadcrumb }: AppLayoutProps) {
           </ResizablePanelGroup>
         </main>
       </div>
-    </div>
+    </ChatAwareLayout>
   );
 }
 
