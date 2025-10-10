@@ -1,24 +1,71 @@
 "use client";
 
-import React, { useState, useRef, useCallback } from "react";
-import { CopilotSidebar } from "@copilotkit/react-ui";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { SparklesIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import {
+  SparklesIcon,
+  XMarkIcon,
+  PaperAirplaneIcon,
+} from "@heroicons/react/24/outline";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   setChatOpen,
   toggleChat,
   setChatWidth,
 } from "@/lib/redux/slices/uiSlice";
+import {
+  useCopilotChatHeadless_c,
+  useCopilotChatSuggestions,
+} from "@copilotkit/react-core";
+
+// Import our modular components
+import { ChatWindow } from "./components/ChatWindow";
+import { ChatHeader } from "./components/ChatHeader";
+import { ChatMessages } from "./components/ChatMessages";
+import { ChatInput } from "./components/ChatInput";
+import { ChatSuggestions } from "./components/ChatSuggestions";
+import { ChatFloatingButton } from "./components/ChatFloatingButton";
+import { ResizeHandle } from "./components/ResizeHandle";
 
 /**
- * Custom Draggable Chat UI using CopilotSidebar with custom styling
+ * Custom Headless Chat UI using CopilotKit's useCopilotChatHeadless_c hook
  *
- * This uses the working CopilotSidebar but with our custom layout integration
+ * This implementation follows CopilotKit's best practices for headless UI:
+ * - Uses proper useCopilotChatHeadless_c hook for full control
+ * - Modular component architecture for scalability
+ * - Supports suggestions, generative UI, and HITL
+ * - Maintains custom layout integration and drag-to-resize
  */
 export function CustomCopilotChat() {
   const dispatch = useAppDispatch();
   const { chatOpen, chatWidth } = useAppSelector((state) => state.ui);
+
+  // CopilotKit Headless UI Hook - provides full chat functionality
+  const {
+    messages,
+    sendMessage,
+    isLoading,
+    suggestions,
+    generateSuggestions,
+    setSuggestions,
+    isLoadingSuggestions,
+    resetSuggestions,
+    interrupt,
+    stopGeneration,
+    reset,
+    deleteMessage,
+    reloadMessages,
+  } = useCopilotChatHeadless_c();
+
+  // Configure suggestions for the chat
+  useCopilotChatSuggestions({
+    instructions:
+      "Suggest helpful actions for campaign management, optimization, and insights based on the current context in Kigo Pro.",
+    maxSuggestions: 4,
+  });
+
+  // Local state for input
+  const [input, setInput] = useState("");
 
   // Resize state
   const [isResizing, setIsResizing] = useState(false);
@@ -26,11 +73,72 @@ export function CustomCopilotChat() {
   const [startWidth, setStartWidth] = useState(0);
 
   const chatRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when new messages arrive
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // Generate initial suggestions when chat opens
+  useEffect(() => {
+    if (chatOpen && suggestions.length === 0 && !isLoadingSuggestions) {
+      generateSuggestions();
+    }
+  }, [chatOpen, suggestions.length, isLoadingSuggestions, generateSuggestions]);
 
   // Handle toggle
   const handleToggle = useCallback(() => {
     dispatch(toggleChat());
   }, [dispatch]);
+
+  // Handle input change
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setInput(e.target.value);
+    },
+    []
+  );
+
+  // Send message using CopilotKit's sendMessage
+  const handleSendMessage = useCallback(
+    async (messageContent: string) => {
+      if (!messageContent.trim() || isLoading) return;
+
+      try {
+        await sendMessage({
+          id: Date.now().toString(),
+          role: "user",
+          content: messageContent.trim(),
+        });
+        setInput("");
+      } catch (error) {
+        console.error("Failed to send message:", error);
+      }
+    },
+    [sendMessage, isLoading]
+  );
+
+  // Handle form submission
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      handleSendMessage(input);
+    },
+    [input, handleSendMessage]
+  );
+
+  // Handle suggestion click
+  const handleSuggestionClick = useCallback(
+    (suggestionMessage: string) => {
+      handleSendMessage(suggestionMessage);
+    },
+    [handleSendMessage]
+  );
 
   // Mouse down on resize handle
   const handleMouseDown = useCallback(
@@ -65,7 +173,7 @@ export function CustomCopilotChat() {
   }, []);
 
   // Add/remove event listeners for resize
-  React.useEffect(() => {
+  useEffect(() => {
     if (isResizing) {
       document.addEventListener("mousemove", handleMouseMove);
       document.addEventListener("mouseup", handleMouseUp);
@@ -80,71 +188,57 @@ export function CustomCopilotChat() {
   return (
     <>
       {/* Floating Chat Button - only show when chat is closed */}
-      {!chatOpen && (
-        <Button
-          onClick={handleToggle}
-          className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg z-50 p-0"
-          aria-label="Open AI Assistant"
-        >
-          <SparklesIcon className="h-6 w-6 text-white" />
-        </Button>
-      )}
+      <ChatFloatingButton isVisible={!chatOpen} onClick={handleToggle} />
 
-      {/* Integrated Chat Window - slides in from right, no overlay */}
-      <div
-        ref={chatRef}
-        className={`fixed right-0 top-0 h-full bg-white shadow-2xl border-l border-gray-200 z-40 flex flex-col transition-transform duration-300 ease-in-out ${
-          chatOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-        style={{
-          width: `${chatWidth}px`,
-        }}
-      >
+      {/* Chat Window - slides in from right, no overlay */}
+      <ChatWindow ref={chatRef} isOpen={chatOpen} width={chatWidth}>
         {/* Resize Handle */}
-        <div
-          className="absolute left-0 top-0 w-1 h-full cursor-ew-resize bg-gray-300 hover:bg-blue-500 transition-colors z-10 group"
-          onMouseDown={handleMouseDown}
-        >
-          <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-12 bg-gray-400 group-hover:bg-blue-600 transition-colors" />
-        </div>
+        <ResizeHandle onMouseDown={handleMouseDown} />
 
-        {/* Custom Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white flex-shrink-0">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-              <SparklesIcon className="h-5 w-5 text-white" />
+        {/* Header */}
+        <ChatHeader
+          onClose={handleToggle}
+          onReset={reset}
+          onStop={isLoading ? stopGeneration : undefined}
+        />
+
+        {/* Human-in-the-loop Interrupt */}
+        {interrupt && (
+          <div className="px-4 py-2 bg-yellow-50 border-b border-yellow-200">
+            <div className="text-sm text-yellow-800 font-medium mb-2">
+              Human input required:
             </div>
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">
-                Kigo Pro AI Assistant
-              </h2>
-            </div>
+            <div className="text-sm text-yellow-700">{interrupt}</div>
           </div>
+        )}
 
-          <Button
-            onClick={handleToggle}
-            variant="ghost"
-            size="sm"
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            aria-label="Close AI Assistant"
-          >
-            <XMarkIcon className="h-5 w-5 text-gray-500" />
-          </Button>
-        </div>
+        {/* Suggestions */}
+        <ChatSuggestions
+          suggestions={suggestions}
+          isLoading={isLoadingSuggestions}
+          onSuggestionClick={handleSuggestionClick}
+          onGenerateSuggestions={generateSuggestions}
+          onResetSuggestions={resetSuggestions}
+        />
 
-        {/* CopilotSidebar - this is the working chat component */}
-        <div className="flex-1 overflow-hidden">
-          <CopilotSidebar
-            instructions="You are an AI assistant for Kigo Pro, a marketing campaign management platform. Help users with campaign creation, optimization, and insights."
-            labels={{
-              title: "Kigo Pro AI Assistant",
-              initial:
-                "Hi! I'm your AI assistant. How can I help you with your campaigns today?",
-            }}
-            className="h-full"
-          />
-        </div>
-      </div>
+        {/* Messages Area */}
+        <ChatMessages
+          messages={messages}
+          isLoading={isLoading}
+          messagesEndRef={messagesEndRef}
+          onDeleteMessage={deleteMessage}
+          onReloadMessage={reloadMessages}
+        />
+
+        {/* Input Area */}
+        <ChatInput
+          value={input}
+          onChange={handleInputChange}
+          onSubmit={handleSubmit}
+          isLoading={isLoading}
+          disabled={isLoading}
+        />
+      </ChatWindow>
     </>
   );
 }
