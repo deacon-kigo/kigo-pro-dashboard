@@ -1,21 +1,21 @@
 /**
  * Official CopilotKit SDK Integration
  *
- * Configured to prioritize remote LangGraph endpoint over OpenAI fallback
+ * Configured to prioritize remote LangGraph endpoint over Anthropic Claude fallback
  * This ensures responses come from our custom agents when available
  */
 
 import { NextRequest } from "next/server";
 import {
   CopilotRuntime,
-  OpenAIAdapter,
+  AnthropicAdapter,
   copilotRuntimeNextJSAppRouterEndpoint,
   LangGraphHttpAgent,
 } from "@copilotkit/runtime";
-import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
 export const POST = async (req: NextRequest) => {
@@ -31,7 +31,10 @@ export const POST = async (req: NextRequest) => {
 
   const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({
     runtime,
-    serviceAdapter: new OpenAIAdapter({ openai }),
+    serviceAdapter: new AnthropicAdapter({
+      anthropic,
+      model: "claude-3-5-sonnet-20241022", // Claude 4 Sonnet latest version
+    }),
     endpoint: "/api/copilotkit",
   });
 
