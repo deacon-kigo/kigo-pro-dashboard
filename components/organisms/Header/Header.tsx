@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import {
   MagnifyingGlassIcon,
   BellIcon,
-  ChatBubbleLeftEllipsisIcon,
   PlusIcon,
   ShoppingBagIcon,
   PlusCircleIcon,
@@ -21,7 +20,7 @@ import {
   useAppDispatch,
   useDemoState,
 } from "@/lib/redux/hooks";
-import { toggleSidebar, toggleChat } from "@/lib/redux/slices/uiSlice";
+import { toggleSidebar } from "@/lib/redux/slices/uiSlice";
 import { markAllNotificationsAsRead } from "@/lib/redux/slices/userSlice";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/atoms/Button";
@@ -279,27 +278,6 @@ export default function Header() {
                 {unreadNotificationsCount}
               </span>
             )}
-          </button>
-          <button
-            onClick={() => dispatch(toggleChat())}
-            className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-colors ${
-              chatOpen
-                ? "bg-blue-100 text-blue-600"
-                : isDarkMode
-                  ? "hover:bg-gray-800/80"
-                  : "hover:bg-white/80"
-            }`}
-            aria-label="Toggle AI Assistant"
-          >
-            <ChatBubbleLeftEllipsisIcon
-              className={`h-5 w-5 ${
-                chatOpen
-                  ? "text-blue-600"
-                  : isDarkMode
-                    ? "text-gray-300"
-                    : "text-gray-600"
-              }`}
-            />
           </button>
 
           {getActionButton()}
