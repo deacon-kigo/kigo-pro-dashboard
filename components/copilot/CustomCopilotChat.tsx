@@ -1,13 +1,9 @@
 "use client";
 
 import React, { useState, useRef, useCallback } from "react";
-import { useCopilotChat } from "@copilotkit/react-core";
+import { CopilotSidebar } from "@copilotkit/react-ui";
 import { Button } from "@/components/ui/button";
-import {
-  SparklesIcon,
-  XMarkIcon,
-  PaperAirplaneIcon,
-} from "@heroicons/react/24/outline";
+import { SparklesIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   setChatOpen,
@@ -16,23 +12,13 @@ import {
 } from "@/lib/redux/slices/uiSlice";
 
 /**
- * Custom Draggable Chat UI using CopilotKit's Headless UI
+ * Custom Draggable Chat UI using CopilotSidebar with custom styling
  *
- * Based on: https://docs.copilotkit.ai/custom-look-and-feel/headless-ui
- * This creates a fully custom chat interface with drag-to-resize functionality
+ * This uses the working CopilotSidebar but with our custom layout integration
  */
 export function CustomCopilotChat() {
   const dispatch = useAppDispatch();
   const { chatOpen, chatWidth } = useAppSelector((state) => state.ui);
-
-  // CopilotKit headless chat hook
-  const {
-    messages = [], // Default to empty array if undefined
-    input = "",
-    handleInputChange,
-    handleSubmit,
-    isLoading = false,
-  } = useCopilotChat() || {}; // Default to empty object if hook returns undefined
 
   // Resize state
   const [isResizing, setIsResizing] = useState(false);
@@ -122,7 +108,7 @@ export function CustomCopilotChat() {
           <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-12 bg-gray-400 group-hover:bg-blue-600 transition-colors" />
         </div>
 
-        {/* Header */}
+        {/* Custom Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white flex-shrink-0">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
@@ -146,79 +132,17 @@ export function CustomCopilotChat() {
           </Button>
         </div>
 
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {(!messages || messages.length === 0) && (
-            <div className="text-center text-gray-500 mt-8">
-              <SparklesIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <p className="text-lg font-medium mb-2">
-                Hi! I'm your AI assistant
-              </p>
-              <p className="text-sm">
-                How can I help you with your campaigns today?
-              </p>
-            </div>
-          )}
-
-          {messages &&
-            messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                    message.role === "user"
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 text-gray-900"
-                  }`}
-                >
-                  <p className="text-sm">{message.content}</p>
-                </div>
-              </div>
-            ))}
-
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-gray-100 rounded-lg px-4 py-2">
-                <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div
-                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                    style={{ animationDelay: "0.1s" }}
-                  ></div>
-                  <div
-                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                    style={{ animationDelay: "0.2s" }}
-                  ></div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Input Area */}
-        <div className="border-t border-gray-200 p-4 flex-shrink-0">
-          <form
-            onSubmit={handleSubmit || ((e) => e.preventDefault())}
-            className="flex space-x-2"
-          >
-            <input
-              type="text"
-              value={input || ""}
-              onChange={handleInputChange || (() => {})}
-              placeholder="Type your message..."
-              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              disabled={isLoading}
-            />
-            <Button
-              type="submit"
-              disabled={isLoading || !input?.trim()}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg"
-            >
-              <PaperAirplaneIcon className="h-4 w-4" />
-            </Button>
-          </form>
+        {/* CopilotSidebar - this is the working chat component */}
+        <div className="flex-1 overflow-hidden">
+          <CopilotSidebar
+            instructions="You are an AI assistant for Kigo Pro, a marketing campaign management platform. Help users with campaign creation, optimization, and insights."
+            labels={{
+              title: "Kigo Pro AI Assistant",
+              initial:
+                "Hi! I'm your AI assistant. How can I help you with your campaigns today?",
+            }}
+            className="h-full"
+          />
         </div>
       </div>
     </>
