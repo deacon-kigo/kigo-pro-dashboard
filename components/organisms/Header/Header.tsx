@@ -38,10 +38,17 @@ export default function Header() {
   const { role, clientId, themeMode, clientName } = useDemoState();
 
   // Get UI state from Redux
-  const { isMobileView, sidebarCollapsed, chatOpen } = useAppSelector(
-    (state) => state.ui
-  );
+  const { isMobileView, sidebarCollapsed, chatOpen, chatWidth } =
+    useAppSelector((state) => state.ui);
   const sidebarWidth = sidebarCollapsed ? "70px" : "225px";
+
+  // Calculate header positioning accounting for both sidebar and chat
+  const headerStyle = {
+    left: sidebarWidth,
+    width: chatOpen
+      ? `calc(100% - ${sidebarWidth} - ${chatWidth}px)`
+      : `calc(100% - ${sidebarWidth})`,
+  };
 
   // Get user state from Redux
   const { notifications } = useAppSelector((state) => state.user);
@@ -221,10 +228,7 @@ export default function Header() {
   return (
     <header
       className={`h-[72px] flex items-center px-6 fixed top-0 right-0 z-30 transition-all duration-300 ease-in-out border-b border-border-light`}
-      style={{
-        left: sidebarWidth,
-        width: `calc(100% - ${sidebarWidth})`,
-      }}
+      style={headerStyle}
     >
       <div
         className={`absolute inset-0 ${
