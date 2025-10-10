@@ -14,6 +14,7 @@ export interface UIState {
 
   // Chat state
   chatOpen: boolean;
+  chatWidth: number;
 
   // Spotlight state
   spotlightOpen: boolean;
@@ -54,6 +55,7 @@ const initialState: UIState = {
   sidebarCollapsed: DEFAULT_SIDEBAR_COLLAPSED,
   sidebarWidth: DEFAULT_SIDEBAR_COLLAPSED ? COLLAPSED_WIDTH : EXPANDED_WIDTH,
   chatOpen: false,
+  chatWidth: 400,
   spotlightOpen: false,
   isMobileView: false,
   demoSelectorOpen: true,
@@ -149,6 +151,10 @@ export const uiSlice = createSlice({
 
     setChatOpen: (state, action: PayloadAction<boolean>) => {
       state.chatOpen = action.payload;
+    },
+
+    setChatWidth: (state, action: PayloadAction<number>) => {
+      state.chatWidth = action.payload;
     },
 
     toggleChat: (state) => {
@@ -302,6 +308,7 @@ export const {
   setSidebarCollapsed,
   toggleSidebar,
   setChatOpen,
+  setChatWidth,
   toggleChat,
   setSpotlightOpen,
   toggleSpotlight,

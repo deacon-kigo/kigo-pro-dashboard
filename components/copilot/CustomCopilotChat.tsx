@@ -1,0 +1,226 @@
+"use client";
+
+import React, { useState, useRef, useCallback } from "react";
+import { useCopilotChat } from "@copilotkit/react-core";
+import { Button } from "@/components/ui/button";
+import {
+  SparklesIcon,
+  XMarkIcon,
+  PaperAirplaneIcon,
+} from "@heroicons/react/24/outline";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import {
+  setChatOpen,
+  toggleChat,
+  setChatWidth,
+} from "@/lib/redux/slices/uiSlice";
+
+/**
+ * Custom Draggable Chat UI using CopilotKit's Headless UI
+ *
+ * Based on: https://docs.copilotkit.ai/custom-look-and-feel/headless-ui
+ * This creates a fully custom chat interface with drag-to-resize functionality
+ */
+export function CustomCopilotChat() {
+  const dispatch = useAppDispatch();
+  const { chatOpen, chatWidth } = useAppSelector((state) => state.ui);
+
+  // CopilotKit headless chat hook
+  const {
+    messages = [], // Default to empty array if undefined
+    input = "",
+    handleInputChange,
+    handleSubmit,
+    isLoading = false,
+  } = useCopilotChat() || {}; // Default to empty object if hook returns undefined
+
+  // Resize state
+  const [isResizing, setIsResizing] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [startWidth, setStartWidth] = useState(0);
+
+  const chatRef = useRef<HTMLDivElement>(null);
+
+  // Handle toggle
+  const handleToggle = useCallback(() => {
+    dispatch(toggleChat());
+  }, [dispatch]);
+
+  // Mouse down on resize handle
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      setIsResizing(true);
+      setStartX(e.clientX);
+      setStartWidth(chatWidth);
+      document.body.style.cursor = "ew-resize";
+      document.body.style.userSelect = "none";
+    },
+    [chatWidth]
+  );
+
+  // Mouse move during resize
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isResizing) return;
+
+      const deltaX = startX - e.clientX;
+      const newWidth = Math.max(300, Math.min(800, startWidth + deltaX));
+      dispatch(setChatWidth(newWidth));
+    },
+    [isResizing, startX, startWidth, dispatch]
+  );
+
+  // Mouse up to end resize
+  const handleMouseUp = useCallback(() => {
+    setIsResizing(false);
+    document.body.style.cursor = "";
+    document.body.style.userSelect = "";
+  }, []);
+
+  // Add/remove event listeners for resize
+  React.useEffect(() => {
+    if (isResizing) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+
+      return () => {
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+      };
+    }
+  }, [isResizing, handleMouseMove, handleMouseUp]);
+
+  return (
+    <>
+      {/* Floating Chat Button - only show when chat is closed */}
+      {!chatOpen && (
+        <Button
+          onClick={handleToggle}
+          className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg z-50 p-0"
+          aria-label="Open AI Assistant"
+        >
+          <SparklesIcon className="h-6 w-6 text-white" />
+        </Button>
+      )}
+
+      {/* Integrated Chat Window - slides in from right, no overlay */}
+      <div
+        ref={chatRef}
+        className={`fixed right-0 top-0 h-full bg-white shadow-2xl border-l border-gray-200 z-40 flex flex-col transition-transform duration-300 ease-in-out ${
+          chatOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+        style={{
+          width: `${chatWidth}px`,
+        }}
+      >
+        {/* Resize Handle */}
+        <div
+          className="absolute left-0 top-0 w-1 h-full cursor-ew-resize bg-gray-300 hover:bg-blue-500 transition-colors z-10 group"
+          onMouseDown={handleMouseDown}
+        >
+          <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-12 bg-gray-400 group-hover:bg-blue-600 transition-colors" />
+        </div>
+
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white flex-shrink-0">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+              <SparklesIcon className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Kigo Pro AI Assistant
+              </h2>
+            </div>
+          </div>
+
+          <Button
+            onClick={handleToggle}
+            variant="ghost"
+            size="sm"
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label="Close AI Assistant"
+          >
+            <XMarkIcon className="h-5 w-5 text-gray-500" />
+          </Button>
+        </div>
+
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {(!messages || messages.length === 0) && (
+            <div className="text-center text-gray-500 mt-8">
+              <SparklesIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <p className="text-lg font-medium mb-2">
+                Hi! I'm your AI assistant
+              </p>
+              <p className="text-sm">
+                How can I help you with your campaigns today?
+              </p>
+            </div>
+          )}
+
+          {messages &&
+            messages.map((message, index) => (
+              <div
+                key={index}
+                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+              >
+                <div
+                  className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                    message.role === "user"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-900"
+                  }`}
+                >
+                  <p className="text-sm">{message.content}</p>
+                </div>
+              </div>
+            ))}
+
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="bg-gray-100 rounded-lg px-4 py-2">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                  <div
+                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    style={{ animationDelay: "0.1s" }}
+                  ></div>
+                  <div
+                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    style={{ animationDelay: "0.2s" }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Input Area */}
+        <div className="border-t border-gray-200 p-4 flex-shrink-0">
+          <form
+            onSubmit={handleSubmit || ((e) => e.preventDefault())}
+            className="flex space-x-2"
+          >
+            <input
+              type="text"
+              value={input || ""}
+              onChange={handleInputChange || (() => {})}
+              placeholder="Type your message..."
+              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={isLoading}
+            />
+            <Button
+              type="submit"
+              disabled={isLoading || !input?.trim()}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg"
+            >
+              <PaperAirplaneIcon className="h-4 w-4" />
+            </Button>
+          </form>
+        </div>
+      </div>
+    </>
+  );
+}

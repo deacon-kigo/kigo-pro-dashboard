@@ -1,7 +1,6 @@
 "use client";
 
 import { CopilotKit } from "@copilotkit/react-core";
-import { CopilotSidebar } from "@copilotkit/react-ui";
 import { ReactNode, useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
@@ -11,6 +10,7 @@ import { useMarketingInsightsCopilot } from "../hooks/useMarketingInsightsCopilo
 import { useAppSelector } from "../redux/hooks";
 import ActionExecutor from "./action-executor";
 import { useApprovalFlow } from "../hooks/useApprovalFlow";
+import { CustomCopilotChat } from "../../components/copilot/CustomCopilotChat";
 
 // Dynamic imports for components
 const ApprovalDialog = dynamic(
@@ -171,6 +171,7 @@ function CopilotKitProviderContent({ children }: CopilotKitProviderProps) {
       runtimeUrl={
         process.env.NEXT_PUBLIC_COPILOT_RUNTIME_URL || "/api/copilotkit"
       }
+      publicLicenseKey="ck_pub_38a9ca0c90205195eb563fd031212b9e"
       showDevConsole={false} // Hidden completely
     >
       {children}
@@ -178,8 +179,8 @@ function CopilotKitProviderContent({ children }: CopilotKitProviderProps) {
       <NavigationBridge />
       <ActionExecutor />
 
-      {/* TEMPORARILY DISABLED: CopilotKit UI disabled for ABC FI demo */}
-      {/* CopilotSidebar component temporarily disabled for demo */}
+      {/* Custom Headless CopilotKit Chat UI */}
+      <CustomCopilotChat />
     </CopilotKit>
   );
 }
