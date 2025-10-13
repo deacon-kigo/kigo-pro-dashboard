@@ -404,10 +404,11 @@ guide them to start the offer creation workflow."""
 
 async def offer_manager_agent(state: OfferManagerState, config: RunnableConfig) -> Dict:
     """
-    Main Offer Manager Agent - routes to appropriate sub-workflow
+    Main Offer Manager Agent - routes to appropriate sub-workflow with error handling
     """
+    messages = state.get("messages", [])
+    
     try:
-        messages = state.get("messages", [])
         context = state.get("context", {})
         
         # Detect program type
@@ -416,7 +417,7 @@ async def offer_manager_agent(state: OfferManagerState, config: RunnableConfig) 
         # Determine workflow step
         current_step = determine_workflow_step(state)
         
-        print(f"[Offer Manager] Program: {program_type}, Step: {current_step}")
+        print(f"[Offer Manager] 🎁 Program: {program_type}, Step: {current_step}")
         
         # Route to appropriate handler
         if current_step == "goal_setting":
@@ -433,12 +434,20 @@ async def offer_manager_agent(state: OfferManagerState, config: RunnableConfig) 
             return await handle_general_offer_assistance(state)
             
     except Exception as e:
-        print(f"[Offer Manager] Error: {e}")
+        # Top-level error handling for offer manager
+        print(f"❌ [Offer Manager] Error: {e}")
+        import traceback
+        traceback.print_exc()
+        
         error_message = AIMessage(
-            content=f"I encountered an error while processing your offer request. Please try again or contact support. Error: {str(e)}"
+            content="I encountered an issue while helping with your offer. Let me try a different approach - could you tell me what you'd like to achieve with this offer?"
         )
+        
         return {
             **state,
             "messages": messages + [error_message],
+            "workflow_step": "goal_setting",  # Reset to beginning
+            "current_phase": "goal_setting",
+            "error": str(e),
         }
 

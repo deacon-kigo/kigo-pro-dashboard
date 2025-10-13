@@ -54,67 +54,46 @@ class KigoProAgentState(CopilotKitState):
 
 def detect_user_intent(user_input: str, context: dict) -> str:
     """
-    AI-powered intent detection using OpenAI LLM
+    Simple, fuzzy intent detection - be generous with matching
     """
-    # Ensure user_input is a string (fix for LangGraph Studio compatibility)
+    # Ensure user_input is a string
     if isinstance(user_input, list):
         user_input = ' '.join(str(item) for item in user_input)
     elif not isinstance(user_input, str):
         user_input = str(user_input)
     
-    current_page = context.get("currentPage", "/")
+    user_lower = user_input.lower()
     
-    intent_prompt = f"""You are an intent classifier for the Kigo Pro advertising platform. 
-Analyze the user's message and classify it into one of these categories:
-
-**Available Intents:**
-- ad_creation: User wants to create a new ad or advertising campaign
-- analytics_query: User wants to see performance data, metrics, or reports  
-- filter_management: User wants to create/manage product filters or targeting
-- merchant_support: User needs help with merchant account or business setup
-- offer_management: User wants to create/manage offers, promotions, or deals
-- general_assistance: General questions or help requests
-
-**Context:**
-- Current page: {current_page}
-- User message: "{user_input}"
-
-Respond with ONLY the intent category name (e.g., "ad_creation"). No explanation needed."""
-
-    try:
-        llm = get_llm()
-        response = llm.invoke([
-            SystemMessage(content=intent_prompt),
-            HumanMessage(content=user_input)
-        ])
-        
-        intent = response.content.strip().lower()
-        
-        # Validate intent
-        valid_intents = ["ad_creation", "analytics_query", "filter_management", "merchant_support", "offer_management", "general_assistance"]
-        if intent in valid_intents:
-            return intent
-        else:
-            return "general_assistance"
-            
-    except Exception as e:
-        print(f"Intent detection error: {e}")
-        # Fallback to keyword detection with type safety
-        try:
-            user_input_lower = user_input.lower()
-            if any(word in user_input_lower for word in ["create ad", "new ad", "campaign", "advertisement"]):
-                return "ad_creation"
-            elif any(word in user_input_lower for word in ["analytics", "performance", "metrics", "report", "stats"]):
-                return "analytics_query"
-            elif any(word in user_input_lower for word in ["filter", "targeting", "audience", "segment"]):
-                return "filter_management"
-            elif any(word in user_input_lower for word in ["merchant", "business", "account", "setup"]):
-                return "merchant_support"
-            elif any(word in user_input_lower for word in ["offer", "promotion", "deal", "discount", "coupon"]):
-                return "offer_management"
-        except Exception as fallback_error:
-            print(f"Fallback intent detection error: {fallback_error}")
-        return "general_assistance"
+    # Fuzzy keyword matching - prioritize offer detection
+    # More generous patterns - catch typos and variations
+    if any(word in user_lower for word in [
+        "offer", "ofer", "promotion", "promo", "deal", "discount", 
+        "coupon", "voucher", "rebate", "cashback", "sale"
+    ]):
+        return "offer_management"
+    
+    if any(word in user_lower for word in [
+        "ad", "campaign", "advertisement", "advertise", "commercial"
+    ]) and "offer" not in user_lower:  # Don't confuse "offer campaign" with ad
+        return "ad_creation"
+    
+    if any(word in user_lower for word in [
+        "analytics", "performance", "metrics", "report", "stats", "data", "insight"
+    ]):
+        return "analytics_query"
+    
+    if any(word in user_lower for word in [
+        "filter", "targeting", "audience", "segment"
+    ]):
+        return "filter_management"
+    
+    if any(word in user_lower for word in [
+        "merchant", "business", "account", "setup", "onboard"
+    ]):
+        return "merchant_support"
+    
+    # Default to general assistance
+    return "general_assistance"
 
 async def approval_node(state: KigoProAgentState, config: RunnableConfig) -> KigoProAgentState:
     """Node that handles human approval for actions - triggers interrupt"""
@@ -222,18 +201,17 @@ def determine_agent_routing(intent: str, context: dict) -> str:
 
 async def supervisor_agent(state: KigoProAgentState, config: RunnableConfig) -> KigoProAgentState:
     """
-    Supervisor Agent - analyzes user input and routes to appropriate specialist agents
+    Simplified Supervisor - extract intent and route to specialist agents
     """
     try:
         messages = state.get("messages", [])
         context = state.get("context", {})
         
-        # Ensure we have complete context
+        # Set defaults
         full_context = {
-            "currentPage": context.get("currentPage", "studio"),
-            "userRole": context.get("userRole", "admin"), 
+            "currentPage": context.get("currentPage", "/"),
+            "userRole": context.get("userRole", "admin"),
             "sessionId": context.get("sessionId", f"session_{os.urandom(4).hex()}"),
-            "campaignData": context.get("campaignData", {}),
         }
         
         # Handle empty messages
@@ -242,22 +220,15 @@ async def supervisor_agent(state: KigoProAgentState, config: RunnableConfig) -> 
                 **state,
                 "agent_decision": "general_assistant",
                 "context": full_context,
-                "user_intent": "",
-                "workflow_data": {},
+                "user_intent": "general_assistance",
             }
         
-        # Get latest user message with robust type handling
+        # Extract user message
         latest_message = messages[-1]
         user_input = ""
         
         if hasattr(latest_message, 'content'):
-            content = latest_message.content
-            if isinstance(content, str):
-                user_input = content
-            elif isinstance(content, list):
-                user_input = ' '.join(str(item) for item in content)
-            else:
-                user_input = str(content)
+            user_input = str(latest_message.content)
         elif isinstance(latest_message, str):
             user_input = latest_message
         elif isinstance(latest_message, dict) and "content" in latest_message:
@@ -265,43 +236,38 @@ async def supervisor_agent(state: KigoProAgentState, config: RunnableConfig) -> 
         else:
             user_input = str(latest_message)
         
-        # Analyze user intent (sync version for now)
-        user_lower = user_input.lower() if user_input else ""
-        if any(word in user_lower for word in ["create ad", "new ad", "campaign", "advertisement", "create an ad"]):
-            intent = "ad_creation"
-        elif any(word in user_lower for word in ["analytics", "performance", "metrics", "report", "stats"]):
-            intent = "analytics_query"
-        elif any(word in user_lower for word in ["filter", "targeting", "audience", "segment"]):
-            intent = "filter_management"
-        elif any(word in user_lower for word in ["merchant", "business", "account", "setup"]):
-            intent = "merchant_support"
-        elif any(word in user_lower for word in ["offer", "promotion", "deal", "discount", "coupon", "create offer"]):
-            intent = "offer_management"
-        else:
-            intent = "general_assistance"
+        # Detect intent using simple keyword matching
+        intent = detect_user_intent(user_input, full_context)
         
-        # Determine routing decision
+        # Route to appropriate agent
         decision = determine_agent_routing(intent, full_context)
         
-        print(f"[Supervisor] Intent: {intent}, Routing to: {decision}")
+        print(f"[Supervisor] 📝 Input: '{user_input[:50]}...' → Intent: {intent} → Agent: {decision}")
         
         return {
             **state,
             "user_intent": intent,
             "agent_decision": decision,
             "context": full_context,
-            "workflow_data": extract_workflow_data(user_input, intent),
         }
         
     except Exception as error:
-        print(f"Supervisor agent error: {error}")
+        # Top-level error handling
+        print(f"❌ [Supervisor] Error: {error}")
+        import traceback
+        traceback.print_exc()
+        
+        # Send to error handler with helpful message
+        error_message = AIMessage(
+            content=f"I encountered an error while processing your request. Let me help you anyway - what would you like to do?"
+        )
+        
         return {
             **state,
-            "agent_decision": "error_handler",
+            "messages": state.get("messages", []) + [error_message],
+            "agent_decision": "general_assistant",  # Graceful fallback
+            "user_intent": "general_assistance",
             "error": str(error),
-            "user_intent": "",
-            "context": state.get("context", {}),
-            "workflow_data": {},
         }
 
 def route_to_agent(state: KigoProAgentState) -> str:
