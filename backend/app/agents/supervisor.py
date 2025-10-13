@@ -72,6 +72,7 @@ Analyze the user's message and classify it into one of these categories:
 - analytics_query: User wants to see performance data, metrics, or reports  
 - filter_management: User wants to create/manage product filters or targeting
 - merchant_support: User needs help with merchant account or business setup
+- offer_management: User wants to create/manage offers, promotions, or deals
 - general_assistance: General questions or help requests
 
 **Context:**
@@ -90,7 +91,7 @@ Respond with ONLY the intent category name (e.g., "ad_creation"). No explanation
         intent = response.content.strip().lower()
         
         # Validate intent
-        valid_intents = ["ad_creation", "analytics_query", "filter_management", "merchant_support", "general_assistance"]
+        valid_intents = ["ad_creation", "analytics_query", "filter_management", "merchant_support", "offer_management", "general_assistance"]
         if intent in valid_intents:
             return intent
         else:
@@ -109,6 +110,8 @@ Respond with ONLY the intent category name (e.g., "ad_creation"). No explanation
                 return "filter_management"
             elif any(word in user_input_lower for word in ["merchant", "business", "account", "setup"]):
                 return "merchant_support"
+            elif any(word in user_input_lower for word in ["offer", "promotion", "deal", "discount", "coupon"]):
+                return "offer_management"
         except Exception as fallback_error:
             print(f"Fallback intent detection error: {fallback_error}")
         return "general_assistance"
@@ -212,6 +215,7 @@ def determine_agent_routing(intent: str, context: dict) -> str:
         "filter_management": "filter_agent",
         "analytics_query": "analytics_agent",
         "merchant_support": "merchant_agent",
+        "offer_management": "offer_manager_agent",
     }
     
     return routing_map.get(intent, "general_assistant")
@@ -271,6 +275,8 @@ async def supervisor_agent(state: KigoProAgentState, config: RunnableConfig) -> 
             intent = "filter_management"
         elif any(word in user_lower for word in ["merchant", "business", "account", "setup"]):
             intent = "merchant_support"
+        elif any(word in user_lower for word in ["offer", "promotion", "deal", "discount", "coupon", "create offer"]):
+            intent = "offer_management"
         else:
             intent = "general_assistance"
         
@@ -548,6 +554,13 @@ What merchant-related question can I help you with?""")
 def create_supervisor_workflow():
     """Create and return the compiled supervisor workflow"""
     
+    # Import offer manager agent (absolute import for LangGraph Studio compatibility)
+    try:
+        from app.agents.offer_manager import offer_manager_agent
+    except ImportError:
+        # Fallback to relative import for direct execution
+        from .offer_manager import offer_manager_agent
+    
     # Build the workflow
     workflow = StateGraph(KigoProAgentState)
     
@@ -559,6 +572,7 @@ def create_supervisor_workflow():
     workflow.add_node("filter_agent", filter_agent)
     workflow.add_node("analytics_agent", analytics_agent)
     workflow.add_node("merchant_agent", merchant_agent)
+    workflow.add_node("offer_manager_agent", offer_manager_agent)
     
     # Add human-in-the-loop nodes
     workflow.add_node("approval_node", approval_node)
@@ -578,6 +592,7 @@ def create_supervisor_workflow():
             "filter_agent": "filter_agent",
             "analytics_agent": "analytics_agent",
             "merchant_agent": "merchant_agent",
+            "offer_manager_agent": "offer_manager_agent",
         }
     )
     
@@ -616,6 +631,16 @@ def create_supervisor_workflow():
     )
     
     workflow.add_edge("execute_action", END)
+    
+    # Offer manager can also require approval
+    workflow.add_conditional_edges(
+        "offer_manager_agent",
+        should_request_approval,
+        {
+            "approval": "approval_node",
+            "end": END
+        }
+    )
     
     # Other agents end the workflow directly
     workflow.add_edge("general_assistant", END)

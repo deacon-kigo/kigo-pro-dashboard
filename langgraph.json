@@ -1,7 +1,7 @@
 {
-  "dependencies": ["langchain", "@langchain/langgraph", "@langchain/openai"],
+  "dependencies": ["."],
   "graphs": {
-    "supervisor": "./services/agents/supervisor.ts:default"
+    "supervisor": "./backend/app/agents/supervisor.py:create_supervisor_workflow"
   },
   "env": ".env.local"
 }

@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Hide CopilotKit's default floating action button */
+[data-copilot-sidebar-button],
+.copilot-sidebar-button,
+button[aria-label*="chat"],
+button[aria-label*="Chat"] {
+  display: none !important;
+}
+
 @layer utilities {
   .scrollbar-hide {
     -ms-overflow-style: none;

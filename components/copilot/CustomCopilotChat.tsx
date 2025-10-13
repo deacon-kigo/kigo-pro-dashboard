@@ -28,6 +28,11 @@ const CustomWindow: React.FC<WindowProps & { children: React.ReactNode }> = ({
 
   const chatRef = useRef<HTMLDivElement>(null);
 
+  // Handle close button
+  const handleClose = useCallback(() => {
+    dispatch(toggleChat());
+  }, [dispatch]);
+
   // Mouse down on resize handle
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
@@ -93,7 +98,18 @@ const CustomWindow: React.FC<WindowProps & { children: React.ReactNode }> = ({
       </div>
 
       {/* CopilotSidebar Content */}
-      <div className="flex-1 flex flex-col h-full">{children}</div>
+      <div className="flex-1 flex flex-col h-full relative">
+        {/* Close Button */}
+        <button
+          onClick={handleClose}
+          className="absolute top-4 right-4 z-50 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200 shadow-sm"
+          aria-label="Close AI Assistant"
+        >
+          <XMarkIcon className="h-5 w-5 text-gray-600" />
+        </button>
+
+        {children}
+      </div>
     </div>
   );
 };
@@ -118,10 +134,20 @@ export function CustomCopilotChat() {
       {!chatOpen && (
         <Button
           onClick={handleToggle}
-          className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg z-50 p-0"
+          className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 p-0"
+          style={{
+            backgroundColor: "#2563eb",
+            transition: "background-color 0.2s ease-in-out",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "#1d4ed8";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "#2563eb";
+          }}
           aria-label="Open AI Assistant"
         >
-          <SparklesIcon className="h-6 w-6 text-white" />
+          <SparklesIcon className="h-6 w-6" style={{ color: "#ffffff" }} />
         </Button>
       )}
 
@@ -135,6 +161,7 @@ export function CustomCopilotChat() {
         }}
         defaultOpen={chatOpen}
         clickOutsideToClose={false}
+        showResponseButton={false}
         onSetOpen={(open) => {
           if (!open) {
             dispatch(toggleChat());

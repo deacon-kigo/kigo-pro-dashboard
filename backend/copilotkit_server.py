@@ -87,8 +87,8 @@ else:
             print(f"[CopilotKit] Converted messages: {[msg.content for msg in converted_messages]}")
             
             if converted_messages:
-                # Invoke your workflow with proper message format
-                result = workflow.invoke({
+                # Invoke your workflow with proper message format using async method
+                result = await workflow.ainvoke({
                     "messages": converted_messages,
                     "context": {"currentPage": "/", "userRole": "admin"},
                     "user_intent": "",
@@ -115,6 +115,11 @@ else:
                     {"role": "assistant", "content": f"I apologize, but I encountered an error: {str(e)}. Please try again."}
                 ]
             }
+    
+    @app.options("/copilotkit")
+    async def copilotkit_options():
+        """Handle CORS preflight requests for /copilotkit endpoint"""
+        return {"status": "ok"}
 
 @app.get("/")
 async def root():

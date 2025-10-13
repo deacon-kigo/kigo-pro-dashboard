@@ -1,0 +1,31 @@
+[project]
+name = "kigo-pro-backend"
+version = "0.1.0"
+description = "Kigo Pro LangGraph Backend with CopilotKit Integration"
+authors = [
+    {name = "Kigo Pro Team"}
+]
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "langgraph",
+    "langchain",
+    "langchain-openai",
+    "langchain-anthropic",
+    "python-dotenv",
+    "httpx",
+    "python-multipart",
+    "copilotkit"
+]
+requires-python = ">=3.11"
+
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+
+[tool.setuptools.package-data]
+"*" = ["**/*"]

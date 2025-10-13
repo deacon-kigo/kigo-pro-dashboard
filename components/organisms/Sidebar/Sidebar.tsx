@@ -22,6 +22,7 @@ import {
   PlusIcon,
   ChatBubbleLeftRightIcon,
   SparklesIcon,
+  GiftIcon,
 } from "@heroicons/react/24/outline";
 import { useDemoState } from "@/lib/redux/hooks";
 import { toggleSidebar, setSidebarCollapsed } from "@/lib/redux/slices/uiSlice";
@@ -285,6 +286,15 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
             </li>
             <li className="nav-item px-3 py-1">
               <SidebarLabel
+                href="/offer-manager"
+                icon={GiftIcon}
+                title="Offer Manager"
+                isActive={isLinkActive("/offer-manager")}
+                isCollapsed={sidebarCollapsed}
+              />
+            </li>
+            <li className="nav-item px-3 py-1">
+              <SidebarLabel
                 href="/campaign-manager/ai-insights"
                 icon={SparklesIcon}
                 title="AI Insights"
@@ -364,6 +374,15 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                   isPublisherDashboard ? "Program Ad Manager" : "Ad Manager"
                 }
                 isActive={isLinkActive("/campaigns")}
+                isCollapsed={sidebarCollapsed}
+              />
+            </li>
+            <li className="nav-item px-3 py-1">
+              <SidebarLabel
+                href="/offer-manager"
+                icon={GiftIcon}
+                title="Offer Manager"
+                isActive={isLinkActive("/offer-manager")}
                 isCollapsed={sidebarCollapsed}
               />
             </li>
