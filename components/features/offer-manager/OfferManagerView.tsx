@@ -22,10 +22,41 @@ import OfferProgressViewer from "./OfferProgressViewer";
 import OfferConversationView from "./OfferConversationView";
 import { OfferManagerState } from "./types";
 import ReactMarkdown from "react-markdown";
+import StepNavigator from "./StepNavigator";
+import GoalSettingStep from "./steps/GoalSettingStep";
+import OfferDetailsStep from "./steps/OfferDetailsStep";
+import RedemptionMethodStep from "./steps/RedemptionMethodStep";
 
 export default function OfferManagerView() {
   const [isCreatingOffer, setIsCreatingOffer] = useState(false);
   const [showApprovalDialog, setShowApprovalDialog] = useState(false);
+  const [currentStep, setCurrentStep] = useState("goal_setting");
+  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
+
+  // Form data state
+  const [formData, setFormData] = useState({
+    // Goal Setting
+    businessObjective: "",
+    programType: "",
+    targetAudience: [] as string[],
+    maxDiscount: "",
+    totalBudget: "",
+    startDate: "",
+    endDate: "",
+    // Offer Details
+    offerType: "",
+    offerValue: "",
+    offerTitle: "",
+    offerDescription: "",
+    termsConditions: "",
+    // Redemption Method
+    redemptionMethod: "",
+    promoCodeType: "single",
+    promoCode: "",
+    usageLimitPerCustomer: "1",
+    totalUsageLimit: "1000",
+    locationScope: "all",
+  });
 
   // Connect to supervisor agent (which routes to offer_manager_agent)
   const { state, setState } = useCoAgent<OfferManagerState>({
@@ -127,6 +158,50 @@ export default function OfferManagerView() {
 
   const handleStartCreation = () => {
     setIsCreatingOffer(true);
+    setCurrentStep("goal_setting");
+    setCompletedSteps([]);
+  };
+
+  const handleFormUpdate = (field: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleNextStep = (fromStep: string) => {
+    // Mark current step as completed
+    setCompletedSteps((prev) => [...prev, fromStep]);
+
+    // Move to next step
+    const stepOrder = [
+      "goal_setting",
+      "offer_details",
+      "redemption_method",
+      "campaign_setup",
+      "review_launch",
+    ];
+    const currentIndex = stepOrder.indexOf(fromStep);
+    if (currentIndex < stepOrder.length - 1) {
+      setCurrentStep(stepOrder[currentIndex + 1]);
+    }
+  };
+
+  const handlePreviousStep = (fromStep: string) => {
+    const stepOrder = [
+      "goal_setting",
+      "offer_details",
+      "redemption_method",
+      "campaign_setup",
+      "review_launch",
+    ];
+    const currentIndex = stepOrder.indexOf(fromStep);
+    if (currentIndex > 0) {
+      setCurrentStep(stepOrder[currentIndex - 1]);
+    }
+  };
+
+  const handleAskAI = (field: string) => {
+    // Placeholder for AI integration
+    console.log("Ask AI about:", field);
+    // TODO: Send message to AI agent
   };
 
   const handleApprove = () => {
@@ -234,28 +309,121 @@ export default function OfferManagerView() {
             </Card>
           </div>
         ) : (
-          // Offer creation workflow - Perplexity-style conversational UI
-          <div className="space-y-6">
-            {/* Agent Progress - Collapsed by default, expandable like Perplexity */}
-            {state?.steps && state.steps.length > 0 && (
-              <OfferProgressViewer steps={state.steps} />
-            )}
+          // Offer creation workflow - Manual multi-step form
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Left Sidebar: Step Navigator (1 column) */}
+            <div className="lg:col-span-1">
+              <StepNavigator
+                currentStep={currentStep}
+                completedSteps={completedSteps}
+              />
+            </div>
 
-            {/* Main Conversation Interface */}
-            <OfferConversationView />
+            {/* Middle: Current Step Form (2 columns) */}
+            <div className="lg:col-span-2">
+              {currentStep === "goal_setting" && (
+                <GoalSettingStep
+                  formData={{
+                    businessObjective: formData.businessObjective,
+                    programType: formData.programType,
+                    targetAudience: formData.targetAudience,
+                    maxDiscount: formData.maxDiscount,
+                    totalBudget: formData.totalBudget,
+                    startDate: formData.startDate,
+                    endDate: formData.endDate,
+                  }}
+                  onUpdate={handleFormUpdate}
+                  onNext={() => handleNextStep("goal_setting")}
+                  onAskAI={handleAskAI}
+                />
+              )}
 
-            {/* Show final offer summary when complete */}
-            {state?.answer?.markdown && (
-              <Card className="p-6 border-l-4 border-l-green-500 shadow-sm">
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-gray-900">
-                  <CheckCircleIcon className="h-5 w-5 text-green-600" />
-                  Offer Created Successfully
+              {currentStep === "offer_details" && (
+                <OfferDetailsStep
+                  formData={{
+                    offerType: formData.offerType,
+                    offerValue: formData.offerValue,
+                    offerTitle: formData.offerTitle,
+                    offerDescription: formData.offerDescription,
+                    termsConditions: formData.termsConditions,
+                  }}
+                  onUpdate={handleFormUpdate}
+                  onNext={() => handleNextStep("offer_details")}
+                  onPrevious={() => handlePreviousStep("offer_details")}
+                  onAskAI={handleAskAI}
+                />
+              )}
+
+              {currentStep === "redemption_method" && (
+                <RedemptionMethodStep
+                  formData={{
+                    redemptionMethod: formData.redemptionMethod,
+                    promoCodeType: formData.promoCodeType,
+                    promoCode: formData.promoCode,
+                    usageLimitPerCustomer: formData.usageLimitPerCustomer,
+                    totalUsageLimit: formData.totalUsageLimit,
+                    locationScope: formData.locationScope,
+                  }}
+                  onUpdate={handleFormUpdate}
+                  onNext={() => handleNextStep("redemption_method")}
+                  onPrevious={() => handlePreviousStep("redemption_method")}
+                  onAskAI={handleAskAI}
+                />
+              )}
+
+              {(currentStep === "campaign_setup" ||
+                currentStep === "review_launch") && (
+                <Card className="p-6 border border-gray-200 shadow-sm">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4">
+                    {currentStep === "campaign_setup"
+                      ? "Step 4: Campaign Setup"
+                      : "Step 5: Review & Launch"}
+                  </h2>
+                  <p className="text-gray-600">Coming soon...</p>
+                  <div className="flex justify-between gap-3 mt-8 pt-6 border-t border-gray-200">
+                    <Button
+                      variant="outline"
+                      onClick={() => handlePreviousStep(currentStep)}
+                      className="border-gray-300"
+                    >
+                      ← Previous
+                    </Button>
+                    {currentStep === "campaign_setup" && (
+                      <Button
+                        onClick={() => handleNextStep("campaign_setup")}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        Next: Review & Launch →
+                      </Button>
+                    )}
+                  </div>
+                </Card>
+              )}
+            </div>
+
+            {/* Right Sidebar: AI Co-Pilot (1 column) - Placeholder */}
+            <div className="lg:col-span-1">
+              <Card className="p-6 border border-gray-200 shadow-sm sticky top-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <SparklesIcon className="h-5 w-5 text-blue-600" />
+                  AI Co-Pilot
                 </h3>
-                <div className="prose prose-sm max-w-none text-gray-700">
-                  <ReactMarkdown>{state.answer.markdown}</ReactMarkdown>
+                <p className="text-sm text-gray-600 mb-4">
+                  AI assistant panel coming soon...
+                </p>
+                <div className="space-y-3">
+                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-xs font-medium text-blue-900">
+                      💡 Pro Tip
+                    </p>
+                    <p className="text-xs text-blue-700 mt-1">
+                      Click "Ask AI" buttons on any field for intelligent
+                      suggestions
+                    </p>
+                  </div>
                 </div>
               </Card>
-            )}
+            </div>
           </div>
         )}
 
