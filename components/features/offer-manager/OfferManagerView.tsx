@@ -18,21 +18,10 @@ import OfferCreationForm from "./OfferCreationForm";
 import OfferProgressTracker from "./OfferProgressTracker";
 import OfferApprovalDialog from "./OfferApprovalDialog";
 import OfferRecommendations from "./OfferRecommendations";
-
-interface OfferManagerState {
-  messages?: any[];
-  business_objective?: string;
-  program_type?: string;
-  offer_config?: any;
-  campaign_setup?: any;
-  workflow_step?: string;
-  validation_results?: any[];
-  progress_percentage?: number;
-  current_phase?: string;
-  pending_action?: any;
-  approval_status?: string;
-  requires_approval?: boolean;
-}
+import OfferProgressViewer from "./OfferProgressViewer";
+import OfferConversationView from "./OfferConversationView";
+import { OfferManagerState } from "./types";
+import ReactMarkdown from "react-markdown";
 
 export default function OfferManagerView() {
   const [isCreatingOffer, setIsCreatingOffer] = useState(false);
@@ -245,40 +234,28 @@ export default function OfferManagerView() {
             </Card>
           </div>
         ) : (
-          // Offer creation workflow
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Main Form - 2 columns */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Progress Tracker */}
-              <OfferProgressTracker
-                currentStep={state?.workflow_step || "goal_setting"}
-                progress={state?.progress_percentage || 0}
-              />
+          // Offer creation workflow - Perplexity-style conversational UI
+          <div className="space-y-6">
+            {/* Agent Progress - Collapsed by default, expandable like Perplexity */}
+            {state?.steps && state.steps.length > 0 && (
+              <OfferProgressViewer steps={state.steps} />
+            )}
 
-              {/* Creation Form */}
-              <OfferCreationForm
-                currentStep={state?.workflow_step || "goal_setting"}
-                businessObjective={state?.business_objective || ""}
-                programType={state?.program_type || "general"}
-                offerConfig={state?.offer_config || {}}
-                campaignSetup={state?.campaign_setup || {}}
-                onUpdate={(updates) => {
-                  setState((prevState: OfferManagerState) => ({
-                    ...prevState,
-                    ...updates,
-                  }));
-                }}
-              />
-            </div>
+            {/* Main Conversation Interface */}
+            <OfferConversationView />
 
-            {/* AI Recommendations - 1 column */}
-            <div className="lg:col-span-1">
-              <OfferRecommendations
-                businessObjective={state?.business_objective || ""}
-                programType={state?.program_type || "general"}
-                currentStep={state?.workflow_step || "goal_setting"}
-              />
-            </div>
+            {/* Show final offer summary when complete */}
+            {state?.answer?.markdown && (
+              <Card className="p-6 border-l-4 border-l-green-500 shadow-sm">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-gray-900">
+                  <CheckCircleIcon className="h-5 w-5 text-green-600" />
+                  Offer Created Successfully
+                </h3>
+                <div className="prose prose-sm max-w-none text-gray-700">
+                  <ReactMarkdown>{state.answer.markdown}</ReactMarkdown>
+                </div>
+              </Card>
+            )}
           </div>
         )}
 
