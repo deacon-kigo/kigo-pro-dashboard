@@ -32,7 +32,7 @@ export default function OfferConversationView() {
     <div className="space-y-4">
       {/* Message Thread */}
       <Card className="p-6 min-h-[500px] max-h-[600px] overflow-y-auto">
-        {messages.length === 0 && (
+        {(!messages || messages.length === 0) && (
           <div className="flex flex-col items-center justify-center h-full text-center py-16">
             <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-6">
               <SparklesIcon className="w-8 h-8 text-blue-600" />
@@ -61,24 +61,25 @@ export default function OfferConversationView() {
 
         {/* Chat Messages */}
         <div className="space-y-4">
-          {messages.map((msg, idx) => (
-            <div
-              key={idx}
-              className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-            >
+          {messages &&
+            messages.map((msg, idx) => (
               <div
-                className={`max-w-[80%] p-4 rounded-lg shadow-sm ${
-                  msg.role === "user"
-                    ? "bg-blue-600 text-white rounded-br-none"
-                    : "bg-gray-100 text-gray-900 rounded-bl-none border border-gray-200"
-                }`}
+                key={idx}
+                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
-                <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                  {msg.content}
-                </p>
+                <div
+                  className={`max-w-[80%] p-4 rounded-lg shadow-sm ${
+                    msg.role === "user"
+                      ? "bg-blue-600 text-white rounded-br-none"
+                      : "bg-gray-100 text-gray-900 rounded-bl-none border border-gray-200"
+                  }`}
+                >
+                  <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                    {msg.content}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
 
           {/* AI Thinking Indicator (Perplexity Pattern) */}
           {isLoading && (
