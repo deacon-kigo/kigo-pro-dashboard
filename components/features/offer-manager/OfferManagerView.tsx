@@ -265,275 +265,274 @@ export default function OfferManagerView() {
 
   return (
     <div className="min-h-screen">
-      <div className="max-w-7xl mx-auto">
-        {/* Main Content */}
-        {!isCreatingOffer ? (
-          // Dashboard view - polished list with stats
+      {/* Main Content */}
+      {!isCreatingOffer ? (
+        // Dashboard view - polished list with stats
+        <div className="max-w-7xl mx-auto">
           <OfferManagerDashboard onCreateOffer={handleStartCreation} />
-        ) : (
-          // Offer creation workflow - Standardized layout
-          <div
-            className="overflow-hidden"
-            style={{ height: "calc(100vh - 140px)" }}
-          >
-            <div className="h-full flex">
-              {/* OriginUI Vertical Stepper */}
-              <div className="w-32 flex-shrink-0">
-                <div className="h-full bg-white rounded-l-lg border border-r-0 border-gray-200 shadow-sm py-6 px-4">
-                  <Stepper
-                    orientation="vertical"
-                    value={currentStepNumber}
-                    onValueChange={(step) =>
-                      handleTabChange(stepNumberToTab(step))
-                    }
-                    className="gap-4"
+        </div>
+      ) : (
+        // Offer creation workflow - Full width layout
+        <div
+          className="overflow-hidden"
+          style={{ height: "calc(100vh - 140px)" }}
+        >
+          <div className="h-full flex">
+            {/* OriginUI Vertical Stepper */}
+            <div className="w-32 flex-shrink-0">
+              <div className="h-full bg-white rounded-l-lg border border-r-0 border-gray-200 shadow-sm py-6 px-4">
+                <Stepper
+                  orientation="vertical"
+                  value={currentStepNumber}
+                  onValueChange={(step) =>
+                    handleTabChange(stepNumberToTab(step))
+                  }
+                  className="gap-4"
+                >
+                  {/* Step 1: Goal Setting */}
+                  <StepperItem
+                    step={1}
+                    completed={completedSteps.includes("goal")}
                   >
-                    {/* Step 1: Goal Setting */}
-                    <StepperItem
-                      step={1}
-                      completed={completedSteps.includes("goal")}
-                    >
-                      <StepperTrigger className="flex flex-col items-center gap-2 w-full">
-                        <StepperIndicator />
-                        <StepperTitle className="text-xs text-center">
-                          Goal
-                        </StepperTitle>
-                      </StepperTrigger>
-                      <StepperSeparator />
-                    </StepperItem>
+                    <StepperTrigger className="flex flex-col items-center gap-2 w-full">
+                      <StepperIndicator />
+                      <StepperTitle className="text-xs text-center">
+                        Goal
+                      </StepperTitle>
+                    </StepperTrigger>
+                    <StepperSeparator />
+                  </StepperItem>
 
-                    {/* Step 2: Offer Details */}
-                    <StepperItem
-                      step={2}
-                      completed={completedSteps.includes("details")}
-                    >
-                      <StepperTrigger className="flex flex-col items-center gap-2 w-full">
-                        <StepperIndicator />
-                        <StepperTitle className="text-xs text-center">
-                          Details
-                        </StepperTitle>
-                      </StepperTrigger>
-                      <StepperSeparator />
-                    </StepperItem>
+                  {/* Step 2: Offer Details */}
+                  <StepperItem
+                    step={2}
+                    completed={completedSteps.includes("details")}
+                  >
+                    <StepperTrigger className="flex flex-col items-center gap-2 w-full">
+                      <StepperIndicator />
+                      <StepperTitle className="text-xs text-center">
+                        Details
+                      </StepperTitle>
+                    </StepperTrigger>
+                    <StepperSeparator />
+                  </StepperItem>
 
-                    {/* Step 3: Redemption */}
-                    <StepperItem
-                      step={3}
-                      completed={completedSteps.includes("redemption")}
-                    >
-                      <StepperTrigger className="flex flex-col items-center gap-2 w-full">
-                        <StepperIndicator />
-                        <StepperTitle className="text-xs text-center">
-                          Redeem
-                        </StepperTitle>
-                      </StepperTrigger>
-                      <StepperSeparator />
-                    </StepperItem>
+                  {/* Step 3: Redemption */}
+                  <StepperItem
+                    step={3}
+                    completed={completedSteps.includes("redemption")}
+                  >
+                    <StepperTrigger className="flex flex-col items-center gap-2 w-full">
+                      <StepperIndicator />
+                      <StepperTitle className="text-xs text-center">
+                        Redeem
+                      </StepperTitle>
+                    </StepperTrigger>
+                    <StepperSeparator />
+                  </StepperItem>
 
-                    {/* Step 4: Campaign Setup */}
-                    <StepperItem
-                      step={4}
-                      completed={completedSteps.includes("campaign")}
-                    >
-                      <StepperTrigger className="flex flex-col items-center gap-2 w-full">
-                        <StepperIndicator />
-                        <StepperTitle className="text-xs text-center">
-                          Campaign
-                        </StepperTitle>
-                      </StepperTrigger>
-                      <StepperSeparator />
-                    </StepperItem>
+                  {/* Step 4: Campaign Setup */}
+                  <StepperItem
+                    step={4}
+                    completed={completedSteps.includes("campaign")}
+                  >
+                    <StepperTrigger className="flex flex-col items-center gap-2 w-full">
+                      <StepperIndicator />
+                      <StepperTitle className="text-xs text-center">
+                        Campaign
+                      </StepperTitle>
+                    </StepperTrigger>
+                    <StepperSeparator />
+                  </StepperItem>
 
-                    {/* Step 5: Review & Launch */}
-                    <StepperItem
-                      step={5}
-                      completed={completedSteps.includes("review")}
-                    >
-                      <StepperTrigger className="flex flex-col items-center gap-2 w-full">
-                        <StepperIndicator />
-                        <StepperTitle className="text-xs text-center">
-                          Review
-                        </StepperTitle>
-                      </StepperTrigger>
-                    </StepperItem>
-                  </Stepper>
-                </div>
+                  {/* Step 5: Review & Launch */}
+                  <StepperItem
+                    step={5}
+                    completed={completedSteps.includes("review")}
+                  >
+                    <StepperTrigger className="flex flex-col items-center gap-2 w-full">
+                      <StepperIndicator />
+                      <StepperTitle className="text-xs text-center">
+                        Review
+                      </StepperTitle>
+                    </StepperTrigger>
+                  </StepperItem>
+                </Stepper>
               </div>
+            </div>
 
-              {/* Main Content Area */}
-              <div className="flex-1">
-                <div className="flex gap-3 h-full">
-                  {/* Full Width - Form */}
-                  <div className="w-full h-full flex flex-col">
-                    <Card className="p-0 flex flex-col h-full overflow-hidden shadow-md">
-                      {/* Header Section */}
-                      <div className="flex items-center justify-between p-3 border-b bg-muted/20 h-[61px] flex-shrink-0">
-                        <div className="flex items-center">
-                          {currentTab === "goal" && (
-                            <DocumentTextIcon className="h-5 w-5 mr-2 text-primary" />
-                          )}
-                          {currentTab === "details" && (
-                            <GiftIcon className="h-5 w-5 mr-2 text-primary" />
-                          )}
-                          {currentTab === "redemption" && (
-                            <CreditCardIcon className="h-5 w-5 mr-2 text-primary" />
-                          )}
-                          {currentTab === "campaign" && (
-                            <CalendarIcon className="h-5 w-5 mr-2 text-primary" />
-                          )}
-                          {currentTab === "review" && (
-                            <ChartBarIcon className="h-5 w-5 mr-2 text-primary" />
-                          )}
-                          <div>
-                            <h3 className="font-medium">
-                              {currentTab === "goal" && "Goal Setting"}
-                              {currentTab === "details" && "Offer Details"}
-                              {currentTab === "redemption" &&
-                                "Redemption Method"}
-                              {currentTab === "campaign" && "Campaign Setup"}
-                              {currentTab === "review" && "Review & Launch"}
-                            </h3>
-                            <p className="text-sm text-muted-foreground">
-                              {currentTab === "goal" &&
-                                "Define your business objective and key parameters"}
-                              {currentTab === "details" &&
-                                "Configure your promotional offer settings"}
-                              {currentTab === "redemption" &&
-                                "Select how customers will redeem your offer"}
-                              {currentTab === "campaign" &&
-                                "Set up campaign targeting and distribution"}
-                              {currentTab === "review" &&
-                                "Review and launch your offer campaign"}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Action Button */}
-                        {currentTab === "review" ? (
-                          <Button className="flex items-center gap-1" size="sm">
-                            <SparklesIcon className="h-4 w-4" />
-                            Launch Offer
-                          </Button>
-                        ) : (
-                          <Button
-                            onClick={handleNextTab}
-                            className="flex items-center gap-1"
-                            size="sm"
-                          >
-                            Next Step →
-                          </Button>
+            {/* Main Content Area */}
+            <div className="flex-1">
+              <div className="h-full">
+                {/* Full Width - Form */}
+                <div className="w-full h-full flex flex-col">
+                  <Card className="p-0 flex flex-col h-full overflow-hidden shadow-md rounded-l-none">
+                    {/* Header Section */}
+                    <div className="flex items-center justify-between p-3 border-b bg-muted/20 h-[61px] flex-shrink-0">
+                      <div className="flex items-center">
+                        {currentTab === "goal" && (
+                          <DocumentTextIcon className="h-5 w-5 mr-2 text-primary" />
                         )}
+                        {currentTab === "details" && (
+                          <GiftIcon className="h-5 w-5 mr-2 text-primary" />
+                        )}
+                        {currentTab === "redemption" && (
+                          <CreditCardIcon className="h-5 w-5 mr-2 text-primary" />
+                        )}
+                        {currentTab === "campaign" && (
+                          <CalendarIcon className="h-5 w-5 mr-2 text-primary" />
+                        )}
+                        {currentTab === "review" && (
+                          <ChartBarIcon className="h-5 w-5 mr-2 text-primary" />
+                        )}
+                        <div>
+                          <h3 className="font-medium">
+                            {currentTab === "goal" && "Goal Setting"}
+                            {currentTab === "details" && "Offer Details"}
+                            {currentTab === "redemption" && "Redemption Method"}
+                            {currentTab === "campaign" && "Campaign Setup"}
+                            {currentTab === "review" && "Review & Launch"}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            {currentTab === "goal" &&
+                              "Define your business objective and key parameters"}
+                            {currentTab === "details" &&
+                              "Configure your promotional offer settings"}
+                            {currentTab === "redemption" &&
+                              "Select how customers will redeem your offer"}
+                            {currentTab === "campaign" &&
+                              "Set up campaign targeting and distribution"}
+                            {currentTab === "review" &&
+                              "Review and launch your offer campaign"}
+                          </p>
+                        </div>
                       </div>
 
-                      {/* Form Content */}
-                      <div className="flex-1 overflow-auto">
-                        <div className="p-4">
-                          {currentTab === "goal" && (
-                            <GoalSettingStep
-                              formData={{
-                                businessObjective: formData.businessObjective,
-                                programType: formData.programType,
-                                targetAudience: formData.targetAudience,
-                                maxDiscount: formData.maxDiscount,
-                                totalBudget: formData.totalBudget,
-                                startDate: formData.startDate,
-                                endDate: formData.endDate,
-                              }}
-                              onUpdate={handleFormUpdate}
-                              onNext={handleNextTab}
-                              onAskAI={handleAskAI}
-                            />
-                          )}
+                      {/* Action Button */}
+                      {currentTab === "review" ? (
+                        <Button className="flex items-center gap-1" size="sm">
+                          <SparklesIcon className="h-4 w-4" />
+                          Launch Offer
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={handleNextTab}
+                          className="flex items-center gap-1"
+                          size="sm"
+                        >
+                          Next Step →
+                        </Button>
+                      )}
+                    </div>
 
-                          {currentTab === "details" && (
-                            <OfferDetailsStep
-                              formData={{
-                                offerType: formData.offerType,
-                                offerValue: formData.offerValue,
-                                offerTitle: formData.offerTitle,
-                                offerDescription: formData.offerDescription,
-                                termsConditions: formData.termsConditions,
-                              }}
-                              onUpdate={handleFormUpdate}
-                              onNext={handleNextTab}
-                              onPrevious={handlePreviousTab}
-                              onAskAI={handleAskAI}
-                            />
-                          )}
+                    {/* Form Content */}
+                    <div className="flex-1 overflow-auto">
+                      <div className="p-4">
+                        {currentTab === "goal" && (
+                          <GoalSettingStep
+                            formData={{
+                              businessObjective: formData.businessObjective,
+                              programType: formData.programType,
+                              targetAudience: formData.targetAudience,
+                              maxDiscount: formData.maxDiscount,
+                              totalBudget: formData.totalBudget,
+                              startDate: formData.startDate,
+                              endDate: formData.endDate,
+                            }}
+                            onUpdate={handleFormUpdate}
+                            onNext={handleNextTab}
+                            onAskAI={handleAskAI}
+                          />
+                        )}
 
-                          {currentTab === "redemption" && (
-                            <RedemptionMethodStep
-                              formData={{
-                                redemptionMethod: formData.redemptionMethod,
-                                promoCodeType: formData.promoCodeType,
-                                promoCode: formData.promoCode,
-                                usageLimitPerCustomer:
-                                  formData.usageLimitPerCustomer,
-                                totalUsageLimit: formData.totalUsageLimit,
-                                locationScope: formData.locationScope,
-                              }}
-                              onUpdate={handleFormUpdate}
-                              onNext={handleNextTab}
-                              onPrevious={handlePreviousTab}
-                              onAskAI={handleAskAI}
-                            />
-                          )}
+                        {currentTab === "details" && (
+                          <OfferDetailsStep
+                            formData={{
+                              offerType: formData.offerType,
+                              offerValue: formData.offerValue,
+                              offerTitle: formData.offerTitle,
+                              offerDescription: formData.offerDescription,
+                              termsConditions: formData.termsConditions,
+                            }}
+                            onUpdate={handleFormUpdate}
+                            onNext={handleNextTab}
+                            onPrevious={handlePreviousTab}
+                            onAskAI={handleAskAI}
+                          />
+                        )}
 
-                          {currentTab === "campaign" && (
-                            <div className="space-y-4">
-                              <p className="text-sm text-gray-600">
-                                Campaign setup coming soon...
-                              </p>
-                              <div className="flex gap-3">
-                                <Button
-                                  variant="outline"
-                                  onClick={handlePreviousTab}
-                                >
-                                  ← Previous
-                                </Button>
-                                <Button onClick={handleNextTab}>
-                                  Next: Review & Launch →
-                                </Button>
-                              </div>
-                            </div>
-                          )}
+                        {currentTab === "redemption" && (
+                          <RedemptionMethodStep
+                            formData={{
+                              redemptionMethod: formData.redemptionMethod,
+                              promoCodeType: formData.promoCodeType,
+                              promoCode: formData.promoCode,
+                              usageLimitPerCustomer:
+                                formData.usageLimitPerCustomer,
+                              totalUsageLimit: formData.totalUsageLimit,
+                              locationScope: formData.locationScope,
+                            }}
+                            onUpdate={handleFormUpdate}
+                            onNext={handleNextTab}
+                            onPrevious={handlePreviousTab}
+                            onAskAI={handleAskAI}
+                          />
+                        )}
 
-                          {currentTab === "review" && (
-                            <div className="space-y-4">
-                              <p className="text-sm text-gray-600">
-                                Review & launch coming soon...
-                              </p>
+                        {currentTab === "campaign" && (
+                          <div className="space-y-4">
+                            <p className="text-sm text-gray-600">
+                              Campaign setup coming soon...
+                            </p>
+                            <div className="flex gap-3">
                               <Button
                                 variant="outline"
                                 onClick={handlePreviousTab}
                               >
                                 ← Previous
                               </Button>
+                              <Button onClick={handleNextTab}>
+                                Next: Review & Launch →
+                              </Button>
                             </div>
-                          )}
-                        </div>
+                          </div>
+                        )}
+
+                        {currentTab === "review" && (
+                          <div className="space-y-4">
+                            <p className="text-sm text-gray-600">
+                              Review & launch coming soon...
+                            </p>
+                            <Button
+                              variant="outline"
+                              onClick={handlePreviousTab}
+                            >
+                              ← Previous
+                            </Button>
+                          </div>
+                        )}
                       </div>
-                    </Card>
-                  </div>
+                    </div>
+                  </Card>
                 </div>
               </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Approval Dialog */}
-        {showApprovalDialog && state?.pending_action && (
-          <OfferApprovalDialog
-            isOpen={showApprovalDialog}
-            offerConfig={state?.offer_config || {}}
-            campaignSetup={state?.campaign_setup || {}}
-            validationResults={state?.validation_results || []}
-            onApprove={handleApprove}
-            onReject={handleReject}
-            onClose={() => setShowApprovalDialog(false)}
-          />
-        )}
-      </div>
+      {/* Approval Dialog */}
+      {showApprovalDialog && state?.pending_action && (
+        <OfferApprovalDialog
+          isOpen={showApprovalDialog}
+          offerConfig={state?.offer_config || {}}
+          campaignSetup={state?.campaign_setup || {}}
+          validationResults={state?.validation_results || []}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          onClose={() => setShowApprovalDialog(false)}
+        />
+      )}
     </div>
   );
 }
