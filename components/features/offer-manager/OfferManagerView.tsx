@@ -31,6 +31,7 @@ export default function OfferManagerView() {
   const [currentTab, setCurrentTab] = useState<
     "goal" | "details" | "redemption" | "campaign" | "review"
   >("goal");
+  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
 
   // Form data state
   const [formData, setFormData] = useState({
@@ -246,116 +247,210 @@ export default function OfferManagerView() {
             style={{ height: "calc(100vh - 140px)" }}
           >
             <div className="h-full flex">
-              {/* Side Navigation - Wider with labels */}
-              <div className="w-48 flex-shrink-0">
+              {/* Compact Vertical Stepper */}
+              <div className="w-24 flex-shrink-0">
                 <div className="h-full bg-white rounded-l-lg border border-r-0 border-gray-200 shadow-sm">
-                  <div className="p-3">
-                    <nav className="space-y-2">
-                      {/* Goal Setting Tab */}
-                      <button
-                        onClick={() => handleTabChange("goal")}
-                        className={`group w-full px-3 py-3 flex items-center gap-3 rounded-lg transition-all duration-200 ${
-                          currentTab === "goal"
-                            ? "bg-pastel-blue text-primary font-medium"
-                            : "text-gray-600 hover:bg-pastel-blue hover:text-primary"
-                        }`}
-                      >
-                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/50">
-                          <DocumentTextIcon className="h-5 w-5" />
-                        </div>
-                        <div className="flex-1 text-left">
-                          <div className="text-xs font-semibold text-gray-500">
-                            STEP 1
-                          </div>
-                          <div className="text-sm font-medium">
-                            Goal Setting
-                          </div>
-                        </div>
-                      </button>
+                  <div className="p-4 pt-6">
+                    <nav className="relative">
+                      {/* Vertical connecting line */}
+                      <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200" />
 
-                      {/* Offer Details Tab */}
-                      <button
-                        onClick={() => handleTabChange("details")}
-                        className={`group w-full px-3 py-3 flex items-center gap-3 rounded-lg transition-all duration-200 ${
-                          currentTab === "details"
-                            ? "bg-pastel-blue text-primary font-medium"
-                            : "text-gray-600 hover:bg-pastel-blue hover:text-primary"
-                        }`}
-                      >
-                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/50">
-                          <GiftIcon className="h-5 w-5" />
-                        </div>
-                        <div className="flex-1 text-left">
-                          <div className="text-xs font-semibold text-gray-500">
-                            STEP 2
+                      <div className="relative space-y-6">
+                        {/* Step 1: Goal */}
+                        <button
+                          onClick={() => handleTabChange("goal")}
+                          className="group relative flex flex-col items-center gap-1 w-full"
+                        >
+                          <div
+                            className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-200 ${
+                              completedSteps.includes("goal")
+                                ? "bg-green-500 border-green-500"
+                                : currentTab === "goal"
+                                  ? "bg-blue-600 border-blue-600"
+                                  : "bg-white border-gray-300"
+                            }`}
+                          >
+                            {completedSteps.includes("goal") ? (
+                              <CheckCircleIcon className="h-5 w-5 text-white" />
+                            ) : (
+                              <span
+                                className={`text-xs font-bold ${
+                                  currentTab === "goal"
+                                    ? "text-white"
+                                    : "text-gray-500"
+                                }`}
+                              >
+                                1
+                              </span>
+                            )}
                           </div>
-                          <div className="text-sm font-medium">
-                            Offer Details
-                          </div>
-                        </div>
-                      </button>
+                          <span
+                            className={`text-xs font-medium text-center transition-colors ${
+                              currentTab === "goal"
+                                ? "text-blue-600"
+                                : "text-gray-600"
+                            }`}
+                          >
+                            Goal
+                          </span>
+                        </button>
 
-                      {/* Redemption Method Tab */}
-                      <button
-                        onClick={() => handleTabChange("redemption")}
-                        className={`group w-full px-3 py-3 flex items-center gap-3 rounded-lg transition-all duration-200 ${
-                          currentTab === "redemption"
-                            ? "bg-pastel-blue text-primary font-medium"
-                            : "text-gray-600 hover:bg-pastel-blue hover:text-primary"
-                        }`}
-                      >
-                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/50">
-                          <CreditCardIcon className="h-5 w-5" />
-                        </div>
-                        <div className="flex-1 text-left">
-                          <div className="text-xs font-semibold text-gray-500">
-                            STEP 3
+                        {/* Step 2: Details */}
+                        <button
+                          onClick={() => handleTabChange("details")}
+                          className="group relative flex flex-col items-center gap-1 w-full"
+                        >
+                          <div
+                            className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-200 ${
+                              completedSteps.includes("details")
+                                ? "bg-green-500 border-green-500"
+                                : currentTab === "details"
+                                  ? "bg-blue-600 border-blue-600"
+                                  : "bg-white border-gray-300"
+                            }`}
+                          >
+                            {completedSteps.includes("details") ? (
+                              <CheckCircleIcon className="h-5 w-5 text-white" />
+                            ) : (
+                              <span
+                                className={`text-xs font-bold ${
+                                  currentTab === "details"
+                                    ? "text-white"
+                                    : "text-gray-500"
+                                }`}
+                              >
+                                2
+                              </span>
+                            )}
                           </div>
-                          <div className="text-sm font-medium">Redemption</div>
-                        </div>
-                      </button>
+                          <span
+                            className={`text-xs font-medium text-center transition-colors ${
+                              currentTab === "details"
+                                ? "text-blue-600"
+                                : "text-gray-600"
+                            }`}
+                          >
+                            Details
+                          </span>
+                        </button>
 
-                      {/* Campaign Setup Tab */}
-                      <button
-                        onClick={() => handleTabChange("campaign")}
-                        className={`group w-full px-3 py-3 flex items-center gap-3 rounded-lg transition-all duration-200 ${
-                          currentTab === "campaign"
-                            ? "bg-pastel-blue text-primary font-medium"
-                            : "text-gray-600 hover:bg-pastel-blue hover:text-primary"
-                        }`}
-                      >
-                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/50">
-                          <CalendarIcon className="h-5 w-5" />
-                        </div>
-                        <div className="flex-1 text-left">
-                          <div className="text-xs font-semibold text-gray-500">
-                            STEP 4
+                        {/* Step 3: Redemption */}
+                        <button
+                          onClick={() => handleTabChange("redemption")}
+                          className="group relative flex flex-col items-center gap-1 w-full"
+                        >
+                          <div
+                            className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-200 ${
+                              completedSteps.includes("redemption")
+                                ? "bg-green-500 border-green-500"
+                                : currentTab === "redemption"
+                                  ? "bg-blue-600 border-blue-600"
+                                  : "bg-white border-gray-300"
+                            }`}
+                          >
+                            {completedSteps.includes("redemption") ? (
+                              <CheckCircleIcon className="h-5 w-5 text-white" />
+                            ) : (
+                              <span
+                                className={`text-xs font-bold ${
+                                  currentTab === "redemption"
+                                    ? "text-white"
+                                    : "text-gray-500"
+                                }`}
+                              >
+                                3
+                              </span>
+                            )}
                           </div>
-                          <div className="text-sm font-medium">Campaign</div>
-                        </div>
-                      </button>
+                          <span
+                            className={`text-xs font-medium text-center transition-colors ${
+                              currentTab === "redemption"
+                                ? "text-blue-600"
+                                : "text-gray-600"
+                            }`}
+                          >
+                            Redeem
+                          </span>
+                        </button>
 
-                      {/* Review & Launch Tab */}
-                      <button
-                        onClick={() => handleTabChange("review")}
-                        className={`group w-full px-3 py-3 flex items-center gap-3 rounded-lg transition-all duration-200 ${
-                          currentTab === "review"
-                            ? "bg-pastel-blue text-primary font-medium"
-                            : "text-gray-600 hover:bg-pastel-blue hover:text-primary"
-                        }`}
-                      >
-                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/50">
-                          <ChartBarIcon className="h-5 w-5" />
-                        </div>
-                        <div className="flex-1 text-left">
-                          <div className="text-xs font-semibold text-gray-500">
-                            STEP 5
+                        {/* Step 4: Campaign */}
+                        <button
+                          onClick={() => handleTabChange("campaign")}
+                          className="group relative flex flex-col items-center gap-1 w-full"
+                        >
+                          <div
+                            className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-200 ${
+                              completedSteps.includes("campaign")
+                                ? "bg-green-500 border-green-500"
+                                : currentTab === "campaign"
+                                  ? "bg-blue-600 border-blue-600"
+                                  : "bg-white border-gray-300"
+                            }`}
+                          >
+                            {completedSteps.includes("campaign") ? (
+                              <CheckCircleIcon className="h-5 w-5 text-white" />
+                            ) : (
+                              <span
+                                className={`text-xs font-bold ${
+                                  currentTab === "campaign"
+                                    ? "text-white"
+                                    : "text-gray-500"
+                                }`}
+                              >
+                                4
+                              </span>
+                            )}
                           </div>
-                          <div className="text-sm font-medium">
-                            Review & Launch
+                          <span
+                            className={`text-xs font-medium text-center transition-colors ${
+                              currentTab === "campaign"
+                                ? "text-blue-600"
+                                : "text-gray-600"
+                            }`}
+                          >
+                            Campaign
+                          </span>
+                        </button>
+
+                        {/* Step 5: Review */}
+                        <button
+                          onClick={() => handleTabChange("review")}
+                          className="group relative flex flex-col items-center gap-1 w-full"
+                        >
+                          <div
+                            className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-200 ${
+                              completedSteps.includes("review")
+                                ? "bg-green-500 border-green-500"
+                                : currentTab === "review"
+                                  ? "bg-blue-600 border-blue-600"
+                                  : "bg-white border-gray-300"
+                            }`}
+                          >
+                            {completedSteps.includes("review") ? (
+                              <CheckCircleIcon className="h-5 w-5 text-white" />
+                            ) : (
+                              <span
+                                className={`text-xs font-bold ${
+                                  currentTab === "review"
+                                    ? "text-white"
+                                    : "text-gray-500"
+                                }`}
+                              >
+                                5
+                              </span>
+                            )}
                           </div>
-                        </div>
-                      </button>
+                          <span
+                            className={`text-xs font-medium text-center transition-colors ${
+                              currentTab === "review"
+                                ? "text-blue-600"
+                                : "text-gray-600"
+                            }`}
+                          >
+                            Review
+                          </span>
+                        </button>
+                      </div>
                     </nav>
                   </div>
                 </div>
