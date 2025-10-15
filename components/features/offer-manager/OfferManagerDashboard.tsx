@@ -18,7 +18,24 @@ import {
   ArchiveBoxIcon,
   DocumentDuplicateIcon,
   ChartBarIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
+  FireIcon,
 } from "@heroicons/react/24/outline";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +46,29 @@ import {
 interface OfferManagerDashboardProps {
   onCreateOffer: () => void;
 }
+
+// Analytics mock data
+const performanceTrendData = [
+  { date: "Jan 1", redemptions: 1200, revenue: 24000 },
+  { date: "Jan 8", redemptions: 1450, revenue: 29000 },
+  { date: "Jan 15", redemptions: 1680, revenue: 33600 },
+  { date: "Jan 22", redemptions: 1920, revenue: 38400 },
+  { date: "Jan 29", redemptions: 2150, revenue: 43000 },
+  { date: "Feb 5", redemptions: 2380, revenue: 47600 },
+];
+
+const offerTypeData = [
+  { name: "Percentage", value: 45, color: "#3B82F6" },
+  { name: "Fixed $", value: 30, color: "#10B981" },
+  { name: "BOGO", value: 15, color: "#F59E0B" },
+  { name: "Cashback", value: 10, color: "#8B5CF6" },
+];
+
+const programPerformanceData = [
+  { program: "John Deere", redemptions: 3200, ctr: 18.5 },
+  { program: "Yardi", redemptions: 2800, ctr: 23.2 },
+  { program: "General", redemptions: 1500, ctr: 15.8 },
+];
 
 // Mock data based on BRD requirements
 const mockOffers = [
@@ -110,29 +150,13 @@ const mockOffers = [
   },
 ];
 
-const statsCards = [
-  { label: "All Offers", value: "156", icon: GiftIcon, color: "blue" },
-  {
-    label: "Active",
-    value: "24",
-    badge: "✓ Live",
-    icon: CheckCircleIcon,
-    color: "green",
-  },
-  {
-    label: "Draft",
-    value: "8",
-    badge: "⏱ Pending",
-    icon: ClockIcon,
-    color: "orange",
-  },
-  {
-    label: "Scheduled",
-    value: "5",
-    badge: "📅 Upcoming",
-    icon: CalendarIcon,
-    color: "purple",
-  },
+// Compact stats for top bar
+const quickStats = [
+  { label: "Total Offers", value: "156", change: "+12", trend: "up" },
+  { label: "Active Campaigns", value: "24", change: "+3", trend: "up" },
+  { label: "Redemptions (30d)", value: "7.5K", change: "+18%", trend: "up" },
+  { label: "Avg. CTR", value: "18.5%", change: "-2.3%", trend: "down" },
+  { label: "Revenue (30d)", value: "$145.2K", change: "+24%", trend: "up" },
 ];
 
 const getStatusColor = (status: string) => {
@@ -180,7 +204,7 @@ export default function OfferManagerDashboard({
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -198,7 +222,7 @@ export default function OfferManagerDashboard({
             className="border-gray-300 hover:bg-gray-50"
           >
             <ChartBarIcon className="h-4 w-4 mr-2" />
-            Analytics
+            Deep Analytics
           </Button>
           <Button
             onClick={onCreateOffer}
@@ -210,52 +234,236 @@ export default function OfferManagerDashboard({
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statsCards.map((stat, index) => {
-          const Icon = stat.icon;
-          return (
-            <Card
-              key={index}
-              className="p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-medium text-gray-600">
-                  {stat.label}
-                </h3>
+      {/* Compact Stats Bar */}
+      <Card className="p-4 border border-gray-200 shadow-sm">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          {quickStats.map((stat, index) => (
+            <div key={index} className="flex flex-col">
+              <p className="text-xs font-medium text-gray-600 mb-1">
+                {stat.label}
+              </p>
+              <div className="flex items-baseline gap-2">
+                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
                 <div
-                  className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    stat.color === "blue"
-                      ? "bg-blue-50"
-                      : stat.color === "green"
-                        ? "bg-green-50"
-                        : stat.color === "orange"
-                          ? "bg-orange-50"
-                          : "bg-purple-50"
+                  className={`flex items-center gap-0.5 text-xs font-medium ${
+                    stat.trend === "up" ? "text-green-600" : "text-red-600"
                   }`}
                 >
-                  <Icon
-                    className={`w-5 h-5 ${
-                      stat.color === "blue"
-                        ? "text-blue-600"
-                        : stat.color === "green"
-                          ? "text-green-600"
-                          : stat.color === "orange"
-                            ? "text-orange-600"
-                            : "text-purple-600"
-                    }`}
-                  />
+                  {stat.trend === "up" ? (
+                    <ArrowTrendingUpIcon className="h-3 w-3" />
+                  ) : (
+                    <ArrowTrendingDownIcon className="h-3 w-3" />
+                  )}
+                  {stat.change}
                 </div>
               </div>
-              <p className="text-3xl font-bold text-gray-900 mb-1">
-                {stat.value}
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* Analytics Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Performance Trend */}
+        <Card className="p-6 border border-gray-200 shadow-sm lg:col-span-2">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-base font-semibold text-gray-900">
+                Performance Trend
+              </h3>
+              <p className="text-xs text-gray-600 mt-0.5">
+                Redemptions & revenue over last 30 days
               </p>
-              {stat.badge && (
-                <p className="text-xs text-gray-500">{stat.badge}</p>
-              )}
-            </Card>
-          );
-        })}
+            </div>
+            <div className="flex gap-4 text-xs">
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded bg-blue-500" />
+                <span className="text-gray-600">Redemptions</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded bg-green-500" />
+                <span className="text-gray-600">Revenue</span>
+              </div>
+            </div>
+          </div>
+          <div className="h-48">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={performanceTrendData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 11, fill: "#64748B" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  yAxisId="left"
+                  tick={{ fontSize: 11, fill: "#64748B" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  yAxisId="right"
+                  orientation="right"
+                  tick={{ fontSize: 11, fill: "#64748B" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "white",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "8px",
+                    fontSize: "12px",
+                  }}
+                />
+                <Line
+                  yAxisId="left"
+                  type="monotone"
+                  dataKey="redemptions"
+                  stroke="#3B82F6"
+                  strokeWidth={2}
+                  dot={{ fill: "#3B82F6", r: 3 }}
+                />
+                <Line
+                  yAxisId="right"
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#10B981"
+                  strokeWidth={2}
+                  dot={{ fill: "#10B981", r: 3 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        {/* Top Performers */}
+        <Card className="p-6 border border-gray-200 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <FireIcon className="h-5 w-5 text-orange-500" />
+            <h3 className="text-base font-semibold text-gray-900">
+              Top Performers
+            </h3>
+          </div>
+          <div className="space-y-3">
+            {mockOffers.slice(0, 3).map((offer, index) => (
+              <div
+                key={offer.id}
+                className="flex items-start gap-3 p-3 rounded-lg bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-100"
+              >
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white text-sm font-bold flex-shrink-0">
+                  {index + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">
+                    {offer.title}
+                  </p>
+                  <p className="text-xs text-gray-600 mt-0.5">
+                    {offer.redemptionCount.toLocaleString()} redemptions
+                  </p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge
+                      variant="outline"
+                      className="text-xs px-2 py-0 h-5 bg-white border-gray-300"
+                    >
+                      {offer.ctr} CTR
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+
+      {/* Program & Offer Type Analytics */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Program Performance */}
+        <Card className="p-6 border border-gray-200 shadow-sm">
+          <h3 className="text-base font-semibold text-gray-900 mb-4">
+            Performance by Program
+          </h3>
+          <div className="h-52">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={programPerformanceData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis
+                  dataKey="program"
+                  tick={{ fontSize: 11, fill: "#64748B" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 11, fill: "#64748B" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "white",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "8px",
+                    fontSize: "12px",
+                  }}
+                />
+                <Bar
+                  dataKey="redemptions"
+                  fill="#3B82F6"
+                  radius={[8, 8, 0, 0]}
+                  barSize={40}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+
+        {/* Offer Type Distribution */}
+        <Card className="p-6 border border-gray-200 shadow-sm">
+          <h3 className="text-base font-semibold text-gray-900 mb-4">
+            Offer Type Distribution
+          </h3>
+          <div className="h-52 flex items-center justify-center">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={offerTypeData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={90}
+                  paddingAngle={2}
+                  dataKey="value"
+                >
+                  {offerTypeData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "white",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "8px",
+                    fontSize: "12px",
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="grid grid-cols-2 gap-3 mt-4">
+            {offerTypeData.map((type, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <div
+                  className="w-3 h-3 rounded"
+                  style={{ backgroundColor: type.color }}
+                />
+                <span className="text-xs text-gray-700">
+                  {type.name} ({type.value}%)
+                </span>
+              </div>
+            ))}
+          </div>
+        </Card>
       </div>
 
       {/* Filters & Search */}
@@ -304,168 +512,149 @@ export default function OfferManagerDashboard({
         </div>
       </Card>
 
-      {/* Offers Table */}
-      <Card className="border border-gray-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Offer
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Program
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Performance
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Campaigns
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredOffers.map((offer) => (
-                <tr
-                  key={offer.id}
-                  className="hover:bg-gray-50 transition-colors"
-                >
-                  {/* Offer Info */}
-                  <td className="px-6 py-4">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-                        <GiftIcon className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900">
-                          {offer.title}
-                        </p>
-                        <p className="text-xs text-gray-600 mt-0.5">
-                          {offer.description}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge
-                            variant="outline"
-                            className="text-xs px-2 py-0 h-5 border-gray-300"
-                          >
-                            {offer.redemptionMethod}
-                          </Badge>
-                          <span className="text-xs text-gray-500">
-                            {offer.offerType}
-                          </span>
-                        </div>
-                      </div>
+      {/* Offers Cards/List */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold text-gray-900">All Offers</h2>
+          <p className="text-sm text-gray-600">
+            {filteredOffers.length} of {mockOffers.length} offers
+          </p>
+        </div>
+        <div className="space-y-3">
+          {filteredOffers.map((offer) => (
+            <Card
+              key={offer.id}
+              className="p-5 border border-gray-200 shadow-sm hover:shadow-md transition-all hover:border-blue-300"
+            >
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+                {/* Offer Info - 5 cols */}
+                <div className="lg:col-span-5">
+                  <div className="flex items-start gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-md">
+                      <GiftIcon className="h-6 w-6 text-white" />
                     </div>
-                  </td>
-
-                  {/* Program */}
-                  <td className="px-6 py-4">
-                    <div>
-                      <Badge
-                        variant="outline"
-                        className={`${getProgramColor(offer.programType)} font-medium`}
-                      >
-                        {offer.programLabel}
-                      </Badge>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {offer.programBadge}
-                      </p>
-                    </div>
-                  </td>
-
-                  {/* Status */}
-                  <td className="px-6 py-4">
-                    <div>
-                      <Badge
-                        variant="outline"
-                        className={`${getStatusColor(offer.status)} font-medium capitalize`}
-                      >
-                        {offer.status}
-                      </Badge>
-                      {offer.status === "active" && offer.daysRemaining && (
-                        <p className="text-xs text-gray-600 mt-1">
-                          {offer.daysRemaining} days left
-                        </p>
-                      )}
-                      {offer.status === "scheduled" && offer.scheduledDate && (
-                        <p className="text-xs text-gray-600 mt-1">
-                          Starts: {offer.scheduledDate}
-                        </p>
-                      )}
-                    </div>
-                  </td>
-
-                  {/* Performance */}
-                  <td className="px-6 py-4">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">
-                        {offer.redemptionCount.toLocaleString()} redemptions
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-gray-900 truncate">
+                        {offer.title}
                       </p>
                       <p className="text-xs text-gray-600 mt-0.5">
-                        {offer.ctr} CTR
+                        {offer.description}
                       </p>
-                    </div>
-                  </td>
-
-                  {/* Campaigns */}
-                  <td className="px-6 py-4">
-                    <Badge
-                      variant="outline"
-                      className="bg-blue-50 text-blue-700 border-blue-200"
-                    >
-                      {offer.campaignCount} campaign
-                      {offer.campaignCount !== 1 ? "s" : ""}
-                    </Badge>
-                  </td>
-
-                  {/* Actions */}
-                  <td className="px-6 py-4 text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0"
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge
+                          variant="outline"
+                          className={`${getProgramColor(offer.programType)} text-xs px-2 py-0.5 font-medium`}
                         >
-                          <EllipsisVerticalIcon className="h-5 w-5 text-gray-600" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem className="cursor-pointer">
-                          <ChartBarIcon className="h-4 w-4 mr-2" />
-                          View Analytics
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="cursor-pointer">
-                          <DocumentDuplicateIcon className="h-4 w-4 mr-2" />
-                          Duplicate
-                        </DropdownMenuItem>
-                        {offer.status === "active" && (
-                          <DropdownMenuItem className="cursor-pointer">
-                            <ArrowPathIcon className="h-4 w-4 mr-2" />
-                            Pause
-                          </DropdownMenuItem>
-                        )}
-                        <DropdownMenuItem className="cursor-pointer text-red-600">
-                          <ArchiveBoxIcon className="h-4 w-4 mr-2" />
-                          Archive
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                          {offer.programLabel}
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className="text-xs px-2 py-0.5 border-gray-300 bg-white"
+                        >
+                          {offer.redemptionMethod}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-        {/* Pagination */}
-        <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                {/* Status - 2 cols */}
+                <div className="lg:col-span-2">
+                  <Badge
+                    variant="outline"
+                    className={`${getStatusColor(offer.status)} font-semibold capitalize`}
+                  >
+                    {offer.status}
+                  </Badge>
+                  {offer.status === "active" && offer.daysRemaining && (
+                    <p className="text-xs text-gray-600 mt-1.5 flex items-center gap-1">
+                      <ClockIcon className="h-3 w-3" />
+                      {offer.daysRemaining} days left
+                    </p>
+                  )}
+                  {offer.status === "scheduled" && offer.scheduledDate && (
+                    <p className="text-xs text-gray-600 mt-1.5 flex items-center gap-1">
+                      <CalendarIcon className="h-3 w-3" />
+                      {offer.scheduledDate}
+                    </p>
+                  )}
+                </div>
+
+                {/* Performance - 3 cols */}
+                <div className="lg:col-span-3">
+                  <div className="flex items-center gap-4">
+                    <div>
+                      <p className="text-lg font-bold text-gray-900">
+                        {offer.redemptionCount.toLocaleString()}
+                      </p>
+                      <p className="text-xs text-gray-600">redemptions</p>
+                    </div>
+                    <div className="h-10 w-px bg-gray-200" />
+                    <div>
+                      <p className="text-lg font-bold text-blue-600">
+                        {offer.ctr}
+                      </p>
+                      <p className="text-xs text-gray-600">CTR</p>
+                    </div>
+                    <div className="h-10 w-px bg-gray-200" />
+                    <div>
+                      <Badge
+                        variant="outline"
+                        className="bg-blue-50 text-blue-700 border-blue-200 font-semibold"
+                      >
+                        {offer.campaignCount}{" "}
+                        {offer.campaignCount === 1 ? "campaign" : "campaigns"}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Actions - 2 cols */}
+                <div className="lg:col-span-2 flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-gray-300 hover:bg-gray-50"
+                  >
+                    <ChartBarIcon className="h-4 w-4" />
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-gray-300 hover:bg-gray-50"
+                      >
+                        <EllipsisVerticalIcon className="h-5 w-5 text-gray-600" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem className="cursor-pointer">
+                        <DocumentDuplicateIcon className="h-4 w-4 mr-2" />
+                        Duplicate
+                      </DropdownMenuItem>
+                      {offer.status === "active" && (
+                        <DropdownMenuItem className="cursor-pointer">
+                          <ArrowPathIcon className="h-4 w-4 mr-2" />
+                          Pause
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuItem className="cursor-pointer text-red-600">
+                        <ArchiveBoxIcon className="h-4 w-4 mr-2" />
+                        Archive
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Pagination */}
+      <Card className="p-4 border border-gray-200 shadow-sm">
+        <div className="flex items-center justify-between">
           <p className="text-sm text-gray-700">
             Showing <span className="font-medium">{filteredOffers.length}</span>{" "}
             of <span className="font-medium">{mockOffers.length}</span> offers
