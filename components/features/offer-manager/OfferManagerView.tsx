@@ -279,8 +279,8 @@ export default function OfferManagerView() {
         >
           <div className="h-full flex">
             {/* OriginUI Vertical Stepper */}
-            <div className="w-32 flex-shrink-0">
-              <div className="h-full bg-white rounded-l-lg border border-r-0 border-gray-200 shadow-sm py-6 px-4">
+            <div className="w-20 flex-shrink-0">
+              <div className="h-full bg-white rounded-l-lg border border-r-0 border-gray-200 shadow-sm py-6 px-3">
                 <Stepper
                   orientation="vertical"
                   value={currentStepNumber}
