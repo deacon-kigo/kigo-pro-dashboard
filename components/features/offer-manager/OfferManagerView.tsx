@@ -26,6 +26,7 @@ import StepNavigator from "./StepNavigator";
 import GoalSettingStep from "./steps/GoalSettingStep";
 import OfferDetailsStep from "./steps/OfferDetailsStep";
 import RedemptionMethodStep from "./steps/RedemptionMethodStep";
+import OfferManagerDashboard from "./OfferManagerDashboard";
 
 export default function OfferManagerView() {
   const [isCreatingOffer, setIsCreatingOffer] = useState(false);
@@ -226,88 +227,10 @@ export default function OfferManagerView() {
   return (
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto">
-        {/* Header with gradient background */}
-        <div
-          className="relative overflow-hidden rounded-lg mb-6"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(226, 240, 253, 0.9), rgba(226, 232, 255, 0.85))",
-            borderRadius: "0.75rem",
-            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.03)",
-          }}
-        >
-          <div className="relative p-6 z-10">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-blue-50 border border-blue-200">
-                  <GiftIcon className="w-6 h-6 text-blue-600" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-blue-600 mb-1">
-                    Offer Manager
-                  </h1>
-                  <p className="text-sm text-blue-500">
-                    Create AI-powered promotional offers with intelligent
-                    recommendations
-                  </p>
-                </div>
-              </div>
-              {!isCreatingOffer && (
-                <Button
-                  onClick={handleStartCreation}
-                  className="bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-sm flex items-center gap-2"
-                >
-                  <SparklesIcon className="h-4 w-4" />
-                  Create New Offer
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-
         {/* Main Content */}
         {!isCreatingOffer ? (
-          // Dashboard view - show recent offers and quick stats
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-medium text-gray-600">
-                  Active Offers
-                </h3>
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-green-50">
-                  <CheckCircleIcon className="w-4 h-4 text-green-600" />
-                </div>
-              </div>
-              <p className="text-3xl font-bold text-gray-900 mb-1">0</p>
-              <p className="text-xs text-gray-500">Currently running</p>
-            </Card>
-
-            <Card className="p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-medium text-gray-600">
-                  Draft Offers
-                </h3>
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-orange-50">
-                  <ClockIcon className="w-4 h-4 text-orange-600" />
-                </div>
-              </div>
-              <p className="text-3xl font-bold text-gray-900 mb-1">0</p>
-              <p className="text-xs text-gray-500">Pending approval</p>
-            </Card>
-
-            <Card className="p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-medium text-gray-600">
-                  Total Reach
-                </h3>
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50">
-                  <SparklesIcon className="w-4 h-4 text-blue-600" />
-                </div>
-              </div>
-              <p className="text-3xl font-bold text-gray-900 mb-1">0</p>
-              <p className="text-xs text-gray-500">Users engaged</p>
-            </Card>
-          </div>
+          // Dashboard view - polished list with stats
+          <OfferManagerDashboard onCreateOffer={handleStartCreation} />
         ) : (
           // Offer creation workflow - Manual multi-step form
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
