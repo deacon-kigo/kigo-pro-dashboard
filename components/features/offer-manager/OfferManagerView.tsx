@@ -18,6 +18,14 @@ import {
   CalendarIcon,
   ChartBarIcon,
 } from "@heroicons/react/24/outline";
+import {
+  Stepper,
+  StepperItem,
+  StepperTrigger,
+  StepperIndicator,
+  StepperTitle,
+  StepperSeparator,
+} from "@/components/ui/stepper";
 import OfferApprovalDialog from "@/components/features/offer-manager/OfferApprovalDialog";
 import GoalSettingStep from "@/components/features/offer-manager/steps/GoalSettingStep";
 import OfferDetailsStep from "@/components/features/offer-manager/steps/OfferDetailsStep";
@@ -200,6 +208,28 @@ export default function OfferManagerView() {
     setCurrentTab(tab);
   };
 
+  // Map currentTab to step number for Stepper component
+  const currentStepNumber = {
+    goal: 1,
+    details: 2,
+    redemption: 3,
+    campaign: 4,
+    review: 5,
+  }[currentTab];
+
+  const stepNumberToTab = (
+    step: number
+  ): "goal" | "details" | "redemption" | "campaign" | "review" => {
+    const mapping = {
+      1: "goal",
+      2: "details",
+      3: "redemption",
+      4: "campaign",
+      5: "review",
+    } as const;
+    return mapping[step as keyof typeof mapping];
+  };
+
   const handleNextTab = () => {
     const tabOrder: (
       | "goal"
@@ -247,212 +277,86 @@ export default function OfferManagerView() {
             style={{ height: "calc(100vh - 140px)" }}
           >
             <div className="h-full flex">
-              {/* Compact Vertical Stepper */}
-              <div className="w-24 flex-shrink-0">
-                <div className="h-full bg-white rounded-l-lg border border-r-0 border-gray-200 shadow-sm">
-                  <div className="p-4 pt-6">
-                    <nav className="relative">
-                      {/* Vertical connecting line */}
-                      <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200" />
+              {/* OriginUI Vertical Stepper */}
+              <div className="w-32 flex-shrink-0">
+                <div className="h-full bg-white rounded-l-lg border border-r-0 border-gray-200 shadow-sm py-6 px-4">
+                  <Stepper
+                    orientation="vertical"
+                    value={currentStepNumber}
+                    onValueChange={(step) =>
+                      handleTabChange(stepNumberToTab(step))
+                    }
+                    className="gap-4"
+                  >
+                    {/* Step 1: Goal Setting */}
+                    <StepperItem
+                      step={1}
+                      completed={completedSteps.includes("goal")}
+                    >
+                      <StepperTrigger className="flex flex-col items-center gap-2 w-full">
+                        <StepperIndicator />
+                        <StepperTitle className="text-xs text-center">
+                          Goal
+                        </StepperTitle>
+                      </StepperTrigger>
+                      <StepperSeparator />
+                    </StepperItem>
 
-                      <div className="relative space-y-6">
-                        {/* Step 1: Goal */}
-                        <button
-                          onClick={() => handleTabChange("goal")}
-                          className="group relative flex flex-col items-center gap-1 w-full"
-                        >
-                          <div
-                            className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-200 ${
-                              completedSteps.includes("goal")
-                                ? "bg-green-500 border-green-500"
-                                : currentTab === "goal"
-                                  ? "bg-blue-600 border-blue-600"
-                                  : "bg-white border-gray-300"
-                            }`}
-                          >
-                            {completedSteps.includes("goal") ? (
-                              <CheckCircleIcon className="h-5 w-5 text-white" />
-                            ) : (
-                              <span
-                                className={`text-xs font-bold ${
-                                  currentTab === "goal"
-                                    ? "text-white"
-                                    : "text-gray-500"
-                                }`}
-                              >
-                                1
-                              </span>
-                            )}
-                          </div>
-                          <span
-                            className={`text-xs font-medium text-center transition-colors ${
-                              currentTab === "goal"
-                                ? "text-blue-600"
-                                : "text-gray-600"
-                            }`}
-                          >
-                            Goal
-                          </span>
-                        </button>
+                    {/* Step 2: Offer Details */}
+                    <StepperItem
+                      step={2}
+                      completed={completedSteps.includes("details")}
+                    >
+                      <StepperTrigger className="flex flex-col items-center gap-2 w-full">
+                        <StepperIndicator />
+                        <StepperTitle className="text-xs text-center">
+                          Details
+                        </StepperTitle>
+                      </StepperTrigger>
+                      <StepperSeparator />
+                    </StepperItem>
 
-                        {/* Step 2: Details */}
-                        <button
-                          onClick={() => handleTabChange("details")}
-                          className="group relative flex flex-col items-center gap-1 w-full"
-                        >
-                          <div
-                            className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-200 ${
-                              completedSteps.includes("details")
-                                ? "bg-green-500 border-green-500"
-                                : currentTab === "details"
-                                  ? "bg-blue-600 border-blue-600"
-                                  : "bg-white border-gray-300"
-                            }`}
-                          >
-                            {completedSteps.includes("details") ? (
-                              <CheckCircleIcon className="h-5 w-5 text-white" />
-                            ) : (
-                              <span
-                                className={`text-xs font-bold ${
-                                  currentTab === "details"
-                                    ? "text-white"
-                                    : "text-gray-500"
-                                }`}
-                              >
-                                2
-                              </span>
-                            )}
-                          </div>
-                          <span
-                            className={`text-xs font-medium text-center transition-colors ${
-                              currentTab === "details"
-                                ? "text-blue-600"
-                                : "text-gray-600"
-                            }`}
-                          >
-                            Details
-                          </span>
-                        </button>
+                    {/* Step 3: Redemption */}
+                    <StepperItem
+                      step={3}
+                      completed={completedSteps.includes("redemption")}
+                    >
+                      <StepperTrigger className="flex flex-col items-center gap-2 w-full">
+                        <StepperIndicator />
+                        <StepperTitle className="text-xs text-center">
+                          Redeem
+                        </StepperTitle>
+                      </StepperTrigger>
+                      <StepperSeparator />
+                    </StepperItem>
 
-                        {/* Step 3: Redemption */}
-                        <button
-                          onClick={() => handleTabChange("redemption")}
-                          className="group relative flex flex-col items-center gap-1 w-full"
-                        >
-                          <div
-                            className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-200 ${
-                              completedSteps.includes("redemption")
-                                ? "bg-green-500 border-green-500"
-                                : currentTab === "redemption"
-                                  ? "bg-blue-600 border-blue-600"
-                                  : "bg-white border-gray-300"
-                            }`}
-                          >
-                            {completedSteps.includes("redemption") ? (
-                              <CheckCircleIcon className="h-5 w-5 text-white" />
-                            ) : (
-                              <span
-                                className={`text-xs font-bold ${
-                                  currentTab === "redemption"
-                                    ? "text-white"
-                                    : "text-gray-500"
-                                }`}
-                              >
-                                3
-                              </span>
-                            )}
-                          </div>
-                          <span
-                            className={`text-xs font-medium text-center transition-colors ${
-                              currentTab === "redemption"
-                                ? "text-blue-600"
-                                : "text-gray-600"
-                            }`}
-                          >
-                            Redeem
-                          </span>
-                        </button>
+                    {/* Step 4: Campaign Setup */}
+                    <StepperItem
+                      step={4}
+                      completed={completedSteps.includes("campaign")}
+                    >
+                      <StepperTrigger className="flex flex-col items-center gap-2 w-full">
+                        <StepperIndicator />
+                        <StepperTitle className="text-xs text-center">
+                          Campaign
+                        </StepperTitle>
+                      </StepperTrigger>
+                      <StepperSeparator />
+                    </StepperItem>
 
-                        {/* Step 4: Campaign */}
-                        <button
-                          onClick={() => handleTabChange("campaign")}
-                          className="group relative flex flex-col items-center gap-1 w-full"
-                        >
-                          <div
-                            className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-200 ${
-                              completedSteps.includes("campaign")
-                                ? "bg-green-500 border-green-500"
-                                : currentTab === "campaign"
-                                  ? "bg-blue-600 border-blue-600"
-                                  : "bg-white border-gray-300"
-                            }`}
-                          >
-                            {completedSteps.includes("campaign") ? (
-                              <CheckCircleIcon className="h-5 w-5 text-white" />
-                            ) : (
-                              <span
-                                className={`text-xs font-bold ${
-                                  currentTab === "campaign"
-                                    ? "text-white"
-                                    : "text-gray-500"
-                                }`}
-                              >
-                                4
-                              </span>
-                            )}
-                          </div>
-                          <span
-                            className={`text-xs font-medium text-center transition-colors ${
-                              currentTab === "campaign"
-                                ? "text-blue-600"
-                                : "text-gray-600"
-                            }`}
-                          >
-                            Campaign
-                          </span>
-                        </button>
-
-                        {/* Step 5: Review */}
-                        <button
-                          onClick={() => handleTabChange("review")}
-                          className="group relative flex flex-col items-center gap-1 w-full"
-                        >
-                          <div
-                            className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-200 ${
-                              completedSteps.includes("review")
-                                ? "bg-green-500 border-green-500"
-                                : currentTab === "review"
-                                  ? "bg-blue-600 border-blue-600"
-                                  : "bg-white border-gray-300"
-                            }`}
-                          >
-                            {completedSteps.includes("review") ? (
-                              <CheckCircleIcon className="h-5 w-5 text-white" />
-                            ) : (
-                              <span
-                                className={`text-xs font-bold ${
-                                  currentTab === "review"
-                                    ? "text-white"
-                                    : "text-gray-500"
-                                }`}
-                              >
-                                5
-                              </span>
-                            )}
-                          </div>
-                          <span
-                            className={`text-xs font-medium text-center transition-colors ${
-                              currentTab === "review"
-                                ? "text-blue-600"
-                                : "text-gray-600"
-                            }`}
-                          >
-                            Review
-                          </span>
-                        </button>
-                      </div>
-                    </nav>
-                  </div>
+                    {/* Step 5: Review & Launch */}
+                    <StepperItem
+                      step={5}
+                      completed={completedSteps.includes("review")}
+                    >
+                      <StepperTrigger className="flex flex-col items-center gap-2 w-full">
+                        <StepperIndicator />
+                        <StepperTitle className="text-xs text-center">
+                          Review
+                        </StepperTitle>
+                      </StepperTrigger>
+                    </StepperItem>
+                  </Stepper>
                 </div>
               </div>
 
