@@ -18,12 +18,12 @@ import {
   CalendarIcon,
   ChartBarIcon,
 } from "@heroicons/react/24/outline";
-import OfferApprovalDialog from "./OfferApprovalDialog";
-import GoalSettingStep from "./steps/GoalSettingStep";
-import OfferDetailsStep from "./steps/OfferDetailsStep";
-import RedemptionMethodStep from "./steps/RedemptionMethodStep";
-import OfferManagerDashboard from "./OfferManagerDashboard";
-import { OfferManagerState } from "./types";
+import OfferApprovalDialog from "@/components/features/offer-manager/OfferApprovalDialog";
+import GoalSettingStep from "@/components/features/offer-manager/steps/GoalSettingStep";
+import OfferDetailsStep from "@/components/features/offer-manager/steps/OfferDetailsStep";
+import RedemptionMethodStep from "@/components/features/offer-manager/steps/RedemptionMethodStep";
+import OfferManagerDashboard from "@/components/features/offer-manager/OfferManagerDashboard";
+import { OfferManagerState } from "@/components/features/offer-manager/types";
 
 export default function OfferManagerView() {
   const [isCreatingOffer, setIsCreatingOffer] = useState(false);
@@ -91,9 +91,9 @@ export default function OfferManagerView() {
           <Card className="p-4 shadow-lg border-l-4 border-l-primary-brand">
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0">
-                {status === "streaming" ? (
+                {status === "inProgress" ? (
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-brand"></div>
-                ) : status === "done" ? (
+                ) : status === "complete" ? (
                   <CheckCircleIcon className="h-5 w-5 text-status-success" />
                 ) : (
                   <ClockIcon className="h-5 w-5 text-gray-400" />
@@ -149,6 +149,7 @@ export default function OfferManagerView() {
         campaign_setup,
         requires_approval: true,
         pending_action: "create_offer",
+        steps: prevState?.steps || [],
       }));
       setShowApprovalDialog(true);
       return "Approval dialog opened";
@@ -172,6 +173,7 @@ export default function OfferManagerView() {
       approval_status: "approved",
       requires_approval: false,
       pending_action: null,
+      steps: prevState?.steps || [],
     }));
     setShowApprovalDialog(false);
   };
@@ -182,6 +184,7 @@ export default function OfferManagerView() {
       approval_status: "rejected",
       requires_approval: false,
       pending_action: null,
+      steps: prevState?.steps || [],
     }));
     setShowApprovalDialog(false);
   };
@@ -243,88 +246,114 @@ export default function OfferManagerView() {
             style={{ height: "calc(100vh - 140px)" }}
           >
             <div className="h-full flex">
-              {/* Side Navigation */}
-              <div className="w-16 flex-shrink-0">
+              {/* Side Navigation - Wider with labels */}
+              <div className="w-48 flex-shrink-0">
                 <div className="h-full bg-white rounded-l-lg border border-r-0 border-gray-200 shadow-sm">
-                  <div className="p-2">
-                    <nav className="space-y-3">
+                  <div className="p-3">
+                    <nav className="space-y-2">
                       {/* Goal Setting Tab */}
                       <button
                         onClick={() => handleTabChange("goal")}
-                        className={`group relative w-12 h-12 flex items-center justify-center rounded-lg transition-all duration-200 ${
+                        className={`group w-full px-3 py-3 flex items-center gap-3 rounded-lg transition-all duration-200 ${
                           currentTab === "goal"
                             ? "bg-pastel-blue text-primary font-medium"
                             : "text-gray-600 hover:bg-pastel-blue hover:text-primary"
                         }`}
-                        title="Goal Setting"
                       >
-                        <DocumentTextIcon className="h-5 w-5" />
-                        <div className="absolute left-16 top-1/2 transform -translate-y-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                          Goal Setting
+                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/50">
+                          <DocumentTextIcon className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <div className="text-xs font-semibold text-gray-500">
+                            STEP 1
+                          </div>
+                          <div className="text-sm font-medium">
+                            Goal Setting
+                          </div>
                         </div>
                       </button>
 
                       {/* Offer Details Tab */}
                       <button
                         onClick={() => handleTabChange("details")}
-                        className={`group relative w-12 h-12 flex items-center justify-center rounded-lg transition-all duration-200 ${
+                        className={`group w-full px-3 py-3 flex items-center gap-3 rounded-lg transition-all duration-200 ${
                           currentTab === "details"
                             ? "bg-pastel-blue text-primary font-medium"
                             : "text-gray-600 hover:bg-pastel-blue hover:text-primary"
                         }`}
-                        title="Offer Details"
                       >
-                        <GiftIcon className="h-5 w-5" />
-                        <div className="absolute left-16 top-1/2 transform -translate-y-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                          Offer Details
+                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/50">
+                          <GiftIcon className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <div className="text-xs font-semibold text-gray-500">
+                            STEP 2
+                          </div>
+                          <div className="text-sm font-medium">
+                            Offer Details
+                          </div>
                         </div>
                       </button>
 
                       {/* Redemption Method Tab */}
                       <button
                         onClick={() => handleTabChange("redemption")}
-                        className={`group relative w-12 h-12 flex items-center justify-center rounded-lg transition-all duration-200 ${
+                        className={`group w-full px-3 py-3 flex items-center gap-3 rounded-lg transition-all duration-200 ${
                           currentTab === "redemption"
                             ? "bg-pastel-blue text-primary font-medium"
                             : "text-gray-600 hover:bg-pastel-blue hover:text-primary"
                         }`}
-                        title="Redemption Method"
                       >
-                        <CreditCardIcon className="h-5 w-5" />
-                        <div className="absolute left-16 top-1/2 transform -translate-y-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                          Redemption Method
+                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/50">
+                          <CreditCardIcon className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <div className="text-xs font-semibold text-gray-500">
+                            STEP 3
+                          </div>
+                          <div className="text-sm font-medium">Redemption</div>
                         </div>
                       </button>
 
                       {/* Campaign Setup Tab */}
                       <button
                         onClick={() => handleTabChange("campaign")}
-                        className={`group relative w-12 h-12 flex items-center justify-center rounded-lg transition-all duration-200 ${
+                        className={`group w-full px-3 py-3 flex items-center gap-3 rounded-lg transition-all duration-200 ${
                           currentTab === "campaign"
                             ? "bg-pastel-blue text-primary font-medium"
                             : "text-gray-600 hover:bg-pastel-blue hover:text-primary"
                         }`}
-                        title="Campaign Setup"
                       >
-                        <CalendarIcon className="h-5 w-5" />
-                        <div className="absolute left-16 top-1/2 transform -translate-y-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                          Campaign Setup
+                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/50">
+                          <CalendarIcon className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <div className="text-xs font-semibold text-gray-500">
+                            STEP 4
+                          </div>
+                          <div className="text-sm font-medium">Campaign</div>
                         </div>
                       </button>
 
                       {/* Review & Launch Tab */}
                       <button
                         onClick={() => handleTabChange("review")}
-                        className={`group relative w-12 h-12 flex items-center justify-center rounded-lg transition-all duration-200 ${
+                        className={`group w-full px-3 py-3 flex items-center gap-3 rounded-lg transition-all duration-200 ${
                           currentTab === "review"
                             ? "bg-pastel-blue text-primary font-medium"
                             : "text-gray-600 hover:bg-pastel-blue hover:text-primary"
                         }`}
-                        title="Review & Launch"
                       >
-                        <ChartBarIcon className="h-5 w-5" />
-                        <div className="absolute left-16 top-1/2 transform -translate-y-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                          Review & Launch
+                        <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/50">
+                          <ChartBarIcon className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <div className="text-xs font-semibold text-gray-500">
+                            STEP 5
+                          </div>
+                          <div className="text-sm font-medium">
+                            Review & Launch
+                          </div>
                         </div>
                       </button>
                     </nav>
@@ -335,8 +364,8 @@ export default function OfferManagerView() {
               {/* Main Content Area */}
               <div className="flex-1">
                 <div className="flex gap-3 h-full">
-                  {/* Left Column - Form (3/5 width) */}
-                  <div className="w-3/5 h-full flex flex-col">
+                  {/* Full Width - Form */}
+                  <div className="w-full h-full flex flex-col">
                     <Card className="p-0 flex flex-col h-full overflow-hidden shadow-md">
                       {/* Header Section */}
                       <div className="flex items-center justify-between p-3 border-b bg-muted/20 h-[61px] flex-shrink-0">
@@ -483,45 +512,6 @@ export default function OfferManagerView() {
                               </Button>
                             </div>
                           )}
-                        </div>
-                      </div>
-                    </Card>
-                  </div>
-
-                  {/* Right Column - AI Co-Pilot & Preview (2/5 width) */}
-                  <div className="w-2/5 h-full flex flex-col">
-                    <Card className="h-full p-0 flex flex-col overflow-hidden shadow-md">
-                      <div className="flex items-center justify-between p-3 border-b bg-muted/20 h-[61px] flex-shrink-0">
-                        <div className="flex items-center">
-                          <SparklesIcon className="h-5 w-5 mr-2 text-primary" />
-                          <div>
-                            <h3 className="font-medium">AI Co-Pilot</h3>
-                            <p className="text-sm text-muted-foreground">
-                              Get intelligent suggestions and recommendations
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex-1 overflow-auto p-4">
-                        <div className="space-y-3">
-                          <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                            <p className="text-xs font-medium text-blue-900">
-                              💡 Pro Tip
-                            </p>
-                            <p className="text-xs text-blue-700 mt-1">
-                              Click "Ask AI" buttons on any field for
-                              intelligent suggestions
-                            </p>
-                          </div>
-                          <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                            <p className="text-xs font-medium text-green-900">
-                              ✓ Best Practice
-                            </p>
-                            <p className="text-xs text-green-700 mt-1">
-                              Use clear, specific business objectives for better
-                              AI recommendations
-                            </p>
-                          </div>
                         </div>
                       </div>
                     </Card>
