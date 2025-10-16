@@ -55,7 +55,11 @@ else:
     @app.post("/copilotkit")
     async def copilotkit_chat(request: dict):
         """Manual CopilotKit chat endpoint"""
-        print(f"[CopilotKit] Received request: {request}")
+        print("=" * 80)
+        print("🔵 [LangGraph Backend] POST /copilotkit - REQUEST RECEIVED")
+        print("=" * 80)
+        print(f"[CopilotKit] Received request keys: {list(request.keys())}")
+        print(f"[CopilotKit] Messages count: {len(request.get('messages', []))}")
         
         try:
             # Extract messages and invoke your existing workflow

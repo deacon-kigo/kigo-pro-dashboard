@@ -26,14 +26,20 @@ import {
   StepperTitle,
   StepperSeparator,
 } from "@/components/ui/stepper";
+import { MessageSquare } from "lucide-react";
 import OfferApprovalDialog from "@/components/features/offer-manager/OfferApprovalDialog";
 import GoalSettingStep from "@/components/features/offer-manager/steps/GoalSettingStep";
 import OfferDetailsStep from "@/components/features/offer-manager/steps/OfferDetailsStep";
 import RedemptionMethodStep from "@/components/features/offer-manager/steps/RedemptionMethodStep";
 import OfferManagerDashboard from "@/components/features/offer-manager/OfferManagerDashboard";
 import { OfferManagerState } from "@/components/features/offer-manager/types";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { toggleChat } from "@/lib/redux/slices/uiSlice";
 
 export default function OfferManagerView() {
+  const dispatch = useAppDispatch();
+  const { chatOpen } = useAppSelector((state) => state.ui);
+
   const [isCreatingOffer, setIsCreatingOffer] = useState(false);
   const [showApprovalDialog, setShowApprovalDialog] = useState(false);
   const [currentTab, setCurrentTab] = useState<
@@ -265,7 +271,7 @@ export default function OfferManagerView() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative">
       {/* Main Content */}
       {!isCreatingOffer ? (
         // Dashboard view - polished list with stats
@@ -409,21 +415,32 @@ export default function OfferManagerView() {
                         </div>
                       </div>
 
-                      {/* Action Button */}
-                      {currentTab === "review" ? (
-                        <Button className="flex items-center gap-1" size="sm">
-                          <SparklesIcon className="h-4 w-4" />
-                          Launch Offer
-                        </Button>
-                      ) : (
+                      {/* Action Buttons */}
+                      <div className="flex items-center gap-2">
                         <Button
-                          onClick={handleNextTab}
-                          className="flex items-center gap-1"
+                          variant="outline"
                           size="sm"
+                          onClick={() => dispatch(toggleChat())}
+                          className="flex items-center gap-1"
                         >
-                          Next Step →
+                          <MessageSquare className="h-4 w-4" />
+                          {chatOpen ? "Hide" : "Show"} AI Assistant
                         </Button>
-                      )}
+                        {currentTab === "review" ? (
+                          <Button className="flex items-center gap-1" size="sm">
+                            <SparklesIcon className="h-4 w-4" />
+                            Launch Offer
+                          </Button>
+                        ) : (
+                          <Button
+                            onClick={handleNextTab}
+                            className="flex items-center gap-1"
+                            size="sm"
+                          >
+                            Next Step →
+                          </Button>
+                        )}
+                      </div>
                     </div>
 
                     {/* Form Content */}

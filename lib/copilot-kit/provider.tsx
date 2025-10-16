@@ -161,26 +161,28 @@ function CopilotKitProviderContent({ children }: CopilotKitProviderProps) {
     setIsMounted(true);
   }, []);
 
-  // Don't render anything until mounted to prevent hydration errors
-  if (!isMounted) {
-    return <>{children}</>;
-  }
-
+  // Always render with CopilotKit wrapper to prevent useCoAgent errors
+  // Hydration mismatches are handled by Next.js suppressHydrationWarning
   return (
     <CopilotKit
       runtimeUrl={
         process.env.NEXT_PUBLIC_COPILOT_RUNTIME_URL || "/api/copilotkit"
       }
       publicLicenseKey="ck_pub_38a9ca0c90205195eb563fd031212b9e"
-      showDevConsole={false} // Hidden completely
+      showDevConsole={true} // Enable dev console for debugging
     >
       {children}
 
-      <NavigationBridge />
-      <ActionExecutor />
+      {/* Only render these after mount to prevent hydration issues */}
+      {isMounted && (
+        <>
+          <NavigationBridge />
+          <ActionExecutor />
 
-      {/* Custom Headless CopilotKit Chat UI */}
-      <CustomCopilotChat />
+          {/* Custom Headless CopilotKit Chat UI */}
+          <CustomCopilotChat />
+        </>
+      )}
     </CopilotKit>
   );
 }

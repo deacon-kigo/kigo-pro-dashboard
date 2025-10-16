@@ -28,10 +28,50 @@ class OfferStep(TypedDict):
     """Represents a step in the offer creation process"""
     id: str                              # Unique step identifier
     description: str                      # What this step is doing
-    status: str                          # "pending" | "running" | "complete"
+    status: str                          # "pending" | "running" | "complete" | "error"
     type: str                            # Step type (goal_setting, research, etc.)
     updates: List[str]                   # Real-time progress messages
     result: Optional[Dict]               # Step result data
+    metadata: Optional[Dict]             # Optional metadata (duration, sources, etc.)
+
+
+# Helper functions for step management
+async def emit_intermediate_state(config: RunnableConfig, state: Dict):
+    """Emit intermediate state for real-time UI updates (CopilotKit pattern)"""
+    emit_fn = config.get("configurable", {}).get("emit_intermediate_state")
+    if emit_fn and callable(emit_fn):
+        try:
+            await emit_fn(state)
+        except Exception as e:
+            print(f"⚠️  Failed to emit intermediate state: {e}")
+
+
+def get_or_create_step(steps: List[OfferStep], step_id: str, description: str, step_type: str) -> OfferStep:
+    """Get existing step or create new one"""
+    for step in steps:
+        if step["id"] == step_id:
+            return step
+    
+    new_step = {
+        "id": step_id,
+        "description": description,
+        "status": "pending",
+        "type": step_type,
+        "updates": [],
+        "result": None,
+        "metadata": {"start_time": datetime.now().isoformat()}
+    }
+    steps.append(new_step)
+    return new_step
+
+
+def mark_step_complete(step: OfferStep, result: Optional[Dict] = None):
+    """Mark a step as complete with optional result"""
+    step["status"] = "complete"
+    if result:
+        step["result"] = result
+    if "metadata" in step:
+        step["metadata"]["end_time"] = datetime.now().isoformat()
 
 class OfferManagerState(KigoProAgentState):
     """Extended state for offer management workflows"""
@@ -110,29 +150,20 @@ def determine_workflow_step(state: OfferManagerState) -> str:
     return current_step
 
 
-async def handle_goal_setting(state: OfferManagerState) -> Dict:
+async def handle_goal_setting(state: OfferManagerState, config: RunnableConfig) -> Dict:
     """Guide user through business goal setting and context gathering"""
     messages = state.get("messages", [])
     context = state.get("context", {})
     program_type = detect_program_type(context, messages)
 
-    # Initialize or update step tracking
+    # Get or create step
     steps = state.get("steps", [])
-    if not steps:
-        steps = [{
-            "id": "goal_setting",
-            "description": "Understanding your business objectives",
-            "status": "running",
-            "type": "goal_setting",
-            "updates": ["Analyzing your request..."],
-            "result": None
-        }]
-    else:
-        # Update existing step
-        for step in steps:
-            if step["id"] == "goal_setting":
-                step["status"] = "running"
-                step["updates"].append("Gathering context...")
+    goal_step = get_or_create_step(steps, "goal_setting", "Understanding your business objectives", "goal_setting")
+    goal_step["status"] = "running"
+    goal_step["updates"].append("🔍 Analyzing your request...")
+    
+    # Emit intermediate state
+    await emit_intermediate_state(config, {**state, "steps": steps})
 
     llm = get_llm()
 
@@ -141,6 +172,9 @@ async def handle_goal_setting(state: OfferManagerState) -> Dict:
     user_input = ""
     if latest_message and hasattr(latest_message, 'content'):
         user_input = str(latest_message.content)
+
+    goal_step["updates"].append("📝 Gathering context...")
+    await emit_intermediate_state(config, {**state, "steps": steps})
 
     system_prompt = f"""You are a Kigo Pro Offer Strategy Consultant helping merchants create effective promotional offers.
 
@@ -163,11 +197,12 @@ Ask 1-2 specific questions at a time to gather the information needed."""
 
     ai_response = AIMessage(content=response.content)
 
-    # Update step status
-    for step in steps:
-        if step["id"] == "goal_setting":
-            step["updates"].append("Goals captured")
-            step["result"] = {"program_type": program_type, "user_input": user_input}
+    # Mark step complete
+    goal_step["updates"].append("✅ Goals captured")
+    mark_step_complete(goal_step, {"program_type": program_type, "user_input": user_input})
+    
+    # Emit final state for this step
+    await emit_intermediate_state(config, {**state, "steps": steps, "messages": messages + [ai_response]})
 
     # Update state
     return {
@@ -181,7 +216,7 @@ Ask 1-2 specific questions at a time to gather the information needed."""
     }
 
 
-async def handle_offer_creation(state: OfferManagerState) -> Dict:
+async def handle_offer_creation(state: OfferManagerState, config: RunnableConfig) -> Dict:
     """AI-powered offer type and value recommendations"""
     messages = state.get("messages", [])
     business_objective = state.get("business_objective", "")
@@ -189,28 +224,17 @@ async def handle_offer_creation(state: OfferManagerState) -> Dict:
 
     # Track step progress
     steps = state.get("steps", [])
-
-    # Add or update offer_creation step
-    offer_step_exists = any(s["id"] == "offer_creation" for s in steps)
-    if not offer_step_exists:
-        steps.append({
-            "id": "offer_creation",
-            "description": "Creating offer recommendations",
-            "status": "running",
-            "type": "offer_creation",
-            "updates": ["Analyzing similar offers...", "Researching industry benchmarks..."],
-            "result": None
-        })
-    else:
-        for step in steps:
-            if step["id"] == "offer_creation":
-                step["status"] = "running"
-                step["updates"].append("Generating recommendations...")
-
+    
     # Mark previous step complete
     for step in steps:
-        if step["id"] == "goal_setting":
-            step["status"] = "complete"
+        if step["id"] == "goal_setting" and step["status"] != "complete":
+            mark_step_complete(step)
+
+    # Get or create offer creation step
+    offer_step = get_or_create_step(steps, "offer_creation", "Creating offer recommendations", "offer_creation")
+    offer_step["status"] = "running"
+    offer_step["updates"].append("🔍 Analyzing similar offers...")
+    await emit_intermediate_state(config, {**state, "steps": steps})
 
     llm = get_llm()
 
@@ -219,6 +243,15 @@ async def handle_offer_creation(state: OfferManagerState) -> Dict:
     user_input = ""
     if latest_message and hasattr(latest_message, 'content'):
         user_input = str(latest_message.content)
+
+    # Simulate research phase with updates
+    offer_step["updates"].append("📊 Researching industry benchmarks...")
+    await emit_intermediate_state(config, {**state, "steps": steps})
+    
+    await asyncio.sleep(0.3)  # Simulate thinking
+    
+    offer_step["updates"].append("🎯 Analyzing target audience fit...")
+    await emit_intermediate_state(config, {**state, "steps": steps})
 
     system_prompt = f"""You are a Kigo Pro Offer Design Specialist with expertise in promotional strategy.
 
@@ -251,11 +284,10 @@ Format your response as structured recommendations that can guide the merchant's
         "recommendations_provided": True,
     }
 
-    # Update step result
-    for step in steps:
-        if step["id"] == "offer_creation":
-            step["updates"].append("Recommendations generated")
-            step["result"] = offer_config
+    # Mark step complete
+    offer_step["updates"].append("✅ Recommendations generated")
+    mark_step_complete(offer_step, offer_config)
+    await emit_intermediate_state(config, {**state, "steps": steps, "messages": messages + [ai_response]})
 
     return {
         **state,
@@ -268,11 +300,25 @@ Format your response as structured recommendations that can guide the merchant's
     }
 
 
-async def handle_campaign_setup(state: OfferManagerState) -> Dict:
+async def handle_campaign_setup(state: OfferManagerState, config: RunnableConfig) -> Dict:
     """Guide campaign targeting and delivery configuration"""
     messages = state.get("messages", [])
     offer_config = state.get("offer_config", {})
     program_type = state.get("program_type", "general")
+    
+    # Track step progress
+    steps = state.get("steps", [])
+    
+    # Mark previous step complete
+    for step in steps:
+        if step["id"] == "offer_creation" and step["status"] != "complete":
+            mark_step_complete(step)
+    
+    # Get or create campaign setup step
+    campaign_step = get_or_create_step(steps, "campaign_setup", "Configuring campaign targeting", "campaign_setup")
+    campaign_step["status"] = "running"
+    campaign_step["updates"].append("🎯 Analyzing target audience...")
+    await emit_intermediate_state(config, {**state, "steps": steps})
     
     llm = get_llm()
     
@@ -281,6 +327,9 @@ async def handle_campaign_setup(state: OfferManagerState) -> Dict:
     user_input = ""
     if latest_message and hasattr(latest_message, 'content'):
         user_input = str(latest_message.content)
+    
+    campaign_step["updates"].append("📱 Determining optimal delivery channels...")
+    await emit_intermediate_state(config, {**state, "steps": steps})
     
     system_prompt = f"""You are a Kigo Pro Campaign Orchestration Specialist.
 
@@ -312,6 +361,10 @@ Ask clarifying questions about their campaign preferences."""
         "setup_complete": False,
     }
     
+    campaign_step["updates"].append("✅ Campaign configuration ready")
+    mark_step_complete(campaign_step, campaign_setup)
+    await emit_intermediate_state(config, {**state, "steps": steps, "messages": messages + [ai_response]})
+    
     return {
         **state,
         "messages": messages + [ai_response],
@@ -319,10 +372,11 @@ Ask clarifying questions about their campaign preferences."""
         "campaign_setup": campaign_setup,
         "current_phase": "campaign_setup",
         "progress_percentage": 60,
+        "steps": steps,
     }
 
 
-async def handle_validation(state: OfferManagerState) -> Dict:
+async def handle_validation(state: OfferManagerState, config: RunnableConfig) -> Dict:
     """Validate offer against brand guidelines and business rules"""
     messages = state.get("messages", [])
     offer_config = state.get("offer_config", {})
@@ -417,7 +471,7 @@ Be thorough but constructive."""
     }
 
 
-async def handle_approval_workflow(state: OfferManagerState) -> Dict:
+async def handle_approval_workflow(state: OfferManagerState, config: RunnableConfig) -> Dict:
     """Human-in-the-loop approval for offer launch"""
     messages = state.get("messages", [])
     offer_config = state.get("offer_config", {})
@@ -498,7 +552,7 @@ I've prepared your offer and campaign setup. Would you like me to proceed with l
     }
 
 
-async def handle_general_offer_assistance(state: OfferManagerState) -> Dict:
+async def handle_general_offer_assistance(state: OfferManagerState, config: RunnableConfig) -> Dict:
     """Handle general offer-related questions and assistance"""
     messages = state.get("messages", [])
     
@@ -551,25 +605,32 @@ async def offer_manager_agent(state: OfferManagerState, config: RunnableConfig) 
         
         print(f"[Offer Manager] 🎁 Program: {program_type}, Step: {current_step}")
         
-        # Route to appropriate handler
+        # Route to appropriate handler (now passing config for intermediate state emission)
         if current_step == "goal_setting":
-            return await handle_goal_setting({**state, "program_type": program_type})
+            return await handle_goal_setting({**state, "program_type": program_type}, config)
         elif current_step == "offer_creation":
-            return await handle_offer_creation(state)
+            return await handle_offer_creation(state, config)
         elif current_step == "campaign_setup":
-            return await handle_campaign_setup(state)
+            return await handle_campaign_setup(state, config)
         elif current_step == "validation":
-            return await handle_validation(state)
+            return await handle_validation(state, config)
         elif current_step == "approval":
-            return await handle_approval_workflow(state)
+            return await handle_approval_workflow(state, config)
         else:
-            return await handle_general_offer_assistance(state)
+            return await handle_general_offer_assistance(state, config)
             
     except Exception as e:
         # Top-level error handling for offer manager
         print(f"❌ [Offer Manager] Error: {e}")
         import traceback
         traceback.print_exc()
+        
+        # Update error step if it exists
+        steps = state.get("steps", [])
+        for step in steps:
+            if step["status"] == "running":
+                step["status"] = "error"
+                step["updates"].append(f"❌ Error: {str(e)}")
         
         error_message = AIMessage(
             content="I encountered an issue while helping with your offer. Let me try a different approach - could you tell me what you'd like to achieve with this offer?"
@@ -580,6 +641,7 @@ async def offer_manager_agent(state: OfferManagerState, config: RunnableConfig) 
             "messages": messages + [error_message],
             "workflow_step": "goal_setting",  # Reset to beginning
             "current_phase": "goal_setting",
+            "steps": steps,
             "error": str(e),
         }
 

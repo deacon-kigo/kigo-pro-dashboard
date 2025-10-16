@@ -1,140 +1,238 @@
 "use client";
 
+/**
+ * OfferProgressViewer - Perplexity-style expandable progress viewer
+ * Shows AI thinking steps in real-time with collapsible sections
+ */
+
 import React, { useState } from "react";
-import { Card } from "@/components/ui/card";
 import {
-  CheckCircleIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
-  ClockIcon,
-} from "@heroicons/react/24/outline";
-import { OfferStep } from "./types";
+  ChevronDown,
+  ChevronRight,
+  CheckCircle2,
+  Loader2,
+  XCircle,
+  Clock,
+} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+
+// Types matching backend OfferStep
+export interface OfferStep {
+  id: string;
+  description: string;
+  status: "pending" | "running" | "complete" | "error";
+  type: string;
+  updates: string[];
+  result?: Record<string, any>;
+  metadata?: {
+    start_time?: string;
+    end_time?: string;
+  };
+}
 
 interface OfferProgressViewerProps {
   steps: OfferStep[];
+  className?: string;
+  defaultCollapsed?: boolean;
 }
 
-export default function OfferProgressViewer({
+const StepStatusIcon: React.FC<{ status: OfferStep["status"] }> = ({
+  status,
+}) => {
+  switch (status) {
+    case "complete":
+      return <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />;
+    case "running":
+      return (
+        <Loader2 className="h-4 w-4 text-blue-500 animate-spin flex-shrink-0" />
+      );
+    case "error":
+      return <XCircle className="h-4 w-4 text-red-500 flex-shrink-0" />;
+    case "pending":
+      return <Clock className="h-4 w-4 text-gray-400 flex-shrink-0" />;
+    default:
+      return <Clock className="h-4 w-4 text-gray-400 flex-shrink-0" />;
+  }
+};
+
+const OfferStepItem: React.FC<{
+  step: OfferStep;
+  isExpanded: boolean;
+  onToggle: () => void;
+}> = ({ step, isExpanded, onToggle }) => {
+  const hasUpdates = step.updates && step.updates.length > 0;
+  const hasResult = step.result && Object.keys(step.result).length > 0;
+
+  return (
+    <div
+      className={cn(
+        "border-l-2 pl-4 py-3 transition-all",
+        step.status === "complete" && "border-green-500/30",
+        step.status === "running" && "border-blue-500",
+        step.status === "error" && "border-red-500/30",
+        step.status === "pending" && "border-gray-300"
+      )}
+    >
+      <button
+        onClick={onToggle}
+        className="flex items-start gap-3 w-full text-left hover:opacity-80 transition-opacity"
+      >
+        <StepStatusIcon status={step.status} />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span
+              className={cn(
+                "font-medium text-sm",
+                step.status === "complete" && "text-gray-700",
+                step.status === "running" && "text-blue-700",
+                step.status === "error" && "text-red-700",
+                step.status === "pending" && "text-gray-500"
+              )}
+            >
+              {step.description}
+            </span>
+          </div>
+          {step.status === "running" && step.updates.length > 0 && (
+            <p className="text-xs text-gray-600 mt-1 animate-pulse">
+              {step.updates[step.updates.length - 1]}
+            </p>
+          )}
+        </div>
+        {(hasUpdates || hasResult) && (
+          <div className="flex-shrink-0">
+            {isExpanded ? (
+              <ChevronDown className="h-4 w-4 text-gray-400" />
+            ) : (
+              <ChevronRight className="h-4 w-4 text-gray-400" />
+            )}
+          </div>
+        )}
+      </button>
+
+      {/* Expanded content */}
+      {isExpanded && (hasUpdates || hasResult) && (
+        <div className="mt-3 ml-7 space-y-2">
+          {/* Show all updates */}
+          {hasUpdates && (
+            <div className="space-y-1">
+              {step.updates.map((update, idx) => (
+                <div
+                  key={`${step.id}-update-${idx}`}
+                  className={cn(
+                    "text-xs py-1 px-2 rounded bg-gray-50 text-gray-600",
+                    idx === step.updates.length - 1 &&
+                      step.status === "running" &&
+                      "animate-pulse"
+                  )}
+                >
+                  {update}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Show result if complete */}
+          {hasResult && step.status === "complete" && (
+            <div className="text-xs bg-green-50 border border-green-200 rounded p-2">
+              <p className="font-medium text-green-800 mb-1">Result:</p>
+              <pre className="text-green-700 whitespace-pre-wrap overflow-x-auto">
+                {JSON.stringify(step.result, null, 2)}
+              </pre>
+            </div>
+          )}
+
+          {/* Show duration if available */}
+          {step.metadata?.start_time && step.metadata?.end_time && (
+            <div className="text-xs text-gray-500">
+              Duration:{" "}
+              {Math.round(
+                (new Date(step.metadata.end_time).getTime() -
+                  new Date(step.metadata.start_time).getTime()) /
+                  1000
+              )}
+              s
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export const OfferProgressViewer: React.FC<OfferProgressViewerProps> = ({
   steps,
-}: OfferProgressViewerProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  className,
+  defaultCollapsed = false,
+}) => {
+  const [expandedSteps, setExpandedSteps] = useState<Set<string>>(
+    new Set(
+      defaultCollapsed
+        ? []
+        : steps.filter((s) => s.status === "running").map((s) => s.id)
+    )
+  );
+
+  const toggleStep = (stepId: string) => {
+    setExpandedSteps((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(stepId)) {
+        newSet.delete(stepId);
+      } else {
+        newSet.add(stepId);
+      }
+      return newSet;
+    });
+  };
+
+  // Auto-expand running steps
+  React.useEffect(() => {
+    const runningStep = steps.find((s) => s.status === "running");
+    if (runningStep && !defaultCollapsed) {
+      setExpandedSteps((prev) => new Set([...prev, runningStep.id]));
+    }
+  }, [steps, defaultCollapsed]);
 
   if (!steps || steps.length === 0) {
     return null;
   }
 
-  // Calculate progress
-  const activeStep = steps.find((s) => s.status === "running");
   const completedCount = steps.filter((s) => s.status === "complete").length;
   const totalCount = steps.length;
-  const progress = Math.round((completedCount / totalCount) * 100);
 
   return (
-    <Card className="border-l-4 border-l-blue-500 shadow-sm overflow-hidden">
-      {/* Collapsed Header - Always Visible (Perplexity Pattern) */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
-      >
-        <div className="flex items-center gap-3">
-          {/* Animated Icon */}
-          {activeStep ? (
-            <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent" />
-          ) : (
-            <CheckCircleIcon className="w-5 h-5 text-green-600" />
-          )}
-
-          {/* Status Text */}
-          <div className="text-left">
-            <p className="text-sm font-medium text-gray-900">
-              {activeStep ? activeStep.description : "All steps complete"}
-            </p>
-            <p className="text-xs text-gray-500">
-              {completedCount} of {totalCount} steps • {progress}% complete
-            </p>
-          </div>
+    <Card className={cn("shadow-sm", className)}>
+      <CardContent className="pt-4 pb-3 px-4">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-semibold text-gray-700">AI Progress</h3>
+          <span className="text-xs text-gray-500">
+            {completedCount} of {totalCount} steps
+          </span>
         </div>
 
-        {/* Expand/Collapse Icon */}
-        {isExpanded ? (
-          <ChevronDownIcon className="h-5 w-5 text-gray-400" />
-        ) : (
-          <ChevronRightIcon className="h-5 w-5 text-gray-400" />
-        )}
-      </button>
-
-      {/* Expanded Content - Shows All Steps */}
-      {isExpanded && (
-        <div className="px-4 pb-4 border-t border-gray-200 bg-gray-50">
-          <div className="mt-4 space-y-1">
-            {steps.map((step, index) => (
-              <div key={step.id} className="flex gap-3">
-                {/* Step Icon Column */}
-                <div className="flex flex-col items-center pt-1">
-                  <div
-                    className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      step.status === "complete"
-                        ? "bg-green-600"
-                        : step.status === "running"
-                          ? "bg-blue-600"
-                          : "bg-gray-300"
-                    }`}
-                  >
-                    {step.status === "complete" ? (
-                      <CheckCircleIcon className="w-4 h-4 text-white" />
-                    ) : step.status === "running" ? (
-                      <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent" />
-                    ) : (
-                      <ClockIcon className="w-4 h-4 text-white" />
-                    )}
-                  </div>
-                  {/* Connector Line */}
-                  {index < steps.length - 1 && (
-                    <div className="w-0.5 h-full bg-gray-200 mt-1" />
-                  )}
-                </div>
-
-                {/* Step Details */}
-                <div className="flex-1 pb-4">
-                  <p className="text-sm font-medium text-gray-900">
-                    {step.description}
-                  </p>
-
-                  {/* Latest Update */}
-                  {step.updates && step.updates.length > 0 && (
-                    <p className="text-xs text-gray-600 mt-1">
-                      {step.updates[step.updates.length - 1]}
-                    </p>
-                  )}
-
-                  {/* Show all updates when expanded (only for active step) */}
-                  {step.status === "running" &&
-                    step.updates &&
-                    step.updates.length > 1 && (
-                      <div className="mt-2 pl-3 border-l-2 border-blue-200 space-y-1">
-                        {step.updates.slice(0, -1).map((update, idx) => (
-                          <p key={idx} className="text-xs text-gray-500">
-                            {update}
-                          </p>
-                        ))}
-                      </div>
-                    )}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Progress Bar */}
-          <div className="mt-4 pt-3 border-t border-gray-200">
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          </div>
+        {/* Progress bar */}
+        <div className="w-full bg-gray-200 rounded-full h-1.5 mb-4">
+          <div
+            className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
+            style={{ width: `${(completedCount / totalCount) * 100}%` }}
+          />
         </div>
-      )}
+
+        {/* Steps list */}
+        <div className="space-y-0">
+          {steps.map((step) => (
+            <OfferStepItem
+              key={step.id}
+              step={step}
+              isExpanded={expandedSteps.has(step.id)}
+              onToggle={() => toggleStep(step.id)}
+            />
+          ))}
+        </div>
+      </CardContent>
     </Card>
   );
-}
+};
+
+export default OfferProgressViewer;

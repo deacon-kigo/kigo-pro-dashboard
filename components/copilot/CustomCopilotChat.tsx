@@ -1,16 +1,23 @@
 "use client";
 
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { SparklesIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { toggleChat, setChatWidth } from "@/lib/redux/slices/uiSlice";
 import { CopilotSidebar } from "@copilotkit/react-ui";
 import type { WindowProps } from "@copilotkit/react-ui";
+import { usePathname } from "next/navigation";
+import { useCopilotContext } from "@copilotkit/react-core";
+import {
+  OfferProgressViewer,
+  OfferStep,
+} from "@/components/features/offer-manager/OfferProgressViewer";
 
 /**
- * Custom Window component for CopilotSidebar
+ * Custom Window component for CopilotSidebar with Progress Viewer
  * Overrides default positioning to integrate with our layout system
+ * Shows Perplexity-style thinking steps when on Offer Manager
  */
 const CustomWindow: React.FC<WindowProps & { children: React.ReactNode }> = ({
   children,
@@ -20,6 +27,30 @@ const CustomWindow: React.FC<WindowProps & { children: React.ReactNode }> = ({
 }) => {
   const dispatch = useAppDispatch();
   const { chatOpen, chatWidth } = useAppSelector((state) => state.ui);
+  const pathname = usePathname();
+  const context = useCopilotContext();
+
+  // Track steps from co-agent state
+  const [steps, setSteps] = useState<OfferStep[]>([]);
+
+  // Listen to state changes from offer_manager agent
+  useEffect(() => {
+    // Check if we're on offer manager page
+    const isOfferManager = pathname?.includes("offer-manager") || false;
+
+    if (isOfferManager) {
+      try {
+        const supervisorState = context.getState("supervisor");
+        if (supervisorState?.steps && Array.isArray(supervisorState.steps)) {
+          setSteps(supervisorState.steps);
+        }
+      } catch (error) {
+        // Context might not be available yet
+      }
+    } else {
+      setSteps([]);
+    }
+  }, [pathname, context]);
 
   // Resize state
   const [isResizing, setIsResizing] = useState(false);
@@ -107,6 +138,13 @@ const CustomWindow: React.FC<WindowProps & { children: React.ReactNode }> = ({
         >
           <XMarkIcon className="h-5 w-5 text-gray-600" />
         </button>
+
+        {/* Progress Viewer - Shows when we have steps */}
+        {steps && steps.length > 0 && (
+          <div className="border-b bg-gray-50 flex-shrink-0">
+            <OfferProgressViewer steps={steps} defaultCollapsed={false} />
+          </div>
+        )}
 
         {children}
       </div>

@@ -50,10 +50,10 @@ export default function OfferDetailsStep({
     <Card className="p-6 border border-gray-200 shadow-sm">
       <div className="mb-6">
         <h2 className="text-xl font-bold text-gray-900 mb-2">
-          Step 2: Offer Details
+          Step 2: Offer Type & Value
         </h2>
         <p className="text-sm text-gray-600">
-          Configure your offer type, value, and messaging
+          Configure your promotional offer settings
         </p>
       </div>
 

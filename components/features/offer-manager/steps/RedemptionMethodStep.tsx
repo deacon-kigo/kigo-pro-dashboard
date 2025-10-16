@@ -215,10 +215,10 @@ export default function RedemptionMethodStep({
 
         {/* Promo Code Configuration */}
         {formData.redemptionMethod === "promo_code" && (
-          <Card className="p-4 bg-gray-50 border border-gray-200">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">
+          <div className="pt-6 border-t border-gray-200">
+            <Label className="text-sm font-medium text-gray-900 mb-4 block">
               Promo Code Configuration
-            </h3>
+            </Label>
 
             {/* Code Type */}
             <div className="space-y-3 mb-4">
@@ -377,7 +377,7 @@ export default function RedemptionMethodStep({
                 )}
               </div>
             </div>
-          </Card>
+          </div>
         )}
       </div>
 

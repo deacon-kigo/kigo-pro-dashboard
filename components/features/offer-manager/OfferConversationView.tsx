@@ -1,136 +1,223 @@
 "use client";
 
+/**
+ * OfferConversationView - Chat interface for offer creation with markdown support
+ * Displays conversation history with rich formatting
+ */
+
 import React from "react";
-import { useCoAgent, useCopilotChat } from "@copilotkit/react-core";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { SparklesIcon } from "@heroicons/react/24/outline";
-import { OfferManagerState } from "./types";
+import { Message } from "@copilotkit/runtime-client-gql";
+import { User, Bot } from "lucide-react";
+import { cn } from "@/lib/utils";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
-export default function OfferConversationView() {
-  const { messages, append, isLoading } = useCopilotChat();
-  const { state } = useCoAgent<OfferManagerState>({
-    name: "supervisor",
-  });
+interface OfferConversationViewProps {
+  messages: Message[];
+  className?: string;
+}
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const message = formData.get("message") as string;
-
-    if (message.trim()) {
-      append({
-        role: "user",
-        content: message,
-      });
-      e.currentTarget.reset();
-    }
-  };
+const MessageBubble: React.FC<{
+  role: "user" | "assistant";
+  content: string;
+  timestamp?: string;
+}> = ({ role, content, timestamp }) => {
+  const isUser = role === "user";
 
   return (
-    <div className="space-y-4">
-      {/* Message Thread */}
-      <Card className="p-6 min-h-[500px] max-h-[600px] overflow-y-auto">
-        {(!messages || messages.length === 0) && (
-          <div className="flex flex-col items-center justify-center h-full text-center py-16">
-            <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-6">
-              <SparklesIcon className="w-8 h-8 text-blue-600" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">
-              What offer would you like to create?
-            </h3>
-            <p className="text-sm text-gray-600 max-w-md leading-relaxed">
-              Describe your goals in natural language. I'll help you create the
-              perfect promotional offer.
-            </p>
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200 max-w-md">
-              <p className="text-xs text-gray-700 font-medium mb-2">
-                Example prompts:
-              </p>
-              <ul className="text-xs text-gray-600 space-y-1 text-left">
-                <li>
-                  • "Create a 20% discount to boost Q4 sales for new customers"
-                </li>
-                <li>• "I need a cashback offer for loyal members"</li>
-                <li>• "Help me set up a seasonal promotion"</li>
-              </ul>
-            </div>
+    <div
+      className={cn(
+        "flex gap-3 mb-4",
+        isUser ? "justify-end" : "justify-start"
+      )}
+    >
+      {!isUser && (
+        <div className="flex-shrink-0 h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
+          <Bot className="h-4 w-4 text-white" />
+        </div>
+      )}
+
+      <div
+        className={cn(
+          "max-w-[75%] rounded-lg px-4 py-3 shadow-sm",
+          isUser
+            ? "bg-blue-600 text-white"
+            : "bg-white border border-gray-200 text-gray-800"
+        )}
+      >
+        {isUser ? (
+          <p className="text-sm whitespace-pre-wrap">{content}</p>
+        ) : (
+          <div className="prose prose-sm max-w-none">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                // Custom components for markdown rendering
+                h1: ({ children }) => (
+                  <h1 className="text-xl font-bold mb-3 text-gray-900">
+                    {children}
+                  </h1>
+                ),
+                h2: ({ children }) => (
+                  <h2 className="text-lg font-semibold mb-2 text-gray-800">
+                    {children}
+                  </h2>
+                ),
+                h3: ({ children }) => (
+                  <h3 className="text-base font-medium mb-2 text-gray-800">
+                    {children}
+                  </h3>
+                ),
+                p: ({ children }) => (
+                  <p className="mb-2 text-gray-700 leading-relaxed">
+                    {children}
+                  </p>
+                ),
+                ul: ({ children }) => (
+                  <ul className="list-disc list-inside mb-2 space-y-1">
+                    {children}
+                  </ul>
+                ),
+                ol: ({ children }) => (
+                  <ol className="list-decimal list-inside mb-2 space-y-1">
+                    {children}
+                  </ol>
+                ),
+                li: ({ children }) => (
+                  <li className="text-gray-700 text-sm">{children}</li>
+                ),
+                strong: ({ children }) => (
+                  <strong className="font-semibold text-gray-900">
+                    {children}
+                  </strong>
+                ),
+                em: ({ children }) => (
+                  <em className="italic text-gray-700">{children}</em>
+                ),
+                code: ({ children, className }) => {
+                  const isInline = !className;
+                  return isInline ? (
+                    <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs font-mono text-gray-800">
+                      {children}
+                    </code>
+                  ) : (
+                    <code className="block bg-gray-100 p-3 rounded text-xs font-mono overflow-x-auto text-gray-800">
+                      {children}
+                    </code>
+                  );
+                },
+                pre: ({ children }) => (
+                  <pre className="bg-gray-100 p-3 rounded overflow-x-auto mb-2">
+                    {children}
+                  </pre>
+                ),
+                blockquote: ({ children }) => (
+                  <blockquote className="border-l-4 border-blue-500 pl-4 italic text-gray-600 mb-2">
+                    {children}
+                  </blockquote>
+                ),
+                table: ({ children }) => (
+                  <div className="overflow-x-auto mb-2">
+                    <table className="min-w-full divide-y divide-gray-200 text-sm">
+                      {children}
+                    </table>
+                  </div>
+                ),
+                thead: ({ children }) => (
+                  <thead className="bg-gray-50">{children}</thead>
+                ),
+                tbody: ({ children }) => (
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {children}
+                  </tbody>
+                ),
+                th: ({ children }) => (
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {children}
+                  </th>
+                ),
+                td: ({ children }) => (
+                  <td className="px-3 py-2 text-sm text-gray-700">
+                    {children}
+                  </td>
+                ),
+              }}
+            >
+              {content}
+            </ReactMarkdown>
           </div>
         )}
+        {timestamp && (
+          <div
+            className={cn(
+              "text-xs mt-2",
+              isUser ? "text-blue-200" : "text-gray-400"
+            )}
+          >
+            {new Date(timestamp).toLocaleTimeString()}
+          </div>
+        )}
+      </div>
 
-        {/* Chat Messages */}
-        <div className="space-y-4">
-          {messages &&
-            messages.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-[80%] p-4 rounded-lg shadow-sm ${
-                    msg.role === "user"
-                      ? "bg-blue-600 text-white rounded-br-none"
-                      : "bg-gray-100 text-gray-900 rounded-bl-none border border-gray-200"
-                  }`}
-                >
-                  <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                    {msg.content}
-                  </p>
-                </div>
-              </div>
-            ))}
-
-          {/* AI Thinking Indicator (Perplexity Pattern) */}
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-gray-100 p-4 rounded-lg rounded-bl-none border border-gray-200 shadow-sm">
-                <div className="flex items-center gap-3">
-                  <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full" />
-                  <span className="text-sm text-gray-700">
-                    {state?.current_phase === "goal_setting" &&
-                      "Understanding your goals..."}
-                    {state?.current_phase === "offer_creation" &&
-                      "Creating recommendations..."}
-                    {state?.current_phase === "campaign_setup" &&
-                      "Setting up campaign..."}
-                    {state?.current_phase === "validation" &&
-                      "Validating offer..."}
-                    {state?.current_phase === "approval" &&
-                      "Preparing for approval..."}
-                    {!state?.current_phase && "Thinking..."}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
+      {isUser && (
+        <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center">
+          <User className="h-4 w-4 text-gray-600" />
         </div>
-      </Card>
-
-      {/* Single Input Field (Perplexity Style) */}
-      <form onSubmit={handleSubmit} className="flex gap-2">
-        <Input
-          name="message"
-          placeholder="Describe what you want to achieve with this offer..."
-          className="flex-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-          disabled={isLoading}
-          autoComplete="off"
-        />
-        <Button
-          type="submit"
-          disabled={isLoading}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6"
-        >
-          {isLoading ? (
-            <div className="flex items-center gap-2">
-              <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-              <span>Sending...</span>
-            </div>
-          ) : (
-            "Send"
-          )}
-        </Button>
-      </form>
+      )}
     </div>
   );
-}
+};
+
+export const OfferConversationView: React.FC<OfferConversationViewProps> = ({
+  messages,
+  className,
+}) => {
+  const conversationRef = React.useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom on new messages
+  React.useEffect(() => {
+    if (conversationRef.current) {
+      conversationRef.current.scrollTop = conversationRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  return (
+    <div
+      ref={conversationRef}
+      className={cn("overflow-y-auto space-y-4 p-4", className)}
+    >
+      {messages.length === 0 ? (
+        <div className="flex flex-col items-center justify-center h-full text-center py-12">
+          <Bot className="h-12 w-12 text-gray-300 mb-4" />
+          <h3 className="text-lg font-medium text-gray-600 mb-2">
+            Start Your Offer Journey
+          </h3>
+          <p className="text-sm text-gray-500 max-w-md">
+            Ask me anything about creating offers, campaign strategies, or best
+            practices. I'm here to help you build effective promotions!
+          </p>
+        </div>
+      ) : (
+        messages.map((msg, idx) => {
+          // Handle different message types from CopilotKit
+          const role = msg.role === "user" ? "user" : "assistant";
+          const content =
+            typeof msg.content === "string"
+              ? msg.content
+              : JSON.stringify(msg.content);
+
+          return (
+            <MessageBubble
+              key={`msg-${idx}-${msg.id || ""}`}
+              role={role}
+              content={content}
+              timestamp={msg.createdAt}
+            />
+          );
+        })
+      )}
+    </div>
+  );
+};
+
+export default OfferConversationView;

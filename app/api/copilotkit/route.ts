@@ -19,26 +19,48 @@ const anthropic = new Anthropic({
 });
 
 export const POST = async (req: NextRequest) => {
+  console.log("=".repeat(80));
+  console.log("🔵 [CopilotKit API] POST /api/copilotkit - REQUEST RECEIVED");
+  console.log("=".repeat(80));
+
   // Connect to your existing LangGraph supervisor workflow via FastAPI
+  const langGraphUrl =
+    process.env.REMOTE_ACTION_URL || "http://localhost:8000/copilotkit";
+  console.log(`🔗 [LangGraph URL]: ${langGraphUrl}`);
+
+  // Log request details
+  try {
+    const body = await req.clone().json();
+    console.log(`📨 Request body keys: ${Object.keys(body).join(", ")}`);
+    console.log(`💬 Messages count: ${body.messages?.length || 0}`);
+  } catch (e) {
+    console.log("⚠️  Could not parse request body");
+  }
+
   const runtime = new CopilotRuntime({
     agents: {
       supervisor: new LangGraphHttpAgent({
-        url:
-          process.env.REMOTE_ACTION_URL || "http://localhost:8000/copilotkit",
+        url: langGraphUrl,
       }),
     },
   });
+
+  console.log("🎯 CopilotRuntime created with supervisor agent");
 
   const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({
     runtime,
     serviceAdapter: new AnthropicAdapter({
       anthropic,
-      model: "claude-3-5-sonnet-20241022", // Claude 4 Sonnet latest version
+      model: "claude-3-5-sonnet-20241022",
     }),
     endpoint: "/api/copilotkit",
   });
 
-  return handleRequest(req);
+  console.log("✅ Calling handleRequest...");
+  const response = await handleRequest(req);
+  console.log(`📤 Response status: ${response.status}`);
+
+  return response;
 };
 
 // Handle CORS preflight requests
