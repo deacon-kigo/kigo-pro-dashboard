@@ -10,6 +10,7 @@ import {
   CalendarIcon,
   ChartBarIcon,
   GiftIcon,
+  ArrowLeftIcon,
 } from "@heroicons/react/24/outline";
 import {
   Stepper,
@@ -26,6 +27,11 @@ import RedemptionMethodStep from "@/components/features/offer-manager/steps/Rede
 import OfferManagerDashboard from "@/components/features/offer-manager/OfferManagerDashboard";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { toggleChat } from "@/lib/redux/slices/uiSlice";
+import {
+  setOfferCreationState,
+  setWorkflowPhase,
+  setFormData,
+} from "@/lib/redux/slices/offerManagerSlice";
 import { OfferAgentStateRenderer } from "@/components/features/offer-manager/OfferAgentStateRenderer";
 import { useCopilotReadable } from "@copilotkit/react-core";
 import { useOfferManagerAgent } from "@/lib/hooks/useOfferManagerAgent";
@@ -75,6 +81,13 @@ export default function OfferManagerView() {
   const handleStartCreation = () => {
     setIsCreatingOffer(true);
     setCurrentTab("goal");
+  };
+
+  const handleBackToDashboard = () => {
+    setIsCreatingOffer(false);
+    setCurrentTab("goal");
+    // Optionally reset form data
+    // setFormData({ ... reset to initial state ... });
   };
 
   const handleFormUpdate = (field: string, value: any) => {
@@ -141,6 +154,45 @@ export default function OfferManagerView() {
     console.log("Ask AI about:", field);
     // TODO: Trigger AI assistant for specific field
   };
+
+  // Sync state to Redux for context-aware AI assistant
+  React.useEffect(() => {
+    const workflowPhase = isCreatingOffer
+      ? currentTab === "goal"
+        ? "goal_setting"
+        : currentTab === "details"
+          ? "offer_configuration"
+          : currentTab === "redemption"
+            ? "redemption_setup"
+            : currentTab === "campaign"
+              ? "campaign_planning"
+              : "review_launch"
+      : "dashboard";
+
+    dispatch(
+      setOfferCreationState({
+        isCreatingOffer,
+        currentStep: currentTab,
+        workflowPhase,
+        formData: {
+          businessObjective: formData.businessObjective,
+          offerType: formData.offerType,
+          offerTitle: formData.offerTitle,
+          programType: formData.programType,
+          targetAudience: formData.targetAudience,
+        },
+      })
+    );
+  }, [
+    isCreatingOffer,
+    currentTab,
+    formData.businessObjective,
+    formData.offerType,
+    formData.offerTitle,
+    formData.programType,
+    formData.targetAudience,
+    dispatch,
+  ]);
 
   // Expose offer creation context to CopilotKit
   useCopilotReadable({
@@ -311,6 +363,15 @@ export default function OfferManagerView() {
 
                       {/* Action Buttons */}
                       <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleBackToDashboard}
+                          className="flex items-center gap-1 text-gray-600 hover:text-gray-900"
+                        >
+                          <ArrowLeftIcon className="h-4 w-4" />
+                          Back to Dashboard
+                        </Button>
                         <Button
                           variant="outline"
                           size="sm"

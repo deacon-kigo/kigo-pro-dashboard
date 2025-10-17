@@ -181,6 +181,105 @@ You are here to be a trusted advisor, not just a form-filler. Help merchants cre
 // Default export with no context
 export const OFFER_MANAGER_SYSTEM_PROMPT = generateSystemPrompt();
 
+/**
+ * Generate dynamic initial greeting based on workflow phase and context
+ */
+export function generateInitialGreeting(context?: {
+  workflowPhase?: string;
+  isCreatingOffer?: boolean;
+  currentStep?: string;
+  businessObjective?: string;
+  offerType?: string;
+  programType?: string;
+}) {
+  const {
+    workflowPhase = "dashboard",
+    isCreatingOffer = false,
+    currentStep = "",
+    businessObjective = "",
+    offerType = "",
+    programType = "",
+  } = context || {};
+
+  // Phase-specific greetings with context
+  const greetings: Record<string, string> = {
+    dashboard: `👋 Welcome to Offer Manager! I can help you:
+
+• **Create high-performing offers** with AI-powered recommendations
+• **Analyze existing campaigns** and identify optimization opportunities
+• **Get instant answers** about offer strategies and best practices
+
+Ready to create something amazing? Try:
+• "Create an offer for Q4 parts sales"
+• "I need to drive foot traffic next week"
+• "Help me optimize my holiday campaign"`,
+
+    goal_setting: `🎯 **Let's define your offer goals!**
+
+${businessObjective ? `I see you're working on: "${businessObjective}"\n\n` : ""}I'll help you craft the perfect offer strategy. Just tell me:
+
+• What's your main business objective?
+• When do you want to run this campaign?
+• Any specific audience or budget constraints?
+
+**Example:** "Increase Q4 parts sales by 15% targeting existing customers"
+
+I'll analyze your goal and recommend the optimal offer type, value, and timing!`,
+
+    offer_configuration: `⚙️ **Configuring your offer details**
+
+${offerType ? `Current offer type: **${offerType}**\n\n` : ""}I'm here to help you:
+
+• **Validate** your offer configuration for best practices
+• **Suggest** compelling titles and descriptions
+• **Estimate** performance based on similar campaigns
+• **Check** brand compliance and feasibility
+
+Need help refining any aspect? Just ask!
+**Try:** "Is this offer value competitive?" or "Suggest a better title"`,
+
+    redemption_setup: `💳 **Setting up redemption method**
+
+I'll help you choose the best way for customers to redeem this offer:
+
+• **Promo Codes** - Simple codes for online/in-store
+• **QR Codes** - Scan and save for easy redemption  
+• **Direct Links** - Click-to-activate URLs
+• **Barcode Scan** - POS integration
+
+**Ask me:** "Which redemption method works best for my merchants?" or "Generate promo codes for this campaign"`,
+
+    campaign_planning: `📅 **Planning your campaign delivery**
+
+${businessObjective ? `Objective: ${businessObjective}\n\n` : ""}Let's optimize your campaign targeting and timing:
+
+• **Who** should receive this offer? (audience targeting)
+• **When** should it launch? (optimal timing)
+• **Where** should it appear? (distribution channels)
+• **How much** will it cost? (budget forecasting)
+
+**Try asking:** "When's the best time to launch?" or "Help me target the right audience"`,
+
+    review_launch: `🚀 **Ready to launch!**
+
+${offerType ? `${offerType} offer configured and ready\n\n` : ""}I'll run final checks before launch:
+
+✓ Validate all configurations
+✓ Check brand compliance  
+✓ Forecast campaign performance
+✓ Estimate budget impact
+
+**Ask me:** "Run a final validation" or "What's the expected ROI?"
+When everything looks good, I'll help you launch! 🎉`,
+  };
+
+  return (
+    greetings[workflowPhase] ||
+    greetings.dashboard ||
+    "How can I help you today?"
+  );
+}
+
 export const OFFER_MANAGER_CONTEXT_PROMPT = (workflowPhase: string) => {
   const phaseGuidance = {
     dashboard: `The merchant is on the dashboard. Offer to help them create a new offer or analyze existing campaign performance.`,

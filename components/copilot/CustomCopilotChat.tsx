@@ -15,6 +15,7 @@ import {
 } from "@/components/features/offer-manager/OfferProgressViewer";
 import {
   generateSystemPrompt,
+  generateInitialGreeting,
   OFFER_MANAGER_CONTEXT_PROMPT,
 } from "@/lib/copilot-kit/offer-manager-prompts";
 
@@ -159,19 +160,47 @@ const CustomWindow: React.FC<WindowProps & { children?: React.ReactNode }> = ({
 export function CustomCopilotChat() {
   const dispatch = useAppDispatch();
   const { chatOpen } = useAppSelector((state) => state.ui);
+  const offerManagerState = useAppSelector((state) => state.offerManager);
   const pathname = usePathname();
 
-  // Dynamic instructions based on current page with context
+  // Dynamic instructions and greetings based on current page and context
   const isOfferManager = pathname?.includes("offer-manager");
 
-  // TODO: Get actual user name and program type from app state/context
+  // Generate dynamic context for prompts from Redux state
+  const offerContext = React.useMemo(() => {
+    if (!isOfferManager) {
+      return {
+        workflowPhase: "dashboard",
+        isCreatingOffer: false,
+        businessObjective: "",
+        offerType: "",
+        programType: "",
+      };
+    }
+
+    return {
+      workflowPhase: offerManagerState.workflowPhase,
+      isCreatingOffer: offerManagerState.isCreatingOffer,
+      currentStep: offerManagerState.currentStep,
+      businessObjective: offerManagerState.formData.businessObjective,
+      offerType: offerManagerState.formData.offerType,
+      programType: offerManagerState.formData.programType,
+    };
+  }, [isOfferManager, offerManagerState]);
+
+  // Generate dynamic system prompt with context
   const instructions = isOfferManager
     ? generateSystemPrompt({
-        userName: undefined, // Will use default "there"
-        programType: undefined, // Will use default "your program"
-        currentPhase: "dashboard", // Can be extracted from URL or state
+        userName: undefined,
+        programType: offerContext.programType || undefined,
+        currentPhase: offerContext.workflowPhase,
       })
     : "You are an AI assistant for Kigo Pro, a marketing campaign management platform. Help users with campaign creation, optimization, and insights.";
+
+  // Generate dynamic initial greeting
+  const initialGreeting = isOfferManager
+    ? generateInitialGreeting(offerContext)
+    : "Hi! I'm your AI assistant for Kigo Pro. How can I help you today?";
 
   // Handle toggle
   const handleToggle = useCallback(() => {
@@ -206,8 +235,7 @@ export function CustomCopilotChat() {
         instructions={instructions}
         labels={{
           title: "Kigo Pro AI Assistant",
-          initial:
-            "Hi! I'm your AI assistant. I can help you create optimized offers with step-by-step guidance.\n\nTry saying something like:\n• 'Create offer for Q4 parts sales'\n• 'I need to drive foot traffic next month'\n• 'Help me with holiday promotions'\n\nWhat would you like to create today?",
+          initial: initialGreeting,
         }}
         defaultOpen={chatOpen}
         clickOutsideToClose={false}
