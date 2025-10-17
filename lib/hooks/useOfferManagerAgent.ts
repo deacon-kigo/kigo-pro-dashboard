@@ -3,9 +3,7 @@
 import React from "react";
 import { useCopilotAction } from "@copilotkit/react-core";
 import { z } from "zod";
-import { ThinkingSteps } from "@/components/features/offer-manager/ThinkingSteps";
-import { Card } from "@/components/ui/card";
-import { CheckCircleIcon } from "@heroicons/react/24/outline";
+import { OfferRecommendationWithApproval } from "@/components/features/offer-manager/OfferRecommendationWithApproval";
 
 export function useOfferManagerAgent() {
   // Action with Render: Analyze business objective with custom UI
@@ -52,98 +50,12 @@ export function useOfferManagerAgent() {
       if (status !== "inProgress" && status !== "complete") {
         return "";
       }
-      const thinking_steps = [
-        {
-          id: "step-1",
-          title: "Understanding Business Context",
-          status:
-            status === "complete"
-              ? ("completed" as const)
-              : ("in_progress" as const),
-          reasoning: `Analyzing objective: "${args.business_objective}" for ${args.program_type} program`,
-        },
-        {
-          id: "step-2",
-          title: "Researching Historical Performance",
-          status:
-            status === "complete"
-              ? ("completed" as const)
-              : ("pending" as const),
-          reasoning: "Reviewing similar campaigns to identify success patterns",
-        },
-        {
-          id: "step-3",
-          title: "Calculating Optimal Offer Value",
-          status:
-            status === "complete"
-              ? ("completed" as const)
-              : ("pending" as const),
-          reasoning: "Running predictive models to find the sweet spot for ROI",
-        },
-      ];
 
-      return React.createElement(
-        "div",
-        { className: "space-y-3 my-4" },
-        React.createElement(ThinkingSteps, {
-          steps: thinking_steps,
-          currentPhase: "Analyzing your objective",
-        }),
-        status === "complete" &&
-          React.createElement(
-            Card,
-            {
-              className:
-                "p-4 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200",
-            },
-            React.createElement(
-              "div",
-              { className: "flex items-start gap-3" },
-              React.createElement(
-                "div",
-                {
-                  className:
-                    "flex items-center justify-center w-8 h-8 bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg flex-shrink-0",
-                },
-                React.createElement(CheckCircleIcon, {
-                  className: "w-5 h-5 text-white",
-                })
-              ),
-              React.createElement(
-                "div",
-                { className: "flex-1" },
-                React.createElement(
-                  "h4",
-                  { className: "text-sm font-bold text-gray-900 mb-2" },
-                  "💡 AI Recommendation"
-                ),
-                React.createElement(
-                  "div",
-                  { className: "mb-2" },
-                  React.createElement(
-                    "span",
-                    { className: "text-xs text-gray-600" },
-                    "Offer Type:"
-                  ),
-                  React.createElement(
-                    "div",
-                    { className: "text-sm font-semibold text-gray-900" },
-                    "Discount Percentage (15% off)"
-                  )
-                ),
-                React.createElement(
-                  "div",
-                  { className: "mt-3 p-3 bg-white/60 rounded-lg" },
-                  React.createElement(
-                    "div",
-                    { className: "text-xs text-gray-700" },
-                    "Based on historical data, a 15% discount drives optimal incremental revenue while maintaining healthy margins. This value converts 23% better than smaller discounts for this goal."
-                  )
-                )
-              )
-            )
-          )
-      );
+      return React.createElement(OfferRecommendationWithApproval, {
+        businessObjective: args.business_objective || "",
+        programType: args.program_type || "closed_loop",
+        status: status as "inProgress" | "complete",
+      });
     },
   });
 
