@@ -1,7 +1,7 @@
 "use client";
 
 import { CopilotKit } from "@copilotkit/react-core";
-import { ReactNode, useState, useEffect } from "react";
+import { ReactNode, useState, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useCopilotReadable } from "@copilotkit/react-core";
@@ -36,21 +36,13 @@ function NavigationBridge() {
   const { approval, handleApprove, handleReject, closeApproval } =
     useApprovalFlow();
 
-  console.log("[NavigationBridge] 🚀 Current context:", {
-    pathname,
-    isLoading: uiState.isLoading,
-    hasAds: campaignState.formData?.ads?.length || 0,
-  });
-
   // DEMO MODE: Re-enable frontend actions for demo presentation
   useCopilotActions(); // Re-enabled for demo - provides immediate action execution
   useMarketingInsightsCopilot(); // Marketing insights and behavioral analysis actions
 
-  // Provide comprehensive context to CopilotKit
-  useCopilotReadable({
-    description:
-      "Complete application state and user context for intelligent assistance",
-    value: {
+  // Memoize context to prevent infinite re-renders
+  const contextValue = useMemo(
+    () => ({
       currentPage: pathname,
       userRole: "admin",
       isLoading: uiState.isLoading,
@@ -70,7 +62,24 @@ function NavigationBridge() {
 
       // Page-specific context
       pageContext: getPageContext(pathname),
-    },
+    }),
+    [
+      pathname,
+      uiState.isLoading,
+      uiState.notifications,
+      uiState.activeModal,
+      campaignState.currentStep,
+      campaignState.formData?.ads,
+      campaignState.formData?.budget,
+      campaignState.formData?.basicInfo,
+    ]
+  );
+
+  // Provide comprehensive context to CopilotKit
+  useCopilotReadable({
+    description:
+      "Complete application state and user context for intelligent assistance",
+    value: contextValue,
   });
 
   return (
@@ -169,7 +178,7 @@ function CopilotKitProviderContent({ children }: CopilotKitProviderProps) {
         process.env.NEXT_PUBLIC_COPILOT_RUNTIME_URL || "/api/copilotkit"
       }
       publicLicenseKey="ck_pub_38a9ca0c90205195eb563fd031212b9e"
-      showDevConsole={true} // Enable dev console for debugging
+      showDevConsole={false} // Disabled to prevent polling loops
     >
       {children}
 

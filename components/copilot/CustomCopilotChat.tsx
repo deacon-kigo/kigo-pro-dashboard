@@ -13,6 +13,10 @@ import {
   OfferProgressViewer,
   OfferStep,
 } from "@/components/features/offer-manager/OfferProgressViewer";
+import {
+  OFFER_MANAGER_SYSTEM_PROMPT,
+  OFFER_MANAGER_CONTEXT_PROMPT,
+} from "@/lib/copilot-kit/offer-manager-prompts";
 
 /**
  * Custom Window component for CopilotSidebar with Progress Viewer
@@ -39,18 +43,13 @@ const CustomWindow: React.FC<WindowProps & { children: React.ReactNode }> = ({
     const isOfferManager = pathname?.includes("offer-manager") || false;
 
     if (isOfferManager) {
-      try {
-        const supervisorState = context.getState("supervisor");
-        if (supervisorState?.steps && Array.isArray(supervisorState.steps)) {
-          setSteps(supervisorState.steps);
-        }
-      } catch (error) {
-        // Context might not be available yet
-      }
+      // TODO: Re-enable when LangGraph agent state is properly configured
+      // For now, steps are empty
+      setSteps([]);
     } else {
       setSteps([]);
     }
-  }, [pathname, context]);
+  }, [pathname]);
 
   // Resize state
   const [isResizing, setIsResizing] = useState(false);
@@ -160,6 +159,13 @@ const CustomWindow: React.FC<WindowProps & { children: React.ReactNode }> = ({
 export function CustomCopilotChat() {
   const dispatch = useAppDispatch();
   const { chatOpen } = useAppSelector((state) => state.ui);
+  const pathname = usePathname();
+
+  // Dynamic instructions based on current page
+  const isOfferManager = pathname?.includes("offer-manager");
+  const instructions = isOfferManager
+    ? OFFER_MANAGER_SYSTEM_PROMPT
+    : "You are an AI assistant for Kigo Pro, a marketing campaign management platform. Help users with campaign creation, optimization, and insights.";
 
   // Handle toggle
   const handleToggle = useCallback(() => {
@@ -191,11 +197,11 @@ export function CustomCopilotChat() {
 
       {/* CopilotSidebar with custom Window component */}
       <CopilotSidebar
-        instructions="You are an AI assistant for Kigo Pro, a marketing campaign management platform. Help users with campaign creation, optimization, and insights."
+        instructions={instructions}
         labels={{
           title: "Kigo Pro AI Assistant",
           initial:
-            "Hi! I'm your AI assistant. How can I help you with your campaigns today?",
+            "Hi! I'm your AI assistant. I can help you create optimized offers with step-by-step guidance. What would you like to create today?",
         }}
         defaultOpen={chatOpen}
         clickOutsideToClose={false}
