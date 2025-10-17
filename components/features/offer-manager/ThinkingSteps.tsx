@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { CheckCircleIcon, SparklesIcon } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
 
-interface ThinkingStep {
+export interface Step {
   id: string;
   title: string;
   status: "pending" | "in_progress" | "completed";
@@ -14,7 +14,7 @@ interface ThinkingStep {
 }
 
 interface ThinkingStepsProps {
-  steps: ThinkingStep[];
+  steps: Step[];
   currentPhase: string;
 }
 
@@ -22,47 +22,73 @@ export function ThinkingSteps({ steps, currentPhase }: ThinkingStepsProps) {
   if (steps.length === 0) return null;
 
   return (
-    <Card className="p-4 bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-200">
-      <div className="flex items-center gap-2 mb-4">
-        <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg">
-          <SparklesIcon className="w-5 h-5 text-white" />
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+    >
+      <Card
+        className="p-4 border border-blue-200 shadow-sm"
+        style={{ backgroundColor: "#EFF6FF" }}
+      >
+        <div className="flex items-center gap-3 mb-4">
+          <div
+            className="flex items-center justify-center w-10 h-10 rounded-lg shadow-md flex-shrink-0"
+            style={{
+              background: "linear-gradient(to bottom right, #2563EB, #4F46E5)",
+            }}
+          >
+            <SparklesIcon className="w-5 h-5" style={{ color: "#FFFFFF" }} />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900">
+              AI Assistant
+            </h3>
+            <p className="text-xs text-gray-600">{currentPhase}</p>
+          </div>
         </div>
-        <div>
-          <h3 className="text-sm font-bold text-gray-900">AI Assistant</h3>
-          <p className="text-xs text-gray-600">{currentPhase}</p>
-        </div>
-      </div>
 
-      <div className="space-y-3">
-        <AnimatePresence>
-          {steps.map((step, index) => (
-            <motion.div
-              key={step.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <ThinkingStepItem step={step} />
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
-    </Card>
+        <div className="space-y-3">
+          <AnimatePresence>
+            {steps.map((step, index) => (
+              <motion.div
+                key={step.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                transition={{
+                  delay: index * 0.3,
+                  duration: 0.4,
+                  ease: "easeOut",
+                }}
+              >
+                <ThinkingStepItem step={step} />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      </Card>
+    </motion.div>
   );
 }
 
-function ThinkingStepItem({ step }: { step: ThinkingStep }) {
+function ThinkingStepItem({ step }: { step: Step }) {
   return (
     <div className="flex gap-3">
       {/* Status Indicator */}
       <div className="flex-shrink-0 pt-1">
         {step.status === "completed" ? (
-          <CheckCircleIcon className="w-5 h-5 text-green-600" />
+          <CheckCircleIcon className="w-5 h-5" style={{ color: "#059669" }} />
         ) : step.status === "in_progress" ? (
-          <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <div
+            className="w-5 h-5 border-2 rounded-full animate-spin"
+            style={{ borderColor: "#2563EB", borderTopColor: "transparent" }}
+          />
         ) : (
-          <div className="w-5 h-5 border-2 border-gray-300 rounded-full" />
+          <div
+            className="w-5 h-5 border-2 rounded-full"
+            style={{ borderColor: "#D1D5DB" }}
+          />
         )}
       </div>
 
@@ -81,13 +107,13 @@ function ThinkingStepItem({ step }: { step: ThinkingStep }) {
         </div>
 
         {step.reasoning && (
-          <div className="mt-1 text-xs text-gray-600 bg-white/60 rounded p-2">
+          <div className="mt-1 text-xs text-gray-700 bg-gray-50 rounded p-2 border border-gray-100">
             {step.reasoning}
           </div>
         )}
 
         {step.result && (
-          <div className="mt-2 p-3 bg-white rounded-lg border border-gray-200">
+          <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
             <div className="text-xs font-semibold text-gray-700 mb-1">
               Recommendation:
             </div>

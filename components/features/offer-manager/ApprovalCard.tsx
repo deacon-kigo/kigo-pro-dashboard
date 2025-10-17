@@ -4,6 +4,7 @@ import React from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
+import { motion } from "framer-motion";
 
 export interface ApprovalCardProps {
   title?: string;
@@ -29,38 +30,67 @@ export function ApprovalCard({
   isProcessing = false,
 }: ApprovalCardProps) {
   return (
-    <Card className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 mt-4">
-      <div className="space-y-3">
-        <div className="flex items-start gap-3">
-          <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex-shrink-0">
-            <CheckCircleIcon className="w-5 h-5 text-white" />
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut", delay: 0.3 }}
+    >
+      <Card
+        className="p-4 border border-indigo-200 shadow-sm mt-4"
+        style={{ backgroundColor: "#EEF2FF" }}
+      >
+        <div className="space-y-3">
+          <div className="flex items-start gap-3">
+            <div
+              className="flex items-center justify-center w-10 h-10 rounded-lg shadow-md flex-shrink-0"
+              style={{
+                background:
+                  "linear-gradient(to bottom right, #2563EB, #4F46E5)",
+              }}
+            >
+              <CheckCircleIcon
+                className="w-5 h-5"
+                style={{ color: "#FFFFFF" }}
+              />
+            </div>
+            <div className="flex-1">
+              <h4 className="text-sm font-semibold text-gray-900 mb-1">
+                {title}
+              </h4>
+              <p className="text-xs text-gray-600">{description}</p>
+            </div>
           </div>
-          <div className="flex-1">
-            <h4 className="text-sm font-bold text-gray-900 mb-1">{title}</h4>
-            <p className="text-xs text-gray-600">{description}</p>
-          </div>
-        </div>
 
-        <div className="flex gap-2 pt-2">
-          <Button
-            onClick={onApprove}
-            disabled={isProcessing}
-            className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
-          >
-            <CheckCircleIcon className="w-4 h-4 mr-2" />
-            {isProcessing ? "Processing..." : approveText}
-          </Button>
-          <Button
-            onClick={onReject}
-            disabled={isProcessing}
-            variant="outline"
-            className="flex-1 border-red-200 hover:bg-red-50 text-red-700"
-          >
-            <XCircleIcon className="w-4 h-4 mr-2" />
-            {rejectText}
-          </Button>
+          <div className="flex gap-2 pt-2">
+            <Button
+              onClick={onApprove}
+              disabled={isProcessing}
+              className="flex-1 text-white shadow-sm"
+              style={{
+                background: "linear-gradient(to right, #059669, #10B981)",
+              }}
+            >
+              <CheckCircleIcon
+                className="w-4 h-4 mr-2"
+                style={{ color: "#FFFFFF" }}
+              />
+              {isProcessing ? "Processing..." : approveText}
+            </Button>
+            <Button
+              onClick={onReject}
+              disabled={isProcessing}
+              variant="outline"
+              className="flex-1 border-gray-300 hover:bg-gray-50 text-gray-700"
+            >
+              <XCircleIcon
+                className="w-4 h-4 mr-2"
+                style={{ color: "#6B7280" }}
+              />
+              {rejectText}
+            </Button>
+          </div>
         </div>
-      </div>
-    </Card>
+      </Card>
+    </motion.div>
   );
 }

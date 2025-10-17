@@ -14,7 +14,7 @@ import {
   OfferStep,
 } from "@/components/features/offer-manager/OfferProgressViewer";
 import {
-  OFFER_MANAGER_SYSTEM_PROMPT,
+  generateSystemPrompt,
   OFFER_MANAGER_CONTEXT_PROMPT,
 } from "@/lib/copilot-kit/offer-manager-prompts";
 
@@ -23,7 +23,7 @@ import {
  * Overrides default positioning to integrate with our layout system
  * Shows Perplexity-style thinking steps when on Offer Manager
  */
-const CustomWindow: React.FC<WindowProps & { children: React.ReactNode }> = ({
+const CustomWindow: React.FC<WindowProps & { children?: React.ReactNode }> = ({
   children,
   clickOutsideToClose,
   hitEscapeToClose,
@@ -161,10 +161,16 @@ export function CustomCopilotChat() {
   const { chatOpen } = useAppSelector((state) => state.ui);
   const pathname = usePathname();
 
-  // Dynamic instructions based on current page
+  // Dynamic instructions based on current page with context
   const isOfferManager = pathname?.includes("offer-manager");
+
+  // TODO: Get actual user name and program type from app state/context
   const instructions = isOfferManager
-    ? OFFER_MANAGER_SYSTEM_PROMPT
+    ? generateSystemPrompt({
+        userName: undefined, // Will use default "there"
+        programType: undefined, // Will use default "your program"
+        currentPhase: "dashboard", // Can be extracted from URL or state
+      })
     : "You are an AI assistant for Kigo Pro, a marketing campaign management platform. Help users with campaign creation, optimization, and insights.";
 
   // Handle toggle
@@ -201,11 +207,10 @@ export function CustomCopilotChat() {
         labels={{
           title: "Kigo Pro AI Assistant",
           initial:
-            "Hi! I'm your AI assistant. I can help you create optimized offers with step-by-step guidance. What would you like to create today?",
+            "Hi! I'm your AI assistant. I can help you create optimized offers with step-by-step guidance.\n\nTry saying something like:\n• 'Create offer for Q4 parts sales'\n• 'I need to drive foot traffic next month'\n• 'Help me with holiday promotions'\n\nWhat would you like to create today?",
         }}
         defaultOpen={chatOpen}
         clickOutsideToClose={false}
-        showResponseButton={false}
         onSetOpen={(open) => {
           if (!open) {
             dispatch(toggleChat());

@@ -159,29 +159,61 @@ const quickStats = [
   { label: "Revenue (30d)", value: "$145.2K", change: "+24%", trend: "up" },
 ];
 
-const getStatusColor = (status: string) => {
+const getStatusStyle = (status: string) => {
   switch (status) {
     case "active":
-      return "bg-green-100 text-green-800 border-green-200";
+      return {
+        backgroundColor: "#D1FAE5",
+        color: "#065F46",
+        borderColor: "#A7F3D0",
+      };
     case "draft":
-      return "bg-orange-100 text-orange-800 border-orange-200";
+      return {
+        backgroundColor: "#FEF3C7",
+        color: "#92400E",
+        borderColor: "#FDE68A",
+      };
     case "scheduled":
-      return "bg-purple-100 text-purple-800 border-purple-200";
+      return {
+        backgroundColor: "#E9D5FF",
+        color: "#6B21A8",
+        borderColor: "#D8B4FE",
+      };
     case "paused":
-      return "bg-gray-100 text-gray-800 border-gray-200";
+      return {
+        backgroundColor: "#F3F4F6",
+        color: "#1F2937",
+        borderColor: "#E5E7EB",
+      };
     default:
-      return "bg-gray-100 text-gray-800 border-gray-200";
+      return {
+        backgroundColor: "#F3F4F6",
+        color: "#1F2937",
+        borderColor: "#E5E7EB",
+      };
   }
 };
 
-const getProgramColor = (programType: string) => {
+const getProgramStyle = (programType: string) => {
   switch (programType) {
     case "john_deere":
-      return "bg-green-50 text-green-700 border-green-200";
+      return {
+        backgroundColor: "#ECFDF5",
+        color: "#047857",
+        borderColor: "#A7F3D0",
+      };
     case "yardi":
-      return "bg-blue-50 text-blue-700 border-blue-200";
+      return {
+        backgroundColor: "#EFF6FF",
+        color: "#1D4ED8",
+        borderColor: "#BFDBFE",
+      };
     default:
-      return "bg-gray-50 text-gray-700 border-gray-200";
+      return {
+        backgroundColor: "#F9FAFB",
+        color: "#374151",
+        borderColor: "#E5E7EB",
+      };
   }
 };
 
@@ -209,7 +241,7 @@ export default function OfferManagerDashboard({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <GiftIcon className="h-7 w-7 text-blue-600" />
+            <GiftIcon className="h-7 w-7" style={{ color: "#2563EB" }} />
             Offer Manager
           </h1>
           <p className="text-sm text-gray-600 mt-1">
@@ -226,9 +258,15 @@ export default function OfferManagerDashboard({
           </Button>
           <Button
             onClick={onCreateOffer}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="text-white shadow-sm"
+            style={{
+              background: "linear-gradient(to right, #2563EB, #3B82F6)",
+            }}
           >
-            <SparklesIcon className="h-4 w-4 mr-2" />
+            <SparklesIcon
+              className="h-4 w-4 mr-2"
+              style={{ color: "#FFFFFF" }}
+            />
             Create New Offer
           </Button>
         </div>
@@ -245,9 +283,8 @@ export default function OfferManagerDashboard({
               <div className="flex items-baseline gap-2">
                 <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
                 <div
-                  className={`flex items-center gap-0.5 text-xs font-medium ${
-                    stat.trend === "up" ? "text-green-600" : "text-red-600"
-                  }`}
+                  className="flex items-center gap-0.5 text-xs font-medium"
+                  style={{ color: stat.trend === "up" ? "#059669" : "#DC2626" }}
                 >
                   {stat.trend === "up" ? (
                     <ArrowTrendingUpIcon className="h-3 w-3" />
@@ -341,7 +378,7 @@ export default function OfferManagerDashboard({
         {/* Top Performers */}
         <Card className="p-6 border border-gray-200 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
-            <FireIcon className="h-5 w-5 text-orange-500" />
+            <FireIcon className="h-5 w-5" style={{ color: "#F97316" }} />
             <h3 className="text-base font-semibold text-gray-900">
               Top Performers
             </h3>
@@ -350,9 +387,20 @@ export default function OfferManagerDashboard({
             {mockOffers.slice(0, 3).map((offer, index) => (
               <div
                 key={offer.id}
-                className="flex items-start gap-3 p-3 rounded-lg bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-100"
+                className="flex items-start gap-3 p-3 rounded-lg border"
+                style={{
+                  background: "linear-gradient(to right, #EFF6FF, #FAF5FF)",
+                  borderColor: "#DBEAFE",
+                }}
               >
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white text-sm font-bold flex-shrink-0">
+                <div
+                  className="flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold flex-shrink-0 shadow-md"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom right, #3B82F6, #9333EA)",
+                    color: "#FFFFFF",
+                  }}
+                >
                   {index + 1}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -530,8 +578,17 @@ export default function OfferManagerDashboard({
                 {/* Offer Info - 5 cols */}
                 <div className="lg:col-span-5">
                   <div className="flex items-start gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-md">
-                      <GiftIcon className="h-6 w-6 text-white" />
+                    <div
+                      className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md"
+                      style={{
+                        background:
+                          "linear-gradient(to bottom right, #3B82F6, #9333EA)",
+                      }}
+                    >
+                      <GiftIcon
+                        className="h-6 w-6"
+                        style={{ color: "#FFFFFF" }}
+                      />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold text-gray-900 truncate">
@@ -543,7 +600,8 @@ export default function OfferManagerDashboard({
                       <div className="flex items-center gap-2 mt-2">
                         <Badge
                           variant="outline"
-                          className={`${getProgramColor(offer.programType)} text-xs px-2 py-0.5 font-medium`}
+                          className="text-xs px-2 py-0.5 font-medium border"
+                          style={getProgramStyle(offer.programType)}
                         >
                           {offer.programLabel}
                         </Badge>
@@ -562,7 +620,8 @@ export default function OfferManagerDashboard({
                 <div className="lg:col-span-2">
                   <Badge
                     variant="outline"
-                    className={`${getStatusColor(offer.status)} font-semibold capitalize`}
+                    className="font-semibold capitalize border"
+                    style={getStatusStyle(offer.status)}
                   >
                     {offer.status}
                   </Badge>
@@ -591,7 +650,10 @@ export default function OfferManagerDashboard({
                     </div>
                     <div className="h-10 w-px bg-gray-200" />
                     <div>
-                      <p className="text-lg font-bold text-blue-600">
+                      <p
+                        className="text-lg font-bold"
+                        style={{ color: "#2563EB" }}
+                      >
                         {offer.ctr}
                       </p>
                       <p className="text-xs text-gray-600">CTR</p>
@@ -600,7 +662,12 @@ export default function OfferManagerDashboard({
                     <div>
                       <Badge
                         variant="outline"
-                        className="bg-blue-50 text-blue-700 border-blue-200 font-semibold"
+                        className="font-semibold border"
+                        style={{
+                          backgroundColor: "#EFF6FF",
+                          color: "#1D4ED8",
+                          borderColor: "#BFDBFE",
+                        }}
                       >
                         {offer.campaignCount}{" "}
                         {offer.campaignCount === 1 ? "campaign" : "campaigns"}
