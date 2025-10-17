@@ -1,7 +1,14 @@
 "use client";
 
 import { CopilotKit } from "@copilotkit/react-core";
-import { ReactNode, useState, useEffect, useMemo } from "react";
+import {
+  ReactNode,
+  useState,
+  useEffect,
+  useMemo,
+  Component,
+  ErrorInfo,
+} from "react";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useCopilotReadable } from "@copilotkit/react-core";
@@ -11,6 +18,34 @@ import { useAppSelector } from "../redux/hooks";
 import ActionExecutor from "./action-executor";
 import { useApprovalFlow } from "../hooks/useApprovalFlow";
 import { CustomCopilotChat } from "../../components/copilot/CustomCopilotChat";
+
+// Error Boundary for CopilotKit components
+class CopilotErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(_: Error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("CopilotKit Error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      // Silently fail - don't block the UI
+      return null;
+    }
+
+    return this.props.children;
+  }
+}
 
 // Dynamic imports for components
 const ApprovalDialog = dynamic(
@@ -162,6 +197,9 @@ function getPageContext(currentPath: string) {
 
 function CopilotKitProviderContent({ children }: CopilotKitProviderProps) {
   const [isMounted, setIsMounted] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const pathname = usePathname();
+
   // REMOVED: Feature flag check - CopilotKit now always enabled
   // const isEnabled = process.env.NEXT_PUBLIC_FEATURE_COPILOT_CHAT === "true";
 
@@ -169,6 +207,16 @@ function CopilotKitProviderContent({ children }: CopilotKitProviderProps) {
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Detect route changes and reset navigation state
+  useEffect(() => {
+    setIsNavigating(true);
+    const timer = setTimeout(() => {
+      setIsNavigating(false);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [pathname]);
 
   // Always render with CopilotKit wrapper to prevent useCoAgent errors
   // Hydration mismatches are handled by Next.js suppressHydrationWarning
@@ -182,15 +230,15 @@ function CopilotKitProviderContent({ children }: CopilotKitProviderProps) {
     >
       {children}
 
-      {/* Only render these after mount to prevent hydration issues */}
-      {isMounted && (
-        <>
+      {/* Only render these after mount and when not navigating */}
+      {isMounted && !isNavigating && (
+        <CopilotErrorBoundary>
           <NavigationBridge />
           <ActionExecutor />
 
           {/* Custom Headless CopilotKit Chat UI */}
           <CustomCopilotChat />
-        </>
+        </CopilotErrorBoundary>
       )}
     </CopilotKit>
   );
