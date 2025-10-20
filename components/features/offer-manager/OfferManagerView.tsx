@@ -21,6 +21,7 @@ import {
   StepperSeparator,
 } from "@/components/ui/stepper";
 import { MessageSquare } from "lucide-react";
+import OfferSelectionStep from "@/components/features/offer-manager/steps/OfferSelectionStep";
 import GoalSettingStep from "@/components/features/offer-manager/steps/GoalSettingStep";
 import OfferDetailsStep from "@/components/features/offer-manager/steps/OfferDetailsStep";
 import RedemptionMethodStep from "@/components/features/offer-manager/steps/RedemptionMethodStep";
@@ -35,6 +36,7 @@ import {
 import { OfferAgentStateRenderer } from "@/components/features/offer-manager/OfferAgentStateRenderer";
 import { useCopilotReadable } from "@copilotkit/react-core";
 import { useOfferManagerAgent } from "@/lib/hooks/useOfferManagerAgent";
+import { AgentModeIndicator } from "@/components/features/offer-manager/AgentModeIndicator";
 
 export default function OfferManagerView() {
   const dispatch = useAppDispatch();
@@ -45,8 +47,13 @@ export default function OfferManagerView() {
 
   const [isCreatingOffer, setIsCreatingOffer] = useState(false);
   const [currentTab, setCurrentTab] = useState<
-    "goal" | "details" | "redemption" | "campaign" | "review"
-  >("goal");
+    | "offer_selection"
+    | "goal"
+    | "details"
+    | "redemption"
+    | "campaign"
+    | "review"
+  >("offer_selection");
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
 
   // Local state for AI agent UI (lightweight)
@@ -80,12 +87,12 @@ export default function OfferManagerView() {
 
   const handleStartCreation = () => {
     setIsCreatingOffer(true);
-    setCurrentTab("goal");
+    setCurrentTab("offer_selection");
   };
 
   const handleBackToDashboard = () => {
     setIsCreatingOffer(false);
-    setCurrentTab("goal");
+    setCurrentTab("offer_selection");
     // Optionally reset form data
     // setFormData({ ... reset to initial state ... });
   };
@@ -95,41 +102,63 @@ export default function OfferManagerView() {
   };
 
   const handleTabChange = (
-    tab: "goal" | "details" | "redemption" | "campaign" | "review"
+    tab:
+      | "offer_selection"
+      | "goal"
+      | "details"
+      | "redemption"
+      | "campaign"
+      | "review"
   ) => {
     setCurrentTab(tab);
   };
 
   // Map currentTab to step number for Stepper component
   const currentStepNumber = {
-    goal: 1,
-    details: 2,
-    redemption: 3,
-    campaign: 4,
-    review: 5,
+    offer_selection: 1,
+    goal: 2,
+    details: 3,
+    redemption: 4,
+    campaign: 5,
+    review: 6,
   }[currentTab];
 
   const stepNumberToTab = (
     step: number
-  ): "goal" | "details" | "redemption" | "campaign" | "review" => {
+  ):
+    | "offer_selection"
+    | "goal"
+    | "details"
+    | "redemption"
+    | "campaign"
+    | "review" => {
     const mapping = {
-      1: "goal",
-      2: "details",
-      3: "redemption",
-      4: "campaign",
-      5: "review",
+      1: "offer_selection",
+      2: "goal",
+      3: "details",
+      4: "redemption",
+      5: "campaign",
+      6: "review",
     } as const;
     return mapping[step as keyof typeof mapping];
   };
 
   const handleNextTab = () => {
     const tabOrder: (
+      | "offer_selection"
       | "goal"
       | "details"
       | "redemption"
       | "campaign"
       | "review"
-    )[] = ["goal", "details", "redemption", "campaign", "review"];
+    )[] = [
+      "offer_selection",
+      "goal",
+      "details",
+      "redemption",
+      "campaign",
+      "review",
+    ];
     const currentIndex = tabOrder.indexOf(currentTab);
     if (currentIndex < tabOrder.length - 1) {
       setCurrentTab(tabOrder[currentIndex + 1]);
@@ -138,12 +167,20 @@ export default function OfferManagerView() {
 
   const handlePreviousTab = () => {
     const tabOrder: (
+      | "offer_selection"
       | "goal"
       | "details"
       | "redemption"
       | "campaign"
       | "review"
-    )[] = ["goal", "details", "redemption", "campaign", "review"];
+    )[] = [
+      "offer_selection",
+      "goal",
+      "details",
+      "redemption",
+      "campaign",
+      "review",
+    ];
     const currentIndex = tabOrder.indexOf(currentTab);
     if (currentIndex > 0) {
       setCurrentTab(tabOrder[currentIndex - 1]);
@@ -158,15 +195,17 @@ export default function OfferManagerView() {
   // Sync state to Redux for context-aware AI assistant
   React.useEffect(() => {
     const workflowPhase = isCreatingOffer
-      ? currentTab === "goal"
-        ? "goal_setting"
-        : currentTab === "details"
-          ? "offer_configuration"
-          : currentTab === "redemption"
-            ? "redemption_setup"
-            : currentTab === "campaign"
-              ? "campaign_planning"
-              : "review_launch"
+      ? currentTab === "offer_selection"
+        ? "offer_selection"
+        : currentTab === "goal"
+          ? "goal_setting"
+          : currentTab === "details"
+            ? "offer_configuration"
+            : currentTab === "redemption"
+              ? "redemption_setup"
+              : currentTab === "campaign"
+                ? "campaign_planning"
+                : "review_launch"
       : "dashboard";
 
     dispatch(
@@ -194,6 +233,11 @@ export default function OfferManagerView() {
     dispatch,
   ]);
 
+  // Get Redux state for selected offer
+  const { selectedOffer, offerSelectionMode } = useAppSelector(
+    (state) => state.offerManager
+  );
+
   // Expose offer creation context to CopilotKit
   useCopilotReadable({
     description: "Current offer creation state and progress",
@@ -202,22 +246,29 @@ export default function OfferManagerView() {
       currentStep: currentTab,
       completedSteps,
       formData,
+      selectedOffer,
+      offerSelectionMode,
       workflowPhase: isCreatingOffer
-        ? currentTab === "goal"
-          ? "goal_setting"
-          : currentTab === "details"
-            ? "offer_configuration"
-            : currentTab === "redemption"
-              ? "redemption_setup"
-              : currentTab === "campaign"
-                ? "campaign_planning"
-                : "review_launch"
+        ? currentTab === "offer_selection"
+          ? "offer_selection"
+          : currentTab === "goal"
+            ? "goal_setting"
+            : currentTab === "details"
+              ? "offer_configuration"
+              : currentTab === "redemption"
+                ? "redemption_setup"
+                : currentTab === "campaign"
+                  ? "campaign_planning"
+                  : "review_launch"
         : "dashboard",
     },
   });
 
   return (
     <div className="min-h-screen relative">
+      {/* Agent Mode Indicator - Shows when AI is filling form */}
+      <AgentModeIndicator />
+
       {/* Main Content */}
       {!isCreatingOffer ? (
         // Dashboard view - polished list with stats
@@ -242,9 +293,23 @@ export default function OfferManagerView() {
                   }
                   className="gap-4"
                 >
-                  {/* Step 1: Goal Setting */}
+                  {/* Step 1: Offer Selection */}
                   <StepperItem
                     step={1}
+                    completed={completedSteps.includes("offer_selection")}
+                  >
+                    <StepperTrigger className="flex flex-col items-center gap-2 w-full">
+                      <StepperIndicator />
+                      <StepperTitle className="text-xs text-center">
+                        Offer
+                      </StepperTitle>
+                    </StepperTrigger>
+                    <StepperSeparator />
+                  </StepperItem>
+
+                  {/* Step 2: Goal Setting */}
+                  <StepperItem
+                    step={2}
                     completed={completedSteps.includes("goal")}
                   >
                     <StepperTrigger className="flex flex-col items-center gap-2 w-full">
@@ -256,9 +321,9 @@ export default function OfferManagerView() {
                     <StepperSeparator />
                   </StepperItem>
 
-                  {/* Step 2: Offer Details */}
+                  {/* Step 3: Offer Details */}
                   <StepperItem
-                    step={2}
+                    step={3}
                     completed={completedSteps.includes("details")}
                   >
                     <StepperTrigger className="flex flex-col items-center gap-2 w-full">
@@ -270,9 +335,9 @@ export default function OfferManagerView() {
                     <StepperSeparator />
                   </StepperItem>
 
-                  {/* Step 3: Redemption */}
+                  {/* Step 4: Redemption */}
                   <StepperItem
-                    step={3}
+                    step={4}
                     completed={completedSteps.includes("redemption")}
                   >
                     <StepperTrigger className="flex flex-col items-center gap-2 w-full">
@@ -284,9 +349,9 @@ export default function OfferManagerView() {
                     <StepperSeparator />
                   </StepperItem>
 
-                  {/* Step 4: Campaign Setup */}
+                  {/* Step 5: Campaign Setup */}
                   <StepperItem
-                    step={4}
+                    step={5}
                     completed={completedSteps.includes("campaign")}
                   >
                     <StepperTrigger className="flex flex-col items-center gap-2 w-full">
@@ -298,9 +363,9 @@ export default function OfferManagerView() {
                     <StepperSeparator />
                   </StepperItem>
 
-                  {/* Step 5: Review & Launch */}
+                  {/* Step 6: Review & Launch */}
                   <StepperItem
-                    step={5}
+                    step={6}
                     completed={completedSteps.includes("review")}
                   >
                     <StepperTrigger className="flex flex-col items-center gap-2 w-full">
@@ -323,6 +388,9 @@ export default function OfferManagerView() {
                     {/* Header Section */}
                     <div className="flex items-center justify-between p-3 border-b bg-muted/20 h-[61px] flex-shrink-0">
                       <div className="flex items-center">
+                        {currentTab === "offer_selection" && (
+                          <GiftIcon className="h-5 w-5 mr-2 text-primary" />
+                        )}
                         {currentTab === "goal" && (
                           <DocumentTextIcon className="h-5 w-5 mr-2 text-primary" />
                         )}
@@ -340,6 +408,7 @@ export default function OfferManagerView() {
                         )}
                         <div>
                           <h3 className="font-medium">
+                            {currentTab === "offer_selection" && "Select Offer"}
                             {currentTab === "goal" && "Goal Setting"}
                             {currentTab === "details" && "Offer Details"}
                             {currentTab === "redemption" && "Redemption Method"}
@@ -347,6 +416,8 @@ export default function OfferManagerView() {
                             {currentTab === "review" && "Review & Launch"}
                           </h3>
                           <p className="text-sm text-muted-foreground">
+                            {currentTab === "offer_selection" &&
+                              "Select an existing offer or create a new one"}
                             {currentTab === "goal" &&
                               "Define your business objective and key parameters"}
                             {currentTab === "details" &&
@@ -401,6 +472,13 @@ export default function OfferManagerView() {
                     {/* Form Content */}
                     <div className="flex-1 overflow-auto">
                       <div className="p-4">
+                        {currentTab === "offer_selection" && (
+                          <OfferSelectionStep
+                            onNext={handleNextTab}
+                            onCreateNew={() => setCurrentTab("goal")}
+                          />
+                        )}
+
                         {currentTab === "goal" && (
                           <GoalSettingStep
                             formData={{

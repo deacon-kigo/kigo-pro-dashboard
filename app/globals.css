@@ -10,6 +10,57 @@ button[aria-label*="Chat"] {
   display: none !important;
 }
 
+/* Align CopilotKit chat header height with dashboard header (72px) */
+.copilotKitHeader {
+  height: 72px !important;
+  min-height: 72px !important;
+  display: flex !important;
+  align-items: center !important;
+  position: relative !important;
+  overflow: hidden !important;
+  padding: 0 1.5rem !important;
+  border-bottom: 1px solid var(--border-light) !important;
+}
+
+/* Add gradient background to CopilotKit header matching dashboard header */
+.copilotKitHeader::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.95),
+    rgba(255, 255, 255, 0.9),
+    rgba(255, 255, 255, 0.85)
+  ) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  z-index: 0 !important;
+}
+
+/* Ensure header content stays above the gradient background */
+.copilotKitHeader > * {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Make close button perfectly circular */
+.copilotKitHeaderCloseButton {
+  height: 40px !important;
+  width: 40px !important;
+  min-width: 40px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-color: rgb(243 244 246) !important; /* bg-gray-100 */
+  transition: background-color 0.2s ease-in-out !important;
+}
+
+.copilotKitHeaderCloseButton:hover {
+  background-color: rgb(229 231 235) !important; /* bg-gray-200 */
+}
+
 @layer utilities {
   .scrollbar-hide {
     -ms-overflow-style: none;

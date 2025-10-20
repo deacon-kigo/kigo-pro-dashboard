@@ -1,15 +1,28 @@
 "use client";
 
 import React, { useState } from "react";
-import { useCopilotContext } from "@copilotkit/react-core";
+import { useCopilotAction } from "@copilotkit/react-core";
 import {
   ThinkingSteps,
   Step,
 } from "@/components/features/offer-manager/ThinkingSteps";
 import { ApprovalCard } from "@/components/features/offer-manager/ApprovalCard";
+import {
+  OfferConfigurationCard,
+  type OfferConfiguration,
+} from "@/components/features/offer-manager/OfferConfigurationCard";
 import { Card } from "@/components/ui/card";
 import { CheckCircleIcon, SparklesIcon } from "@heroicons/react/24/outline";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import {
+  startAgentMode,
+  setActiveField,
+  markFieldComplete,
+  updateAgentMessage,
+  stopAgentMode,
+} from "@/lib/redux/slices/agentModeSlice";
+import { setFormData as setOfferFormData } from "@/lib/redux/slices/offerManagerSlice";
 
 export interface OfferRecommendationProps {
   businessObjective: string;
@@ -32,80 +45,222 @@ export function OfferRecommendationWithApproval({
   recommendedValue = "15%",
   reasoning = "Based on historical data, a 15% discount drives optimal incremental revenue while maintaining healthy margins. This value converts 23% better than smaller discounts for this goal.",
 }: OfferRecommendationProps) {
-  const context = useCopilotContext();
+  const dispatch = useAppDispatch();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
+  const [showConfiguration, setShowConfiguration] = useState(false);
 
-  const thinking_steps: Step[] = [
-    {
-      id: "step-1",
-      title: "Understanding Business Context",
-      status: status === "complete" ? "completed" : "in_progress",
-      reasoning: `Analyzing objective: "${businessObjective}" for ${programType} program`,
-    },
-    {
-      id: "step-2",
-      title: "Researching Historical Performance",
-      status: status === "complete" ? "completed" : "pending",
-      reasoning: "Reviewing similar campaigns to identify success patterns",
-    },
-    {
+  // Generate dynamic thinking steps based on business objective
+  const generateThinkingSteps = (): Step[] => {
+    const objective_lower = businessObjective.toLowerCase();
+    const isParts = objective_lower.includes("part");
+    const isEngagement = objective_lower.includes("engagement");
+    const isTraffic = objective_lower.includes("traffic");
+    const hasTarget = /(\d+)%/.test(businessObjective);
+
+    const steps: Step[] = [
+      {
+        id: "step-1",
+        title: "Understanding Business Context",
+        status: status === "complete" ? "completed" : "in_progress",
+        reasoning: `Analyzing "${businessObjective}" for ${programType === "closed_loop" ? "dealer network" : "marketplace"} program`,
+      },
+    ];
+
+    // Add context-specific analysis steps
+    if (hasTarget) {
+      steps.push({
+        id: "step-2",
+        title: "Analyzing Target Metrics",
+        status: status === "complete" ? "completed" : "pending",
+        reasoning:
+          "Calculating offer value to align with your specific growth target",
+      });
+    } else if (isParts) {
+      steps.push({
+        id: "step-2",
+        title: "Reviewing Parts Sales Data",
+        status: status === "complete" ? "completed" : "pending",
+        reasoning:
+          "Analyzing historical parts campaign performance in dealer networks",
+      });
+    } else if (isEngagement) {
+      steps.push({
+        id: "step-2",
+        title: "Evaluating Engagement Strategies",
+        status: status === "complete" ? "completed" : "pending",
+        reasoning:
+          "Comparing discount vs loyalty point approaches for retention",
+      });
+    } else if (isTraffic) {
+      steps.push({
+        id: "step-2",
+        title: "Analyzing Traffic Patterns",
+        status: status === "complete" ? "completed" : "pending",
+        reasoning:
+          "Identifying time-sensitive offer strategies for foot traffic",
+      });
+    } else {
+      steps.push({
+        id: "step-2",
+        title: "Researching Historical Performance",
+        status: status === "complete" ? "completed" : "pending",
+        reasoning: "Reviewing similar campaigns to identify success patterns",
+      });
+    }
+
+    steps.push({
       id: "step-3",
-      title: "Calculating Optimal Offer Value",
+      title: "Determining Optimal Configuration",
       status: status === "complete" ? "completed" : "pending",
-      reasoning: "Running predictive models to find the sweet spot for ROI",
-    },
-  ];
+      reasoning:
+        programType === "closed_loop"
+          ? "Optimizing for dealer network performance and POS integration"
+          : "Balancing tenant value with merchant catalog coordination",
+    });
+
+    return steps;
+  };
+
+  const thinking_steps = generateThinkingSteps();
 
   const handleApprove = async () => {
     setIsProcessing(true);
     setIsApproved(true);
 
-    // Send approval message to AI to continue workflow
-    try {
-      await context.appendMessage({
-        role: "user",
-        content: `Approved! I'd like to proceed with the ${recommendedOfferType} recommendation. Please continue with campaign creation.`,
-      });
-    } catch (error) {
-      console.error("Error sending approval:", error);
-    } finally {
+    // Show configuration UI instead of immediately messaging AI
+    setTimeout(() => {
+      setShowConfiguration(true);
       setIsProcessing(false);
-    }
+    }, 500);
   };
 
   const handleReject = async () => {
     setIsProcessing(true);
+    // TODO: Implement rejection flow - could show adjustment UI or reset to earlier state
+    alert("Adjustment flow not yet implemented. Please start over.");
+    setIsProcessing(false);
+  };
 
-    // Send rejection message to AI for refinement
+  const handleConfigurationComplete = async (config: OfferConfiguration) => {
+    setIsProcessing(true);
+
+    // Directly trigger agent mode and fill the form
     try {
-      await context.appendMessage({
-        role: "user",
-        content:
-          "I'd like to make some changes to this recommendation. Can you help me adjust the offer parameters?",
-      });
+      // Calculate total fields to fill
+      const fieldsToFill = [
+        "businessObjective",
+        "programType",
+        "offerType",
+        "offerValue",
+        config.title && "offerTitle",
+        config.description && "offerDescription",
+        config.termsAndConditions && "termsConditions",
+        config.redemptionMethod && "redemptionMethod",
+      ].filter(Boolean);
+
+      // Start agent mode
+      dispatch(
+        startAgentMode({
+          total: fieldsToFill.length,
+          message: "Configuring your offer with AI...",
+        })
+      );
+
+      // Fill fields one by one with delays for visual effect
+      const fillField = async (
+        fieldId: string,
+        value: string,
+        label: string
+      ) => {
+        dispatch(setActiveField(fieldId));
+        dispatch(updateAgentMessage(`Filling ${label}...`));
+
+        // Wait for animation
+        await new Promise((resolve) => setTimeout(resolve, 800));
+
+        // Update form data
+        dispatch(setOfferFormData({ [fieldId]: value }));
+
+        // Mark as complete
+        dispatch(markFieldComplete(fieldId));
+
+        // Brief pause before next field
+        await new Promise((resolve) => setTimeout(resolve, 400));
+      };
+
+      // Fill each field sequentially
+      await fillField(
+        "businessObjective",
+        businessObjective,
+        "Business Objective"
+      );
+      await fillField("programType", programType, "Program Type");
+      await fillField("offerType", config.offerType, "Offer Type");
+      await fillField("offerValue", config.value, "Offer Value");
+
+      if (config.title) {
+        await fillField("offerTitle", config.title, "Offer Title");
+      }
+
+      if (config.description) {
+        await fillField(
+          "offerDescription",
+          config.description,
+          "Offer Description"
+        );
+      }
+
+      if (config.termsAndConditions) {
+        await fillField(
+          "termsConditions",
+          config.termsAndConditions,
+          "Terms & Conditions"
+        );
+      }
+
+      if (config.redemptionMethod) {
+        await fillField(
+          "redemptionMethod",
+          config.redemptionMethod,
+          "Redemption Method"
+        );
+      }
+
+      // Complete agent mode
+      dispatch(updateAgentMessage("Configuration complete! ✓"));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      dispatch(stopAgentMode());
     } catch (error) {
-      console.error("Error sending rejection:", error);
+      console.error("Error filling configuration:", error);
+      dispatch(stopAgentMode());
     } finally {
       setIsProcessing(false);
     }
   };
 
+  const handleConfigurationCancel = () => {
+    setShowConfiguration(false);
+    setIsApproved(false);
+  };
+
   return (
     <div className="space-y-4 my-4">
-      {/* Thinking Steps */}
-      <ThinkingSteps
-        steps={thinking_steps}
-        currentPhase="Analyzing your objective"
-      />
+      {/* Thinking Steps - Only show if configuration is not open */}
+      {!showConfiguration && (
+        <ThinkingSteps
+          steps={thinking_steps}
+          currentPhase="Analyzing your objective"
+        />
+      )}
 
-      {/* Recommendation Card - Only show when complete */}
-      {status === "complete" && (
+      {/* Recommendation Card - Only show when complete and not showing configuration */}
+      {status === "complete" && !showConfiguration && (
         <>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: "easeOut", delay: 0.6 }}
+            transition={{ duration: 0.5, ease: "easeOut", delay: 2.1 }}
           >
             <Card
               className="p-4 border border-emerald-200 shadow-sm"
@@ -144,19 +299,25 @@ export function OfferRecommendationWithApproval({
 
           {/* Human-in-the-Loop Approval */}
           {!isApproved && (
-            <ApprovalCard
-              title="Approve Recommendation?"
-              description="I see you just created this offer. Would you like to create a campaign for this offer?"
-              onApprove={handleApprove}
-              onReject={handleReject}
-              isProcessing={isProcessing}
-              approveText="Yes, Create Campaign"
-              rejectText="Modify Offer"
-            />
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut", delay: 3.1 }}
+            >
+              <ApprovalCard
+                title="Sound good?"
+                description="Does this recommendation work for you? Click continue to configure the offer details."
+                onApprove={handleApprove}
+                onReject={handleReject}
+                isProcessing={isProcessing}
+                approveText="Yes, continue"
+                rejectText="Let me adjust"
+              />
+            </motion.div>
           )}
 
-          {/* Approved State */}
-          {isApproved && (
+          {/* Approved State (brief confirmation before showing configuration) */}
+          {isApproved && !showConfiguration && (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -180,7 +341,7 @@ export function OfferRecommendationWithApproval({
                     />
                   </div>
                   <span className="text-sm font-semibold text-gray-900">
-                    ✓ Approved - Proceeding with campaign creation
+                    ✓ Great! Loading configuration...
                   </span>
                 </div>
               </Card>
@@ -188,6 +349,20 @@ export function OfferRecommendationWithApproval({
           )}
         </>
       )}
+
+      {/* Offer Configuration UI */}
+      <AnimatePresence mode="wait">
+        {showConfiguration && (
+          <OfferConfigurationCard
+            offerType={recommendedOfferType}
+            initialValue={recommendedValue.replace(/[^0-9.]/g, "")}
+            programType={programType}
+            businessObjective={businessObjective}
+            onComplete={handleConfigurationComplete}
+            onCancel={handleConfigurationCancel}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

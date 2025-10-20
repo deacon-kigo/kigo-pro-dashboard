@@ -17,6 +17,7 @@ import {
   generateSystemPrompt,
   generateInitialGreeting,
   OFFER_MANAGER_CONTEXT_PROMPT,
+  type FeatureContext,
 } from "@/lib/copilot-kit/offer-manager-prompts";
 
 /**
@@ -122,10 +123,10 @@ const CustomWindow: React.FC<WindowProps & { children?: React.ReactNode }> = ({
     >
       {/* Resize Handle */}
       <div
-        className="w-1 h-full cursor-ew-resize bg-gray-300 hover:bg-blue-500 transition-colors z-10 group flex-shrink-0"
+        className="w-px h-full cursor-ew-resize bg-gray-200 hover:bg-blue-400 transition-colors z-10 group flex-shrink-0"
         onMouseDown={handleMouseDown}
       >
-        <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-12 bg-gray-400 group-hover:bg-blue-600 transition-colors" />
+        <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-px h-8 bg-gray-300 group-hover:bg-blue-500 transition-colors" />
       </div>
 
       {/* CopilotSidebar Content */}
@@ -133,7 +134,7 @@ const CustomWindow: React.FC<WindowProps & { children?: React.ReactNode }> = ({
         {/* Close Button */}
         <button
           onClick={handleClose}
-          className="absolute top-4 right-4 z-50 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200 shadow-sm"
+          className="absolute top-4 right-4 z-50 h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200 shadow-sm flex items-center justify-center"
           aria-label="Close AI Assistant"
         >
           <XMarkIcon className="h-5 w-5 text-gray-600" />
@@ -166,41 +167,87 @@ export function CustomCopilotChat() {
   // Dynamic instructions and greetings based on current page and context
   const isOfferManager = pathname?.includes("offer-manager");
 
+  // Detect current feature from pathname
+  const detectFeature = (): FeatureContext => {
+    if (!pathname) return "dashboard";
+
+    if (pathname.includes("/offer-manager")) return "offer_manager";
+    if (pathname.includes("/product-filters")) return "product_filters";
+    if (pathname.includes("/ads-create")) return "ad_creation";
+    if (pathname.includes("/campaign-manager")) return "campaign_manager";
+    if (pathname.includes("/analytics")) return "analytics";
+
+    return "dashboard";
+  };
+
+  const currentFeature = detectFeature();
+
   // Generate dynamic context for prompts from Redux state
-  const offerContext = React.useMemo(() => {
-    if (!isOfferManager) {
+  const contextData = React.useMemo(() => {
+    const feature = detectFeature();
+
+    // Offer Manager context
+    if (feature === "offer_manager") {
       return {
-        workflowPhase: "dashboard",
-        isCreatingOffer: false,
-        businessObjective: "",
-        offerType: "",
-        programType: "",
+        feature: "offer_manager" as FeatureContext,
+        workflowPhase: offerManagerState.workflowPhase,
+        isCreating: offerManagerState.isCreatingOffer,
+        currentStep: offerManagerState.currentStep,
+        businessObjective: offerManagerState.formData.businessObjective,
+        offerType: offerManagerState.formData.offerType,
+        programType: offerManagerState.formData.programType,
       };
     }
 
+    // Product Filters context
+    if (feature === "product_filters") {
+      const isCreating = pathname?.includes("/new") || false;
+      return {
+        feature: "product_filters" as FeatureContext,
+        isCreating,
+        filterName: "", // TODO: Get from state
+        currentStep: "",
+      };
+    }
+
+    // Campaign/Ad Manager context
+    if (feature === "campaign_manager" || feature === "ad_creation") {
+      const isCreating = pathname?.includes("/create") || false;
+      return {
+        feature: feature as FeatureContext,
+        isCreating,
+        campaignType: "", // TODO: Get from state
+        currentStep: "",
+      };
+    }
+
+    // Analytics context
+    if (feature === "analytics") {
+      return {
+        feature: "analytics" as FeatureContext,
+      };
+    }
+
+    // Default dashboard context
     return {
-      workflowPhase: offerManagerState.workflowPhase,
-      isCreatingOffer: offerManagerState.isCreatingOffer,
-      currentStep: offerManagerState.currentStep,
-      businessObjective: offerManagerState.formData.businessObjective,
-      offerType: offerManagerState.formData.offerType,
-      programType: offerManagerState.formData.programType,
+      feature: "dashboard" as FeatureContext,
+      workflowPhase: "dashboard",
+      isCreating: false,
     };
-  }, [isOfferManager, offerManagerState]);
+  }, [pathname, offerManagerState]);
 
   // Generate dynamic system prompt with context
-  const instructions = isOfferManager
-    ? generateSystemPrompt({
-        userName: undefined,
-        programType: offerContext.programType || undefined,
-        currentPhase: offerContext.workflowPhase,
-      })
-    : "You are an AI assistant for Kigo Pro, a marketing campaign management platform. Help users with campaign creation, optimization, and insights.";
+  const instructions =
+    currentFeature !== "dashboard"
+      ? generateSystemPrompt({
+          userName: undefined,
+          programType: (contextData as any).programType || undefined,
+          currentPhase: (contextData as any).workflowPhase || currentFeature,
+        })
+      : "You are an AI assistant for Kigo Pro, a marketing campaign management platform. Help users with campaign creation, optimization, and insights.";
 
-  // Generate dynamic initial greeting
-  const initialGreeting = isOfferManager
-    ? generateInitialGreeting(offerContext)
-    : "Hi! I'm your AI assistant for Kigo Pro. How can I help you today?";
+  // Generate dynamic initial greeting based on feature
+  const initialGreeting = generateInitialGreeting(contextData);
 
   // Handle toggle
   const handleToggle = useCallback(() => {

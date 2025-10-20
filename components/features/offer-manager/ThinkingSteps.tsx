@@ -25,7 +25,7 @@ export function ThinkingSteps({ steps, currentPhase }: ThinkingStepsProps) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
     >
       <Card
         className="p-4 border border-blue-200 shadow-sm"
@@ -49,16 +49,16 @@ export function ThinkingSteps({ steps, currentPhase }: ThinkingStepsProps) {
         </div>
 
         <div className="space-y-3">
-          <AnimatePresence>
+          <AnimatePresence mode="popLayout">
             {steps.map((step, index) => (
               <motion.div
                 key={step.id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 10 }}
+                initial={{ opacity: 0, x: -10, height: 0 }}
+                animate={{ opacity: 1, x: 0, height: "auto" }}
+                exit={{ opacity: 0, x: 10, height: 0 }}
                 transition={{
-                  delay: index * 0.3,
-                  duration: 0.4,
+                  delay: 0.3 + index * 0.6,
+                  duration: 0.5,
                   ease: "easeOut",
                 }}
               >
