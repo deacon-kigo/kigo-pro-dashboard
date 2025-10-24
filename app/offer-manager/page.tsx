@@ -1,6 +1,7 @@
 "use client";
 
 import React, { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import AppLayout from "@/components/templates/AppLayout/AppLayout";
 import {
   Breadcrumb,
@@ -8,7 +9,8 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
 } from "@/components/atoms/Breadcrumb";
-import OfferManagerView from "@/components/features/offer-manager/OfferManagerView";
+import OfferManagerViewV1 from "@/components/features/offer-manager/v1/OfferManagerView";
+import OfferManagerViewFuture from "@/components/features/offer-manager/future/OfferManagerView";
 
 function LoadingFallback() {
   return (
@@ -22,11 +24,16 @@ function LoadingFallback() {
 }
 
 export default function OfferManagerPage() {
+  const searchParams = useSearchParams();
+  const version = searchParams.get("version") || "v1"; // Default to v1
+
   const breadcrumb = (
     <Breadcrumb className="mb-4">
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbPage>Offer Manager</BreadcrumbPage>
+          <BreadcrumbPage>
+            Offer Manager {version === "future" && "(Future Version)"}
+          </BreadcrumbPage>
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>
@@ -36,7 +43,11 @@ export default function OfferManagerPage() {
     <Suspense fallback={<LoadingFallback />}>
       <AppLayout customBreadcrumb={breadcrumb}>
         <div className="pt-0 mt-0">
-          <OfferManagerView />
+          {version === "future" ? (
+            <OfferManagerViewFuture />
+          ) : (
+            <OfferManagerViewV1 />
+          )}
         </div>
       </AppLayout>
     </Suspense>
