@@ -74,8 +74,8 @@ export default function RedemptionMethodStepV1({
               <Card
                 className={`p-4 cursor-pointer transition-all hover:shadow-md ${
                   formData.redemptionType === type.value
-                    ? "border-primary border-2 bg-primary/5"
-                    : "border-gray-200"
+                    ? "border-primary border bg-primary/5"
+                    : "border border-gray-200"
                 }`}
               >
                 <div className="flex items-start gap-3">

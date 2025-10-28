@@ -166,24 +166,15 @@ export default function OfferManagerDashboardV1({
   return (
     <div className="space-y-6">
       {/* V1 Badge Banner */}
-      <div
-        className="p-3 rounded-lg border-2"
-        style={{
-          background: "linear-gradient(to right, #FEF3C7, #FDE68A)",
-          borderColor: "#F59E0B",
-        }}
-      >
+      <div className="p-3 rounded-lg border border-blue-200 bg-blue-50">
         <div className="flex items-center gap-3">
           <Badge
-            className="text-xs font-bold px-3 py-1"
-            style={{
-              backgroundColor: "#F59E0B",
-              color: "#FFFFFF",
-            }}
+            variant="outline"
+            className="text-xs font-semibold px-3 py-1 border-blue-500 text-blue-700 bg-white"
           >
             V1
           </Badge>
-          <p className="text-sm font-medium text-gray-800">
+          <p className="text-sm font-medium text-gray-700">
             Simple & Streamlined Offer Management - No AI Features
           </p>
         </div>
@@ -193,7 +184,7 @@ export default function OfferManagerDashboardV1({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <GiftIcon className="h-8 w-8 text-orange-500" />
+            <GiftIcon className="h-8 w-8 text-blue-500" />
             Offer Manager
           </h1>
           <p className="text-sm text-gray-600 mt-1">
@@ -203,10 +194,7 @@ export default function OfferManagerDashboardV1({
         <Button
           onClick={onCreateOffer}
           size="lg"
-          className="text-white font-semibold shadow-md hover:shadow-lg transition-shadow"
-          style={{
-            background: "linear-gradient(to right, #F59E0B, #F97316)",
-          }}
+          className="bg-blue-500 hover:bg-blue-600 text-white font-semibold shadow-md hover:shadow-lg transition-all"
         >
           <PlusIcon className="h-5 w-5 mr-2" />
           Create New Offer
@@ -215,7 +203,7 @@ export default function OfferManagerDashboardV1({
 
       {/* Simple Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="p-4 border-2 border-green-200 bg-green-50">
+        <Card className="p-4 border border-green-200 bg-green-50">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-700">Active Offers</p>
@@ -227,7 +215,7 @@ export default function OfferManagerDashboardV1({
           </div>
         </Card>
 
-        <Card className="p-4 border-2 border-yellow-200 bg-yellow-50">
+        <Card className="p-4 border border-yellow-200 bg-yellow-50">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-700">Draft Offers</p>
@@ -239,7 +227,7 @@ export default function OfferManagerDashboardV1({
           </div>
         </Card>
 
-        <Card className="p-4 border-2 border-blue-200 bg-blue-50">
+        <Card className="p-4 border border-blue-200 bg-blue-50">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-700">
@@ -272,7 +260,7 @@ export default function OfferManagerDashboardV1({
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-2 border-2 border-gray-300 rounded-lg text-base bg-white hover:bg-gray-50 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 font-medium"
+            className="px-4 py-2 border border-gray-300 rounded-lg text-base bg-white hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -293,7 +281,7 @@ export default function OfferManagerDashboardV1({
         </div>
 
         {filteredOffers.length === 0 ? (
-          <Card className="p-12 text-center border-2 border-dashed border-gray-300">
+          <Card className="p-12 text-center border border-dashed border-gray-300">
             <GiftIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <p className="text-lg font-medium text-gray-600">No offers found</p>
             <p className="text-sm text-gray-500 mt-1">
@@ -311,18 +299,12 @@ export default function OfferManagerDashboardV1({
               return (
                 <Card
                   key={offer.id}
-                  className="p-5 border-2 border-gray-200 hover:border-orange-300 hover:shadow-lg transition-all"
+                  className="p-5 border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all"
                 >
                   <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                     {/* Offer Icon & Info */}
                     <div className="flex items-start gap-4 flex-1">
-                      <div
-                        className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md"
-                        style={{
-                          background:
-                            "linear-gradient(to bottom right, #F59E0B, #F97316)",
-                        }}
-                      >
+                      <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md bg-gradient-to-br from-blue-500 to-blue-600">
                         <GiftIcon className="h-7 w-7 text-white" />
                       </div>
 
@@ -337,7 +319,7 @@ export default function OfferManagerDashboardV1({
                         <div className="flex flex-wrap items-center gap-2 mt-3">
                           <Badge
                             variant="outline"
-                            className="text-xs px-2 py-1 font-semibold border-2"
+                            className="text-xs px-2 py-1 font-semibold border"
                             style={getStatusStyleV1(offer.status)}
                           >
                             {offer.status.toUpperCase()}
@@ -345,7 +327,7 @@ export default function OfferManagerDashboardV1({
 
                           <Badge
                             variant="outline"
-                            className="text-xs px-2 py-1 border-2 border-gray-300 bg-white"
+                            className="text-xs px-2 py-1 border border-gray-300 bg-white"
                           >
                             {getRedemptionTypeLabel(offer.redemptionType)}
                           </Badge>
@@ -353,7 +335,7 @@ export default function OfferManagerDashboardV1({
                           {offer.promoCode !== "—" && (
                             <Badge
                               variant="outline"
-                              className="text-xs px-2 py-1 font-mono border-2 border-blue-300 bg-blue-50 text-blue-700"
+                              className="text-xs px-2 py-1 font-mono border border-blue-300 bg-blue-50 text-blue-700"
                             >
                               {offer.promoCode}
                             </Badge>
@@ -413,7 +395,7 @@ export default function OfferManagerDashboardV1({
                         <Button
                           variant="outline"
                           size="sm"
-                          className="border-2 border-gray-300 hover:bg-gray-50"
+                          className="border border-gray-300 hover:bg-gray-50"
                         >
                           <PencilIcon className="h-4 w-4" />
                         </Button>
@@ -422,7 +404,7 @@ export default function OfferManagerDashboardV1({
                             <Button
                               variant="outline"
                               size="sm"
-                              className="border-2 border-gray-300 hover:bg-gray-50"
+                              className="border border-gray-300 hover:bg-gray-50"
                             >
                               <EllipsisVerticalIcon className="h-5 w-5 text-gray-600" />
                             </Button>
@@ -464,10 +446,19 @@ export default function OfferManagerDashboardV1({
               Showing {filteredOffers.length} of {mockOffersV1.length} offers
             </p>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" disabled className="border-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled
+                className="border border-gray-300"
+              >
                 ← Previous
               </Button>
-              <Button variant="outline" size="sm" className="border-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="border border-gray-300"
+              >
                 Next →
               </Button>
             </div>
