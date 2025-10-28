@@ -29,7 +29,7 @@ export default function OfferDetailsStepV1({
       <div className="space-y-4">
         <div>
           <h3 className="text-lg font-semibold mb-3">Basic Information</h3>
-          <p className="text-sm text-muted-foreground mb-4">
+          <p className="text-sm text-gray-500 mb-4">
             Provide the core details about your offer
           </p>
         </div>
@@ -45,7 +45,7 @@ export default function OfferDetailsStepV1({
             onChange={(e) => onUpdate("shortText", e.target.value)}
             maxLength={60}
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-gray-500">
             {formData.shortText.length}/60 characters - Shown in listing view
           </p>
         </div>
@@ -62,7 +62,7 @@ export default function OfferDetailsStepV1({
             rows={4}
             maxLength={500}
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-gray-500">
             {formData.longText.length}/500 characters - Shown in detail view
           </p>
         </div>
@@ -81,7 +81,7 @@ export default function OfferDetailsStepV1({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="endDate">End Date (Optional)</Label>
+            <Label htmlFor="endDate">End Date</Label>
             <Input
               id="endDate"
               type="date"
@@ -89,14 +89,14 @@ export default function OfferDetailsStepV1({
               onChange={(e) => onUpdate("endDate", e.target.value)}
               min={formData.startDate}
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-gray-500">
               Leave blank for no expiration
             </p>
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="maxDiscount">Max Discount Amount (Optional)</Label>
+          <Label htmlFor="maxDiscount">Max Discount Amount</Label>
           <Input
             id="maxDiscount"
             type="text"
@@ -104,7 +104,7 @@ export default function OfferDetailsStepV1({
             value={formData.maxDiscount}
             onChange={(e) => onUpdate("maxDiscount", e.target.value)}
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-gray-500">
             Maximum discount value if applicable
           </p>
         </div>
@@ -127,7 +127,7 @@ export default function OfferDetailsStepV1({
       <div className="space-y-4 pt-6 border-t">
         <div>
           <h3 className="text-lg font-semibold mb-3">Classification</h3>
-          <p className="text-sm text-muted-foreground mb-4">
+          <p className="text-sm text-gray-500 mb-4">
             Help customers find your offer through search and filtering
           </p>
         </div>
@@ -163,7 +163,7 @@ export default function OfferDetailsStepV1({
             value={formData.discountValue}
             onChange={(e) => onUpdate("discountValue", e.target.value)}
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-gray-500">
             Can be auto-extracted from offer text
           </p>
         </div>
@@ -198,7 +198,7 @@ export default function OfferDetailsStepV1({
             value={formData.keywords}
             onChange={(e) => onUpdate("keywords", e.target.value)}
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-gray-500">
             Comma-separated keywords for search
           </p>
         </div>

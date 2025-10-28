@@ -59,7 +59,7 @@ export default function RedemptionMethodStepV1({
       <div className="space-y-4">
         <div>
           <h3 className="text-lg font-semibold mb-3">Redemption Method</h3>
-          <p className="text-sm text-muted-foreground mb-4">
+          <p className="text-sm text-gray-500 mb-4">
             Choose how customers will redeem this offer
           </p>
         </div>
@@ -85,7 +85,7 @@ export default function RedemptionMethodStepV1({
                       <type.icon className="h-5 w-5 text-primary" />
                       <span className="font-medium">{type.label}</span>
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-gray-500">
                       {type.description}
                     </p>
                   </div>
@@ -102,7 +102,7 @@ export default function RedemptionMethodStepV1({
         <div className="space-y-4 pt-6 border-t">
           <div>
             <h3 className="text-lg font-semibold mb-3">Promo Code Setup</h3>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-sm text-gray-500 mb-4">
               Configure how promo codes work for this offer
             </p>
           </div>
@@ -123,7 +123,7 @@ export default function RedemptionMethodStepV1({
                   >
                     Single Static Code
                   </Label>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-gray-500">
                     One code used by all customers (e.g., SAVE20)
                   </p>
                 </div>
@@ -138,7 +138,7 @@ export default function RedemptionMethodStepV1({
                   >
                     Unique Codes
                   </Label>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-gray-500">
                     Upload a list of unique codes for individual customers
                   </p>
                 </div>
@@ -160,7 +160,7 @@ export default function RedemptionMethodStepV1({
                 }
                 className="font-mono"
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-sm text-gray-500">
                 This code will be shown to all customers
               </p>
             </div>
@@ -180,14 +180,14 @@ export default function RedemptionMethodStepV1({
                   }
                 }}
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-sm text-gray-500">
                 Upload a CSV or TXT file with one code per line
               </p>
             </div>
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="barcode">Barcode (Optional)</Label>
+            <Label htmlFor="barcode">Barcode</Label>
             <Input
               id="barcode"
               placeholder="Enter barcode number"
@@ -195,20 +195,20 @@ export default function RedemptionMethodStepV1({
               onChange={(e) => onUpdate("barcode", e.target.value)}
               className="font-mono"
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-gray-500">
               For in-store scanning
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="qrCode">QR Code (Optional)</Label>
+            <Label htmlFor="qrCode">QR Code</Label>
             <Input
               id="qrCode"
               placeholder="Enter QR code data or URL"
               value={formData.qrCode}
               onChange={(e) => onUpdate("qrCode", e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-gray-500">
               QR code will be auto-generated if left blank
             </p>
           </div>
@@ -220,7 +220,7 @@ export default function RedemptionMethodStepV1({
         <div className="space-y-4 pt-6 border-t">
           <div>
             <h3 className="text-lg font-semibold mb-3">External Website</h3>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-sm text-gray-500 mb-4">
               Redirect customers to an external website to redeem
             </p>
           </div>
@@ -236,7 +236,7 @@ export default function RedemptionMethodStepV1({
               value={formData.externalUrl}
               onChange={(e) => onUpdate("externalUrl", e.target.value)}
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-gray-500">
               Customers will be redirected to this URL when they click "Redeem"
             </p>
           </div>
@@ -247,7 +247,7 @@ export default function RedemptionMethodStepV1({
       <div className="space-y-4 pt-6 border-t">
         <div>
           <h3 className="text-lg font-semibold mb-3">Usage Limits</h3>
-          <p className="text-sm text-muted-foreground mb-4">
+          <p className="text-sm text-gray-500 mb-4">
             Control how many times this offer can be redeemed
           </p>
         </div>
@@ -271,14 +271,14 @@ export default function RedemptionMethodStepV1({
               <SelectItem value="unlimited">Unlimited</SelectItem>
             </SelectContent>
           </Select>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-gray-500">
             How many times each customer can use this offer
           </p>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="totalUsageLimit">
-            Total Redemptions Allowed (Optional)
+            Total Redemptions Allowed
           </Label>
           <Input
             id="totalUsageLimit"
@@ -288,7 +288,7 @@ export default function RedemptionMethodStepV1({
             onChange={(e) => onUpdate("totalUsageLimit", e.target.value)}
             min="1"
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-gray-500">
             Total number of redemptions across all customers. Leave blank for
             unlimited.
           </p>
@@ -308,7 +308,7 @@ export default function RedemptionMethodStepV1({
               <SelectItem value="specific">Specific Locations</SelectItem>
             </SelectContent>
           </Select>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-gray-500">
             Which merchant locations can redeem this offer
           </p>
         </div>
@@ -317,10 +317,10 @@ export default function RedemptionMethodStepV1({
           <div className="space-y-2">
             <Label>Select Locations</Label>
             <Card className="p-4 bg-muted/20">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-gray-500">
                 Location selector will be implemented here
               </p>
-              <p className="text-xs text-muted-foreground mt-2">
+              <p className="text-sm text-gray-500 mt-2">
                 (V1 Placeholder - will show merchant locations list with
                 checkboxes)
               </p>
