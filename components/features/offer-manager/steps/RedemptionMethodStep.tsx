@@ -90,19 +90,19 @@ export default function RedemptionMethodStep({
                 <p className="text-sm font-semibold text-gray-900">
                   Promo Code
                 </p>
-                <p className="text-xs text-gray-600 mt-1">
+                <p className="text-sm text-gray-600 mt-1">
                   Customer provides merchant-supplied code (online, phone, or
                   in-store)
                 </p>
                 <div className="flex gap-2 mt-2">
                   <CheckCircleIcon className="w-4 h-4 text-green-600" />
-                  <span className="text-xs text-gray-600">
+                  <span className="text-sm text-gray-600">
                     Easy implementation
                   </span>
                 </div>
                 <div className="flex gap-2">
                   <CheckCircleIcon className="w-4 h-4 text-green-600" />
-                  <span className="text-xs text-gray-600">
+                  <span className="text-sm text-gray-600">
                     Works with POS systems
                   </span>
                 </div>
@@ -129,18 +129,18 @@ export default function RedemptionMethodStep({
                 <p className="text-sm font-semibold text-gray-900">
                   Show & Save
                 </p>
-                <p className="text-xs text-gray-600 mt-1">
+                <p className="text-sm text-gray-600 mt-1">
                   Customer displays QR/barcode/code to staff
                 </p>
                 <div className="flex gap-2 mt-2">
                   <CheckCircleIcon className="w-4 h-4 text-green-600" />
-                  <span className="text-xs text-gray-600">
+                  <span className="text-sm text-gray-600">
                     Mobile-optimized
                   </span>
                 </div>
                 <div className="flex gap-2">
                   <CheckCircleIcon className="w-4 h-4 text-green-600" />
-                  <span className="text-xs text-gray-600">
+                  <span className="text-sm text-gray-600">
                     Real-time tracking
                   </span>
                 </div>
@@ -167,12 +167,12 @@ export default function RedemptionMethodStep({
                 <p className="text-sm font-semibold text-gray-900">
                   Barcode Scan
                 </p>
-                <p className="text-xs text-gray-600 mt-1">
+                <p className="text-sm text-gray-600 mt-1">
                   Customer scans barcode at location
                 </p>
                 <div className="flex gap-2 mt-2">
                   <ExclamationTriangleIcon className="w-4 h-4 text-orange-600" />
-                  <span className="text-xs text-gray-600">
+                  <span className="text-sm text-gray-600">
                     Requires barcode reader
                   </span>
                 </div>
@@ -199,12 +199,12 @@ export default function RedemptionMethodStep({
                 <p className="text-sm font-semibold text-gray-900">
                   Online Link
                 </p>
-                <p className="text-xs text-gray-600 mt-1">
+                <p className="text-sm text-gray-600 mt-1">
                   Redirect to merchant website with discount applied
                 </p>
                 <div className="flex gap-2 mt-2">
                   <CheckCircleIcon className="w-4 h-4 text-green-600" />
-                  <span className="text-xs text-gray-600">
+                  <span className="text-sm text-gray-600">
                     Seamless for e-commerce
                   </span>
                 </div>
@@ -235,7 +235,7 @@ export default function RedemptionMethodStep({
                   <p className="text-sm font-medium text-gray-900">
                     Single Universal Code
                   </p>
-                  <p className="text-xs text-gray-600">
+                  <p className="text-sm text-gray-600">
                     One code for all customers (Example: SPRING20)
                   </p>
                 </div>
@@ -254,7 +254,7 @@ export default function RedemptionMethodStep({
                   <p className="text-sm font-medium text-gray-900">
                     Multiple Unique Codes
                   </p>
-                  <p className="text-xs text-gray-600">
+                  <p className="text-sm text-gray-600">
                     Individual codes per customer
                   </p>
                   {formData.promoCodeType === "multiple" && (
@@ -339,7 +339,7 @@ export default function RedemptionMethodStep({
                   variant="ghost"
                   size="sm"
                   onClick={() => onAskAI("locationScope")}
-                  className="h-7 px-2 text-xs text-blue-600 hover:bg-blue-50"
+                  className="h-7 px-2 text-sm text-blue-600 hover:bg-blue-50"
                 >
                   <SparklesIcon className="h-3 w-3 mr-1" />
                   Ask AI

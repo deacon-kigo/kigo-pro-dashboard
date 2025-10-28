@@ -68,7 +68,7 @@ export default function OfferDetailsStep({
               variant="ghost"
               size="sm"
               onClick={() => onAskAI("offerType")}
-              className="h-7 px-2 text-xs text-blue-600 hover:bg-blue-50"
+              className="h-7 px-2 text-sm text-blue-600 hover:bg-blue-50"
             >
               <SparklesIcon className="h-3 w-3 mr-1" />
               Ask AI
@@ -99,7 +99,7 @@ export default function OfferDetailsStep({
               variant="ghost"
               size="sm"
               onClick={() => onAskAI("offerValue")}
-              className="h-7 px-2 text-xs text-blue-600 hover:bg-blue-50"
+              className="h-7 px-2 text-sm text-blue-600 hover:bg-blue-50"
             >
               <SparklesIcon className="h-3 w-3 mr-1" />
               Ask AI
@@ -132,7 +132,7 @@ export default function OfferDetailsStep({
                   onChange={(e) => onUpdate("offerValue", e.target.value)}
                   className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                 />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <div className="flex justify-between text-sm text-gray-500 mt-1">
                   <span>10% Low</span>
                   <span>↑</span>
                   <span>30% High</span>
@@ -158,7 +158,7 @@ export default function OfferDetailsStep({
           )}
 
           {!formData.offerType && (
-            <p className="text-xs text-gray-500">
+            <p className="text-sm text-gray-500">
               Select an offer type to configure the value
             </p>
           )}
@@ -174,7 +174,7 @@ export default function OfferDetailsStep({
               variant="ghost"
               size="sm"
               onClick={() => onAskAI("offerTitle")}
-              className="h-7 px-2 text-xs text-blue-600 hover:bg-blue-50"
+              className="h-7 px-2 text-sm text-blue-600 hover:bg-blue-50"
             >
               <SparklesIcon className="h-3 w-3 mr-1" />
               Ask AI
@@ -188,7 +188,7 @@ export default function OfferDetailsStep({
             maxLength={60}
             className="w-full"
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-sm text-gray-500 mt-1">
             {formData.offerTitle.length}/60 characters
           </p>
         </div>
@@ -203,7 +203,7 @@ export default function OfferDetailsStep({
               variant="ghost"
               size="sm"
               onClick={() => onAskAI("offerDescription")}
-              className="h-7 px-2 text-xs text-blue-600 hover:bg-blue-50"
+              className="h-7 px-2 text-sm text-blue-600 hover:bg-blue-50"
             >
               <SparklesIcon className="h-3 w-3 mr-1" />
               Ask AI
@@ -218,7 +218,7 @@ export default function OfferDetailsStep({
             maxLength={500}
             className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-sm text-gray-500 mt-1">
             {formData.offerDescription.length}/500 characters
           </p>
         </div>
@@ -233,7 +233,7 @@ export default function OfferDetailsStep({
               variant="ghost"
               size="sm"
               onClick={() => onAskAI("terms")}
-              className="h-7 px-2 text-xs text-blue-600 hover:bg-blue-50"
+              className="h-7 px-2 text-sm text-blue-600 hover:bg-blue-50"
             >
               <SparklesIcon className="h-3 w-3 mr-1" />
               Generate with AI

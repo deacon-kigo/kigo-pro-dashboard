@@ -78,7 +78,7 @@ export default function GoalSettingStep({
               variant="ghost"
               size="sm"
               onClick={() => onAskAI("businessObjective")}
-              className="h-7 px-2 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              className="h-7 px-2 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50"
             >
               <SparklesIcon className="h-3 w-3 mr-1" />
               Ask AI
@@ -92,7 +92,7 @@ export default function GoalSettingStep({
             className="w-full min-h-[80px] text-sm"
             rows={3}
           />
-          <p className="text-xs text-gray-500 mt-1.5">
+          <p className="text-sm text-gray-500 mt-1.5">
             Describe what you want to achieve with this offer in natural
             language
           </p>
@@ -108,7 +108,7 @@ export default function GoalSettingStep({
               variant="ghost"
               size="sm"
               onClick={() => onAskAI("programType")}
-              className="h-7 px-2 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              className="h-7 px-2 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50"
             >
               <SparklesIcon className="h-3 w-3 mr-1" />
               Ask AI
@@ -125,7 +125,7 @@ export default function GoalSettingStep({
                 <p className="text-sm font-medium text-gray-900">
                   John Deere - Closed Loop
                 </p>
-                <p className="text-xs text-gray-600 mt-0.5">
+                <p className="text-sm text-gray-600 mt-0.5">
                   Dealer network only, restricted to authorized locations
                 </p>
               </div>
@@ -137,7 +137,7 @@ export default function GoalSettingStep({
                 <p className="text-sm font-medium text-gray-900">
                   Yardi - Open Loop
                 </p>
-                <p className="text-xs text-gray-600 mt-0.5">
+                <p className="text-sm text-gray-600 mt-0.5">
                   Tenant rewards + merchant catalog, flexible redemption
                 </p>
               </div>
@@ -149,7 +149,7 @@ export default function GoalSettingStep({
                 <p className="text-sm font-medium text-gray-900">
                   General - Flexible
                 </p>
-                <p className="text-xs text-gray-600 mt-0.5">
+                <p className="text-sm text-gray-600 mt-0.5">
                   Custom program configuration, all redemption methods supported
                 </p>
               </div>
@@ -167,7 +167,7 @@ export default function GoalSettingStep({
               variant="ghost"
               size="sm"
               onClick={() => onAskAI("targetAudience")}
-              className="h-7 px-2 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              className="h-7 px-2 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50"
             >
               <SparklesIcon className="h-3 w-3 mr-1" />
               Ask AI
@@ -201,7 +201,7 @@ export default function GoalSettingStep({
               </label>
             ))}
           </div>
-          <p className="text-xs text-gray-500 mt-1.5">
+          <p className="text-sm text-gray-500 mt-1.5">
             Select one or more audience segments (per spec: basic audience
             description)
           </p>
@@ -218,7 +218,7 @@ export default function GoalSettingStep({
                 variant="ghost"
                 size="sm"
                 onClick={() => onAskAI("budget")}
-                className="h-7 px-2 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                className="h-7 px-2 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50"
               >
                 <SparklesIcon className="h-3 w-3 mr-1" />
                 Ask AI
@@ -247,7 +247,7 @@ export default function GoalSettingStep({
                 </SelectContent>
               </Select>
             </div>
-            <p className="text-xs text-gray-500 mt-1.5">
+            <p className="text-sm text-gray-500 mt-1.5">
               Maximum discount per offer redemption
             </p>
           </div>
@@ -270,7 +270,7 @@ export default function GoalSettingStep({
                 min="0"
               />
             </div>
-            <p className="text-xs text-gray-500 mt-1.5">
+            <p className="text-sm text-gray-500 mt-1.5">
               Total budget for this campaign
             </p>
           </div>
@@ -286,7 +286,7 @@ export default function GoalSettingStep({
               variant="ghost"
               size="sm"
               onClick={() => onAskAI("timeline")}
-              className="h-7 px-2 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              className="h-7 px-2 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50"
             >
               <SparklesIcon className="h-3 w-3 mr-1" />
               Ask AI
@@ -296,7 +296,7 @@ export default function GoalSettingStep({
             <div>
               <Label
                 htmlFor="startDate"
-                className="text-xs text-gray-600 mb-1.5 block"
+                className="text-sm text-gray-600 mb-1.5 block"
               >
                 Start Date
               </Label>
@@ -339,7 +339,7 @@ export default function GoalSettingStep({
             <div>
               <Label
                 htmlFor="endDate"
-                className="text-xs text-gray-600 mb-1.5 block"
+                className="text-sm text-gray-600 mb-1.5 block"
               >
                 End Date
               </Label>
@@ -378,7 +378,7 @@ export default function GoalSettingStep({
               </Popover>
             </div>
           </div>
-          <p className="text-xs text-gray-500 mt-1.5">
+          <p className="text-sm text-gray-500 mt-1.5">
             Campaign start and end dates (per spec: desired campaign start and
             end dates)
           </p>
