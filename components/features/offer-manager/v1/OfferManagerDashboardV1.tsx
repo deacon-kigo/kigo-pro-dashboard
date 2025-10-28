@@ -165,21 +165,6 @@ export default function OfferManagerDashboardV1({
 
   return (
     <div className="space-y-6">
-      {/* V1 Badge Banner */}
-      <div className="p-3 rounded-lg border border-blue-200 bg-blue-50">
-        <div className="flex items-center gap-3">
-          <Badge
-            variant="outline"
-            className="text-xs font-semibold px-3 py-1 border-blue-500 text-blue-700 bg-white"
-          >
-            V1
-          </Badge>
-          <p className="text-sm font-medium text-gray-700">
-            Simple & Streamlined Offer Management - No AI Features
-          </p>
-        </div>
-      </div>
-
       {/* Simple Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -319,7 +304,7 @@ export default function OfferManagerDashboardV1({
                         <div className="flex flex-wrap items-center gap-2 mt-3">
                           <Badge
                             variant="outline"
-                            className="text-xs px-2 py-1 font-semibold border"
+                            className="text-sm px-2 py-1 font-semibold border"
                             style={getStatusStyleV1(offer.status)}
                           >
                             {offer.status.toUpperCase()}
@@ -327,7 +312,7 @@ export default function OfferManagerDashboardV1({
 
                           <Badge
                             variant="outline"
-                            className="text-xs px-2 py-1 border border-gray-300 bg-white"
+                            className="text-sm px-2 py-1 border border-gray-300 bg-white"
                           >
                             {getRedemptionTypeLabel(offer.redemptionType)}
                           </Badge>
@@ -335,7 +320,7 @@ export default function OfferManagerDashboardV1({
                           {offer.promoCode !== "—" && (
                             <Badge
                               variant="outline"
-                              className="text-xs px-2 py-1 font-mono border border-blue-300 bg-blue-50 text-blue-700"
+                              className="text-sm px-2 py-1 font-mono border border-blue-300 bg-blue-50 text-blue-700"
                             >
                               {offer.promoCode}
                             </Badge>
@@ -351,7 +336,7 @@ export default function OfferManagerDashboardV1({
                         <p className="text-2xl font-bold text-gray-900">
                           {offer.usageCount}
                         </p>
-                        <p className="text-xs text-gray-600 font-medium">
+                        <p className="text-sm text-gray-600 font-medium">
                           uses
                         </p>
                       </div>
@@ -364,7 +349,7 @@ export default function OfferManagerDashboardV1({
                             <p className="text-2xl font-bold text-orange-600">
                               {daysLeft}
                             </p>
-                            <p className="text-xs text-gray-600 font-medium">
+                            <p className="text-sm text-gray-600 font-medium">
                               days left
                             </p>
                           </div>
@@ -378,7 +363,7 @@ export default function OfferManagerDashboardV1({
                           <div className="flex items-center gap-2 text-purple-700">
                             <CalendarIcon className="h-5 w-5" />
                             <div className="text-left">
-                              <p className="text-xs font-medium">Starts</p>
+                              <p className="text-sm font-medium">Starts</p>
                               <p className="text-sm font-semibold">
                                 {new Date(offer.startDate).toLocaleDateString(
                                   "en-US",
