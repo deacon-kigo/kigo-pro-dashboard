@@ -169,7 +169,7 @@ export default function OfferManagerDashboardV1({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <GiftIcon className="h-8 w-8 text-blue-500" />
+            <GiftIcon className="h-8 w-8" style={{ color: '#328FE5' }} />
             Offer Manager
           </h1>
           <p className="text-sm text-gray-600 mt-1">
@@ -179,7 +179,10 @@ export default function OfferManagerDashboardV1({
         <Button
           onClick={onCreateOffer}
           size="lg"
-          className="bg-blue-500 hover:bg-blue-600 text-white font-semibold shadow-md hover:shadow-lg transition-all"
+          className="text-white font-semibold shadow-md hover:shadow-lg transition-all"
+          style={{ backgroundColor: '#328FE5' }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2978C8'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#328FE5'}
         >
           <PlusIcon className="h-5 w-5 mr-2" />
           Create New Offer
@@ -289,7 +292,12 @@ export default function OfferManagerDashboardV1({
                   <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                     {/* Offer Icon & Info */}
                     <div className="flex items-start gap-4 flex-1">
-                      <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md bg-gradient-to-br from-blue-500 to-blue-600">
+                      <div
+                        className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md"
+                        style={{
+                          background: 'linear-gradient(to bottom right, #328FE5, #2978C8)'
+                        }}
+                      >
                         <GiftIcon className="h-7 w-7 text-white" />
                       </div>
 
