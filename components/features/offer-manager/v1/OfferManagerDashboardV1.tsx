@@ -31,8 +31,10 @@ interface OfferManagerDashboardV1Props {
 const mockOffersV1 = [
   {
     id: "1",
-    shortText: "20% Off Dinner Entrees",
-    longText: "Get 20% off any dinner entree when you dine in",
+    offerName: "20% Off Dinner Entrees",
+    description: "Get 20% off any dinner entree when you dine in",
+    shortText: "20% Off Dinner Entrees", // Backward compatibility
+    longText: "Get 20% off any dinner entree when you dine in", // Backward compatibility
     status: "active",
     startDate: "2026-01-15",
     endDate: "2026-03-15",
@@ -42,6 +44,8 @@ const mockOffersV1 = [
   },
   {
     id: "2",
+    offerName: "Buy One Get One Free Appetizer",
+    description: "Purchase any appetizer and get a second one free",
     shortText: "Buy One Get One Free Appetizer",
     longText: "Purchase any appetizer and get a second one free",
     status: "active",
@@ -53,6 +57,8 @@ const mockOffersV1 = [
   },
   {
     id: "3",
+    offerName: "$10 Off Your Next Visit",
+    description: "Save $10 on any purchase of $50 or more",
     shortText: "$10 Off Your Next Visit",
     longText: "Save $10 on any purchase of $50 or more",
     status: "draft",
@@ -64,6 +70,8 @@ const mockOffersV1 = [
   },
   {
     id: "4",
+    offerName: "Free Dessert with Entree",
+    description: "Enjoy a complimentary dessert with any entree purchase",
     shortText: "Free Dessert with Entree",
     longText: "Enjoy a complimentary dessert with any entree purchase",
     status: "scheduled",
@@ -75,6 +83,8 @@ const mockOffersV1 = [
   },
   {
     id: "5",
+    offerName: "Happy Hour Special",
+    description: "50% off drinks and appetizers 3-6pm weekdays",
     shortText: "Happy Hour Special",
     longText: "50% off drinks and appetizers 3-6pm weekdays",
     status: "paused",
@@ -130,7 +140,7 @@ export default function OfferManagerDashboardV1({
   const [filterStatus, setFilterStatus] = useState("all");
 
   const filteredOffers = mockOffersV1.filter((offer) => {
-    const matchesSearch = offer.shortText
+    const matchesSearch = (offer.offerName || offer.shortText)
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
     const matchesStatus =
@@ -279,10 +289,10 @@ export default function OfferManagerDashboardV1({
 
                           <div className="flex-1 min-w-0">
                             <p className="text-base font-bold text-gray-900">
-                              {offer.shortText}
+                              {offer.offerName || offer.shortText}
                             </p>
                             <p className="text-sm text-gray-600 mt-1">
-                              {offer.longText}
+                              {offer.description || offer.longText}
                             </p>
 
                             <div className="flex flex-wrap items-center gap-2 mt-3">
