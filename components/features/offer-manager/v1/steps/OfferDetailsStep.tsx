@@ -12,8 +12,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ReactSelectMulti } from "@/components/ui/react-select-multi";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import {
+  HierarchicalTreeSelector,
+  TreeNode,
+} from "@/components/ui/hierarchical-tree-selector";
 
 interface OfferDetailsStepProps {
   formData: any;
@@ -34,7 +36,7 @@ const OFFER_SOURCES = [
 // Available categories (from config.categorisation table)
 // In production, these would be fetched from GET /api/categories
 // Structured as tree with parent-child relationships
-const CATEGORY_TREE = [
+const CATEGORY_TREE: TreeNode[] = [
   {
     id: "1",
     name: "Food & Dining",
@@ -97,28 +99,6 @@ export default function OfferDetailsStepV1({
   // Initialize category_ids and commodity_ids arrays (matching API structure)
   const categoryIds = formData.category_ids || [];
   const commodityIds = formData.commodity_ids || [];
-
-  // State for expanded parent categories
-  const [expandedCategories, setExpandedCategories] = React.useState<
-    Set<string>
-  >(new Set());
-
-  const toggleCategory = (categoryId: string) => {
-    const newExpanded = new Set(expandedCategories);
-    if (newExpanded.has(categoryId)) {
-      newExpanded.delete(categoryId);
-    } else {
-      newExpanded.add(categoryId);
-    }
-    setExpandedCategories(newExpanded);
-  };
-
-  const toggleCategorySelection = (categoryId: string) => {
-    const newIds = categoryIds.includes(categoryId)
-      ? categoryIds.filter((id: string) => id !== categoryId)
-      : [...categoryIds, categoryId];
-    onUpdate("category_ids", newIds);
-  };
 
   return (
     <div className="space-y-6">
@@ -359,106 +339,19 @@ export default function OfferDetailsStepV1({
           </p>
         </div>
 
-        {/* Categories - Hierarchical Checkbox Tree */}
-        <div className="space-y-3">
-          <div>
-            <Label>Categories</Label>
-            <p className="text-sm text-gray-500">
-              Select one or more categories. Click arrows to expand
-              subcategories.
-            </p>
-          </div>
-
-          <div className="border border-gray-200 rounded-lg p-4 bg-gray-50 max-h-80 overflow-y-auto">
-            <div className="space-y-1">
-              {CATEGORY_TREE.map((parentCategory) => (
-                <div key={parentCategory.id}>
-                  {/* Parent Category */}
-                  <div className="flex items-center gap-2 py-2 hover:bg-gray-100 rounded px-2">
-                    {parentCategory.children.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => toggleCategory(parentCategory.id)}
-                        className="p-0.5 hover:bg-gray-200 rounded"
-                      >
-                        {expandedCategories.has(parentCategory.id) ? (
-                          <ChevronDownIcon className="h-4 w-4 text-gray-600" />
-                        ) : (
-                          <ChevronRightIcon className="h-4 w-4 text-gray-600" />
-                        )}
-                      </button>
-                    )}
-                    {parentCategory.children.length === 0 && (
-                      <div className="w-5" />
-                    )}
-                    <Checkbox
-                      id={`cat-${parentCategory.id}`}
-                      checked={categoryIds.includes(parentCategory.id)}
-                      onCheckedChange={() =>
-                        toggleCategorySelection(parentCategory.id)
-                      }
-                    />
-                    <label
-                      htmlFor={`cat-${parentCategory.id}`}
-                      className="text-sm font-medium text-gray-900 cursor-pointer flex-1"
-                    >
-                      {parentCategory.name}
-                    </label>
-                  </div>
-
-                  {/* Child Categories */}
-                  {expandedCategories.has(parentCategory.id) &&
-                    parentCategory.children.length > 0 && (
-                      <div className="ml-8 space-y-1 mt-1">
-                        {parentCategory.children.map((childCategory) => (
-                          <div
-                            key={childCategory.id}
-                            className="flex items-center gap-2 py-1.5 hover:bg-gray-100 rounded px-2"
-                          >
-                            <Checkbox
-                              id={`cat-${childCategory.id}`}
-                              checked={categoryIds.includes(childCategory.id)}
-                              onCheckedChange={() =>
-                                toggleCategorySelection(childCategory.id)
-                              }
-                            />
-                            <label
-                              htmlFor={`cat-${childCategory.id}`}
-                              className="text-sm text-gray-700 cursor-pointer flex-1"
-                            >
-                              {childCategory.name}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {categoryIds.length > 0 && (
-            <div className="flex flex-wrap gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <span className="text-sm font-medium text-blue-900">
-                Selected:
-              </span>
-              {categoryIds.map((id: string) => {
-                const category =
-                  CATEGORY_TREE.find((c) => c.id === id) ||
-                  CATEGORY_TREE.flatMap((c) => c.children).find(
-                    (c) => c?.id === id
-                  );
-                return category ? (
-                  <span
-                    key={id}
-                    className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm font-medium"
-                  >
-                    {category.name}
-                  </span>
-                ) : null;
-              })}
-            </div>
-          )}
+        {/* Categories - Hierarchical Tree Selector */}
+        <div className="space-y-2">
+          <Label>Categories</Label>
+          <p className="text-sm text-gray-500 mb-2">
+            Select one or more categories. Click arrows to expand subcategories.
+          </p>
+          <HierarchicalTreeSelector
+            data={CATEGORY_TREE}
+            selectedIds={categoryIds}
+            onChange={(ids) => onUpdate("category_ids", ids)}
+            placeholder="No categories available"
+            showSelectedBadge={true}
+          />
         </div>
 
         {/* Commodities - Multi-Select from Existing */}
