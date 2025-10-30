@@ -16,6 +16,12 @@ import {
   HierarchicalTreeSelector,
   TreeNode,
 } from "@/components/ui/hierarchical-tree-selector";
+import { Card } from "@/components/ui/card";
+import {
+  FileTextIcon,
+  InformationCircleIcon,
+  TagIcon,
+} from "@heroicons/react/24/outline";
 
 interface OfferDetailsStepProps {
   formData: any;

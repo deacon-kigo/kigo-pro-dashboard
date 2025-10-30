@@ -14,6 +14,8 @@ import assignmentReducer from "./slices/assignmentSlice";
 import programSelectionReducer from "./slices/programSelectionSlice";
 import agentReducer from "./slices/agentSlice";
 import offerManagerReducer from "./slices/offerManagerSlice";
+import merchantManagerReducer from "./slices/merchantManagerSlice";
+import campaignManagerReducer from "./slices/campaignManagerSlice";
 import agentModeReducer from "./slices/agentModeSlice";
 import { useDispatch } from "react-redux";
 import { ActionWithType } from "../../types/redux";
@@ -71,6 +73,8 @@ export function makeStore() {
       programSelection: programSelectionReducer,
       agent: agentReducer,
       offerManager: offerManagerReducer,
+      merchantManager: merchantManagerReducer,
+      campaignManager: campaignManagerReducer,
       agentMode: agentModeReducer,
     },
     middleware: (getDefaultMiddleware) =>
