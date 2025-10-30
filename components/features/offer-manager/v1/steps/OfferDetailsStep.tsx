@@ -11,8 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { ReactSelectMulti } from "@/components/ui/react-select-multi";
 
 interface OfferDetailsStepProps {
   formData: any;
@@ -30,16 +29,34 @@ const OFFER_SOURCES = [
   { label: "Create New Offer", value: "NEW" },
 ];
 
-// Available categories
+// Available categories (from config.categorisation table)
+// In production, these would be fetched from GET /api/categories
 const AVAILABLE_CATEGORIES = [
-  { label: "Food & Dining", value: "food" },
-  { label: "Retail", value: "retail" },
-  { label: "Entertainment", value: "entertainment" },
-  { label: "Services", value: "services" },
-  { label: "Health & Wellness", value: "health" },
-  { label: "Automotive", value: "automotive" },
-  { label: "Travel", value: "travel" },
-  { label: "Home & Garden", value: "home" },
+  { label: "Food & Dining", value: "1" },
+  { label: "  → Pizza", value: "2" },
+  { label: "  → Burgers", value: "3" },
+  { label: "  → Fine Dining", value: "4" },
+  { label: "  → Fast Food", value: "5" },
+  { label: "Retail", value: "6" },
+  { label: "  → Clothing", value: "7" },
+  { label: "  → Electronics", value: "8" },
+  { label: "Entertainment", value: "9" },
+  { label: "Services", value: "10" },
+  { label: "Health & Wellness", value: "11" },
+  { label: "Automotive", value: "12" },
+];
+
+// Available commodities (from config.commodities table)
+// In production, these would be fetched from GET /api/commodities
+const AVAILABLE_COMMODITIES = [
+  { label: "Entrees", value: "1" },
+  { label: "Appetizers", value: "2" },
+  { label: "Desserts", value: "3" },
+  { label: "Beverages", value: "4" },
+  { label: "Alcohol", value: "5" },
+  { label: "Gift Cards", value: "6" },
+  { label: "Merchandise", value: "7" },
+  { label: "Services", value: "8" },
 ];
 
 export default function OfferDetailsStepV1({
@@ -47,47 +64,9 @@ export default function OfferDetailsStepV1({
   onUpdate,
   onNext,
 }: OfferDetailsStepProps) {
-  // Initialize categories and commodities arrays if not exists
-  const categories = formData.categories || [];
-  const commodities = formData.commodities || [];
-
-  const handleAddCategory = () => {
-    const newCategories = [...categories, { category: "", subcategory: "" }];
-    onUpdate("categories", newCategories);
-  };
-
-  const handleRemoveCategory = (index: number) => {
-    const newCategories = categories.filter((_: any, i: number) => i !== index);
-    onUpdate("categories", newCategories);
-  };
-
-  const handleCategoryChange = (
-    index: number,
-    field: string,
-    value: string
-  ) => {
-    const newCategories = [...categories];
-    newCategories[index] = { ...newCategories[index], [field]: value };
-    onUpdate("categories", newCategories);
-  };
-
-  const handleAddCommodity = () => {
-    const newCommodities = [...commodities, ""];
-    onUpdate("commodities", newCommodities);
-  };
-
-  const handleRemoveCommodity = (index: number) => {
-    const newCommodities = commodities.filter(
-      (_: any, i: number) => i !== index
-    );
-    onUpdate("commodities", newCommodities);
-  };
-
-  const handleCommodityChange = (index: number, value: string) => {
-    const newCommodities = [...commodities];
-    newCommodities[index] = value;
-    onUpdate("commodities", newCommodities);
-  };
+  // Initialize category_ids and commodity_ids arrays (matching API structure)
+  const categoryIds = formData.category_ids || [];
+  const commodityIds = formData.commodity_ids || [];
 
   return (
     <div className="space-y-6">
@@ -328,152 +307,35 @@ export default function OfferDetailsStepV1({
           </p>
         </div>
 
-        {/* Categories - Flexible System */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <Label>Categories</Label>
-              <p className="text-sm text-gray-500">
-                Add one or more categories. Categories can have subcategories.
-              </p>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleAddCategory}
-              className="flex items-center gap-1"
-            >
-              <PlusIcon className="h-4 w-4" />
-              Add Category
-            </Button>
-          </div>
-
-          {categories.length === 0 && (
-            <div className="p-4 border border-dashed border-gray-300 rounded-lg text-center">
-              <p className="text-sm text-gray-500">
-                No categories added yet. Click "Add Category" to get started.
-              </p>
-            </div>
-          )}
-
-          <div className="space-y-3">
-            {categories.map((cat: any, index: number) => (
-              <div
-                key={index}
-                className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg bg-gray-50"
-              >
-                <div className="flex-1 grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <Label htmlFor={`category-${index}`} className="text-sm">
-                      Category
-                    </Label>
-                    <Select
-                      value={cat.category}
-                      onValueChange={(value) =>
-                        handleCategoryChange(index, "category", value)
-                      }
-                    >
-                      <SelectTrigger id={`category-${index}`} className="h-9">
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {AVAILABLE_CATEGORIES.map((category) => (
-                          <SelectItem
-                            key={category.value}
-                            value={category.value}
-                          >
-                            {category.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor={`subcategory-${index}`} className="text-sm">
-                      Subcategory
-                    </Label>
-                    <Input
-                      id={`subcategory-${index}`}
-                      placeholder="e.g., Pizza, Burgers"
-                      value={cat.subcategory}
-                      onChange={(e) =>
-                        handleCategoryChange(
-                          index,
-                          "subcategory",
-                          e.target.value
-                        )
-                      }
-                      className="h-9"
-                    />
-                  </div>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleRemoveCategory(index)}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50 mt-6"
-                >
-                  <XMarkIcon className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
-          </div>
+        {/* Categories - Multi-Select from Existing */}
+        <div className="space-y-2">
+          <Label htmlFor="categories">Categories</Label>
+          <ReactSelectMulti
+            options={AVAILABLE_CATEGORIES}
+            values={categoryIds}
+            onChange={(values) => onUpdate("category_ids", values)}
+            placeholder="Select categories..."
+            maxDisplayValues={3}
+          />
+          <p className="text-sm text-gray-500">
+            Select one or more categories from the list. Categories with → are
+            subcategories.
+          </p>
         </div>
 
-        {/* Commodities - Flexible Tags */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <Label>Commodities</Label>
-              <p className="text-sm text-gray-500">
-                Add specific items, products, or services included in this
-                offer.
-              </p>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleAddCommodity}
-              className="flex items-center gap-1"
-            >
-              <PlusIcon className="h-4 w-4" />
-              Add Commodity
-            </Button>
-          </div>
-
-          {commodities.length === 0 && (
-            <div className="p-4 border border-dashed border-gray-300 rounded-lg text-center">
-              <p className="text-sm text-gray-500">
-                No commodities added yet. Click "Add Commodity" to get started.
-              </p>
-            </div>
-          )}
-
-          <div className="flex flex-wrap gap-2">
-            {commodities.map((commodity: string, index: number) => (
-              <div
-                key={index}
-                className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-md"
-              >
-                <Input
-                  placeholder="e.g., Entrees, Appetizers"
-                  value={commodity}
-                  onChange={(e) => handleCommodityChange(index, e.target.value)}
-                  className="h-7 w-40 text-sm border-none bg-transparent focus-visible:ring-0"
-                />
-                <button
-                  type="button"
-                  onClick={() => handleRemoveCommodity(index)}
-                  className="text-blue-600 hover:text-blue-800"
-                >
-                  <XMarkIcon className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
-          </div>
+        {/* Commodities - Multi-Select from Existing */}
+        <div className="space-y-2">
+          <Label htmlFor="commodities">Commodities</Label>
+          <ReactSelectMulti
+            options={AVAILABLE_COMMODITIES}
+            values={commodityIds}
+            onChange={(values) => onUpdate("commodity_ids", values)}
+            placeholder="Select commodities..."
+            maxDisplayValues={3}
+          />
+          <p className="text-sm text-gray-500">
+            Select specific items, products, or services included in this offer.
+          </p>
         </div>
       </div>
     </div>
