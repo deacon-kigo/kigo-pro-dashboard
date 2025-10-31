@@ -161,20 +161,14 @@ export function OffersTable({ offers, searchQuery = "" }: OffersTableProps) {
         cell: ({ row }) => {
           const offer = row.original;
           const title = row.getValue("title") as string;
-          const isMatch =
-            searchQuery &&
-            title.toLowerCase().includes(searchQuery.toLowerCase());
+          // Remove search highlighting to prevent re-renders
+          // const isMatch =
+          //   searchQuery &&
+          //   title.toLowerCase().includes(searchQuery.toLowerCase());
 
           return (
             <div className="flex flex-col">
-              <span
-                className={cn(
-                  "font-semibold text-gray-900",
-                  isMatch && "bg-yellow-200"
-                )}
-              >
-                {title}
-              </span>
+              <span className="font-semibold text-gray-900">{title}</span>
               <span className="text-sm text-gray-600">{offer.description}</span>
             </div>
           );
@@ -283,7 +277,9 @@ export function OffersTable({ offers, searchQuery = "" }: OffersTableProps) {
         cell: OfferActions,
       },
     ],
-    [searchQuery]
+    // Disable dependencies to prevent re-renders and dropdown menu issues
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
   );
 
   return (

@@ -145,11 +145,7 @@ export default function OfferManagerViewV1() {
     stepConfig.find((s) => s.id === currentStep)?.number || 1;
 
   if (!isCreatingOffer) {
-    return (
-      <div className="max-w-7xl mx-auto">
-        <OfferManagerDashboardV1 onCreateOffer={handleStartCreation} />
-      </div>
-    );
+    return <OfferManagerDashboardV1 onCreateOffer={handleStartCreation} />;
   }
 
   return (

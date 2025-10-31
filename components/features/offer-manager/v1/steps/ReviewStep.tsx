@@ -54,7 +54,7 @@ export default function ReviewStepV1({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <div className="flex items-start gap-3">
           <CheckCircleIcon className="h-5 w-5 text-blue-600 mt-0.5" />
@@ -69,13 +69,17 @@ export default function ReviewStepV1({
       </div>
 
       {/* Offer Details Section */}
-      <Card className="p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <DocumentTextIcon className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold">Offer Details</h3>
+      <Card className="rounded-md border">
+        <div className="bg-muted/20 flex items-center border-b p-3">
+          <DocumentTextIcon className="text-primary mr-2 size-5" />
+          <div>
+            <h3 className="font-medium">Offer Details</h3>
+            <p className="text-muted-foreground text-sm">
+              Core information about your offer
+            </p>
+          </div>
         </div>
-
-        <div className="space-y-4">
+        <div className="space-y-4 p-4">
           <div>
             <Label>Short Text</Label>
             <p className="text-sm mt-1">{formData.shortText || "(Not set)"}</p>
@@ -131,13 +135,17 @@ export default function ReviewStepV1({
       </Card>
 
       {/* Classification Section */}
-      <Card className="p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <TagIcon className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold">Classification</h3>
+      <Card className="rounded-md border">
+        <div className="bg-muted/20 flex items-center border-b p-3">
+          <TagIcon className="text-primary mr-2 size-5" />
+          <div>
+            <h3 className="font-medium">Classification</h3>
+            <p className="text-muted-foreground text-sm">
+              Category and type information
+            </p>
+          </div>
         </div>
-
-        <div className="space-y-4">
+        <div className="space-y-4 p-4">
           <div>
             <Label>Offer Type</Label>
             <div className="mt-1">
@@ -202,13 +210,17 @@ export default function ReviewStepV1({
       </Card>
 
       {/* Redemption Section */}
-      <Card className="p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <CreditCardIcon className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold">Redemption Method</h3>
+      <Card className="rounded-md border">
+        <div className="bg-muted/20 flex items-center border-b p-3">
+          <CreditCardIcon className="text-primary mr-2 size-5" />
+          <div>
+            <h3 className="font-medium">Redemption Method</h3>
+            <p className="text-muted-foreground text-sm">
+              How customers will redeem this offer
+            </p>
+          </div>
         </div>
-
-        <div className="space-y-4">
+        <div className="space-y-4 p-4">
           <div>
             <Label>Redemption Type</Label>
             <div className="mt-1">
@@ -264,13 +276,17 @@ export default function ReviewStepV1({
       </Card>
 
       {/* Usage Limits Section */}
-      <Card className="p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <MapPinIcon className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold">Usage & Location</h3>
+      <Card className="rounded-md border">
+        <div className="bg-muted/20 flex items-center border-b p-3">
+          <MapPinIcon className="text-primary mr-2 size-5" />
+          <div>
+            <h3 className="font-medium">Usage & Location</h3>
+            <p className="text-muted-foreground text-sm">
+              Usage limits and location restrictions
+            </p>
+          </div>
         </div>
-
-        <div className="space-y-4">
+        <div className="space-y-4 p-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Uses Per Customer</Label>

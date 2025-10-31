@@ -12,13 +12,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ReactSelectMulti } from "@/components/ui/react-select-multi";
+import { ReactSelectCreatable } from "@/components/ui/react-select-creatable";
 import {
   HierarchicalTreeSelector,
   TreeNode,
 } from "@/components/ui/hierarchical-tree-selector";
-import { Card } from "@/components/ui/card";
 import {
-  FileTextIcon,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  DocumentTextIcon,
   InformationCircleIcon,
   TagIcon,
 } from "@heroicons/react/24/outline";
@@ -29,14 +35,13 @@ interface OfferDetailsStepProps {
   onNext: () => void;
 }
 
-// Available offer sources
+// Available offer sources (external reference values)
 const OFFER_SOURCES = [
   { label: "MCM (Merchant Commerce Manager)", value: "MCM" },
   { label: "FMTC (FlexOffers)", value: "FMTC" },
   { label: "EBG (Enterprise Business Group)", value: "EBG" },
   { label: "RN (Retail Network)", value: "RN" },
   { label: "AUGEO (Augeo Platform)", value: "AUGEO" },
-  { label: "Create New Offer", value: "NEW" },
 ];
 
 // Available categories (from config.categorisation table)
@@ -100,281 +105,271 @@ const AVAILABLE_COMMODITIES = [
 export default function OfferDetailsStepV1({
   formData,
   onUpdate,
-  onNext,
 }: OfferDetailsStepProps) {
   // Initialize category_ids and commodity_ids arrays (matching API structure)
   const categoryIds = formData.category_ids || [];
   const commodityIds = formData.commodity_ids || [];
 
   return (
-    <div className="space-y-6">
-      {/* Offer Source Selection */}
-      <div className="space-y-4">
-        <div>
-          <h3 className="text-lg font-semibold mb-3">Offer Source</h3>
-          <p className="text-sm text-gray-500 mb-4">
-            Select whether to use an existing offer or create a new one
-          </p>
-        </div>
+    <div className="space-y-4">
+      {/* Offer Source Section */}
+      <Accordion
+        className="rounded-md border"
+        collapsible
+        defaultValue="offer-source"
+        type="single"
+      >
+        <AccordionItem value="offer-source">
+          <AccordionTrigger>
+            <div className="flex items-center gap-2">
+              <DocumentTextIcon className="size-4" />
+              <span>Offer Source</span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="space-y-5">
+            <div>
+              <Label htmlFor="offerSource">Offer Source*</Label>
+              <ReactSelectCreatable
+                options={OFFER_SOURCES}
+                value={formData.offerSource || null}
+                onChange={(value) => onUpdate("offerSource", value)}
+                placeholder="Select existing or create new source"
+                formatCreateLabel={(inputValue) =>
+                  `Create new source "${inputValue.toUpperCase().replace(/\s+/g, "_")}"`
+                }
+                helperText="Select from existing sources (MCM, FMTC, EBG, RN, AUGEO) or type to create a new one. Only uppercase letters, numbers, and underscores allowed (3-60 characters)"
+              />
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
 
-        <div className="space-y-2">
-          <Label htmlFor="offerSource">
-            Source <span className="text-red-500">*</span>
-          </Label>
-          <Select
-            value={formData.offerSource || "NEW"}
-            onValueChange={(value) => onUpdate("offerSource", value)}
-          >
-            <SelectTrigger id="offerSource">
-              <SelectValue placeholder="Select offer source" />
-            </SelectTrigger>
-            <SelectContent>
-              {OFFER_SOURCES.map((source) => (
-                <SelectItem key={source.value} value={source.value}>
-                  {source.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className="text-sm text-gray-500">
-            Choose a source to import from, or create a new offer
-          </p>
-        </div>
+      {/* Basic Information Section */}
+      <Accordion
+        className="rounded-md border"
+        collapsible
+        defaultValue="basic-info"
+        type="single"
+      >
+        <AccordionItem value="basic-info">
+          <AccordionTrigger>
+            <div className="flex items-center gap-2">
+              <InformationCircleIcon className="size-4" />
+              <span>Basic Information</span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="space-y-5">
+            <div>
+              <Label htmlFor="offerName">Offer Name*</Label>
+              <Input
+                id="offerName"
+                placeholder="Brief offer name for listing view (e.g., '20% Off Dinner')"
+                value={formData.offerName || formData.shortText || ""}
+                onChange={(e) => {
+                  onUpdate("offerName", e.target.value);
+                  // Keep backward compatibility with shortText
+                  onUpdate("shortText", e.target.value);
+                }}
+                maxLength={60}
+              />
+              <p className="text-muted-foreground text-sm">
+                {(formData.offerName || formData.shortText || "").length}/60
+                characters - Shown in listing view
+              </p>
+            </div>
 
-        {formData.offerSource && formData.offerSource !== "NEW" && (
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-800">
-              <strong>Source selected:</strong>{" "}
-              {
-                OFFER_SOURCES.find((s) => s.value === formData.offerSource)
-                  ?.label
-              }
-            </p>
-            <p className="text-xs text-blue-600 mt-1">
-              Offer details will be imported from this source
-            </p>
-          </div>
-        )}
-      </div>
+            <div>
+              <Label htmlFor="description">Description*</Label>
+              <Textarea
+                id="description"
+                placeholder="Detailed offer description for detail view"
+                value={formData.description || formData.longText || ""}
+                onChange={(e) => {
+                  onUpdate("description", e.target.value);
+                  // Keep backward compatibility with longText
+                  onUpdate("longText", e.target.value);
+                }}
+                rows={4}
+                maxLength={500}
+              />
+              <p className="text-muted-foreground text-sm">
+                {(formData.description || formData.longText || "").length}/500
+                characters - Shown in detail view
+              </p>
+            </div>
 
-      {/* Basic Offer Information */}
-      <div className="space-y-4 pt-6 border-t">
-        <div>
-          <h3 className="text-lg font-semibold mb-3">Basic Information</h3>
-          <p className="text-sm text-gray-500 mb-4">
-            Provide the core details about your offer
-          </p>
-        </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="startDate">Start Date*</Label>
+                <Input
+                  id="startDate"
+                  type="date"
+                  value={formData.startDate}
+                  onChange={(e) => onUpdate("startDate", e.target.value)}
+                />
+              </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="offerName">
-            Offer Name <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="offerName"
-            placeholder="Brief offer name for listing view (e.g., '20% Off Dinner')"
-            value={formData.offerName || formData.shortText || ""}
-            onChange={(e) => {
-              onUpdate("offerName", e.target.value);
-              // Keep backward compatibility with shortText
-              onUpdate("shortText", e.target.value);
-            }}
-            maxLength={60}
-          />
-          <p className="text-sm text-gray-500">
-            {(formData.offerName || formData.shortText || "").length}/60
-            characters - Shown in listing view
-          </p>
-        </div>
+              <div>
+                <Label htmlFor="endDate">End Date</Label>
+                <Input
+                  id="endDate"
+                  type="date"
+                  value={formData.endDate}
+                  onChange={(e) => onUpdate("endDate", e.target.value)}
+                  min={formData.startDate}
+                />
+                <p className="text-muted-foreground text-sm">
+                  Leave blank for no expiration
+                </p>
+              </div>
+            </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="description">
-            Description <span className="text-red-500">*</span>
-          </Label>
-          <Textarea
-            id="description"
-            placeholder="Detailed offer description for detail view"
-            value={formData.description || formData.longText || ""}
-            onChange={(e) => {
-              onUpdate("description", e.target.value);
-              // Keep backward compatibility with longText
-              onUpdate("longText", e.target.value);
-            }}
-            rows={4}
-            maxLength={500}
-          />
-          <p className="text-sm text-gray-500">
-            {(formData.description || formData.longText || "").length}/500
-            characters - Shown in detail view
-          </p>
-        </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="maxDiscount">Max Discount Amount</Label>
+                <Input
+                  id="maxDiscount"
+                  type="text"
+                  placeholder="e.g., $50"
+                  value={formData.maxDiscount}
+                  onChange={(e) => onUpdate("maxDiscount", e.target.value)}
+                />
+                <p className="text-muted-foreground text-sm">
+                  Maximum discount value if applicable
+                </p>
+              </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="startDate">
-              Start Date <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="startDate"
-              type="date"
-              value={formData.startDate}
-              onChange={(e) => onUpdate("startDate", e.target.value)}
-            />
-          </div>
+              <div>
+                <Label htmlFor="discountValue">Discount Value</Label>
+                <Input
+                  id="discountValue"
+                  placeholder="e.g., 20% or $10"
+                  value={formData.discountValue}
+                  onChange={(e) => onUpdate("discountValue", e.target.value)}
+                />
+                <p className="text-muted-foreground text-sm">
+                  Can be auto-extracted from offer text
+                </p>
+              </div>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="endDate">End Date</Label>
-            <Input
-              id="endDate"
-              type="date"
-              value={formData.endDate}
-              onChange={(e) => onUpdate("endDate", e.target.value)}
-              min={formData.startDate}
-            />
-            <p className="text-sm text-gray-500">
-              Leave blank for no expiration
-            </p>
-          </div>
-        </div>
+            <div>
+              <Label htmlFor="termsConditions">Terms & Conditions*</Label>
+              <Textarea
+                id="termsConditions"
+                placeholder="Enter the terms and conditions for this offer"
+                value={formData.termsConditions}
+                onChange={(e) => onUpdate("termsConditions", e.target.value)}
+                rows={4}
+              />
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
 
-        <div className="space-y-2">
-          <Label htmlFor="maxDiscount">Max Discount Amount</Label>
-          <Input
-            id="maxDiscount"
-            type="text"
-            placeholder="e.g., $50"
-            value={formData.maxDiscount}
-            onChange={(e) => onUpdate("maxDiscount", e.target.value)}
-          />
-          <p className="text-sm text-gray-500">
-            Maximum discount value if applicable
-          </p>
-        </div>
+      {/* Classification Section */}
+      <Accordion
+        className="rounded-md border"
+        collapsible
+        defaultValue="classification"
+        type="single"
+      >
+        <AccordionItem value="classification">
+          <AccordionTrigger>
+            <div className="flex items-center gap-2">
+              <TagIcon className="size-4" />
+              <span>Classification</span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="space-y-5">
+            <div>
+              <Label htmlFor="offerType">Offer Type*</Label>
+              <Select
+                value={formData.offerType}
+                onValueChange={(value) => onUpdate("offerType", value)}
+              >
+                <SelectTrigger id="offerType">
+                  <SelectValue placeholder="Select offer type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="bogo">BOGO (Buy One Get One)</SelectItem>
+                  <SelectItem value="percent_off">Percentage Off</SelectItem>
+                  <SelectItem value="dollar_off">Dollar Amount Off</SelectItem>
+                  <SelectItem value="free">Free Item/Service</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="termsConditions">
-            Terms & Conditions <span className="text-red-500">*</span>
-          </Label>
-          <Textarea
-            id="termsConditions"
-            placeholder="Enter the terms and conditions for this offer"
-            value={formData.termsConditions}
-            onChange={(e) => onUpdate("termsConditions", e.target.value)}
-            rows={4}
-          />
-        </div>
-      </div>
+            <div>
+              <Label htmlFor="cuisineType">Cuisine Type</Label>
+              <Select
+                value={formData.cuisineType}
+                onValueChange={(value) => onUpdate("cuisineType", value)}
+              >
+                <SelectTrigger id="cuisineType">
+                  <SelectValue placeholder="Select cuisine type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="american">American</SelectItem>
+                  <SelectItem value="italian">Italian</SelectItem>
+                  <SelectItem value="mexican">Mexican</SelectItem>
+                  <SelectItem value="asian">Asian</SelectItem>
+                  <SelectItem value="mediterranean">Mediterranean</SelectItem>
+                  <SelectItem value="fast_food">Fast Food</SelectItem>
+                  <SelectItem value="cafe">Café/Bakery</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-      {/* Classification */}
-      <div className="space-y-4 pt-6 border-t">
-        <div>
-          <h3 className="text-lg font-semibold mb-3">Classification</h3>
-          <p className="text-sm text-gray-500 mb-4">
-            Help customers find your offer through search and filtering
-          </p>
-        </div>
+            <div>
+              <Label htmlFor="keywords">Keywords</Label>
+              <Input
+                id="keywords"
+                placeholder="e.g., dinner, lunch, drinks, pizza"
+                value={formData.keywords}
+                onChange={(e) => onUpdate("keywords", e.target.value)}
+              />
+              <p className="text-muted-foreground text-sm">
+                Comma-separated keywords for search
+              </p>
+            </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="offerType">
-            Offer Type <span className="text-red-500">*</span>
-          </Label>
-          <Select
-            value={formData.offerType}
-            onValueChange={(value) => onUpdate("offerType", value)}
-          >
-            <SelectTrigger id="offerType">
-              <SelectValue placeholder="Select offer type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="bogo">BOGO (Buy One Get One)</SelectItem>
-              <SelectItem value="percent_off">Percentage Off</SelectItem>
-              <SelectItem value="dollar_off">Dollar Amount Off</SelectItem>
-              <SelectItem value="free">Free Item/Service</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+            {/* Categories - Hierarchical Tree Selector */}
+            <div>
+              <Label>Categories</Label>
+              <p className="text-muted-foreground text-sm mb-2">
+                Select one or more categories. Click arrows to expand
+                subcategories.
+              </p>
+              <HierarchicalTreeSelector
+                data={CATEGORY_TREE}
+                selectedIds={categoryIds}
+                onChange={(ids) => onUpdate("category_ids", ids)}
+                placeholder="No categories available"
+                showSelectedBadge={true}
+              />
+            </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="discountValue">
-            Discount Value (Auto-calculated or Manual)
-          </Label>
-          <Input
-            id="discountValue"
-            placeholder="e.g., 20% or $10"
-            value={formData.discountValue}
-            onChange={(e) => onUpdate("discountValue", e.target.value)}
-          />
-          <p className="text-sm text-gray-500">
-            Can be auto-extracted from offer text
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="cuisineType">Cuisine Type (Optional)</Label>
-          <Select
-            value={formData.cuisineType}
-            onValueChange={(value) => onUpdate("cuisineType", value)}
-          >
-            <SelectTrigger id="cuisineType">
-              <SelectValue placeholder="Select cuisine type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="american">American</SelectItem>
-              <SelectItem value="italian">Italian</SelectItem>
-              <SelectItem value="mexican">Mexican</SelectItem>
-              <SelectItem value="asian">Asian</SelectItem>
-              <SelectItem value="mediterranean">Mediterranean</SelectItem>
-              <SelectItem value="fast_food">Fast Food</SelectItem>
-              <SelectItem value="cafe">Café/Bakery</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="keywords">Keywords (Optional)</Label>
-          <Input
-            id="keywords"
-            placeholder="e.g., dinner, lunch, drinks, pizza"
-            value={formData.keywords}
-            onChange={(e) => onUpdate("keywords", e.target.value)}
-          />
-          <p className="text-sm text-gray-500">
-            Comma-separated keywords for search
-          </p>
-        </div>
-
-        {/* Categories - Hierarchical Tree Selector */}
-        <div className="space-y-2">
-          <Label>Categories</Label>
-          <p className="text-sm text-gray-500 mb-2">
-            Select one or more categories. Click arrows to expand subcategories.
-          </p>
-          <HierarchicalTreeSelector
-            data={CATEGORY_TREE}
-            selectedIds={categoryIds}
-            onChange={(ids) => onUpdate("category_ids", ids)}
-            placeholder="No categories available"
-            showSelectedBadge={true}
-          />
-        </div>
-
-        {/* Commodities - Multi-Select from Existing */}
-        <div className="space-y-2">
-          <Label htmlFor="commodities">Commodities</Label>
-          <ReactSelectMulti
-            options={AVAILABLE_COMMODITIES}
-            values={commodityIds}
-            onChange={(values) => onUpdate("commodity_ids", values)}
-            placeholder="Select commodities..."
-            maxDisplayValues={3}
-          />
-          <p className="text-sm text-gray-500">
-            Select specific items, products, or services included in this offer.
-          </p>
-        </div>
-      </div>
+            {/* Commodities - Multi-Select from Existing */}
+            <div>
+              <Label htmlFor="commodities">Commodities</Label>
+              <ReactSelectMulti
+                options={AVAILABLE_COMMODITIES}
+                values={commodityIds}
+                onChange={(values) => onUpdate("commodity_ids", values)}
+                placeholder="Select commodities..."
+                maxDisplayValues={3}
+              />
+              <p className="text-muted-foreground text-sm">
+                Select specific items, products, or services included in this
+                offer.
+              </p>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </div>
   );
 }
