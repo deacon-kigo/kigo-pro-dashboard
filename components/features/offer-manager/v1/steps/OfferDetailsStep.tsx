@@ -172,7 +172,7 @@ export default function OfferDetailsStepV1({
                 }}
                 maxLength={60}
               />
-              <p className="mt-1 text-muted-foreground text-sm">
+              <p className="mt-2 text-muted-foreground text-sm">
                 {(formData.offerName || formData.shortText || "").length}/60
                 characters - Shown in listing view
               </p>
@@ -192,7 +192,7 @@ export default function OfferDetailsStepV1({
                 rows={4}
                 maxLength={500}
               />
-              <p className="mt-1 text-muted-foreground text-sm">
+              <p className="mt-2 text-muted-foreground text-sm">
                 {(formData.description || formData.longText || "").length}/500
                 characters - Shown in detail view
               </p>
@@ -218,7 +218,7 @@ export default function OfferDetailsStepV1({
                   onChange={(e) => onUpdate("endDate", e.target.value)}
                   min={formData.startDate}
                 />
-                <p className="mt-1 text-muted-foreground text-sm">
+                <p className="mt-2 text-muted-foreground text-sm">
                   Leave blank for no expiration
                 </p>
               </div>
@@ -234,7 +234,7 @@ export default function OfferDetailsStepV1({
                   value={formData.maxDiscount}
                   onChange={(e) => onUpdate("maxDiscount", e.target.value)}
                 />
-                <p className="mt-1 text-muted-foreground text-sm">
+                <p className="mt-2 text-muted-foreground text-sm">
                   Maximum discount value if applicable
                 </p>
               </div>
@@ -247,7 +247,7 @@ export default function OfferDetailsStepV1({
                   value={formData.discountValue}
                   onChange={(e) => onUpdate("discountValue", e.target.value)}
                 />
-                <p className="mt-1 text-muted-foreground text-sm">
+                <p className="mt-2 text-muted-foreground text-sm">
                   Can be auto-extracted from offer text
                 </p>
               </div>
@@ -331,7 +331,7 @@ export default function OfferDetailsStepV1({
                 value={formData.keywords}
                 onChange={(e) => onUpdate("keywords", e.target.value)}
               />
-              <p className="mt-1 text-muted-foreground text-sm">
+              <p className="mt-2 text-muted-foreground text-sm">
                 Comma-separated keywords for search
               </p>
             </div>
@@ -362,7 +362,7 @@ export default function OfferDetailsStepV1({
                 placeholder="Select commodities..."
                 maxDisplayValues={3}
               />
-              <p className="mt-1 text-muted-foreground text-sm">
+              <p className="mt-2 text-muted-foreground text-sm">
                 Select specific items, products, or services included in this
                 offer.
               </p>
