@@ -93,7 +93,7 @@ const getProgramStyle = (programType: string) => {
   }
 };
 
-const OfferActions = ({ row }: { row: { original: Offer } }) => {
+const OfferActions = React.memo(({ row }: { row: { original: Offer } }) => {
   const offer = row.original;
 
   return (
@@ -134,7 +134,7 @@ const OfferActions = ({ row }: { row: { original: Offer } }) => {
       </DropdownMenu>
     </div>
   );
-};
+});
 
 export function OffersTable({ offers, searchQuery = "" }: OffersTableProps) {
   const columns: ColumnDef<Offer>[] = useMemo(
