@@ -136,6 +136,8 @@ const OfferActions = React.memo(({ row }: { row: { original: Offer } }) => {
   );
 });
 
+OfferActions.displayName = "OfferActions";
+
 export function OffersTable({ offers, searchQuery = "" }: OffersTableProps) {
   const columns: ColumnDef<Offer>[] = useMemo(
     () => [
