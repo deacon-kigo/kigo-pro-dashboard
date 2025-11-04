@@ -51,8 +51,13 @@ export function ReactSelectCreatable({
   helperText,
 }: ReactSelectCreatableProps) {
   // Convert string value to Option object for react-select
-  const selectedValue =
-    options.find((option) => option.value === value) || null;
+  // If value exists but not in options (newly created), create a temporary option
+  const selectedValue = value
+    ? options.find((option) => option.value === value) || {
+        label: value,
+        value: value,
+      }
+    : null;
 
   // Custom styles for react-select matching Shadcn UI
   const customStyles: StylesConfig<Option, false> = {
