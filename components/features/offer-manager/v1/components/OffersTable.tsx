@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpIcon, ArrowDownIcon } from "@heroicons/react/24/outline";
 import { DataTable } from "@/components/organisms/DataTable/DataTable";
