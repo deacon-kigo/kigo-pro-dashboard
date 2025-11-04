@@ -200,7 +200,7 @@ const CustomMenu = (props: MenuProps<any, true> & { treeData: TreeNode[] }) => {
 
   return (
     <components.Menu {...props}>
-      <div className="max-h-80 overflow-y-auto">
+      <div style={{ maxHeight: "320px", overflowY: "auto" }}>
         <div className="py-2">
           {treeData.length === 0 ? (
             <div className="text-center text-sm text-gray-500 py-4">
@@ -278,6 +278,7 @@ export function ReactSelectHierarchical({
   helperText,
 }: ReactSelectHierarchicalProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const valueContainerRef = useRef<HTMLDivElement>(null);
   const [effectiveMaxDisplayValues, setEffectiveMaxDisplayValues] =
     useState(maxDisplayValues);
 
@@ -296,25 +297,69 @@ export function ReactSelectHierarchical({
 
   const allNodes = flattenTree(data);
 
-  // Convert selectedIds to react-select value format
+  // Convert selectedIds to react-select value format and sort alphabetically
   const selectedValues = selectedIds
     .map((id) => {
       const node = allNodes.find((n) => n.id === id);
       return node ? { label: node.name, value: node.id } : null;
     })
-    .filter(Boolean) as { label: string; value: string }[];
+    .filter(Boolean)
+    .sort((a, b) => a!.label.localeCompare(b!.label)) as {
+    label: string;
+    value: string;
+  }[];
 
-  // Use ResizeObserver to dynamically adjust max display values based on width
+  // Dynamically calculate how many badges can fit based on actual width
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || selectedValues.length === 0) return;
 
-    const resizeObserver = new ResizeObserver((entries) => {
-      const containerWidth = entries[0].contentRect.width;
-      if (containerWidth < 350) {
-        setEffectiveMaxDisplayValues(1);
-      } else {
-        setEffectiveMaxDisplayValues(maxDisplayValues);
+    const calculateFittingValues = () => {
+      const container = containerRef.current;
+      if (!container) return;
+
+      const containerWidth = container.offsetWidth;
+      // Reserve space for dropdown indicator (40px) and padding (16px)
+      const availableWidth = containerWidth - 56;
+
+      // Average badge width estimation: 8px chars + 12px padding + 24px remove button + 4px margin
+      // We'll use a more conservative estimate and calculate dynamically
+      let estimatedBadgeWidth = 0;
+      let fittingCount = 0;
+
+      for (let i = 0; i < selectedValues.length; i++) {
+        const labelLength = selectedValues[i].label.length;
+        // Approximate: 7px per character + 40px (padding + remove button + margin)
+        const badgeWidth = labelLength * 7 + 40;
+
+        if (estimatedBadgeWidth + badgeWidth < availableWidth) {
+          estimatedBadgeWidth += badgeWidth;
+          fittingCount++;
+        } else {
+          // Reserve 70px for "+X more" badge
+          if (estimatedBadgeWidth + 70 < availableWidth) {
+            break;
+          } else {
+            // Need to show one less to fit "+X more"
+            fittingCount = Math.max(1, fittingCount - 1);
+            break;
+          }
+        }
       }
+
+      // If all fit, show all
+      if (fittingCount >= selectedValues.length) {
+        setEffectiveMaxDisplayValues(selectedValues.length);
+      } else {
+        setEffectiveMaxDisplayValues(Math.max(1, fittingCount));
+      }
+    };
+
+    // Initial calculation
+    calculateFittingValues();
+
+    // Recalculate on resize
+    const resizeObserver = new ResizeObserver(() => {
+      calculateFittingValues();
     });
 
     resizeObserver.observe(containerRef.current);
@@ -322,7 +367,7 @@ export function ReactSelectHierarchical({
     return () => {
       resizeObserver.disconnect();
     };
-  }, [maxDisplayValues]);
+  }, [selectedValues]);
 
   // Custom styles for react-select
   const customStyles: StylesConfig<any, true> = {
@@ -383,6 +428,13 @@ export function ReactSelectHierarchical({
       boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
       border: "1px solid #e2e8f0",
       borderRadius: "0.375rem",
+      overflow: "hidden",
+    }),
+    menuList: (base) => ({
+      ...base,
+      maxHeight: "320px",
+      overflowY: "auto",
+      padding: 0,
     }),
     menuPortal: (base) => ({
       ...base,
