@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React, { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import AppLayout from "@/components/templates/AppLayout/AppLayout";
 import {
@@ -8,6 +8,8 @@ import {
   BreadcrumbItem,
   BreadcrumbList,
   BreadcrumbPage,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
 } from "@/components/atoms/Breadcrumb";
 import OfferManagerViewV1 from "@/components/features/offer-manager/v1/OfferManagerView";
 import OfferManagerViewFuture from "@/components/features/offer-manager/future/OfferManagerView";
@@ -23,33 +25,52 @@ function LoadingFallback() {
   );
 }
 
-export default function OfferManagerPage() {
+function OfferManagerContent() {
   const searchParams = useSearchParams();
-  const version = searchParams.get("version") || "v1"; // Default to v1
+  const version = searchParams.get("version") || "v1";
+  const [isCreating, setIsCreating] = useState(false);
 
   const breadcrumb = (
     <Breadcrumb className="mb-4">
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbPage>
-            Offer Manager {version === "future" && "(Future Version)"}
-          </BreadcrumbPage>
+          {isCreating ? (
+            <BreadcrumbLink href="/offer-manager">Offer Manager</BreadcrumbLink>
+          ) : (
+            <BreadcrumbPage>
+              Offer Manager {version === "future" && "(Future Version)"}
+            </BreadcrumbPage>
+          )}
         </BreadcrumbItem>
+        {isCreating && (
+          <>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Create Offer</BreadcrumbPage>
+            </BreadcrumbItem>
+          </>
+        )}
       </BreadcrumbList>
     </Breadcrumb>
   );
 
   return (
+    <AppLayout customBreadcrumb={breadcrumb}>
+      <div className="pt-0 mt-0">
+        {version === "future" ? (
+          <OfferManagerViewFuture onCreatingChange={setIsCreating} />
+        ) : (
+          <OfferManagerViewV1 onCreatingChange={setIsCreating} />
+        )}
+      </div>
+    </AppLayout>
+  );
+}
+
+export default function OfferManagerPage() {
+  return (
     <Suspense fallback={<LoadingFallback />}>
-      <AppLayout customBreadcrumb={breadcrumb}>
-        <div className="pt-0 mt-0">
-          {version === "future" ? (
-            <OfferManagerViewFuture />
-          ) : (
-            <OfferManagerViewV1 />
-          )}
-        </div>
-      </AppLayout>
+      <OfferManagerContent />
     </Suspense>
   );
 }

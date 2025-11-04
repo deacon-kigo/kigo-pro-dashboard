@@ -156,12 +156,9 @@ export default function OfferManagerDashboardV1({
         emoji="🎁"
         variant="aurora"
         actions={
-          <Button
-            onClick={onCreateOffer}
-            className="flex items-center gap-2 bg-primary-brand hover:bg-blue-700 text-white"
-          >
+          <Button onClick={onCreateOffer} className="flex items-center gap-2">
             <PlusIcon className="h-5 w-5" />
-            Create New Offer
+            Create Offer
           </Button>
         }
       />

@@ -33,7 +33,13 @@ import OfferManagerDashboardV1 from "./OfferManagerDashboardV1";
  * - Based on offer-manager-v1.md PRD
  */
 
-export default function OfferManagerViewV1() {
+interface OfferManagerViewV1Props {
+  onCreatingChange?: (isCreating: boolean) => void;
+}
+
+export default function OfferManagerViewV1({
+  onCreatingChange,
+}: OfferManagerViewV1Props = {}) {
   const [isCreatingOffer, setIsCreatingOffer] = useState(false);
   const [currentStep, setCurrentStep] = useState<
     "details" | "redemption" | "review"
@@ -75,12 +81,14 @@ export default function OfferManagerViewV1() {
   const handleStartCreation = () => {
     setIsCreatingOffer(true);
     setCurrentStep("details");
+    onCreatingChange?.(true);
   };
 
   const handleBackToDashboard = () => {
     setIsCreatingOffer(false);
     setCurrentStep("details");
     setCompletedSteps([]);
+    onCreatingChange?.(false);
   };
 
   const handleFormUpdate = (field: string, value: any) => {
