@@ -14,9 +14,9 @@ import {
 import { ReactSelectMulti } from "@/components/ui/react-select-multi";
 import { ReactSelectCreatable } from "@/components/ui/react-select-creatable";
 import {
-  HierarchicalTreeSelector,
+  ReactSelectHierarchical,
   TreeNode,
-} from "@/components/ui/hierarchical-tree-selector";
+} from "@/components/ui/react-select-hierarchical";
 import {
   Accordion,
   AccordionContent,
@@ -330,17 +330,14 @@ export default function OfferDetailsStepV1({
 
             {/* Categories - Hierarchical Tree Selector */}
             <div>
-              <Label>Categories</Label>
-              <p className="mt-1 mb-2 text-muted-foreground text-sm">
-                Select one or more categories. Click arrows to expand
-                subcategories.
-              </p>
-              <HierarchicalTreeSelector
+              <Label htmlFor="categories">Categories</Label>
+              <ReactSelectHierarchical
                 data={CATEGORY_TREE}
                 selectedIds={categoryIds}
                 onChange={(ids) => onUpdate("category_ids", ids)}
-                placeholder="No categories available"
-                showSelectedBadge={true}
+                placeholder="Select categories..."
+                maxDisplayValues={3}
+                helperText="Select one or more categories. Click arrows to expand subcategories."
               />
             </div>
 
