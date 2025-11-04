@@ -23,11 +23,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  DocumentTextIcon,
-  InformationCircleIcon,
-  TagIcon,
-} from "@heroicons/react/24/outline";
+import { InformationCircleIcon, TagIcon } from "@heroicons/react/24/outline";
 
 interface OfferDetailsStepProps {
   formData: any;
@@ -112,38 +108,6 @@ export default function OfferDetailsStepV1({
 
   return (
     <div className="space-y-4">
-      {/* Offer Source Section */}
-      <Accordion
-        className="rounded-md border"
-        collapsible
-        defaultValue="offer-source"
-        type="single"
-      >
-        <AccordionItem value="offer-source">
-          <AccordionTrigger>
-            <div className="flex items-center gap-2">
-              <DocumentTextIcon className="size-4" />
-              <span>Offer Source</span>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="space-y-5">
-            <div>
-              <Label htmlFor="offerSource">Offer Source*</Label>
-              <ReactSelectCreatable
-                options={OFFER_SOURCES}
-                value={formData.offerSource || null}
-                onChange={(value) => onUpdate("offerSource", value)}
-                placeholder="Select existing or create new source"
-                formatCreateLabel={(inputValue) =>
-                  `Create new source "${inputValue.toUpperCase().replace(/\s+/g, "_")}"`
-                }
-                helperText="Select from existing sources (MCM, FMTC, EBG, RN, AUGEO) or type to create a new one. Only uppercase letters, numbers, and underscores allowed (3-60 characters)"
-              />
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
-
       {/* Basic Information Section */}
       <Accordion
         className="rounded-md border"
@@ -159,6 +123,34 @@ export default function OfferDetailsStepV1({
             </div>
           </AccordionTrigger>
           <AccordionContent className="space-y-5">
+            <div>
+              <Label htmlFor="merchantSource">Merchant Source*</Label>
+              <ReactSelectCreatable
+                options={OFFER_SOURCES}
+                value={formData.merchantSource || null}
+                onChange={(value) => onUpdate("merchantSource", value)}
+                placeholder="Select existing or create new merchant source"
+                formatCreateLabel={(inputValue) =>
+                  `Create new source "${inputValue.toUpperCase().replace(/\s+/g, "_")}"`
+                }
+                helperText="Merchant or partner providing this offer (e.g., MCM, FMTC, EBG, RN, AUGEO)"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="offerSource">Offer Source*</Label>
+              <ReactSelectCreatable
+                options={OFFER_SOURCES}
+                value={formData.offerSource || null}
+                onChange={(value) => onUpdate("offerSource", value)}
+                placeholder="Select existing or create new offer source"
+                formatCreateLabel={(inputValue) =>
+                  `Create new source "${inputValue.toUpperCase().replace(/\s+/g, "_")}"`
+                }
+                helperText="Source system or feed where offer originated (3-60 chars, uppercase, underscores only)"
+              />
+            </div>
+
             <div>
               <Label htmlFor="offerName">Offer Name*</Label>
               <Input
