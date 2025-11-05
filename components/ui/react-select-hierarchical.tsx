@@ -41,6 +41,7 @@ interface ReactSelectHierarchicalProps {
 const CustomMenu = (props: MenuProps<any, true> & { treeData: TreeNode[] }) => {
   const { treeData, selectProps } = props;
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [searchTerm, setSearchTerm] = useState("");
 
   const toggleExpand = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -52,6 +53,64 @@ const CustomMenu = (props: MenuProps<any, true> & { treeData: TreeNode[] }) => {
     }
     setExpandedIds(newExpanded);
   };
+
+  // Filter tree based on search term
+  const filterTree = (nodes: TreeNode[], term: string): TreeNode[] => {
+    if (!term) return nodes;
+
+    const lowerTerm = term.toLowerCase();
+    const filtered: TreeNode[] = [];
+
+    const filterNode = (node: TreeNode): TreeNode | null => {
+      const nameMatches = node.name.toLowerCase().includes(lowerTerm);
+      const hasChildren = node.children && node.children.length > 0;
+
+      if (hasChildren) {
+        const filteredChildren = node.children
+          .map(filterNode)
+          .filter(Boolean) as TreeNode[];
+
+        // Include parent if it matches OR has matching children
+        if (nameMatches || filteredChildren.length > 0) {
+          return {
+            ...node,
+            children:
+              filteredChildren.length > 0 ? filteredChildren : node.children,
+          };
+        }
+      } else if (nameMatches) {
+        return node;
+      }
+
+      return null;
+    };
+
+    nodes.forEach((node) => {
+      const result = filterNode(node);
+      if (result) filtered.push(result);
+    });
+
+    return filtered;
+  };
+
+  const filteredData = filterTree(treeData, searchTerm);
+
+  // Auto-expand all nodes when searching
+  React.useEffect(() => {
+    if (searchTerm) {
+      const allIds = new Set<string>();
+      const collectIds = (nodes: TreeNode[]) => {
+        nodes.forEach((node) => {
+          if (node.children && node.children.length > 0) {
+            allIds.add(node.id);
+            collectIds(node.children);
+          }
+        });
+      };
+      collectIds(filteredData);
+      setExpandedIds(allIds);
+    }
+  }, [searchTerm, filteredData]);
 
   const isAllChildrenSelected = (node: TreeNode): boolean => {
     if (!node.children || node.children.length === 0) return false;
@@ -200,15 +259,33 @@ const CustomMenu = (props: MenuProps<any, true> & { treeData: TreeNode[] }) => {
 
   return (
     <components.Menu {...props}>
-      <div style={{ maxHeight: "320px", overflowY: "auto" }}>
-        <div className="py-2">
-          {treeData.length === 0 ? (
-            <div className="text-center text-sm text-gray-500 py-4">
-              No categories available
-            </div>
-          ) : (
-            treeData.map((node) => renderNode(node, 0))
-          )}
+      <div>
+        {/* Search Input */}
+        <div className="px-3 py-2 border-b border-gray-200 bg-gray-50">
+          <input
+            type="text"
+            placeholder="Search categories..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+          />
+        </div>
+
+        {/* Tree List */}
+        <div style={{ maxHeight: "280px", overflowY: "auto" }}>
+          <div className="py-2">
+            {filteredData.length === 0 ? (
+              <div className="text-center text-sm text-gray-500 py-4">
+                {searchTerm
+                  ? `No categories found for "${searchTerm}"`
+                  : "No categories available"}
+              </div>
+            ) : (
+              filteredData.map((node) => renderNode(node, 0))
+            )}
+          </div>
         </div>
       </div>
     </components.Menu>
@@ -432,8 +509,8 @@ export function ReactSelectHierarchical({
     }),
     menuList: (base) => ({
       ...base,
-      maxHeight: "320px",
-      overflowY: "auto",
+      maxHeight: "none",
+      overflowY: "visible",
       padding: 0,
     }),
     menuPortal: (base) => ({
