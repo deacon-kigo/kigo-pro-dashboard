@@ -14,10 +14,6 @@ import {
 import { ReactSelectMulti } from "@/components/ui/react-select-multi";
 import { ReactSelectCreatable } from "@/components/ui/react-select-creatable";
 import {
-  ReactSelectHierarchical,
-  TreeNode,
-} from "@/components/ui/react-select-hierarchical";
-import {
   Accordion,
   AccordionContent,
   AccordionItem,
@@ -42,47 +38,32 @@ const OFFER_SOURCES = [
 
 // Available categories (from config.categorisation table)
 // In production, these would be fetched from GET /api/categories
-// Structured as tree with parent-child relationships
-const CATEGORY_TREE: TreeNode[] = [
-  {
-    id: "1",
-    name: "Food & Dining",
-    children: [
-      { id: "2", name: "Pizza" },
-      { id: "3", name: "Burgers" },
-      { id: "4", name: "Fine Dining" },
-      { id: "5", name: "Fast Food" },
-      { id: "6", name: "Cafe & Bakery" },
-    ],
-  },
-  {
-    id: "7",
-    name: "Retail",
-    children: [
-      { id: "8", name: "Clothing" },
-      { id: "9", name: "Electronics" },
-      { id: "10", name: "Home Goods" },
-    ],
-  },
-  {
-    id: "11",
-    name: "Entertainment",
-    children: [
-      { id: "12", name: "Movies" },
-      { id: "13", name: "Sports Events" },
-    ],
-  },
-  {
-    id: "14",
-    name: "Services",
-    children: [
-      { id: "15", name: "Auto Repair" },
-      { id: "16", name: "Home Services" },
-    ],
-  },
-  { id: "17", name: "Health & Wellness", children: [] },
-  { id: "18", name: "Automotive", children: [] },
-  { id: "19", name: "Travel", children: [] },
+// Flattened list for simple multi-select
+const AVAILABLE_CATEGORIES = [
+  // Food & Dining
+  { label: "Food & Dining", value: "1" },
+  { label: "Pizza", value: "2" },
+  { label: "Burgers", value: "3" },
+  { label: "Fine Dining", value: "4" },
+  { label: "Fast Food", value: "5" },
+  { label: "Cafe & Bakery", value: "6" },
+  // Retail
+  { label: "Retail", value: "7" },
+  { label: "Clothing", value: "8" },
+  { label: "Electronics", value: "9" },
+  { label: "Home Goods", value: "10" },
+  // Entertainment
+  { label: "Entertainment", value: "11" },
+  { label: "Movies", value: "12" },
+  { label: "Sports Events", value: "13" },
+  // Services
+  { label: "Services", value: "14" },
+  { label: "Auto Repair", value: "15" },
+  { label: "Home Services", value: "16" },
+  // Other
+  { label: "Health & Wellness", value: "17" },
+  { label: "Automotive", value: "18" },
+  { label: "Travel", value: "19" },
 ];
 
 // Available commodities (from config.commodities table)
@@ -328,17 +309,19 @@ export default function OfferDetailsStepV1({
               </p>
             </div>
 
-            {/* Categories - Hierarchical Tree Selector */}
+            {/* Categories - Multi-Select */}
             <div>
               <Label htmlFor="categories">Categories</Label>
-              <ReactSelectHierarchical
-                data={CATEGORY_TREE}
-                selectedIds={categoryIds}
-                onChange={(ids) => onUpdate("category_ids", ids)}
+              <ReactSelectMulti
+                options={AVAILABLE_CATEGORIES}
+                values={categoryIds}
+                onChange={(values) => onUpdate("category_ids", values)}
                 placeholder="Select categories..."
                 maxDisplayValues={3}
-                helperText="Select one or more categories. Click arrows to expand subcategories."
               />
+              <p className="mt-2 text-muted-foreground text-sm">
+                Select one or more categories for this offer.
+              </p>
             </div>
 
             {/* Commodities - Multi-Select from Existing */}
