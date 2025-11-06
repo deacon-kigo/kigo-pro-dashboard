@@ -8,15 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import {
   GiftIcon,
   SparklesIcon,
-  CheckCircleIcon,
   ClockIcon,
   CalendarIcon,
   MagnifyingGlassIcon,
-  EllipsisVerticalIcon,
   FunnelIcon,
-  ArrowPathIcon,
-  ArchiveBoxIcon,
-  DocumentDuplicateIcon,
   ChartBarIcon,
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
@@ -36,12 +31,6 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface OfferManagerDashboardProps {
   onCreateOffer: () => void;
@@ -678,40 +667,7 @@ export default function OfferManagerDashboard({
 
                 {/* Actions - 2 cols */}
                 <div className="lg:col-span-2 flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-gray-300 hover:bg-gray-50"
-                  >
-                    <ChartBarIcon className="h-4 w-4" />
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="border-gray-300 hover:bg-gray-50"
-                      >
-                        <EllipsisVerticalIcon className="h-5 w-5 text-gray-600" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuItem className="cursor-pointer">
-                        <DocumentDuplicateIcon className="h-4 w-4 mr-2" />
-                        Duplicate
-                      </DropdownMenuItem>
-                      {offer.status === "active" && (
-                        <DropdownMenuItem className="cursor-pointer">
-                          <ArrowPathIcon className="h-4 w-4 mr-2" />
-                          Pause
-                        </DropdownMenuItem>
-                      )}
-                      <DropdownMenuItem className="cursor-pointer text-red-600">
-                        <ArchiveBoxIcon className="h-4 w-4 mr-2" />
-                        Archive
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  {/* Action buttons temporarily removed to fix infinite loop */}
                 </div>
               </div>
             </Card>

@@ -23,6 +23,7 @@ import {
   ChatBubbleLeftRightIcon,
   SparklesIcon,
   GiftIcon,
+  RectangleGroupIcon,
 } from "@heroicons/react/24/outline";
 import { useDemoState } from "@/lib/redux/hooks";
 import { toggleSidebar, setSidebarCollapsed } from "@/lib/redux/slices/uiSlice";
@@ -295,6 +296,15 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
             </li>
             <li className="nav-item px-3 py-1">
               <SidebarLabel
+                href="/campaign-management"
+                icon={RectangleGroupIcon}
+                title="Campaigns"
+                isActive={isLinkActive("/campaign-management")}
+                isCollapsed={sidebarCollapsed}
+              />
+            </li>
+            <li className="nav-item px-3 py-1">
+              <SidebarLabel
                 href="/campaign-manager/ai-insights"
                 icon={SparklesIcon}
                 title="AI Insights"
@@ -383,6 +393,15 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 icon={GiftIcon}
                 title="Offer Manager"
                 isActive={isLinkActive("/offer-manager")}
+                isCollapsed={sidebarCollapsed}
+              />
+            </li>
+            <li className="nav-item px-3 py-1">
+              <SidebarLabel
+                href="/campaign-management"
+                icon={RectangleGroupIcon}
+                title="Campaigns"
+                isActive={isLinkActive("/campaign-management")}
                 isCollapsed={sidebarCollapsed}
               />
             </li>
