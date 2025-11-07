@@ -17,6 +17,7 @@ import {
   ArrowTrendingDownIcon,
   FireIcon,
 } from "@heroicons/react/24/outline";
+import { MoreHorizontal, Edit, Copy, Archive } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -31,6 +32,12 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface OfferManagerDashboardProps {
   onCreateOffer: () => void;
@@ -667,7 +674,28 @@ export default function OfferManagerDashboard({
 
                 {/* Actions - 2 cols */}
                 <div className="lg:col-span-2 flex justify-end gap-2">
-                  {/* Action buttons temporarily removed to fix infinite loop */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem>
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit Offer
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Copy className="w-4 h-4 mr-2" />
+                        Duplicate
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-red-600">
+                        <Archive className="w-4 h-4 mr-2" />
+                        Archive
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             </Card>

@@ -5,21 +5,6 @@ import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpIcon, ArrowDownIcon } from "@heroicons/react/24/outline";
 import { DataTable } from "@/components/organisms/DataTable/DataTable";
 import { Badge } from "@/components/atoms/Badge/Badge";
-import { Button } from "@/components/atoms/Button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  EllipsisVerticalIcon,
-  DocumentDuplicateIcon,
-  ArrowPathIcon,
-  ArchiveBoxIcon,
-  ChartBarIcon,
-} from "@heroicons/react/24/outline";
-import { cn } from "@/lib/utils";
 
 // Mock offer type definition
 interface Offer {
@@ -92,51 +77,6 @@ const getProgramStyle = (programType: string) => {
       };
   }
 };
-
-const OfferActions = React.memo(({ row }: { row: { original: Offer } }) => {
-  const offer = row.original;
-
-  return (
-    <div className="flex items-center justify-end gap-2">
-      <Button
-        variant="outline"
-        size="sm"
-        className="border-gray-300 hover:bg-gray-50"
-      >
-        <ChartBarIcon className="h-4 w-4" />
-      </Button>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-gray-300 hover:bg-gray-50"
-          >
-            <EllipsisVerticalIcon className="h-5 w-5 text-gray-600" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem className="cursor-pointer">
-            <DocumentDuplicateIcon className="h-4 w-4 mr-2" />
-            Duplicate
-          </DropdownMenuItem>
-          {offer.status === "active" && (
-            <DropdownMenuItem className="cursor-pointer">
-              <ArrowPathIcon className="h-4 w-4 mr-2" />
-              Pause
-            </DropdownMenuItem>
-          )}
-          <DropdownMenuItem className="cursor-pointer text-red-600">
-            <ArchiveBoxIcon className="h-4 w-4 mr-2" />
-            Archive
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
-  );
-});
-
-OfferActions.displayName = "OfferActions";
 
 export function OffersTable({ offers, searchQuery = "" }: OffersTableProps) {
   const columns: ColumnDef<Offer>[] = useMemo(
@@ -273,14 +213,7 @@ export function OffersTable({ offers, searchQuery = "" }: OffersTableProps) {
           );
         },
       },
-      {
-        id: "actions",
-        header: "Actions",
-        cell: OfferActions,
-      },
     ],
-    // Disable dependencies to prevent re-renders and dropdown menu issues
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 
