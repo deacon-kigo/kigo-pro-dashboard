@@ -18,6 +18,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { ReactSelectMulti } from "@/components/ui/react-select-multi";
 import {
   DevicePhoneMobileIcon,
   PrinterIcon,
@@ -34,10 +35,26 @@ interface RedemptionMethodStepProps {
   onPrevious: () => void;
 }
 
+// Available locations (from merchant locations table)
+// In production, these would be fetched from GET /api/locations
+const AVAILABLE_LOCATIONS = [
+  { label: "Downtown Store - 123 Main St", value: "loc_1" },
+  { label: "Westside Mall - 456 Shopping Blvd", value: "loc_2" },
+  { label: "North Branch - 789 North Ave", value: "loc_3" },
+  { label: "Eastside Center - 321 East St", value: "loc_4" },
+  { label: "South Plaza - 654 South Rd", value: "loc_5" },
+  { label: "Airport Location - 987 Terminal Dr", value: "loc_6" },
+  { label: "Suburban Store - 111 Suburban Way", value: "loc_7" },
+  { label: "City Center - 222 City Square", value: "loc_8" },
+];
+
 export default function RedemptionMethodStepV1({
   formData,
   onUpdate,
 }: RedemptionMethodStepProps) {
+  // Initialize location_ids array
+  const locationIds = formData.location_ids || [];
+
   const redemptionTypes = [
     {
       value: "mobile",
@@ -268,6 +285,41 @@ export default function RedemptionMethodStepV1({
                   "Redeem"
                 </p>
               </div>
+
+              <div>
+                <Label htmlFor="locationScope">Location Scope</Label>
+                <Select
+                  value={formData.locationScope}
+                  onValueChange={(value) => onUpdate("locationScope", value)}
+                >
+                  <SelectTrigger id="locationScope">
+                    <SelectValue placeholder="Select locations" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Locations</SelectItem>
+                    <SelectItem value="specific">Specific Locations</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-muted-foreground text-sm">
+                  Which merchant locations can redeem this offer
+                </p>
+              </div>
+
+              {formData.locationScope === "specific" && (
+                <div>
+                  <Label htmlFor="locations">Select Locations*</Label>
+                  <ReactSelectMulti
+                    options={AVAILABLE_LOCATIONS}
+                    values={locationIds}
+                    onChange={(values) => onUpdate("location_ids", values)}
+                    placeholder="Search and select locations..."
+                    maxDisplayValues={2}
+                  />
+                  <p className="mt-2 text-muted-foreground text-sm">
+                    Select which merchant locations can redeem this offer
+                  </p>
+                </div>
+              )}
             </AccordionContent>
           </AccordionItem>
         </Accordion>
@@ -349,16 +401,17 @@ export default function RedemptionMethodStepV1({
 
             {formData.locationScope === "specific" && (
               <div>
-                <Label>Select Locations</Label>
-                <Card className="p-4 bg-muted/20">
-                  <p className="text-muted-foreground text-sm">
-                    Location selector will be implemented here
-                  </p>
-                  <p className="text-muted-foreground text-sm mt-2">
-                    (V1 Placeholder - will show merchant locations list with
-                    checkboxes)
-                  </p>
-                </Card>
+                <Label htmlFor="locations">Select Locations*</Label>
+                <ReactSelectMulti
+                  options={AVAILABLE_LOCATIONS}
+                  values={locationIds}
+                  onChange={(values) => onUpdate("location_ids", values)}
+                  placeholder="Search and select locations..."
+                  maxDisplayValues={2}
+                />
+                <p className="mt-2 text-muted-foreground text-sm">
+                  Select which merchant locations can redeem this offer
+                </p>
               </div>
             )}
           </AccordionContent>
