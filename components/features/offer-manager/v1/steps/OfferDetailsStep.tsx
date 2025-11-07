@@ -84,10 +84,14 @@ export default function OfferDetailsStepV1({
   return (
     <div className="space-y-4">
       {/* Basic Information Section */}
-      <div className="rounded-md border bg-white">
-        <div className="flex items-center gap-2 px-4 py-3 font-medium border-b">
-          <InformationCircleIcon className="size-4" />
-          <span>Basic Information</span>
+      <div className="rounded-md border">
+        <div className="border-b">
+          <div className="flex flex-1 items-center justify-between px-4 py-3 font-medium">
+            <div className="flex items-center gap-2">
+              <InformationCircleIcon className="size-4" />
+              <span>Basic Information</span>
+            </div>
+          </div>
         </div>
         <div className="px-4 pb-4 pt-0 space-y-5">
           <div>
@@ -226,10 +230,14 @@ export default function OfferDetailsStepV1({
       </div>
 
       {/* Classification Section */}
-      <div className="rounded-md border bg-white">
-        <div className="flex items-center gap-2 px-4 py-3 font-medium border-b">
-          <TagIcon className="size-4" />
-          <span>Classification</span>
+      <div className="rounded-md border">
+        <div className="border-b">
+          <div className="flex flex-1 items-center justify-between px-4 py-3 font-medium">
+            <div className="flex items-center gap-2">
+              <TagIcon className="size-4" />
+              <span>Classification</span>
+            </div>
+          </div>
         </div>
         <div className="px-4 pb-4 pt-0 space-y-5">
           <div>
