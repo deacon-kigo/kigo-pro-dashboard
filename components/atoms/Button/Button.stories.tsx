@@ -9,7 +9,7 @@ import type { Meta, StoryObj } from "@storybook/react";
  */
 
 const meta: Meta<typeof Button> = {
-  title: "KIGO UI/Atoms/Button",
+  title: "Applications/Kigo Pro/Atoms/Button",
   component: Button,
   parameters: {
     layout: "centered",

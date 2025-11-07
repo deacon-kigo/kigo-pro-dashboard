@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/atoms/Button";
 
 const meta: Meta<typeof AlertDialog> = {
-  title: "Kigo UI/Molecules/AlertDialog",
+  title: "Applications/Kigo Pro/Molecules/AlertDialog",
   component: AlertDialog,
   parameters: {
     layout: "centered",

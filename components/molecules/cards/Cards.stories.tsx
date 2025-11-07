@@ -1,22 +1,30 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import React from 'react';
-import StatCard from './StatCard';
-import TaskCard from './TaskCard';
-import CampaignCard from './CampaignCard';
-import { UsersIcon, ShoppingBagIcon, CurrencyDollarIcon, ChartBarIcon, EnvelopeIcon, BellIcon } from '@heroicons/react/24/outline';
+import type { Meta, StoryObj } from "@storybook/react";
+import React from "react";
+import StatCard from "./StatCard";
+import TaskCard from "./TaskCard";
+import CampaignCard from "./CampaignCard";
+import {
+  UsersIcon,
+  ShoppingBagIcon,
+  CurrencyDollarIcon,
+  ChartBarIcon,
+  EnvelopeIcon,
+  BellIcon,
+} from "@heroicons/react/24/outline";
 
 const meta: Meta<typeof StatCard> = {
-  title: 'Kigo UI/Molecules/Cards',
+  title: "Applications/Kigo Pro/Molecules/Cards",
   component: StatCard,
   parameters: {
-    layout: 'centered',
+    layout: "centered",
     docs: {
       description: {
-        component: 'Card components for displaying various types of information.'
+        component:
+          "Card components for displaying various types of information.",
       },
     },
   },
-  tags: ['autodocs'],
+  tags: ["autodocs"],
 };
 
 export default meta;
@@ -188,4 +196,4 @@ export const CampaignCardPaused: Story = {
       />
     </div>
   ),
-}; 
+};

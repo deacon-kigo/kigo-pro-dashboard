@@ -1,26 +1,27 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import React from 'react';
-import { 
-  StatusBadge, 
-  TokenStateBadge, 
-  TicketBadge, 
-  TicketStatusBadge, 
-  TierBadge, 
-  VersionBadge 
-} from './index';
+import type { Meta, StoryObj } from "@storybook/react";
+import React from "react";
+import {
+  StatusBadge,
+  TokenStateBadge,
+  TicketBadge,
+  TicketStatusBadge,
+  TierBadge,
+  VersionBadge,
+} from "./index";
 
 const meta: Meta<typeof StatusBadge> = {
-  title: 'Kigo UI/Molecules/Badges',
+  title: "Applications/Kigo Pro/Molecules/Badges",
   component: StatusBadge,
   parameters: {
-    layout: 'centered',
+    layout: "centered",
     docs: {
       description: {
-        component: 'Badge components for displaying statuses, states, and other information.'
+        component:
+          "Badge components for displaying statuses, states, and other information.",
       },
     },
   },
-  tags: ['autodocs'],
+  tags: ["autodocs"],
 };
 
 export default meta;
@@ -107,19 +108,23 @@ export const CustomizedBadges: Story = {
         <span className="text-sm font-medium text-text-muted">Normal:</span>
         <StatusBadge status="active" />
       </div>
-      
+
       <div className="flex flex-wrap gap-4 items-center">
-        <span className="text-sm font-medium text-text-muted">Custom size:</span>
+        <span className="text-sm font-medium text-text-muted">
+          Custom size:
+        </span>
         <StatusBadge status="active" className="text-xs px-2 py-0.5" />
         <StatusBadge status="draft" className="text-lg px-4 py-1" />
       </div>
-      
+
       <div className="flex flex-wrap gap-4 items-center">
-        <span className="text-sm font-medium text-text-muted">Custom style:</span>
+        <span className="text-sm font-medium text-text-muted">
+          Custom style:
+        </span>
         <StatusBadge status="active" className="rounded-sm" />
         <StatusBadge status="draft" className="rounded-full" />
         <StatusBadge status="completed" className="border-2" />
       </div>
     </div>
   ),
-}; 
+};

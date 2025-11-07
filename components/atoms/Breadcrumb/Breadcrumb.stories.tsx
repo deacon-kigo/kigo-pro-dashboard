@@ -10,7 +10,7 @@ import {
 } from "./Breadcrumb";
 
 const meta: Meta<typeof Breadcrumb> = {
-  title: "KIGO UI/Atoms/Breadcrumb",
+  title: "Applications/Kigo Pro/Atoms/Breadcrumb",
   component: Breadcrumb,
   tags: ["autodocs"],
   parameters: {

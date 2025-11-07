@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import React from 'react';
+import type { Meta, StoryObj } from "@storybook/react";
+import React from "react";
 import {
   Select,
   SelectContent,
@@ -9,20 +9,21 @@ import {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
-} from './Select';
+} from "./Select";
 
 const meta: Meta<typeof Select> = {
-  title: 'Kigo UI/Atoms/Select',
+  title: "Applications/Kigo Pro/Atoms/Select",
   component: Select,
   parameters: {
-    layout: 'centered',
+    layout: "centered",
     docs: {
       description: {
-        component: 'A dropdown select component for selecting from a list of options.'
+        component:
+          "A dropdown select component for selecting from a list of options.",
       },
     },
   },
-  tags: ['autodocs'],
+  tags: ["autodocs"],
 };
 
 export default meta;
@@ -93,7 +94,9 @@ export const DisabledOptions: Story = {
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="apple">Apple</SelectItem>
-        <SelectItem value="banana" disabled>Banana (unavailable)</SelectItem>
+        <SelectItem value="banana" disabled>
+          Banana (unavailable)
+        </SelectItem>
         <SelectItem value="orange">Orange</SelectItem>
       </SelectContent>
     </Select>
@@ -109,8 +112,10 @@ export const CustomWidth: Story = {
       <SelectContent>
         <SelectItem value="option1">Option 1</SelectItem>
         <SelectItem value="option2">Option 2</SelectItem>
-        <SelectItem value="option3">Option with a very long label that demonstrates wrapping</SelectItem>
+        <SelectItem value="option3">
+          Option with a very long label that demonstrates wrapping
+        </SelectItem>
       </SelectContent>
     </Select>
   ),
-}; 
+};

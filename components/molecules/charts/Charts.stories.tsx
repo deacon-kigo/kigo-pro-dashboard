@@ -1,67 +1,67 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import React from 'react';
-import { LineChart, BarChart, PieChart, DoughnutChart } from './BaseChart';
-import CampaignPerformanceChart from './CampaignPerformanceChart';
+import type { Meta, StoryObj } from "@storybook/react";
+import React from "react";
+import { LineChart, BarChart, PieChart, DoughnutChart } from "./BaseChart";
+import CampaignPerformanceChart from "./CampaignPerformanceChart";
 
 // Mock data for charts
 const lineChartData = {
-  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+  labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
   datasets: [
     {
-      label: 'Revenue',
+      label: "Revenue",
       data: [65, 59, 80, 81, 56, 55, 72],
       fill: false,
-      borderColor: 'rgb(75, 85, 253)',
+      borderColor: "rgb(75, 85, 253)",
       tension: 0.1,
     },
     {
-      label: 'Expenses',
+      label: "Expenses",
       data: [28, 48, 40, 19, 36, 27, 40],
       fill: false,
-      borderColor: 'rgb(255, 99, 132)',
+      borderColor: "rgb(255, 99, 132)",
       tension: 0.1,
     },
   ],
 };
 
 const barChartData = {
-  labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+  labels: ["Q1", "Q2", "Q3", "Q4"],
   datasets: [
     {
-      label: 'Sales 2022',
+      label: "Sales 2022",
       data: [45, 59, 63, 81],
-      backgroundColor: 'rgba(75, 85, 253, 0.2)',
-      borderColor: 'rgb(75, 85, 253)',
+      backgroundColor: "rgba(75, 85, 253, 0.2)",
+      borderColor: "rgb(75, 85, 253)",
       borderWidth: 1,
     },
     {
-      label: 'Sales 2023',
+      label: "Sales 2023",
       data: [53, 65, 82, 97],
-      backgroundColor: 'rgba(53, 162, 235, 0.2)',
-      borderColor: 'rgb(53, 162, 235)',
+      backgroundColor: "rgba(53, 162, 235, 0.2)",
+      borderColor: "rgb(53, 162, 235)",
       borderWidth: 1,
     },
   ],
 };
 
 const pieChartData = {
-  labels: ['Direct', 'Social Media', 'Email', 'Affiliates', 'Other'],
+  labels: ["Direct", "Social Media", "Email", "Affiliates", "Other"],
   datasets: [
     {
       data: [35, 25, 22, 15, 3],
       backgroundColor: [
-        'rgba(75, 85, 253, 0.7)',
-        'rgba(53, 162, 235, 0.7)',
-        'rgba(255, 99, 132, 0.7)',
-        'rgba(255, 206, 86, 0.7)',
-        'rgba(75, 192, 192, 0.7)',
+        "rgba(75, 85, 253, 0.7)",
+        "rgba(53, 162, 235, 0.7)",
+        "rgba(255, 99, 132, 0.7)",
+        "rgba(255, 206, 86, 0.7)",
+        "rgba(75, 192, 192, 0.7)",
       ],
       borderColor: [
-        'rgb(75, 85, 253)',
-        'rgb(53, 162, 235)',
-        'rgb(255, 99, 132)',
-        'rgb(255, 206, 86)',
-        'rgb(75, 192, 192)',
+        "rgb(75, 85, 253)",
+        "rgb(53, 162, 235)",
+        "rgb(255, 99, 132)",
+        "rgb(255, 206, 86)",
+        "rgb(75, 192, 192)",
       ],
       borderWidth: 1,
     },
@@ -69,19 +69,19 @@ const pieChartData = {
 };
 
 const doughnutChartData = {
-  labels: ['Desktop', 'Mobile', 'Tablet'],
+  labels: ["Desktop", "Mobile", "Tablet"],
   datasets: [
     {
       data: [55, 35, 10],
       backgroundColor: [
-        'rgba(75, 85, 253, 0.7)',
-        'rgba(255, 99, 132, 0.7)',
-        'rgba(255, 206, 86, 0.7)',
+        "rgba(75, 85, 253, 0.7)",
+        "rgba(255, 99, 132, 0.7)",
+        "rgba(255, 206, 86, 0.7)",
       ],
       borderColor: [
-        'rgb(75, 85, 253)',
-        'rgb(255, 99, 132)',
-        'rgb(255, 206, 86)',
+        "rgb(75, 85, 253)",
+        "rgb(255, 99, 132)",
+        "rgb(255, 206, 86)",
       ],
       borderWidth: 1,
     },
@@ -89,17 +89,18 @@ const doughnutChartData = {
 };
 
 const meta: Meta<typeof LineChart> = {
-  title: 'Kigo UI/Molecules/Charts',
+  title: "Applications/Kigo Pro/Molecules/Charts",
   component: LineChart,
   parameters: {
-    layout: 'centered',
+    layout: "centered",
     docs: {
       description: {
-        component: 'Data visualization components for displaying charts and graphs.',
+        component:
+          "Data visualization components for displaying charts and graphs.",
       },
     },
   },
-  tags: ['autodocs'],
+  tags: ["autodocs"],
 };
 
 export default meta;
@@ -109,17 +110,17 @@ type Story = StoryObj<typeof LineChart>;
 export const Line: Story = {
   render: () => (
     <div className="w-[700px] h-[400px]">
-      <LineChart 
-        data={lineChartData} 
+      <LineChart
+        data={lineChartData}
         options={{
           plugins: {
             title: {
               display: true,
-              text: 'Revenue vs Expenses',
-              font: { size: 16 }
+              text: "Revenue vs Expenses",
+              font: { size: 16 },
             },
             legend: {
-              position: 'top',
+              position: "top",
             },
           },
           scales: {
@@ -127,11 +128,11 @@ export const Line: Story = {
               beginAtZero: true,
               title: {
                 display: true,
-                text: 'Amount ($K)',
-              }
-            }
-          }
-        }} 
+                text: "Amount ($K)",
+              },
+            },
+          },
+        }}
       />
     </div>
   ),
@@ -141,17 +142,17 @@ export const Line: Story = {
 export const Bar: Story = {
   render: () => (
     <div className="w-[700px] h-[400px]">
-      <BarChart 
-        data={barChartData} 
+      <BarChart
+        data={barChartData}
         options={{
           plugins: {
             title: {
               display: true,
-              text: 'Quarterly Sales Comparison',
-              font: { size: 16 }
+              text: "Quarterly Sales Comparison",
+              font: { size: 16 },
             },
             legend: {
-              position: 'top',
+              position: "top",
             },
           },
           scales: {
@@ -159,11 +160,11 @@ export const Bar: Story = {
               beginAtZero: true,
               title: {
                 display: true,
-                text: 'Sales ($K)',
-              }
-            }
-          }
-        }} 
+                text: "Sales ($K)",
+              },
+            },
+          },
+        }}
       />
     </div>
   ),
@@ -173,20 +174,20 @@ export const Bar: Story = {
 export const Pie: Story = {
   render: () => (
     <div className="w-[500px] h-[500px]">
-      <PieChart 
-        data={pieChartData} 
+      <PieChart
+        data={pieChartData}
         options={{
           plugins: {
             title: {
               display: true,
-              text: 'Traffic Sources',
-              font: { size: 16 }
+              text: "Traffic Sources",
+              font: { size: 16 },
             },
             legend: {
-              position: 'bottom',
+              position: "bottom",
             },
-          }
-        }} 
+          },
+        }}
       />
     </div>
   ),
@@ -196,20 +197,20 @@ export const Pie: Story = {
 export const Doughnut: Story = {
   render: () => (
     <div className="w-[500px] h-[500px]">
-      <DoughnutChart 
-        data={doughnutChartData} 
+      <DoughnutChart
+        data={doughnutChartData}
         options={{
           plugins: {
             title: {
               display: true,
-              text: 'Device Distribution',
-              font: { size: 16 }
+              text: "Device Distribution",
+              font: { size: 16 },
             },
             legend: {
-              position: 'bottom',
+              position: "bottom",
             },
-          }
-        }} 
+          },
+        }}
       />
     </div>
   ),
@@ -222,4 +223,4 @@ export const CampaignPerformance: Story = {
       <CampaignPerformanceChart />
     </div>
   ),
-}; 
+};

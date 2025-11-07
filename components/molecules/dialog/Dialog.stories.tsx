@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import React, { useState } from 'react';
-import { 
+import type { Meta, StoryObj } from "@storybook/react";
+import React, { useState } from "react";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -8,24 +8,25 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose
-} from './Dialog';
-import { Button } from '@/components/atoms/Button';
-import { Input } from '@/components/atoms/Input';
-import { Label } from '@/components/atoms/Label';
+  DialogClose,
+} from "./Dialog";
+import { Button } from "@/components/atoms/Button";
+import { Input } from "@/components/atoms/Input";
+import { Label } from "@/components/atoms/Label";
 
 const meta: Meta<typeof Dialog> = {
-  title: 'Kigo UI/Molecules/Dialog',
+  title: "Applications/Kigo Pro/Molecules/Dialog",
   component: Dialog,
   parameters: {
-    layout: 'centered',
+    layout: "centered",
     docs: {
       description: {
-        component: 'A modal dialog component that interrupts the user with important content.'
+        component:
+          "A modal dialog component that interrupts the user with important content.",
       },
     },
   },
-  tags: ['autodocs'],
+  tags: ["autodocs"],
 };
 
 export default meta;
@@ -42,11 +43,15 @@ export const Basic: Story = {
         <DialogHeader>
           <DialogTitle>Basic Dialog</DialogTitle>
           <DialogDescription>
-            This is a basic dialog example that demonstrates the standard layout.
+            This is a basic dialog example that demonstrates the standard
+            layout.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
-          <p>Dialog content goes here. This could be any content you want to display.</p>
+          <p>
+            Dialog content goes here. This could be any content you want to
+            display.
+          </p>
         </div>
         <DialogFooter>
           <DialogClose asChild>
@@ -69,7 +74,8 @@ export const WithForm: Story = {
         <DialogHeader>
           <DialogTitle>Edit Profile</DialogTitle>
           <DialogDescription>
-            Make changes to your profile information. Click save when you're done.
+            Make changes to your profile information. Click save when you're
+            done.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -83,12 +89,18 @@ export const WithForm: Story = {
             <Label htmlFor="email" className="text-right">
               Email
             </Label>
-            <Input id="email" defaultValue="john.smith@example.com" className="col-span-3" />
+            <Input
+              id="email"
+              defaultValue="john.smith@example.com"
+              className="col-span-3"
+            />
           </div>
         </div>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline" className="mr-2">Cancel</Button>
+            <Button variant="outline" className="mr-2">
+              Cancel
+            </Button>
           </DialogClose>
           <Button type="submit">Save changes</Button>
         </DialogFooter>
@@ -108,12 +120,15 @@ export const Confirmation: Story = {
         <DialogHeader>
           <DialogTitle>Confirm Deletion</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete this item? This action cannot be undone.
+            Are you sure you want to delete this item? This action cannot be
+            undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="mt-4">
           <DialogClose asChild>
-            <Button variant="outline" className="mr-2">Cancel</Button>
+            <Button variant="outline" className="mr-2">
+              Cancel
+            </Button>
           </DialogClose>
           <Button variant="destructive">Delete</Button>
         </DialogFooter>
@@ -139,27 +154,49 @@ export const Large: Story = {
         <div className="py-4 max-h-[60vh] overflow-y-auto">
           <h3 className="text-lg font-medium mb-2">1. Introduction</h3>
           <p className="mb-4">
-            Welcome to Kigo Pro. By using our service, you agree to these terms, our Privacy Policy, and our Community Guidelines.
+            Welcome to Kigo Pro. By using our service, you agree to these terms,
+            our Privacy Policy, and our Community Guidelines.
           </p>
-          
+
           <h3 className="text-lg font-medium mb-2">2. Using our Service</h3>
           <p className="mb-4">
-            You must follow any policies made available to you within the Services. You may use our Services only as permitted by law. We may suspend or stop providing our Services to you if you do not comply with our terms or policies or if we are investigating suspected misconduct.
+            You must follow any policies made available to you within the
+            Services. You may use our Services only as permitted by law. We may
+            suspend or stop providing our Services to you if you do not comply
+            with our terms or policies or if we are investigating suspected
+            misconduct.
           </p>
-          
-          <h3 className="text-lg font-medium mb-2">3. Privacy and Copyright Protection</h3>
+
+          <h3 className="text-lg font-medium mb-2">
+            3. Privacy and Copyright Protection
+          </h3>
           <p className="mb-4">
-            Our privacy policies explain how we treat your personal data and protect your privacy when you use our Services. By using our Services, you agree that we can use such data in accordance with our privacy policies.
+            Our privacy policies explain how we treat your personal data and
+            protect your privacy when you use our Services. By using our
+            Services, you agree that we can use such data in accordance with our
+            privacy policies.
           </p>
-          
-          <h3 className="text-lg font-medium mb-2">4. Your Content in our Services</h3>
+
+          <h3 className="text-lg font-medium mb-2">
+            4. Your Content in our Services
+          </h3>
           <p className="mb-4">
-            Some of our Services allow you to upload, submit, store, send or receive content. When you upload, submit, store, send or receive content to or through our Services, you give us a worldwide license to use, host, store, reproduce, modify, create derivative works, communicate, publish, publicly perform, publicly display and distribute such content.
+            Some of our Services allow you to upload, submit, store, send or
+            receive content. When you upload, submit, store, send or receive
+            content to or through our Services, you give us a worldwide license
+            to use, host, store, reproduce, modify, create derivative works,
+            communicate, publish, publicly perform, publicly display and
+            distribute such content.
           </p>
-          
-          <h3 className="text-lg font-medium mb-2">5. Software in our Services</h3>
+
+          <h3 className="text-lg font-medium mb-2">
+            5. Software in our Services
+          </h3>
           <p className="mb-4">
-            When a Service requires or includes downloadable software, this software may update automatically on your device once a new version or feature is available. Some Services may let you adjust your automatic update settings.
+            When a Service requires or includes downloadable software, this
+            software may update automatically on your device once a new version
+            or feature is available. Some Services may let you adjust your
+            automatic update settings.
           </p>
         </div>
         <DialogFooter>
@@ -181,14 +218,17 @@ export const CustomStyling: Story = {
       </DialogTrigger>
       <DialogContent className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 sm:max-w-[500px]">
         <DialogHeader className="border-b border-blue-100 pb-3">
-          <DialogTitle className="text-blue-700 text-xl">Custom Styled Dialog</DialogTitle>
+          <DialogTitle className="text-blue-700 text-xl">
+            Custom Styled Dialog
+          </DialogTitle>
           <DialogDescription className="text-blue-600">
             This dialog uses custom styling to match your brand.
           </DialogDescription>
         </DialogHeader>
         <div className="py-6 px-2">
           <p className="text-gray-700 mb-4">
-            You can customize the appearance of dialogs to match your application's design language.
+            You can customize the appearance of dialogs to match your
+            application's design language.
           </p>
           <div className="bg-white bg-opacity-50 p-4 rounded-lg border border-blue-100">
             <p className="text-sm text-blue-800">
@@ -204,4 +244,4 @@ export const CustomStyling: Story = {
       </DialogContent>
     </Dialog>
   ),
-}; 
+};

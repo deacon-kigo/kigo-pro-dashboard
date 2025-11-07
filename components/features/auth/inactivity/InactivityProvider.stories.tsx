@@ -51,7 +51,7 @@ const DemoContent = () => (
 );
 
 const meta: Meta<typeof InactivityProvider> = {
-  title: "Kigo UI/Features/Auth/InactivityProvider",
+  title: "Applications/Kigo Pro/Features/Auth/InactivityProvider",
   component: InactivityProvider,
   parameters: {
     docs: {

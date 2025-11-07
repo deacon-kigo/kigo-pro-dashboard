@@ -5,7 +5,7 @@ import { Button } from "@/components/atoms/Button";
 import { PlusIcon } from "@heroicons/react/24/outline";
 
 const meta: Meta<typeof PageHeader> = {
-  title: "Kigo UI/Molecules/PageHeader",
+  title: "Applications/Kigo Pro/Molecules/PageHeader",
   component: PageHeader,
   parameters: {
     layout: "centered",

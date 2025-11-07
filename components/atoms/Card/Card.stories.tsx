@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import Card from './Card';
+import type { Meta, StoryObj } from "@storybook/react";
+import Card from "./Card";
 
 /**
  * Card component for displaying content in a visually distinct container.
@@ -8,27 +8,28 @@ import Card from './Card';
 
 const meta: Meta<typeof Card> = {
   component: Card,
-  title: 'Kigo UI/Atoms/Card',
+  title: "Applications/Kigo Pro/Atoms/Card",
   parameters: {
     docs: {
       description: {
-        component: 'Card component for displaying content in a contained box with optional title.'
+        component:
+          "Card component for displaying content in a contained box with optional title.",
       },
     },
   },
-  tags: ['autodocs'],
+  tags: ["autodocs"],
   argTypes: {
     title: {
-      description: 'Optional card title displayed in the header',
-      control: 'text',
+      description: "Optional card title displayed in the header",
+      control: "text",
     },
     className: {
-      description: 'Additional CSS classes to apply',
-      control: 'text',
+      description: "Additional CSS classes to apply",
+      control: "text",
     },
     children: {
-      description: 'Card content',
-      control: 'text',
+      description: "Card content",
+      control: "text",
     },
   },
 };
@@ -44,15 +45,15 @@ export const Default: Story = {
 
 export const WithTitle: Story = {
   args: {
-    title: 'Card Title',
+    title: "Card Title",
     children: <div className="p-5">Card content with a title</div>,
   },
 };
 
 export const CustomStyles: Story = {
   args: {
-    title: 'Custom Card',
-    className: 'bg-pastel-blue border-blue',
+    title: "Custom Card",
+    className: "bg-pastel-blue border-blue",
     children: <div className="p-5">Card with custom styling</div>,
   },
 };
@@ -115,4 +116,4 @@ export const NestedCards: Story = {
       </div>
     </Card>
   ),
-}; 
+};

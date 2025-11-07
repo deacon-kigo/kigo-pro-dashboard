@@ -1,15 +1,15 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import SidebarLabel from './index';
-import { HomeIcon } from '@heroicons/react/24/outline';
+import type { Meta, StoryObj } from "@storybook/react";
+import SidebarLabel from "./index";
+import { HomeIcon } from "@heroicons/react/24/outline";
 
 // Debug console log
-console.log('Loading SidebarLabel story file');
+console.log("Loading SidebarLabel story file");
 
 const meta = {
-  title: 'Kigo UI/Organisms/Sidebar/SidebarLabel',
+  title: "Applications/Kigo Pro/Organisms/Sidebar/SidebarLabel",
   component: SidebarLabel,
   parameters: {
-    layout: 'padded',
+    layout: "padded",
   },
 } satisfies Meta<typeof SidebarLabel>;
 
@@ -18,9 +18,9 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    href: '/',
+    href: "/",
     icon: HomeIcon,
-    title: 'Dashboard',
+    title: "Dashboard",
     isActive: false,
     isCollapsed: false,
     isCVSContext: false,
@@ -29,9 +29,9 @@ export const Default: Story = {
 
 export const Active: Story = {
   args: {
-    href: '/',
+    href: "/",
     icon: HomeIcon,
-    title: 'Dashboard',
+    title: "Dashboard",
     isActive: true,
     isCollapsed: false,
     isCVSContext: false,
@@ -40,9 +40,9 @@ export const Active: Story = {
 
 export const Collapsed: Story = {
   args: {
-    href: '/',
+    href: "/",
     icon: HomeIcon,
-    title: 'Dashboard',
+    title: "Dashboard",
     isActive: false,
     isCollapsed: true,
     isCVSContext: false,
@@ -51,9 +51,9 @@ export const Collapsed: Story = {
 
 export const CVSContext: Story = {
   args: {
-    href: '/',
+    href: "/",
     icon: HomeIcon,
-    title: 'Dashboard',
+    title: "Dashboard",
     isActive: false,
     isCollapsed: false,
     isCVSContext: true,
@@ -62,11 +62,11 @@ export const CVSContext: Story = {
 
 export const CVSContextActive: Story = {
   args: {
-    href: '/',
+    href: "/",
     icon: HomeIcon,
-    title: 'Dashboard',
+    title: "Dashboard",
     isActive: true,
     isCollapsed: false,
     isCVSContext: true,
   },
-}; 
+};
