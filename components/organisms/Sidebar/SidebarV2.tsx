@@ -14,26 +14,23 @@ import {
   QuestionMarkCircleIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
   TicketIcon,
   BuildingStorefrontIcon,
   ArrowRightOnRectangleIcon,
-  ChevronDownIcon,
   AdjustmentsHorizontalIcon,
-  PlusIcon,
   ChatBubbleLeftRightIcon,
-  // SparklesIcon, // Removed - AI Insights hidden from sidebar
   GiftIcon,
   RectangleGroupIcon,
 } from "@heroicons/react/24/outline";
 import { useDemoState } from "@/lib/redux/hooks";
-import { toggleSidebar, setSidebarCollapsed } from "@/lib/redux/slices/uiSlice";
+import { toggleSidebar } from "@/lib/redux/slices/uiSlice";
 import { logout } from "@/lib/redux/slices/userSlice";
 import { buildDemoUrl, isPathActive } from "@/lib/utils";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
-// Import SidebarLabel component with standard path
 import SidebarLabel from "./SidebarLabel";
-// Import Dialog components for the confirmation
 import {
   Dialog,
   DialogContent,
@@ -46,19 +43,35 @@ import {
 import { Button } from "@/components/atoms/Button";
 import FeedbackModal from "@/components/features/feedback/FeedbackModal";
 
-// Ensure window type declaration for Storybook
-declare global {
-  interface Window {
-    __NEXT_MOCK_PATHNAME?: string;
-  }
+// Navigation item types
+export interface NavItem {
+  id: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  href?: string;
+  children?: NavItem[];
+  badge?: number | string;
+  roles?: Array<"merchant" | "support" | "admin">;
 }
 
-export interface SidebarProps {
+export interface NavSection {
+  id: string;
+  label: string;
+  items: NavItem[];
+  collapsible?: boolean;
+  defaultExpanded?: boolean;
+  roles?: Array<"merchant" | "support" | "admin">;
+}
+
+export interface SidebarV2Props {
   role?: "merchant" | "support" | "admin";
   isCVSContext?: boolean;
 }
 
-const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
+const SidebarV2 = ({
+  role = "merchant",
+  isCVSContext = false,
+}: SidebarV2Props) => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { sidebarCollapsed } = useSelector((state: RootState) => state.ui);
@@ -70,7 +83,22 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // Get pathname with fallback safely, only run once when needed
+  // State for expanded sections - load from localStorage
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("kigoProSidebarExpandedSections");
+      if (saved) {
+        try {
+          return new Set(JSON.parse(saved));
+        } catch {
+          return new Set();
+        }
+      }
+    }
+    return new Set();
+  });
+
+  // Get pathname with fallback safely
   const rawPathname = usePathname();
   const pathname = useMemo(() => {
     if (rawPathname === null) {
@@ -82,28 +110,43 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     return rawPathname;
   }, [rawPathname]);
 
-  // Determine if we're in campaign manager view based on pathname
-  const isCampaignManagerView = pathname.includes("/campaign-manager");
-
-  // Memoize the CVS context to avoid recalculations
   const isCVSContextBool = useMemo(() => {
     return Boolean(isCVSContext || clientId === "cvs");
   }, [isCVSContext, clientId]);
 
   useEffect(() => {
-    // Mark component as hydrated once on first client render
     setIsHydrated(true);
   }, []);
 
-  // Handle toggle sidebar click - memoize the handler
+  // Save expanded sections to localStorage
+  useEffect(() => {
+    if (isHydrated) {
+      localStorage.setItem(
+        "kigoProSidebarExpandedSections",
+        JSON.stringify(Array.from(expandedSections))
+      );
+    }
+  }, [expandedSections, isHydrated]);
+
   const handleToggleSidebar = useCallback(() => {
     dispatch(toggleSidebar());
   }, [dispatch]);
 
-  // Memoize the isLinkActive function to prevent unnecessary recalculations
+  const handleToggleSection = useCallback((sectionId: string) => {
+    setExpandedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(sectionId)) {
+        next.delete(sectionId);
+      } else {
+        next.add(sectionId);
+      }
+      return next;
+    });
+  }, []);
+
+  // Check if link is active
   const isLinkActive = useCallback(
     (path: string): boolean => {
-      // Special case for analytics
       if (
         path.includes("/analytics") &&
         (pathname.includes("/analytics") ||
@@ -112,7 +155,6 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         return true;
       }
 
-      // Special case for token management
       if (
         path.includes("token-management") &&
         (pathname.includes("token-management") ||
@@ -121,7 +163,6 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         return true;
       }
 
-      // Special case for product filters - CHECK THIS FIRST before general campaigns check
       if (
         path.includes("/campaigns/product-filters") &&
         pathname.includes("/campaigns/product-filters")
@@ -129,11 +170,9 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         return true;
       }
 
-      // Special case for campaigns - ensure /campaigns route is accessible
-      // But exclude product filters (already handled above)
       if (path === "/campaigns") {
         if (pathname.includes("/campaigns/product-filters")) {
-          return false; // Don't highlight campaigns when on product filters
+          return false;
         }
         return (
           pathname === "/campaigns" ||
@@ -142,7 +181,6 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         );
       }
 
-      // Special case for dashboard - now always campaign-manager
       if (
         (path === "/" ||
           path.includes("/dashboard") ||
@@ -152,12 +190,10 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
           pathname.includes("cvs-dashboard") ||
           pathname.includes("/campaign-manager"))
       ) {
-        // Don't highlight dashboard when on campaign creation pages or AI insights
         if (
           pathname.includes("/campaign-manager/ads-create") ||
           pathname.includes("/campaign-manager/ai-create") ||
           pathname.includes("/campaign-manager/campaign-create") ||
-          pathname.includes("/campaign-manager/ai-insights") ||
           pathname.includes("/campaign-manager/analytics")
         ) {
           return false;
@@ -165,7 +201,6 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         return true;
       }
 
-      // Special case for campaigns - highlight when on campaign creation pages
       if (
         path === "/campaigns" &&
         (pathname.includes("/campaign-manager/ads-create") ||
@@ -175,7 +210,6 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         return true;
       }
 
-      // Special cases for other CVS pages
       if (isCVSContextBool) {
         if (path.includes("customers") && pathname.includes("customers"))
           return true;
@@ -190,45 +224,36 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     [pathname, isCVSContextBool]
   );
 
-  // Memoize navigation items based on context and role
-  const navigationItems = useMemo(() => {
-    // Always use campaign-manager as dashboard URL for consistency
-    const dashboardUrl = "/campaign-manager";
-
-    // Check if we're in the publisher dashboard view
-    const isPublisherDashboard = pathname.includes("/publisher-dashboard");
-
-    // If in CVS context, show CVS-specific navigation
+  // Define navigation sections
+  const navigationSections = useMemo((): NavSection[] => {
     if (isCVSContextBool) {
-      const cvsUrl = "/campaign-manager";
-      const customersUrl = "/demos/cvs-token-management";
-      const tokenManagementUrl = "/demos/cvs-token-catalog";
-      const ticketsUrl = "/demos/cvs-tickets";
-
-      return (
-        <>
-          <li className="nav-item px-3 py-1">
-            <SidebarLabel
-              href={cvsUrl}
-              icon={HomeIcon}
-              title="Dashboard"
-              isActive={isLinkActive("/campaign-manager")}
-              isCollapsed={sidebarCollapsed}
-            />
-          </li>
-          <li className="nav-item px-3 py-1">
-            <SidebarLabel
-              href={customersUrl}
-              icon={UserGroupIcon}
-              title="Customers"
-              isActive={isLinkActive(customersUrl)}
-              isCollapsed={sidebarCollapsed}
-            />
-          </li>
-          <li className="nav-item px-3 py-1">
-            <SidebarLabel
-              href={tokenManagementUrl}
-              icon={(props) => (
+      return [
+        {
+          id: "overview",
+          label: "Overview",
+          items: [
+            {
+              id: "dashboard",
+              label: "Dashboard",
+              icon: HomeIcon,
+              href: "/campaign-manager",
+            },
+          ],
+        },
+        {
+          id: "cvs-main",
+          label: "Main",
+          items: [
+            {
+              id: "customers",
+              label: "Customers",
+              icon: UserGroupIcon,
+              href: "/demos/cvs-token-management",
+            },
+            {
+              id: "tokens",
+              label: "Tokens",
+              icon: (props) => (
                 <svg
                   {...props}
                   fill="none"
@@ -242,223 +267,412 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                     d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"
                   />
                 </svg>
+              ),
+              href: "/demos/cvs-token-catalog",
+            },
+            {
+              id: "tickets",
+              label: "Tickets",
+              icon: TicketIcon,
+              href: "/demos/cvs-tickets",
+            },
+          ],
+        },
+      ];
+    }
+
+    const overviewSection: NavSection = {
+      id: "overview",
+      label: "Overview",
+      items: [
+        {
+          id: "dashboard",
+          label: "Dashboard",
+          icon: HomeIcon,
+          href: "/campaign-manager",
+        },
+        {
+          id: "analytics",
+          label: "Analytics",
+          icon: ChartBarIcon,
+          href: "/analytics",
+        },
+      ],
+    };
+
+    const marketingSection: NavSection = {
+      id: "marketing",
+      label: "Marketing & Promotions",
+      collapsible: true,
+      defaultExpanded: true,
+      items: [
+        {
+          id: "ad-manager",
+          label: "Ad Manager",
+          icon: MegaphoneIcon,
+          href: "/campaigns",
+          children: [
+            {
+              id: "program-ads",
+              label: "Program Ads",
+              icon: MegaphoneIcon,
+              href: "/campaigns",
+            },
+            {
+              id: "display-ads",
+              label: "Display Ads",
+              icon: MegaphoneIcon,
+              href: "/campaigns/display",
+            },
+            {
+              id: "ad-creation",
+              label: "Ad Creation Wizard",
+              icon: MegaphoneIcon,
+              href: "/campaign-manager/ads-create",
+            },
+            {
+              id: "ad-analytics",
+              label: "Ad Analytics",
+              icon: ChartBarIcon,
+              href: "/campaigns/analytics",
+            },
+          ],
+        },
+        {
+          id: "offer-manager",
+          label: "Offer Manager",
+          icon: GiftIcon,
+          href: "/offer-manager",
+          children: [
+            {
+              id: "active-offers",
+              label: "Active Offers",
+              icon: GiftIcon,
+              href: "/offer-manager",
+            },
+            {
+              id: "create-offer",
+              label: "Create Offer",
+              icon: GiftIcon,
+              href: "/offer-manager?action=create",
+            },
+            {
+              id: "offer-templates",
+              label: "Offer Templates",
+              icon: GiftIcon,
+              href: "/offer-manager/templates",
+            },
+            {
+              id: "redemption-tracking",
+              label: "Redemption Tracking",
+              icon: GiftIcon,
+              href: "/offer-manager/redemptions",
+            },
+            {
+              id: "offer-analytics",
+              label: "Offer Analytics",
+              icon: ChartBarIcon,
+              href: "/offer-manager/analytics",
+            },
+          ],
+        },
+        {
+          id: "campaigns",
+          label: "Campaigns",
+          icon: RectangleGroupIcon,
+          href: "/campaign-management",
+          children: [
+            {
+              id: "active-campaigns",
+              label: "Active Campaigns",
+              icon: RectangleGroupIcon,
+              href: "/campaign-management",
+            },
+            {
+              id: "create-campaign",
+              label: "Create Campaign",
+              icon: RectangleGroupIcon,
+              href: "/campaign-management/create",
+            },
+            {
+              id: "campaign-templates",
+              label: "Campaign Templates",
+              icon: RectangleGroupIcon,
+              href: "/campaign-management/templates",
+            },
+            {
+              id: "campaign-performance",
+              label: "Campaign Performance",
+              icon: ChartBarIcon,
+              href: "/campaign-management/performance",
+            },
+          ],
+        },
+      ],
+    };
+
+    const businessOpsSection: NavSection = {
+      id: "business-ops",
+      label: "Business Operations",
+      collapsible: true,
+      items: [
+        {
+          id: "merchant-manager",
+          label: "Merchant Manager",
+          icon: BuildingStorefrontIcon,
+          href: "/merchants",
+          children: [
+            {
+              id: "merchant-directory",
+              label: "Merchant Directory",
+              icon: BuildingStorefrontIcon,
+              href: "/merchants",
+            },
+            {
+              id: "add-merchant",
+              label: "Add New Merchant",
+              icon: BuildingStorefrontIcon,
+              href: "/merchants/create",
+            },
+            {
+              id: "location-management",
+              label: "Location Management",
+              icon: BuildingStorefrontIcon,
+              href: "/merchants/locations",
+            },
+            {
+              id: "contracts",
+              label: "Contracts & Agreements",
+              icon: BuildingStorefrontIcon,
+              href: "/merchants/contracts",
+            },
+            {
+              id: "onboarding-pipeline",
+              label: "Onboarding Pipeline",
+              icon: BuildingStorefrontIcon,
+              href: "/merchants/onboarding",
+            },
+            {
+              id: "closure-detection",
+              label: "Closure Detection",
+              icon: BuildingStorefrontIcon,
+              href: "/merchants/closures",
+            },
+          ],
+        },
+        {
+          id: "catalog-filters",
+          label: "Catalog Filters",
+          icon: AdjustmentsHorizontalIcon,
+          href: "/campaigns/product-filters",
+        },
+      ],
+    };
+
+    const customerEngagementSection: NavSection = {
+      id: "customer-engagement",
+      label: "Customer Engagement",
+      collapsible: true,
+      items: [
+        {
+          id: "customers",
+          label: "Customers",
+          icon: UserGroupIcon,
+          href: "/customers",
+          children: [
+            {
+              id: "customer-directory",
+              label: "Customer Directory",
+              icon: UserGroupIcon,
+              href: "/customers",
+            },
+            {
+              id: "segments",
+              label: "Segments",
+              icon: UserGroupIcon,
+              href: "/customers/segments",
+            },
+            {
+              id: "loyalty-programs",
+              label: "Loyalty Programs",
+              icon: UserGroupIcon,
+              href: "/customers/loyalty",
+            },
+            {
+              id: "customer-insights",
+              label: "Customer Insights",
+              icon: ChartBarIcon,
+              href: "/customers/insights",
+            },
+          ],
+        },
+        {
+          id: "tokens-rewards",
+          label: "Tokens/Rewards",
+          icon: (props) => (
+            <svg
+              {...props}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"
+              />
+            </svg>
+          ),
+          href: "/tokens",
+          children: [
+            {
+              id: "token-management",
+              label: "Token Management",
+              icon: TicketIcon,
+              href: "/tokens",
+            },
+            {
+              id: "token-catalog",
+              label: "Token Catalog",
+              icon: TicketIcon,
+              href: "/tokens/catalog",
+            },
+            {
+              id: "redemption-history",
+              label: "Redemption History",
+              icon: TicketIcon,
+              href: "/tokens/redemptions",
+            },
+          ],
+        },
+      ],
+    };
+
+    // Filter sections by role
+    const sections = [overviewSection, marketingSection, businessOpsSection];
+
+    if (role === "admin") {
+      sections.push(customerEngagementSection);
+    }
+
+    return sections;
+  }, [role, isCVSContextBool]);
+
+  // Render navigation item (with or without children)
+  const renderNavItem = useCallback(
+    (item: NavItem, depth: number = 0) => {
+      const hasChildren = item.children && item.children.length > 0;
+      const isExpanded = expandedSections.has(item.id);
+      const isActive = item.href ? isLinkActive(item.href) : false;
+
+      if (hasChildren) {
+        return (
+          <li key={item.id} className="nav-item">
+            <div
+              className={`flex items-center justify-between px-3 py-1 cursor-pointer ${
+                depth > 0 ? "pl-8" : ""
+              }`}
+              onClick={() => handleToggleSection(item.id)}
+            >
+              <SidebarLabel
+                href={item.href || "#"}
+                icon={item.icon}
+                title={item.label}
+                isActive={isActive}
+                isCollapsed={sidebarCollapsed}
+                onClick={(e) => {
+                  if (hasChildren) {
+                    e.preventDefault();
+                  }
+                }}
+              />
+              {!sidebarCollapsed && (
+                <button
+                  className="ml-auto p-1 hover:bg-gray-100 rounded transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToggleSection(item.id);
+                  }}
+                >
+                  {isExpanded ? (
+                    <ChevronUpIcon className="w-4 h-4 text-gray-500" />
+                  ) : (
+                    <ChevronDownIcon className="w-4 h-4 text-gray-500" />
+                  )}
+                </button>
               )}
-              title="Tokens"
-              isActive={isLinkActive(tokenManagementUrl)}
-              isCollapsed={sidebarCollapsed}
-            />
+            </div>
+            {isExpanded && !sidebarCollapsed && item.children && (
+              <ul className="mt-1 space-y-1">
+                {item.children.map((child) => renderNavItem(child, depth + 1))}
+              </ul>
+            )}
           </li>
-          <li className="nav-item px-3 py-1">
-            <SidebarLabel
-              href={ticketsUrl}
-              icon={TicketIcon}
-              title="Tickets"
-              isActive={isLinkActive(ticketsUrl)}
-              isCollapsed={sidebarCollapsed}
-            />
-          </li>
-        </>
+        );
+      }
+
+      return (
+        <li
+          key={item.id}
+          className={`nav-item px-3 py-1 ${depth > 0 ? "pl-8" : ""}`}
+        >
+          <SidebarLabel
+            href={item.href || "#"}
+            icon={item.icon}
+            title={item.label}
+            isActive={isActive}
+            isCollapsed={sidebarCollapsed}
+          />
+        </li>
       );
-    }
+    },
+    [expandedSections, isLinkActive, sidebarCollapsed, handleToggleSection]
+  );
 
-    switch (role) {
-      case "merchant":
-        return (
-          <>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href={dashboardUrl}
-                icon={HomeIcon}
-                title="Dashboard"
-                isActive={isLinkActive("/campaign-manager")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/campaigns"
-                icon={MegaphoneIcon}
-                title={
-                  isPublisherDashboard ? "Program Ad Manager" : "Ad Manager"
-                }
-                isActive={isLinkActive("/campaigns")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/offer-manager"
-                icon={GiftIcon}
-                title="Offer Manager"
-                isActive={isLinkActive("/offer-manager")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/campaign-management"
-                icon={RectangleGroupIcon}
-                title="Campaigns"
-                isActive={isLinkActive("/campaign-management")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-            {/* AI Insights - Hidden from sidebar (demo feature, accessible via direct URL) */}
-            {/* <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/campaign-manager/ai-insights"
-                icon={SparklesIcon}
-                title="AI Insights"
-                isActive={isLinkActive("/campaign-manager/ai-insights")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li> */}
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/campaigns/product-filters"
-                icon={AdjustmentsHorizontalIcon}
-                title="Catalog Filters"
-                isActive={isLinkActive("/campaigns/product-filters")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/analytics"
-                icon={ChartBarIcon}
-                title="Analytics"
-                isActive={isLinkActive("/analytics")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-          </>
-        );
-      case "support":
-        return (
-          <>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href={dashboardUrl}
-                icon={HomeIcon}
-                title="Dashboard"
-                isActive={isLinkActive("/campaign-manager")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/tickets"
-                icon={TicketIcon}
-                title="Tickets"
-                isActive={isLinkActive("/tickets")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/merchants"
-                icon={BuildingStorefrontIcon}
-                title="Merchants"
-                isActive={isLinkActive("/merchants")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-          </>
-        );
-      case "admin":
-        return (
-          <>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href={dashboardUrl}
-                icon={HomeIcon}
-                title="Dashboard"
-                isActive={isLinkActive("/campaign-manager")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/campaigns"
-                icon={MegaphoneIcon}
-                title={
-                  isPublisherDashboard ? "Program Ad Manager" : "Ad Manager"
-                }
-                isActive={isLinkActive("/campaigns")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/offer-manager"
-                icon={GiftIcon}
-                title="Offer Manager"
-                isActive={isLinkActive("/offer-manager")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/campaign-management"
-                icon={RectangleGroupIcon}
-                title="Campaigns"
-                isActive={isLinkActive("/campaign-management")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-            {/* AI Insights - Hidden from sidebar (demo feature, accessible via direct URL) */}
-            {/* <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/campaign-manager/ai-insights"
-                icon={SparklesIcon}
-                title="AI Insights"
-                isActive={isLinkActive("/campaign-manager/ai-insights")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li> */}
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/campaigns/product-filters"
-                icon={AdjustmentsHorizontalIcon}
-                title="Catalog Filters"
-                isActive={isLinkActive("/campaigns/product-filters")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/merchants"
-                icon={UserGroupIcon}
-                title="Merchants"
-                isActive={isLinkActive("/merchants")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/analytics"
-                icon={ChartBarIcon}
-                title="Analytics"
-                isActive={isLinkActive("/analytics")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-          </>
-        );
-      default:
-        return null;
-    }
-  }, [isCVSContextBool, role, sidebarCollapsed, isLinkActive, pathname]);
+  // Render section
+  const renderSection = useCallback(
+    (section: NavSection) => {
+      const isSectionExpanded = expandedSections.has(section.id);
 
-  // Memoize the role title
+      return (
+        <div key={section.id} className="mb-6">
+          {!sidebarCollapsed && section.collapsible && (
+            <div
+              className="flex items-center justify-between px-5 mb-2 cursor-pointer"
+              onClick={() => handleToggleSection(section.id)}
+            >
+              <p className="text-xs font-medium text-text-muted uppercase tracking-wider">
+                {section.label}
+              </p>
+              <button className="p-1 hover:bg-gray-100 rounded transition-colors">
+                {isSectionExpanded ? (
+                  <ChevronUpIcon className="w-3.5 h-3.5 text-gray-500" />
+                ) : (
+                  <ChevronDownIcon className="w-3.5 h-3.5 text-gray-500" />
+                )}
+              </button>
+            </div>
+          )}
+          {!sidebarCollapsed && !section.collapsible && (
+            <p className="text-xs font-medium text-text-muted px-5 uppercase tracking-wider mb-2">
+              {section.label}
+            </p>
+          )}
+          {(!section.collapsible || isSectionExpanded || sidebarCollapsed) && (
+            <ul className="nav-items w-full">
+              {section.items.map((item) => renderNavItem(item))}
+            </ul>
+          )}
+        </div>
+      );
+    },
+    [expandedSections, sidebarCollapsed, handleToggleSection, renderNavItem]
+  );
+
   const roleTitle = useMemo(() => {
-    // Check if we're in the publisher dashboard view
     const isPublisherDashboard = pathname.includes("/publisher-dashboard");
-
-    if (isPublisherDashboard) {
-      return "Publisher";
-    }
-
+    if (isPublisherDashboard) return "Publisher";
     switch (role) {
       case "merchant":
         return "Business Owner";
@@ -471,17 +685,14 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     }
   }, [role, pathname]);
 
-  // Handle sign out - memoize the handler
   const handleSignOut = useCallback(() => {
     dispatch(logout());
     setSignOutDialogOpen(false);
     router.push("/sso/login");
   }, [dispatch, router]);
 
-  // Memoize logo rendering to prevent unnecessary recreation
   const logoElement = useMemo(() => {
     if (!isHydrated) {
-      // Server-side rendering
       return (
         <Link href="/" className="flex items-center">
           <div className="w-[100px] h-[40px] flex items-center justify-center overflow-hidden">
@@ -581,7 +792,6 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     );
   }, [isHydrated, sidebarCollapsed, isCVSContextBool, clientName]);
 
-  // Memoize settings items to avoid recreating on every render
   const settingsItems = useMemo(() => {
     const settingsUrl = isCVSContextBool
       ? buildDemoUrl("cvs", "settings")
@@ -680,11 +890,8 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     handleSignOut,
   ]);
 
-  // User profile info - memoized
   const userProfileInfo = useMemo(() => {
-    // Check if we're in the publisher dashboard view
     const isPublisherDashboard = pathname.includes("/publisher-dashboard");
-
     const avatar = (
       <div className="w-9 h-9 bg-pastel-purple rounded-full flex items-center justify-center text-indigo-500 font-semibold text-sm shadow-sm">
         {isCVSContextBool
@@ -775,12 +982,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
 
         {/* Navigation section */}
         <div className="mt-6 mb-6 flex-1 overflow-y-auto overflow-x-hidden">
-          {!sidebarCollapsed && isHydrated && (
-            <p className="text-xs font-medium text-text-muted px-5 uppercase tracking-wider mb-2">
-              {role === "merchant" ? "Business" : "Main"}
-            </p>
-          )}
-          <ul className="nav-items w-full">{navigationItems}</ul>
+          {navigationSections.map((section) => renderSection(section))}
         </div>
 
         {/* Settings section */}
@@ -814,4 +1016,4 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
   );
 };
 
-export default Sidebar;
+export default SidebarV2;
