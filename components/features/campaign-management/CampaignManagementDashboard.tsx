@@ -224,9 +224,9 @@ export function CampaignManagementDashboard({
         actions={
           <Button
             onClick={onCreateCampaign}
-            className="bg-blue-500 hover:bg-blue-600 text-white"
+            className="flex items-center gap-2"
           >
-            <PlusIcon className="h-4 w-4 mr-2" />
+            <PlusIcon className="h-5 w-5" />
             Create Campaign
           </Button>
         }
