@@ -85,11 +85,11 @@ export default function OfferDetailsStepV1({
     <div className="space-y-4">
       {/* Basic Information Section */}
       <div className="rounded-md border bg-white">
-        <div className="flex items-center gap-2 px-4 py-3 border-b bg-gray-50">
+        <div className="flex items-center gap-2 px-4 py-3 font-medium border-b">
           <InformationCircleIcon className="size-4" />
-          <span className="font-medium">Basic Information</span>
+          <span>Basic Information</span>
         </div>
-        <div className="px-4 py-4 space-y-5">
+        <div className="px-4 pb-4 pt-0 space-y-5">
           <div>
             <Label htmlFor="merchantSource">Merchant Source*</Label>
             <ReactSelectCreatable
@@ -227,11 +227,11 @@ export default function OfferDetailsStepV1({
 
       {/* Classification Section */}
       <div className="rounded-md border bg-white">
-        <div className="flex items-center gap-2 px-4 py-3 border-b bg-gray-50">
+        <div className="flex items-center gap-2 px-4 py-3 font-medium border-b">
           <TagIcon className="size-4" />
-          <span className="font-medium">Classification</span>
+          <span>Classification</span>
         </div>
-        <div className="px-4 py-4 space-y-5">
+        <div className="px-4 pb-4 pt-0 space-y-5">
           <div>
             <Label htmlFor="offerType">Offer Type*</Label>
             <Select
