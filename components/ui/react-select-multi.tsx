@@ -253,6 +253,7 @@ export function ReactSelectMulti({
           typeof document !== "undefined" ? document.body : undefined
         }
         menuPosition="fixed"
+        menuPlacement="auto"
       />
     </div>
   );
