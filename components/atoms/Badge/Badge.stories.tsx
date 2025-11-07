@@ -8,7 +8,7 @@ import { Badge } from "./";
 
 const meta: Meta<typeof Badge> = {
   component: Badge,
-  title: "Applications/Kigo Pro/Atoms/Badge",
+  title: "Applications/Kigo Pro/Design System/Atoms/Badge",
   parameters: {
     docs: {
       description: {

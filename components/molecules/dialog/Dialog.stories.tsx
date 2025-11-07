@@ -15,7 +15,7 @@ import { Input } from "@/components/atoms/Input";
 import { Label } from "@/components/atoms/Label";
 
 const meta: Meta<typeof Dialog> = {
-  title: "Applications/Kigo Pro/Molecules/Dialog",
+  title: "Applications/Kigo Pro/Design System/Molecules/Dialog",
   component: Dialog,
   parameters: {
     layout: "centered",

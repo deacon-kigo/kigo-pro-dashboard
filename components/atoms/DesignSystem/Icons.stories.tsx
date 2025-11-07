@@ -39,7 +39,7 @@ import {
 const IconSystem = () => <div></div>;
 
 const meta: Meta<typeof IconSystem> = {
-  title: "Applications/Kigo Pro/Design System/Icons",
+  title: "Applications/Kigo Pro/Design System/Foundation/Icons",
   parameters: {
     docs: {
       description: {

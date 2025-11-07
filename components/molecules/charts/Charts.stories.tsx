@@ -89,7 +89,7 @@ const doughnutChartData = {
 };
 
 const meta: Meta<typeof LineChart> = {
-  title: "Applications/Kigo Pro/Molecules/Charts",
+  title: "Applications/Kigo Pro/Design System/Molecules/Charts",
   component: LineChart,
   parameters: {
     layout: "centered",

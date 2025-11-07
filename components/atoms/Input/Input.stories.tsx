@@ -3,7 +3,7 @@ import { Input } from "./";
 
 const meta: Meta<typeof Input> = {
   component: Input,
-  title: "Applications/Kigo Pro/Atoms/Input",
+  title: "Applications/Kigo Pro/Design System/Atoms/Input",
   parameters: {
     docs: {
       description: {

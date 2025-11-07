@@ -61,7 +61,7 @@ const TypographySpecimen: React.FC<TypographySpecimenProps> = ({
 const TypographySystem = () => <div></div>;
 
 const meta: Meta<typeof TypographySystem> = {
-  title: "Applications/Kigo Pro/Design System/Typography",
+  title: "Applications/Kigo Pro/Design System/Foundation/Typography",
   parameters: {
     docs: {
       description: {

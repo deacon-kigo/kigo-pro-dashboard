@@ -6,7 +6,7 @@ import { HomeIcon } from "@heroicons/react/24/outline";
 console.log("Loading SidebarLabel story file");
 
 const meta = {
-  title: "Applications/Kigo Pro/Organisms/Sidebar/SidebarLabel",
+  title: "Applications/Kigo Pro/Design System/Organisms/Sidebar/SidebarLabel",
   component: SidebarLabel,
   parameters: {
     layout: "padded",

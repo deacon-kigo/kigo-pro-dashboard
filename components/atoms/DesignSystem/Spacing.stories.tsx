@@ -9,7 +9,7 @@ import React from "react";
 const SpacingSystem = () => <div></div>;
 
 const meta: Meta<typeof SpacingSystem> = {
-  title: "Applications/Kigo Pro/Design System/Spacing",
+  title: "Applications/Kigo Pro/Design System/Foundation/Spacing",
   parameters: {
     docs: {
       description: {

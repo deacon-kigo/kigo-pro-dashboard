@@ -9,7 +9,7 @@ import React from "react";
 const AccessibilityGuidelines = () => <div></div>;
 
 const meta: Meta<typeof AccessibilityGuidelines> = {
-  title: "Applications/Kigo Pro/Design System/Accessibility",
+  title: "Applications/Kigo Pro/Design System/Foundation/Accessibility",
   parameters: {
     docs: {
       description: {

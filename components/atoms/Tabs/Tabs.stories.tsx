@@ -3,7 +3,7 @@ import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./Tabs";
 
 const meta: Meta<typeof Tabs> = {
-  title: "Applications/Kigo Pro/Atoms/Tabs",
+  title: "Applications/Kigo Pro/Design System/Atoms/Tabs",
   component: Tabs,
   parameters: {
     layout: "centered",

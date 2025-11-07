@@ -9,7 +9,7 @@ import React from "react";
 const ElevationSystem = () => <div></div>;
 
 const meta: Meta<typeof ElevationSystem> = {
-  title: "Applications/Kigo Pro/Design System/Elevation",
+  title: "Applications/Kigo Pro/Design System/Foundation/Elevation",
   parameters: {
     docs: {
       description: {

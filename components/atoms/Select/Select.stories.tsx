@@ -12,7 +12,7 @@ import {
 } from "./Select";
 
 const meta: Meta<typeof Select> = {
-  title: "Applications/Kigo Pro/Atoms/Select",
+  title: "Applications/Kigo Pro/Design System/Atoms/Select",
   component: Select,
   parameters: {
     layout: "centered",

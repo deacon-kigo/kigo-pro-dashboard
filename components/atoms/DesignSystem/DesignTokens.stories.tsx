@@ -9,7 +9,7 @@ import React from "react";
 const DesignTokens = () => <div></div>;
 
 const meta: Meta<typeof DesignTokens> = {
-  title: "Applications/Kigo Pro/Design System/Design Tokens",
+  title: "Applications/Kigo Pro/Design System/Foundation/Design Tokens",
   parameters: {
     docs: {
       description: {

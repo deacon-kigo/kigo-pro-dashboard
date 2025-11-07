@@ -46,7 +46,7 @@ const ColorSection: React.FC<ColorSectionProps> = ({ title, children }) => (
 const ColorPalette = () => <div></div>;
 
 const meta: Meta<typeof ColorPalette> = {
-  title: "Applications/Kigo Pro/Design System/Colors",
+  title: "Applications/Kigo Pro/Design System/Foundation/Colors",
   parameters: {
     docs: {
       description: {

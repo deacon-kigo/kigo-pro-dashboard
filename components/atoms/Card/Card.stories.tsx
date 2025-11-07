@@ -8,7 +8,7 @@ import Card from "./Card";
 
 const meta: Meta<typeof Card> = {
   component: Card,
-  title: "Applications/Kigo Pro/Atoms/Card",
+  title: "Applications/Kigo Pro/Design System/Atoms/Card",
   parameters: {
     docs: {
       description: {

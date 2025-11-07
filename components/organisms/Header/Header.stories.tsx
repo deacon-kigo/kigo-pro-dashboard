@@ -6,7 +6,7 @@ import React from "react";
 
 const meta: Meta<typeof Header> = {
   component: Header,
-  title: "Applications/Kigo Pro/Organisms/Header",
+  title: "Applications/Kigo Pro/Design System/Organisms/Header",
   parameters: {
     docs: {
       description: {

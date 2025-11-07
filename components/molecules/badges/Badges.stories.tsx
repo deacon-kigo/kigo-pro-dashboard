@@ -10,7 +10,7 @@ import {
 } from "./index";
 
 const meta: Meta<typeof StatusBadge> = {
-  title: "Applications/Kigo Pro/Molecules/Badges",
+  title: "Applications/Kigo Pro/Design System/Molecules/Badges",
   component: StatusBadge,
   parameters: {
     layout: "centered",

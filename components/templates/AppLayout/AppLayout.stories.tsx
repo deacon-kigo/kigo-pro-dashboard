@@ -90,7 +90,7 @@ const ResponsiveTestContent = () => (
 
 const meta: Meta<typeof AppLayout> = {
   component: AppLayout,
-  title: "Applications/Kigo Pro/Templates/AppLayout",
+  title: "Applications/Kigo Pro/Design System/Templates/AppLayout",
   parameters: {
     docs: {
       description: {

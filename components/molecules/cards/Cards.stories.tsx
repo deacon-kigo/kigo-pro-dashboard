@@ -13,7 +13,7 @@ import {
 } from "@heroicons/react/24/outline";
 
 const meta: Meta<typeof StatCard> = {
-  title: "Applications/Kigo Pro/Molecules/Cards",
+  title: "Applications/Kigo Pro/Design System/Molecules/Cards",
   component: StatCard,
   parameters: {
     layout: "centered",

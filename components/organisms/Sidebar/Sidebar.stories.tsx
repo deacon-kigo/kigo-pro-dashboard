@@ -118,7 +118,7 @@ const StoreWrapper = (props: {
 };
 
 const meta: Meta<typeof Sidebar> = {
-  title: "Applications/Kigo Pro/Organisms/Sidebar",
+  title: "Applications/Kigo Pro/Design System/Organisms/Sidebar",
   component: Sidebar,
   parameters: {
     layout: "fullscreen",
