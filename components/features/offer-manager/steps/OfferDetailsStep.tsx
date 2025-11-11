@@ -9,8 +9,8 @@ import { SparklesIcon } from "@heroicons/react/24/outline";
 
 interface OfferDetailsStepProps {
   formData: {
-    offerType: string;
-    offerValue: string;
+    offerTypes: string[]; // Changed from offerType (string) to offerTypes (array)
+    offerValues: { [key: string]: string }; // Values for each offer type
     offerTitle: string;
     offerDescription: string;
     termsConditions: string;
@@ -38,9 +38,37 @@ export default function OfferDetailsStep({
   onPrevious,
   onAskAI,
 }: OfferDetailsStepProps) {
+  // Initialize offerTypes and offerValues if undefined
+  const offerTypes = formData.offerTypes || [];
+  const offerValues = formData.offerValues || {};
+
+  const handleOfferTypeToggle = (typeValue: string) => {
+    const newOfferTypes = offerTypes.includes(typeValue)
+      ? offerTypes.filter((t) => t !== typeValue)
+      : [...offerTypes, typeValue];
+    onUpdate("offerTypes", newOfferTypes);
+  };
+
+  const handleOfferValueChange = (typeValue: string, value: string) => {
+    const newOfferValues = { ...offerValues, [typeValue]: value };
+    onUpdate("offerValues", newOfferValues);
+  };
+
   const handleNext = () => {
-    if (!formData.offerType || !formData.offerValue || !formData.offerTitle) {
-      alert("Please fill in required fields");
+    if (offerTypes.length === 0) {
+      alert("Please select at least one offer type");
+      return;
+    }
+
+    // Check if all selected offer types have values
+    const missingValues = offerTypes.filter((type) => !offerValues[type]);
+    if (missingValues.length > 0) {
+      alert("Please provide values for all selected offer types");
+      return;
+    }
+
+    if (!formData.offerTitle) {
+      alert("Please fill in the offer title");
       return;
     }
     onNext();
@@ -58,11 +86,14 @@ export default function OfferDetailsStep({
       </div>
 
       <div className="space-y-6">
-        {/* Offer Type */}
+        {/* Offer Types - Multiple Selection */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <Label htmlFor="offerType" className="text-sm font-medium">
-              Offer Type <span className="text-red-500">*</span>
+            <Label className="text-sm font-medium">
+              Offer Types <span className="text-red-500">*</span>
+              <span className="text-sm text-gray-500 font-normal ml-2">
+                (Select one or more)
+              </span>
             </Label>
             <Button
               variant="ghost"
@@ -74,95 +105,218 @@ export default function OfferDetailsStep({
               Ask AI
             </Button>
           </div>
-          <select
-            id="offerType"
-            value={formData.offerType}
-            onChange={(e) => onUpdate("offerType", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="">Select offer type...</option>
+          <div className="space-y-2">
             {OFFER_TYPES.map((type) => (
-              <option key={type.value} value={type.value}>
-                {type.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Offer Value */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <Label htmlFor="offerValue" className="text-sm font-medium">
-              Offer Value <span className="text-red-500">*</span>
-            </Label>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onAskAI("offerValue")}
-              className="h-7 px-2 text-sm text-blue-600 hover:bg-blue-50"
-            >
-              <SparklesIcon className="h-3 w-3 mr-1" />
-              Ask AI
-            </Button>
-          </div>
-
-          {formData.offerType === "percentage_discount" && (
-            <div>
-              <div className="flex gap-2 items-center mb-2">
-                <span className="text-sm text-gray-600">Discount:</span>
-                <Input
-                  id="offerValue"
-                  type="number"
-                  min="1"
-                  max="100"
-                  placeholder="20"
-                  value={formData.offerValue}
-                  onChange={(e) => onUpdate("offerValue", e.target.value)}
-                  className="w-24"
-                />
-                <span className="text-sm text-gray-600">%</span>
-              </div>
-              {/* Visual slider */}
-              <div className="relative">
+              <label
+                key={type.value}
+                className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50"
+              >
                 <input
-                  type="range"
-                  min="1"
-                  max="100"
-                  value={formData.offerValue || 20}
-                  onChange={(e) => onUpdate("offerValue", e.target.value)}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  type="checkbox"
+                  checked={offerTypes.includes(type.value)}
+                  onChange={() => handleOfferTypeToggle(type.value)}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
-                <div className="flex justify-between text-sm text-gray-500 mt-1">
-                  <span>10% Low</span>
-                  <span>↑</span>
-                  <span>30% High</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {formData.offerType === "fixed_discount" && (
-            <div className="flex gap-2">
-              <span className="px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50">
-                $
-              </span>
-              <Input
-                id="offerValue"
-                type="number"
-                placeholder="50"
-                value={formData.offerValue}
-                onChange={(e) => onUpdate("offerValue", e.target.value)}
-                className="flex-1"
-              />
-            </div>
-          )}
-
-          {!formData.offerType && (
-            <p className="text-sm text-gray-500">
-              Select an offer type to configure the value
-            </p>
-          )}
+                <span className="text-sm text-gray-900">{type.label}</span>
+              </label>
+            ))}
+          </div>
+          <p className="text-sm text-gray-500 mt-2">
+            Select all applicable offer types. Configuration fields will appear
+            below for each selected type.
+          </p>
         </div>
+
+        {/* Conditional Fields for Each Selected Offer Type */}
+        {offerTypes.length === 0 && (
+          <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+            <p className="text-sm text-gray-600 text-center">
+              Select one or more offer types above to configure their values
+            </p>
+          </div>
+        )}
+
+        {offerTypes.map((typeValue) => {
+          const typeLabel =
+            OFFER_TYPES.find((t) => t.value === typeValue)?.label || typeValue;
+
+          return (
+            <div
+              key={typeValue}
+              className="p-4 bg-blue-50 border border-blue-200 rounded-lg"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <Label className="text-sm font-semibold text-gray-900">
+                  {typeLabel} <span className="text-red-500">*</span>
+                </Label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onAskAI("offerValue")}
+                  className="h-7 px-2 text-sm text-blue-600 hover:bg-blue-100"
+                >
+                  <SparklesIcon className="h-3 w-3 mr-1" />
+                  Ask AI
+                </Button>
+              </div>
+
+              {/* Percentage Discount Fields */}
+              {typeValue === "percentage_discount" && (
+                <div>
+                  <div className="flex gap-2 items-center mb-2">
+                    <span className="text-sm text-gray-600">Discount:</span>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="100"
+                      placeholder="20"
+                      value={offerValues[typeValue] || ""}
+                      onChange={(e) =>
+                        handleOfferValueChange(typeValue, e.target.value)
+                      }
+                      className="w-24"
+                    />
+                    <span className="text-sm text-gray-600">%</span>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="range"
+                      min="1"
+                      max="100"
+                      value={offerValues[typeValue] || 20}
+                      onChange={(e) =>
+                        handleOfferValueChange(typeValue, e.target.value)
+                      }
+                      className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer"
+                    />
+                    <div className="flex justify-between text-sm text-gray-500 mt-1">
+                      <span>1% Low</span>
+                      <span>↑</span>
+                      <span>100% High</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Fixed Discount Fields */}
+              {typeValue === "fixed_discount" && (
+                <div className="flex gap-2">
+                  <span className="px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50">
+                    $
+                  </span>
+                  <Input
+                    type="number"
+                    placeholder="50"
+                    value={offerValues[typeValue] || ""}
+                    onChange={(e) =>
+                      handleOfferValueChange(typeValue, e.target.value)
+                    }
+                    className="flex-1"
+                  />
+                </div>
+              )}
+
+              {/* BOGO Fields */}
+              {typeValue === "bogo" && (
+                <div>
+                  <Input
+                    type="text"
+                    placeholder="e.g., Buy 1 Get 1 Free, Buy 2 Get 1 50% Off"
+                    value={offerValues[typeValue] || ""}
+                    onChange={(e) =>
+                      handleOfferValueChange(typeValue, e.target.value)
+                    }
+                    className="w-full"
+                  />
+                  <p className="text-sm text-gray-600 mt-1">
+                    Describe the BOGO offer details
+                  </p>
+                </div>
+              )}
+
+              {/* Cashback Fields */}
+              {typeValue === "cashback" && (
+                <div className="flex gap-2">
+                  <span className="px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50">
+                    $
+                  </span>
+                  <Input
+                    type="number"
+                    placeholder="10"
+                    value={offerValues[typeValue] || ""}
+                    onChange={(e) =>
+                      handleOfferValueChange(typeValue, e.target.value)
+                    }
+                    className="flex-1"
+                  />
+                  <span className="text-sm text-gray-600 self-center">
+                    cashback
+                  </span>
+                </div>
+              )}
+
+              {/* Loyalty Points Fields */}
+              {typeValue === "loyalty_points" && (
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    placeholder="500"
+                    value={offerValues[typeValue] || ""}
+                    onChange={(e) =>
+                      handleOfferValueChange(typeValue, e.target.value)
+                    }
+                    className="flex-1"
+                  />
+                  <span className="text-sm text-gray-600 self-center">
+                    points
+                  </span>
+                </div>
+              )}
+
+              {/* Spend & Get Fields */}
+              {typeValue === "spend_get" && (
+                <div className="space-y-2">
+                  <div className="flex gap-2 items-center">
+                    <span className="text-sm text-gray-600">Spend:</span>
+                    <span className="px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50">
+                      $
+                    </span>
+                    <Input
+                      type="number"
+                      placeholder="50"
+                      value={offerValues[typeValue] || ""}
+                      onChange={(e) =>
+                        handleOfferValueChange(typeValue, e.target.value)
+                      }
+                      className="w-32"
+                    />
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    Minimum spend amount (requires receipt scan)
+                  </p>
+                </div>
+              )}
+
+              {/* Lightning Offer Fields */}
+              {typeValue === "lightning" && (
+                <div className="space-y-2">
+                  <Input
+                    type="number"
+                    placeholder="100"
+                    value={offerValues[typeValue] || ""}
+                    onChange={(e) =>
+                      handleOfferValueChange(typeValue, e.target.value)
+                    }
+                    className="w-full"
+                  />
+                  <p className="text-sm text-gray-600">
+                    Limited quantity available (e.g., first 100 customers)
+                  </p>
+                </div>
+              )}
+            </div>
+          );
+        })}
 
         {/* Offer Title */}
         <div>
