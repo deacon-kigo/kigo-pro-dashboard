@@ -13,7 +13,8 @@ import {
 
 interface RedemptionMethodStepProps {
   formData: {
-    redemptionMethod: string;
+    redemptionMethods: string[]; // Changed from redemptionMethod (string) to redemptionMethods (array)
+    redemptionConfigs: { [key: string]: any }; // Config data for each redemption method
     promoCodeType: string;
     promoCode: string;
     usageLimitPerCustomer: string;
@@ -33,21 +34,53 @@ export default function RedemptionMethodStep({
   onPrevious,
   onAskAI,
 }: RedemptionMethodStepProps) {
+  // Initialize redemptionMethods and redemptionConfigs if undefined
+  const redemptionMethods = formData.redemptionMethods || [];
+  const redemptionConfigs = formData.redemptionConfigs || {};
+
+  const handleRedemptionMethodToggle = (methodValue: string) => {
+    const newMethods = redemptionMethods.includes(methodValue)
+      ? redemptionMethods.filter((m) => m !== methodValue)
+      : [...redemptionMethods, methodValue];
+    onUpdate("redemptionMethods", newMethods);
+  };
+
+  const handleConfigUpdate = (
+    methodValue: string,
+    field: string,
+    value: any
+  ) => {
+    const newConfigs = {
+      ...redemptionConfigs,
+      [methodValue]: {
+        ...redemptionConfigs[methodValue],
+        [field]: value,
+      },
+    };
+    onUpdate("redemptionConfigs", newConfigs);
+  };
+
   const handleNext = () => {
-    if (!formData.redemptionMethod) {
-      alert("Please select a redemption method");
+    if (redemptionMethods.length === 0) {
+      alert("Please select at least one redemption method");
       return;
     }
-    if (formData.redemptionMethod === "promo_code" && !formData.promoCode) {
-      alert("Please enter a promo code");
+
+    // Validate promo code if promo_code method is selected
+    if (
+      redemptionMethods.includes("promo_code") &&
+      !redemptionConfigs.promo_code?.promoCode
+    ) {
+      alert("Please enter a promo code for the Promo Code redemption method");
       return;
     }
+
     onNext();
   };
 
   const generateRandomCode = () => {
     const code = Math.random().toString(36).substring(2, 10).toUpperCase();
-    onUpdate("promoCode", code);
+    handleConfigUpdate("promo_code", "promoCode", code);
   };
 
   return (
@@ -62,29 +95,29 @@ export default function RedemptionMethodStep({
       </div>
 
       <div className="space-y-6">
-        {/* Redemption Method Selection */}
+        {/* Redemption Methods - Multiple Selection */}
         <div>
           <Label className="text-sm font-medium mb-3 block">
-            Select how customers will redeem{" "}
-            <span className="text-red-500">*</span>
+            Redemption Methods <span className="text-red-500">*</span>
+            <span className="text-sm text-gray-500 font-normal ml-2">
+              (Select one or more)
+            </span>
           </Label>
 
           <div className="space-y-3">
             {/* Promo Code */}
             <label
               className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                formData.redemptionMethod === "promo_code"
+                redemptionMethods.includes("promo_code")
                   ? "border-blue-500 bg-blue-50"
                   : "border-gray-200 hover:border-gray-300"
               }`}
             >
               <input
-                type="radio"
-                name="redemptionMethod"
-                value="promo_code"
-                checked={formData.redemptionMethod === "promo_code"}
-                onChange={(e) => onUpdate("redemptionMethod", e.target.value)}
-                className="mt-1 mr-3"
+                type="checkbox"
+                checked={redemptionMethods.includes("promo_code")}
+                onChange={() => handleRedemptionMethodToggle("promo_code")}
+                className="mt-1 mr-3 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
               <div className="flex-1">
                 <p className="text-sm font-semibold text-gray-900">
@@ -112,18 +145,16 @@ export default function RedemptionMethodStep({
             {/* Show & Save */}
             <label
               className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                formData.redemptionMethod === "show_save"
+                redemptionMethods.includes("show_save")
                   ? "border-blue-500 bg-blue-50"
                   : "border-gray-200 hover:border-gray-300"
               }`}
             >
               <input
-                type="radio"
-                name="redemptionMethod"
-                value="show_save"
-                checked={formData.redemptionMethod === "show_save"}
-                onChange={(e) => onUpdate("redemptionMethod", e.target.value)}
-                className="mt-1 mr-3"
+                type="checkbox"
+                checked={redemptionMethods.includes("show_save")}
+                onChange={() => handleRedemptionMethodToggle("show_save")}
+                className="mt-1 mr-3 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
               <div className="flex-1">
                 <p className="text-sm font-semibold text-gray-900">
@@ -150,18 +181,16 @@ export default function RedemptionMethodStep({
             {/* Barcode Scan */}
             <label
               className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                formData.redemptionMethod === "barcode_scan"
+                redemptionMethods.includes("barcode_scan")
                   ? "border-blue-500 bg-blue-50"
                   : "border-gray-200 hover:border-gray-300"
               }`}
             >
               <input
-                type="radio"
-                name="redemptionMethod"
-                value="barcode_scan"
-                checked={formData.redemptionMethod === "barcode_scan"}
-                onChange={(e) => onUpdate("redemptionMethod", e.target.value)}
-                className="mt-1 mr-3"
+                type="checkbox"
+                checked={redemptionMethods.includes("barcode_scan")}
+                onChange={() => handleRedemptionMethodToggle("barcode_scan")}
+                className="mt-1 mr-3 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
               <div className="flex-1">
                 <p className="text-sm font-semibold text-gray-900">
@@ -182,18 +211,16 @@ export default function RedemptionMethodStep({
             {/* Online Link */}
             <label
               className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                formData.redemptionMethod === "online_link"
+                redemptionMethods.includes("online_link")
                   ? "border-blue-500 bg-blue-50"
                   : "border-gray-200 hover:border-gray-300"
               }`}
             >
               <input
-                type="radio"
-                name="redemptionMethod"
-                value="online_link"
-                checked={formData.redemptionMethod === "online_link"}
-                onChange={(e) => onUpdate("redemptionMethod", e.target.value)}
-                className="mt-1 mr-3"
+                type="checkbox"
+                checked={redemptionMethods.includes("online_link")}
+                onChange={() => handleRedemptionMethodToggle("online_link")}
+                className="mt-1 mr-3 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
               <div className="flex-1">
                 <p className="text-sm font-semibold text-gray-900">
@@ -211,13 +238,26 @@ export default function RedemptionMethodStep({
               </div>
             </label>
           </div>
+          <p className="text-sm text-gray-500 mt-3">
+            Select all applicable redemption methods. Configuration sections
+            will appear below for each selected method.
+          </p>
         </div>
 
+        {/* Configuration Sections for Selected Methods */}
+        {redemptionMethods.length === 0 && (
+          <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+            <p className="text-sm text-gray-600 text-center">
+              Select one or more redemption methods above to configure them
+            </p>
+          </div>
+        )}
+
         {/* Promo Code Configuration */}
-        {formData.redemptionMethod === "promo_code" && (
-          <div className="pt-6 border-t border-gray-200">
-            <Label className="text-sm font-medium text-gray-900 mb-4 block">
-              Promo Code Configuration
+        {redemptionMethods.includes("promo_code") && (
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <Label className="text-sm font-semibold text-gray-900 mb-4 block">
+              Promo Code Configuration <span className="text-red-500">*</span>
             </Label>
 
             {/* Code Type */}
@@ -225,10 +265,15 @@ export default function RedemptionMethodStep({
               <label className="flex items-start gap-2">
                 <input
                   type="radio"
-                  name="promoCodeType"
+                  name="promoCodeType_promo_code"
                   value="single"
-                  checked={formData.promoCodeType === "single"}
-                  onChange={(e) => onUpdate("promoCodeType", e.target.value)}
+                  checked={
+                    redemptionConfigs.promo_code?.codeType === "single" ||
+                    !redemptionConfigs.promo_code?.codeType
+                  }
+                  onChange={(e) =>
+                    handleConfigUpdate("promo_code", "codeType", e.target.value)
+                  }
                   className="mt-1"
                 />
                 <div>
@@ -244,10 +289,14 @@ export default function RedemptionMethodStep({
               <label className="flex items-start gap-2">
                 <input
                   type="radio"
-                  name="promoCodeType"
+                  name="promoCodeType_promo_code"
                   value="multiple"
-                  checked={formData.promoCodeType === "multiple"}
-                  onChange={(e) => onUpdate("promoCodeType", e.target.value)}
+                  checked={
+                    redemptionConfigs.promo_code?.codeType === "multiple"
+                  }
+                  onChange={(e) =>
+                    handleConfigUpdate("promo_code", "codeType", e.target.value)
+                  }
                   className="mt-1"
                 />
                 <div>
@@ -257,7 +306,7 @@ export default function RedemptionMethodStep({
                   <p className="text-sm text-gray-600">
                     Individual codes per customer
                   </p>
-                  {formData.promoCodeType === "multiple" && (
+                  {redemptionConfigs.promo_code?.codeType === "multiple" && (
                     <Button variant="outline" size="sm" className="mt-2">
                       📎 Upload CSV File
                     </Button>
@@ -267,7 +316,8 @@ export default function RedemptionMethodStep({
             </div>
 
             {/* Promo Code Input */}
-            {formData.promoCodeType === "single" && (
+            {(redemptionConfigs.promo_code?.codeType === "single" ||
+              !redemptionConfigs.promo_code?.codeType) && (
               <div className="mb-4">
                 <Label
                   htmlFor="promoCode"
@@ -279,9 +329,13 @@ export default function RedemptionMethodStep({
                   <Input
                     id="promoCode"
                     placeholder="PARTS20"
-                    value={formData.promoCode}
+                    value={redemptionConfigs.promo_code?.promoCode || ""}
                     onChange={(e) =>
-                      onUpdate("promoCode", e.target.value.toUpperCase())
+                      handleConfigUpdate(
+                        "promo_code",
+                        "promoCode",
+                        e.target.value.toUpperCase()
+                      )
                     }
                     className="flex-1 uppercase"
                   />
@@ -306,9 +360,15 @@ export default function RedemptionMethodStep({
                 <Input
                   type="number"
                   min="1"
-                  value={formData.usageLimitPerCustomer}
+                  value={
+                    redemptionConfigs.promo_code?.usageLimitPerCustomer || "1"
+                  }
                   onChange={(e) =>
-                    onUpdate("usageLimitPerCustomer", e.target.value)
+                    handleConfigUpdate(
+                      "promo_code",
+                      "usageLimitPerCustomer",
+                      e.target.value
+                    )
                   }
                   className="w-20"
                 />
@@ -323,60 +383,182 @@ export default function RedemptionMethodStep({
                 <Input
                   type="number"
                   min="1"
-                  value={formData.totalUsageLimit}
-                  onChange={(e) => onUpdate("totalUsageLimit", e.target.value)}
+                  value={redemptionConfigs.promo_code?.totalUsageLimit || ""}
+                  onChange={(e) =>
+                    handleConfigUpdate(
+                      "promo_code",
+                      "totalUsageLimit",
+                      e.target.value
+                    )
+                  }
                   className="w-24"
                 />
                 <span className="text-sm text-gray-700">uses</span>
               </label>
             </div>
+          </div>
+        )}
 
-            {/* Location Scope */}
-            <div className="mt-4">
-              <div className="flex items-center justify-between mb-2">
-                <Label className="text-sm font-medium">Location Scope</Label>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onAskAI("locationScope")}
-                  className="h-7 px-2 text-sm text-blue-600 hover:bg-blue-50"
+        {/* Show & Save Configuration */}
+        {redemptionMethods.includes("show_save") && (
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <Label className="text-sm font-semibold text-gray-900 mb-4 block">
+              Show & Save Configuration
+            </Label>
+            <p className="text-sm text-gray-600 mb-3">
+              QR code and display options for mobile redemption
+            </p>
+            <div className="space-y-3">
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  className="rounded"
+                  checked={redemptionConfigs.show_save?.enableQR !== false}
+                  onChange={(e) =>
+                    handleConfigUpdate(
+                      "show_save",
+                      "enableQR",
+                      e.target.checked
+                    )
+                  }
+                />
+                <span className="text-sm text-gray-700">Generate QR Code</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  className="rounded"
+                  checked={redemptionConfigs.show_save?.enableBarcode !== false}
+                  onChange={(e) =>
+                    handleConfigUpdate(
+                      "show_save",
+                      "enableBarcode",
+                      e.target.checked
+                    )
+                  }
+                />
+                <span className="text-sm text-gray-700">Generate Barcode</span>
+              </label>
+            </div>
+          </div>
+        )}
+
+        {/* Barcode Scan Configuration */}
+        {redemptionMethods.includes("barcode_scan") && (
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <Label className="text-sm font-semibold text-gray-900 mb-4 block">
+              Barcode Scan Configuration
+            </Label>
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="barcodeFormat" className="text-sm mb-2 block">
+                  Barcode Format
+                </Label>
+                <select
+                  id="barcodeFormat"
+                  value={redemptionConfigs.barcode_scan?.format || "CODE128"}
+                  onChange={(e) =>
+                    handleConfigUpdate("barcode_scan", "format", e.target.value)
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                 >
-                  <SparklesIcon className="h-3 w-3 mr-1" />
-                  Ask AI
-                </Button>
+                  <option value="CODE128">CODE128</option>
+                  <option value="EAN13">EAN13</option>
+                  <option value="UPC">UPC</option>
+                  <option value="QR">QR Code</option>
+                </select>
               </div>
-              <div className="space-y-2">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name="locationScope"
-                    value="all"
-                    checked={formData.locationScope === "all"}
-                    onChange={(e) => onUpdate("locationScope", e.target.value)}
-                  />
-                  <span className="text-sm text-gray-700">
-                    All participating locations
-                  </span>
-                </label>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name="locationScope"
-                    value="specific"
-                    checked={formData.locationScope === "specific"}
-                    onChange={(e) => onUpdate("locationScope", e.target.value)}
-                  />
-                  <span className="text-sm text-gray-700">
-                    Specific locations only
-                  </span>
-                </label>
-                {formData.locationScope === "specific" && (
-                  <Button variant="outline" size="sm" className="ml-6 mt-2">
-                    Select Locations...
-                  </Button>
-                )}
+              <p className="text-sm text-gray-600">
+                Ensure your POS system supports the selected barcode format
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Online Link Configuration */}
+        {redemptionMethods.includes("online_link") && (
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <Label className="text-sm font-semibold text-gray-900 mb-4 block">
+              Online Link Configuration
+            </Label>
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="redirectUrl" className="text-sm mb-2 block">
+                  Redirect URL <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="redirectUrl"
+                  type="url"
+                  placeholder="https://example.com/offer"
+                  value={redemptionConfigs.online_link?.redirectUrl || ""}
+                  onChange={(e) =>
+                    handleConfigUpdate(
+                      "online_link",
+                      "redirectUrl",
+                      e.target.value
+                    )
+                  }
+                  className="w-full"
+                />
+                <p className="text-sm text-gray-600 mt-2">
+                  Customers will be redirected to this URL when they redeem
+                </p>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Location Scope - Applies to All Methods */}
+        {redemptionMethods.length > 0 && (
+          <div className="pt-6 border-t border-gray-200">
+            <div className="flex items-center justify-between mb-2">
+              <Label className="text-sm font-medium">Location Scope</Label>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onAskAI("locationScope")}
+                className="h-7 px-2 text-sm text-blue-600 hover:bg-blue-50"
+              >
+                <SparklesIcon className="h-3 w-3 mr-1" />
+                Ask AI
+              </Button>
+            </div>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="locationScope"
+                  value="all"
+                  checked={
+                    formData.locationScope === "all" || !formData.locationScope
+                  }
+                  onChange={(e) => onUpdate("locationScope", e.target.value)}
+                />
+                <span className="text-sm text-gray-700">
+                  All participating locations
+                </span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="locationScope"
+                  value="specific"
+                  checked={formData.locationScope === "specific"}
+                  onChange={(e) => onUpdate("locationScope", e.target.value)}
+                />
+                <span className="text-sm text-gray-700">
+                  Specific locations only
+                </span>
+              </label>
+              {formData.locationScope === "specific" && (
+                <Button variant="outline" size="sm" className="ml-6 mt-2">
+                  Select Locations...
+                </Button>
+              )}
+            </div>
+            <p className="text-sm text-gray-500 mt-2">
+              This applies to all selected redemption methods
+            </p>
           </div>
         )}
       </div>
