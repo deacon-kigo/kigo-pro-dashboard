@@ -302,47 +302,12 @@ export default function RedemptionMethodStepV1({
                   "Redeem"
                 </p>
               </div>
-
-              <div>
-                <Label htmlFor="locationScope">Location Scope</Label>
-                <Select
-                  value={formData.locationScope}
-                  onValueChange={(value) => onUpdate("locationScope", value)}
-                >
-                  <SelectTrigger id="locationScope">
-                    <SelectValue placeholder="Select locations" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Locations</SelectItem>
-                    <SelectItem value="specific">Specific Locations</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-muted-foreground text-sm">
-                  Which merchant locations can redeem this offer
-                </p>
-              </div>
-
-              {formData.locationScope === "specific" && (
-                <div>
-                  <Label htmlFor="locations">Select Locations*</Label>
-                  <ReactSelectMulti
-                    options={AVAILABLE_LOCATIONS}
-                    values={locationIds}
-                    onChange={(values) => onUpdate("location_ids", values)}
-                    placeholder="Search and select locations..."
-                    maxDisplayValues={2}
-                  />
-                  <p className="mt-2 text-muted-foreground text-sm">
-                    Select which merchant locations can redeem this offer
-                  </p>
-                </div>
-              )}
             </AccordionContent>
           </AccordionItem>
         </Accordion>
       )}
 
-      {/* Usage Limits */}
+      {/* Usage Limits & Location Scope */}
       <Accordion
         className="rounded-md border"
         collapsible
@@ -353,7 +318,7 @@ export default function RedemptionMethodStepV1({
           <AccordionTrigger>
             <div className="flex items-center gap-2">
               <ChartBarIcon className="size-4" />
-              <span>Usage Limits</span>
+              <span>Usage Limits & Location Scope</span>
             </div>
           </AccordionTrigger>
           <AccordionContent className="space-y-5">
@@ -398,7 +363,7 @@ export default function RedemptionMethodStepV1({
             </div>
 
             <div>
-              <Label htmlFor="locationScope">Location Scope</Label>
+              <Label htmlFor="locationScope">Location Scope*</Label>
               <Select
                 value={formData.locationScope}
                 onValueChange={(value) => onUpdate("locationScope", value)}
@@ -412,7 +377,8 @@ export default function RedemptionMethodStepV1({
                 </SelectContent>
               </Select>
               <p className="text-muted-foreground text-sm">
-                Which merchant locations can redeem this offer
+                Which merchant locations can redeem this offer (applies to all
+                redemption types)
               </p>
             </div>
 
