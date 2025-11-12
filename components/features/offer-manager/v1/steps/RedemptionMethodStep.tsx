@@ -52,10 +52,19 @@ export default function RedemptionMethodStepV1({
   formData,
   onUpdate,
 }: RedemptionMethodStepProps) {
-  // Initialize location_ids array
+  // Initialize arrays for multiple selection support
   const locationIds = formData.location_ids || [];
+  const selectedRedemptionTypes = formData.redemptionTypes || []; // Changed from single redemptionType to array
 
-  const redemptionTypes = [
+  // Handle checkbox toggle for redemption types
+  const handleRedemptionTypeToggle = (typeValue: string) => {
+    const newTypes = selectedRedemptionTypes.includes(typeValue)
+      ? selectedRedemptionTypes.filter((t: string) => t !== typeValue)
+      : [...selectedRedemptionTypes, typeValue];
+    onUpdate("redemptionTypes", newTypes);
+  };
+
+  const redemptionTypeOptions = [
     {
       value: "mobile",
       label: "Mobile",
@@ -94,23 +103,27 @@ export default function RedemptionMethodStepV1({
           </AccordionTrigger>
           <AccordionContent className="space-y-5">
             <div>
-              <Label>Redemption Type*</Label>
-              <RadioGroup
-                value={formData.redemptionType}
-                onValueChange={(value) => onUpdate("redemptionType", value)}
-                className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2"
-              >
-                {redemptionTypes.map((type) => (
+              <Label>Redemption Types* (Select one or more)</Label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+                {redemptionTypeOptions.map((type) => (
                   <label key={type.value} htmlFor={type.value}>
                     <Card
                       className={`p-4 cursor-pointer transition-all hover:shadow-md ${
-                        formData.redemptionType === type.value
-                          ? "border-primary border bg-primary/5"
+                        selectedRedemptionTypes.includes(type.value)
+                          ? "border-primary border-2 bg-primary/5"
                           : "border border-gray-200"
                       }`}
                     >
                       <div className="flex items-start gap-3">
-                        <RadioGroupItem value={type.value} id={type.value} />
+                        <input
+                          type="checkbox"
+                          id={type.value}
+                          checked={selectedRedemptionTypes.includes(type.value)}
+                          onChange={() =>
+                            handleRedemptionTypeToggle(type.value)
+                          }
+                          className="mt-1 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                        />
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             <type.icon className="h-5 w-5 text-primary" />
@@ -124,15 +137,19 @@ export default function RedemptionMethodStepV1({
                     </Card>
                   </label>
                 ))}
-              </RadioGroup>
+              </div>
+              <p className="text-muted-foreground text-sm mt-2">
+                Select all redemption methods that apply to this offer.
+                Configuration sections will appear below for each selected type.
+              </p>
             </div>
           </AccordionContent>
         </AccordionItem>
       </Accordion>
 
       {/* Promo Code Configuration */}
-      {(formData.redemptionType === "mobile" ||
-        formData.redemptionType === "online_print") && (
+      {(selectedRedemptionTypes.includes("mobile") ||
+        selectedRedemptionTypes.includes("online_print")) && (
         <Accordion
           className="rounded-md border"
           collapsible
@@ -256,7 +273,7 @@ export default function RedemptionMethodStepV1({
       )}
 
       {/* External URL */}
-      {formData.redemptionType === "external_url" && (
+      {selectedRedemptionTypes.includes("external_url") && (
         <Accordion
           className="rounded-md border"
           collapsible
