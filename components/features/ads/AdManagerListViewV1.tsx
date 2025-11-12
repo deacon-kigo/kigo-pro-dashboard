@@ -848,7 +848,7 @@ export default function AdManagerListView() {
               toast({
                 title: "✅ Ad Activated",
                 description: `"${ad.name}" is now active and will start delivering`,
-                className: "!bg-green-100 !border-green-300 !text-green-800",
+                variant: "success",
               });
             } else if (newStatus === "Paused") {
               toast({

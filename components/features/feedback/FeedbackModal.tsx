@@ -112,7 +112,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
         title: "✅ Feedback Submitted Successfully",
         description:
           "Thank you for your feedback! We appreciate your input and will review it carefully.",
-        className: "!bg-green-100 !border-green-300 !text-green-800",
+        variant: "success",
       });
 
       // Close modal and reset form

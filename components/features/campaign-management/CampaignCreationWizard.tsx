@@ -122,7 +122,7 @@ export default function CampaignCreationWizard() {
           ? "🎯 Campaign Created & Activated"
           : "🎯 Campaign Created",
         description: `Campaign "${formData.name}" has been successfully created${formData.active ? " and is now active" : ""}`,
-        className: "!bg-green-100 !border-green-300 !text-green-800",
+        variant: "success",
       });
 
       // Encode campaign data to pass to list page

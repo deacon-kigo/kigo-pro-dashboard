@@ -37,7 +37,7 @@ const AdGroupCreationSuccessModal: React.FC<
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full">
-            <CheckCircle className="w-8 h-8 text-green-600" />
+            <CheckCircle className="w-8 h-8 text-green-700" />
           </div>
           <DialogTitle className="text-center text-xl font-semibold">
             Ad Group Created Successfully!
@@ -76,12 +76,12 @@ const AdGroupCreationSuccessModal: React.FC<
           {/* Status Information */}
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
             <div className="flex items-start">
-              <PauseIcon className="w-5 h-5 text-amber-600 mt-0.5 mr-3 flex-shrink-0" />
+              <PauseIcon className="w-5 h-5 text-amber-700 mt-0.5 mr-3 flex-shrink-0" />
               <div>
-                <h4 className="text-sm font-medium text-amber-800 mb-1">
+                <h4 className="text-sm font-medium text-amber-900 mb-1">
                   Ad Group Created (Not Published)
                 </h4>
-                <p className="text-sm text-amber-700">
+                <p className="text-sm text-amber-900">
                   Your ad group has been successfully created and program
                   assignments have been completed. However, it's currently in
                   draft status and won't be visible to users until published.

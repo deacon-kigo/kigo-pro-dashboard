@@ -684,7 +684,7 @@ const AdvertisementWizard: React.FC<AdvertisementWizardProps> = ({
       toast({
         title: "🚀 Ad Group Published",
         description: `Ad group "${adGroupName}" is now active and live`,
-        className: "!bg-green-100 !border-green-300 !text-green-800",
+        variant: "success",
       });
 
       // Reset form and navigate

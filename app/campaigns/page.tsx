@@ -36,14 +36,14 @@ export default function CampaignsPage() {
           toast({
             title: "🚀 Ad Group Published Successfully!",
             description: `"${newAdGroup.name}" is now active and delivering ads. Check it out at the top of your Ad Groups list.`,
-            className: "!bg-green-100 !border-green-300 !text-green-800",
+            variant: "success",
             duration: 5000,
           });
         } else if (success === "created") {
           toast({
             title: "📝 Ad Group Created Successfully!",
             description: `"${newAdGroup.name}" has been saved as inactive. You can find it at the top of your Ad Groups list.`,
-            className: "!bg-blue-100 !border-blue-300 !text-blue-800",
+            className: "!bg-blue-100 !border-blue-300 !text-blue-900",
             duration: 5000,
           });
         }

@@ -390,7 +390,7 @@ ${filterId},"${row.original.name}","${row.original.description}","${status}","${
           toast({
             title: "✅ Download Successful",
             description: `Catalog filter offers have been downloaded as CSV.`,
-            className: "!bg-green-100 !border-green-300 !text-green-800",
+            variant: "success",
           });
         } catch (error) {
           toast({

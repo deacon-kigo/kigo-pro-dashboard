@@ -219,7 +219,7 @@ export default function ProductFilterCreationView({
         toast({
           title: "✅ Assignment Successful",
           description: `Filter assigned to ${selectedIds.length} programs successfully.`,
-          className: "!bg-green-100 !border-green-300 !text-green-800",
+          variant: "success",
         });
 
         // Redirect after successful assignment
@@ -456,7 +456,7 @@ export default function ProductFilterCreationView({
       toast({
         title: "✅ Filter Created Successfully",
         description: "Your catalog filter has been created.",
-        className: "!bg-green-100 !border-green-300 !text-green-800",
+        variant: "success",
       });
 
       // 2. If there are selected programs, proceed with assignment
@@ -687,7 +687,7 @@ export default function ProductFilterCreationView({
     toast({
       title: "✅ Draft Saved",
       description: "Your filter has been saved as a draft.",
-      className: "!bg-green-100 !border-green-300 !text-green-800",
+      variant: "success",
     });
 
     setTimeout(() => {

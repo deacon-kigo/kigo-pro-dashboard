@@ -2359,7 +2359,7 @@ export default function AdManagerListView() {
         toast({
           title: "✅ Ad Group Activated",
           description: `"${adGroupName}" is now active and will start delivering ads`,
-          className: "!bg-green-100 !border-green-300 !text-green-800",
+          variant: "success",
         });
       } else if (newStatus === "Paused") {
         toast({

@@ -471,8 +471,8 @@ export default function AdvertisementCampaignCreationContent({
                       transition={{ duration: 0.3 }}
                       className="mb-3 p-2 bg-green-100 border border-green-300 rounded-md flex items-center"
                     >
-                      <CheckCircleIcon className="h-5 w-5 text-green-600 mr-2" />
-                      <span className="text-sm text-green-700">
+                      <CheckCircleIcon className="h-5 w-5 text-green-700 mr-2" />
+                      <span className="text-sm text-green-900 font-medium">
                         {successMessage}
                       </span>
                     </motion.div>
