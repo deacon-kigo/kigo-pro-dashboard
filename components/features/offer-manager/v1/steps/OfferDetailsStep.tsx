@@ -95,14 +95,14 @@ export default function OfferDetailsStepV1({
         </div>
         <div className="px-4 pb-4 pt-0 space-y-5">
           <div>
-            <Label htmlFor="merchantSource">Merchant Source*</Label>
+            <Label htmlFor="merchant">Merchant*</Label>
             <ReactSelectCreatable
               options={OFFER_SOURCES}
-              value={formData.merchantSource || null}
-              onChange={(value) => onUpdate("merchantSource", value)}
-              placeholder="Select existing or create new merchant source"
+              value={formData.merchant || null}
+              onChange={(value) => onUpdate("merchant", value)}
+              placeholder="Select existing or create new merchant"
               formatCreateLabel={(inputValue) =>
-                `Create new source "${inputValue.toUpperCase().replace(/\s+/g, "_")}"`
+                `Create new merchant "${inputValue.toUpperCase().replace(/\s+/g, "_")}"`
               }
               helperText="Merchant or partner providing this offer (e.g., MCM, FMTC, EBG, RN, AUGEO)"
             />
@@ -240,23 +240,35 @@ export default function OfferDetailsStepV1({
           </div>
         </div>
         <div className="px-4 pb-4 pt-0 space-y-5">
+          {/* Categories - Multi-Select (Moved to top for semantic importance) */}
           <div>
-            <Label htmlFor="offerType">Offer Type*</Label>
-            <Select
-              value={formData.offerType}
-              onValueChange={(value) => onUpdate("offerType", value)}
-            >
-              <SelectTrigger id="offerType">
-                <SelectValue placeholder="Select offer type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="bogo">BOGO (Buy One Get One)</SelectItem>
-                <SelectItem value="percent_off">Percentage Off</SelectItem>
-                <SelectItem value="dollar_off">Dollar Amount Off</SelectItem>
-                <SelectItem value="free">Free Item/Service</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label htmlFor="categories">Categories</Label>
+            <ReactSelectMulti
+              options={AVAILABLE_CATEGORIES}
+              values={categoryIds}
+              onChange={(values) => onUpdate("category_ids", values)}
+              placeholder="Select categories..."
+              maxDisplayValues={3}
+            />
+            <p className="mt-2 text-muted-foreground text-sm">
+              Select one or more categories for this offer.
+            </p>
+          </div>
+
+          {/* Commodities - Multi-Select from Existing */}
+          <div>
+            <Label htmlFor="commodities">Commodities</Label>
+            <ReactSelectMulti
+              options={AVAILABLE_COMMODITIES}
+              values={commodityIds}
+              onChange={(values) => onUpdate("commodity_ids", values)}
+              placeholder="Select commodities..."
+              maxDisplayValues={3}
+            />
+            <p className="mt-2 text-muted-foreground text-sm">
+              Select specific items, products, or services included in this
+              offer.
+            </p>
           </div>
 
           <div>
@@ -294,35 +306,23 @@ export default function OfferDetailsStepV1({
             </p>
           </div>
 
-          {/* Categories - Multi-Select */}
           <div>
-            <Label htmlFor="categories">Categories</Label>
-            <ReactSelectMulti
-              options={AVAILABLE_CATEGORIES}
-              values={categoryIds}
-              onChange={(values) => onUpdate("category_ids", values)}
-              placeholder="Select categories..."
-              maxDisplayValues={3}
-            />
-            <p className="mt-2 text-muted-foreground text-sm">
-              Select one or more categories for this offer.
-            </p>
-          </div>
-
-          {/* Commodities - Multi-Select from Existing */}
-          <div>
-            <Label htmlFor="commodities">Commodities</Label>
-            <ReactSelectMulti
-              options={AVAILABLE_COMMODITIES}
-              values={commodityIds}
-              onChange={(values) => onUpdate("commodity_ids", values)}
-              placeholder="Select commodities..."
-              maxDisplayValues={3}
-            />
-            <p className="mt-2 text-muted-foreground text-sm">
-              Select specific items, products, or services included in this
-              offer.
-            </p>
+            <Label htmlFor="offerType">Offer Type*</Label>
+            <Select
+              value={formData.offerType}
+              onValueChange={(value) => onUpdate("offerType", value)}
+            >
+              <SelectTrigger id="offerType">
+                <SelectValue placeholder="Select offer type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="bogo">BOGO (Buy One Get One)</SelectItem>
+                <SelectItem value="percent_off">Percentage Off</SelectItem>
+                <SelectItem value="dollar_off">Dollar Amount Off</SelectItem>
+                <SelectItem value="free">Free Item/Service</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
