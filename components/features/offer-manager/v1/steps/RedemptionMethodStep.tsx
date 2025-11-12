@@ -239,15 +239,22 @@ export default function RedemptionMethodStepV1({
             </div>
 
             <div>
-              <Label htmlFor="qrCode">QR Code</Label>
+              <Label htmlFor="qrCodeUpload">QR Code Image</Label>
               <Input
-                id="qrCode"
-                placeholder="Enter QR code data or URL"
-                value={formData.qrCode}
-                onChange={(e) => onUpdate("qrCode", e.target.value)}
+                id="qrCodeUpload"
+                type="file"
+                accept="image/png,image/jpeg,image/jpg,image/svg+xml"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    onUpdate("qrCode", `Uploaded: ${file.name}`);
+                    onUpdate("qrCodeFile", file);
+                  }
+                }}
               />
               <p className="text-muted-foreground text-sm">
-                QR code will be auto-generated if left blank
+                Upload a QR code image (PNG, JPG, or SVG). Leave blank to
+                auto-generate.
               </p>
             </div>
           </div>
