@@ -13,6 +13,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card } from "@/components/ui/card";
 import { ReactSelectMulti } from "@/components/ui/react-select-multi";
+import { Button } from "@/components/ui/button";
 import {
   DevicePhoneMobileIcon,
   PrinterIcon,
@@ -20,6 +21,7 @@ import {
   QrCodeIcon,
   GlobeAltIcon,
   ChartBarIcon,
+  ArrowUpTrayIcon,
 } from "@heroicons/react/24/outline";
 
 interface RedemptionMethodStepProps {
@@ -240,21 +242,119 @@ export default function RedemptionMethodStepV1({
 
             <div>
               <Label htmlFor="qrCodeUpload">QR Code Image</Label>
-              <Input
-                id="qrCodeUpload"
-                type="file"
-                accept="image/png,image/jpeg,image/jpg,image/svg+xml"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    onUpdate("qrCode", `Uploaded: ${file.name}`);
-                    onUpdate("qrCodeFile", file);
-                  }
-                }}
-              />
-              <p className="text-muted-foreground text-sm">
-                Upload a QR code image (PNG, JPG, or SVG). Leave blank to
-                auto-generate.
+              {!formData.qrCodeFile ? (
+                <div className="border-2 border-dashed rounded-lg p-6 transition-colors border-gray-300 hover:border-gray-400">
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <QrCodeIcon className="h-8 w-8 mb-3 text-gray-400" />
+                    <p className="text-sm font-medium mb-2 text-gray-600">
+                      Upload QR Code Image
+                    </p>
+                    <p className="text-sm mb-4 text-gray-500">
+                      PNG, JPG, or SVG (max 2MB)
+                    </p>
+                    <input
+                      type="file"
+                      id="qrCodeUpload"
+                      className="hidden"
+                      accept="image/png,image/jpeg,image/jpg,image/svg+xml"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          // Validate file size (2MB limit)
+                          if (file.size > 2 * 1024 * 1024) {
+                            alert("File must be under 2MB");
+                            return;
+                          }
+                          onUpdate("qrCodeFile", file);
+                          onUpdate("qrCodePreview", URL.createObjectURL(file));
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        document.getElementById("qrCodeUpload")?.click()
+                      }
+                    >
+                      <ArrowUpTrayIcon className="h-4 w-4 mr-2" />
+                      Choose file
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
+                        {formData.qrCodePreview ? (
+                          <img
+                            src={formData.qrCodePreview}
+                            alt="QR Code"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <QrCodeIcon className="h-6 w-6 text-gray-400" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {formData.qrCodeFile.name}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {(formData.qrCodeFile.size / 1024).toFixed(1)} KB
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="file"
+                        id="qrCodeReplace"
+                        className="hidden"
+                        accept="image/png,image/jpeg,image/jpg,image/svg+xml"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            if (file.size > 2 * 1024 * 1024) {
+                              alert("File must be under 2MB");
+                              return;
+                            }
+                            onUpdate("qrCodeFile", file);
+                            onUpdate(
+                              "qrCodePreview",
+                              URL.createObjectURL(file)
+                            );
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          document.getElementById("qrCodeReplace")?.click()
+                        }
+                      >
+                        Replace
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          onUpdate("qrCodeFile", null);
+                          onUpdate("qrCodePreview", null);
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <p className="text-muted-foreground text-sm mt-2">
+                Upload a QR code image. Leave blank to auto-generate.
               </p>
             </div>
           </div>
