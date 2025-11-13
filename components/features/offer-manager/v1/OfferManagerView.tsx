@@ -197,33 +197,6 @@ export default function OfferManagerViewV1({
   };
 
   const handleNext = () => {
-    // Validate current step before proceeding
-    let isValid = true;
-
-    if (currentStep === "details") {
-      isValid = validateDetailsStep();
-      if (!isValid) {
-        // Scroll to first error
-        const firstErrorElement = document.querySelector(".border-red-500");
-        firstErrorElement?.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-        return;
-      }
-    } else if (currentStep === "redemption") {
-      isValid = validateRedemptionStep();
-      if (!isValid) {
-        // Scroll to first error
-        const firstErrorElement = document.querySelector(".border-red-500");
-        firstErrorElement?.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-        return;
-      }
-    }
-
     // Mark current step as completed
     if (!completedSteps.includes(currentStep)) {
       setCompletedSteps([...completedSteps, currentStep]);
@@ -235,6 +208,16 @@ export default function OfferManagerViewV1({
     } else if (currentStep === "redemption") {
       setCurrentStep("review");
     }
+  };
+
+  // Check if Next button should be disabled
+  const isNextDisabled = () => {
+    if (currentStep === "details") {
+      return !validateDetailsStep();
+    } else if (currentStep === "redemption") {
+      return !validateRedemptionStep();
+    }
+    return false;
   };
 
   const handlePrevious = () => {
@@ -366,6 +349,7 @@ export default function OfferManagerViewV1({
                         onClick={handleNext}
                         className="flex items-center gap-1"
                         size="sm"
+                        disabled={isNextDisabled()}
                       >
                         Next Step →
                       </Button>
