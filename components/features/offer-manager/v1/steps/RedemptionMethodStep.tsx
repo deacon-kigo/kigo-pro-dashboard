@@ -30,6 +30,7 @@ interface RedemptionMethodStepProps {
   onUpdate: (field: string, value: any) => void;
   onNext: () => void;
   onPrevious: () => void;
+  errors?: Record<string, string>;
 }
 
 // Available locations (from merchant locations table)
@@ -48,6 +49,7 @@ const AVAILABLE_LOCATIONS = [
 export default function RedemptionMethodStepV1({
   formData,
   onUpdate,
+  errors = {},
 }: RedemptionMethodStepProps) {
   // Initialize arrays for multiple selection support
   const locationIds = formData.location_ids || [];
@@ -96,7 +98,14 @@ export default function RedemptionMethodStepV1({
         </div>
         <div className="px-4 pb-4 pt-0 space-y-5">
           <div>
-            <Label>Redemption Types* (Select one or more)</Label>
+            <Label>
+              Redemption Types* (Select one or more)
+              {errors.redemptionTypes && (
+                <span className="text-red-500 text-sm ml-2">
+                  {errors.redemptionTypes}
+                </span>
+              )}
+            </Label>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
               {redemptionTypeOptions.map((type) => (
                 <label key={type.value} htmlFor={type.value}>
