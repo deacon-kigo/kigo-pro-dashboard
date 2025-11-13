@@ -1,29 +1,14 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import PageHeader from "@/components/molecules/PageHeader/PageHeader";
 import { SearchBar } from "@/components/shared/SearchBar";
 import { Button } from "@/components/atoms/Button";
 import { useToast } from "@/lib/hooks/use-toast";
-import { PlusIcon, RectangleGroupIcon } from "@heroicons/react/24/outline";
+import { PlusIcon } from "@heroicons/react/24/outline";
 import { CampaignsTable } from "./components/CampaignsTable";
-
-// Campaign type definition based on BRD
-interface Campaign {
-  id: string;
-  name: string;
-  partner_name: string;
-  program_name: string;
-  type: "promotional" | "targeted" | "seasonal";
-  description: string;
-  start_date: string;
-  end_date: string;
-  active: boolean;
-  has_products: boolean;
-  status: "active" | "scheduled" | "ended" | "paused" | "draft";
-  created_at: string;
-}
+import { Campaign } from "./components/campaignColumns";
 
 interface CampaignManagementDashboardProps {
   onCreateCampaign: () => void;
@@ -213,6 +198,46 @@ export function CampaignManagementDashboard({
     });
   }, [campaigns, searchQuery, statusFilter, partnerFilter, typeFilter]);
 
+  // Handle row click to edit campaign
+  const handleRowClick = useCallback(
+    (campaign: Campaign) => {
+      console.log("Edit campaign:", campaign);
+      // TODO: Navigate to edit page or open edit modal
+      toast({
+        title: "Edit Campaign",
+        description: `Opening editor for "${campaign.name}"`,
+      });
+    },
+    [toast]
+  );
+
+  // Handle edit action from dropdown
+  const handleEdit = useCallback(
+    (campaign: Campaign) => {
+      console.log("Edit campaign:", campaign);
+      // TODO: Navigate to edit page or open edit modal
+      toast({
+        title: "Edit Campaign",
+        description: `Opening editor for "${campaign.name}"`,
+      });
+    },
+    [toast]
+  );
+
+  // Handle delete action from dropdown
+  const handleDelete = useCallback(
+    (campaign: Campaign) => {
+      console.log("Delete campaign:", campaign);
+      // TODO: Show delete confirmation dialog
+      toast({
+        title: "Delete Campaign",
+        description: `Preparing to delete "${campaign.name}"`,
+        variant: "destructive",
+      });
+    },
+    [toast]
+  );
+
   return (
     <div className="space-y-6">
       {/* Page Header with Create Button */}
@@ -245,6 +270,9 @@ export function CampaignManagementDashboard({
         campaigns={filteredCampaigns}
         searchQuery={searchQuery}
         highlightedId={highlightedCampaignId}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onRowClick={handleRowClick}
       />
     </div>
   );
