@@ -13,6 +13,7 @@ import {
   XCircleIcon,
   CheckCircleIcon,
   MapPinIcon,
+  ArrowDownTrayIcon,
 } from "@heroicons/react/24/outline";
 
 interface ConfigurationStepProps {
@@ -317,10 +318,20 @@ export default function ConfigurationStep({
                 </div>
               )}
             </div>
-            <p className="mt-2 text-muted-foreground text-sm">
-              Upload an Excel file containing targeting rules for different
-              offers in different locations
-            </p>
+            <div className="mt-2 flex items-center gap-2">
+              <p className="text-muted-foreground text-sm">
+                Upload an Excel file containing targeting rules for different
+                offers in different locations.
+              </p>
+              <a
+                href="/templates/targeting-rules-template.csv"
+                download="targeting-rules-template.csv"
+                className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary-dark font-medium hover:underline whitespace-nowrap"
+              >
+                <ArrowDownTrayIcon className="h-4 w-4" />
+                Download Sample
+              </a>
+            </div>
           </div>
 
           {uploadError && (
@@ -336,12 +347,15 @@ export default function ConfigurationStep({
             </h4>
             <ul className="text-sm text-blue-800 space-y-1">
               <li>
-                • Excel file should contain columns for offer ID, location, and
-                targeting criteria
+                • Excel file should contain columns for Offer ID, Location, and
+                Targeting Criteria
               </li>
               <li>
                 • Each row represents a targeting rule for a specific offer and
                 location
+              </li>
+              <li>
+                • Download the sample template above to see the expected format
               </li>
               <li>
                 • Leave blank if you want to configure targeting rules later
