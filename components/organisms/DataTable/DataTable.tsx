@@ -42,6 +42,8 @@ export interface DataTableProps<TData, TValue> {
   customPagination?: ReactNode;
   rowSelection?: Record<string, boolean>;
   onRowSelectionChange?: (selection: Record<string, boolean>) => void;
+  getRowClassName?: (row: TData) => string;
+  onRowClick?: (row: TData) => void;
 }
 
 /**
@@ -60,6 +62,8 @@ export const DataTable = memo(function DataTable<TData, TValue>({
   customPagination,
   rowSelection = {},
   onRowSelectionChange,
+  getRowClassName,
+  onRowClick,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pageIndex, setPageIndex] = useState(0);
@@ -143,19 +147,36 @@ export const DataTable = memo(function DataTable<TData, TValue>({
     () => (
       <TableBody>
         {table.getRowModel().rows?.length ? (
-          table.getRowModel().rows.map((row) => (
-            <TableRow
-              key={row.id}
-              data-state={row.getIsSelected() && "selected"}
-              className="hover:bg-gray-50"
-            >
-              {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </TableCell>
-              ))}
-            </TableRow>
-          ))
+          table.getRowModel().rows.map((row) => {
+            const rowClassName = getRowClassName
+              ? getRowClassName(row.original)
+              : "";
+            return (
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() && "selected"}
+                className={cn("hover:bg-gray-50", rowClassName)}
+                onClick={(e) => {
+                  // Don't trigger row click if clicking on a button or link
+                  const target = e.target as HTMLElement;
+                  if (
+                    target.closest("button") ||
+                    target.closest("a") ||
+                    target.closest('[role="menuitem"]')
+                  ) {
+                    return;
+                  }
+                  onRowClick?.(row.original);
+                }}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            );
+          })
         ) : (
           <TableRow>
             <TableCell
@@ -168,7 +189,7 @@ export const DataTable = memo(function DataTable<TData, TValue>({
         )}
       </TableBody>
     ),
-    [table.getRowModel(), columns?.length]
+    [table.getRowModel(), columns?.length, getRowClassName, onRowClick]
   );
 
   // Memoize the default pagination UI
