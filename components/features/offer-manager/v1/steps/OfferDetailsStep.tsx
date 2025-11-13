@@ -190,13 +190,21 @@ export default function OfferDetailsStepV1({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="maxDiscount">Max Discount Amount</Label>
-              <Input
-                id="maxDiscount"
-                type="text"
-                placeholder="e.g., $50"
-                value={formData.maxDiscount}
-                onChange={(e) => onUpdate("maxDiscount", e.target.value)}
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  $
+                </span>
+                <Input
+                  id="maxDiscount"
+                  type="number"
+                  placeholder="50"
+                  value={formData.maxDiscount}
+                  onChange={(e) => onUpdate("maxDiscount", e.target.value)}
+                  className="pl-7"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
               <p className="mt-2 text-muted-foreground text-sm">
                 Maximum discount value if applicable
               </p>
@@ -204,12 +212,46 @@ export default function OfferDetailsStepV1({
 
             <div>
               <Label htmlFor="discountValue">Discount Value</Label>
-              <Input
-                id="discountValue"
-                placeholder="e.g., 20% or $10"
-                value={formData.discountValue}
-                onChange={(e) => onUpdate("discountValue", e.target.value)}
-              />
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    {formData.discountValueType === "percent" ? "%" : "$"}
+                  </span>
+                  <Input
+                    id="discountValue"
+                    type="number"
+                    placeholder={
+                      formData.discountValueType === "percent" ? "20" : "10"
+                    }
+                    value={formData.discountValue}
+                    onChange={(e) => onUpdate("discountValue", e.target.value)}
+                    className="pl-7"
+                    min="0"
+                    step={
+                      formData.discountValueType === "percent" ? "1" : "0.01"
+                    }
+                    max={
+                      formData.discountValueType === "percent"
+                        ? "100"
+                        : undefined
+                    }
+                  />
+                </div>
+                <Select
+                  value={formData.discountValueType || "dollar"}
+                  onValueChange={(value) =>
+                    onUpdate("discountValueType", value)
+                  }
+                >
+                  <SelectTrigger className="w-[110px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="dollar">Dollar ($)</SelectItem>
+                    <SelectItem value="percent">Percent (%)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <p className="mt-2 text-muted-foreground text-sm">
                 Can be auto-extracted from offer text
               </p>
