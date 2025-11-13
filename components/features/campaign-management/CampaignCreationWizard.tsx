@@ -65,7 +65,7 @@ export default function CampaignCreationWizard() {
     // Configuration (Step 2)
     start_date: "",
     end_date: "",
-    has_end_date: false,
+    has_end_date: true, // Default to having end date, user can check "no end date" to make it ongoing
     active: true,
     auto_activate: false,
     auto_deactivate: false,
