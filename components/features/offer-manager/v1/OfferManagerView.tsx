@@ -45,10 +45,6 @@ export default function OfferManagerViewV1({
     "details" | "redemption" | "review"
   >("details");
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [redemptionErrors, setRedemptionErrors] = useState<
-    Record<string, string>
-  >({});
 
   // V1 Form data - simplified from PRD spec
   const [formData, setFormData] = useState({
@@ -69,7 +65,7 @@ export default function OfferManagerViewV1({
     secondCategory: "", // Editable list
 
     // Redemption Method
-    redemptionTypes: [], // Multiple redemption types
+    redemptionType: "", // Mobile, Online Print, External URL
     promoCodeType: "single", // Static or unique
     promoCode: "", // Single code or uploaded codes
     barcode: "", // Optional
@@ -82,89 +78,9 @@ export default function OfferManagerViewV1({
     locationScope: "all", // Which merchant locations
   });
 
-  // Validation function for Offer Details step
-  const validateDetailsStep = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    // Required fields
-    if (!formData.merchant) {
-      newErrors.merchant = "Required";
-    }
-    if (!formData.offerSource) {
-      newErrors.offerSource = "Required";
-    }
-    if (!formData.offerName && !formData.shortText) {
-      newErrors.offerName = "Required";
-    }
-    if (!formData.description && !formData.longText) {
-      newErrors.description = "Required";
-    }
-    if (!formData.startDate) {
-      newErrors.startDate = "Required";
-    }
-    if (!formData.termsConditions) {
-      newErrors.termsConditions = "Required";
-    }
-    if (!formData.offerType) {
-      newErrors.offerType = "Required";
-    }
-
-    // Date validation
-    if (formData.startDate && formData.endDate) {
-      const start = new Date(formData.startDate);
-      const end = new Date(formData.endDate);
-      if (end < start) {
-        newErrors.endDate = "End date must be after start date";
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // Validation function for Redemption Method step
-  const validateRedemptionStep = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    // At least one redemption type required
-    if (!formData.redemptionTypes || formData.redemptionTypes.length === 0) {
-      newErrors.redemptionTypes = "Select at least one redemption method";
-    }
-
-    // If mobile or online_print is selected, promo code is required
-    if (
-      formData.redemptionTypes &&
-      (formData.redemptionTypes.includes("mobile") ||
-        formData.redemptionTypes.includes("online_print"))
-    ) {
-      if (formData.promoCodeType === "single" && !formData.promoCode) {
-        newErrors.promoCode = "Promo code is required";
-      }
-    }
-
-    // If external_url is selected, URL is required
-    if (
-      formData.redemptionTypes &&
-      formData.redemptionTypes.includes("external_url") &&
-      !formData.externalUrl
-    ) {
-      newErrors.externalUrl = "External URL is required";
-    }
-
-    // Usage limit per customer is required
-    if (!formData.usageLimitPerCustomer) {
-      newErrors.usageLimitPerCustomer = "Required";
-    }
-
-    setRedemptionErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleStartCreation = () => {
     setIsCreatingOffer(true);
     setCurrentStep("details");
-    setErrors({});
-    setRedemptionErrors({});
     onCreatingChange?.(true);
   };
 
@@ -172,58 +88,14 @@ export default function OfferManagerViewV1({
     setIsCreatingOffer(false);
     setCurrentStep("details");
     setCompletedSteps([]);
-    setErrors({});
-    setRedemptionErrors({});
     onCreatingChange?.(false);
   };
 
   const handleFormUpdate = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error for this field when user updates it
-    if (errors[field]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    }
-    if (redemptionErrors[field]) {
-      setRedemptionErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    }
   };
 
   const handleNext = () => {
-    // Validate current step before proceeding
-    let isValid = true;
-
-    if (currentStep === "details") {
-      isValid = validateDetailsStep();
-      if (!isValid) {
-        // Scroll to first error
-        const firstErrorElement = document.querySelector(".border-red-500");
-        firstErrorElement?.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-        return;
-      }
-    } else if (currentStep === "redemption") {
-      isValid = validateRedemptionStep();
-      if (!isValid) {
-        // Scroll to first error
-        const firstErrorElement = document.querySelector(".border-red-500");
-        firstErrorElement?.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-        return;
-      }
-    }
-
     // Mark current step as completed
     if (!completedSteps.includes(currentStep)) {
       setCompletedSteps([...completedSteps, currentStep]);
@@ -381,7 +253,6 @@ export default function OfferManagerViewV1({
                         formData={formData}
                         onUpdate={handleFormUpdate}
                         onNext={handleNext}
-                        errors={errors}
                       />
                     )}
 
@@ -391,7 +262,6 @@ export default function OfferManagerViewV1({
                         onUpdate={handleFormUpdate}
                         onNext={handleNext}
                         onPrevious={handlePrevious}
-                        errors={redemptionErrors}
                       />
                     )}
 

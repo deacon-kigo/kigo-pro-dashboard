@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,14 +14,11 @@ import {
 import { ReactSelectMulti } from "@/components/ui/react-select-multi";
 import { ReactSelectCreatable } from "@/components/ui/react-select-creatable";
 import { InformationCircleIcon, TagIcon } from "@heroicons/react/24/outline";
-import { DatePicker } from "@/components/ui/date-picker";
-import { format } from "date-fns";
 
 interface OfferDetailsStepProps {
   formData: any;
   onUpdate: (field: string, value: any) => void;
   onNext: () => void;
-  errors?: Record<string, string>;
 }
 
 // Available offer sources (external reference values)
@@ -79,17 +76,10 @@ const AVAILABLE_COMMODITIES = [
 export default function OfferDetailsStepV1({
   formData,
   onUpdate,
-  errors = {},
 }: OfferDetailsStepProps) {
   // Initialize category_ids and commodity_ids arrays (matching API structure)
   const categoryIds = formData.category_ids || [];
   const commodityIds = formData.commodity_ids || [];
-
-  // Convert string dates to Date objects for DatePicker
-  const startDate = formData.startDate
-    ? new Date(formData.startDate)
-    : undefined;
-  const endDate = formData.endDate ? new Date(formData.endDate) : undefined;
 
   return (
     <div className="space-y-4">
@@ -105,14 +95,7 @@ export default function OfferDetailsStepV1({
         </div>
         <div className="px-4 pb-4 pt-0 space-y-5">
           <div>
-            <Label htmlFor="merchant">
-              Merchant*
-              {errors.merchant && (
-                <span className="text-red-500 text-sm ml-2">
-                  {errors.merchant}
-                </span>
-              )}
-            </Label>
+            <Label htmlFor="merchant">Merchant*</Label>
             <ReactSelectCreatable
               options={OFFER_SOURCES}
               value={formData.merchant || null}
@@ -122,19 +105,11 @@ export default function OfferDetailsStepV1({
                 `Create new merchant "${inputValue.toUpperCase().replace(/\s+/g, "_")}"`
               }
               helperText="Merchant or partner providing this offer (e.g., MCM, FMTC, EBG, RN, AUGEO)"
-              className={errors.merchant ? "border-red-500" : ""}
             />
           </div>
 
           <div>
-            <Label htmlFor="offerSource">
-              Offer Source*
-              {errors.offerSource && (
-                <span className="text-red-500 text-sm ml-2">
-                  {errors.offerSource}
-                </span>
-              )}
-            </Label>
+            <Label htmlFor="offerSource">Offer Source*</Label>
             <ReactSelectCreatable
               options={OFFER_SOURCES}
               value={formData.offerSource || null}
@@ -144,19 +119,11 @@ export default function OfferDetailsStepV1({
                 `Create new source "${inputValue.toUpperCase().replace(/\s+/g, "_")}"`
               }
               helperText="Source system or feed where offer originated (3-60 chars, uppercase, underscores only)"
-              className={errors.offerSource ? "border-red-500" : ""}
             />
           </div>
 
           <div>
-            <Label htmlFor="offerName">
-              Offer Name*
-              {errors.offerName && (
-                <span className="text-red-500 text-sm ml-2">
-                  {errors.offerName}
-                </span>
-              )}
-            </Label>
+            <Label htmlFor="offerName">Offer Name*</Label>
             <Input
               id="offerName"
               placeholder="Brief offer name for listing view (e.g., '20% Off Dinner')"
@@ -167,7 +134,6 @@ export default function OfferDetailsStepV1({
                 onUpdate("shortText", e.target.value);
               }}
               maxLength={60}
-              className={errors.offerName ? "border-red-500" : ""}
             />
             <p className="mt-2 text-muted-foreground text-sm">
               {(formData.offerName || formData.shortText || "").length}/60
@@ -176,14 +142,7 @@ export default function OfferDetailsStepV1({
           </div>
 
           <div>
-            <Label htmlFor="description">
-              Description*
-              {errors.description && (
-                <span className="text-red-500 text-sm ml-2">
-                  {errors.description}
-                </span>
-              )}
-            </Label>
+            <Label htmlFor="description">Description*</Label>
             <Textarea
               id="description"
               placeholder="Detailed offer description for detail view"
@@ -195,7 +154,6 @@ export default function OfferDetailsStepV1({
               }}
               rows={4}
               maxLength={500}
-              className={errors.description ? "border-red-500" : ""}
             />
             <p className="mt-2 text-muted-foreground text-sm">
               {(formData.description || formData.longText || "").length}/500
@@ -205,39 +163,23 @@ export default function OfferDetailsStepV1({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="startDate">
-                Start Date*
-                {errors.startDate && (
-                  <span className="text-red-500 text-sm ml-2">
-                    {errors.startDate}
-                  </span>
-                )}
-              </Label>
-              <DatePicker
-                date={startDate}
-                onSelect={(date) => {
-                  if (date) {
-                    onUpdate("startDate", format(date, "yyyy-MM-dd"));
-                  } else {
-                    onUpdate("startDate", "");
-                  }
-                }}
-                className={errors.startDate ? "border-red-500" : ""}
+              <Label htmlFor="startDate">Start Date*</Label>
+              <Input
+                id="startDate"
+                type="date"
+                value={formData.startDate}
+                onChange={(e) => onUpdate("startDate", e.target.value)}
               />
             </div>
 
             <div>
               <Label htmlFor="endDate">End Date</Label>
-              <DatePicker
-                date={endDate}
-                onSelect={(date) => {
-                  if (date) {
-                    onUpdate("endDate", format(date, "yyyy-MM-dd"));
-                  } else {
-                    onUpdate("endDate", "");
-                  }
-                }}
-                disabled={!formData.startDate}
+              <Input
+                id="endDate"
+                type="date"
+                value={formData.endDate}
+                onChange={(e) => onUpdate("endDate", e.target.value)}
+                min={formData.startDate}
               />
               <p className="mt-2 text-muted-foreground text-sm">
                 Leave blank for no expiration
@@ -336,21 +278,13 @@ export default function OfferDetailsStepV1({
           </div>
 
           <div>
-            <Label htmlFor="termsConditions">
-              Terms & Conditions*
-              {errors.termsConditions && (
-                <span className="text-red-500 text-sm ml-2">
-                  {errors.termsConditions}
-                </span>
-              )}
-            </Label>
+            <Label htmlFor="termsConditions">Terms & Conditions*</Label>
             <Textarea
               id="termsConditions"
               placeholder="Enter the terms and conditions for this offer"
               value={formData.termsConditions}
               onChange={(e) => onUpdate("termsConditions", e.target.value)}
               rows={4}
-              className={errors.termsConditions ? "border-red-500" : ""}
             />
           </div>
         </div>
@@ -434,22 +368,12 @@ export default function OfferDetailsStepV1({
           </div>
 
           <div>
-            <Label htmlFor="offerType">
-              Offer Type*
-              {errors.offerType && (
-                <span className="text-red-500 text-sm ml-2">
-                  {errors.offerType}
-                </span>
-              )}
-            </Label>
+            <Label htmlFor="offerType">Offer Type*</Label>
             <Select
               value={formData.offerType}
               onValueChange={(value) => onUpdate("offerType", value)}
             >
-              <SelectTrigger
-                id="offerType"
-                className={errors.offerType ? "border-red-500" : ""}
-              >
+              <SelectTrigger id="offerType">
                 <SelectValue placeholder="Select offer type" />
               </SelectTrigger>
               <SelectContent>
