@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
 
 interface BasicInfoStepProps {
@@ -43,6 +44,12 @@ const mockPrograms = [
   { id: "5", name: "Delta Loyalty", partner_id: "4" },
 ];
 
+// Transform partners for Combobox (label includes ID)
+const partnerOptions = mockPartners.map((p) => ({
+  label: `${p.name} (ID: ${p.id})`,
+  value: p.id,
+}));
+
 export default function BasicInfoStep({
   formData,
   onUpdate,
@@ -71,6 +78,12 @@ export default function BasicInfoStep({
     ? mockPrograms.filter((p) => p.partner_id === formData.partner_id)
     : [];
 
+  // Transform available programs for Combobox (label includes ID)
+  const programOptions = availablePrograms.map((p) => ({
+    label: `${p.name} (ID: ${p.id})`,
+    value: p.id,
+  }));
+
   return (
     <div className="space-y-4">
       {/* Campaign Details - Single Group */}
@@ -91,9 +104,11 @@ export default function BasicInfoStep({
               value={formData.name}
               onChange={(e) => onUpdate("name", e.target.value)}
               placeholder="e.g., Summer Savings 2025"
+              maxLength={100}
             />
             <p className="mt-2 text-muted-foreground text-sm">
-              Give your campaign a clear, descriptive name
+              Note: This campaign name is internal-facing only and does not
+              appear in any end-user views
             </p>
           </div>
 
@@ -105,60 +120,53 @@ export default function BasicInfoStep({
               onChange={(e) => onUpdate("description", e.target.value)}
               placeholder="Enter a detailed description of this campaign..."
               rows={4}
+              maxLength={256}
             />
             <p className="mt-2 text-muted-foreground text-sm">
-              Provide additional context and details about this campaign
+              Provide additional context and details (max 256 characters). This
+              is internal-facing only and does not appear in any end-user views
             </p>
           </div>
 
           <div>
             <Label htmlFor="partner">Partner*</Label>
-            <Select
+            <Combobox
+              options={partnerOptions}
               value={formData.partner_id}
-              onValueChange={handlePartnerChange}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a partner" />
-              </SelectTrigger>
-              <SelectContent>
-                {mockPartners.map((partner) => (
-                  <SelectItem key={partner.id} value={partner.id}>
-                    {partner.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              onChange={handlePartnerChange}
+              placeholder="Search for a partner..."
+              searchPlaceholder="Type to search partners..."
+              emptyText="No partners found"
+            />
             <p className="mt-2 text-muted-foreground text-sm">
-              Choose the partner organization for this campaign
+              Search and select the partner organization for this campaign
             </p>
           </div>
 
           <div>
             <Label htmlFor="program">Program*</Label>
-            <Select
+            <Combobox
+              options={programOptions}
               value={formData.program_id}
-              onValueChange={handleProgramChange}
-              disabled={!formData.partner_id}
-            >
-              <SelectTrigger>
-                <SelectValue
-                  placeholder={
-                    formData.partner_id
-                      ? "Select a program"
-                      : "Select a partner first"
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {availablePrograms.map((program) => (
-                  <SelectItem key={program.id} value={program.id}>
-                    {program.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              onChange={handleProgramChange}
+              placeholder={
+                formData.partner_id
+                  ? "Search for a program..."
+                  : "Select a partner first"
+              }
+              searchPlaceholder="Type to search programs..."
+              emptyText={
+                formData.partner_id
+                  ? "No programs found"
+                  : "Please select a partner first"
+              }
+              className={
+                !formData.partner_id ? "opacity-50 cursor-not-allowed" : ""
+              }
+            />
             <p className="mt-2 text-muted-foreground text-sm">
-              Select the specific program within the partner organization
+              Search and select the specific program within the partner
+              organization
             </p>
           </div>
 

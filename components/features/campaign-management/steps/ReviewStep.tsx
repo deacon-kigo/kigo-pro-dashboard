@@ -37,10 +37,14 @@ export default function ReviewStep({
   const formatDate = (dateString: string) => {
     if (!dateString) return "Not set";
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
+    return date.toLocaleString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      timeZone: "America/Chicago", // CST timezone
     });
   };
 

@@ -46,29 +46,29 @@ export default function ConfigurationStep({
         <div className="px-4 pb-4 pt-0 space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="start_date">Start Date*</Label>
+              <Label htmlFor="start_date">Start Date & Time*</Label>
               <Input
                 id="start_date"
-                type="date"
+                type="datetime-local"
                 value={formData.start_date}
                 onChange={(e) => onUpdate("start_date", e.target.value)}
               />
               <p className="mt-2 text-muted-foreground text-sm">
-                When the campaign becomes active
+                When the campaign becomes active (CST timezone)
               </p>
             </div>
 
             <div>
-              <Label htmlFor="end_date">End Date*</Label>
+              <Label htmlFor="end_date">End Date & Time*</Label>
               <Input
                 id="end_date"
-                type="date"
+                type="datetime-local"
                 value={formData.end_date}
                 onChange={(e) => onUpdate("end_date", e.target.value)}
                 min={formData.start_date || undefined}
               />
               <p className="mt-2 text-muted-foreground text-sm">
-                When the campaign ends
+                When the campaign ends (CST timezone)
               </p>
             </div>
           </div>
