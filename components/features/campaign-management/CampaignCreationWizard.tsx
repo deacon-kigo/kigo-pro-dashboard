@@ -65,6 +65,7 @@ export default function CampaignCreationWizard() {
     // Configuration (Step 2)
     start_date: "",
     end_date: "",
+    has_end_date: false,
     active: true,
     auto_activate: false,
     auto_deactivate: false,

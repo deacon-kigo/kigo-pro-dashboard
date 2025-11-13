@@ -19,6 +19,7 @@ interface ConfigurationStepProps {
   formData: {
     start_date: string;
     end_date: string;
+    has_end_date: boolean;
     active: boolean;
     auto_activate: boolean;
     auto_deactivate: boolean;
@@ -39,7 +40,8 @@ export default function ConfigurationStep({
   // Calculate if dates are valid
   const startDate = formData.start_date ? new Date(formData.start_date) : null;
   const endDate = formData.end_date ? new Date(formData.end_date) : null;
-  const datesValid = !startDate || !endDate || startDate <= endDate;
+  const datesValid =
+    !formData.has_end_date || !startDate || !endDate || startDate <= endDate;
 
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -122,28 +124,53 @@ export default function ConfigurationStep({
           </div>
         </div>
         <div className="px-4 pb-4 pt-0 space-y-5">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="start_date">Start Date & Time*</Label>
-              <DateTimePicker
-                date={startDateTime}
-                onSelect={handleStartDateChange}
+          <div>
+            <Label htmlFor="start_date">Start Date & Time*</Label>
+            <DateTimePicker
+              date={startDateTime}
+              onSelect={handleStartDateChange}
+            />
+            <p className="mt-2 text-muted-foreground text-sm">
+              When the campaign becomes active (24-hour UTC)
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <Checkbox
+                id="has_end_date"
+                checked={formData.has_end_date}
+                onCheckedChange={(checked) => {
+                  onUpdate("has_end_date", checked);
+                  // Clear end date if unchecking
+                  if (!checked) {
+                    onUpdate("end_date", "");
+                  }
+                }}
               />
-              <p className="mt-2 text-muted-foreground text-sm">
-                When the campaign becomes active (24-hour UTC)
-              </p>
+              <div className="flex-1">
+                <Label htmlFor="has_end_date" className="cursor-pointer">
+                  Set End Date
+                </Label>
+                <p className="mt-1 text-muted-foreground text-sm">
+                  Specify when the campaign should end (leave unchecked for
+                  ongoing campaigns)
+                </p>
+              </div>
             </div>
 
-            <div>
-              <Label htmlFor="end_date">End Date & Time*</Label>
-              <DateTimePicker
-                date={endDateTime}
-                onSelect={handleEndDateChange}
-              />
-              <p className="mt-2 text-muted-foreground text-sm">
-                When the campaign ends (24-hour UTC)
-              </p>
-            </div>
+            {formData.has_end_date && (
+              <div className="pl-7">
+                <Label htmlFor="end_date">End Date & Time</Label>
+                <DateTimePicker
+                  date={endDateTime}
+                  onSelect={handleEndDateChange}
+                />
+                <p className="mt-2 text-muted-foreground text-sm">
+                  When the campaign ends (24-hour UTC)
+                </p>
+              </div>
+            )}
           </div>
 
           {!datesValid && (

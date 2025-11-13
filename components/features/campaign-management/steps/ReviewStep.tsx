@@ -23,6 +23,7 @@ interface ReviewStepProps {
     description: string;
     start_date: string;
     end_date: string;
+    has_end_date: boolean;
     active: boolean;
     auto_activate: boolean;
     auto_deactivate: boolean;
@@ -174,7 +175,13 @@ export default function ReviewStep({
               </p>
               <p className="text-sm text-foreground">
                 {formatDate(formData.start_date)} →{" "}
-                {formatDate(formData.end_date)}
+                {formData.has_end_date && formData.end_date ? (
+                  formatDate(formData.end_date)
+                ) : (
+                  <span className="italic text-muted-foreground">
+                    No end date (ongoing)
+                  </span>
+                )}
               </p>
             </div>
           </div>
