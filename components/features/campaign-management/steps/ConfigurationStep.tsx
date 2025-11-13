@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import {
   Cog6ToothIcon,
   DocumentArrowUpIcon,
@@ -84,6 +85,30 @@ export default function ConfigurationStep({
     onUpdate("targeting_rules_filename", "");
   };
 
+  // Convert string dates to Date objects for DateTimePicker
+  const startDateTime = formData.start_date
+    ? new Date(formData.start_date)
+    : undefined;
+  const endDateTime = formData.end_date
+    ? new Date(formData.end_date)
+    : undefined;
+
+  const handleStartDateChange = (date: Date | undefined) => {
+    if (date) {
+      onUpdate("start_date", date.toISOString());
+    } else {
+      onUpdate("start_date", "");
+    }
+  };
+
+  const handleEndDateChange = (date: Date | undefined) => {
+    if (date) {
+      onUpdate("end_date", date.toISOString());
+    } else {
+      onUpdate("end_date", "");
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* Campaign Configuration - Single Group */}
@@ -100,28 +125,23 @@ export default function ConfigurationStep({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="start_date">Start Date & Time*</Label>
-              <Input
-                id="start_date"
-                type="datetime-local"
-                value={formData.start_date}
-                onChange={(e) => onUpdate("start_date", e.target.value)}
+              <DateTimePicker
+                date={startDateTime}
+                onSelect={handleStartDateChange}
               />
               <p className="mt-2 text-muted-foreground text-sm">
-                When the campaign becomes active (UTC timezone)
+                When the campaign becomes active (24-hour UTC)
               </p>
             </div>
 
             <div>
               <Label htmlFor="end_date">End Date & Time*</Label>
-              <Input
-                id="end_date"
-                type="datetime-local"
-                value={formData.end_date}
-                onChange={(e) => onUpdate("end_date", e.target.value)}
-                min={formData.start_date || undefined}
+              <DateTimePicker
+                date={endDateTime}
+                onSelect={handleEndDateChange}
               />
               <p className="mt-2 text-muted-foreground text-sm">
-                When the campaign ends (UTC timezone)
+                When the campaign ends (24-hour UTC)
               </p>
             </div>
           </div>
