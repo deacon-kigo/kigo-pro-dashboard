@@ -1,22 +1,13 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpIcon, ArrowDownIcon, MoreHorizontal } from "lucide-react";
+import { ArrowUpIcon, ArrowDownIcon } from "lucide-react";
 import { Badge } from "@/components/atoms/Badge/Badge";
 import { Button } from "@/components/atoms/Button";
 import {
   ExclamationTriangleIcon,
   PencilIcon,
-  TrashIcon,
 } from "@heroicons/react/24/outline";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 // Campaign type definition based on BRD
 export interface Campaign {
@@ -244,41 +235,19 @@ export const createCampaignColumns = ({
   },
   {
     id: "actions",
+    header: () => <div className="text-right">Actions</div>,
     cell: ({ row }) => {
       const campaign = row.original;
       return (
         <div className="text-right">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(campaign.id)}
-              >
-                Copy Campaign ID
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => onEdit?.(campaign)}
-                className="flex items-center gap-2"
-              >
-                <PencilIcon className="h-4 w-4" />
-                Edit Campaign
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => onDelete?.(campaign)}
-                className="flex items-center gap-2 text-red-600 focus:text-red-600"
-              >
-                <TrashIcon className="h-4 w-4" />
-                Delete Campaign
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button
+            variant="secondary"
+            className="h-8 px-3 py-1.5 font-medium"
+            onClick={() => onEdit?.(campaign)}
+          >
+            <PencilIcon className="h-4 w-4 mr-1.5" />
+            Edit
+          </Button>
         </div>
       );
     },
