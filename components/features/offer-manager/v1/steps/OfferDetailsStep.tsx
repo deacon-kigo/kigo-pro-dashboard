@@ -153,10 +153,10 @@ export default function OfferDetailsStepV1({
                 onUpdate("longText", e.target.value);
               }}
               rows={4}
-              maxLength={500}
+              maxLength={250}
             />
             <p className="mt-2 text-muted-foreground text-sm">
-              {(formData.description || formData.longText || "").length}/500
+              {(formData.description || formData.longText || "").length}/250
               characters - Shown in detail view
             </p>
           </div>
@@ -173,7 +173,7 @@ export default function OfferDetailsStepV1({
             </div>
 
             <div>
-              <Label htmlFor="endDate">End Date</Label>
+              <Label htmlFor="endDate">End Date (Optional)</Label>
               <Input
                 id="endDate"
                 type="date"
