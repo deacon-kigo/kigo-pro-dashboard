@@ -10,6 +10,8 @@ import {
   TagIcon,
   ClockIcon,
   DocumentTextIcon,
+  MapPinIcon,
+  DocumentArrowUpIcon,
 } from "@heroicons/react/24/outline";
 
 interface ReviewStepProps {
@@ -24,6 +26,7 @@ interface ReviewStepProps {
     active: boolean;
     auto_activate: boolean;
     auto_deactivate: boolean;
+    targeting_rules_filename?: string;
   };
   onSubmit: () => void;
   onPrevious: () => void;
@@ -37,15 +40,17 @@ export default function ReviewStep({
   const formatDate = (dateString: string) => {
     if (!dateString) return "Not set";
     const date = new Date(dateString);
-    return date.toLocaleString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-      timeZone: "America/Chicago", // CST timezone
-    });
+    return (
+      date.toLocaleString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: "UTC", // UTC timezone
+      }) + " UTC"
+    );
   };
 
   const getTypeColor = (type: string) => {
@@ -207,6 +212,42 @@ export default function ReviewStep({
               Auto-deactivate on end date
             </span>
           </div>
+        </div>
+      </div>
+
+      {/* Targeting Rules */}
+      <div className="rounded-md border border-b">
+        <div className="flex">
+          <div className="flex flex-1 items-center justify-between px-4 py-3 font-medium">
+            <div className="flex items-center gap-2">
+              <MapPinIcon className="size-4" />
+              <span>Targeting Rules</span>
+            </div>
+          </div>
+        </div>
+        <div className="px-4 pb-4 pt-0">
+          {formData.targeting_rules_filename ? (
+            <div className="flex items-start gap-3">
+              <DocumentArrowUpIcon className="size-4 text-muted-foreground mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  {formData.targeting_rules_filename}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Targeting rules file uploaded
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-start gap-3">
+              <MapPinIcon className="size-4 text-muted-foreground mt-0.5" />
+              <div>
+                <p className="text-sm text-muted-foreground italic">
+                  No targeting rules configured
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

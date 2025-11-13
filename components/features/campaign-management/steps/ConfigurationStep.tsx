@@ -1,11 +1,18 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Cog6ToothIcon } from "@heroicons/react/24/outline";
+import { Button } from "@/components/ui/button";
+import {
+  Cog6ToothIcon,
+  DocumentArrowUpIcon,
+  XCircleIcon,
+  CheckCircleIcon,
+  MapPinIcon,
+} from "@heroicons/react/24/outline";
 
 interface ConfigurationStepProps {
   formData: {
@@ -14,6 +21,8 @@ interface ConfigurationStepProps {
     active: boolean;
     auto_activate: boolean;
     auto_deactivate: boolean;
+    targeting_rules_file?: File | null;
+    targeting_rules_filename?: string;
   };
   onUpdate: (field: string, value: any) => void;
   onNext: () => void;
@@ -30,6 +39,50 @@ export default function ConfigurationStep({
   const startDate = formData.start_date ? new Date(formData.start_date) : null;
   const endDate = formData.end_date ? new Date(formData.end_date) : null;
   const datesValid = !startDate || !endDate || startDate <= endDate;
+
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // Handle file upload
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type (Excel files)
+    const validTypes = [
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      ".xlsx",
+      ".xls",
+    ];
+    const fileExtension = file.name.split(".").pop()?.toLowerCase();
+    const isValidType =
+      validTypes.includes(file.type) ||
+      fileExtension === "xlsx" ||
+      fileExtension === "xls";
+
+    if (!isValidType) {
+      setUploadError("Please upload a valid Excel file (.xlsx or .xls)");
+      setTimeout(() => setUploadError(null), 5000);
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError("File size should be less than 10MB");
+      setTimeout(() => setUploadError(null), 5000);
+      return;
+    }
+
+    onUpdate("targeting_rules_file", file);
+    onUpdate("targeting_rules_filename", file.name);
+    setUploadError(null);
+  };
+
+  // Handle file removal
+  const handleFileRemove = () => {
+    onUpdate("targeting_rules_file", null);
+    onUpdate("targeting_rules_filename", "");
+  };
 
   return (
     <div className="space-y-4">
@@ -54,7 +107,7 @@ export default function ConfigurationStep({
                 onChange={(e) => onUpdate("start_date", e.target.value)}
               />
               <p className="mt-2 text-muted-foreground text-sm">
-                When the campaign becomes active (CST timezone)
+                When the campaign becomes active (UTC timezone)
               </p>
             </div>
 
@@ -68,7 +121,7 @@ export default function ConfigurationStep({
                 min={formData.start_date || undefined}
               />
               <p className="mt-2 text-muted-foreground text-sm">
-                When the campaign ends (CST timezone)
+                When the campaign ends (UTC timezone)
               </p>
             </div>
           </div>
@@ -145,6 +198,108 @@ export default function ConfigurationStep({
               <li>
                 • You can manually override these settings at any time from the
                 dashboard
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Targeting Rules Configuration */}
+      <div className="rounded-md border border-b">
+        <div className="flex">
+          <div className="flex flex-1 items-center justify-between px-4 py-3 font-medium">
+            <div className="flex items-center gap-2">
+              <MapPinIcon className="size-4" />
+              <span>Targeting Rules</span>
+            </div>
+          </div>
+        </div>
+        <div className="px-4 pb-4 pt-0 space-y-5">
+          <div>
+            <Label htmlFor="targeting_rules">
+              Upload Targeting Rules (Optional)
+            </Label>
+            <div className="mt-2">
+              {!formData.targeting_rules_filename ? (
+                <div className="border-2 border-dashed rounded-lg border-gray-300 p-6 text-center hover:border-blue-400 transition-colors">
+                  <DocumentArrowUpIcon className="mx-auto h-12 w-12 text-gray-400" />
+                  <div className="mt-3">
+                    <label
+                      htmlFor="targeting-rules-upload"
+                      className="relative cursor-pointer rounded-md font-medium text-primary hover:text-primary-dark focus-within:outline-none"
+                    >
+                      <span className="text-sm">Upload Excel file</span>
+                      <input
+                        id="targeting-rules-upload"
+                        name="targeting-rules-upload"
+                        type="file"
+                        className="sr-only"
+                        accept=".xlsx,.xls,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        onChange={handleFileUpload}
+                      />
+                    </label>
+                    <p className="text-xs text-gray-500 mt-1">
+                      or drag and drop
+                    </p>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Excel files (.xlsx, .xls) up to 10MB
+                  </p>
+                </div>
+              ) : (
+                <div className="border border-green-200 bg-green-50 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <CheckCircleIcon className="h-5 w-5 text-green-600" />
+                      <div>
+                        <p className="text-sm font-medium text-green-900">
+                          {formData.targeting_rules_filename}
+                        </p>
+                        <p className="text-xs text-green-700">
+                          File uploaded successfully
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleFileRemove}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <XCircleIcon className="h-5 w-5" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+            <p className="mt-2 text-muted-foreground text-sm">
+              Upload an Excel file containing targeting rules for different
+              offers in different locations
+            </p>
+          </div>
+
+          {uploadError && (
+            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+              <p className="text-sm text-destructive">{uploadError}</p>
+            </div>
+          )}
+
+          {/* Info Box */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
+            <h4 className="text-sm font-medium text-blue-900">
+              Targeting Rules Format
+            </h4>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>
+                • Excel file should contain columns for offer ID, location, and
+                targeting criteria
+              </li>
+              <li>
+                • Each row represents a targeting rule for a specific offer and
+                location
+              </li>
+              <li>
+                • Leave blank if you want to configure targeting rules later
               </li>
             </ul>
           </div>

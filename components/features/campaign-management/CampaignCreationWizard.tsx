@@ -68,6 +68,8 @@ export default function CampaignCreationWizard() {
     active: true,
     auto_activate: false,
     auto_deactivate: false,
+    targeting_rules_file: null as File | null,
+    targeting_rules_filename: "",
   });
 
   const handleBackToDashboard = () => {
