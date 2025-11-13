@@ -272,7 +272,7 @@ export default function OfferDetailsStepV1({
                 </Select>
               </div>
               <p className="mt-2 text-muted-foreground text-sm">
-                Can be auto-extracted from offer text
+                The discount amount or percentage for this offer
               </p>
             </div>
           </div>
