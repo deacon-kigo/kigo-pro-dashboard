@@ -105,7 +105,14 @@ export default function OfferDetailsStepV1({
         </div>
         <div className="px-4 pb-4 pt-0 space-y-5">
           <div>
-            <Label htmlFor="merchant">Merchant*</Label>
+            <Label htmlFor="merchant">
+              Merchant*
+              {errors.merchant && (
+                <span className="text-red-500 text-sm ml-2">
+                  {errors.merchant}
+                </span>
+              )}
+            </Label>
             <ReactSelectCreatable
               options={OFFER_SOURCES}
               value={formData.merchant || null}
@@ -115,11 +122,19 @@ export default function OfferDetailsStepV1({
                 `Create new merchant "${inputValue.toUpperCase().replace(/\s+/g, "_")}"`
               }
               helperText="Merchant or partner providing this offer (e.g., MCM, FMTC, EBG, RN, AUGEO)"
+              className={errors.merchant ? "border-red-500" : ""}
             />
           </div>
 
           <div>
-            <Label htmlFor="offerSource">Offer Source*</Label>
+            <Label htmlFor="offerSource">
+              Offer Source*
+              {errors.offerSource && (
+                <span className="text-red-500 text-sm ml-2">
+                  {errors.offerSource}
+                </span>
+              )}
+            </Label>
             <ReactSelectCreatable
               options={OFFER_SOURCES}
               value={formData.offerSource || null}
@@ -129,11 +144,19 @@ export default function OfferDetailsStepV1({
                 `Create new source "${inputValue.toUpperCase().replace(/\s+/g, "_")}"`
               }
               helperText="Source system or feed where offer originated (3-60 chars, uppercase, underscores only)"
+              className={errors.offerSource ? "border-red-500" : ""}
             />
           </div>
 
           <div>
-            <Label htmlFor="offerName">Offer Name*</Label>
+            <Label htmlFor="offerName">
+              Offer Name*
+              {errors.offerName && (
+                <span className="text-red-500 text-sm ml-2">
+                  {errors.offerName}
+                </span>
+              )}
+            </Label>
             <Input
               id="offerName"
               placeholder="Brief offer name for listing view (e.g., '20% Off Dinner')"
@@ -144,6 +167,7 @@ export default function OfferDetailsStepV1({
                 onUpdate("shortText", e.target.value);
               }}
               maxLength={60}
+              className={errors.offerName ? "border-red-500" : ""}
             />
             <p className="mt-2 text-muted-foreground text-sm">
               {(formData.offerName || formData.shortText || "").length}/60
@@ -152,7 +176,14 @@ export default function OfferDetailsStepV1({
           </div>
 
           <div>
-            <Label htmlFor="description">Description*</Label>
+            <Label htmlFor="description">
+              Description*
+              {errors.description && (
+                <span className="text-red-500 text-sm ml-2">
+                  {errors.description}
+                </span>
+              )}
+            </Label>
             <Textarea
               id="description"
               placeholder="Detailed offer description for detail view"
@@ -164,6 +195,7 @@ export default function OfferDetailsStepV1({
               }}
               rows={4}
               maxLength={500}
+              className={errors.description ? "border-red-500" : ""}
             />
             <p className="mt-2 text-muted-foreground text-sm">
               {(formData.description || formData.longText || "").length}/500
@@ -173,7 +205,14 @@ export default function OfferDetailsStepV1({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="startDate">Start Date*</Label>
+              <Label htmlFor="startDate">
+                Start Date*
+                {errors.startDate && (
+                  <span className="text-red-500 text-sm ml-2">
+                    {errors.startDate}
+                  </span>
+                )}
+              </Label>
               <DatePicker
                 date={startDate}
                 onSelect={(date) => {
@@ -183,6 +222,7 @@ export default function OfferDetailsStepV1({
                     onUpdate("startDate", "");
                   }
                 }}
+                className={errors.startDate ? "border-red-500" : ""}
               />
             </div>
 
@@ -296,13 +336,21 @@ export default function OfferDetailsStepV1({
           </div>
 
           <div>
-            <Label htmlFor="termsConditions">Terms & Conditions*</Label>
+            <Label htmlFor="termsConditions">
+              Terms & Conditions*
+              {errors.termsConditions && (
+                <span className="text-red-500 text-sm ml-2">
+                  {errors.termsConditions}
+                </span>
+              )}
+            </Label>
             <Textarea
               id="termsConditions"
               placeholder="Enter the terms and conditions for this offer"
               value={formData.termsConditions}
               onChange={(e) => onUpdate("termsConditions", e.target.value)}
               rows={4}
+              className={errors.termsConditions ? "border-red-500" : ""}
             />
           </div>
         </div>
@@ -386,12 +434,22 @@ export default function OfferDetailsStepV1({
           </div>
 
           <div>
-            <Label htmlFor="offerType">Offer Type*</Label>
+            <Label htmlFor="offerType">
+              Offer Type*
+              {errors.offerType && (
+                <span className="text-red-500 text-sm ml-2">
+                  {errors.offerType}
+                </span>
+              )}
+            </Label>
             <Select
               value={formData.offerType}
               onValueChange={(value) => onUpdate("offerType", value)}
             >
-              <SelectTrigger id="offerType">
+              <SelectTrigger
+                id="offerType"
+                className={errors.offerType ? "border-red-500" : ""}
+              >
                 <SelectValue placeholder="Select offer type" />
               </SelectTrigger>
               <SelectContent>
