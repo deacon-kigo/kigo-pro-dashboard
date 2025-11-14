@@ -190,39 +190,20 @@ export default function OfferDetailsStepV1({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="maxDiscount">Max Discount Amount</Label>
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                    {formData.maxDiscountType === "percent" ? "%" : "$"}
-                  </span>
-                  <Input
-                    id="maxDiscount"
-                    type="number"
-                    placeholder={
-                      formData.maxDiscountType === "percent" ? "50" : "50"
-                    }
-                    value={formData.maxDiscount}
-                    onChange={(e) => onUpdate("maxDiscount", e.target.value)}
-                    className="pl-7"
-                    min="0"
-                    step={formData.maxDiscountType === "percent" ? "1" : "0.01"}
-                    max={
-                      formData.maxDiscountType === "percent" ? "100" : undefined
-                    }
-                  />
-                </div>
-                <Select
-                  value={formData.maxDiscountType || "dollar"}
-                  onValueChange={(value) => onUpdate("maxDiscountType", value)}
-                >
-                  <SelectTrigger className="w-[110px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="dollar">Dollar ($)</SelectItem>
-                    <SelectItem value="percent">Percent (%)</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  $
+                </span>
+                <Input
+                  id="maxDiscount"
+                  type="number"
+                  placeholder="50"
+                  value={formData.maxDiscount}
+                  onChange={(e) => onUpdate("maxDiscount", e.target.value)}
+                  className="pl-7"
+                  min="0"
+                  step="0.01"
+                />
               </div>
               <p className="mt-2 text-muted-foreground text-sm">
                 Maximum discount value if applicable
