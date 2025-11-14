@@ -301,9 +301,9 @@ export default function OfferDetailsStepV1({
             </p>
           </div>
 
-          {/* Commodities - Multi-Select from Existing */}
+          {/* Commodities Group - Multi-Select from Existing */}
           <div>
-            <Label htmlFor="commodities">Commodities</Label>
+            <Label htmlFor="commodities">Commodities Group</Label>
             <ReactSelectMulti
               options={AVAILABLE_COMMODITIES}
               values={commodityIds}
@@ -318,7 +318,7 @@ export default function OfferDetailsStepV1({
           </div>
 
           <div>
-            <Label htmlFor="cuisineType">Cuisine Type</Label>
+            <Label htmlFor="cuisineType">Commodities</Label>
             <Select
               value={formData.cuisineType}
               onValueChange={(value) => onUpdate("cuisineType", value)}
