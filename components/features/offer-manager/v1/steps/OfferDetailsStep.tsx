@@ -285,7 +285,11 @@ export default function OfferDetailsStepV1({
               value={formData.termsConditions}
               onChange={(e) => onUpdate("termsConditions", e.target.value)}
               rows={4}
+              maxLength={500}
             />
+            <p className="mt-2 text-muted-foreground text-sm">
+              {(formData.termsConditions || "").length}/500 characters
+            </p>
           </div>
         </div>
       </div>
