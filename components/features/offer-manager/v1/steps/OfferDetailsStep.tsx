@@ -324,7 +324,7 @@ export default function OfferDetailsStepV1({
               onValueChange={(value) => onUpdate("cuisineType", value)}
             >
               <SelectTrigger id="cuisineType">
-                <SelectValue placeholder="Select cuisine type" />
+                <SelectValue placeholder="Select commodities" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="american">American</SelectItem>
