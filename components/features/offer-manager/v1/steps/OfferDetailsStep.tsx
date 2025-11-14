@@ -308,7 +308,7 @@ export default function OfferDetailsStepV1({
               options={AVAILABLE_COMMODITIES}
               values={commodityIds}
               onChange={(values) => onUpdate("commodity_ids", values)}
-              placeholder="Select commodities..."
+              placeholder="Select commodities group..."
               maxDisplayValues={3}
             />
             <p className="mt-2 text-muted-foreground text-sm">
