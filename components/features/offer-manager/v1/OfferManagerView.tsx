@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,6 +37,62 @@ interface OfferManagerViewV1Props {
   onCreatingChange?: (isCreating: boolean) => void;
 }
 
+// Validation functions for each step
+const validateDetailsStep = (formData: any): boolean => {
+  // Required fields: Offer Name, Description, Start Date, Terms & Conditions, Offer Type
+  return !!(
+    formData.offerName?.trim() &&
+    formData.description?.trim() &&
+    formData.startDate?.trim() &&
+    formData.termsConditions?.trim() &&
+    formData.offerType?.trim()
+  );
+};
+
+const validateRedemptionStep = (formData: any): boolean => {
+  // Required: At least one redemption type selected
+  const hasRedemptionType =
+    formData.redemptionTypes && formData.redemptionTypes.length > 0;
+
+  if (!hasRedemptionType) return false;
+
+  // Required: Usage limit per customer
+  const hasUsageLimit = formData.usageLimitPerCustomer?.trim();
+  if (!hasUsageLimit) return false;
+
+  // Required: Location scope
+  const hasLocationScope = formData.locationScope?.trim();
+  if (!hasLocationScope) return false;
+
+  // If specific locations selected, must have at least one location
+  if (
+    formData.locationScope === "specific" &&
+    (!formData.location_ids || formData.location_ids.length === 0)
+  ) {
+    return false;
+  }
+
+  // If mobile or online_print, require promo code setup
+  if (
+    formData.redemptionTypes.includes("mobile") ||
+    formData.redemptionTypes.includes("online_print")
+  ) {
+    if (!formData.promoCodeType) return false;
+    if (formData.promoCodeType === "single" && !formData.promoCode?.trim())
+      return false;
+  }
+
+  // If external_url, require URL
+  if (
+    formData.redemptionTypes.includes("external_url") &&
+    !formData.externalUrl?.trim()
+  ) {
+    return false;
+  }
+
+  return true;
+};
+
 export default function OfferManagerViewV1({
   onCreatingChange,
 }: OfferManagerViewV1Props = {}) {
@@ -45,38 +101,60 @@ export default function OfferManagerViewV1({
     "details" | "redemption" | "review"
   >("details");
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
+  const [stepValidation, setStepValidation] = useState<{
+    details: boolean;
+    redemption: boolean;
+  }>({
+    details: false,
+    redemption: false,
+  });
 
   // V1 Form data - simplified from PRD spec
   const [formData, setFormData] = useState({
     // Offer Details
-    shortText: "", // Listing view
-    longText: "", // Detail view
-    startDate: "", // Offer start date
-    endDate: "", // Offer end date (optional)
+    offerName: "", // Required - also used as shortText
+    shortText: "", // Listing view (backward compat)
+    description: "", // Required - also used as longText
+    longText: "", // Detail view (backward compat)
+    startDate: "", // Required
+    endDate: "", // Optional
     maxDiscount: "", // Optional
-    termsConditions: "", // Merchant-supplied
+    termsConditions: "", // Required
+    discountValue: "", // Optional
 
     // Classification
-    offerType: "", // BOGO, % Off, Free
-    discountValue: "", // Auto-calculated (optional)
+    offerType: "", // Required - BOGO, % Off, Free
     cuisineType: "", // For search
     keywords: "", // For search
     firstCategory: "", // Editable list
     secondCategory: "", // Editable list
+    category_ids: [], // Category IDs
+    commodity_ids: [], // Commodity IDs
 
     // Redemption Method
-    redemptionType: "", // Mobile, Online Print, External URL
+    redemptionTypes: [] as string[], // Required - Mobile, Online Print, External URL (array)
     promoCodeType: "single", // Static or unique
     promoCode: "", // Single code or uploaded codes
-    barcode: "", // Optional
-    qrCode: "", // Optional
+    barcodeFile: null, // Optional
+    barcodePreview: null, // Optional
+    qrCodeFile: null, // Optional
+    qrCodePreview: null, // Optional
     externalUrl: "", // For External URL redemption
 
     // Usage limits
-    usageLimitPerCustomer: "1",
-    totalUsageLimit: "", // Total redemptions allowed
-    locationScope: "all", // Which merchant locations
+    usageLimitPerCustomer: "1", // Required
+    totalUsageLimit: "", // Optional
+    locationScope: "all", // Required
+    location_ids: [], // Required if locationScope === "specific"
   });
+
+  // Track validation state whenever formData changes
+  useEffect(() => {
+    setStepValidation({
+      details: validateDetailsStep(formData),
+      redemption: validateRedemptionStep(formData),
+    });
+  }, [formData]);
 
   const handleStartCreation = () => {
     setIsCreatingOffer(true);
@@ -96,6 +174,14 @@ export default function OfferManagerViewV1({
   };
 
   const handleNext = () => {
+    // Check if current step is valid before proceeding
+    if (currentStep === "details" && !stepValidation.details) {
+      return; // Block navigation
+    }
+    if (currentStep === "redemption" && !stepValidation.redemption) {
+      return; // Block navigation
+    }
+
     // Mark current step as completed
     if (!completedSteps.includes(currentStep)) {
       setCompletedSteps([...completedSteps, currentStep]);
@@ -115,6 +201,33 @@ export default function OfferManagerViewV1({
     } else if (currentStep === "redemption") {
       setCurrentStep("details");
     }
+  };
+
+  // Handle stepper click - prevent skipping ahead
+  const handleStepperClick = (stepNumber: number) => {
+    const targetStepId = stepConfig.find((s) => s.number === stepNumber)?.id;
+    if (!targetStepId) return;
+
+    // Allow clicking on current or previous steps
+    const currentStepNum =
+      stepConfig.find((s) => s.id === currentStep)?.number || 1;
+
+    if (stepNumber > currentStepNum) {
+      // Trying to skip ahead - check if all prior steps are completed
+      const canNavigate =
+        (stepNumber === 2 && completedSteps.includes("details")) ||
+        (stepNumber === 3 &&
+          completedSteps.includes("details") &&
+          completedSteps.includes("redemption"));
+
+      if (!canNavigate) {
+        // Show tooltip/message (handled by disabled state)
+        return;
+      }
+    }
+
+    // Allow navigation
+    setCurrentStep(targetStepId as any);
   };
 
   const handleSubmit = () => {
@@ -165,27 +278,44 @@ export default function OfferManagerViewV1({
             <Stepper
               orientation="vertical"
               value={currentStepNumber}
-              onValueChange={(step) => {
-                const stepId = stepConfig.find((s) => s.number === step)?.id;
-                if (stepId) setCurrentStep(stepId as any);
-              }}
+              onValueChange={handleStepperClick}
               className="gap-4"
             >
-              {stepConfig.map((step) => (
-                <StepperItem
-                  key={step.id}
-                  step={step.number}
-                  completed={completedSteps.includes(step.id)}
-                >
-                  <StepperTrigger className="flex flex-col items-center gap-2 w-full">
-                    <StepperIndicator />
-                    <StepperTitle className="text-xs text-center">
-                      {step.label}
-                    </StepperTitle>
-                  </StepperTrigger>
-                  {step.number < stepConfig.length && <StepperSeparator />}
-                </StepperItem>
-              ))}
+              {stepConfig.map((step) => {
+                const isCompleted = completedSteps.includes(step.id);
+                const isCurrent = step.id === currentStep;
+                const isLocked =
+                  step.number > currentStepNumber &&
+                  !completedSteps.includes(
+                    stepConfig[step.number - 2]?.id || ""
+                  );
+
+                return (
+                  <StepperItem
+                    key={step.id}
+                    step={step.number}
+                    completed={isCompleted}
+                    disabled={isLocked}
+                  >
+                    <StepperTrigger
+                      className="flex flex-col items-center gap-2 w-full"
+                      aria-current={isCurrent ? "step" : undefined}
+                      aria-disabled={isLocked}
+                      title={
+                        isLocked
+                          ? "Complete previous steps to continue"
+                          : undefined
+                      }
+                    >
+                      <StepperIndicator />
+                      <StepperTitle className="text-xs text-center">
+                        {step.label}
+                      </StepperTitle>
+                    </StepperTrigger>
+                    {step.number < stepConfig.length && <StepperSeparator />}
+                  </StepperItem>
+                );
+              })}
             </Stepper>
           </div>
         </div>
@@ -238,6 +368,20 @@ export default function OfferManagerViewV1({
                         onClick={handleNext}
                         className="flex items-center gap-1"
                         size="sm"
+                        disabled={
+                          (currentStep === "details" &&
+                            !stepValidation.details) ||
+                          (currentStep === "redemption" &&
+                            !stepValidation.redemption)
+                        }
+                        title={
+                          currentStep === "details" && !stepValidation.details
+                            ? "Complete all required fields to continue"
+                            : currentStep === "redemption" &&
+                                !stepValidation.redemption
+                              ? "Complete all required fields to continue"
+                              : undefined
+                        }
                       >
                         Next Step →
                       </Button>
