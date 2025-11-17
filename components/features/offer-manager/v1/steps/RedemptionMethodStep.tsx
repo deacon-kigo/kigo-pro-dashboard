@@ -368,70 +368,80 @@ export default function RedemptionMethodStepV1({
                   )}
                 </>
               ) : (
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
-                        {formData.barcodePreview ? (
-                          <img
-                            src={formData.barcodePreview}
-                            alt="Barcode"
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <Bars3BottomLeftIcon className="h-6 w-6 text-gray-400" />
-                        )}
+                <>
+                  <div className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
+                          {formData.barcodePreview ? (
+                            <img
+                              src={formData.barcodePreview}
+                              alt="Barcode"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <Bars3BottomLeftIcon className="h-6 w-6 text-gray-400" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">
+                            {formData.barcodeFile.name}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {(formData.barcodeFile.size / 1024).toFixed(1)} KB
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">
-                          {formData.barcodeFile.name}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {(formData.barcodeFile.size / 1024).toFixed(1)} KB
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="file"
-                        id="barcodeReplace"
-                        className="hidden"
-                        accept="image/png,image/jpeg,image/jpg,image/svg+xml"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            handleBarcodeUpload(file);
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="file"
+                          id="barcodeReplace"
+                          className="hidden"
+                          accept="image/png,image/jpeg,image/jpg,image/svg+xml"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              handleBarcodeUpload(file);
+                            }
+                          }}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            document.getElementById("barcodeReplace")?.click()
                           }
-                        }}
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          document.getElementById("barcodeReplace")?.click()
-                        }
-                      >
-                        Replace
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          onUpdate("barcodeFile", null);
-                          onUpdate("barcodePreview", null);
-                        }}
-                      >
-                        Remove
-                      </Button>
+                        >
+                          Replace
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            onUpdate("barcodeFile", null);
+                            onUpdate("barcodePreview", null);
+                            setUploadErrors((prev) => ({
+                              ...prev,
+                              barcode: undefined,
+                            }));
+                          }}
+                        >
+                          Remove
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
+                  {uploadErrors.barcode && (
+                    <p className="mt-2 text-sm text-red-600">
+                      {uploadErrors.barcode}
+                    </p>
+                  )}
+                </>
               )}
               <p className="text-muted-foreground text-sm mt-2">
-                Upload a barcode image for in-store scanning. Leave blank to
-                auto-generate.
+                Upload a barcode image for in-store scanning.
               </p>
             </div>
 
@@ -494,69 +504,80 @@ export default function RedemptionMethodStepV1({
                   )}
                 </>
               ) : (
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
-                        {formData.qrCodePreview ? (
-                          <img
-                            src={formData.qrCodePreview}
-                            alt="QR Code"
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <QrCodeIcon className="h-6 w-6 text-gray-400" />
-                        )}
+                <>
+                  <div className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
+                          {formData.qrCodePreview ? (
+                            <img
+                              src={formData.qrCodePreview}
+                              alt="QR Code"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <QrCodeIcon className="h-6 w-6 text-gray-400" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">
+                            {formData.qrCodeFile.name}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {(formData.qrCodeFile.size / 1024).toFixed(1)} KB
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">
-                          {formData.qrCodeFile.name}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {(formData.qrCodeFile.size / 1024).toFixed(1)} KB
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="file"
-                        id="qrCodeReplace"
-                        className="hidden"
-                        accept="image/png,image/jpeg,image/jpg,image/svg+xml"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            handleQRCodeUpload(file);
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="file"
+                          id="qrCodeReplace"
+                          className="hidden"
+                          accept="image/png,image/jpeg,image/jpg,image/svg+xml"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              handleQRCodeUpload(file);
+                            }
+                          }}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            document.getElementById("qrCodeReplace")?.click()
                           }
-                        }}
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          document.getElementById("qrCodeReplace")?.click()
-                        }
-                      >
-                        Replace
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          onUpdate("qrCodeFile", null);
-                          onUpdate("qrCodePreview", null);
-                        }}
-                      >
-                        Remove
-                      </Button>
+                        >
+                          Replace
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            onUpdate("qrCodeFile", null);
+                            onUpdate("qrCodePreview", null);
+                            setUploadErrors((prev) => ({
+                              ...prev,
+                              qrCode: undefined,
+                            }));
+                          }}
+                        >
+                          Remove
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
+                  {uploadErrors.qrCode && (
+                    <p className="mt-2 text-sm text-red-600">
+                      {uploadErrors.qrCode}
+                    </p>
+                  )}
+                </>
               )}
               <p className="text-muted-foreground text-sm mt-2">
-                Upload a QR code image. Leave blank to auto-generate.
+                Upload a QR code image for mobile redemption.
               </p>
             </div>
           </div>
