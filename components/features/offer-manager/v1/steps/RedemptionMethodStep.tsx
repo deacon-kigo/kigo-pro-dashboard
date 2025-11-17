@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -49,9 +49,87 @@ export default function RedemptionMethodStepV1({
   formData,
   onUpdate,
 }: RedemptionMethodStepProps) {
+  // Error state management for image uploads
+  const [uploadErrors, setUploadErrors] = useState<{
+    barcode?: string;
+    qrCode?: string;
+  }>({});
+
   // Initialize arrays for multiple selection support
   const locationIds = formData.location_ids || [];
   const selectedRedemptionTypes = formData.redemptionTypes || []; // Changed from single redemptionType to array
+
+  // Validate image file (type and size)
+  const validateImageFile = (file: File): string | null => {
+    // Check file type (only allow images)
+    const validTypes = [
+      "image/png",
+      "image/jpeg",
+      "image/jpg",
+      "image/svg+xml",
+    ];
+    if (!validTypes.includes(file.type)) {
+      return "Only PNG, JPG, or SVG files are allowed.";
+    }
+
+    // Check file size (2MB limit)
+    const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+    if (file.size > maxSize) {
+      return "File must be under 2MB.";
+    }
+
+    return null; // Valid file
+  };
+
+  // Handle barcode file upload with validation
+  const handleBarcodeUpload = (file: File | null) => {
+    if (!file) return;
+
+    // Clear previous error
+    setUploadErrors((prev) => ({ ...prev, barcode: undefined }));
+
+    // Validate file
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      setUploadErrors((prev) => ({ ...prev, barcode: validationError }));
+      return;
+    }
+
+    try {
+      onUpdate("barcodeFile", file);
+      onUpdate("barcodePreview", URL.createObjectURL(file));
+    } catch (error) {
+      setUploadErrors((prev) => ({
+        ...prev,
+        barcode: "Sorry, something went wrong. Please try again.",
+      }));
+    }
+  };
+
+  // Handle QR code file upload with validation
+  const handleQRCodeUpload = (file: File | null) => {
+    if (!file) return;
+
+    // Clear previous error
+    setUploadErrors((prev) => ({ ...prev, qrCode: undefined }));
+
+    // Validate file
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      setUploadErrors((prev) => ({ ...prev, qrCode: validationError }));
+      return;
+    }
+
+    try {
+      onUpdate("qrCodeFile", file);
+      onUpdate("qrCodePreview", URL.createObjectURL(file));
+    } catch (error) {
+      setUploadErrors((prev) => ({
+        ...prev,
+        qrCode: "Sorry, something went wrong. Please try again.",
+      }));
+    }
+  };
 
   // Handle checkbox toggle for redemption types
   const handleRedemptionTypeToggle = (typeValue: string) => {
@@ -230,46 +308,65 @@ export default function RedemptionMethodStepV1({
             <div>
               <Label htmlFor="barcodeUpload">Barcode Image</Label>
               {!formData.barcodeFile ? (
-                <div className="border-2 border-dashed rounded-lg p-6 transition-colors border-gray-300 hover:border-gray-400">
-                  <div className="flex flex-col items-center justify-center text-center">
-                    <Bars3BottomLeftIcon className="h-8 w-8 mb-3 text-gray-400" />
-                    <p className="text-sm font-medium mb-2 text-gray-600">
-                      Upload Barcode Image
-                    </p>
-                    <p className="text-sm mb-4 text-gray-500">
-                      PNG, JPG, or SVG (max 2MB)
-                    </p>
-                    <input
-                      type="file"
-                      id="barcodeUpload"
-                      className="hidden"
-                      accept="image/png,image/jpeg,image/jpg,image/svg+xml"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          // Validate file size (2MB limit)
-                          if (file.size > 2 * 1024 * 1024) {
-                            alert("File must be under 2MB");
-                            return;
+                <>
+                  <div
+                    className={`border-2 border-dashed rounded-lg p-6 transition-colors ${
+                      uploadErrors.barcode
+                        ? "border-red-300 bg-red-50"
+                        : "border-gray-300 hover:border-gray-400"
+                    }`}
+                  >
+                    <div className="flex flex-col items-center justify-center text-center">
+                      <Bars3BottomLeftIcon
+                        className={`h-8 w-8 mb-3 ${
+                          uploadErrors.barcode
+                            ? "text-red-400"
+                            : "text-gray-400"
+                        }`}
+                      />
+                      <p
+                        className={`text-sm font-medium mb-2 ${
+                          uploadErrors.barcode
+                            ? "text-red-600"
+                            : "text-gray-600"
+                        }`}
+                      >
+                        Upload Barcode Image
+                      </p>
+                      <p className="text-sm mb-4 text-gray-500">
+                        PNG, JPG, or SVG (max 2MB)
+                      </p>
+                      <input
+                        type="file"
+                        id="barcodeUpload"
+                        className="hidden"
+                        accept="image/png,image/jpeg,image/jpg,image/svg+xml"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            handleBarcodeUpload(file);
                           }
-                          onUpdate("barcodeFile", file);
-                          onUpdate("barcodePreview", URL.createObjectURL(file));
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          document.getElementById("barcodeUpload")?.click()
                         }
-                      }}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        document.getElementById("barcodeUpload")?.click()
-                      }
-                    >
-                      <ArrowUpTrayIcon className="h-4 w-4 mr-2" />
-                      Choose file
-                    </Button>
+                      >
+                        <ArrowUpTrayIcon className="h-4 w-4 mr-2" />
+                        Choose file
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                  {uploadErrors.barcode && (
+                    <p className="mt-2 text-sm text-red-600">
+                      {uploadErrors.barcode}
+                    </p>
+                  )}
+                </>
               ) : (
                 <div className="border border-gray-200 rounded-lg p-4">
                   <div className="flex items-center justify-between">
@@ -303,15 +400,7 @@ export default function RedemptionMethodStepV1({
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) {
-                            if (file.size > 2 * 1024 * 1024) {
-                              alert("File must be under 2MB");
-                              return;
-                            }
-                            onUpdate("barcodeFile", file);
-                            onUpdate(
-                              "barcodePreview",
-                              URL.createObjectURL(file)
-                            );
+                            handleBarcodeUpload(file);
                           }
                         }}
                       />
@@ -349,46 +438,61 @@ export default function RedemptionMethodStepV1({
             <div>
               <Label htmlFor="qrCodeUpload">QR Code Image</Label>
               {!formData.qrCodeFile ? (
-                <div className="border-2 border-dashed rounded-lg p-6 transition-colors border-gray-300 hover:border-gray-400">
-                  <div className="flex flex-col items-center justify-center text-center">
-                    <QrCodeIcon className="h-8 w-8 mb-3 text-gray-400" />
-                    <p className="text-sm font-medium mb-2 text-gray-600">
-                      Upload QR Code Image
-                    </p>
-                    <p className="text-sm mb-4 text-gray-500">
-                      PNG, JPG, or SVG (max 2MB)
-                    </p>
-                    <input
-                      type="file"
-                      id="qrCodeUpload"
-                      className="hidden"
-                      accept="image/png,image/jpeg,image/jpg,image/svg+xml"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          // Validate file size (2MB limit)
-                          if (file.size > 2 * 1024 * 1024) {
-                            alert("File must be under 2MB");
-                            return;
+                <>
+                  <div
+                    className={`border-2 border-dashed rounded-lg p-6 transition-colors ${
+                      uploadErrors.qrCode
+                        ? "border-red-300 bg-red-50"
+                        : "border-gray-300 hover:border-gray-400"
+                    }`}
+                  >
+                    <div className="flex flex-col items-center justify-center text-center">
+                      <QrCodeIcon
+                        className={`h-8 w-8 mb-3 ${
+                          uploadErrors.qrCode ? "text-red-400" : "text-gray-400"
+                        }`}
+                      />
+                      <p
+                        className={`text-sm font-medium mb-2 ${
+                          uploadErrors.qrCode ? "text-red-600" : "text-gray-600"
+                        }`}
+                      >
+                        Upload QR Code Image
+                      </p>
+                      <p className="text-sm mb-4 text-gray-500">
+                        PNG, JPG, or SVG (max 2MB)
+                      </p>
+                      <input
+                        type="file"
+                        id="qrCodeUpload"
+                        className="hidden"
+                        accept="image/png,image/jpeg,image/jpg,image/svg+xml"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            handleQRCodeUpload(file);
                           }
-                          onUpdate("qrCodeFile", file);
-                          onUpdate("qrCodePreview", URL.createObjectURL(file));
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          document.getElementById("qrCodeUpload")?.click()
                         }
-                      }}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        document.getElementById("qrCodeUpload")?.click()
-                      }
-                    >
-                      <ArrowUpTrayIcon className="h-4 w-4 mr-2" />
-                      Choose file
-                    </Button>
+                      >
+                        <ArrowUpTrayIcon className="h-4 w-4 mr-2" />
+                        Choose file
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                  {uploadErrors.qrCode && (
+                    <p className="mt-2 text-sm text-red-600">
+                      {uploadErrors.qrCode}
+                    </p>
+                  )}
+                </>
               ) : (
                 <div className="border border-gray-200 rounded-lg p-4">
                   <div className="flex items-center justify-between">
@@ -422,15 +526,7 @@ export default function RedemptionMethodStepV1({
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) {
-                            if (file.size > 2 * 1024 * 1024) {
-                              alert("File must be under 2MB");
-                              return;
-                            }
-                            onUpdate("qrCodeFile", file);
-                            onUpdate(
-                              "qrCodePreview",
-                              URL.createObjectURL(file)
-                            );
+                            handleQRCodeUpload(file);
                           }
                         }}
                       />
