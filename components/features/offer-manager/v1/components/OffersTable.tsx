@@ -103,14 +103,18 @@ export function OffersTable({ offers, searchQuery = "" }: OffersTableProps) {
         cell: ({ row }) => {
           const offer = row.original;
           const title = row.getValue("title") as string;
-          // Remove search highlighting to prevent re-renders
-          // const isMatch =
-          //   searchQuery &&
-          //   title.toLowerCase().includes(searchQuery.toLowerCase());
 
           return (
             <div className="flex flex-col">
-              <span className="font-semibold text-gray-900">{title}</span>
+              <button
+                onClick={() => {
+                  // TODO: Navigate to offer details view
+                  console.log("Navigate to offer details:", offer.id);
+                }}
+                className="font-semibold text-gray-900 hover:text-primary hover:underline text-left"
+              >
+                {title}
+              </button>
               <span className="text-sm text-gray-600">{offer.description}</span>
             </div>
           );
@@ -123,15 +127,7 @@ export function OffersTable({ offers, searchQuery = "" }: OffersTableProps) {
           const offer = row.original;
           const programStyle = getProgramStyle(offer.programType);
           return (
-            <div className="flex flex-col gap-1">
-              <Badge {...programStyle}>{row.getValue("programLabel")}</Badge>
-              <Badge
-                variant="outline"
-                className="text-xs border-gray-300 bg-white"
-              >
-                {offer.redemptionMethod}
-              </Badge>
-            </div>
+            <Badge {...programStyle}>{row.getValue("programLabel")}</Badge>
           );
         },
       },
