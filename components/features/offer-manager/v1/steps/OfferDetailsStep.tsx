@@ -410,7 +410,13 @@ export default function OfferDetailsStepV1({
             <Label htmlFor="offerType">Offer Type*</Label>
             <Select
               value={formData.offerType}
-              onValueChange={(value) => onUpdate("offerType", value)}
+              onValueChange={(value) => {
+                onUpdate("offerType", value);
+                // If CLK is selected, automatically set External Link as redemption type
+                if (value === "clk") {
+                  onUpdate("redemptionTypes", ["external_url"]);
+                }
+              }}
             >
               <SelectTrigger id="offerType">
                 <SelectValue placeholder="Select offer type" />
@@ -420,9 +426,16 @@ export default function OfferDetailsStepV1({
                 <SelectItem value="percent_off">Percentage Off</SelectItem>
                 <SelectItem value="dollar_off">Dollar Amount Off</SelectItem>
                 <SelectItem value="free">Free Item/Service</SelectItem>
+                <SelectItem value="clk">CLK (Click-through)</SelectItem>
                 <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
+            {formData.offerType === "clk" && (
+              <p className="mt-2 text-sm text-blue-600 bg-blue-50 p-2 rounded border border-blue-200">
+                CLK offers require External Link redemption and cannot use
+                Mobile or In-Store redemption methods.
+              </p>
+            )}
           </div>
 
           {/* Categories - Multi-Select */}

@@ -133,9 +133,40 @@ export default function RedemptionMethodStepV1({
 
   // Handle checkbox toggle for redemption types
   const handleRedemptionTypeToggle = (typeValue: string) => {
-    const newTypes = selectedRedemptionTypes.includes(typeValue)
-      ? selectedRedemptionTypes.filter((t: string) => t !== typeValue)
-      : [...selectedRedemptionTypes, typeValue];
+    let newTypes;
+
+    if (typeValue === "external_url") {
+      // If selecting External Link, remove Mobile and Online Print
+      if (selectedRedemptionTypes.includes(typeValue)) {
+        newTypes = selectedRedemptionTypes.filter(
+          (t: string) => t !== typeValue
+        );
+      } else {
+        // Select External Link and set CLK offer type
+        newTypes = ["external_url"];
+        onUpdate("offerType", "clk");
+      }
+    } else {
+      // For Mobile or Online Print
+      if (selectedRedemptionTypes.includes(typeValue)) {
+        newTypes = selectedRedemptionTypes.filter(
+          (t: string) => t !== typeValue
+        );
+      } else {
+        // If External Link is currently selected, remove it first
+        newTypes = selectedRedemptionTypes
+          .filter((t: string) => t !== "external_url")
+          .concat(typeValue);
+        // If user switches away from External Link, clear CLK offer type
+        if (
+          selectedRedemptionTypes.includes("external_url") &&
+          formData.offerType === "clk"
+        ) {
+          onUpdate("offerType", "");
+        }
+      }
+    }
+
     onUpdate("redemptionTypes", newTypes);
   };
 
@@ -176,41 +207,82 @@ export default function RedemptionMethodStepV1({
           <div>
             <Label>Redemption Types* (Select one or more)</Label>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
-              {redemptionTypeOptions.map((type) => (
-                <label key={type.value} htmlFor={type.value}>
-                  <Card
-                    className={`p-4 cursor-pointer transition-all hover:shadow-md ${
-                      selectedRedemptionTypes.includes(type.value)
-                        ? "border-primary border-2 bg-primary/5"
-                        : "border border-gray-200"
-                    }`}
+              {redemptionTypeOptions.map((type) => {
+                // Disable Mobile and Online Print when External Link is selected
+                const isDisabled =
+                  selectedRedemptionTypes.includes("external_url") &&
+                  type.value !== "external_url";
+                const isChecked = selectedRedemptionTypes.includes(type.value);
+
+                return (
+                  <label
+                    key={type.value}
+                    htmlFor={type.value}
+                    className={isDisabled ? "cursor-not-allowed" : ""}
                   >
-                    <div className="flex items-start gap-3">
-                      <input
-                        type="checkbox"
-                        id={type.value}
-                        checked={selectedRedemptionTypes.includes(type.value)}
-                        onChange={() => handleRedemptionTypeToggle(type.value)}
-                        className="mt-1 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <type.icon className="h-5 w-5 text-primary" />
-                          <span className="font-medium">{type.label}</span>
+                    <Card
+                      className={`p-4 transition-all ${
+                        isDisabled
+                          ? "opacity-50 cursor-not-allowed bg-gray-50"
+                          : "cursor-pointer hover:shadow-md"
+                      } ${
+                        isChecked
+                          ? "border-primary border-2 bg-primary/5"
+                          : "border border-gray-200"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <input
+                          type="checkbox"
+                          id={type.value}
+                          checked={isChecked}
+                          onChange={() =>
+                            handleRedemptionTypeToggle(type.value)
+                          }
+                          disabled={isDisabled}
+                          className="mt-1 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <type.icon
+                              className={`h-5 w-5 ${
+                                isDisabled ? "text-gray-400" : "text-primary"
+                              }`}
+                            />
+                            <span
+                              className={`font-medium ${
+                                isDisabled ? "text-gray-500" : ""
+                              }`}
+                            >
+                              {type.label}
+                            </span>
+                          </div>
+                          <p className="text-muted-foreground text-sm">
+                            {type.description}
+                          </p>
                         </div>
-                        <p className="text-muted-foreground text-sm">
-                          {type.description}
-                        </p>
                       </div>
-                    </div>
-                  </Card>
-                </label>
-              ))}
+                    </Card>
+                  </label>
+                );
+              })}
             </div>
             <p className="text-muted-foreground text-sm mt-2">
               Select all redemption methods that apply to this offer.
               Configuration sections will appear below for each selected type.
             </p>
+            {selectedRedemptionTypes.includes("external_url") && (
+              <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-700 font-medium mb-1">
+                  External Link is Exclusive
+                </p>
+                <p className="text-sm text-blue-600">
+                  CLK offers use External Link redemption only. Mobile and
+                  In-Store redemption options are not available when External
+                  Link is selected.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
