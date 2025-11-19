@@ -118,9 +118,10 @@ export default function OfferManagerViewV1({
     longText: "", // Detail view (backward compat)
     startDate: "", // Required
     endDate: "", // Optional
-    maxDiscount: "", // Optional
+    maxDiscount: "0", // Optional - default to 0 per feedback
     termsConditions: "", // Required
-    discountValue: "", // Optional
+    discountValue: "0", // Optional - default to 0 per feedback
+    exclusions: "", // Optional
 
     // Classification
     offerType: "", // Required - BOGO, % Off, Free
