@@ -21,8 +21,8 @@ import {
 import OfferDetailsStepV1 from "./steps/OfferDetailsStep";
 import RedemptionMethodStepV1 from "./steps/RedemptionMethodStep";
 import OfferManagerDashboardV1 from "./OfferManagerDashboardV1";
-import { OfferPreviewPanel } from "@/components/ui/offer-preview-panel";
 import { AIContentEnhancer } from "@/components/ui/ai-content-enhancer";
+import { useOfferContentAI } from "@/lib/hooks/useOfferContentAI";
 
 /**
  * Offer Manager V1
@@ -148,6 +148,14 @@ export default function OfferManagerViewV1({
     totalUsageLimit: "", // Optional
     locationScope: "all", // Required
     location_ids: [], // Required if locationScope === "specific"
+  });
+
+  // Initialize CopilotKit AI content generation
+  useOfferContentAI({
+    merchantName: formData.merchant?.label || formData.merchant,
+    offerTitle: formData.offerName,
+    offerType: formData.offerType,
+    description: formData.description,
   });
 
   // Track validation state whenever formData changes
@@ -408,64 +416,60 @@ export default function OfferManagerViewV1({
           </div>
         </div>
 
-        {/* Preview Panel - Right Column */}
+        {/* AI Enhancement Panel - Right Column */}
         <div className="w-[400px] flex-shrink-0">
-          <Card className="p-0 h-full overflow-hidden shadow-md rounded-r-lg">
-            <OfferPreviewPanel formData={formData}>
-              <AIContentEnhancer
-                context={{
-                  merchantName: formData.merchant?.label || formData.merchant,
-                  offerTitle: formData.offerName,
-                  offerType: formData.offerType,
-                  description: formData.description,
-                }}
-                enhancements={[
-                  {
-                    id: "brand_narrative",
-                    label: "Brand Narrative",
-                    description: "Compelling merchant story",
-                  },
-                  {
-                    id: "merchant_narrative",
-                    label: "Merchant Story",
-                    description: "Merchant value proposition",
-                  },
-                  {
-                    id: "offer_narrative",
-                    label: "Offer Description",
-                    description: "Enhanced offer description",
-                  },
-                  {
-                    id: "categories",
-                    label: "Categories",
-                    description: "AI-suggested categories",
-                    autoPopulate: "category_ids",
-                  },
-                  {
-                    id: "keywords",
-                    label: "Keywords",
-                    description: "SEO keywords",
-                    autoPopulate: "keywords",
-                  },
-                ]}
-                onGenerated={(results) => {
-                  // Auto-populate form fields
-                  results.forEach((result) => {
-                    if (result.id === "categories") {
-                      // Parse comma-separated categories and convert to array
-                      const cats = result.content
-                        .split(",")
-                        .map((c) => c.trim());
-                      handleFormUpdate("category_ids", cats);
-                    } else if (result.id === "keywords") {
-                      handleFormUpdate("keywords", result.content);
-                    }
-                  });
-                }}
-                autoGenerate={true}
-                streaming={true}
-              />
-            </OfferPreviewPanel>
+          <Card className="p-4 h-full overflow-auto shadow-md rounded-r-lg">
+            <AIContentEnhancer
+              context={{
+                merchantName: formData.merchant?.label || formData.merchant,
+                offerTitle: formData.offerName,
+                offerType: formData.offerType,
+                description: formData.description,
+              }}
+              enhancements={[
+                {
+                  id: "brand_narrative",
+                  label: "Brand Narrative",
+                  description: "Compelling merchant story",
+                },
+                {
+                  id: "merchant_narrative",
+                  label: "Merchant Story",
+                  description: "Merchant value proposition",
+                },
+                {
+                  id: "offer_narrative",
+                  label: "Offer Description",
+                  description: "Enhanced offer description",
+                },
+                {
+                  id: "categories",
+                  label: "Categories",
+                  description: "AI-suggested categories",
+                  autoPopulate: "category_ids",
+                },
+                {
+                  id: "keywords",
+                  label: "Keywords",
+                  description: "SEO keywords",
+                  autoPopulate: "keywords",
+                },
+              ]}
+              onGenerated={(results) => {
+                // Auto-populate form fields
+                results.forEach((result) => {
+                  if (result.id === "categories") {
+                    // Parse comma-separated categories and convert to array
+                    const cats = result.content.split(",").map((c) => c.trim());
+                    handleFormUpdate("category_ids", cats);
+                  } else if (result.id === "keywords") {
+                    handleFormUpdate("keywords", result.content);
+                  }
+                });
+              }}
+              autoGenerate={true}
+              streaming={true}
+            />
           </Card>
         </div>
       </div>
