@@ -109,20 +109,6 @@ export default function OfferDetailsStepV1({
           </div>
 
           <div>
-            <Label htmlFor="offerSource">Offer Source*</Label>
-            <ReactSelectCreatable
-              options={OFFER_SOURCES}
-              value={formData.offerSource || null}
-              onChange={(value) => onUpdate("offerSource", value)}
-              placeholder="Select existing or create new offer source"
-              formatCreateLabel={(inputValue) =>
-                `Create new source "${inputValue.toUpperCase().replace(/\s+/g, "_")}"`
-              }
-              helperText="Source system or feed where offer originated (3-60 chars, uppercase, underscores only)"
-            />
-          </div>
-
-          <div>
             <Label htmlFor="offerName">Offer Name*</Label>
             <Input
               id="offerName"
@@ -137,7 +123,7 @@ export default function OfferDetailsStepV1({
             />
             <p className="mt-2 text-muted-foreground text-sm">
               {(formData.offerName || formData.shortText || "").length}/60
-              characters - Shown in listing view
+              characters - Used for short description in UX
             </p>
           </div>
 
@@ -157,7 +143,150 @@ export default function OfferDetailsStepV1({
             />
             <p className="mt-2 text-muted-foreground text-sm">
               {(formData.description || formData.longText || "").length}/250
-              characters - Shown in detail view
+              characters - Used in long description on offer details page
+            </p>
+          </div>
+
+          <div>
+            <Label htmlFor="offerImage">Offer Image</Label>
+            {!formData.offerImageFile ? (
+              <>
+                <div className="border-2 border-dashed rounded-lg p-6 transition-colors border-gray-300 hover:border-gray-400">
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <svg
+                      className="h-8 w-8 mb-3 text-gray-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <p className="text-sm font-medium mb-2 text-gray-600">
+                      Upload Offer Image
+                    </p>
+                    <p className="text-sm mb-4 text-gray-500">
+                      PNG or JPG (max 5MB)
+                    </p>
+                    <input
+                      type="file"
+                      id="offerImageUpload"
+                      className="hidden"
+                      accept="image/png,image/jpeg,image/jpg"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          if (file.size > 5 * 1024 * 1024) {
+                            alert("File must be under 5MB");
+                            return;
+                          }
+                          onUpdate("offerImageFile", file);
+                          onUpdate(
+                            "offerImagePreview",
+                            URL.createObjectURL(file)
+                          );
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        document.getElementById("offerImageUpload")?.click()
+                      }
+                      className="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
+                    >
+                      Choose file
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-start gap-4">
+                    <div className="w-24 h-24 rounded border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center flex-shrink-0">
+                      {formData.offerImagePreview && (
+                        <img
+                          src={formData.offerImagePreview}
+                          alt={formData.offerImageAlt || "Offer image"}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900 mb-2">
+                        {formData.offerImageFile.name}
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="file"
+                          id="offerImageReplace"
+                          className="hidden"
+                          accept="image/png,image/jpeg,image/jpg"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              if (file.size > 5 * 1024 * 1024) {
+                                alert("File must be under 5MB");
+                                return;
+                              }
+                              onUpdate("offerImageFile", file);
+                              onUpdate(
+                                "offerImagePreview",
+                                URL.createObjectURL(file)
+                              );
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            document
+                              .getElementById("offerImageReplace")
+                              ?.click()
+                          }
+                          className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
+                        >
+                          Replace
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onUpdate("offerImageFile", null);
+                            onUpdate("offerImagePreview", null);
+                            onUpdate("offerImageAlt", "");
+                          }}
+                          className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+            {formData.offerImageFile && (
+              <div className="mt-3">
+                <Label htmlFor="offerImageAlt">Alt Text for Image*</Label>
+                <Input
+                  id="offerImageAlt"
+                  placeholder="Describe the image for accessibility and SEO"
+                  value={formData.offerImageAlt || ""}
+                  onChange={(e) => onUpdate("offerImageAlt", e.target.value)}
+                  maxLength={150}
+                />
+                <p className="mt-1 text-muted-foreground text-sm">
+                  Important for search/AI optimization and accessibility
+                </p>
+              </div>
+            )}
+            <p className="mt-2 text-muted-foreground text-sm">
+              Upload an image for the offer creative
             </p>
           </div>
 
@@ -247,6 +376,21 @@ export default function OfferDetailsStepV1({
               {(formData.termsConditions || "").length}/1000 characters
             </p>
           </div>
+
+          <div>
+            <Label htmlFor="exclusions">Exclusions</Label>
+            <Textarea
+              id="exclusions"
+              placeholder="List products or services NOT included in this offer"
+              value={formData.exclusions || ""}
+              onChange={(e) => onUpdate("exclusions", e.target.value)}
+              rows={3}
+            />
+            <p className="mt-2 text-muted-foreground text-sm">
+              Specify any products, services, or conditions excluded from this
+              offer
+            </p>
+          </div>
         </div>
       </div>
 
@@ -261,7 +405,27 @@ export default function OfferDetailsStepV1({
           </div>
         </div>
         <div className="px-4 pb-4 pt-0 space-y-5">
-          {/* Categories - Multi-Select (Moved to top for semantic importance) */}
+          {/* Offer Type - Moved to top per feedback */}
+          <div>
+            <Label htmlFor="offerType">Offer Type*</Label>
+            <Select
+              value={formData.offerType}
+              onValueChange={(value) => onUpdate("offerType", value)}
+            >
+              <SelectTrigger id="offerType">
+                <SelectValue placeholder="Select offer type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="bogo">BOGO (Buy One Get One)</SelectItem>
+                <SelectItem value="percent_off">Percentage Off</SelectItem>
+                <SelectItem value="dollar_off">Dollar Amount Off</SelectItem>
+                <SelectItem value="free">Free Item/Service</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Categories - Multi-Select */}
           <div>
             <Label htmlFor="categories">Categories</Label>
             <ReactSelectMulti
@@ -325,25 +489,6 @@ export default function OfferDetailsStepV1({
             <p className="mt-2 text-muted-foreground text-sm">
               Comma-separated keywords for search
             </p>
-          </div>
-
-          <div>
-            <Label htmlFor="offerType">Offer Type*</Label>
-            <Select
-              value={formData.offerType}
-              onValueChange={(value) => onUpdate("offerType", value)}
-            >
-              <SelectTrigger id="offerType">
-                <SelectValue placeholder="Select offer type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="bogo">BOGO (Buy One Get One)</SelectItem>
-                <SelectItem value="percent_off">Percentage Off</SelectItem>
-                <SelectItem value="dollar_off">Dollar Amount Off</SelectItem>
-                <SelectItem value="free">Free Item/Service</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
         </div>
       </div>
