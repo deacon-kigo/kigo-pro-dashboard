@@ -346,13 +346,23 @@ export default function OfferManagerViewV1({
 
                   {/* Action Buttons */}
                   <div className="flex items-center gap-2">
+                    {currentStep !== "details" && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handlePrevious}
+                        className="flex items-center gap-1 text-gray-600 hover:text-gray-900"
+                      >
+                        <ArrowLeftIcon className="h-4 w-4" />
+                        Back
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={handleBackToDashboard}
                       className="flex items-center gap-1 text-gray-600 hover:text-gray-900"
                     >
-                      <ArrowLeftIcon className="h-4 w-4" />
                       Cancel
                     </Button>
                     {currentStep === "review" ? (

@@ -415,6 +415,15 @@ export default function OfferDetailsStepV1({
                 // If CLK is selected, automatically set External Link as redemption type
                 if (value === "clk") {
                   onUpdate("redemptionTypes", ["external_url"]);
+                } else {
+                  // If changing FROM CLK to another type, clear External Link if it's the only redemption type
+                  if (
+                    formData.offerType === "clk" &&
+                    formData.redemptionTypes?.length === 1 &&
+                    formData.redemptionTypes[0] === "external_url"
+                  ) {
+                    onUpdate("redemptionTypes", []);
+                  }
                 }
               }}
             >
