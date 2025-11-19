@@ -20,8 +20,9 @@ import {
 } from "@/components/ui/stepper";
 import OfferDetailsStepV1 from "./steps/OfferDetailsStep";
 import RedemptionMethodStepV1 from "./steps/RedemptionMethodStep";
-import ReviewStepV1 from "./steps/ReviewStep";
 import OfferManagerDashboardV1 from "./OfferManagerDashboardV1";
+import { OfferPreviewPanel } from "@/components/ui/offer-preview-panel";
+import { AIContentEnhancer } from "@/components/ui/ai-content-enhancer";
 
 /**
  * Offer Manager V1
@@ -97,9 +98,9 @@ export default function OfferManagerViewV1({
   onCreatingChange,
 }: OfferManagerViewV1Props = {}) {
   const [isCreatingOffer, setIsCreatingOffer] = useState(false);
-  const [currentStep, setCurrentStep] = useState<
-    "details" | "redemption" | "review"
-  >("details");
+  const [currentStep, setCurrentStep] = useState<"details" | "redemption">(
+    "details"
+  );
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [stepValidation, setStepValidation] = useState<{
     details: boolean;
@@ -188,18 +189,14 @@ export default function OfferManagerViewV1({
       setCompletedSteps([...completedSteps, currentStep]);
     }
 
-    // Navigate to next step
+    // Navigate to next step (only details -> redemption now)
     if (currentStep === "details") {
       setCurrentStep("redemption");
-    } else if (currentStep === "redemption") {
-      setCurrentStep("review");
     }
   };
 
   const handlePrevious = () => {
-    if (currentStep === "review") {
-      setCurrentStep("redemption");
-    } else if (currentStep === "redemption") {
+    if (currentStep === "redemption") {
       setCurrentStep("details");
     }
   };
@@ -253,13 +250,6 @@ export default function OfferManagerViewV1({
       label: "Redemption",
       icon: CreditCardIcon,
       description: "How customers redeem",
-    },
-    {
-      id: "review",
-      number: 3,
-      label: "Review",
-      icon: CheckCircleIcon,
-      description: "Review and publish",
     },
   ];
 
@@ -357,15 +347,7 @@ export default function OfferManagerViewV1({
                         Back
                       </Button>
                     )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleBackToDashboard}
-                      className="flex items-center gap-1 text-gray-600 hover:text-gray-900"
-                    >
-                      Cancel
-                    </Button>
-                    {currentStep === "review" ? (
+                    {currentStep === "redemption" ? (
                       <Button
                         className="flex items-center gap-1"
                         size="sm"
@@ -419,19 +401,72 @@ export default function OfferManagerViewV1({
                         onPrevious={handlePrevious}
                       />
                     )}
-
-                    {currentStep === "review" && (
-                      <ReviewStepV1
-                        formData={formData}
-                        onPrevious={handlePrevious}
-                        onSubmit={handleSubmit}
-                      />
-                    )}
                   </div>
                 </div>
               </Card>
             </div>
           </div>
+        </div>
+
+        {/* Preview Panel - Right Column */}
+        <div className="w-[400px] flex-shrink-0">
+          <Card className="p-0 h-full overflow-hidden shadow-md rounded-r-lg">
+            <OfferPreviewPanel formData={formData}>
+              <AIContentEnhancer
+                context={{
+                  merchantName: formData.merchant?.label || formData.merchant,
+                  offerTitle: formData.offerName,
+                  offerType: formData.offerType,
+                  description: formData.description,
+                }}
+                enhancements={[
+                  {
+                    id: "brand_narrative",
+                    label: "Brand Narrative",
+                    description: "Compelling merchant story",
+                  },
+                  {
+                    id: "merchant_narrative",
+                    label: "Merchant Story",
+                    description: "Merchant value proposition",
+                  },
+                  {
+                    id: "offer_narrative",
+                    label: "Offer Description",
+                    description: "Enhanced offer description",
+                  },
+                  {
+                    id: "categories",
+                    label: "Categories",
+                    description: "AI-suggested categories",
+                    autoPopulate: "category_ids",
+                  },
+                  {
+                    id: "keywords",
+                    label: "Keywords",
+                    description: "SEO keywords",
+                    autoPopulate: "keywords",
+                  },
+                ]}
+                onGenerated={(results) => {
+                  // Auto-populate form fields
+                  results.forEach((result) => {
+                    if (result.id === "categories") {
+                      // Parse comma-separated categories and convert to array
+                      const cats = result.content
+                        .split(",")
+                        .map((c) => c.trim());
+                      handleFormUpdate("category_ids", cats);
+                    } else if (result.id === "keywords") {
+                      handleFormUpdate("keywords", result.content);
+                    }
+                  });
+                }}
+                autoGenerate={true}
+                streaming={true}
+              />
+            </OfferPreviewPanel>
+          </Card>
         </div>
       </div>
     </div>
