@@ -272,147 +272,153 @@ export default function OfferManagerViewV1({
   return (
     <div className="overflow-hidden" style={{ height: "calc(100vh - 140px)" }}>
       <div className="h-full flex gap-3">
-        {/* Vertical Stepper */}
-        <div className="w-20 flex-shrink-0">
-          <div className="h-full bg-white rounded-l-lg border border-r-0 border-gray-200 shadow-sm py-6 px-3">
-            <Stepper
-              orientation="vertical"
-              value={currentStepNumber}
-              onValueChange={handleStepperClick}
-              className="gap-4"
-            >
-              {stepConfig.map((step) => {
-                const isCompleted = completedSteps.includes(step.id);
-                const isCurrent = step.id === currentStep;
-                const isLocked =
-                  step.number > currentStepNumber &&
-                  !completedSteps.includes(
-                    stepConfig[step.number - 2]?.id || ""
-                  );
+        {/* Vertical Stepper + Main Content - Combined */}
+        <div className="flex-1 flex">
+          {/* Vertical Stepper */}
+          <div className="w-20 flex-shrink-0 bg-white border-l border-t border-b border-gray-200 shadow-sm rounded-l-lg">
+            <div className="py-6 px-3">
+              <Stepper
+                orientation="vertical"
+                value={currentStepNumber}
+                onValueChange={handleStepperClick}
+                className="gap-4"
+              >
+                {stepConfig.map((step) => {
+                  const isCompleted = completedSteps.includes(step.id);
+                  const isCurrent = step.id === currentStep;
+                  const isLocked =
+                    step.number > currentStepNumber &&
+                    !completedSteps.includes(
+                      stepConfig[step.number - 2]?.id || ""
+                    );
 
-                return (
-                  <StepperItem
-                    key={step.id}
-                    step={step.number}
-                    completed={isCompleted}
-                    disabled={isLocked}
-                  >
-                    <StepperTrigger
-                      className="flex flex-col items-center gap-2 w-full"
-                      aria-current={isCurrent ? "step" : undefined}
-                      aria-disabled={isLocked}
-                      title={
-                        isLocked
-                          ? "Complete previous steps to continue"
-                          : undefined
-                      }
+                  return (
+                    <StepperItem
+                      key={step.id}
+                      step={step.number}
+                      completed={isCompleted}
+                      disabled={isLocked}
                     >
-                      <StepperIndicator />
-                      <StepperTitle className="text-xs text-center">
-                        {step.label}
-                      </StepperTitle>
-                    </StepperTrigger>
-                    {step.number < stepConfig.length && <StepperSeparator />}
-                  </StepperItem>
-                );
-              })}
-            </Stepper>
+                      <StepperTrigger
+                        className="flex flex-col items-center gap-2 w-full"
+                        aria-current={isCurrent ? "step" : undefined}
+                        aria-disabled={isLocked}
+                        title={
+                          isLocked
+                            ? "Complete previous steps to continue"
+                            : undefined
+                        }
+                      >
+                        <StepperIndicator />
+                        <StepperTitle className="text-xs text-center">
+                          {step.label}
+                        </StepperTitle>
+                      </StepperTrigger>
+                      {step.number < stepConfig.length && <StepperSeparator />}
+                    </StepperItem>
+                  );
+                })}
+              </Stepper>
+            </div>
           </div>
-        </div>
 
-        {/* Main Content Area */}
-        <div className="flex-1">
-          <div className="h-full">
-            <div className="w-full h-full flex flex-col">
-              <Card className="p-0 flex flex-col h-full overflow-hidden shadow-md rounded-l-none">
-                {/* Header */}
-                <div className="flex items-center justify-between p-3 border-b bg-muted/20 h-[61px] flex-shrink-0">
-                  <div className="flex items-center">
-                    <GiftIcon className="h-5 w-5 mr-2 text-primary" />
-                    <div>
-                      <h3 className="font-medium">
-                        {currentStep === "details" && "Offer Details"}
-                        {currentStep === "redemption" && "Redemption Method"}
-                        {currentStep === "review" && "Review & Publish"}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {currentStep === "details" && "Enter offer information"}
-                        {currentStep === "redemption" && "Configure redemption"}
-                        {currentStep === "review" && "Review and publish offer"}
-                      </p>
+          {/* Main Content Area */}
+          <div className="flex-1">
+            <div className="h-full">
+              <div className="w-full h-full flex flex-col">
+                <Card className="p-0 flex flex-col h-full overflow-hidden shadow-md rounded-l-none border-l-0">
+                  {/* Header */}
+                  <div className="flex items-center justify-between p-3 border-b bg-muted/20 h-[61px] flex-shrink-0">
+                    <div className="flex items-center">
+                      <GiftIcon className="h-5 w-5 mr-2 text-primary" />
+                      <div>
+                        <h3 className="font-medium">
+                          {currentStep === "details" && "Offer Details"}
+                          {currentStep === "redemption" && "Redemption Method"}
+                          {currentStep === "review" && "Review & Publish"}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {currentStep === "details" &&
+                            "Enter offer information"}
+                          {currentStep === "redemption" &&
+                            "Configure redemption"}
+                          {currentStep === "review" &&
+                            "Review and publish offer"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-2">
+                      {currentStep !== "details" && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handlePrevious}
+                          className="flex items-center gap-1 text-gray-600 hover:text-gray-900"
+                        >
+                          <ArrowLeftIcon className="h-4 w-4" />
+                          Back
+                        </Button>
+                      )}
+                      {currentStep === "redemption" ? (
+                        <Button
+                          className="flex items-center gap-1"
+                          size="sm"
+                          onClick={handleSubmit}
+                        >
+                          <CheckCircleIcon className="h-4 w-4" />
+                          Publish Offer
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={handleNext}
+                          className="flex items-center gap-1"
+                          size="sm"
+                          disabled={
+                            (currentStep === "details" &&
+                              !stepValidation.details) ||
+                            (currentStep === "redemption" &&
+                              !stepValidation.redemption)
+                          }
+                          title={
+                            currentStep === "details" && !stepValidation.details
+                              ? "Complete all required fields to continue"
+                              : currentStep === "redemption" &&
+                                  !stepValidation.redemption
+                                ? "Complete all required fields to continue"
+                                : undefined
+                          }
+                        >
+                          Next Step →
+                        </Button>
+                      )}
                     </div>
                   </div>
 
-                  {/* Action Buttons */}
-                  <div className="flex items-center gap-2">
-                    {currentStep !== "details" && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handlePrevious}
-                        className="flex items-center gap-1 text-gray-600 hover:text-gray-900"
-                      >
-                        <ArrowLeftIcon className="h-4 w-4" />
-                        Back
-                      </Button>
-                    )}
-                    {currentStep === "redemption" ? (
-                      <Button
-                        className="flex items-center gap-1"
-                        size="sm"
-                        onClick={handleSubmit}
-                      >
-                        <CheckCircleIcon className="h-4 w-4" />
-                        Publish Offer
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={handleNext}
-                        className="flex items-center gap-1"
-                        size="sm"
-                        disabled={
-                          (currentStep === "details" &&
-                            !stepValidation.details) ||
-                          (currentStep === "redemption" &&
-                            !stepValidation.redemption)
-                        }
-                        title={
-                          currentStep === "details" && !stepValidation.details
-                            ? "Complete all required fields to continue"
-                            : currentStep === "redemption" &&
-                                !stepValidation.redemption
-                              ? "Complete all required fields to continue"
-                              : undefined
-                        }
-                      >
-                        Next Step →
-                      </Button>
-                    )}
-                  </div>
-                </div>
+                  {/* Form Content */}
+                  <div className="flex-1 overflow-auto">
+                    <div className="p-4">
+                      {currentStep === "details" && (
+                        <OfferDetailsStepV1
+                          formData={formData}
+                          onUpdate={handleFormUpdate}
+                          onNext={handleNext}
+                        />
+                      )}
 
-                {/* Form Content */}
-                <div className="flex-1 overflow-auto">
-                  <div className="p-4">
-                    {currentStep === "details" && (
-                      <OfferDetailsStepV1
-                        formData={formData}
-                        onUpdate={handleFormUpdate}
-                        onNext={handleNext}
-                      />
-                    )}
-
-                    {currentStep === "redemption" && (
-                      <RedemptionMethodStepV1
-                        formData={formData}
-                        onUpdate={handleFormUpdate}
-                        onNext={handleNext}
-                        onPrevious={handlePrevious}
-                      />
-                    )}
+                      {currentStep === "redemption" && (
+                        <RedemptionMethodStepV1
+                          formData={formData}
+                          onUpdate={handleFormUpdate}
+                          onNext={handleNext}
+                          onPrevious={handlePrevious}
+                        />
+                      )}
+                    </div>
                   </div>
-                </div>
-              </Card>
+                </Card>
+              </div>
             </div>
           </div>
         </div>
