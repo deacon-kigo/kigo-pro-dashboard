@@ -292,13 +292,15 @@ export function ReviewPreviewPanel({
                       </span>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {formData.keywords.map(
-                          (keyword: string, index: number) => (
+                          (keyword: any, index: number) => (
                             <Badge
                               key={index}
                               variant="outline"
                               className="text-xs"
                             >
-                              {keyword}
+                              {typeof keyword === "string"
+                                ? keyword
+                                : keyword.label || keyword.value}
                             </Badge>
                           )
                         )}

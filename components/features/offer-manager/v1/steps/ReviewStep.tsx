@@ -174,10 +174,18 @@ export default function ReviewStepV1({
             </div>
           )}
 
-          {formData.keywords && (
+          {formData.keywords && formData.keywords.length > 0 && (
             <div>
               <Label>Keywords</Label>
-              <p className="text-sm mt-1">{formData.keywords}</p>
+              <div className="flex flex-wrap gap-1 mt-1">
+                {formData.keywords.map((keyword: any, index: number) => (
+                  <Badge key={index} variant="outline" className="text-xs">
+                    {typeof keyword === "string"
+                      ? keyword
+                      : keyword.label || keyword.value}
+                  </Badge>
+                ))}
+              </div>
             </div>
           )}
 
