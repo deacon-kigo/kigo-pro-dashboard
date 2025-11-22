@@ -755,6 +755,10 @@ body.spotlight-open nav {
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
+  .theme {
+    --animate-border-beam: border-beam calc(var(--duration) * 1s) infinite
+      linear;
+  }
 }
 
 @layer base {
@@ -763,5 +767,24 @@ body.spotlight-open nav {
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@theme inline {
+  @keyframes border-beam {
+    100% {
+      offset-distance: 100%;
+    }
+  }
+  @keyframes shine-pulse {
+    0% {
+      background-position: 0% 0%;
+    }
+    50% {
+      background-position: 100% 100%;
+    }
+    to {
+      background-position: 0% 0%;
+    }
   }
 }

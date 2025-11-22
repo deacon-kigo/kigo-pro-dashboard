@@ -14,6 +14,8 @@ import {
 import { ReactSelectMulti } from "@/components/ui/react-select-multi";
 import { ReactSelectCreatable } from "@/components/ui/react-select-creatable";
 import { InformationCircleIcon, TagIcon } from "@heroicons/react/24/outline";
+import { InlineAIEnhance } from "@/components/ui/inline-ai-enhance";
+import { OFFER_AI_PROMPTS } from "@/lib/prompts/offer-ai-prompts";
 
 interface OfferDetailsStepProps {
   formData: any;
@@ -106,6 +108,52 @@ export default function OfferDetailsStepV1({
               }
               helperText="Merchant or partner providing this offer (e.g., MCM, FMTC, EBG, RN, AUGEO)"
             />
+
+            <div className="mt-4">
+              <Label htmlFor="brandNarrative">
+                Brand Narrative (for semantic search)
+              </Label>
+              <Textarea
+                id="brandNarrative"
+                placeholder="AI-generated brand narrative for search optimization..."
+                value={formData.brandNarrative || ""}
+                onChange={(e) => onUpdate("brandNarrative", e.target.value)}
+                rows={3}
+                className="mb-2"
+              />
+
+              {/* AI Enhancement: Brand Narrative */}
+              <InlineAIEnhance
+                fieldName="brandNarrative"
+                label="AI Brand Narrative Generator"
+                context={{
+                  merchantName:
+                    typeof formData.merchant === "object"
+                      ? formData.merchant.label
+                      : formData.merchant,
+                  offerType: formData.offerType,
+                  offerTitle: formData.offerName,
+                  description: formData.description,
+                }}
+                promptTemplate={OFFER_AI_PROMPTS.brand_narrative}
+                autoGenerate={true}
+                onGenerated={(content) => onUpdate("brandNarrative", content)}
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="offerSource">Offer Source*</Label>
+            <ReactSelectCreatable
+              options={OFFER_SOURCES}
+              value={formData.offerSource || null}
+              onChange={(value) => onUpdate("offerSource", value)}
+              placeholder="Select or create offer source"
+              formatCreateLabel={(inputValue) =>
+                `Create source "${inputValue.toUpperCase()}"`
+              }
+              helperText="Source of this offer (e.g., MCM, FMTC, EBG, RN, AUGEO)"
+            />
           </div>
 
           <div>
@@ -145,6 +193,38 @@ export default function OfferDetailsStepV1({
               {(formData.description || formData.longText || "").length}/250
               characters - Used in long description on offer details page
             </p>
+
+            <div className="mt-4">
+              <Label htmlFor="offerNarrative">
+                Offer Narrative (for semantic search)
+              </Label>
+              <Textarea
+                id="offerNarrative"
+                placeholder="AI-generated offer narrative for search optimization..."
+                value={formData.offerNarrative || ""}
+                onChange={(e) => onUpdate("offerNarrative", e.target.value)}
+                rows={3}
+                className="mb-2"
+              />
+
+              {/* AI Enhancement: Offer Narrative */}
+              <InlineAIEnhance
+                fieldName="offerNarrative"
+                label="AI Offer Narrative Generator"
+                context={{
+                  merchantName:
+                    typeof formData.merchant === "object"
+                      ? formData.merchant.label
+                      : formData.merchant,
+                  offerType: formData.offerType,
+                  offerTitle: formData.offerName,
+                  description: formData.description,
+                }}
+                promptTemplate={OFFER_AI_PROMPTS.offer_narrative}
+                autoGenerate={true}
+                onGenerated={(content) => onUpdate("offerNarrative", content)}
+              />
+            </div>
           </div>
 
           <div>
@@ -460,6 +540,28 @@ export default function OfferDetailsStepV1({
             <p className="mt-2 text-muted-foreground text-sm">
               Select one or more categories for this offer.
             </p>
+
+            {/* AI Enhancement: Categories */}
+            <InlineAIEnhance
+              fieldName="category_ids"
+              label="AI-Suggested Categories"
+              context={{
+                merchantName:
+                  typeof formData.merchant === "object"
+                    ? formData.merchant.label
+                    : formData.merchant,
+                offerType: formData.offerType,
+                offerTitle: formData.offerName,
+                description: formData.description,
+              }}
+              promptTemplate={OFFER_AI_PROMPTS.categories}
+              autoGenerate={true}
+              onGenerated={(content) => {
+                // Parse comma-separated categories and update form
+                const cats = content.split(",").map((c: string) => c.trim());
+                onUpdate("category_ids", cats);
+              }}
+            />
           </div>
 
           {/* Commodities Group - Multi-Select from Existing */}
@@ -502,15 +604,42 @@ export default function OfferDetailsStepV1({
 
           <div>
             <Label htmlFor="keywords">Keywords</Label>
-            <Input
-              id="keywords"
-              placeholder="e.g., dinner, lunch, drinks, pizza"
-              value={formData.keywords}
-              onChange={(e) => onUpdate("keywords", e.target.value)}
+            <ReactSelectCreatable
+              isMulti
+              options={[]}
+              values={formData.keywords || []}
+              onChange={(values) => onUpdate("keywords", values)}
+              placeholder="Add keywords..."
+              formatCreateLabel={(inputValue) => `Add keyword "${inputValue}"`}
+              helperText="Enter keywords and press Enter to add tags"
             />
             <p className="mt-2 text-muted-foreground text-sm">
-              Comma-separated keywords for search
+              Keywords for search optimization
             </p>
+
+            {/* AI Enhancement: Keywords */}
+            <InlineAIEnhance
+              fieldName="keywords"
+              label="AI-Suggested Keywords"
+              context={{
+                merchantName:
+                  typeof formData.merchant === "object"
+                    ? formData.merchant.label
+                    : formData.merchant,
+                offerType: formData.offerType,
+                offerTitle: formData.offerName,
+                description: formData.description,
+              }}
+              promptTemplate={OFFER_AI_PROMPTS.keywords}
+              autoGenerate={true}
+              onGenerated={(content) => {
+                // Parse comma-separated keywords and update form
+                const keywords = content
+                  .split(",")
+                  .map((k: string) => k.trim());
+                onUpdate("keywords", keywords);
+              }}
+            />
           </div>
         </div>
       </div>

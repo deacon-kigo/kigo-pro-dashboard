@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+const createWithVercelToolbar = require("@vercel/toolbar/plugins/next");
+
 const nextConfig: NextConfig = {
   /* config options here */
   eslint: {
@@ -21,4 +23,6 @@ const nextConfig: NextConfig = {
   reactStrictMode: false,
 };
 
-export default nextConfig;
+const withVercelToolbar = createWithVercelToolbar();
+
+export default withVercelToolbar(nextConfig);

@@ -21,7 +21,7 @@ import {
 import OfferDetailsStepV1 from "./steps/OfferDetailsStep";
 import RedemptionMethodStepV1 from "./steps/RedemptionMethodStep";
 import OfferManagerDashboardV1 from "./OfferManagerDashboardV1";
-import { AIContentEnhancer } from "@/components/ui/ai-content-enhancer";
+import { ReviewPreviewPanel } from "@/components/ui/review-preview-panel";
 import { useOfferContentAI } from "@/lib/hooks/useOfferContentAI";
 
 /**
@@ -113,6 +113,7 @@ export default function OfferManagerViewV1({
   // V1 Form data - simplified from PRD spec
   const [formData, setFormData] = useState({
     // Offer Details
+    offerSource: "", // Required - Source of offer (MCM, FMTC, etc.)
     offerName: "", // Required - also used as shortText
     shortText: "", // Listing view (backward compat)
     description: "", // Required - also used as longText
@@ -127,7 +128,7 @@ export default function OfferManagerViewV1({
     // Classification
     offerType: "", // Required - BOGO, % Off, Free
     cuisineType: "", // For search
-    keywords: "", // For search
+    keywords: [] as string[], // For search - array of keyword tags
     firstCategory: "", // Editable list
     secondCategory: "", // Editable list
     category_ids: [], // Category IDs
@@ -270,7 +271,7 @@ export default function OfferManagerViewV1({
 
   return (
     <div className="overflow-hidden" style={{ height: "calc(100vh - 140px)" }}>
-      <div className="h-full flex">
+      <div className="h-full flex gap-3">
         {/* Vertical Stepper */}
         <div className="w-20 flex-shrink-0">
           <div className="h-full bg-white rounded-l-lg border border-r-0 border-gray-200 shadow-sm py-6 px-3">
@@ -416,60 +417,10 @@ export default function OfferManagerViewV1({
           </div>
         </div>
 
-        {/* AI Enhancement Panel - Right Column */}
+        {/* Review Preview Panel - Right Column */}
         <div className="w-[400px] flex-shrink-0">
-          <Card className="p-4 h-full overflow-auto shadow-md rounded-r-lg">
-            <AIContentEnhancer
-              context={{
-                merchantName: formData.merchant?.label || formData.merchant,
-                offerTitle: formData.offerName,
-                offerType: formData.offerType,
-                description: formData.description,
-              }}
-              enhancements={[
-                {
-                  id: "brand_narrative",
-                  label: "Brand Narrative",
-                  description: "Compelling merchant story",
-                },
-                {
-                  id: "merchant_narrative",
-                  label: "Merchant Story",
-                  description: "Merchant value proposition",
-                },
-                {
-                  id: "offer_narrative",
-                  label: "Offer Description",
-                  description: "Enhanced offer description",
-                },
-                {
-                  id: "categories",
-                  label: "Categories",
-                  description: "AI-suggested categories",
-                  autoPopulate: "category_ids",
-                },
-                {
-                  id: "keywords",
-                  label: "Keywords",
-                  description: "SEO keywords",
-                  autoPopulate: "keywords",
-                },
-              ]}
-              onGenerated={(results) => {
-                // Auto-populate form fields
-                results.forEach((result) => {
-                  if (result.id === "categories") {
-                    // Parse comma-separated categories and convert to array
-                    const cats = result.content.split(",").map((c) => c.trim());
-                    handleFormUpdate("category_ids", cats);
-                  } else if (result.id === "keywords") {
-                    handleFormUpdate("keywords", result.content);
-                  }
-                });
-              }}
-              autoGenerate={true}
-              streaming={true}
-            />
+          <Card className="h-full overflow-hidden shadow-md rounded-r-lg">
+            <ReviewPreviewPanel formData={formData} currentStep={currentStep} />
           </Card>
         </div>
       </div>

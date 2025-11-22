@@ -62,9 +62,9 @@ export function OfferPreviewPanel({
   return (
     <div className={`flex flex-col w-full h-full ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b bg-muted/20 h-[61px] flex-shrink-0">
-        <div className="flex items-center">
-          <Eye className="h-5 w-5 mr-2 text-primary" />
+      <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/20 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <Eye className="h-5 w-5 text-primary" />
           <div>
             <h3 className="font-medium">Offer Preview</h3>
             <p className="text-xs text-muted-foreground">
@@ -79,7 +79,7 @@ export function OfferPreviewPanel({
 
       {/* Content */}
       <ScrollArea className="flex-1">
-        <div className="p-3 space-y-4">
+        <div className="px-4 py-3 space-y-4">
           {/* Offer Card Preview */}
           <ShinyBorder isActive={completionPercentage > 50} borderRadius={8}>
             <Card className="p-4 bg-gradient-to-br from-white to-slate-50">

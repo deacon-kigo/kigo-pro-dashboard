@@ -17,6 +17,8 @@ interface ShineBorderProps {
   borderTrail?: boolean;
   trailColor?: string;
   trailSize?: number;
+  simulateLoading?: boolean; // New prop for loading simulation
+  loadingDuration?: number; // Duration in seconds for loading animation
 }
 
 /**
@@ -25,8 +27,8 @@ interface ShineBorderProps {
  */
 export function ShineBorder({
   borderRadius = 8,
-  color = "rgba(74, 222, 128, 0.8)", // Light green with some transparency
-  secondaryColor = "rgba(34, 197, 94, 0.8)", // Medium green with some transparency
+  color = "rgba(50, 143, 229, 0.8)", // Kigo blue #328FE5 with transparency
+  secondaryColor = "rgba(37, 99, 235, 0.8)", // Darker Kigo blue #2563EB with transparency
   isActive = false,
   className,
   children,
@@ -34,10 +36,13 @@ export function ShineBorder({
   borderTrail = false,
   trailColor,
   trailSize = 10, // Smaller trail size (was 16)
+  simulateLoading = false,
+  loadingDuration = 3,
 }: ShineBorderProps) {
   // Handle client-side only animations to prevent hydration errors
   const [isMounted, setIsMounted] = useState(false);
   const [showBorder, setShowBorder] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
 
   useEffect(() => {
     setIsMounted(true);
@@ -51,6 +56,25 @@ export function ShineBorder({
       setShowBorder(false);
     }
   }, [isActive, isMounted]);
+
+  // Simulate loading progress
+  useEffect(() => {
+    if (isMounted && isActive && simulateLoading) {
+      setLoadingProgress(0);
+      const interval = setInterval(() => {
+        setLoadingProgress((prev) => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            return 100;
+          }
+          return prev + 100 / (loadingDuration * 20); // Update 20 times per second
+        });
+      }, 50);
+      return () => clearInterval(interval);
+    } else {
+      setLoadingProgress(0);
+    }
+  }, [isActive, isMounted, simulateLoading, loadingDuration]);
 
   // Don't render animations on server
   const shouldShowBorder = isMounted && isActive;
@@ -76,13 +100,17 @@ export function ShineBorder({
             className="absolute inset-0"
             style={{
               borderRadius: `${borderRadius}px`,
-              background: `linear-gradient(90deg, ${color}, ${secondaryColor}, ${color})`,
-              backgroundSize: "200% 100%",
+              background: simulateLoading
+                ? `linear-gradient(90deg, transparent 0%, transparent ${100 - loadingProgress}%, ${color} ${100 - loadingProgress}%, ${secondaryColor} 100%)`
+                : `linear-gradient(90deg, ${color}, ${secondaryColor}, ${color})`,
+              backgroundSize: simulateLoading ? "100% 100%" : "200% 100%",
               boxShadow: `0 0 4px 0 ${color}99`, // Reduced glow
               border: `${borderWidth}px solid transparent`,
             }}
             animate={{
-              backgroundPosition: ["0% 0%", "100% 0%", "200% 0%"],
+              backgroundPosition: simulateLoading
+                ? undefined
+                : ["0% 0%", "100% 0%", "200% 0%"],
               boxShadow: [
                 `0 0 2px 0 ${color}80`,
                 `0 0 4px 0 ${color}99`,
@@ -90,12 +118,14 @@ export function ShineBorder({
               ],
             }}
             transition={{
-              backgroundPosition: {
-                duration: 6, // Slower animation (was 3)
-                ease: "easeInOut",
-                repeat: Infinity,
-                repeatType: "loop",
-              },
+              backgroundPosition: simulateLoading
+                ? undefined
+                : {
+                    duration: 6, // Slower animation (was 3)
+                    ease: "easeInOut",
+                    repeat: Infinity,
+                    repeatType: "loop",
+                  },
               boxShadow: {
                 duration: 4, // Slower pulse (was 2)
                 ease: "easeInOut",

@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Card } from "@/components/ui/card";
+import { ShineBorder } from "@/components/ui/shine-border";
 import { CheckCircleIcon, SparklesIcon } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -21,53 +22,64 @@ interface ThinkingStepsProps {
 export function ThinkingSteps({ steps, currentPhase }: ThinkingStepsProps) {
   if (steps.length === 0) return null;
 
+  const hasInProgressStep = steps.some((step) => step.status === "in_progress");
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
-      <Card
-        className="p-4 border border-blue-200 shadow-sm"
-        style={{ backgroundColor: "#EFF6FF" }}
+      <ShineBorder
+        isActive={hasInProgressStep}
+        simulateLoading={true}
+        loadingDuration={3}
+        borderWidth={2}
+        className="w-full"
       >
-        <div className="flex items-center gap-3 mb-4">
-          <div
-            className="flex items-center justify-center w-10 h-10 rounded-lg shadow-md flex-shrink-0"
-            style={{
-              background: "linear-gradient(to bottom right, #2563EB, #4F46E5)",
-            }}
-          >
-            <SparklesIcon className="w-5 h-5" style={{ color: "#FFFFFF" }} />
+        <Card
+          className="p-4 border border-blue-200 shadow-sm"
+          style={{ backgroundColor: "#EFF6FF" }}
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <div
+              className="flex items-center justify-center w-10 h-10 rounded-lg shadow-md flex-shrink-0"
+              style={{
+                background:
+                  "linear-gradient(to bottom right, #2563EB, #4F46E5)",
+              }}
+            >
+              <SparklesIcon className="w-5 h-5" style={{ color: "#FFFFFF" }} />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900">
+                AI Assistant
+              </h3>
+              <p className="text-xs text-gray-600">{currentPhase}</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900">
-              AI Assistant
-            </h3>
-            <p className="text-xs text-gray-600">{currentPhase}</p>
-          </div>
-        </div>
 
-        <div className="space-y-3">
-          <AnimatePresence mode="popLayout">
-            {steps.map((step, index) => (
-              <motion.div
-                key={step.id}
-                initial={{ opacity: 0, x: -10, height: 0 }}
-                animate={{ opacity: 1, x: 0, height: "auto" }}
-                exit={{ opacity: 0, x: 10, height: 0 }}
-                transition={{
-                  delay: 0.3 + index * 0.6,
-                  duration: 0.5,
-                  ease: "easeOut",
-                }}
-              >
-                <ThinkingStepItem step={step} />
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-      </Card>
+          <div className="space-y-3">
+            <AnimatePresence mode="popLayout">
+              {steps.map((step, index) => (
+                <motion.div
+                  key={step.id}
+                  initial={{ opacity: 0, x: -10, height: 0 }}
+                  animate={{ opacity: 1, x: 0, height: "auto" }}
+                  exit={{ opacity: 0, x: 10, height: 0 }}
+                  transition={{
+                    delay: 0.3 + index * 0.6,
+                    duration: 0.5,
+                    ease: "easeOut",
+                  }}
+                >
+                  <ThinkingStepItem step={step} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        </Card>
+      </ShineBorder>
     </motion.div>
   );
 }

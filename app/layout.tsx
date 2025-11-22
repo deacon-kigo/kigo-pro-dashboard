@@ -6,6 +6,7 @@ import "@copilotkit/react-ui/styles.css";
 import { Providers } from "@/lib/providers";
 import URLSyncProvider from "@/lib/providers/URLSyncProvider";
 import { Toaster } from "@/components/molecules/Toaster";
+import { VercelToolbar } from "@vercel/toolbar/next";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,6 +20,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const shouldInjectToolbar = process.env.NODE_ENV === "development";
+
   return (
     <html lang="en">
       <body className={inter.className}>
@@ -41,6 +44,7 @@ export default function RootLayout({
           </URLSyncProvider>
         </Providers>
         <Toaster />
+        {shouldInjectToolbar && <VercelToolbar />}
       </body>
     </html>
   );
