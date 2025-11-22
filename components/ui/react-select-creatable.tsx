@@ -16,11 +16,13 @@ export interface Option {
 
 interface ReactSelectCreatableProps {
   options: Option[];
-  value: string | null;
-  onChange: (value: string | null) => void;
+  value?: string | null;
+  values?: Option[];
+  onChange: (value: string | null | Option[]) => void;
   placeholder?: string;
   className?: string;
   isDisabled?: boolean;
+  isMulti?: boolean;
   formatCreateLabel?: (inputValue: string) => string;
   onCreateOption?: (inputValue: string) => void;
   formatOptionLabel?: (option: Option) => React.ReactNode;
@@ -40,27 +42,30 @@ const DropdownIndicator = (props: any) => {
 export function ReactSelectCreatable({
   options,
   value,
+  values,
   onChange,
   placeholder = "Select or create...",
   className,
   isDisabled = false,
+  isMulti = false,
   formatCreateLabel = (inputValue: string) => `Create "${inputValue}"`,
   onCreateOption,
   formatOptionLabel,
   isValidNewOption,
   helperText,
 }: ReactSelectCreatableProps) {
-  // Convert string value to Option object for react-select
-  // If value exists but not in options (newly created), create a temporary option
-  const selectedValue = value
-    ? options.find((option) => option.value === value) || {
-        label: value,
-        value: value,
-      }
-    : null;
+  // Handle both single and multi-select
+  const selectedValue = isMulti
+    ? values || []
+    : value
+      ? options.find((option) => option.value === value) || {
+          label: value,
+          value: value,
+        }
+      : null;
 
   // Custom styles for react-select matching Shadcn UI
-  const customStyles: StylesConfig<Option, false> = {
+  const customStyles: StylesConfig<Option, boolean> = {
     control: (base, state) => ({
       ...base,
       minHeight: "2.5rem",
@@ -147,21 +152,54 @@ export function ReactSelectCreatable({
     indicatorSeparator: () => ({
       display: "none",
     }),
+    multiValue: (base) => ({
+      ...base,
+      backgroundColor: "hsl(var(--accent))",
+      borderRadius: "0.25rem",
+      padding: "0.125rem 0.25rem",
+    }),
+    multiValueLabel: (base) => ({
+      ...base,
+      color: "hsl(var(--foreground))",
+      fontSize: "0.75rem",
+      padding: "0.125rem 0.25rem",
+    }),
+    multiValueRemove: (base) => ({
+      ...base,
+      color: "hsl(var(--muted-foreground))",
+      cursor: "pointer",
+      "&:hover": {
+        backgroundColor: "hsl(var(--destructive))",
+        color: "hsl(var(--destructive-foreground))",
+      },
+    }),
   };
 
-  const handleChange = (newValue: Option | null) => {
-    onChange(newValue ? newValue.value : null);
+  const handleChange = (newValue: Option | Option[] | null) => {
+    if (isMulti) {
+      onChange((newValue as Option[]) || []);
+    } else {
+      onChange((newValue as Option) ? (newValue as Option).value : null);
+    }
   };
 
   const handleCreate = (inputValue: string) => {
-    // Transform to uppercase and replace spaces with underscores
-    const transformedValue = inputValue.toUpperCase().replace(/\s+/g, "_");
+    // For keywords, keep original case and don't transform
+    const newOption: Option = {
+      label: inputValue,
+      value: inputValue,
+    };
 
     if (onCreateOption) {
-      onCreateOption(transformedValue);
+      onCreateOption(inputValue);
     }
 
-    onChange(transformedValue);
+    if (isMulti) {
+      const currentValues = (values || []) as Option[];
+      onChange([...currentValues, newOption]);
+    } else {
+      onChange(inputValue);
+    }
   };
 
   // Default validation: uppercase, underscores only, 3-60 chars
@@ -178,6 +216,7 @@ export function ReactSelectCreatable({
   return (
     <div className={cn("w-full", className)}>
       <Creatable
+        isMulti={isMulti}
         options={options}
         value={selectedValue}
         onChange={handleChange}

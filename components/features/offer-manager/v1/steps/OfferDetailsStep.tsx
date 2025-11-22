@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -83,6 +83,44 @@ export default function OfferDetailsStepV1({
   const categoryIds = formData.category_ids || [];
   const commodityIds = formData.commodity_ids || [];
 
+  // Local state for immediate UI updates (fixes INP performance issue)
+  const [localOfferName, setLocalOfferName] = useState(
+    formData.offerName || formData.shortText || ""
+  );
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Sync local state with formData when it changes externally
+  useEffect(() => {
+    setLocalOfferName(formData.offerName || formData.shortText || "");
+  }, [formData.offerName, formData.shortText]);
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Debounced handler for offer name changes (fixes INP issue)
+  const handleOfferNameChange = (value: string) => {
+    // Update local state immediately for responsive UI
+    setLocalOfferName(value);
+
+    // Clear existing debounce timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Debounce the actual state updates to avoid blocking main thread
+    debounceTimerRef.current = setTimeout(() => {
+      onUpdate("offerName", value);
+      // Keep backward compatibility with shortText
+      onUpdate("shortText", value);
+    }, 150); // 150ms debounce
+  };
+
   return (
     <div className="space-y-4">
       {/* Basic Information Section */}
@@ -161,17 +199,13 @@ export default function OfferDetailsStepV1({
             <Input
               id="offerName"
               placeholder="Brief offer name for listing view (e.g., '20% Off Dinner')"
-              value={formData.offerName || formData.shortText || ""}
-              onChange={(e) => {
-                onUpdate("offerName", e.target.value);
-                // Keep backward compatibility with shortText
-                onUpdate("shortText", e.target.value);
-              }}
+              value={localOfferName}
+              onChange={(e) => handleOfferNameChange(e.target.value)}
               maxLength={60}
             />
             <p className="mt-2 text-muted-foreground text-sm">
-              {(formData.offerName || formData.shortText || "").length}/60
-              characters - Used for short description in UX
+              {localOfferName.length}/60 characters - Used for short description
+              in UX
             </p>
           </div>
 
@@ -557,9 +591,23 @@ export default function OfferDetailsStepV1({
               promptTemplate={OFFER_AI_PROMPTS.categories}
               autoGenerate={true}
               onGenerated={(content) => {
-                // Parse comma-separated categories and update form
-                const cats = content.split(",").map((c: string) => c.trim());
-                onUpdate("category_ids", cats);
+                // Parse comma-separated categories and match to available options
+                const categoryNames = content
+                  .toLowerCase()
+                  .split(",")
+                  .map((c: string) => c.trim())
+                  .filter((c: string) => c.length > 0);
+
+                // Find matching category IDs from AVAILABLE_CATEGORIES
+                const matchedIds = AVAILABLE_CATEGORIES.filter((cat) =>
+                  categoryNames.some(
+                    (name) =>
+                      cat.label.toLowerCase().includes(name) ||
+                      name.includes(cat.label.toLowerCase())
+                  )
+                ).map((cat) => cat.value);
+
+                onUpdate("category_ids", matchedIds);
               }}
             />
           </div>
@@ -633,10 +681,12 @@ export default function OfferDetailsStepV1({
               promptTemplate={OFFER_AI_PROMPTS.keywords}
               autoGenerate={true}
               onGenerated={(content) => {
-                // Parse comma-separated keywords and update form
+                // Parse comma-separated keywords and convert to Option[] format
                 const keywords = content
                   .split(",")
-                  .map((k: string) => k.trim());
+                  .map((k: string) => k.trim())
+                  .filter((k: string) => k.length > 0)
+                  .map((k: string) => ({ label: k, value: k }));
                 onUpdate("keywords", keywords);
               }}
             />
