@@ -89,6 +89,9 @@ export default function OfferDetailsStepV1({
   );
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Track AI-generated content application state
+  const [brandNarrativeApplied, setBrandNarrativeApplied] = useState(false);
+
   // Sync local state with formData when it changes externally
   useEffect(() => {
     setLocalOfferName(formData.offerName || formData.shortText || "");
@@ -155,9 +158,19 @@ export default function OfferDetailsStepV1({
                 id="brandNarrative"
                 placeholder="AI-generated brand narrative for search optimization..."
                 value={formData.brandNarrative || ""}
-                onChange={(e) => onUpdate("brandNarrative", e.target.value)}
+                onChange={(e) => {
+                  onUpdate("brandNarrative", e.target.value);
+                  // Reset applied state if user manually edits
+                  if (brandNarrativeApplied) {
+                    setBrandNarrativeApplied(false);
+                  }
+                }}
                 rows={3}
-                className="mb-2"
+                className={`mb-2 transition-colors duration-300 ${
+                  brandNarrativeApplied
+                    ? "bg-green-50 border-green-300 focus:border-green-500 focus:ring-green-500"
+                    : ""
+                }`}
               />
 
               {/* AI Enhancement: Brand Narrative */}
@@ -175,7 +188,10 @@ export default function OfferDetailsStepV1({
                 }}
                 promptTemplate={OFFER_AI_PROMPTS.brand_narrative}
                 autoGenerate={true}
-                onGenerated={(content) => onUpdate("brandNarrative", content)}
+                onGenerated={(content) => {
+                  onUpdate("brandNarrative", content);
+                  setBrandNarrativeApplied(true);
+                }}
               />
             </div>
           </div>
