@@ -76,9 +76,11 @@ export function InlineAIEnhance({
   const [generatedContent, setGeneratedContent] = useState<string>("");
   const [displayedContent, setDisplayedContent] = useState<string>("");
   const [editedContent, setEditedContent] = useState<string>("");
+  const [localValue, setLocalValue] = useState<string>(""); // For immediate UI updates
   const [shouldGenerate, setShouldGenerate] = useState(false);
   const previousContextRef = useRef<string>("");
   const actionNameRef = useRef(`generate_${fieldName}_${Date.now()}`);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Make context readable to CopilotKit
   useCopilotReadable({
@@ -129,6 +131,11 @@ export function InlineAIEnhance({
     },
   });
 
+  // Sync localValue with editedContent when content is generated
+  useEffect(() => {
+    setLocalValue(editedContent);
+  }, [editedContent]);
+
   // Streaming effect - character by character display
   useEffect(() => {
     if (!generatedContent || displayedContent === generatedContent) return;
@@ -169,6 +176,31 @@ export function InlineAIEnhance({
       setShouldGenerate(false);
     }
   }, [shouldGenerate]);
+
+  // Debounced handler for textarea changes (fixes INP performance issue)
+  const handleTextareaChange = (value: string) => {
+    // Update local value immediately for responsive UI
+    setLocalValue(value);
+
+    // Clear existing debounce timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Debounce the actual state update to avoid blocking main thread
+    debounceTimerRef.current = setTimeout(() => {
+      setEditedContent(value);
+    }, 150); // 150ms debounce - balances responsiveness and performance
+  };
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleGenerate = async () => {
     // Check if we have enough context
@@ -281,8 +313,8 @@ export function InlineAIEnhance({
               borderWidth={2}
             >
               <Textarea
-                value={editedContent}
-                onChange={(e) => setEditedContent(e.target.value)}
+                value={localValue}
+                onChange={(e) => handleTextareaChange(e.target.value)}
                 className="min-h-[80px] text-sm bg-white resize-none border-blue-200 focus:border-blue-400 focus:ring-1"
                 style={{
                   borderColor: "#BFDBFE",
