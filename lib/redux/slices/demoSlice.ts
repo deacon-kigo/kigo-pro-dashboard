@@ -95,6 +95,22 @@ const clientThemes: Record<string, { light: ThemeColors; dark: ThemeColors }> =
         textColor: "#334155",
       },
     },
+    schwab: {
+      light: {
+        primaryColor: "#009DDB", // Schwab blue
+        secondaryColor: "#1B53B1", // Darker blue
+        accentColor: "#00A86B", // Green accent
+        backgroundColor: "#ffffff",
+        textColor: "#1f2937",
+      },
+      dark: {
+        primaryColor: "#1E90FF", // Lighter blue for dark mode
+        secondaryColor: "#4169E1", // Steel blue
+        accentColor: "#32CD32", // Lighter green
+        backgroundColor: "#f8fafc", // Very light gray instead of dark
+        textColor: "#334155",
+      },
+    },
     // Default theme for any other client
     default: {
       light: {
@@ -164,6 +180,9 @@ export const demoSlice = createSlice({
         case "seven-eleven":
           state.clientName = "7-Eleven";
           break;
+        case "schwab":
+          state.clientName = "Charles Schwab";
+          break;
         default:
           state.clientName = action.payload;
       }
@@ -215,7 +234,10 @@ export const demoSlice = createSlice({
         version: state.version,
       });
     },
-    setCampaignCreationStep: (state, action: PayloadAction<CampaignCreationStepType>) => {
+    setCampaignCreationStep: (
+      state,
+      action: PayloadAction<CampaignCreationStepType>
+    ) => {
       state.campaignCreationStep = action.payload;
 
       // Add to history (following existing pattern)
@@ -256,6 +278,9 @@ export const demoSlice = createSlice({
               break;
             case "seven-eleven":
               state.clientName = "7-Eleven";
+              break;
+            case "schwab":
+              state.clientName = "Charles Schwab";
               break;
             default:
               state.clientName = updates.clientId;

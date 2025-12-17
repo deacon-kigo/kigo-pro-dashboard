@@ -8,3 +8,6 @@ export { default as LowesView } from "./LowesView";
 export { default as JohnDeereView } from "./JohnDeereView";
 export { default as PublisherDashboardView } from "./PublisherDashboardView";
 export { default as BoADashboardView } from "./BoADashboardView";
+export { default as SchwabDashboardView } from "./SchwabDashboardView";
+export { default as SchwabClientHubView } from "./SchwabClientHubView";
+export { default as SchwabAssetCreationView } from "./SchwabAssetCreationView";

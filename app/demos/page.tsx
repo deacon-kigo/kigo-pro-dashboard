@@ -11,6 +11,7 @@ import {
   ChartBarIcon,
   UserGroupIcon,
   LinkIcon,
+  CalendarIcon,
 } from "@heroicons/react/24/outline";
 import { buildDemoUrl } from "@/lib/utils";
 
@@ -248,6 +249,78 @@ export default function DemosPage() {
                 <Link
                   href="/demos/ai-campaign-creation"
                   className="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  View Demo
+                  <ArrowRightIcon className="ml-1.5 h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Charles Schwab Demo */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+            <div className="p-6">
+              <div className="flex items-center mb-4">
+                <div className="h-12 w-12 bg-blue-100 rounded-full overflow-hidden flex items-center justify-center mr-4">
+                  <img
+                    src="/logos/CharlesSchwab_Logo.svg"
+                    alt="Charles Schwab"
+                    className="h-8 w-8 object-contain"
+                  />
+                </div>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Charles Schwab Events
+                </h2>
+              </div>
+
+              <p className="text-gray-600 mb-6 h-20">
+                Create and manage digital passes for Schwab events and marketing
+                campaigns. Streamline event access with shareable assets
+                delivered directly to client digital wallets.
+              </p>
+
+              <div className="grid grid-cols-3 gap-2 mb-6">
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <svg
+                    className="h-5 w-5 text-blue-500 mx-auto mb-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"
+                    />
+                  </svg>
+                  <span className="text-xs text-gray-600">Digital Passes</span>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <CalendarIcon className="h-5 w-5 text-[#009DDB] mx-auto mb-1" />
+                  <span className="text-xs text-gray-600">
+                    Event Management
+                  </span>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <SparklesIcon className="h-5 w-5 text-amber-500 mx-auto mb-1" />
+                  <span className="text-xs text-gray-600">AI Creation</span>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <div className="space-x-1">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    Financial Services
+                  </span>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                    Events
+                  </span>
+                </div>
+
+                <Link
+                  href="/demos/schwab"
+                  className="inline-flex items-center px-3 py-1.5 bg-[#009DDB] hover:bg-[#1B53B1] text-white text-sm font-medium rounded-lg transition-colors"
                 >
                   View Demo
                   <ArrowRightIcon className="ml-1.5 h-4 w-4" />
