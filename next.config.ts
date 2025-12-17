@@ -4,11 +4,8 @@ const createWithVercelToolbar = require("@vercel/toolbar/plugins/next");
 
 const nextConfig: NextConfig = {
   /* config options here */
-  eslint: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has ESLint errors.
-    ignoreDuringBuilds: true,
-  },
+  // Note: eslint.ignoreDuringBuilds is no longer supported in Next.js 16
+  // Use `next lint --ignore-during-builds` in build command instead
   // Commenting out static export config for now to fix build errors
   // output: "export", // This is important for Netlify static deployment
   // distDir: "out", // Use an explicit 'out' directory
@@ -21,6 +18,7 @@ const nextConfig: NextConfig = {
   },
   // Disable React strict mode for demo app
   reactStrictMode: false,
+  transpilePackages: ["shiki", "recharts"],
 };
 
 const withVercelToolbar = createWithVercelToolbar();
