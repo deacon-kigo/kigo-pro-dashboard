@@ -1,8 +1,7 @@
 /**
- * Official CopilotKit SDK Integration
+ * CopilotKit API Route - Simplified (No LangGraph)
  *
- * Configured to prioritize remote LangGraph endpoint over Anthropic Claude fallback
- * This ensures responses come from our custom agents when available
+ * Using Anthropic Claude directly without external agent dependencies
  */
 
 import { NextRequest } from "next/server";
@@ -10,42 +9,15 @@ import {
   CopilotRuntime,
   AnthropicAdapter,
   copilotRuntimeNextJSAppRouterEndpoint,
-  LangGraphHttpAgent,
 } from "@copilotkit/runtime";
 import Anthropic from "@anthropic-ai/sdk";
 
 const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+  apiKey: process.env.ANTHROPIC_API_KEY || "",
 });
 
 export const POST = async (req: NextRequest) => {
-  console.log("=".repeat(80));
-  console.log("🔵 [CopilotKit API] POST /api/copilotkit - REQUEST RECEIVED");
-  console.log("=".repeat(80));
-
-  // Connect to your existing LangGraph supervisor workflow via FastAPI
-  const langGraphUrl =
-    process.env.REMOTE_ACTION_URL || "http://localhost:8000/copilotkit";
-  console.log(`🔗 [LangGraph URL]: ${langGraphUrl}`);
-
-  // Log request details
-  try {
-    const body = await req.clone().json();
-    console.log(`📨 Request body keys: ${Object.keys(body).join(", ")}`);
-    console.log(`💬 Messages count: ${body.messages?.length || 0}`);
-  } catch (e) {
-    console.log("⚠️  Could not parse request body");
-  }
-
-  const runtime = new CopilotRuntime({
-    agents: {
-      supervisor: new LangGraphHttpAgent({
-        url: langGraphUrl,
-      }),
-    },
-  });
-
-  console.log("🎯 CopilotRuntime created with supervisor agent");
+  const runtime = new CopilotRuntime();
 
   const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({
     runtime,
@@ -56,11 +28,7 @@ export const POST = async (req: NextRequest) => {
     endpoint: "/api/copilotkit",
   });
 
-  console.log("✅ Calling handleRequest...");
-  const response = await handleRequest(req);
-  console.log(`📤 Response status: ${response.status}`);
-
-  return response;
+  return await handleRequest(req);
 };
 
 // Handle CORS preflight requests
