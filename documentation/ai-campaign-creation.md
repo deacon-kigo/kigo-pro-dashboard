@@ -29,27 +29,15 @@ The campaign creation process has three main components:
 ### Step 1: Basic Information
 
 - Campaign Name (required)
-
   - Text field, max 50 characters
   - Supports letters, symbols, and characters
 
 - Campaign Description (optional)
-
   - Text field, max 100 characters
   - Supports letters, symbols, and characters
 
 - Campaign Type (required)
-
   - Dropdown, only "Advertising" available in V1
-
-- Start Date/Time (required)
-
-  - UTC time
-  - Must be today or in the future
-
-- End Date/Time (required)
-  - UTC time
-  - Minimum 1-day duration
 
 ### Step 2: Targeting
 
@@ -58,18 +46,15 @@ The campaign creation process has three main components:
 ### Step 3: Distribution
 
 - Channels/Editions
-
   - All selected by default
 
 - Programs
-
   - List from Kigo Core Server
   - Multiple selection
 
 ### Step 4: Budget
 
 - Max budget allocation (required)
-
   - Currency field (USD)
 
 ### Step 5: Review & Publish
@@ -85,11 +70,9 @@ The campaign creation process has three main components:
 ### Step 1: Merchant & Offer Selection
 
 - Merchant ID (required)
-
   - Input field
 
 - Merchant Name
-
   - Auto-populated based on Merchant ID (DBA Name)
 
 - Offer ID (required)
@@ -99,7 +82,6 @@ The campaign creation process has three main components:
 ### Step 2: Media & Creative
 
 - Media type selection (required)
-
   - Multiple options: display banner, double decker, native, etc.
   - Multiple selections allowed
 
@@ -111,7 +93,6 @@ The campaign creation process has three main components:
 ### Step 3: Performance Parameters
 
 - Cost per activation
-
   - Currency field (USD)
 
 - Cost per redemption
