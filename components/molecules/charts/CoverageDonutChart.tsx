@@ -79,8 +79,8 @@ export function CoverageDonutChart({
               endAngle={-270}
               stroke="none"
             >
-              <Cell key="cell-0" className="fill-[--color-covered]" />
-              <Cell key="cell-1" className="fill-[--color-uncovered]" />
+              <Cell key="cell-0" fill={getCoverageColor()} />
+              <Cell key="cell-1" fill="hsl(220, 14%, 96%)" />
             </Pie>
             {showTooltip && (
               <ChartTooltip

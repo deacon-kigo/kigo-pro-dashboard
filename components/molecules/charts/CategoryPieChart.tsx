@@ -82,7 +82,6 @@ export function CategoryPieChart({
                 <Cell
                   key={`cell-${index}`}
                   fill={COLORS[index % COLORS.length]}
-                  className={`fill-[--color-category-${index}]`}
                 />
               ))}
             </Pie>

@@ -86,13 +86,9 @@ export function CoverageBarChart({
               }
             />
           )}
-          <Bar
-            dataKey="count"
-            radius={[0, 4, 4, 0]}
-            className="fill-[--color-region]"
-          >
+          <Bar dataKey="count" radius={[0, 4, 4, 0]} fill="hsl(var(--chart-1))">
             {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} className="fill-[--color-region]" />
+              <Cell key={`cell-${index}`} fill="hsl(var(--chart-1))" />
             ))}
           </Bar>
         </RechartsBarChart>
