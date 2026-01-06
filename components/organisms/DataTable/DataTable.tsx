@@ -44,6 +44,7 @@ export interface DataTableProps<TData, TValue> {
   onRowSelectionChange?: (selection: Record<string, boolean>) => void;
   getRowClassName?: (row: TData) => string;
   onRowClick?: (row: TData) => void;
+  emptyState?: ReactNode;
 }
 
 /**
@@ -64,6 +65,7 @@ export const DataTable = memo(function DataTable<TData, TValue>({
   onRowSelectionChange,
   getRowClassName,
   onRowClick,
+  emptyState,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pageIndex, setPageIndex] = useState(0);
@@ -118,6 +120,7 @@ export const DataTable = memo(function DataTable<TData, TValue>({
     onRowSelectionChange: handleRowSelectionChange,
     state: tableState,
     enableRowSelection: true,
+    enableMultiSort: false,
   });
 
   // Memoize table components to prevent unnecessary re-renders
@@ -183,13 +186,19 @@ export const DataTable = memo(function DataTable<TData, TValue>({
               colSpan={columns?.length || 1}
               className="h-24 text-center"
             >
-              No results.
+              {emptyState || "No results."}
             </TableCell>
           </TableRow>
         )}
       </TableBody>
     ),
-    [table.getRowModel(), columns?.length, getRowClassName, onRowClick]
+    [
+      table.getRowModel(),
+      columns?.length,
+      getRowClassName,
+      onRowClick,
+      emptyState,
+    ]
   );
 
   // Memoize the default pagination UI

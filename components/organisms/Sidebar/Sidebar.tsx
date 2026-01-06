@@ -121,6 +121,14 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         return true;
       }
 
+      // Special case for members
+      if (
+        path.includes("/dashboard/members") &&
+        pathname.includes("/dashboard/members")
+      ) {
+        return true;
+      }
+
       // Special case for product filters - CHECK THIS FIRST before general campaigns check
       if (
         path.includes("/campaigns/product-filters") &&
@@ -328,6 +336,15 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 icon={ChartBarIcon}
                 title="Analytics"
                 isActive={isLinkActive("/analytics")}
+                isCollapsed={sidebarCollapsed}
+              />
+            </li>
+            <li className="nav-item px-3 py-1">
+              <SidebarLabel
+                href="/dashboard/members"
+                icon={UserGroupIcon}
+                title="Members"
+                isActive={isLinkActive("/dashboard/members")}
                 isCollapsed={sidebarCollapsed}
               />
             </li>

@@ -60,7 +60,8 @@ const badgeVariants = cva(
 
 // Extended props interface
 export interface BadgeProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "color">,
+  extends
+    Omit<React.HTMLAttributes<HTMLDivElement>, "color">,
     VariantProps<typeof badgeVariants> {
   icon?: React.ReactNode;
   iconPosition?: "left" | "right";
@@ -121,7 +122,7 @@ function Badge({
   if (useClassName) {
     // Base badge styles for custom badges
     const baseStyles =
-      "inline-flex items-center px-2.5 py-0.5 text-xs font-semibold";
+      "inline-flex items-center border px-2.5 py-0.5 text-xs font-semibold";
 
     // Rounded classes
     let roundedClass = "rounded-full"; // default
