@@ -19,6 +19,9 @@ const nextConfig: NextConfig = {
   // Disable React strict mode for demo app
   reactStrictMode: false,
   transpilePackages: ["shiki", "recharts"],
+  // Turbopack configuration - empty object to silence Turbopack warnings
+  // Note: @copilotkit/runtime with pino logger may still have issues in client-side bundles
+  turbopack: {},
 };
 
 const withVercelToolbar = createWithVercelToolbar();
