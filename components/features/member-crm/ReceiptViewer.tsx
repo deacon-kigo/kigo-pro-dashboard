@@ -11,14 +11,8 @@ import {
 } from "@/components/molecules/dialog";
 import { Button } from "@/components/atoms/Button/Button";
 import { ReceiptStatusBadge } from "@/components/molecules/badges";
-import {
-  CalendarIcon,
-  BuildingStorefrontIcon,
-  CurrencyDollarIcon,
-  CheckCircleIcon,
-} from "@heroicons/react/24/outline";
 import { getReceiptById } from "./data";
-import { formatDateTime, getMockReceiptImageUrl, formatPoints } from "./utils";
+import { formatDate, getMockReceiptImageUrl, formatUsdCents } from "./utils";
 
 interface ReceiptViewerProps {
   receiptId: string;
@@ -26,9 +20,9 @@ interface ReceiptViewerProps {
 }
 
 /**
- * ReceiptViewer component - Modal for viewing receipt images and details
+ * ReceiptViewer component - Simplified modal for viewing receipt images
  * @classification organism
- * @description Displays receipt image and metadata for verification
+ * @description Displays large receipt image with minimal metadata (same as preview card)
  */
 export default function ReceiptViewer({
   receiptId,
@@ -62,122 +56,78 @@ export default function ReceiptViewer({
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-gray-900">
-            Receipt Details
+            Receipt Image
           </DialogTitle>
           <DialogDescription className="text-sm text-gray-500">
-            Review receipt information and image
+            {receipt.merchantName} • {formatDate(receipt.uploadedAt)}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
-            {/* Left Column - Receipt Image */}
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                  Receipt Image
-                </h3>
-                <div className="border-2 border-gray-200 rounded-lg overflow-hidden bg-gray-50">
-                  <img
-                    src={imageUrl}
-                    alt="Receipt"
-                    className="w-full h-auto"
-                    style={{ maxHeight: "600px", objectFit: "contain" }}
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+          <div className="space-y-4">
+            {/* Receipt Image - Large and centered */}
+            <div className="border border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm">
+              <img
+                src={imageUrl}
+                alt={`Receipt from ${receipt.merchantName}`}
+                className="w-full h-auto"
+                style={{ maxHeight: "70vh", objectFit: "contain" }}
+              />
+            </div>
+
+            {/* Receipt Metadata - Same structure as preview card */}
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs font-medium text-gray-500 mb-1">
+                    Merchant
+                  </p>
+                  <p className="text-sm font-semibold text-gray-900">
+                    {receipt.merchantName}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 mb-1">Date</p>
+                  <p className="text-sm font-semibold text-gray-900">
+                    {formatDate(receipt.uploadedAt)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 mb-1">
+                    Total Amount
+                  </p>
+                  <p className="text-sm font-semibold text-gray-900">
+                    {formatUsdCents(Math.round(receipt.totalAmount * 100))}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 mb-1">
+                    Status
+                  </p>
+                  <ReceiptStatusBadge
+                    status={receipt.verificationStatus}
+                    size="sm"
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-2 text-center">
-                  Use browser zoom (Ctrl/Cmd +/-) to view details
-                </p>
-              </div>
-            </div>
-
-            {/* Right Column - Receipt Information */}
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                  Receipt Information
-                </h3>
-
-                <div className="space-y-3">
-                  {/* Status Badge */}
-                  <div>
+                {receipt.campaignName && (
+                  <div className="col-span-2">
                     <p className="text-xs font-medium text-gray-500 mb-1">
-                      Status
+                      Campaign
                     </p>
-                    <ReceiptStatusBadge status={receipt.verificationStatus} />
+                    <p className="text-sm text-gray-900">
+                      {receipt.campaignName}
+                    </p>
                   </div>
-
-                  {/* Merchant */}
-                  <div className="border-t border-gray-100 pt-3">
-                    <div className="flex items-start">
-                      <BuildingStorefrontIcon className="h-4 w-4 text-gray-400 mt-0.5 mr-3 flex-shrink-0" />
-                      <div className="flex-1">
-                        <p className="text-xs font-medium text-gray-500 mb-1">
-                          Merchant
-                        </p>
-                        <p className="text-sm font-semibold text-gray-900">
-                          {receipt.merchantName}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Total Amount */}
-                  <div className="border-t border-gray-100 pt-3">
-                    <div className="flex items-start">
-                      <CurrencyDollarIcon className="h-4 w-4 text-gray-400 mt-0.5 mr-3 flex-shrink-0" />
-                      <div className="flex-1">
-                        <p className="text-xs font-medium text-gray-500 mb-1">
-                          Total Amount
-                        </p>
-                        <p className="text-sm font-semibold text-gray-900">
-                          ${receipt.totalAmount.toFixed(2)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Upload Date */}
-                  <div className="border-t border-gray-100 pt-3">
-                    <div className="flex items-start">
-                      <CalendarIcon className="h-4 w-4 text-gray-400 mt-0.5 mr-3 flex-shrink-0" />
-                      <div className="flex-1">
-                        <p className="text-xs font-medium text-gray-500 mb-1">
-                          Uploaded
-                        </p>
-                        <p className="text-sm font-semibold text-gray-900">
-                          {formatDateTime(receipt.uploadedAt)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Points Awarded (for approved receipts) */}
-                  {receipt.verificationStatus === "approved" &&
-                    receipt.actionAmount && (
-                      <div className="border-t border-gray-100 pt-3">
-                        <div className="flex items-start">
-                          <CheckCircleIcon className="h-4 w-4 text-gray-400 mt-0.5 mr-3 flex-shrink-0" />
-                          <div className="flex-1">
-                            <p className="text-xs font-medium text-gray-500 mb-1">
-                              Points Awarded
-                            </p>
-                            <p className="text-sm font-semibold text-gray-900">
-                              {formatPoints(receipt.actionAmount)}
-                            </p>
-                            <p className="text-xs text-gray-600 mt-1">
-                              ≈ ${(receipt.actionAmount / 100).toFixed(2)} value
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                </div>
+                )}
               </div>
             </div>
+
+            <p className="text-xs text-gray-500 text-center">
+              Use browser zoom (Ctrl/Cmd +/-) to view receipt details
+            </p>
           </div>
         </div>
 

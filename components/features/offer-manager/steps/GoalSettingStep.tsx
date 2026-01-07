@@ -22,7 +22,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { CalendarIcon } from "@heroicons/react/24/solid";
-import { SparklesIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -39,14 +38,12 @@ interface GoalSettingStepProps {
   };
   onUpdate: (field: string, value: any) => void;
   onNext: () => void;
-  onAskAI: (field: string) => void;
 }
 
 export default function GoalSettingStep({
   formData,
   onUpdate,
   onNext,
-  onAskAI,
 }: GoalSettingStepProps) {
   const handleNext = () => {
     if (!formData.businessObjective || !formData.programType) {
@@ -70,20 +67,12 @@ export default function GoalSettingStep({
       <div className="space-y-6">
         {/* Business Objective */}
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <Label htmlFor="businessObjective" className="text-sm font-medium">
-              Business Objective <span className="text-red-500">*</span>
-            </Label>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onAskAI("businessObjective")}
-              className="h-7 px-2 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-            >
-              <SparklesIcon className="h-3 w-3 mr-1" />
-              Ask AI
-            </Button>
-          </div>
+          <Label
+            htmlFor="businessObjective"
+            className="text-sm font-medium mb-2 block"
+          >
+            Business Objective <span className="text-red-500">*</span>
+          </Label>
           <Textarea
             id="businessObjective"
             placeholder='Example: "Increase Q4 parts sales by 20% through seasonal promotion"'
@@ -100,20 +89,9 @@ export default function GoalSettingStep({
 
         {/* Program Type */}
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <Label className="text-sm font-medium">
-              Program Type <span className="text-red-500">*</span>
-            </Label>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onAskAI("programType")}
-              className="h-7 px-2 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-            >
-              <SparklesIcon className="h-3 w-3 mr-1" />
-              Ask AI
-            </Button>
-          </div>
+          <Label className="text-sm font-medium mb-2 block">
+            Program Type <span className="text-red-500">*</span>
+          </Label>
           <RadioGroup
             value={formData.programType}
             onValueChange={(value) => onUpdate("programType", value)}
@@ -159,20 +137,9 @@ export default function GoalSettingStep({
 
         {/* Target Audience */}
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <Label className="text-sm font-medium">
-              Target Audience <span className="text-red-500">*</span>
-            </Label>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onAskAI("targetAudience")}
-              className="h-7 px-2 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-            >
-              <SparklesIcon className="h-3 w-3 mr-1" />
-              Ask AI
-            </Button>
-          </div>
+          <Label className="text-sm font-medium mb-2 block">
+            Target Audience <span className="text-red-500">*</span>
+          </Label>
           <div className="space-y-2">
             {[
               { value: "existing_customers", label: "Existing Customers" },
@@ -210,20 +177,12 @@ export default function GoalSettingStep({
         {/* Budget Constraints */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <Label htmlFor="maxDiscount" className="text-sm font-medium">
-                Max Discount Value
-              </Label>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onAskAI("budget")}
-                className="h-7 px-2 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-              >
-                <SparklesIcon className="h-3 w-3 mr-1" />
-                Ask AI
-              </Button>
-            </div>
+            <Label
+              htmlFor="maxDiscount"
+              className="text-sm font-medium mb-2 block"
+            >
+              Max Discount Value
+            </Label>
             <div className="flex gap-2">
               <Input
                 id="maxDiscount"
@@ -278,20 +237,9 @@ export default function GoalSettingStep({
 
         {/* Timeline */}
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <Label className="text-sm font-medium">
-              Timeline <span className="text-red-500">*</span>
-            </Label>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onAskAI("timeline")}
-              className="h-7 px-2 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-            >
-              <SparklesIcon className="h-3 w-3 mr-1" />
-              Ask AI
-            </Button>
-          </div>
+          <Label className="text-sm font-medium mb-2 block">
+            Timeline <span className="text-red-500">*</span>
+          </Label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label
@@ -347,6 +295,7 @@ export default function GoalSettingStep({
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
+                    disabled={formData.noExpiration}
                     className={cn(
                       "w-full justify-start text-left font-normal text-sm",
                       !formData.endDate && "text-muted-foreground"
@@ -376,6 +325,24 @@ export default function GoalSettingStep({
                   />
                 </PopoverContent>
               </Popover>
+              <div className="flex items-center gap-2 mt-2">
+                <Checkbox
+                  id="noExpiration"
+                  checked={formData.noExpiration || false}
+                  onCheckedChange={(checked) => {
+                    onUpdate("noExpiration", checked);
+                    if (checked) {
+                      onUpdate("endDate", "");
+                    }
+                  }}
+                />
+                <Label
+                  htmlFor="noExpiration"
+                  className="text-sm font-normal cursor-pointer"
+                >
+                  No expiration
+                </Label>
+              </div>
             </div>
           </div>
           <p className="text-sm text-gray-500 mt-1.5">

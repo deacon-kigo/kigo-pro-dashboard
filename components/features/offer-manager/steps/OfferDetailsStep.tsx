@@ -5,7 +5,6 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/atoms/Label";
-import { SparklesIcon } from "@heroicons/react/24/outline";
 
 interface OfferDetailsStepProps {
   formData: {
@@ -18,7 +17,6 @@ interface OfferDetailsStepProps {
   onUpdate: (field: string, value: any) => void;
   onNext: () => void;
   onPrevious: () => void;
-  onAskAI: (field: string) => void;
 }
 
 const OFFER_TYPES = [
@@ -36,7 +34,6 @@ export default function OfferDetailsStep({
   onUpdate,
   onNext,
   onPrevious,
-  onAskAI,
 }: OfferDetailsStepProps) {
   // Initialize offerTypes and offerValues if undefined
   const offerTypes = formData.offerTypes || [];
@@ -88,23 +85,12 @@ export default function OfferDetailsStep({
       <div className="space-y-6">
         {/* Offer Types - Multiple Selection */}
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <Label className="text-sm font-medium">
-              Offer Types <span className="text-red-500">*</span>
-              <span className="text-sm text-gray-500 font-normal ml-2">
-                (Select one or more)
-              </span>
-            </Label>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onAskAI("offerType")}
-              className="h-7 px-2 text-sm text-blue-600 hover:bg-blue-50"
-            >
-              <SparklesIcon className="h-3 w-3 mr-1" />
-              Ask AI
-            </Button>
-          </div>
+          <Label className="text-sm font-medium mb-2 block">
+            Offer Types <span className="text-red-500">*</span>
+            <span className="text-sm text-gray-500 font-normal ml-2">
+              (Select one or more)
+            </span>
+          </Label>
           <div className="space-y-2">
             {OFFER_TYPES.map((type) => (
               <label
@@ -145,20 +131,9 @@ export default function OfferDetailsStep({
               key={typeValue}
               className="p-4 bg-blue-50 border border-blue-200 rounded-lg"
             >
-              <div className="flex items-center justify-between mb-3">
-                <Label className="text-sm font-semibold text-gray-900">
-                  {typeLabel} <span className="text-red-500">*</span>
-                </Label>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onAskAI("offerValue")}
-                  className="h-7 px-2 text-sm text-blue-600 hover:bg-blue-100"
-                >
-                  <SparklesIcon className="h-3 w-3 mr-1" />
-                  Ask AI
-                </Button>
-              </div>
+              <Label className="text-sm font-semibold text-gray-900 mb-3 block">
+                {typeLabel} <span className="text-red-500">*</span>
+              </Label>
 
               {/* Percentage Discount Fields */}
               {typeValue === "percentage_discount" && (
@@ -320,20 +295,12 @@ export default function OfferDetailsStep({
 
         {/* Offer Title */}
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <Label htmlFor="offerTitle" className="text-sm font-medium">
-              Offer Title <span className="text-red-500">*</span>
-            </Label>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onAskAI("offerTitle")}
-              className="h-7 px-2 text-sm text-blue-600 hover:bg-blue-50"
-            >
-              <SparklesIcon className="h-3 w-3 mr-1" />
-              Ask AI
-            </Button>
-          </div>
+          <Label
+            htmlFor="offerTitle"
+            className="text-sm font-medium mb-2 block"
+          >
+            Offer Title <span className="text-red-500">*</span>
+          </Label>
           <Input
             id="offerTitle"
             placeholder="20% Off All Parts & Service"
@@ -349,20 +316,12 @@ export default function OfferDetailsStep({
 
         {/* Offer Description */}
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <Label htmlFor="offerDescription" className="text-sm font-medium">
-              Offer Description
-            </Label>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onAskAI("offerDescription")}
-              className="h-7 px-2 text-sm text-blue-600 hover:bg-blue-50"
-            >
-              <SparklesIcon className="h-3 w-3 mr-1" />
-              Ask AI
-            </Button>
-          </div>
+          <Label
+            htmlFor="offerDescription"
+            className="text-sm font-medium mb-2 block"
+          >
+            Offer Description
+          </Label>
           <textarea
             id="offerDescription"
             placeholder="Save 20% on all parts and service this Q4. Valid on orders over $50. Cannot be combined with other offers."
@@ -379,20 +338,12 @@ export default function OfferDetailsStep({
 
         {/* Terms & Conditions */}
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <Label htmlFor="termsConditions" className="text-sm font-medium">
-              Terms & Conditions
-            </Label>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onAskAI("terms")}
-              className="h-7 px-2 text-sm text-blue-600 hover:bg-blue-50"
-            >
-              <SparklesIcon className="h-3 w-3 mr-1" />
-              Generate with AI
-            </Button>
-          </div>
+          <Label
+            htmlFor="termsConditions"
+            className="text-sm font-medium mb-2 block"
+          >
+            Terms & Conditions
+          </Label>
           <textarea
             id="termsConditions"
             placeholder="(Auto-populated legal boilerplate)"

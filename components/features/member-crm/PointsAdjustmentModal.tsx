@@ -311,26 +311,22 @@ export default function PointsAdjustmentModal({
               <div className="space-y-2">
                 <Label
                   htmlFor="points"
-                  className="text-sm font-semibold text-gray-900"
+                  className="text-sm font-semibold text-gray-900 flex items-center gap-2"
                 >
+                  <PlusIcon className="h-4 w-4 text-gray-600" />
                   Points to Add *
                 </Label>
                 <div className="flex items-center gap-2">
-                  <div className="relative flex-1">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <PlusIcon className="h-4 w-4 text-gray-400" />
-                    </div>
-                    <Input
-                      id="points"
-                      type="number"
-                      min="1"
-                      value={pointsAmount}
-                      onChange={(e) => setPointsAmount(e.target.value)}
-                      placeholder="Enter points amount"
-                      className="pl-10"
-                    />
-                  </div>
-                  <div className="text-right">
+                  <Input
+                    id="points"
+                    type="number"
+                    min="1"
+                    value={pointsAmount}
+                    onChange={(e) => setPointsAmount(e.target.value)}
+                    placeholder="Enter points amount"
+                    className="flex-1"
+                  />
+                  <div className="text-right min-w-[80px]">
                     <span className="text-sm font-medium text-gray-700">
                       points
                     </span>
