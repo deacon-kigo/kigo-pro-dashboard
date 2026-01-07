@@ -10,13 +10,17 @@ import {
   XCircleIcon,
   ClockIcon,
   ExclamationCircleIcon,
+  ShieldCheckIcon,
+  ShieldExclamationIcon,
 } from "@heroicons/react/24/solid";
 
 export type ReceiptVerificationStatus =
   | "pending"
   | "approved"
   | "rejected"
-  | "manual_review";
+  | "manual_review"
+  | "manually_approved"
+  | "manually_rejected";
 
 interface ReceiptStatusBadgeProps {
   status: ReceiptVerificationStatus;
@@ -82,6 +86,30 @@ const statusConfig: Record<
       backgroundColor: "#fef3c7",
       borderColor: "#fde047",
       color: "#854d0e", // yellow-800/amber-800 dark
+    },
+  },
+  manually_approved: {
+    label: "Manually Approved",
+    variant: "success",
+    icon: ShieldCheckIcon,
+    className: "font-semibold",
+    iconClassName: "h-3.5 w-3.5",
+    style: {
+      backgroundColor: "#d1fae5",
+      borderColor: "#6ee7b7",
+      color: "#166534", // green-800 dark
+    },
+  },
+  manually_rejected: {
+    label: "Manually Rejected",
+    variant: "error",
+    icon: ShieldExclamationIcon,
+    className: "font-semibold",
+    iconClassName: "h-3.5 w-3.5",
+    style: {
+      backgroundColor: "#fee2e2",
+      borderColor: "#fca5a5",
+      color: "#991b1b", // red-800 dark
     },
   },
 };

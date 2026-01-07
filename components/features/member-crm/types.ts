@@ -107,7 +107,13 @@ export interface Receipt {
   uploadedAt: string;
   merchantName: string;
   totalAmount: number;
-  verificationStatus: "pending" | "approved" | "rejected" | "manual_review";
+  verificationStatus:
+    | "pending"
+    | "approved"
+    | "rejected"
+    | "manual_review"
+    | "manually_approved"
+    | "manually_rejected";
   imageUrl: string;
   items?: ReceiptItem[];
   campaignName?: string;

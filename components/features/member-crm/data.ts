@@ -251,6 +251,35 @@ export const sampleReceipts: Receipt[] = [
     campaignName: "Organic Foods Initiative",
     actionAmount: 400,
   },
+  {
+    id: "rcp-006a",
+    accountId: "acc-789xyz-prog-optum-001",
+    uploadedAt: "2026-01-05T09:15:00Z",
+    merchantName: "Safeway",
+    totalAmount: 32.5,
+    verificationStatus: "manually_approved",
+    imageUrl: "/mock/mock-receipt-target.jpg",
+    campaignName: "Health & Wellness",
+    actionAmount: 225,
+    items: [
+      { name: "Multivitamins", quantity: 1, price: 18.99, isQualifying: true },
+      { name: "Protein Powder", quantity: 1, price: 13.49, isQualifying: true },
+    ],
+  },
+  {
+    id: "rcp-006b",
+    accountId: "acc-789xyz-prog-optum-001",
+    uploadedAt: "2026-01-02T15:40:00Z",
+    merchantName: "Rite Aid",
+    totalAmount: 45.0,
+    verificationStatus: "manually_rejected",
+    imageUrl: "/mock/mock-receipt-walgreens.jpg",
+    campaignName: "Seasonal Promotion",
+    reasonCode: "receipt_too_old",
+    items: [
+      { name: "Cold Medicine", quantity: 2, price: 22.49, isQualifying: false },
+    ],
+  },
   // Sarah Johnson - Optum Program Receipts
   {
     id: "rcp-007",
