@@ -19,8 +19,32 @@ const nextConfig: NextConfig = {
   // Disable React strict mode for demo app
   reactStrictMode: false,
   transpilePackages: ["shiki", "recharts"],
-  // Turbopack configuration - empty object to silence Turbopack warnings
-  // Note: @copilotkit/runtime with pino logger may still have issues in client-side bundles
+  // Mark CopilotKit and pino as external packages (server-only, don't bundle)
+  serverExternalPackages: [
+    "@copilotkit/runtime",
+    "pino",
+    "pino-pretty",
+    "thread-stream",
+    "pino-abstract-transport",
+  ],
+  // Webpack configuration for client-side fallbacks
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Prevent Node.js modules from being bundled in client-side code
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        worker_threads: false,
+        pino: false,
+        "pino-pretty": false,
+        "thread-stream": false,
+      };
+    }
+    return config;
+  },
+  // Turbopack configuration - empty object to acknowledge Turbopack usage
   turbopack: {},
 };
 
