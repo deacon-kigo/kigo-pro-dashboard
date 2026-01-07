@@ -25,18 +25,13 @@ import {
   PlusIcon,
   PhotoIcon,
   MagnifyingGlassPlusIcon,
-  TagIcon,
-  ReceiptRefundIcon,
   InformationCircleIcon,
 } from "@heroicons/react/24/outline";
-import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import { useToast } from "@/components/ui/use-toast";
 import {
   MemberWithPoints,
   PointsAdjustmentResponse,
   ADJUSTMENT_REASONS,
-  Promotion,
-  Receipt,
 } from "./types";
 import {
   formatPoints,
@@ -45,7 +40,7 @@ import {
   formatDate,
   getMockReceiptImageUrl,
 } from "./utils";
-import { getPromotionsByProgram, sampleReceipts } from "./data";
+import { sampleReceipts } from "./data";
 import ReceiptViewer from "./ReceiptViewer";
 import PointsAdjustmentConfirmationModal from "./PointsAdjustmentConfirmationModal";
 import { ReceiptStatusBadge } from "@/components/molecules/badges";
@@ -79,12 +74,6 @@ export default function PointsAdjustmentModal({
   const [reason, setReason] = useState("");
   const [notes, setNotes] = useState("");
 
-  // Promotion state
-  const [selectedPromotionId, setSelectedPromotionId] = useState<string>("");
-  const [availablePromotions, setAvailablePromotions] = useState<Promotion[]>(
-    []
-  );
-
   // Receipt state
   const [selectedReceiptId, setSelectedReceiptId] = useState<string>(
     receiptId || ""
@@ -105,14 +94,8 @@ export default function PointsAdjustmentModal({
       ? memberReceipts.find((r) => r.id === selectedReceiptId) || null
       : null;
 
-  // Load promotions on mount
-  useEffect(() => {
-    const promotions = getPromotionsByProgram(program.id);
-    setAvailablePromotions(promotions);
-  }, [program.id]);
-
   const parsedPoints = parseInt(pointsAmount) || 0;
-  const isFormValid = parsedPoints > 0 && reason && notes.trim().length >= 10;
+  const isFormValid = parsedPoints > 0 && reason;
 
   const handleContinue = () => {
     if (!isFormValid) return;
@@ -134,14 +117,6 @@ export default function PointsAdjustmentModal({
         (newBalance / balance.conversionRate) * 100
       );
 
-      // Get selected promotion name
-      const selectedPromotion = availablePromotions.find(
-        (p) => p.id === selectedPromotionId
-      );
-      const promotionName = selectedPromotion
-        ? selectedPromotion.name
-        : undefined;
-
       // Mock successful response
       const response: PointsAdjustmentResponse = {
         success: true,
@@ -151,7 +126,6 @@ export default function PointsAdjustmentModal({
         newBalanceUsdCents,
         displayName: `${balance.displayNamePrefix} ${balance.displayName}`,
         transactionDate: new Date().toISOString(),
-        message: promotionName ? `Promotion: ${promotionName}` : undefined,
       };
 
       onSuccess(response);
@@ -179,7 +153,6 @@ export default function PointsAdjustmentModal({
       setReason("");
       setNotes("");
       setError("");
-      setSelectedPromotionId("");
       setSelectedReceiptId("");
       setShowConfirmation(false);
       onClose();
@@ -189,12 +162,6 @@ export default function PointsAdjustmentModal({
   const handleGoBack = () => {
     setShowConfirmation(false);
   };
-
-  // Get selected promotion details
-  const selectedPromotion =
-    selectedPromotionId && selectedPromotionId !== "none"
-      ? availablePromotions.find((p) => p.id === selectedPromotionId)
-      : undefined;
 
   if (showConfirmation) {
     return (
@@ -340,63 +307,6 @@ export default function PointsAdjustmentModal({
                 </div>
               </div>
 
-              {/* Promotion Rules (if selected) */}
-              {selectedPromotion && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
-                    <TagIcon className="h-4 w-4 mr-2" />
-                    Promotion Rules
-                  </h3>
-                  <div className="space-y-2">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">
-                        {selectedPromotion.name}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {selectedPromotion.description}
-                      </p>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3 mt-3">
-                      <div>
-                        <p className="text-xs font-medium text-gray-500">
-                          Reward Amount
-                        </p>
-                        <p className="text-sm font-semibold text-gray-900">
-                          {selectedPromotion.rewardAmount > 0
-                            ? formatPoints(selectedPromotion.rewardAmount)
-                            : "Variable"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium text-gray-500">
-                          USD Value
-                        </p>
-                        <p className="text-sm font-semibold text-gray-900">
-                          {selectedPromotion.rewardAmount > 0
-                            ? formatUsdCents(
-                                Math.round(
-                                  (selectedPromotion.rewardAmount /
-                                    balance.conversionRate) *
-                                    100
-                                )
-                              )
-                            : "Variable"}
-                        </p>
-                      </div>
-                    </div>
-                    {/* Eligible Products Section (placeholder) */}
-                    <div className="mt-3 pt-3 border-t border-green-200">
-                      <p className="text-xs font-medium text-gray-500 mb-1">
-                        Eligible Products
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        All qualifying products in category
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {/* Points to Add */}
               <div className="space-y-2">
                 <Label
@@ -443,134 +353,6 @@ export default function PointsAdjustmentModal({
                 </p>
               </div>
 
-              {/* Receipt Selector */}
-              <div className="space-y-2">
-                <Label
-                  htmlFor="receipt"
-                  className="text-sm font-semibold text-gray-900"
-                >
-                  Related Receipt
-                  <span className="text-sm font-normal text-gray-500 ml-2">
-                    (optional)
-                  </span>
-                </Label>
-                <Select
-                  value={selectedReceiptId}
-                  onValueChange={setSelectedReceiptId}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a receipt to link">
-                      {selectedReceipt
-                        ? `${selectedReceipt.merchantName} - ${formatDate(selectedReceipt.uploadedAt)}`
-                        : "No receipt selected"}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none" className="cursor-pointer">
-                      <div className="py-1">
-                        <div className="font-medium text-gray-900">
-                          No Receipt
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          Adjustment not linked to a receipt
-                        </div>
-                      </div>
-                    </SelectItem>
-                    {memberReceipts.length > 0 ? (
-                      memberReceipts.slice(0, 10).map((receipt) => (
-                        <SelectItem
-                          key={receipt.id}
-                          value={receipt.id}
-                          className="cursor-pointer"
-                        >
-                          <div className="py-1">
-                            <div className="font-medium text-gray-900 flex items-center gap-2">
-                              {receipt.merchantName}
-                              <ReceiptStatusBadge
-                                status={receipt.verificationStatus}
-                                size="sm"
-                              />
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {formatDate(receipt.uploadedAt)} •{" "}
-                              {formatUsdCents(
-                                Math.round(receipt.totalAmount * 100)
-                              )}
-                            </div>
-                          </div>
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <div className="px-2 py-3 text-sm text-gray-500">
-                        No receipts found for this member
-                      </div>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Promotion Selector */}
-              <div className="space-y-2">
-                <Label
-                  htmlFor="promotion"
-                  className="text-sm font-semibold text-gray-900"
-                >
-                  Related Promotion
-                  <span className="text-sm font-normal text-gray-500 ml-2">
-                    (optional)
-                  </span>
-                </Label>
-                <Select
-                  value={selectedPromotionId}
-                  onValueChange={setSelectedPromotionId}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a promotion">
-                      {selectedPromotion
-                        ? selectedPromotion.name
-                        : "No promotion selected"}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none" className="cursor-pointer">
-                      <div className="py-1">
-                        <div className="font-medium text-gray-900">
-                          No Promotion
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          Standard points adjustment
-                        </div>
-                      </div>
-                    </SelectItem>
-                    {availablePromotions.length > 0 ? (
-                      availablePromotions.map((promo) => (
-                        <SelectItem
-                          key={promo.id}
-                          value={promo.id}
-                          className="cursor-pointer"
-                        >
-                          <div className="py-1">
-                            <div className="font-medium text-gray-900">
-                              {promo.name}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {promo.description} •{" "}
-                              {promo.rewardAmount > 0
-                                ? `${formatPoints(promo.rewardAmount)} pts`
-                                : "Variable"}
-                            </div>
-                          </div>
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <div className="px-2 py-3 text-sm text-gray-500">
-                        No active promotions found
-                      </div>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-
               {/* Reason Code Dropdown */}
               <div className="space-y-2">
                 <Label
@@ -612,27 +394,20 @@ export default function PointsAdjustmentModal({
                   htmlFor="notes"
                   className="text-sm font-semibold text-gray-900"
                 >
-                  Notes *
+                  Notes
+                  <span className="text-sm font-normal text-gray-500 ml-2">
+                    (optional)
+                  </span>
                 </Label>
                 <Textarea
                   id="notes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Provide detailed notes for audit purposes..."
+                  placeholder="Add any additional notes for this adjustment..."
                   rows={3}
                   className="resize-none"
                   disabled={isSubmitting}
                 />
-                <div className="flex justify-between">
-                  <p className="text-xs text-gray-500">
-                    Minimum 10 characters required
-                  </p>
-                  <p
-                    className={`text-xs ${notes.length >= 10 ? "text-green-600" : "text-gray-500"}`}
-                  >
-                    {notes.length}/10
-                  </p>
-                </div>
               </div>
 
               {/* Error Message */}

@@ -198,25 +198,21 @@ export const createMemberColumns = ({
             className="bg-yellow-100 text-yellow-800 border-yellow-300 hover:bg-yellow-200"
             useClassName={true}
           >
-            Manual Review Needed
+            Review Required
           </Badge>
         );
       }
 
-      if (hasApprovedReceipts) {
-        return (
-          <Badge
-            variant="default"
-            className="bg-green-100 text-green-800 border-green-300 hover:bg-green-200"
-            useClassName={true}
-          >
-            Approved
-          </Badge>
-        );
-      }
-
-      // No receipts or no status
-      return <span className="text-sm text-gray-500">No Receipts</span>;
+      // No manual review needed
+      return (
+        <Badge
+          variant="default"
+          className="bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200"
+          useClassName={true}
+        >
+          No Action Needed
+        </Badge>
+      );
     },
     sortingFn: (rowA, rowB) => {
       const getStatusPriority = (member: MemberWithPoints) => {
@@ -226,14 +222,9 @@ export const createMemberColumns = ({
         const hasManualReview = receiptsWithStatus.some(
           (txn) => txn.metadata?.verificationStatus === "manual_review"
         );
-        const hasApproved = receiptsWithStatus.some(
-          (txn) => txn.metadata?.verificationStatus === "approved"
-        );
 
-        // Priority: Manual Review (1) > Approved (2) > No Receipts (3)
-        if (hasManualReview) return 1;
-        if (hasApproved) return 2;
-        return 3;
+        // Priority: Review Required (1) > No Action Needed (2)
+        return hasManualReview ? 1 : 2;
       };
 
       return (

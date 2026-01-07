@@ -33,9 +33,9 @@ export default function MemberCRMView() {
   const searchQuery = searchParams.get("searchQuery") ?? "";
   const statusFilter = searchParams.get("statusFilter") ?? "";
 
-  // Filter members based on search and filters
+  // Filter and sort members - prioritize those needing review
   const filteredMembers = useMemo(() => {
-    return members.filter((member) => {
+    const filtered = members.filter((member) => {
       const matchesSearch =
         !searchQuery ||
         member.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -45,6 +45,23 @@ export default function MemberCRMView() {
       const matchesStatus = !statusFilter || member.status === statusFilter;
 
       return matchesSearch && matchesStatus;
+    });
+
+    // Sort by review required status - those needing review come first
+    return filtered.sort((a, b) => {
+      const aHasReview = a.transactions.some(
+        (txn) =>
+          txn.receiptId && txn.metadata?.verificationStatus === "manual_review"
+      );
+      const bHasReview = b.transactions.some(
+        (txn) =>
+          txn.receiptId && txn.metadata?.verificationStatus === "manual_review"
+      );
+
+      // Review Required (true) comes before No Action Needed (false)
+      if (aHasReview && !bHasReview) return -1;
+      if (!aHasReview && bHasReview) return 1;
+      return 0;
     });
   }, [members, searchQuery, statusFilter]);
 
