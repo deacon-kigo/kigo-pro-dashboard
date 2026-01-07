@@ -221,7 +221,7 @@ export default function RedemptionMethodStepV1({
                     className={isDisabled ? "cursor-not-allowed" : ""}
                   >
                     <Card
-                      className={`p-4 transition-all ${
+                      className={`p-4 h-24 transition-all ${
                         isDisabled
                           ? "opacity-50 cursor-not-allowed bg-gray-50"
                           : "cursor-pointer hover:shadow-md"

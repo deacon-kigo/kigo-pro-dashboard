@@ -41,7 +41,6 @@ import {
   getMockReceiptImageUrl,
 } from "./utils";
 import { sampleReceipts } from "./data";
-import ReceiptViewer from "./ReceiptViewer";
 import PointsAdjustmentConfirmationModal from "./PointsAdjustmentConfirmationModal";
 import { ReceiptStatusBadge } from "@/components/molecules/badges";
 
@@ -78,12 +77,15 @@ export default function PointsAdjustmentModal({
   const [selectedReceiptId, setSelectedReceiptId] = useState<string>(
     receiptId || ""
   );
-  const [showReceiptViewer, setShowReceiptViewer] = useState(false);
+
+  // View state - 'form' | 'receipt' | 'confirmation'
+  const [currentView, setCurrentView] = useState<
+    "form" | "receipt" | "confirmation"
+  >("form");
 
   // Modal state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [showConfirmation, setShowConfirmation] = useState(false);
 
   // Get member's receipts
   const memberReceipts = sampleReceipts.filter(
@@ -99,7 +101,7 @@ export default function PointsAdjustmentModal({
 
   const handleContinue = () => {
     if (!isFormValid) return;
-    setShowConfirmation(true);
+    setCurrentView("confirmation");
   };
 
   const handleConfirm = async () => {
@@ -143,7 +145,7 @@ export default function PointsAdjustmentModal({
         err.message || "Failed to process adjustment. Please try again."
       );
       setIsSubmitting(false);
-      setShowConfirmation(false);
+      setCurrentView("form");
     }
   };
 
@@ -154,16 +156,27 @@ export default function PointsAdjustmentModal({
       setNotes("");
       setError("");
       setSelectedReceiptId("");
-      setShowConfirmation(false);
+      setCurrentView("form");
       onClose();
     }
   };
 
   const handleGoBack = () => {
-    setShowConfirmation(false);
+    setCurrentView("form");
   };
 
-  if (showConfirmation) {
+  const handleViewReceipt = () => {
+    if (selectedReceipt) {
+      setCurrentView("receipt");
+    }
+  };
+
+  const handleBackToForm = () => {
+    setCurrentView("form");
+  };
+
+  // Render Confirmation View
+  if (currentView === "confirmation") {
     return (
       <PointsAdjustmentConfirmationModal
         member={member}
@@ -179,6 +192,106 @@ export default function PointsAdjustmentModal({
     );
   }
 
+  // Render Receipt View
+  if (currentView === "receipt" && selectedReceipt) {
+    const imageUrl = getMockReceiptImageUrl(selectedReceipt.id);
+
+    return (
+      <Dialog open={true} onOpenChange={handleClose}>
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold text-gray-900">
+              Receipt Image
+            </DialogTitle>
+            <DialogDescription className="text-sm text-gray-500">
+              {selectedReceipt.merchantName} •{" "}
+              {formatDate(selectedReceipt.uploadedAt)}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto px-6 py-4">
+            <div className="space-y-4">
+              {/* Receipt Image - Large and centered */}
+              <div className="border border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm">
+                <img
+                  src={imageUrl}
+                  alt={`Receipt from ${selectedReceipt.merchantName}`}
+                  className="w-full h-auto"
+                  style={{ maxHeight: "70vh", objectFit: "contain" }}
+                />
+              </div>
+
+              {/* Receipt Metadata - Same structure as preview card */}
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 mb-1">
+                      Merchant
+                    </p>
+                    <p className="text-sm font-semibold text-gray-900">
+                      {selectedReceipt.merchantName}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 mb-1">
+                      Date
+                    </p>
+                    <p className="text-sm font-semibold text-gray-900">
+                      {formatDate(selectedReceipt.uploadedAt)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 mb-1">
+                      Total Amount
+                    </p>
+                    <p className="text-sm font-semibold text-gray-900">
+                      {formatUsdCents(
+                        Math.round(selectedReceipt.totalAmount * 100)
+                      )}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 mb-1">
+                      Status
+                    </p>
+                    <ReceiptStatusBadge
+                      status={selectedReceipt.verificationStatus}
+                      size="sm"
+                    />
+                  </div>
+                  {selectedReceipt.campaignName && (
+                    <div className="col-span-2">
+                      <p className="text-xs font-medium text-gray-500 mb-1">
+                        Campaign
+                      </p>
+                      <p className="text-sm text-gray-900">
+                        {selectedReceipt.campaignName}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <p className="text-xs text-gray-500 text-center">
+                Use browser zoom (Ctrl/Cmd +/-) to view receipt details
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter className="border-t border-gray-200 pt-4 flex gap-3">
+            <Button variant="outline" onClick={handleBackToForm}>
+              ← Back to Form
+            </Button>
+            <Button variant="primary" onClick={handleBackToForm}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Render Form View
   return (
     <>
       <Dialog open={true} onOpenChange={handleClose}>
@@ -207,7 +320,7 @@ export default function PointsAdjustmentModal({
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => setShowReceiptViewer(true)}
+                      onClick={handleViewReceipt}
                       className="flex items-center gap-1"
                     >
                       <MagnifyingGlassPlusIcon className="h-3.5 w-3.5" />
@@ -219,7 +332,7 @@ export default function PointsAdjustmentModal({
                     {/* Receipt Thumbnail */}
                     <div
                       className="flex-shrink-0 w-24 h-32 bg-white border border-gray-300 rounded-lg overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition-shadow"
-                      onClick={() => setShowReceiptViewer(true)}
+                      onClick={handleViewReceipt}
                     >
                       <img
                         src={getMockReceiptImageUrl(selectedReceipt.id)}
@@ -311,21 +424,25 @@ export default function PointsAdjustmentModal({
               <div className="space-y-2">
                 <Label
                   htmlFor="points"
-                  className="text-sm font-semibold text-gray-900 flex items-center gap-2"
+                  className="text-sm font-semibold text-gray-900"
                 >
-                  <PlusIcon className="h-4 w-4 text-gray-600" />
                   Points to Add *
                 </Label>
                 <div className="flex items-center gap-2">
-                  <Input
-                    id="points"
-                    type="number"
-                    min="1"
-                    value={pointsAmount}
-                    onChange={(e) => setPointsAmount(e.target.value)}
-                    placeholder="Enter points amount"
-                    className="flex-1"
-                  />
+                  <div className="relative flex-1">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <PlusIcon className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <Input
+                      id="points"
+                      type="number"
+                      min="1"
+                      value={pointsAmount}
+                      onChange={(e) => setPointsAmount(e.target.value)}
+                      placeholder="Enter points amount"
+                      className="pl-10"
+                    />
+                  </div>
                   <div className="text-right min-w-[80px]">
                     <span className="text-sm font-medium text-gray-700">
                       points
@@ -437,14 +554,6 @@ export default function PointsAdjustmentModal({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Receipt Viewer Modal */}
-      {selectedReceipt && showReceiptViewer && (
-        <ReceiptViewer
-          receiptId={selectedReceipt.id}
-          onClose={() => setShowReceiptViewer(false)}
-        />
-      )}
     </>
   );
 }
