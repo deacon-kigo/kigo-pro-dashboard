@@ -212,7 +212,14 @@ export default function CustomerDetailsTab({
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
-                          {/* Manual Review */}
+                          {/* Pending - Waiting for AI verification */}
+                          {receipt.verificationStatus === "pending" && (
+                            <span className="text-sm text-gray-500 italic">
+                              Processing...
+                            </span>
+                          )}
+
+                          {/* Manual Review - Needs agent review */}
                           {receipt.verificationStatus === "manual_review" && (
                             <Button
                               variant="outline"
@@ -221,14 +228,16 @@ export default function CustomerDetailsTab({
                                 setSelectedReceiptForReview(receipt);
                                 setShowManualReviewModal(true);
                               }}
+                              className="text-yellow-700 border-yellow-300 hover:bg-yellow-50"
                             >
                               Review
                             </Button>
                           )}
 
-                          {/* Approved or Rejected - Can adjust points */}
+                          {/* Approved (AI or Manual) - Can adjust if needed */}
                           {(receipt.verificationStatus === "approved" ||
-                            receipt.verificationStatus === "rejected") &&
+                            receipt.verificationStatus ===
+                              "manually_approved") &&
                             onOpenPointsAdjustment && (
                               <Button
                                 variant="outline"
@@ -241,11 +250,24 @@ export default function CustomerDetailsTab({
                               </Button>
                             )}
 
-                          {/* Pending - No action */}
-                          {receipt.verificationStatus === "pending" && (
-                            <span className="text-sm text-gray-500">
-                              Pending
-                            </span>
+                          {/* Rejected (AI) - Can adjust/override if needed */}
+                          {receipt.verificationStatus === "rejected" &&
+                            onOpenPointsAdjustment && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                  onOpenPointsAdjustment(receipt.id)
+                                }
+                              >
+                                Override
+                              </Button>
+                            )}
+
+                          {/* Manually Rejected - Final decision, no action */}
+                          {receipt.verificationStatus ===
+                            "manually_rejected" && (
+                            <span className="text-sm text-gray-500">—</span>
                           )}
                         </div>
                       </td>
