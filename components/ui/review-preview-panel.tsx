@@ -13,7 +13,6 @@ import {
   TagIcon,
   DevicePhoneMobileIcon,
   EyeIcon,
-  CheckCircleIcon,
 } from "@heroicons/react/24/outline";
 
 interface ReviewPreviewPanelProps {
@@ -60,9 +59,9 @@ const COMMODITY_LABELS: Record<string, string> = {
  * Review Preview Panel
  *
  * Displays a live preview/review of the offer form data as users fill it out.
- * ALWAYS shows all sections with completion indicators.
+ * ALWAYS shows all sections.
  * Shows placeholder text for empty fields.
- * Sections auto-expand when user inputs data and remain user-collapsible.
+ * All sections start expanded and remain user-collapsible.
  * Matches catalog filter and campaign preview patterns.
  */
 export function ReviewPreviewPanel({
@@ -76,28 +75,6 @@ export function ReviewPreviewPanel({
     if (typeof value === "object" && value !== null) return true;
     return !!value;
   };
-
-  // Check section completion
-  const hasBasicInfo =
-    isFieldFilled(formData.merchant) ||
-    isFieldFilled(formData.offerName) ||
-    isFieldFilled(formData.description) ||
-    isFieldFilled(formData.offerImagePreview);
-
-  const hasClassification =
-    isFieldFilled(formData.offerType) ||
-    isFieldFilled(formData.category_ids) ||
-    isFieldFilled(formData.keywords);
-
-  const hasRedemption =
-    isFieldFilled(formData.redemptionTypes) ||
-    isFieldFilled(formData.promoCode);
-
-  // Reactive accordion expansion - auto-expand sections with data
-  const expandedSections: string[] = [];
-  if (hasBasicInfo) expandedSections.push("basic-info");
-  if (hasClassification) expandedSections.push("classification");
-  if (hasRedemption) expandedSections.push("redemption");
 
   return (
     <div className="h-full flex flex-col">
@@ -116,7 +93,7 @@ export function ReviewPreviewPanel({
       <div className="flex-1 overflow-auto p-4">
         <Accordion
           type="multiple"
-          value={expandedSections}
+          defaultValue={["basic-info", "classification", "redemption"]}
           className="space-y-4"
         >
           {/* Basic Information Section - Always visible */}
@@ -125,11 +102,6 @@ export function ReviewPreviewPanel({
               <div className="flex items-center gap-2 flex-1">
                 <InformationCircleIcon className="size-4 text-blue-600 flex-shrink-0" />
                 <span className="text-sm font-medium">Basic Information</span>
-                <CheckCircleIcon
-                  className={`size-4 ml-auto mr-2 transition-colors ${
-                    hasBasicInfo ? "text-green-600" : "text-gray-300"
-                  }`}
-                />
               </div>
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-3">
@@ -313,11 +285,6 @@ export function ReviewPreviewPanel({
               <div className="flex items-center gap-2 flex-1">
                 <TagIcon className="size-4 text-purple-600 flex-shrink-0" />
                 <span className="text-sm font-medium">Classification</span>
-                <CheckCircleIcon
-                  className={`size-4 ml-auto mr-2 transition-colors ${
-                    hasClassification ? "text-green-600" : "text-gray-300"
-                  }`}
-                />
               </div>
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-3">
@@ -428,11 +395,6 @@ export function ReviewPreviewPanel({
               <div className="flex items-center gap-2 flex-1">
                 <DevicePhoneMobileIcon className="size-4 text-green-600 flex-shrink-0" />
                 <span className="text-sm font-medium">Redemption</span>
-                <CheckCircleIcon
-                  className={`size-4 ml-auto mr-2 transition-colors ${
-                    hasRedemption ? "text-green-600" : "text-gray-300"
-                  }`}
-                />
               </div>
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-3">
