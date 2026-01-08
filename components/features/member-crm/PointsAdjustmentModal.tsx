@@ -234,10 +234,10 @@ export default function PointsAdjustmentModal({
                       <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-2">
                         New Balance
                       </p>
-                      <p className="text-3xl font-bold text-blue-900">
+                      <p className="text-3xl font-bold text-primary">
                         {formatPoints(newBalancePoints)}
                       </p>
-                      <p className="text-sm font-medium text-gray-600 mt-1">
+                      <p className="text-sm font-medium text-primary mt-1">
                         {formatUsdCents(newBalanceUsd)}
                       </p>
                     </div>
