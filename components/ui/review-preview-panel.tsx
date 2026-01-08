@@ -55,8 +55,7 @@ export function ReviewPreviewPanel({
 
   const hasRedemption =
     isFieldFilled(formData.redemptionTypes) ||
-    isFieldFilled(formData.promoCode) ||
-    isFieldFilled(formData.locationScope);
+    isFieldFilled(formData.promoCode);
 
   // Dynamically expand sections that have data
   const expandedSections = [];
