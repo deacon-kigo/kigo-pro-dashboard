@@ -26,6 +26,7 @@ import {
   ExclamationCircleIcon,
   PhotoIcon,
   MagnifyingGlassPlusIcon,
+  ArrowLeftIcon,
 } from "@heroicons/react/24/outline";
 import { useToast } from "@/components/ui/use-toast";
 import { ReceiptStatusBadge } from "@/components/molecules/badges";
@@ -40,7 +41,6 @@ import {
 import { formatPoints, formatUsdCents, formatDate } from "./utils";
 import { getPromotionsByProgram, getReceiptById } from "./data";
 import ReceiptViewer from "./ReceiptViewer";
-import ManualReviewConfirmationModal from "./ManualReviewConfirmationModal";
 
 interface ManualReviewModalProps {
   member: MemberWithPoints;
@@ -65,13 +65,17 @@ export default function ManualReviewModal({
   const balance = member.pointsBalance;
   const program = member.program;
 
+  // View state - 'form' | 'confirmation'
+  const [currentView, setCurrentView] = useState<"form" | "confirmation">(
+    "form"
+  );
+
   const [decision, setDecision] = useState<ManualReviewDecision | null>(null);
   const [pointsAmount, setPointsAmount] = useState("");
   const [reasonCode, setReasonCode] = useState("");
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [showConfirmation, setShowConfirmation] = useState(false);
 
   const [receiptData, setReceiptData] = useState<Receipt | null>(null);
   const [isReceiptViewerOpen, setIsReceiptViewerOpen] = useState(false);
@@ -108,7 +112,11 @@ export default function ManualReviewModal({
 
   const handleContinue = () => {
     if (!isFormValid) return;
-    setShowConfirmation(true);
+    setCurrentView("confirmation");
+  };
+
+  const handleGoBack = () => {
+    setCurrentView("form");
   };
 
   const handleConfirm = async () => {
@@ -162,7 +170,7 @@ export default function ManualReviewModal({
     } catch (err: any) {
       setError(err.message || "Failed to process review. Please try again.");
       setIsSubmitting(false);
-      setShowConfirmation(false);
+      setCurrentView("form");
     }
   };
 
@@ -173,31 +181,189 @@ export default function ManualReviewModal({
       setReasonCode("");
       setNotes("");
       setError("");
-      setShowConfirmation(false);
+      setCurrentView("form");
       onClose();
     }
   };
 
-  const handleGoBack = () => {
-    setShowConfirmation(false);
-  };
-
-  if (showConfirmation) {
+  // Confirmation View
+  if (currentView === "confirmation" && decision) {
     return (
-      <ManualReviewConfirmationModal
-        member={member}
-        decision={decision!}
-        pointsToAward={decision === "approve" ? parsedPoints : undefined}
-        reasonCode={reasonCode}
-        reasonLabel={reasonLabel}
-        notes={notes}
-        onGoBack={handleGoBack}
-        onConfirm={handleConfirm}
-        isSubmitting={isSubmitting}
-      />
+      <Dialog open={true} onOpenChange={handleClose}>
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold text-gray-900">
+              {decision === "approve"
+                ? "Confirm Approval"
+                : "Confirm Rejection"}
+            </DialogTitle>
+            <DialogDescription className="text-sm text-gray-500">
+              Review details before confirming • Step 2 of 2
+            </DialogDescription>
+            {/* Progress Indicator */}
+            <div className="flex items-center gap-2 mb-2">
+              <div className="h-1.5 flex-1 bg-primary rounded-full transition-all"></div>
+              <div className="h-1.5 flex-1 bg-primary rounded-full transition-all"></div>
+            </div>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto px-6 py-4">
+            <div className="space-y-5">
+              {/* Decision Summary with color-coded backgrounds */}
+              <div
+                className={`border-l-4 ${decision === "approve" ? "border-green-500 bg-gradient-to-br from-green-50/50 to-white" : "border-red-500 bg-gradient-to-br from-red-50/50 to-white"} border border-gray-200 rounded-lg p-4 shadow-sm`}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  {decision === "approve" ? (
+                    <CheckCircleIcon className="h-8 w-8 text-green-600" />
+                  ) : (
+                    <XCircleIcon className="h-8 w-8 text-red-600" />
+                  )}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {decision === "approve"
+                        ? "Approving Receipt"
+                        : "Rejecting Receipt"}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {decision === "approve"
+                        ? `${formatPoints(parsedPoints)} will be added to member's account`
+                        : "No points will be awarded"}
+                    </p>
+                  </div>
+                </div>
+
+                {decision === "approve" && (
+                  <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-200">
+                    <div>
+                      <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
+                        Points to Award
+                      </p>
+                      <p className="text-xl font-bold text-green-700">
+                        {formatPoints(parsedPoints)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
+                        USD Value
+                      </p>
+                      <p className="text-xl font-bold text-green-700">
+                        {formatUsdCents(
+                          Math.round(
+                            (parsedPoints / balance.conversionRate) * 100
+                          )
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {decision === "reject" && reasonLabel && (
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
+                      Rejection Reason
+                    </p>
+                    <p className="text-sm font-semibold text-red-700">
+                      {reasonLabel}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Receipt & Member Info */}
+              {receiptData && (
+                <div className="border-l-4 border-primary bg-gradient-to-br from-blue-50/50 to-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                  <h3 className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-3">
+                    Receipt Details
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
+                        Merchant
+                      </p>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {receiptData.merchantName}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
+                        Amount
+                      </p>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {formatUsdCents(
+                          Math.round(receiptData.totalAmount * 100)
+                        )}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
+                        Member
+                      </p>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {member.fullName}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
+                        Program
+                      </p>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {balance.displayNamePrefix} {balance.displayName}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Notes */}
+              {notes && (
+                <div className="border-l-4 border-primary bg-gradient-to-br from-blue-50/50 to-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                  <h3 className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-2">
+                    Notes
+                  </h3>
+                  <p className="text-sm text-gray-900 whitespace-pre-wrap">
+                    {notes}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter className="px-6 py-4 border-t">
+            <div className="flex items-center justify-between w-full">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleGoBack}
+                disabled={isSubmitting}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeftIcon className="h-4 w-4" />
+                Go Back
+              </Button>
+              <Button
+                onClick={handleConfirm}
+                disabled={isSubmitting}
+                className={
+                  decision === "approve"
+                    ? "bg-green-600 hover:bg-green-700"
+                    : "bg-red-600 hover:bg-red-700"
+                }
+              >
+                {isSubmitting
+                  ? "Processing..."
+                  : decision === "approve"
+                    ? "Confirm Approval"
+                    : "Confirm Rejection"}
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     );
   }
 
+  // Form View
   return (
     <Dialog open={true} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-hidden flex flex-col">
@@ -206,9 +372,14 @@ export default function ManualReviewModal({
             Manual Review - Receipt Submission
           </DialogTitle>
           <DialogDescription className="text-sm text-gray-500">
-            Review the receipt and decide whether to approve or reject the
-            submission
+            Review the receipt and decide whether to approve or reject • Step 1
+            of 2
           </DialogDescription>
+          {/* Progress Indicator */}
+          <div className="flex items-center gap-2 mb-2">
+            <div className="h-1.5 flex-1 bg-primary rounded-full transition-all"></div>
+            <div className="h-1.5 flex-1 bg-gray-200 rounded-full transition-all"></div>
+          </div>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-4">
