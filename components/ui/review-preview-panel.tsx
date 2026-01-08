@@ -112,9 +112,14 @@ export function ReviewPreviewPanel({
                         className="w-full h-32 object-cover rounded-lg border border-gray-200"
                       />
                       {formData.offerImageAlt && (
-                        <p className="text-xs text-gray-500 mt-1">
-                          Alt text: {formData.offerImageAlt}
-                        </p>
+                        <div className="mt-2">
+                          <span className="text-sm font-medium text-slate-700">
+                            Alt Text
+                          </span>
+                          <p className="text-sm text-gray-700 mt-0.5">
+                            {formData.offerImageAlt}
+                          </p>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -131,6 +136,24 @@ export function ReviewPreviewPanel({
                         formData.merchant.label
                       ) : (
                         formData.merchant
+                      )
+                    ) : (
+                      <span className="text-gray-400 italic">(Not set)</span>
+                    )}
+                  </p>
+                </div>
+
+                {/* Offer Source */}
+                <div>
+                  <span className="text-sm font-medium text-slate-700">
+                    Offer Source
+                  </span>
+                  <p className="text-sm text-gray-700 mt-0.5">
+                    {isFieldFilled(formData.offerSource) ? (
+                      typeof formData.offerSource === "object" ? (
+                        formData.offerSource.label
+                      ) : (
+                        formData.offerSource
                       )
                     ) : (
                       <span className="text-gray-400 italic">(Not set)</span>
@@ -190,15 +213,58 @@ export function ReviewPreviewPanel({
                   </p>
                 </div>
 
-                {/* Terms */}
-                {isFieldFilled(formData.termsConditions) && (
+                {/* Max Discount - Optional, only show if filled */}
+                {isFieldFilled(formData.maxDiscount) &&
+                  formData.maxDiscount !== "0" && (
+                    <div>
+                      <span className="text-sm font-medium text-slate-700">
+                        Max Discount
+                      </span>
+                      <p className="text-sm text-gray-700 mt-0.5">
+                        ${formData.maxDiscount}
+                      </p>
+                    </div>
+                  )}
+
+                {/* Discount Value - Optional, only show if filled */}
+                {isFieldFilled(formData.discountValue) &&
+                  formData.discountValue !== "0" && (
+                    <div>
+                      <span className="text-sm font-medium text-slate-700">
+                        Discount Value
+                      </span>
+                      <p className="text-sm text-gray-700 mt-0.5">
+                        ${formData.discountValue}
+                      </p>
+                    </div>
+                  )}
+
+                {/* Terms & Conditions - Mandatory */}
+                <div>
+                  <span className="text-sm font-medium text-slate-700">
+                    Terms & Conditions
+                  </span>
+                  <p className="text-sm text-gray-700 mt-0.5 leading-relaxed">
+                    {isFieldFilled(formData.termsConditions) ? (
+                      <>
+                        {formData.termsConditions.substring(0, 100)}
+                        {formData.termsConditions.length > 100 && "..."}
+                      </>
+                    ) : (
+                      <span className="text-gray-400 italic">(Not set)</span>
+                    )}
+                  </p>
+                </div>
+
+                {/* Exclusions - Optional, only show if filled */}
+                {isFieldFilled(formData.exclusions) && (
                   <div>
                     <span className="text-sm font-medium text-slate-700">
-                      Terms & Conditions
+                      Exclusions
                     </span>
                     <p className="text-sm text-gray-700 mt-0.5 leading-relaxed">
-                      {formData.termsConditions.substring(0, 100)}
-                      {formData.termsConditions.length > 100 && "..."}
+                      {formData.exclusions.substring(0, 100)}
+                      {formData.exclusions.length > 100 && "..."}
                     </p>
                   </div>
                 )}
@@ -265,6 +331,34 @@ export function ReviewPreviewPanel({
                     )}
                   </div>
                 </div>
+
+                {/* Commodities - Optional, only show if filled */}
+                {isFieldFilled(formData.commodity_ids) && (
+                  <div>
+                    <span className="text-sm font-medium text-slate-700">
+                      Commodities
+                    </span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {formData.commodity_ids.map((id: string) => (
+                        <Badge key={id} variant="outline" className="text-xs">
+                          Commodity {id}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Cuisine Type - Optional, only show if filled */}
+                {isFieldFilled(formData.cuisineType) && (
+                  <div>
+                    <span className="text-sm font-medium text-slate-700">
+                      Cuisine Type
+                    </span>
+                    <p className="text-sm text-gray-700 mt-0.5 capitalize">
+                      {formData.cuisineType.replace("_", " ")}
+                    </p>
+                  </div>
+                )}
 
                 {/* Keywords */}
                 {isFieldFilled(formData.keywords) && (
@@ -333,6 +427,18 @@ export function ReviewPreviewPanel({
                   </div>
                 </div>
 
+                {/* Promo Code Type - Optional, only show if filled */}
+                {isFieldFilled(formData.promoCodeType) && (
+                  <div>
+                    <span className="text-sm font-medium text-slate-700">
+                      Promo Code Type
+                    </span>
+                    <p className="text-sm text-gray-700 mt-0.5 capitalize">
+                      {formData.promoCodeType}
+                    </p>
+                  </div>
+                )}
+
                 {/* Promo Code */}
                 <div>
                   <span className="text-sm font-medium text-slate-700">
@@ -347,6 +453,38 @@ export function ReviewPreviewPanel({
                   </p>
                 </div>
 
+                {/* Barcode Image - Optional, only show if filled */}
+                {formData.barcodePreview && (
+                  <div>
+                    <span className="text-sm font-medium text-slate-700">
+                      Barcode
+                    </span>
+                    <div className="mt-2">
+                      <img
+                        src={formData.barcodePreview}
+                        alt="Barcode"
+                        className="h-20 object-contain border border-gray-200 rounded"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* QR Code Image - Optional, only show if filled */}
+                {formData.qrCodePreview && (
+                  <div>
+                    <span className="text-sm font-medium text-slate-700">
+                      QR Code
+                    </span>
+                    <div className="mt-2">
+                      <img
+                        src={formData.qrCodePreview}
+                        alt="QR Code"
+                        className="h-20 w-20 object-contain border border-gray-200 rounded"
+                      />
+                    </div>
+                  </div>
+                )}
+
                 {/* External URL */}
                 {isFieldFilled(formData.externalUrl) && (
                   <div>
@@ -359,17 +497,30 @@ export function ReviewPreviewPanel({
                   </div>
                 )}
 
-                {/* Usage Limits */}
+                {/* Usage Limit Per Customer - Mandatory */}
                 <div>
                   <span className="text-sm font-medium text-slate-700">
                     Usage Limit Per Customer
                   </span>
-                  <p className="text-sm text-gray-700 mt-0.5">
+                  <p className="text-sm text-gray-700 mt-0.5 capitalize">
                     {formData.usageLimitPerCustomer || (
                       <span className="text-gray-400 italic">(Not set)</span>
                     )}
                   </p>
                 </div>
+
+                {/* Total Usage Limit - Optional, only show if filled */}
+                {isFieldFilled(formData.totalUsageLimit) &&
+                  formData.totalUsageLimit !== "0" && (
+                    <div>
+                      <span className="text-sm font-medium text-slate-700">
+                        Total Usage Limit
+                      </span>
+                      <p className="text-sm text-gray-700 mt-0.5">
+                        {formData.totalUsageLimit}
+                      </p>
+                    </div>
+                  )}
 
                 {/* Location Scope */}
                 <div>
