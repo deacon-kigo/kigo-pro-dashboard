@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   PhotoIcon,
   PlusCircleIcon,
   EyeIcon,
   ClockIcon,
+  ChevronUpDownIcon,
 } from "@heroicons/react/24/outline";
 import { Badge } from "@/components/atoms/Badge/Badge";
 import { ReceiptStatusBadge } from "@/components/molecules/badges";
@@ -34,11 +35,41 @@ export default function CustomerDetailsTab({
   const [showManualReviewModal, setShowManualReviewModal] = useState(false);
   const [selectedReceiptForReview, setSelectedReceiptForReview] =
     useState<Receipt | null>(null);
+  const [sortField, setSortField] = useState<keyof Receipt | null>(null);
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   const balance = member.pointsBalance;
-  const memberReceipts = sampleReceipts.filter(
-    (r) => r.accountId === member.accountId
-  );
+
+  // Filter and sort receipts
+  const memberReceipts = useMemo(() => {
+    const filtered = sampleReceipts.filter(
+      (r) => r.accountId === member.accountId
+    );
+
+    // Sort receipts - manual_review always comes first
+    return filtered.sort((a, b) => {
+      // Priority 1: manual_review receipts first
+      const aIsManualReview = a.verificationStatus === "manual_review";
+      const bIsManualReview = b.verificationStatus === "manual_review";
+
+      if (aIsManualReview && !bIsManualReview) return -1;
+      if (!aIsManualReview && bIsManualReview) return 1;
+
+      // Priority 2: Apply column sorting if selected
+      if (sortField) {
+        const aValue = a[sortField];
+        const bValue = b[sortField];
+
+        if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+        if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+      }
+
+      // Priority 3: Default to submission date (newest first)
+      return (
+        new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
+      );
+    });
+  }, [member.accountId, sortField, sortDirection]);
 
   // Flag indicator logic
   const receiptsWithStatus = member.transactions.filter(
@@ -55,6 +86,15 @@ export default function CustomerDetailsTab({
     setShowManualReviewModal(false);
     setSelectedReceiptForReview(null);
     onReviewSuccess?.();
+  };
+
+  const handleSort = (field: keyof Receipt) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
   };
 
   const getFlagIndicator = () => {
@@ -152,26 +192,62 @@ export default function CustomerDetailsTab({
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 bg-gray-50">
-                      Receipt ID
+                    <th
+                      className="text-left py-3 px-4 text-sm font-semibold text-gray-700 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+                      onClick={() => handleSort("id")}
+                    >
+                      <div className="flex items-center gap-1">
+                        Receipt ID
+                        <ChevronUpDownIcon className="h-4 w-4 text-gray-400" />
+                      </div>
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 bg-gray-50">
-                      Receipt Submission Date
+                    <th
+                      className="text-left py-3 px-4 text-sm font-semibold text-gray-700 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+                      onClick={() => handleSort("uploadedAt")}
+                    >
+                      <div className="flex items-center gap-1">
+                        Receipt Submission Date
+                        <ChevronUpDownIcon className="h-4 w-4 text-gray-400" />
+                      </div>
                     </th>
                     <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 bg-gray-50">
                       Receipt Image
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 bg-gray-50">
-                      Campaign Name
+                    <th
+                      className="text-left py-3 px-4 text-sm font-semibold text-gray-700 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+                      onClick={() => handleSort("campaignName")}
+                    >
+                      <div className="flex items-center gap-1">
+                        Campaign Name
+                        <ChevronUpDownIcon className="h-4 w-4 text-gray-400" />
+                      </div>
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 bg-gray-50">
-                      Receipt Status
+                    <th
+                      className="text-left py-3 px-4 text-sm font-semibold text-gray-700 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+                      onClick={() => handleSort("verificationStatus")}
+                    >
+                      <div className="flex items-center gap-1">
+                        Receipt Status
+                        <ChevronUpDownIcon className="h-4 w-4 text-gray-400" />
+                      </div>
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 bg-gray-50">
-                      Reason Code
+                    <th
+                      className="text-left py-3 px-4 text-sm font-semibold text-gray-700 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+                      onClick={() => handleSort("reasonCode")}
+                    >
+                      <div className="flex items-center gap-1">
+                        Reason Code
+                        <ChevronUpDownIcon className="h-4 w-4 text-gray-400" />
+                      </div>
                     </th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700 bg-gray-50">
-                      Dollar Amount Awarded
+                    <th
+                      className="text-right py-3 px-4 text-sm font-semibold text-gray-700 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+                      onClick={() => handleSort("actionAmount")}
+                    >
+                      <div className="flex items-center justify-end gap-1">
+                        Dollar Amount Awarded
+                        <ChevronUpDownIcon className="h-4 w-4 text-gray-400" />
+                      </div>
                     </th>
                     <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 bg-gray-50">
                       Actions
@@ -223,7 +299,7 @@ export default function CustomerDetailsTab({
                               variant="outline"
                               size="sm"
                               disabled
-                              className="gap-1.5"
+                              className="gap-1.5 text-gray-500 border-gray-300"
                             >
                               <ClockIcon className="h-4 w-4" />
                               Process
@@ -239,7 +315,7 @@ export default function CustomerDetailsTab({
                                 setSelectedReceiptForReview(receipt);
                                 setShowManualReviewModal(true);
                               }}
-                              className="gap-1.5"
+                              className="gap-1.5 text-blue-700 border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 hover:border-blue-400"
                             >
                               <EyeIcon className="h-4 w-4" />
                               Review
@@ -258,7 +334,7 @@ export default function CustomerDetailsTab({
                                 onClick={() =>
                                   onOpenPointsAdjustment(receipt.id)
                                 }
-                                className="gap-1.5"
+                                className="gap-1.5 text-green-700 border-green-300 bg-green-50 hover:bg-green-100 hover:text-green-800 hover:border-green-400"
                               >
                                 <PlusCircleIcon className="h-4 w-4" />
                                 Adjust Points
