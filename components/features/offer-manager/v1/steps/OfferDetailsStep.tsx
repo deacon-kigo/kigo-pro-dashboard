@@ -395,6 +395,14 @@ export default function OfferDetailsStepV1({
                   placeholder="50"
                   value={formData.maxDiscount}
                   onChange={(e) => onUpdate("maxDiscount", e.target.value)}
+                  onFocus={(e) => {
+                    // Clear "0" on focus for better UX
+                    if (e.target.value === "0") {
+                      onUpdate("maxDiscount", "");
+                    }
+                    // Select all text for easy replacement
+                    e.target.select();
+                  }}
                   className="pl-7"
                   min="0"
                   step="0.01"
@@ -417,6 +425,14 @@ export default function OfferDetailsStepV1({
                   placeholder="10"
                   value={formData.discountValue}
                   onChange={(e) => onUpdate("discountValue", e.target.value)}
+                  onFocus={(e) => {
+                    // Clear "0" on focus for better UX
+                    if (e.target.value === "0") {
+                      onUpdate("discountValue", "");
+                    }
+                    // Select all text for easy replacement
+                    e.target.select();
+                  }}
                   className="pl-7"
                   min="0"
                   step="0.01"

@@ -21,6 +21,41 @@ interface ReviewPreviewPanelProps {
   currentStep?: string;
 }
 
+// Category lookup - matches OfferDetailsStep.tsx
+const CATEGORY_LABELS: Record<string, string> = {
+  "1": "Food & Dining",
+  "2": "Pizza",
+  "3": "Burgers",
+  "4": "Fine Dining",
+  "5": "Fast Food",
+  "6": "Cafe & Bakery",
+  "7": "Retail",
+  "8": "Clothing",
+  "9": "Electronics",
+  "10": "Home Goods",
+  "11": "Entertainment",
+  "12": "Movies",
+  "13": "Sports Events",
+  "14": "Services",
+  "15": "Auto Repair",
+  "16": "Home Services",
+  "17": "Health & Wellness",
+  "18": "Automotive",
+  "19": "Travel",
+};
+
+// Commodity lookup - matches OfferDetailsStep.tsx
+const COMMODITY_LABELS: Record<string, string> = {
+  "1": "Entrees",
+  "2": "Appetizers",
+  "3": "Desserts",
+  "4": "Beverages",
+  "5": "Alcohol",
+  "6": "Gift Cards",
+  "7": "Merchandise",
+  "8": "Services",
+};
+
 /**
  * Review Preview Panel
  *
@@ -315,7 +350,7 @@ export function ReviewPreviewPanel({
                     {isFieldFilled(formData.category_ids) ? (
                       formData.category_ids.map((id: string) => (
                         <Badge key={id} variant="outline" className="text-xs">
-                          Category {id}
+                          {CATEGORY_LABELS[id] || `Category ${id}`}
                         </Badge>
                       ))
                     ) : (
@@ -335,7 +370,7 @@ export function ReviewPreviewPanel({
                     <div className="flex flex-wrap gap-1 mt-1">
                       {formData.commodity_ids.map((id: string) => (
                         <Badge key={id} variant="outline" className="text-xs">
-                          Commodity {id}
+                          {COMMODITY_LABELS[id] || `Commodity ${id}`}
                         </Badge>
                       ))}
                     </div>
