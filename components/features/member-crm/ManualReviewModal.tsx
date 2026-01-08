@@ -211,7 +211,14 @@ export default function ManualReviewModal({
             <div className="space-y-5">
               {/* Decision Summary with color-coded backgrounds */}
               <div
-                className={`border-l-4 ${decision === "approve" ? "border-green-500 bg-gradient-to-br from-green-50/50 to-white" : "border-red-500 bg-gradient-to-br from-red-50/50 to-white"} border border-gray-200 rounded-lg p-4 shadow-sm`}
+                className="border border-gray-200 rounded-lg p-4 shadow-sm"
+                style={{
+                  borderLeft: `4px solid ${decision === "approve" ? "#22c55e" : "#ef4444"}`,
+                  background:
+                    decision === "approve"
+                      ? "linear-gradient(to bottom right, rgba(220, 252, 231, 0.5), white)"
+                      : "linear-gradient(to bottom right, rgba(254, 226, 226, 0.5), white)",
+                }}
               >
                 <div className="flex items-center gap-3 mb-3">
                   {decision === "approve" ? (
@@ -344,11 +351,12 @@ export default function ManualReviewModal({
               <Button
                 onClick={handleConfirm}
                 disabled={isSubmitting}
-                className={
-                  decision === "approve"
-                    ? "bg-green-600 hover:bg-green-700"
-                    : "bg-red-600 hover:bg-red-700"
-                }
+                style={{
+                  backgroundColor:
+                    decision === "approve" ? "#16a34a" : "#dc2626",
+                  color: "white",
+                }}
+                className="hover:opacity-90 transition-opacity"
               >
                 {isSubmitting
                   ? "Processing..."
