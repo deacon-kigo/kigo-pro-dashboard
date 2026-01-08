@@ -26,6 +26,8 @@ import {
   PhotoIcon,
   MagnifyingGlassPlusIcon,
   InformationCircleIcon,
+  ArrowTrendingUpIcon,
+  CheckCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useToast } from "@/components/ui/use-toast";
 import {
@@ -41,7 +43,6 @@ import {
   getMockReceiptImageUrl,
 } from "./utils";
 import { sampleReceipts } from "./data";
-import PointsAdjustmentConfirmationModal from "./PointsAdjustmentConfirmationModal";
 import { ReceiptStatusBadge } from "@/components/molecules/badges";
 
 interface PointsAdjustmentModalProps {
@@ -175,20 +176,198 @@ export default function PointsAdjustmentModal({
     setCurrentView("form");
   };
 
+  // Calculate preview values
+  const currentBalance = balance.currentPoints;
+  const newBalancePoints = currentBalance + parsedPoints;
+  const usdValue = (parsedPoints / balance.conversionRate) * 100;
+  const newBalanceUsd = (newBalancePoints / balance.conversionRate) * 100;
+
   // Render Confirmation View
   if (currentView === "confirmation") {
     return (
-      <PointsAdjustmentConfirmationModal
-        member={member}
-        pointsToAdd={parsedPoints}
-        reasonCode={reason}
-        reasonLabel={getAdjustmentReasonLabel(reason)}
-        notes={notes}
-        receiptId={selectedReceiptId !== "none" ? selectedReceiptId : undefined}
-        onGoBack={handleGoBack}
-        onConfirm={handleConfirm}
-        isSubmitting={isSubmitting}
-      />
+      <Dialog open={true} onOpenChange={handleClose}>
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold text-gray-900">
+              Confirm Points Adjustment
+            </DialogTitle>
+            <DialogDescription className="text-sm text-gray-500">
+              Review details before confirming • Step 2 of 2
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto px-6 py-4">
+            <div className="space-y-5 pr-1">
+              {/* Progress Indicator */}
+              <div className="flex items-center gap-2 mb-2">
+                <div className="h-1.5 flex-1 bg-blue-500 rounded-full transition-all"></div>
+                <div className="h-1.5 flex-1 bg-blue-500 rounded-full transition-all"></div>
+              </div>
+
+              {/* Balance Preview */}
+              <div className="border-l-4 border-green-500 bg-white border border-gray-200 rounded-lg p-6">
+                <h4 className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-4 flex items-center gap-2">
+                  <ArrowTrendingUpIcon className="h-4 w-4" />
+                  Balance Preview
+                </h4>
+
+                <div className="space-y-4">
+                  {/* Before → After */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-2">
+                        Current Balance
+                      </p>
+                      <p className="text-3xl font-bold text-gray-900">
+                        {formatPoints(currentBalance)}
+                      </p>
+                      <p className="text-sm font-medium text-gray-600 mt-1">
+                        {formatUsdCents(balance.currentUsdCents)}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center px-4">
+                      <div className="text-2xl text-gray-400 font-light">→</div>
+                    </div>
+
+                    <div>
+                      <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-2">
+                        New Balance
+                      </p>
+                      <p className="text-3xl font-bold text-blue-900">
+                        {formatPoints(newBalancePoints)}
+                      </p>
+                      <p className="text-sm font-medium text-gray-600 mt-1">
+                        {formatUsdCents(newBalanceUsd)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Change Amount */}
+                  <div className="pt-4 border-t border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium uppercase tracking-wide text-gray-500">
+                        Points Added
+                      </span>
+                      <div className="text-right">
+                        <p className="text-2xl font-bold text-green-700">
+                          +{formatPoints(parsedPoints)}
+                        </p>
+                        <p className="text-sm font-medium text-gray-600">
+                          (+{formatUsdCents(usdValue)})
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Adjustment Details */}
+              <div className="border-l-4 border-blue-500 bg-white border border-gray-200 rounded-lg p-5">
+                <h4 className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-4">
+                  Adjustment Details
+                </h4>
+
+                <div className="space-y-4">
+                  {/* Reason Code */}
+                  <div>
+                    <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
+                      Reason Code
+                    </p>
+                    <p className="text-base font-bold text-gray-900">
+                      {getAdjustmentReasonLabel(reason)}
+                    </p>
+                  </div>
+
+                  {/* Notes */}
+                  {notes && (
+                    <div>
+                      <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
+                        Notes
+                      </p>
+                      <div className="bg-gray-50 border border-gray-200 rounded-md p-3">
+                        <p className="text-sm text-gray-900 whitespace-pre-wrap">
+                          {notes}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Program */}
+                  <div>
+                    <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
+                      Program
+                    </p>
+                    <p className="text-base font-bold text-gray-900">
+                      {balance.displayNamePrefix} {balance.displayName}
+                    </p>
+                    <p className="text-sm text-gray-600 mt-0.5">
+                      {program.partnerName}
+                    </p>
+                  </div>
+
+                  {/* Linked Receipt */}
+                  {selectedReceipt && (
+                    <div>
+                      <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-2">
+                        Linked Receipt
+                      </p>
+                      <div className="bg-gray-50 border border-gray-200 rounded-md p-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <p className="text-xs text-gray-500">Merchant</p>
+                            <p className="text-sm font-bold text-gray-900">
+                              {selectedReceipt.merchantName}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500">Date</p>
+                            <p className="text-sm font-bold text-gray-900">
+                              {formatDate(selectedReceipt.uploadedAt)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <DialogFooter className="gap-3 pt-4 border-t border-gray-200">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleGoBack}
+              disabled={isSubmitting}
+              className="text-base font-semibold"
+            >
+              ← Go Back
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              onClick={handleConfirm}
+              disabled={isSubmitting}
+              className="text-base font-semibold"
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                  <span>Processing...</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircleIcon className="h-5 w-5 mr-2" />
+                  Confirm Adjustment
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     );
   }
 
@@ -301,13 +480,18 @@ export default function PointsAdjustmentModal({
               Adjust Points Balance
             </DialogTitle>
             <DialogDescription className="text-sm text-gray-500">
-              Add points to {member.fullName}'s account with receipt
-              verification
+              Add points to {member.fullName}'s account • Step 1 of 2
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto px-6 py-4">
             <div className="space-y-5 pr-1">
+              {/* Progress Indicator */}
+              <div className="flex items-center gap-2">
+                <div className="h-1.5 flex-1 bg-blue-500 rounded-full transition-all"></div>
+                <div className="h-1.5 flex-1 bg-gray-200 rounded-full transition-all"></div>
+              </div>
+
               {/* Receipt Preview Section */}
               {selectedReceipt && (
                 <div className="border-l-4 border-green-500 bg-white border border-gray-200 rounded-lg p-4">
