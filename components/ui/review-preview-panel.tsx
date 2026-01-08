@@ -15,6 +15,7 @@ import {
   CalendarIcon,
   MapPinIcon,
   EyeIcon,
+  CheckCircleIcon,
 } from "@heroicons/react/24/outline";
 
 interface ReviewPreviewPanelProps {
@@ -26,8 +27,9 @@ interface ReviewPreviewPanelProps {
  * Review Preview Panel
  *
  * Displays a live preview/review of the offer form data as users fill it out.
- * Shows all form sections with completed data highlighted.
- * Matches the streamlined container-based design of the form.
+ * ALWAYS shows all sections with completion indicators.
+ * Shows placeholder text for empty fields.
+ * Matches catalog filter and campaign preview patterns.
  */
 export function ReviewPreviewPanel({
   formData,
@@ -41,16 +43,25 @@ export function ReviewPreviewPanel({
     return !!value;
   };
 
-  const hasAnyData =
+  // Check section completion
+  const hasBasicInfo =
     isFieldFilled(formData.merchant) ||
-    isFieldFilled(formData.offerSource) ||
     isFieldFilled(formData.offerName) ||
-    isFieldFilled(formData.description) ||
-    isFieldFilled(formData.offerType);
+    isFieldFilled(formData.description);
+
+  const hasClassification =
+    isFieldFilled(formData.offerType) ||
+    isFieldFilled(formData.category_ids) ||
+    isFieldFilled(formData.keywords);
+
+  const hasRedemption =
+    isFieldFilled(formData.redemptionTypes) ||
+    isFieldFilled(formData.promoCode) ||
+    isFieldFilled(formData.locationScope);
 
   return (
     <div className="h-full flex flex-col">
-      {/* Header - matching OfferDetails header style */}
+      {/* Header */}
       <div className="flex items-center gap-2 px-4 py-2 border-b bg-muted/20 flex-shrink-0">
         <EyeIcon className="h-5 w-5 text-primary" />
         <div>
@@ -61,396 +72,304 @@ export function ReviewPreviewPanel({
         </div>
       </div>
 
-      {/* Content */}
+      {/* Content - Always show all sections */}
       <div className="flex-1 overflow-auto p-4">
-        {!hasAnyData ? (
-          <div className="flex flex-col items-center justify-center h-full text-center py-12">
-            <InformationCircleIcon className="h-16 w-16 text-gray-300 mb-4" />
-            <p className="text-sm text-gray-400">
-              Start filling out the form to see a preview here
-            </p>
-          </div>
-        ) : (
-          <Accordion
-            type="multiple"
-            defaultValue={["basic-info", "classification", "redemption"]}
-            className="space-y-4"
-          >
-            {/* Basic Information Section */}
-            {(isFieldFilled(formData.merchant) ||
-              isFieldFilled(formData.offerSource) ||
-              isFieldFilled(formData.offerName) ||
-              isFieldFilled(formData.description) ||
-              isFieldFilled(formData.startDate) ||
-              isFieldFilled(formData.endDate) ||
-              (isFieldFilled(formData.maxDiscount) &&
-                formData.maxDiscount !== "0") ||
-              (isFieldFilled(formData.discountValue) &&
-                formData.discountValue !== "0") ||
-              isFieldFilled(formData.termsConditions)) && (
-              <AccordionItem value="basic-info" className="border rounded-md">
-                <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                  <div className="flex items-center gap-2">
-                    <InformationCircleIcon className="size-4 text-blue-600" />
-                    <span className="text-sm font-medium">
-                      Basic Information
+        <Accordion
+          type="multiple"
+          defaultValue={["basic-info", "classification", "redemption"]}
+          className="space-y-4"
+        >
+          {/* Basic Information Section - Always visible */}
+          <AccordionItem value="basic-info" className="border rounded-md">
+            <AccordionTrigger className="px-4 py-3 hover:no-underline">
+              <div className="flex items-center gap-2 flex-1">
+                <InformationCircleIcon className="size-4 text-blue-600 flex-shrink-0" />
+                <span className="text-sm font-medium">Basic Information</span>
+                {hasBasicInfo && (
+                  <CheckCircleIcon className="size-4 text-green-600 ml-auto mr-2" />
+                )}
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-3">
+              <div className="space-y-3 text-sm">
+                {/* Merchant */}
+                <div>
+                  <span className="text-sm font-medium text-slate-700">
+                    Merchant
+                  </span>
+                  <p className="font-medium text-gray-900 mt-0.5">
+                    {isFieldFilled(formData.merchant) ? (
+                      typeof formData.merchant === "object" ? (
+                        formData.merchant.label
+                      ) : (
+                        formData.merchant
+                      )
+                    ) : (
+                      <span className="text-gray-400 italic">(Not set)</span>
+                    )}
+                  </p>
+                </div>
+
+                {/* Offer Name */}
+                <div>
+                  <span className="text-sm font-medium text-slate-700">
+                    Offer Name
+                  </span>
+                  <p className="font-medium text-gray-900 mt-0.5">
+                    {formData.offerName || (
+                      <span className="text-gray-400 italic">(Not set)</span>
+                    )}
+                  </p>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <span className="text-sm font-medium text-slate-700">
+                    Description
+                  </span>
+                  <p className="text-gray-700 mt-0.5 text-xs leading-relaxed">
+                    {formData.description || (
+                      <span className="text-gray-400 italic">(Not set)</span>
+                    )}
+                  </p>
+                </div>
+
+                {/* Dates */}
+                <div className="flex items-start gap-2">
+                  <CalendarIcon className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <span className="text-sm font-medium text-slate-700">
+                      Validity Period
                     </span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-4 pb-3">
-                  <div className="space-y-3 text-sm">
-                    {/* Merchant */}
-                    {isFieldFilled(formData.merchant) && (
-                      <div>
-                        <span className="text-sm font-medium text-slate-700">
-                          Merchant
-                        </span>
-                        <p className="font-medium text-gray-900 mt-0.5">
-                          {typeof formData.merchant === "object"
-                            ? formData.merchant.label
-                            : formData.merchant}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Offer Source */}
-                    {isFieldFilled(formData.offerSource) && (
-                      <div>
-                        <span className="text-sm font-medium text-slate-700">
-                          Offer Source
-                        </span>
-                        <p className="font-medium text-gray-900 mt-0.5">
-                          {typeof formData.offerSource === "object"
-                            ? formData.offerSource.label
-                            : formData.offerSource}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Offer Name */}
-                    {isFieldFilled(formData.offerName) && (
-                      <div>
-                        <span className="text-sm font-medium text-slate-700">
-                          Offer Name
-                        </span>
-                        <p className="font-medium text-gray-900 mt-0.5">
-                          {formData.offerName}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Description */}
-                    {isFieldFilled(formData.description) && (
-                      <div>
-                        <span className="text-sm font-medium text-slate-700">
-                          Description
-                        </span>
-                        <p className="text-gray-700 mt-0.5 text-xs leading-relaxed">
-                          {formData.description}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Dates */}
-                    {(isFieldFilled(formData.startDate) ||
-                      isFieldFilled(formData.endDate)) && (
-                      <div className="flex items-start gap-2">
-                        <CalendarIcon className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                        <div className="flex-1">
-                          <span className="text-sm font-medium text-slate-700">
-                            Validity Period
+                    <p className="text-gray-700 mt-0.5 text-xs">
+                      {formData.startDate ? (
+                        <>
+                          <span>
+                            {new Date(formData.startDate).toLocaleDateString()}
                           </span>
-                          <p className="text-gray-700 mt-0.5 text-xs">
-                            {formData.startDate && (
-                              <span>
-                                {new Date(
-                                  formData.startDate
-                                ).toLocaleDateString()}
-                              </span>
-                            )}
-                            {formData.startDate && formData.endDate && " → "}
-                            {formData.endDate ? (
-                              <span>
-                                {new Date(
-                                  formData.endDate
-                                ).toLocaleDateString()}
-                              </span>
-                            ) : (
-                              formData.startDate && (
-                                <span className="text-gray-500 italic">
-                                  (No expiration)
-                                </span>
-                              )
-                            )}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Max Discount */}
-                    {isFieldFilled(formData.maxDiscount) &&
-                      formData.maxDiscount !== "0" && (
-                        <div>
-                          <span className="text-sm font-medium text-slate-700">
-                            Max Discount
-                          </span>
-                          <p className="font-medium text-gray-900 mt-0.5 text-sm">
-                            ${formData.maxDiscount}
-                          </p>
-                        </div>
-                      )}
-
-                    {/* Discount Value */}
-                    {isFieldFilled(formData.discountValue) &&
-                      formData.discountValue !== "0" && (
-                        <div>
-                          <span className="text-sm font-medium text-slate-700">
-                            Discount Value
-                          </span>
-                          <p className="font-medium text-gray-900 mt-0.5 text-sm">
-                            ${formData.discountValue}
-                          </p>
-                        </div>
-                      )}
-
-                    {/* Terms */}
-                    {isFieldFilled(formData.termsConditions) && (
-                      <div>
-                        <span className="text-sm font-medium text-slate-700">
-                          Terms & Conditions
-                        </span>
-                        <p className="text-gray-700 mt-0.5 text-xs leading-relaxed">
-                          {formData.termsConditions.substring(0, 100)}
-                          {formData.termsConditions.length > 100 && "..."}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            )}
-
-            {/* Classification Section */}
-            {(isFieldFilled(formData.offerType) ||
-              isFieldFilled(formData.category_ids) ||
-              isFieldFilled(formData.commodity_ids) ||
-              isFieldFilled(formData.keywords)) && (
-              <AccordionItem
-                value="classification"
-                className="border rounded-md"
-              >
-                <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                  <div className="flex items-center gap-2">
-                    <TagIcon className="size-4 text-purple-600" />
-                    <span className="text-sm font-medium">Classification</span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-4 pb-3">
-                  <div className="space-y-3 text-sm">
-                    {/* Offer Type */}
-                    {isFieldFilled(formData.offerType) && (
-                      <div>
-                        <span className="text-sm font-medium text-slate-700">
-                          Offer Type
-                        </span>
-                        <div className="mt-1">
-                          <Badge variant="secondary" className="text-xs">
-                            {formData.offerType === "bogo" && "BOGO"}
-                            {formData.offerType === "percent_off" &&
-                              "Percentage Off"}
-                            {formData.offerType === "dollar_off" &&
-                              "Dollar Amount Off"}
-                            {formData.offerType === "free" &&
-                              "Free Item/Service"}
-                            {formData.offerType === "clk" && "CLK"}
-                            {formData.offerType === "other" && "Other"}
-                          </Badge>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Categories */}
-                    {isFieldFilled(formData.category_ids) && (
-                      <div>
-                        <span className="text-sm font-medium text-slate-700">
-                          Categories
-                        </span>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {formData.category_ids.map((id: string) => (
-                            <Badge
-                              key={id}
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              Category {id}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Commodities */}
-                    {isFieldFilled(formData.commodity_ids) && (
-                      <div>
-                        <span className="text-sm font-medium text-slate-700">
-                          Commodities
-                        </span>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {formData.commodity_ids.map((id: string) => (
-                            <Badge
-                              key={id}
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              Commodity {id}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Keywords */}
-                    {isFieldFilled(formData.keywords) && (
-                      <div>
-                        <span className="text-sm font-medium text-slate-700">
-                          Keywords
-                        </span>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {formData.keywords.map(
-                            (keyword: any, index: number) => (
-                              <Badge
-                                key={index}
-                                variant="outline"
-                                className="text-xs"
-                              >
-                                {typeof keyword === "string"
-                                  ? keyword
-                                  : keyword.label || keyword.value}
-                              </Badge>
-                            )
+                          {formData.startDate && " → "}
+                          {formData.endDate ? (
+                            <span>
+                              {new Date(formData.endDate).toLocaleDateString()}
+                            </span>
+                          ) : (
+                            <span className="text-gray-500 italic">
+                              (No expiration)
+                            </span>
                           )}
-                        </div>
-                      </div>
+                        </>
+                      ) : (
+                        <span className="text-gray-400 italic">(Not set)</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Terms */}
+                {isFieldFilled(formData.termsConditions) && (
+                  <div>
+                    <span className="text-sm font-medium text-slate-700">
+                      Terms & Conditions
+                    </span>
+                    <p className="text-gray-700 mt-0.5 text-xs leading-relaxed">
+                      {formData.termsConditions.substring(0, 100)}
+                      {formData.termsConditions.length > 100 && "..."}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* Classification Section - Always visible */}
+          <AccordionItem value="classification" className="border rounded-md">
+            <AccordionTrigger className="px-4 py-3 hover:no-underline">
+              <div className="flex items-center gap-2 flex-1">
+                <TagIcon className="size-4 text-purple-600 flex-shrink-0" />
+                <span className="text-sm font-medium">Classification</span>
+                {hasClassification && (
+                  <CheckCircleIcon className="size-4 text-green-600 ml-auto mr-2" />
+                )}
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-3">
+              <div className="space-y-3 text-sm">
+                {/* Offer Type */}
+                <div>
+                  <span className="text-sm font-medium text-slate-700">
+                    Offer Type
+                  </span>
+                  <div className="mt-1">
+                    {isFieldFilled(formData.offerType) ? (
+                      <Badge variant="secondary" className="text-xs">
+                        {formData.offerType === "bogo" && "BOGO"}
+                        {formData.offerType === "percent_off" &&
+                          "Percentage Off"}
+                        {formData.offerType === "dollar_off" &&
+                          "Dollar Amount Off"}
+                        {formData.offerType === "free" && "Free Item/Service"}
+                        {formData.offerType === "clk" && "CLK"}
+                        {formData.offerType === "other" && "Other"}
+                      </Badge>
+                    ) : (
+                      <span className="text-gray-400 italic text-sm">
+                        (Not selected)
+                      </span>
                     )}
                   </div>
-                </AccordionContent>
-              </AccordionItem>
-            )}
+                </div>
 
-            {/* Redemption Section */}
-            {(isFieldFilled(formData.redemptionTypes) ||
-              isFieldFilled(formData.promoCode) ||
-              isFieldFilled(formData.externalUrl) ||
-              isFieldFilled(formData.usageLimitPerCustomer) ||
-              isFieldFilled(formData.locationScope)) && (
-              <AccordionItem value="redemption" className="border rounded-md">
-                <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                  <div className="flex items-center gap-2">
-                    <DevicePhoneMobileIcon className="size-4 text-green-600" />
-                    <span className="text-sm font-medium">Redemption</span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-4 pb-3">
-                  <div className="space-y-3 text-sm">
-                    {/* Redemption Types */}
-                    {isFieldFilled(formData.redemptionTypes) && (
-                      <div>
-                        <span className="text-sm font-medium text-slate-700">
-                          Redemption Methods
-                        </span>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {formData.redemptionTypes.map((type: string) => (
-                            <Badge
-                              key={type}
-                              variant="secondary"
-                              className="text-xs"
-                            >
-                              {type === "mobile" && "Mobile"}
-                              {type === "online_print" && "Online Print"}
-                              {type === "in_store" && "In-Store"}
-                              {type === "external_url" && "External Link"}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Promo Code */}
-                    {isFieldFilled(formData.promoCode) && (
-                      <div>
-                        <span className="text-sm font-medium text-slate-700">
-                          Promo Code
-                        </span>
-                        <p className="font-mono font-medium text-gray-900 mt-0.5 text-sm">
-                          {formData.promoCode}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* External URL */}
-                    {isFieldFilled(formData.externalUrl) && (
-                      <div>
-                        <span className="text-sm font-medium text-slate-700">
-                          External URL
-                        </span>
-                        <p className="text-blue-600 mt-0.5 break-all text-xs">
-                          {formData.externalUrl}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Usage Limits */}
-                    {isFieldFilled(formData.usageLimitPerCustomer) && (
-                      <div>
-                        <span className="text-sm font-medium text-slate-700">
-                          Usage Limit Per Customer
-                        </span>
-                        <p className="text-gray-700 mt-0.5 text-sm">
-                          {formData.usageLimitPerCustomer}
-                        </p>
-                      </div>
-                    )}
-
-                    {isFieldFilled(formData.totalUsageLimit) && (
-                      <div>
-                        <span className="text-sm font-medium text-slate-700">
-                          Total Usage Limit
-                        </span>
-                        <p className="text-gray-700 mt-0.5 text-sm">
-                          {formData.totalUsageLimit}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Location Scope */}
-                    {isFieldFilled(formData.locationScope) && (
-                      <div className="flex items-start gap-2">
-                        <MapPinIcon className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                        <div className="flex-1">
-                          <span className="text-sm font-medium text-slate-700">
-                            Location Scope
-                          </span>
-                          <p className="text-gray-700 mt-0.5 text-sm">
-                            {formData.locationScope === "all"
-                              ? "All Locations"
-                              : "Specific Locations"}
-                          </p>
-                          {formData.locationScope === "specific" &&
-                            isFieldFilled(formData.location_ids) && (
-                              <p className="text-xs text-gray-500 mt-1">
-                                {formData.location_ids.length} location(s)
-                                selected
-                              </p>
-                            )}
-                        </div>
-                      </div>
+                {/* Categories */}
+                <div>
+                  <span className="text-sm font-medium text-slate-700">
+                    Categories
+                  </span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {isFieldFilled(formData.category_ids) ? (
+                      formData.category_ids.map((id: string) => (
+                        <Badge key={id} variant="outline" className="text-xs">
+                          Category {id}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="text-gray-400 italic text-sm">
+                        (None)
+                      </span>
                     )}
                   </div>
-                </AccordionContent>
-              </AccordionItem>
-            )}
-          </Accordion>
-        )}
+                </div>
+
+                {/* Keywords */}
+                {isFieldFilled(formData.keywords) && (
+                  <div>
+                    <span className="text-sm font-medium text-slate-700">
+                      Keywords
+                    </span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {formData.keywords.map((keyword: any, index: number) => (
+                        <Badge
+                          key={index}
+                          variant="outline"
+                          className="text-xs"
+                        >
+                          {typeof keyword === "string"
+                            ? keyword
+                            : keyword.label || keyword.value}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* Redemption Section - Always visible */}
+          <AccordionItem value="redemption" className="border rounded-md">
+            <AccordionTrigger className="px-4 py-3 hover:no-underline">
+              <div className="flex items-center gap-2 flex-1">
+                <DevicePhoneMobileIcon className="size-4 text-green-600 flex-shrink-0" />
+                <span className="text-sm font-medium">Redemption</span>
+                {hasRedemption && (
+                  <CheckCircleIcon className="size-4 text-green-600 ml-auto mr-2" />
+                )}
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-3">
+              <div className="space-y-3 text-sm">
+                {/* Redemption Types */}
+                <div>
+                  <span className="text-sm font-medium text-slate-700">
+                    Redemption Methods
+                  </span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {isFieldFilled(formData.redemptionTypes) ? (
+                      formData.redemptionTypes.map((type: string) => (
+                        <Badge
+                          key={type}
+                          variant="secondary"
+                          className="text-xs"
+                        >
+                          {type === "mobile" && "Mobile"}
+                          {type === "online_print" && "Online Print"}
+                          {type === "in_store" && "In-Store"}
+                          {type === "external_url" && "External Link"}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="text-gray-400 italic text-sm">
+                        (Not configured)
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Promo Code */}
+                <div>
+                  <span className="text-sm font-medium text-slate-700">
+                    Promo Code
+                  </span>
+                  <p className="font-mono font-medium text-gray-900 mt-0.5 text-sm">
+                    {formData.promoCode || (
+                      <span className="text-gray-400 italic font-sans">
+                        (Not set)
+                      </span>
+                    )}
+                  </p>
+                </div>
+
+                {/* External URL */}
+                {isFieldFilled(formData.externalUrl) && (
+                  <div>
+                    <span className="text-sm font-medium text-slate-700">
+                      External URL
+                    </span>
+                    <p className="text-blue-600 mt-0.5 break-all text-xs">
+                      {formData.externalUrl}
+                    </p>
+                  </div>
+                )}
+
+                {/* Usage Limits */}
+                <div>
+                  <span className="text-sm font-medium text-slate-700">
+                    Usage Limit Per Customer
+                  </span>
+                  <p className="text-gray-700 mt-0.5 text-sm">
+                    {formData.usageLimitPerCustomer || (
+                      <span className="text-gray-400 italic">(Not set)</span>
+                    )}
+                  </p>
+                </div>
+
+                {/* Location Scope */}
+                <div className="flex items-start gap-2">
+                  <MapPinIcon className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <span className="text-sm font-medium text-slate-700">
+                      Location Scope
+                    </span>
+                    <p className="text-gray-700 mt-0.5 text-sm">
+                      {formData.locationScope === "all" ? (
+                        "All Locations"
+                      ) : formData.locationScope === "specific" ? (
+                        "Specific Locations"
+                      ) : (
+                        <span className="text-gray-400 italic">(Not set)</span>
+                      )}
+                    </p>
+                    {formData.locationScope === "specific" &&
+                      isFieldFilled(formData.location_ids) && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          {formData.location_ids.length} location(s) selected
+                        </p>
+                      )}
+                  </div>
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </div>
     </div>
   );
