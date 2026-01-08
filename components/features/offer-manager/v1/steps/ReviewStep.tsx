@@ -10,13 +10,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  DocumentTextIcon,
-  CreditCardIcon,
+  InformationCircleIcon,
   TagIcon,
-  CalendarIcon,
+  DevicePhoneMobileIcon,
   MapPinIcon,
   CheckCircleIcon,
+  CalendarIcon,
 } from "@heroicons/react/24/outline";
 
 interface ReviewStepProps {
@@ -86,7 +87,7 @@ export default function ReviewStepV1({
         <AccordionItem value="offer-details" className="border-none">
           <AccordionTrigger className="px-3 sm:px-4 py-3 text-sm font-medium hover:no-underline">
             <div className="flex items-center">
-              <DocumentTextIcon className="h-4 w-4 mr-2 text-blue-600 flex-shrink-0" />
+              <InformationCircleIcon className="h-4 w-4 mr-2 text-blue-600 flex-shrink-0" />
               <span>Offer Details</span>
             </div>
           </AccordionTrigger>
@@ -253,7 +254,7 @@ export default function ReviewStepV1({
         <AccordionItem value="redemption" className="border-none">
           <AccordionTrigger className="px-3 sm:px-4 py-3 text-sm font-medium hover:no-underline">
             <div className="flex items-center">
-              <CreditCardIcon className="h-4 w-4 mr-2 text-green-600 flex-shrink-0" />
+              <DevicePhoneMobileIcon className="h-4 w-4 mr-2 text-green-600 flex-shrink-0" />
               <span>Redemption Method</span>
             </div>
           </AccordionTrigger>
@@ -390,9 +391,5 @@ export default function ReviewStepV1({
 
 // Helper component for labels
 function Label({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-      {children}
-    </span>
-  );
+  return <span className="text-sm font-medium text-slate-700">{children}</span>;
 }
