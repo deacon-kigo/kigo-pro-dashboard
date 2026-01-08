@@ -274,7 +274,7 @@ export default function PointsAdjustmentModal({
                     <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
                       Reason Code
                     </p>
-                    <p className="text-base font-bold text-gray-900">
+                    <p className="text-sm font-semibold text-gray-900">
                       {getAdjustmentReasonLabel(reason)}
                     </p>
                   </div>
@@ -298,7 +298,7 @@ export default function PointsAdjustmentModal({
                     <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
                       Program
                     </p>
-                    <p className="text-base font-bold text-gray-900">
+                    <p className="text-sm font-semibold text-gray-900">
                       {balance.displayNamePrefix} {balance.displayName}
                     </p>
                     <p className="text-sm text-gray-600 mt-0.5">
@@ -316,13 +316,13 @@ export default function PointsAdjustmentModal({
                         <div className="grid grid-cols-2 gap-3">
                           <div>
                             <p className="text-xs text-gray-500">Merchant</p>
-                            <p className="text-sm font-bold text-gray-900">
+                            <p className="text-sm font-semibold text-gray-900">
                               {selectedReceipt.merchantName}
                             </p>
                           </div>
                           <div>
                             <p className="text-xs text-gray-500">Date</p>
-                            <p className="text-sm font-bold text-gray-900">
+                            <p className="text-sm font-semibold text-gray-900">
                               {formatDate(selectedReceipt.uploadedAt)}
                             </p>
                           </div>
@@ -531,7 +531,7 @@ export default function PointsAdjustmentModal({
                         <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
                           Merchant
                         </p>
-                        <p className="text-sm font-bold text-gray-900">
+                        <p className="text-sm font-semibold text-gray-900">
                           {selectedReceipt.merchantName}
                         </p>
                       </div>
@@ -539,7 +539,7 @@ export default function PointsAdjustmentModal({
                         <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
                           Date
                         </p>
-                        <p className="text-sm font-bold text-gray-900">
+                        <p className="text-sm font-semibold text-gray-900">
                           {formatDate(selectedReceipt.uploadedAt)}
                         </p>
                       </div>
@@ -547,7 +547,7 @@ export default function PointsAdjustmentModal({
                         <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
                           Total Amount
                         </p>
-                        <p className="text-sm font-bold text-gray-900">
+                        <p className="text-sm font-semibold text-gray-900">
                           {formatUsdCents(
                             Math.round(selectedReceipt.totalAmount * 100)
                           )}
@@ -584,7 +584,7 @@ export default function PointsAdjustmentModal({
                     <h3 className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-2">
                       Program Information
                     </h3>
-                    <p className="text-base font-semibold text-gray-900">
+                    <p className="text-sm font-semibold text-gray-900">
                       {balance.displayNamePrefix} {balance.displayName}
                     </p>
                     <p className="text-sm text-gray-600 mt-1">
@@ -595,7 +595,7 @@ export default function PointsAdjustmentModal({
                     <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
                       Conversion Rate
                     </p>
-                    <p className="text-base font-bold text-gray-900">
+                    <p className="text-sm font-semibold text-gray-900">
                       {balance.conversionRate} pts = $1.00
                     </p>
                   </div>
@@ -606,7 +606,7 @@ export default function PointsAdjustmentModal({
               <div className="space-y-2">
                 <Label
                   htmlFor="points"
-                  className="text-base font-semibold text-gray-900"
+                  className="text-sm font-semibold text-gray-900"
                 >
                   Points to Add *
                 </Label>
@@ -626,7 +626,7 @@ export default function PointsAdjustmentModal({
                     />
                   </div>
                   <div className="text-right min-w-[90px]">
-                    <span className="text-base font-bold text-gray-900">
+                    <span className="text-sm font-semibold text-gray-900">
                       points
                     </span>
                     {parsedPoints > 0 && (
@@ -652,7 +652,7 @@ export default function PointsAdjustmentModal({
               <div className="space-y-2">
                 <Label
                   htmlFor="reason"
-                  className="text-base font-semibold text-gray-900"
+                  className="text-sm font-semibold text-gray-900"
                 >
                   Adjustment Reason *
                 </Label>
@@ -687,7 +687,7 @@ export default function PointsAdjustmentModal({
               <div className="space-y-2">
                 <Label
                   htmlFor="notes"
-                  className="text-base font-semibold text-gray-900"
+                  className="text-sm font-semibold text-gray-900"
                 >
                   Notes
                   <span className="text-sm font-normal text-gray-600 ml-2">
