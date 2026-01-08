@@ -1,7 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { PhotoIcon } from "@heroicons/react/24/outline";
+import {
+  PhotoIcon,
+  PlusCircleIcon,
+  EyeIcon,
+  ClockIcon,
+} from "@heroicons/react/24/outline";
 import { Badge } from "@/components/atoms/Badge/Badge";
 import { ReceiptStatusBadge } from "@/components/molecules/badges";
 import { Button } from "@/components/atoms/Button/Button";
@@ -212,14 +217,20 @@ export default function CustomerDetailsTab({
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
-                          {/* Pending - Waiting for AI verification */}
+                          {/* Process - Pending receipts */}
                           {receipt.verificationStatus === "pending" && (
-                            <span className="text-sm text-gray-500 italic">
-                              Processing...
-                            </span>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled
+                              className="gap-1.5"
+                            >
+                              <ClockIcon className="h-4 w-4" />
+                              Process
+                            </Button>
                           )}
 
-                          {/* Manual Review - Needs agent review */}
+                          {/* Review - Manual review needed */}
                           {receipt.verificationStatus === "manual_review" && (
                             <Button
                               variant="outline"
@@ -228,16 +239,18 @@ export default function CustomerDetailsTab({
                                 setSelectedReceiptForReview(receipt);
                                 setShowManualReviewModal(true);
                               }}
-                              className="text-yellow-700 border-yellow-300 hover:bg-yellow-50"
+                              className="gap-1.5"
                             >
+                              <EyeIcon className="h-4 w-4" />
                               Review
                             </Button>
                           )}
 
-                          {/* Approved (AI or Manual) - Can adjust if needed */}
+                          {/* Adjust Points - For approved/rejected receipts */}
                           {(receipt.verificationStatus === "approved" ||
                             receipt.verificationStatus ===
-                              "manually_approved") &&
+                              "manually_approved" ||
+                            receipt.verificationStatus === "rejected") &&
                             onOpenPointsAdjustment && (
                               <Button
                                 variant="outline"
@@ -245,29 +258,17 @@ export default function CustomerDetailsTab({
                                 onClick={() =>
                                   onOpenPointsAdjustment(receipt.id)
                                 }
+                                className="gap-1.5"
                               >
+                                <PlusCircleIcon className="h-4 w-4" />
                                 Adjust Points
                               </Button>
                             )}
 
-                          {/* Rejected (AI) - Can adjust/override if needed */}
-                          {receipt.verificationStatus === "rejected" &&
-                            onOpenPointsAdjustment && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  onOpenPointsAdjustment(receipt.id)
-                                }
-                              >
-                                Override
-                              </Button>
-                            )}
-
-                          {/* Manually Rejected - Final decision, no action */}
+                          {/* No action for manually rejected */}
                           {receipt.verificationStatus ===
                             "manually_rejected" && (
-                            <span className="text-sm text-gray-500">—</span>
+                            <span className="text-sm text-gray-400">—</span>
                           )}
                         </div>
                       </td>
