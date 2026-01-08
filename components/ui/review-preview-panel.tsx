@@ -46,7 +46,8 @@ export function ReviewPreviewPanel({
   const hasBasicInfo =
     isFieldFilled(formData.merchant) ||
     isFieldFilled(formData.offerName) ||
-    isFieldFilled(formData.description);
+    isFieldFilled(formData.description) ||
+    isFieldFilled(formData.offerImagePreview);
 
   const hasClassification =
     isFieldFilled(formData.offerType) ||
@@ -98,6 +99,27 @@ export function ReviewPreviewPanel({
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-3">
               <div className="space-y-3 text-sm">
+                {/* Offer Image */}
+                {formData.offerImagePreview && (
+                  <div>
+                    <span className="text-sm font-medium text-slate-700">
+                      Offer Image
+                    </span>
+                    <div className="mt-2">
+                      <img
+                        src={formData.offerImagePreview}
+                        alt={formData.offerImageAlt || "Offer image"}
+                        className="w-full h-32 object-cover rounded-lg border border-gray-200"
+                      />
+                      {formData.offerImageAlt && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Alt text: {formData.offerImageAlt}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Merchant */}
                 <div>
                   <span className="text-sm font-medium text-slate-700">
