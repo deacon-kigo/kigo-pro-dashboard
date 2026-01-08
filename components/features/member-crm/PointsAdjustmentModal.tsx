@@ -310,9 +310,9 @@ export default function PointsAdjustmentModal({
             <div className="space-y-5 pr-1">
               {/* Receipt Preview Section */}
               {selectedReceipt && (
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div className="border-l-4 border-green-500 bg-white border border-gray-200 rounded-lg p-4">
                   <div className="flex items-start justify-between mb-3">
-                    <h3 className="text-sm font-semibold text-gray-900 flex items-center">
+                    <h3 className="text-xs font-medium uppercase tracking-wide text-gray-500 flex items-center">
                       <PhotoIcon className="h-4 w-4 mr-2" />
                       Receipt Preview
                     </h3>
@@ -321,9 +321,9 @@ export default function PointsAdjustmentModal({
                       variant="outline"
                       size="sm"
                       onClick={handleViewReceipt}
-                      className="flex items-center gap-1"
+                      className="flex items-center gap-1 text-sm font-semibold"
                     >
-                      <MagnifyingGlassPlusIcon className="h-3.5 w-3.5" />
+                      <MagnifyingGlassPlusIcon className="h-4 w-4" />
                       View Full Receipt
                     </Button>
                   </div>
@@ -331,7 +331,7 @@ export default function PointsAdjustmentModal({
                   <div className="flex gap-4">
                     {/* Receipt Thumbnail */}
                     <div
-                      className="flex-shrink-0 w-24 h-32 bg-white border border-gray-300 rounded-lg overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                      className="flex-shrink-0 w-24 h-32 bg-white border-2 border-gray-300 rounded-lg overflow-hidden shadow-sm cursor-pointer hover:border-blue-500 transition-all"
                       onClick={handleViewReceipt}
                     >
                       <img
@@ -344,33 +344,33 @@ export default function PointsAdjustmentModal({
                     {/* Receipt Details */}
                     <div className="flex-1 grid grid-cols-2 gap-3">
                       <div>
-                        <p className="text-xs font-medium text-gray-500 mb-1">
+                        <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
                           Merchant
                         </p>
-                        <p className="text-sm font-semibold text-gray-900">
+                        <p className="text-sm font-bold text-gray-900">
                           {selectedReceipt.merchantName}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-gray-500 mb-1">
+                        <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
                           Date
                         </p>
-                        <p className="text-sm font-semibold text-gray-900">
+                        <p className="text-sm font-bold text-gray-900">
                           {formatDate(selectedReceipt.uploadedAt)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-gray-500 mb-1">
+                        <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
                           Total Amount
                         </p>
-                        <p className="text-sm font-semibold text-gray-900">
+                        <p className="text-sm font-bold text-gray-900">
                           {formatUsdCents(
                             Math.round(selectedReceipt.totalAmount * 100)
                           )}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-gray-500 mb-1">
+                        <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
                           Status
                         </p>
                         <ReceiptStatusBadge
@@ -380,10 +380,10 @@ export default function PointsAdjustmentModal({
                       </div>
                       {selectedReceipt.campaignName && (
                         <div className="col-span-2">
-                          <p className="text-xs font-medium text-gray-500 mb-1">
+                          <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
                             Campaign
                           </p>
-                          <p className="text-sm text-gray-900">
+                          <p className="text-sm font-semibold text-gray-900">
                             {selectedReceipt.campaignName}
                           </p>
                         </div>
@@ -394,26 +394,24 @@ export default function PointsAdjustmentModal({
               )}
 
               {/* Program Info with Conversion Rate */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="border-l-4 border-blue-500 bg-white border border-gray-200 rounded-lg p-4">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="text-sm font-semibold text-gray-900 mb-1">
+                    <h3 className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-2">
                       Program Information
                     </h3>
-                    <p className="text-sm text-gray-700">
-                      <span className="font-medium">
-                        {balance.displayNamePrefix} {balance.displayName}
-                      </span>
+                    <p className="text-base font-semibold text-gray-900">
+                      {balance.displayNamePrefix} {balance.displayName}
                     </p>
-                    <p className="text-sm text-gray-600 mt-0.5">
+                    <p className="text-sm text-gray-600 mt-1">
                       {program.partnerName}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs font-medium text-gray-500">
+                    <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
                       Conversion Rate
                     </p>
-                    <p className="text-sm font-semibold text-gray-900 mt-1">
+                    <p className="text-base font-bold text-gray-900">
                       {balance.conversionRate} pts = $1.00
                     </p>
                   </div>
@@ -424,14 +422,14 @@ export default function PointsAdjustmentModal({
               <div className="space-y-2">
                 <Label
                   htmlFor="points"
-                  className="text-sm font-semibold text-gray-900"
+                  className="text-base font-semibold text-gray-900"
                 >
                   Points to Add *
                 </Label>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <div className="relative flex-1">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <PlusIcon className="h-4 w-4 text-gray-400" />
+                      <PlusIcon className="h-5 w-5 text-gray-400" />
                     </div>
                     <Input
                       id="points"
@@ -440,15 +438,15 @@ export default function PointsAdjustmentModal({
                       value={pointsAmount}
                       onChange={(e) => setPointsAmount(e.target.value)}
                       placeholder="Enter points amount"
-                      className="pl-10"
+                      className="pl-10 text-base font-semibold"
                     />
                   </div>
-                  <div className="text-right min-w-[80px]">
-                    <span className="text-sm font-medium text-gray-700">
+                  <div className="text-right min-w-[90px]">
+                    <span className="text-base font-bold text-gray-900">
                       points
                     </span>
                     {parsedPoints > 0 && (
-                      <p className="text-xs text-gray-500 mt-0.5">
+                      <p className="text-sm font-medium text-gray-600 mt-0.5">
                         ={" "}
                         {formatUsdCents(
                           Math.round(
@@ -459,8 +457,8 @@ export default function PointsAdjustmentModal({
                     )}
                   </div>
                 </div>
-                <p className="text-xs text-gray-500 flex items-center">
-                  <InformationCircleIcon className="h-3.5 w-3.5 mr-1" />
+                <p className="text-sm font-medium text-gray-600 flex items-center mt-2">
+                  <InformationCircleIcon className="h-4 w-4 mr-1.5 flex-shrink-0" />
                   This action will add points only. Points cannot be subtracted
                   through this interface.
                 </p>
@@ -470,12 +468,12 @@ export default function PointsAdjustmentModal({
               <div className="space-y-2">
                 <Label
                   htmlFor="reason"
-                  className="text-sm font-semibold text-gray-900"
+                  className="text-base font-semibold text-gray-900"
                 >
                   Adjustment Reason *
                 </Label>
                 <Select value={reason} onValueChange={setReason}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full text-base">
                     <SelectValue placeholder="Select a reason code">
                       {reason && getAdjustmentReasonLabel(reason)}
                     </SelectValue>
@@ -488,10 +486,10 @@ export default function PointsAdjustmentModal({
                         className="cursor-pointer"
                       >
                         <div className="py-1">
-                          <div className="font-medium text-gray-900">
+                          <div className="font-semibold text-gray-900">
                             {option.label}
                           </div>
-                          <div className="text-xs text-gray-500">
+                          <div className="text-sm text-gray-600">
                             {option.description}
                           </div>
                         </div>
@@ -505,10 +503,10 @@ export default function PointsAdjustmentModal({
               <div className="space-y-2">
                 <Label
                   htmlFor="notes"
-                  className="text-sm font-semibold text-gray-900"
+                  className="text-base font-semibold text-gray-900"
                 >
                   Notes
-                  <span className="text-sm font-normal text-gray-500 ml-2">
+                  <span className="text-sm font-normal text-gray-600 ml-2">
                     (optional)
                   </span>
                 </Label>
@@ -518,7 +516,7 @@ export default function PointsAdjustmentModal({
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Add any additional notes for this adjustment..."
                   rows={3}
-                  className="resize-none"
+                  className="resize-none text-base"
                   disabled={isSubmitting}
                 />
               </div>
