@@ -238,4 +238,8 @@ export interface ManualReviewResponse {
   newBalancePoints?: number;
   newBalanceUsdCents?: number;
   message?: string;
+  // Additional fields for frontend updates
+  reasonCode?: string;
+  notes?: string;
+  reviewedAt?: string;
 }

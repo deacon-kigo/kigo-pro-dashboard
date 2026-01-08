@@ -81,7 +81,7 @@ export function ReviewPreviewPanel({
       <div className="flex-1 overflow-auto p-4">
         <Accordion
           type="multiple"
-          value={expandedSections}
+          defaultValue={["basic-info", "classification", "redemption"]}
           className="space-y-4"
         >
           {/* Basic Information Section - Always visible */}

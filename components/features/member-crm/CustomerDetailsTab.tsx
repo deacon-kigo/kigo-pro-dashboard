@@ -11,7 +11,7 @@ import {
 import { Badge } from "@/components/atoms/Badge/Badge";
 import { ReceiptStatusBadge } from "@/components/molecules/badges";
 import { Button } from "@/components/atoms/Button/Button";
-import { MemberWithPoints, Receipt } from "./types";
+import { MemberWithPoints, Receipt, ManualReviewResponse } from "./types";
 import { formatDate } from "./utils";
 import { sampleReceipts } from "./data";
 import ManualReviewModal from "./ManualReviewModal";

@@ -142,6 +142,9 @@ export default function ManualReviewModal({
           decision === "approve"
             ? "Receipt approved successfully"
             : "Receipt rejected",
+        reasonCode: decision === "reject" ? reasonCode : undefined,
+        notes,
+        reviewedAt: new Date().toISOString(),
       };
 
       onSuccess(response);
