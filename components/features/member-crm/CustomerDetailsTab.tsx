@@ -315,7 +315,7 @@ export default function CustomerDetailsTab({
                                 setSelectedReceiptForReview(receipt);
                                 setShowManualReviewModal(true);
                               }}
-                              className="gap-1.5 text-blue-700 border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 hover:border-blue-400"
+                              className="gap-1.5"
                             >
                               <EyeIcon className="h-4 w-4" />
                               Review
@@ -334,7 +334,7 @@ export default function CustomerDetailsTab({
                                 onClick={() =>
                                   onOpenPointsAdjustment(receipt.id)
                                 }
-                                className="gap-1.5 text-green-700 border-green-300 bg-green-50 hover:bg-green-100 hover:text-green-800 hover:border-green-400"
+                                className="gap-1.5"
                               >
                                 <PlusCircleIcon className="h-4 w-4" />
                                 Adjust Points
