@@ -197,15 +197,15 @@ export default function PointsAdjustmentModal({
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto px-6 py-4">
-            <div className="space-y-5 pr-1">
+            <div className="space-y-5">
               {/* Progress Indicator */}
               <div className="flex items-center gap-2 mb-2">
-                <div className="h-1.5 flex-1 bg-blue-500 rounded-full transition-all"></div>
-                <div className="h-1.5 flex-1 bg-blue-500 rounded-full transition-all"></div>
+                <div className="h-1.5 flex-1 bg-[#328FE5] rounded-full transition-all"></div>
+                <div className="h-1.5 flex-1 bg-[#328FE5] rounded-full transition-all"></div>
               </div>
 
               {/* Balance Preview */}
-              <div className="border-l-4 border-green-500 bg-white border border-gray-200 rounded-lg p-6">
+              <div className="border-l-4 border-[#328FE5] bg-gradient-to-br from-blue-50/50 to-white border border-gray-200 rounded-lg p-6 shadow-sm">
                 <h4 className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-4 flex items-center gap-2">
                   <ArrowTrendingUpIcon className="h-4 w-4" />
                   Balance Preview
@@ -263,7 +263,7 @@ export default function PointsAdjustmentModal({
               </div>
 
               {/* Adjustment Details */}
-              <div className="border-l-4 border-blue-500 bg-white border border-gray-200 rounded-lg p-5">
+              <div className="border-l-4 border-[#328FE5] bg-gradient-to-br from-blue-50/50 to-white border border-gray-200 rounded-lg p-5 shadow-sm">
                 <h4 className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-4">
                   Adjustment Details
                 </h4>
@@ -485,16 +485,16 @@ export default function PointsAdjustmentModal({
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto px-6 py-4">
-            <div className="space-y-5 pr-1">
+            <div className="space-y-5">
               {/* Progress Indicator */}
               <div className="flex items-center gap-2">
-                <div className="h-1.5 flex-1 bg-blue-500 rounded-full transition-all"></div>
+                <div className="h-1.5 flex-1 bg-[#328FE5] rounded-full transition-all"></div>
                 <div className="h-1.5 flex-1 bg-gray-200 rounded-full transition-all"></div>
               </div>
 
               {/* Receipt Preview Section */}
               {selectedReceipt && (
-                <div className="border-l-4 border-green-500 bg-white border border-gray-200 rounded-lg p-4">
+                <div className="border-l-4 border-[#328FE5] bg-gradient-to-br from-blue-50/50 to-white border border-gray-200 rounded-lg p-4 shadow-sm">
                   <div className="flex items-start justify-between mb-3">
                     <h3 className="text-xs font-medium uppercase tracking-wide text-gray-500 flex items-center">
                       <PhotoIcon className="h-4 w-4 mr-2" />
@@ -578,7 +578,7 @@ export default function PointsAdjustmentModal({
               )}
 
               {/* Program Info with Conversion Rate */}
-              <div className="border-l-4 border-blue-500 bg-white border border-gray-200 rounded-lg p-4">
+              <div className="border-l-4 border-[#328FE5] bg-gradient-to-br from-blue-50/50 to-white border border-gray-200 rounded-lg p-4 shadow-sm">
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-2">
