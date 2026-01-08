@@ -99,6 +99,11 @@ export interface PointsAdjustmentResponse {
   displayName: string;
   transactionDate: string;
   message?: string;
+  // Additional fields for creating transaction entry
+  adjustmentReason?: string;
+  adjustmentNotes?: string;
+  receiptId?: string;
+  merchantName?: string;
 }
 
 export interface Receipt {

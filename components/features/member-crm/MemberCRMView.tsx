@@ -15,7 +15,11 @@ import {
 } from "@/components/atoms/Breadcrumb";
 import { MemberCatalogTable } from "./components/MemberCatalogTable";
 import MemberDetailView from "./MemberDetailView";
-import { MemberWithPoints, PointsAdjustmentResponse } from "./types";
+import {
+  MemberWithPoints,
+  PointsAdjustmentResponse,
+  PointsTransaction,
+} from "./types";
 import { sampleMembers } from "./data";
 
 /**
@@ -78,20 +82,53 @@ export default function MemberCRMView() {
       // In production, this would update the member's balance and add transaction to history
       console.log("Adjustment successful:", response);
 
-      // Show success notification (could use a toast library)
-      alert(
-        `Successfully adjusted points!\n\nNew Balance: ${response.newBalancePoints} points`
-      );
-
       // Refresh member data (in production, refetch from API)
       if (selectedMember) {
         const updatedMember = { ...selectedMember };
-        if (updatedMember.pointsBalances[0]) {
-          updatedMember.pointsBalances[0].currentPoints =
-            response.newBalancePoints;
-          updatedMember.pointsBalances[0].currentUsdCents =
+
+        // Update balance
+        if (updatedMember.pointsBalance) {
+          updatedMember.pointsBalance.currentPoints = response.newBalancePoints;
+          updatedMember.pointsBalance.currentUsdCents =
             response.newBalanceUsdCents;
         }
+
+        // Create new transaction entry
+        const newTransaction: PointsTransaction = {
+          id: response.ledgerEntryId,
+          accountId: selectedMember.accountId,
+          programId: selectedMember.program.id,
+          transactionType: "adjust",
+          sourceType: response.receiptId ? "receipt" : "manual",
+          pointsAmount: response.pointsAdjusted,
+          usdAmountCents: Math.round(
+            (response.pointsAdjusted /
+              updatedMember.pointsBalance.conversionRate) *
+              100
+          ),
+          balanceAfterPoints: response.newBalancePoints,
+          balanceAfterUsdCents: response.newBalanceUsdCents,
+          transactionDate: response.transactionDate,
+          description: response.adjustmentReason
+            ? `Manual Adjustment: ${response.adjustmentReason}`
+            : "Manual Points Adjustment",
+          adjustedByAdministratorId: "admin-001",
+          adjustedByName: "Kigo Pro Agent",
+          adjustmentReason: response.adjustmentReason,
+          adjustmentNotes: response.adjustmentNotes,
+          receiptId: response.receiptId,
+          merchantName: response.merchantName,
+        };
+
+        // Add transaction to the beginning of the list (most recent first)
+        updatedMember.transactions = [
+          newTransaction,
+          ...updatedMember.transactions,
+        ];
+
+        // Update total adjustments
+        updatedMember.totalAdjustments += response.pointsAdjusted;
+
         setSelectedMember(updatedMember);
       }
     },

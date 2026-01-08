@@ -129,6 +129,10 @@ export default function PointsAdjustmentModal({
         newBalanceUsdCents,
         displayName: `${balance.displayNamePrefix} ${balance.displayName}`,
         transactionDate: new Date().toISOString(),
+        adjustmentReason: reason,
+        adjustmentNotes: notes,
+        receiptId: selectedReceipt?.id,
+        merchantName: selectedReceipt?.merchantName,
       };
 
       onSuccess(response);
