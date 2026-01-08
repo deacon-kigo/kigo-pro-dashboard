@@ -323,7 +323,7 @@ export function ReviewPreviewPanel({
                   </span>
                   <div className="mt-1">
                     {isFieldFilled(formData.offerType) ? (
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="outline" className="text-xs">
                         {formData.offerType === "bogo" && "BOGO"}
                         {formData.offerType === "percent_off" &&
                           "Percentage Off"}
@@ -383,9 +383,11 @@ export function ReviewPreviewPanel({
                     <span className="text-sm font-medium text-slate-700">
                       Cuisine Type
                     </span>
-                    <p className="text-sm text-gray-700 mt-0.5 capitalize">
-                      {formData.cuisineType.replace("_", " ")}
-                    </p>
+                    <div className="mt-1">
+                      <Badge variant="outline" className="text-xs capitalize">
+                        {formData.cuisineType.replace("_", " ")}
+                      </Badge>
+                    </div>
                   </div>
                 )}
 
