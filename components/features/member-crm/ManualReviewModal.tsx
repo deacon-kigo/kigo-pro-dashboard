@@ -209,12 +209,12 @@ export default function ManualReviewModal({
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-4">
-          <form className="space-y-5 pr-1">
+          <form className="space-y-5">
             {/* Receipt Image Preview */}
             {receiptData && (
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <div className="border-l-4 border-primary bg-gradient-to-br from-blue-50/50 to-white border border-gray-200 rounded-lg p-4 shadow-sm">
                 <div className="flex items-start justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-gray-900 flex items-center">
+                  <h3 className="text-xs font-medium uppercase tracking-wide text-gray-500 flex items-center">
                     <PhotoIcon className="h-4 w-4 mr-2" />
                     Receipt Preview
                   </h3>
@@ -223,9 +223,9 @@ export default function ManualReviewModal({
                     variant="outline"
                     size="sm"
                     onClick={() => setIsReceiptViewerOpen(true)}
-                    className="flex items-center gap-1"
+                    className="flex items-center gap-1 text-sm font-semibold"
                   >
-                    <MagnifyingGlassPlusIcon className="h-3.5 w-3.5" />
+                    <MagnifyingGlassPlusIcon className="h-4 w-4" />
                     View Full Receipt
                   </Button>
                 </div>
@@ -246,7 +246,7 @@ export default function ManualReviewModal({
                   {/* Receipt Details */}
                   <div className="flex-1 grid grid-cols-2 gap-3">
                     <div>
-                      <p className="text-xs font-medium text-gray-500 mb-1">
+                      <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
                         Merchant
                       </p>
                       <p className="text-sm font-semibold text-gray-900">
@@ -254,7 +254,7 @@ export default function ManualReviewModal({
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs font-medium text-gray-500 mb-1">
+                      <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
                         Date
                       </p>
                       <p className="text-sm font-semibold text-gray-900">
@@ -262,7 +262,7 @@ export default function ManualReviewModal({
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs font-medium text-gray-500 mb-1">
+                      <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
                         Total Amount
                       </p>
                       <p className="text-sm font-semibold text-gray-900">
@@ -272,7 +272,7 @@ export default function ManualReviewModal({
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs font-medium text-gray-500 mb-1">
+                      <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
                         Status
                       </p>
                       <ReceiptStatusBadge
@@ -282,10 +282,10 @@ export default function ManualReviewModal({
                     </div>
                     {receiptData.campaignName && (
                       <div className="col-span-2">
-                        <p className="text-xs font-medium text-gray-500 mb-1">
+                        <p className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-1">
                           Campaign
                         </p>
-                        <p className="text-sm text-gray-900">
+                        <p className="text-sm font-semibold text-gray-900">
                           {receiptData.campaignName}
                         </p>
                       </div>
@@ -297,13 +297,13 @@ export default function ManualReviewModal({
 
             {/* Promotion Rules */}
             {availablePromotions.length > 0 && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <Label className="text-sm font-semibold text-gray-900 mb-2 block">
+              <div className="border-l-4 border-primary bg-gradient-to-br from-blue-50/50 to-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                <h3 className="text-xs font-medium uppercase tracking-wide text-gray-500 mb-3">
                   Promotion Rules
-                </Label>
+                </h3>
                 <div className="space-y-2">
                   <p className="text-sm text-gray-900">
-                    <span className="font-medium">Promotion:</span>{" "}
+                    <span className="font-semibold">Promotion:</span>{" "}
                     {availablePromotions[0].name}
                   </p>
                   <p className="text-sm text-gray-600">
