@@ -12,8 +12,6 @@ import {
   InformationCircleIcon,
   TagIcon,
   DevicePhoneMobileIcon,
-  CalendarIcon,
-  MapPinIcon,
   EyeIcon,
   CheckCircleIcon,
 } from "@heroicons/react/24/outline";
@@ -30,6 +28,7 @@ interface ReviewPreviewPanelProps {
  * ALWAYS shows all sections with completion indicators.
  * Shows placeholder text for empty fields.
  * Matches catalog filter and campaign preview patterns.
+ * Reactively expands sections as user fills them out.
  */
 export function ReviewPreviewPanel({
   formData,
@@ -59,6 +58,12 @@ export function ReviewPreviewPanel({
     isFieldFilled(formData.promoCode) ||
     isFieldFilled(formData.locationScope);
 
+  // Dynamically expand sections that have data
+  const expandedSections = [];
+  if (hasBasicInfo) expandedSections.push("basic-info");
+  if (hasClassification) expandedSections.push("classification");
+  if (hasRedemption) expandedSections.push("redemption");
+
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
@@ -76,7 +81,7 @@ export function ReviewPreviewPanel({
       <div className="flex-1 overflow-auto p-4">
         <Accordion
           type="multiple"
-          defaultValue={["basic-info", "classification", "redemption"]}
+          value={expandedSections}
           className="space-y-4"
         >
           {/* Basic Information Section - Always visible */}
@@ -85,9 +90,11 @@ export function ReviewPreviewPanel({
               <div className="flex items-center gap-2 flex-1">
                 <InformationCircleIcon className="size-4 text-blue-600 flex-shrink-0" />
                 <span className="text-sm font-medium">Basic Information</span>
-                {hasBasicInfo && (
-                  <CheckCircleIcon className="size-4 text-green-600 ml-auto mr-2" />
-                )}
+                <CheckCircleIcon
+                  className={`size-4 ml-auto mr-2 transition-colors ${
+                    hasBasicInfo ? "text-green-600" : "text-gray-300"
+                  }`}
+                />
               </div>
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-3">
@@ -97,7 +104,7 @@ export function ReviewPreviewPanel({
                   <span className="text-sm font-medium text-slate-700">
                     Merchant
                   </span>
-                  <p className="font-medium text-gray-900 mt-0.5">
+                  <p className="text-sm text-gray-700 mt-0.5">
                     {isFieldFilled(formData.merchant) ? (
                       typeof formData.merchant === "object" ? (
                         formData.merchant.label
@@ -115,7 +122,7 @@ export function ReviewPreviewPanel({
                   <span className="text-sm font-medium text-slate-700">
                     Offer Name
                   </span>
-                  <p className="font-medium text-gray-900 mt-0.5">
+                  <p className="text-sm text-gray-700 mt-0.5">
                     {formData.offerName || (
                       <span className="text-gray-400 italic">(Not set)</span>
                     )}
@@ -127,42 +134,39 @@ export function ReviewPreviewPanel({
                   <span className="text-sm font-medium text-slate-700">
                     Description
                   </span>
-                  <p className="text-gray-700 mt-0.5 text-xs leading-relaxed">
+                  <p className="text-sm text-gray-700 mt-0.5 leading-relaxed">
                     {formData.description || (
                       <span className="text-gray-400 italic">(Not set)</span>
                     )}
                   </p>
                 </div>
 
-                {/* Dates */}
-                <div className="flex items-start gap-2">
-                  <CalendarIcon className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                  <div className="flex-1">
-                    <span className="text-sm font-medium text-slate-700">
-                      Validity Period
-                    </span>
-                    <p className="text-gray-700 mt-0.5 text-xs">
-                      {formData.startDate ? (
-                        <>
+                {/* Validity Period */}
+                <div>
+                  <span className="text-sm font-medium text-slate-700">
+                    Validity Period
+                  </span>
+                  <p className="text-sm text-gray-700 mt-0.5">
+                    {formData.startDate ? (
+                      <>
+                        <span>
+                          {new Date(formData.startDate).toLocaleDateString()}
+                        </span>
+                        {" → "}
+                        {formData.endDate ? (
                           <span>
-                            {new Date(formData.startDate).toLocaleDateString()}
+                            {new Date(formData.endDate).toLocaleDateString()}
                           </span>
-                          {formData.startDate && " → "}
-                          {formData.endDate ? (
-                            <span>
-                              {new Date(formData.endDate).toLocaleDateString()}
-                            </span>
-                          ) : (
-                            <span className="text-gray-500 italic">
-                              (No expiration)
-                            </span>
-                          )}
-                        </>
-                      ) : (
-                        <span className="text-gray-400 italic">(Not set)</span>
-                      )}
-                    </p>
-                  </div>
+                        ) : (
+                          <span className="text-gray-500 italic">
+                            (No expiration)
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-gray-400 italic">(Not set)</span>
+                    )}
+                  </p>
                 </div>
 
                 {/* Terms */}
@@ -171,7 +175,7 @@ export function ReviewPreviewPanel({
                     <span className="text-sm font-medium text-slate-700">
                       Terms & Conditions
                     </span>
-                    <p className="text-gray-700 mt-0.5 text-xs leading-relaxed">
+                    <p className="text-sm text-gray-700 mt-0.5 leading-relaxed">
                       {formData.termsConditions.substring(0, 100)}
                       {formData.termsConditions.length > 100 && "..."}
                     </p>
@@ -187,9 +191,11 @@ export function ReviewPreviewPanel({
               <div className="flex items-center gap-2 flex-1">
                 <TagIcon className="size-4 text-purple-600 flex-shrink-0" />
                 <span className="text-sm font-medium">Classification</span>
-                {hasClassification && (
-                  <CheckCircleIcon className="size-4 text-green-600 ml-auto mr-2" />
-                )}
+                <CheckCircleIcon
+                  className={`size-4 ml-auto mr-2 transition-colors ${
+                    hasClassification ? "text-green-600" : "text-gray-300"
+                  }`}
+                />
               </div>
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-3">
@@ -213,7 +219,7 @@ export function ReviewPreviewPanel({
                       </Badge>
                     ) : (
                       <span className="text-gray-400 italic text-sm">
-                        (Not selected)
+                        (Not set)
                       </span>
                     )}
                   </div>
@@ -233,7 +239,7 @@ export function ReviewPreviewPanel({
                       ))
                     ) : (
                       <span className="text-gray-400 italic text-sm">
-                        (None)
+                        (Not set)
                       </span>
                     )}
                   </div>
@@ -270,9 +276,11 @@ export function ReviewPreviewPanel({
               <div className="flex items-center gap-2 flex-1">
                 <DevicePhoneMobileIcon className="size-4 text-green-600 flex-shrink-0" />
                 <span className="text-sm font-medium">Redemption</span>
-                {hasRedemption && (
-                  <CheckCircleIcon className="size-4 text-green-600 ml-auto mr-2" />
-                )}
+                <CheckCircleIcon
+                  className={`size-4 ml-auto mr-2 transition-colors ${
+                    hasRedemption ? "text-green-600" : "text-gray-300"
+                  }`}
+                />
               </div>
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-3">
@@ -298,7 +306,7 @@ export function ReviewPreviewPanel({
                       ))
                     ) : (
                       <span className="text-gray-400 italic text-sm">
-                        (Not configured)
+                        (Not set)
                       </span>
                     )}
                   </div>
@@ -309,11 +317,11 @@ export function ReviewPreviewPanel({
                   <span className="text-sm font-medium text-slate-700">
                     Promo Code
                   </span>
-                  <p className="font-mono font-medium text-gray-900 mt-0.5 text-sm">
-                    {formData.promoCode || (
-                      <span className="text-gray-400 italic font-sans">
-                        (Not set)
-                      </span>
+                  <p className="text-sm text-gray-700 mt-0.5">
+                    {formData.promoCode ? (
+                      <span className="font-mono">{formData.promoCode}</span>
+                    ) : (
+                      <span className="text-gray-400 italic">(Not set)</span>
                     )}
                   </p>
                 </div>
@@ -324,7 +332,7 @@ export function ReviewPreviewPanel({
                     <span className="text-sm font-medium text-slate-700">
                       External URL
                     </span>
-                    <p className="text-blue-600 mt-0.5 break-all text-xs">
+                    <p className="text-blue-600 mt-0.5 break-all text-sm">
                       {formData.externalUrl}
                     </p>
                   </div>
@@ -335,7 +343,7 @@ export function ReviewPreviewPanel({
                   <span className="text-sm font-medium text-slate-700">
                     Usage Limit Per Customer
                   </span>
-                  <p className="text-gray-700 mt-0.5 text-sm">
+                  <p className="text-sm text-gray-700 mt-0.5">
                     {formData.usageLimitPerCustomer || (
                       <span className="text-gray-400 italic">(Not set)</span>
                     )}
@@ -343,28 +351,26 @@ export function ReviewPreviewPanel({
                 </div>
 
                 {/* Location Scope */}
-                <div className="flex items-start gap-2">
-                  <MapPinIcon className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                  <div className="flex-1">
-                    <span className="text-sm font-medium text-slate-700">
-                      Location Scope
-                    </span>
-                    <p className="text-gray-700 mt-0.5 text-sm">
-                      {formData.locationScope === "all" ? (
-                        "All Locations"
-                      ) : formData.locationScope === "specific" ? (
-                        "Specific Locations"
-                      ) : (
-                        <span className="text-gray-400 italic">(Not set)</span>
-                      )}
-                    </p>
-                    {formData.locationScope === "specific" &&
-                      isFieldFilled(formData.location_ids) && (
-                        <p className="text-xs text-gray-500 mt-1">
-                          {formData.location_ids.length} location(s) selected
-                        </p>
-                      )}
-                  </div>
+                <div>
+                  <span className="text-sm font-medium text-slate-700">
+                    Location Scope
+                  </span>
+                  <p className="text-sm text-gray-700 mt-0.5">
+                    {formData.locationScope === "all" ? (
+                      "All Locations"
+                    ) : formData.locationScope === "specific" ? (
+                      <>
+                        Specific Locations
+                        {isFieldFilled(formData.location_ids) && (
+                          <span className="text-xs text-gray-500 ml-1">
+                            ({formData.location_ids.length} selected)
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-gray-400 italic">(Not set)</span>
+                    )}
+                  </p>
                 </div>
               </div>
             </AccordionContent>
