@@ -62,7 +62,7 @@ const COMMODITY_LABELS: Record<string, string> = {
  * Displays a live preview/review of the offer form data as users fill it out.
  * ALWAYS shows all sections with completion indicators.
  * Shows placeholder text for empty fields.
- * All sections start expanded and are user-collapsible.
+ * Sections auto-expand when user inputs data and remain user-collapsible.
  * Matches catalog filter and campaign preview patterns.
  */
 export function ReviewPreviewPanel({
@@ -93,6 +93,12 @@ export function ReviewPreviewPanel({
     isFieldFilled(formData.redemptionTypes) ||
     isFieldFilled(formData.promoCode);
 
+  // Reactive accordion expansion - auto-expand sections with data
+  const expandedSections: string[] = [];
+  if (hasBasicInfo) expandedSections.push("basic-info");
+  if (hasClassification) expandedSections.push("classification");
+  if (hasRedemption) expandedSections.push("redemption");
+
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
@@ -110,7 +116,7 @@ export function ReviewPreviewPanel({
       <div className="flex-1 overflow-auto p-4">
         <Accordion
           type="multiple"
-          defaultValue={["basic-info", "classification", "redemption"]}
+          value={expandedSections}
           className="space-y-4"
         >
           {/* Basic Information Section - Always visible */}
@@ -431,7 +437,7 @@ export function ReviewPreviewPanel({
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-3">
               <div className="space-y-3 text-sm">
-                {/* Redemption Types */}
+                {/* Redemption Types - Mandatory */}
                 <div>
                   <span className="text-sm font-medium text-slate-700">
                     Redemption Methods
@@ -439,11 +445,7 @@ export function ReviewPreviewPanel({
                   <div className="flex flex-wrap gap-1 mt-1">
                     {isFieldFilled(formData.redemptionTypes) ? (
                       formData.redemptionTypes.map((type: string) => (
-                        <Badge
-                          key={type}
-                          variant="secondary"
-                          className="text-xs"
-                        >
+                        <Badge key={type} variant="outline" className="text-xs">
                           {type === "mobile" && "Mobile"}
                           {type === "online_print" && "Online Print"}
                           {type === "in_store" && "In-Store"}
@@ -464,13 +466,15 @@ export function ReviewPreviewPanel({
                     <span className="text-sm font-medium text-slate-700">
                       Promo Code Type
                     </span>
-                    <p className="text-sm text-gray-700 mt-0.5 capitalize">
-                      {formData.promoCodeType}
-                    </p>
+                    <div className="mt-1">
+                      <Badge variant="outline" className="text-xs capitalize">
+                        {formData.promoCodeType}
+                      </Badge>
+                    </div>
                   </div>
                 )}
 
-                {/* Promo Code */}
+                {/* Promo Code - Mandatory */}
                 <div>
                   <span className="text-sm font-medium text-slate-700">
                     Promo Code
