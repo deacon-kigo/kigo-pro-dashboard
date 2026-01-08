@@ -27,8 +27,8 @@ interface ReviewPreviewPanelProps {
  * Displays a live preview/review of the offer form data as users fill it out.
  * ALWAYS shows all sections with completion indicators.
  * Shows placeholder text for empty fields.
+ * All sections start expanded and are user-collapsible.
  * Matches catalog filter and campaign preview patterns.
- * Reactively expands sections as user fills them out.
  */
 export function ReviewPreviewPanel({
   formData,
@@ -57,12 +57,6 @@ export function ReviewPreviewPanel({
   const hasRedemption =
     isFieldFilled(formData.redemptionTypes) ||
     isFieldFilled(formData.promoCode);
-
-  // Dynamically expand sections that have data
-  const expandedSections = [];
-  if (hasBasicInfo) expandedSections.push("basic-info");
-  if (hasClassification) expandedSections.push("classification");
-  if (hasRedemption) expandedSections.push("redemption");
 
   return (
     <div className="h-full flex flex-col">
