@@ -4,11 +4,20 @@ import React, { useState, useMemo, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   DocumentTextIcon,
   CreditCardIcon,
   CheckCircleIcon,
   GiftIcon,
   ArrowLeftIcon,
+  ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import {
   Stepper,
@@ -109,6 +118,12 @@ export default function OfferManagerViewV1({
     details: false,
     redemption: false,
   });
+
+  // Publish modal state
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishError, setPublishError] = useState<string | null>(null);
+  const [publishSuccess, setPublishSuccess] = useState(false);
 
   // V1 Form data - simplified from PRD spec
   const [formData, setFormData] = useState({
@@ -237,12 +252,50 @@ export default function OfferManagerViewV1({
     setCurrentStep(targetStepId as any);
   };
 
+  // Open publish confirmation modal
   const handleSubmit = () => {
-    console.log("V1 Offer Created:", formData);
-    // TODO: API call to create offer
-    // For now, just go back to dashboard
-    alert("Offer created successfully! (V1)");
-    handleBackToDashboard();
+    setShowPublishModal(true);
+  };
+
+  // Actual publish handler with API call
+  const handleConfirmPublish = async () => {
+    setIsPublishing(true);
+    setPublishError(null);
+
+    try {
+      console.log("Publishing offer:", formData);
+
+      // TODO: Replace with actual API call
+      // const response = await fetch("/api/offers", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify(formData),
+      // });
+      //
+      // if (!response.ok) {
+      //   throw new Error("Failed to publish offer");
+      // }
+
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      // Success!
+      setPublishSuccess(true);
+      setIsPublishing(false);
+
+      // Close modal and return to dashboard after short delay
+      setTimeout(() => {
+        setShowPublishModal(false);
+        handleBackToDashboard();
+      }, 1500);
+    } catch (error) {
+      setIsPublishing(false);
+      setPublishError(
+        error instanceof Error
+          ? error.message
+          : "Failed to publish offer. Please try again."
+      );
+    }
   };
 
   const stepConfig = [
@@ -430,6 +483,126 @@ export default function OfferManagerViewV1({
           </Card>
         </div>
       </div>
+
+      {/* Publish Confirmation Modal */}
+      <Dialog open={showPublishModal} onOpenChange={setShowPublishModal}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {publishSuccess ? (
+                <>
+                  <CheckCircleIcon className="h-6 w-6 text-green-600" />
+                  Offer Published Successfully!
+                </>
+              ) : publishError ? (
+                <>
+                  <ExclamationTriangleIcon className="h-6 w-6 text-red-600" />
+                  Publishing Failed
+                </>
+              ) : (
+                <>
+                  <GiftIcon className="h-6 w-6 text-blue-600" />
+                  Publish Offer
+                </>
+              )}
+            </DialogTitle>
+            <DialogDescription className="pt-4">
+              {publishSuccess ? (
+                <div className="space-y-2">
+                  <p className="text-green-700">
+                    Your offer has been published and is now live!
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Redirecting to dashboard...
+                  </p>
+                </div>
+              ) : publishError ? (
+                <div className="space-y-2">
+                  <p className="text-red-700">{publishError}</p>
+                  <p className="text-sm text-gray-600">
+                    Please try again or contact support if the problem persists.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p>
+                    You are about to publish{" "}
+                    <strong>{formData.offerName || "this offer"}</strong>.
+                  </p>
+                  <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+                    <p className="text-sm text-blue-900">
+                      <strong>What happens next:</strong>
+                    </p>
+                    <ul className="text-sm text-blue-800 mt-2 space-y-1 list-disc list-inside">
+                      <li>Offer will be published immediately</li>
+                      <li>
+                        Users can start redeeming based on the redemption
+                        methods you set
+                      </li>
+                      <li>
+                        You can edit or deactivate the offer later from the
+                        dashboard
+                      </li>
+                    </ul>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    Are you sure you want to continue?
+                  </p>
+                </div>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-6">
+            {publishSuccess ? null : publishError ? (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowPublishModal(false);
+                    setPublishError(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleConfirmPublish}
+                  disabled={isPublishing}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  {isPublishing ? "Retrying..." : "Try Again"}
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowPublishModal(false)}
+                  disabled={isPublishing}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleConfirmPublish}
+                  disabled={isPublishing}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  {isPublishing ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Publishing...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircleIcon className="h-4 w-4 mr-2" />
+                      Confirm & Publish
+                    </>
+                  )}
+                </Button>
+              </>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
