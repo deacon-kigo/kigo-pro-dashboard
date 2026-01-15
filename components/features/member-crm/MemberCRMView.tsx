@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState, useMemo, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import AppLayout from "@/components/templates/AppLayout/AppLayout";
 import PageHeader from "@/components/molecules/PageHeader/PageHeader";
 import { SearchBar } from "@/components/shared/SearchBar";
+import { Button } from "@/components/ui/button";
+import { PlusIcon } from "@heroicons/react/24/outline";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -28,6 +30,7 @@ import { sampleMembers } from "./data";
  * @description Top-level component that manages member account state and layout
  */
 export default function MemberCRMView() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [members] = useState<MemberWithPoints[]>(sampleMembers);
   const [selectedMember, setSelectedMember] = useState<MemberWithPoints | null>(
@@ -36,6 +39,10 @@ export default function MemberCRMView() {
 
   const searchQuery = searchParams.get("searchQuery") ?? "";
   const statusFilter = searchParams.get("statusFilter") ?? "";
+
+  const handleCreateOffer = useCallback(() => {
+    router.push("/dashboard/offers/create-v1");
+  }, [router]);
 
   // Filter and sort members - prioritize those needing review
   const filteredMembers = useMemo(() => {
@@ -177,6 +184,15 @@ export default function MemberCRMView() {
               title="Members"
               description="Manage member accounts, view points balances, and adjust points"
               variant="aurora"
+              actions={
+                <Button
+                  onClick={handleCreateOffer}
+                  className="flex items-center gap-2"
+                >
+                  <PlusIcon className="h-4 w-4" />
+                  Create Offer
+                </Button>
+              }
             />
 
             {/* Search Bar */}
