@@ -1,6 +1,6 @@
 "use client";
 
-import { useCopilotAction, useCopilotReadable } from "@copilotkit/react-core";
+import { useCopilotAction, useCopilotReadable } from "@/lib/copilot-stubs";
 
 /**
  * Prompt templates with dynamic variable substitution

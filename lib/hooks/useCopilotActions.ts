@@ -5,7 +5,7 @@
  * Enhanced with intelligent demo workflow using real merchant/offer data.
  */
 
-import { useCopilotAction, useCopilotReadable } from "@copilotkit/react-core";
+import { useCopilotAction, useCopilotReadable } from "@/lib/copilot-stubs";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { setCurrentPage, addNotification } from "../redux/slices/uiSlice";
@@ -1061,7 +1061,7 @@ What would you like to create?`;
   });
 
   // 🎬 DEMO: Create McDonald's FreeFries campaign with everything filled out
-  useCopilotAction({
+  (useCopilotAction({
     name: "createMcDonaldsFreeFriesCampaign",
     description:
       "Create a complete McDonald's FreeFries campaign with all details, optimal media types, and asset upload guidance",
@@ -1385,7 +1385,7 @@ Would you like me to navigate you to the ad creation page to explore available o
 
 What would you like to work on next?`;
       },
-    });
+    }));
 
   // 📝 FORM MANAGEMENT - Update existing ad
   useCopilotAction({
@@ -1592,7 +1592,7 @@ What would you like to do next?`;
   // 🚀 QUICK DEMO ACTIONS for streamlined workflow
 
   // 📱 Upload banner asset (shortcut)
-  useCopilotAction({
+  (useCopilotAction({
     name: "uploadBannerAsset",
     description: "Quick upload of display banner asset for current campaign",
     parameters: [],
@@ -1834,10 +1834,10 @@ Then try launching again!`;
 
  Want to create another campaign or explore more features?`;
       },
-    });
+    }));
 
   // 📤 DRAG & DROP IMAGE UPLOAD - Advanced file handling in chat
-  useCopilotAction({
+  (useCopilotAction({
     name: "uploadImageAsset",
     description:
       "Upload image assets via drag & drop or file selection for the current campaign with automatic media type detection",
@@ -2287,5 +2287,5 @@ Then try launching again!`;
 
 Want to create another campaign or explore more features?`;
       },
-    });
+    }));
 }

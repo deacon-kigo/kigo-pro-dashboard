@@ -6,7 +6,7 @@
  */
 
 import { useCallback } from "react";
-import { useCopilotAction, useCopilotChat } from "@copilotkit/react-core";
+import { useCopilotAction, useCopilotChat } from "@/lib/copilot-stubs";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import {
   setCurrentPage,

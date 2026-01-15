@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useCopilotAction } from "@copilotkit/react-core";
+import { useCopilotAction } from "@/lib/copilot-stubs";
 import { z } from "zod";
 import { OfferRecommendationWithApproval } from "@/components/features/offer-manager/OfferRecommendationWithApproval";
 import { useAppDispatch } from "@/lib/redux/hooks";
@@ -239,9 +239,8 @@ The action will:
       } = await import("@/lib/redux/slices/agentModeSlice");
 
       // Import offer manager actions
-      const { setFormData } = await import(
-        "@/lib/redux/slices/offerManagerSlice"
-      );
+      const { setFormData } =
+        await import("@/lib/redux/slices/offerManagerSlice");
 
       // Calculate total fields to fill
       const fieldsToFill = [

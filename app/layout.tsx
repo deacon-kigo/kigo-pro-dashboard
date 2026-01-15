@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
-import "@copilotkit/react-ui/styles.css";
 import { Providers } from "@/lib/providers";
 import URLSyncProvider from "@/lib/providers/URLSyncProvider";
 import { Toaster } from "@/components/molecules/Toaster";
 import { VercelToolbar } from "@vercel/toolbar/next";
+import { AIChatBot } from "@/components/chat/ai-chatbot";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -42,6 +42,7 @@ export default function RootLayout({
               {children}
             </Suspense>
           </URLSyncProvider>
+          <AIChatBot />
         </Providers>
         <Toaster />
         {shouldInjectToolbar && <VercelToolbar />}

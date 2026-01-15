@@ -34,7 +34,7 @@ import {
   setFormData,
 } from "@/lib/redux/slices/offerManagerSlice";
 import { OfferAgentStateRenderer } from "@/components/features/offer-manager/OfferAgentStateRenderer";
-import { useCopilotReadable } from "@copilotkit/react-core";
+import { useCopilotReadable } from "@/lib/copilot-stubs";
 import { useOfferManagerAgent } from "@/lib/hooks/useOfferManagerAgent";
 import { AgentModeIndicator } from "@/components/features/offer-manager/AgentModeIndicator";
 

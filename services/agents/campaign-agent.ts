@@ -1,5 +1,5 @@
 import { BaseMessage, AIMessage } from "@langchain/core/messages";
-import { createTracedFunction } from "../../lib/copilot-kit/langsmith-config";
+import { createTracedFunction } from "@/lib/copilot-stubs";
 import { KigoProAgentState } from "./supervisor";
 import { store } from "../../lib/redux/store";
 import {

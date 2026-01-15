@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/atoms/Label";
-import { useCopilotChat } from "@copilotkit/react-core";
+import { useCopilotChat } from "@/lib/copilot-stubs";
 import { SparklesIcon } from "@heroicons/react/24/outline";
 
 interface OfferCreationFormProps {

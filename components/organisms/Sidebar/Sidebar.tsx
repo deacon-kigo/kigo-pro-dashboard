@@ -21,12 +21,16 @@ import {
   AdjustmentsHorizontalIcon,
   PlusIcon,
   ChatBubbleLeftRightIcon,
-  // SparklesIcon, // Removed - AI Insights hidden from sidebar
+  SparklesIcon,
   GiftIcon,
   RectangleGroupIcon,
 } from "@heroicons/react/24/outline";
 import { useDemoState } from "@/lib/redux/hooks";
-import { toggleSidebar, setSidebarCollapsed } from "@/lib/redux/slices/uiSlice";
+import {
+  toggleSidebar,
+  setSidebarCollapsed,
+  toggleChat,
+} from "@/lib/redux/slices/uiSlice";
 import { logout } from "@/lib/redux/slices/userSlice";
 import { buildDemoUrl, isPathActive } from "@/lib/utils";
 import { useDispatch, useSelector } from "react-redux";
@@ -636,6 +640,19 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
             onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
               e.preventDefault();
               setFeedbackModalOpen(true);
+            }}
+          />
+        </li>
+        <li className="nav-item px-3 py-1">
+          <SidebarLabel
+            href="#"
+            icon={SparklesIcon}
+            title="AI Assistant"
+            isActive={false}
+            isCollapsed={sidebarCollapsed}
+            onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+              e.preventDefault();
+              dispatch(toggleChat());
             }}
           />
         </li>

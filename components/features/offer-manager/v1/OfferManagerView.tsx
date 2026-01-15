@@ -45,6 +45,7 @@ import { useOfferContentAI } from "@/lib/hooks/useOfferContentAI";
 
 interface OfferManagerViewV1Props {
   onCreatingChange?: (isCreating: boolean) => void;
+  autoStart?: boolean;
 }
 
 // Validation functions for each step
@@ -105,8 +106,9 @@ const validateRedemptionStep = (formData: any): boolean => {
 
 export default function OfferManagerViewV1({
   onCreatingChange,
+  autoStart = false,
 }: OfferManagerViewV1Props = {}) {
-  const [isCreatingOffer, setIsCreatingOffer] = useState(false);
+  const [isCreatingOffer, setIsCreatingOffer] = useState(autoStart);
   const [currentStep, setCurrentStep] = useState<"details" | "redemption">(
     "details"
   );
@@ -182,10 +184,19 @@ export default function OfferManagerViewV1({
     });
   }, [formData]);
 
+  // Notify parent component when creation mode changes (for autoStart)
+  useEffect(() => {
+    if (autoStart && !isCreatingOffer) {
+      setIsCreatingOffer(true);
+      onCreatingChange?.(true);
+    }
+  }, [autoStart, isCreatingOffer, onCreatingChange]);
+
   const handleStartCreation = () => {
-    setIsCreatingOffer(true);
-    setCurrentStep("details");
-    onCreatingChange?.(true);
+    // Redirect to V1 Express template by default
+    if (typeof window !== "undefined") {
+      window.location.href = "/dashboard/offers/create-v1";
+    }
   };
 
   const handleBackToDashboard = () => {

@@ -1,8 +1,5 @@
 import { AIMessage } from "@langchain/core/messages";
-import {
-  createTracedFunction,
-  logAgentInteraction,
-} from "../../lib/copilot-kit/langsmith-config";
+import { createTracedFunction, logAgentInteraction } from "@/lib/copilot-stubs";
 import { KigoProAgentState } from "./supervisor";
 
 /**

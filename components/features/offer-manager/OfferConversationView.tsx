@@ -6,7 +6,7 @@
  */
 
 import React from "react";
-import { Message } from "@copilotkit/runtime-client-gql";
+import { Message } from "@/lib/copilot-stubs";
 import { User, Bot } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";

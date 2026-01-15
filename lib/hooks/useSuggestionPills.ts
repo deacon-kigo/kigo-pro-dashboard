@@ -6,7 +6,7 @@
  */
 
 import { useMemo, useCallback } from "react";
-import { useCopilotAction } from "@copilotkit/react-core";
+import { useCopilotAction } from "@/lib/copilot-stubs";
 import { useAppSelector, useAppDispatch } from "../redux/hooks";
 import { useRouter } from "next/navigation";
 import { addNotification } from "../redux/slices/uiSlice";

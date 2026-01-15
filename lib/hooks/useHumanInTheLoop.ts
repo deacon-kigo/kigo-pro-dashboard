@@ -6,7 +6,7 @@
  */
 
 import { useCallback, useState } from "react";
-import { useCopilotAction } from "@copilotkit/react-core";
+import { useCopilotAction } from "@/lib/copilot-stubs";
 import { useAppDispatch } from "../redux/hooks";
 import { addNotification, setActiveModal } from "../redux/slices/uiSlice";
 

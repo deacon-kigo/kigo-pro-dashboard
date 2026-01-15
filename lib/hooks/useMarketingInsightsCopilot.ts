@@ -5,7 +5,7 @@
  * and strategic campaign recommendations. Integrates with the AI Marketing Insights dashboard.
  */
 
-import { useCopilotAction, useCopilotReadable } from "@copilotkit/react-core";
+import { useCopilotAction, useCopilotReadable } from "@/lib/copilot-stubs";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { addNotification } from "../redux/slices/uiSlice";
