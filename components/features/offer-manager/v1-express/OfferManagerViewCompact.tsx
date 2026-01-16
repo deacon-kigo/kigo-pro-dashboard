@@ -75,7 +75,7 @@ const validateFormExpress = (formData: any): boolean => {
     formData.externalUrl?.trim() &&
     formData.promoCode?.trim() &&
     formData.usageLimitPerCustomer?.trim() &&
-    formData.redemptionControlDetails?.trim() // Required - M, Y, or U
+    formData.redemptionRollingPeriod?.trim() // Required - single, monthly, or yearly
   );
 };
 
@@ -119,7 +119,7 @@ export default function OfferManagerViewCompact({
 
     // Usage limits
     usageLimitPerCustomer: "1", // Required
-    redemptionControlDetails: "", // Required - M, Y, or U
+    redemptionRollingPeriod: "", // Required - single, monthly, or yearly
     locationScope: "all", // Hardcoded: online, no location restrictions
 
     // Hidden/hardcoded values (not exposed in UI)

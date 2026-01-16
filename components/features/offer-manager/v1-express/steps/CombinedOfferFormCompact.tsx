@@ -602,42 +602,26 @@ export default function CombinedOfferFormCompact({
             </div>
 
             <div>
-              <Label htmlFor="totalUsageLimit">Total Redemptions Allowed</Label>
-              <Input
-                id="totalUsageLimit"
-                type="number"
-                placeholder="e.g., 1000"
-                value={formData.totalUsageLimit}
-                onChange={(e) => onUpdate("totalUsageLimit", e.target.value)}
-                min="1"
-              />
-              <p className="text-muted-foreground text-sm mt-2">
-                Total redemptions across all customers. Leave blank for
-                unlimited.
-              </p>
-            </div>
-
-            <div>
-              <Label htmlFor="redemptionControlDetails">
-                Redemption Control*
+              <Label htmlFor="redemptionRollingPeriod">
+                Redemption Rolling Period*
               </Label>
               <Select
-                value={formData.redemptionControlDetails}
+                value={formData.redemptionRollingPeriod}
                 onValueChange={(value) =>
-                  onUpdate("redemptionControlDetails", value)
+                  onUpdate("redemptionRollingPeriod", value)
                 }
               >
-                <SelectTrigger id="redemptionControlDetails">
-                  <SelectValue placeholder="Select redemption control" />
+                <SelectTrigger id="redemptionRollingPeriod">
+                  <SelectValue placeholder="Select rolling period" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="M">Monthly</SelectItem>
-                  <SelectItem value="Y">Yearly</SelectItem>
-                  <SelectItem value="U">Unlimited</SelectItem>
+                  <SelectItem value="single">Single Use</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="yearly">Yearly</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-muted-foreground text-sm mt-2">
-                How frequently customers can redeem this offer
+                Time period for redemption limits to reset
               </p>
             </div>
           </div>
