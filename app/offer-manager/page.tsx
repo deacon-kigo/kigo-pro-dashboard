@@ -11,7 +11,7 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
 } from "@/components/atoms/Breadcrumb";
-import OfferManagerViewV1 from "@/components/features/offer-manager/v1/OfferManagerView";
+import OfferManagerViewP0 from "@/components/features/offer-manager/v1-express/OfferManagerViewCompactWithDashboard";
 import OfferManagerViewFuture from "@/components/features/offer-manager/future/OfferManagerView";
 
 function LoadingFallback() {
@@ -27,8 +27,9 @@ function LoadingFallback() {
 
 function OfferManagerContent() {
   const searchParams = useSearchParams();
-  const version = searchParams.get("version") || "v1";
-  const [isCreating, setIsCreating] = useState(false);
+  const version = searchParams.get("version") || "p0";
+  const autoStart = searchParams.get("create") === "true";
+  const [isCreating, setIsCreating] = useState(autoStart);
 
   const breadcrumb = (
     <Breadcrumb className="mb-4">
@@ -38,7 +39,12 @@ function OfferManagerContent() {
             <BreadcrumbLink href="/offer-manager">Offer Manager</BreadcrumbLink>
           ) : (
             <BreadcrumbPage>
-              Offer Manager {version === "future" && "(Future Version)"}
+              Offer Manager
+              {version === "p1" && " (P1)"}
+              {version === "p2" && " (P2)"}
+              {version === "p3" && " (P3)"}
+              {version === "p4" && " (P4)"}
+              {version === "p5" && " (P5)"}
             </BreadcrumbPage>
           )}
         </BreadcrumbItem>
@@ -57,10 +63,13 @@ function OfferManagerContent() {
   return (
     <AppLayout customBreadcrumb={breadcrumb}>
       <div className="pt-0 mt-0">
-        {version === "future" ? (
+        {version === "p5" ? (
           <OfferManagerViewFuture onCreatingChange={setIsCreating} />
         ) : (
-          <OfferManagerViewV1 onCreatingChange={setIsCreating} />
+          <OfferManagerViewP0
+            onCreatingChange={setIsCreating}
+            autoStart={autoStart}
+          />
         )}
       </div>
     </AppLayout>

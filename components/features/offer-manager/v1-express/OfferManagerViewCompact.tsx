@@ -20,6 +20,30 @@ import CombinedOfferFormCompact from "./steps/CombinedOfferFormCompact";
 import { ReviewPreviewPanel } from "@/components/ui/review-preview-panel";
 import { useOfferContentAI } from "@/lib/hooks/useOfferContentAI";
 
+// Available merchants with IDs (shared with form)
+const MERCHANTS = [
+  { label: "Deacon's Pizza (ID: M001)", value: "M001" },
+  { label: "Tony's Italian Restaurant (ID: M002)", value: "M002" },
+  { label: "Burger Haven (ID: M003)", value: "M003" },
+  { label: "Sushi Palace (ID: M004)", value: "M004" },
+  { label: "Coffee Corner Cafe (ID: M005)", value: "M005" },
+  { label: "The Steakhouse (ID: M006)", value: "M006" },
+  { label: "Thai Spice Kitchen (ID: M007)", value: "M007" },
+  { label: "Pizza Express (ID: M008)", value: "M008" },
+  { label: "Mediterranean Grill (ID: M009)", value: "M009" },
+  { label: "Taco Fiesta (ID: M010)", value: "M010" },
+  { label: "Seafood Shack (ID: M011)", value: "M011" },
+  { label: "Downtown Bakery (ID: M012)", value: "M012" },
+  { label: "Garden Bistro (ID: M013)", value: "M013" },
+  { label: "BBQ Junction (ID: M014)", value: "M014" },
+  { label: "Noodle House (ID: M015)", value: "M015" },
+  { label: "The Sandwich Shop (ID: M016)", value: "M016" },
+  { label: "Ice Cream Parlor (ID: M017)", value: "M017" },
+  { label: "Smoothie Bar (ID: M018)", value: "M018" },
+  { label: "Breakfast Spot (ID: M019)", value: "M019" },
+  { label: "Wine & Dine (ID: M020)", value: "M020" },
+];
+
 /**
  * Offer Manager Express Template - Compact Version
  *
@@ -39,16 +63,18 @@ interface OfferManagerViewCompactProps {
 const validateFormExpress = (formData: any): boolean => {
   // All required fields in one validation
   return !!(
-    formData.merchant &&
+    formData.merchant?.trim() && // Now a string value
     formData.offerSource &&
     formData.offerName?.trim() &&
     formData.description?.trim() &&
     formData.startDate?.trim() &&
     formData.termsConditions?.trim() &&
     formData.offerType?.trim() &&
+    formData.discountValue?.trim() && // Required
     formData.externalUrl?.trim() &&
     formData.promoCode?.trim() &&
-    formData.usageLimitPerCustomer?.trim()
+    formData.usageLimitPerCustomer?.trim() &&
+    formData.redemptionControlDetails?.trim() // Required - M, Y, or U
   );
 };
 
@@ -68,7 +94,7 @@ export default function OfferManagerViewCompact({
   // Express Template Form data - simplified, only essential fields
   const [formData, setFormData] = useState({
     // Offer Details
-    merchant: null, // Required - Select/create merchant
+    merchant: "", // Required - Select merchant by ID
     offerSource: null, // Required - Select/create source
     offerName: "", // Required
     shortText: "", // Backward compat
@@ -80,6 +106,8 @@ export default function OfferManagerViewCompact({
 
     // Classification
     offerType: "", // Required
+    discountValue: "", // Required
+    maxDiscountAmount: "", // Optional
 
     // Redemption Method (hardcoded for Express)
     redemptionTypes: ["external_url"], // Hardcoded: online only
@@ -89,6 +117,7 @@ export default function OfferManagerViewCompact({
 
     // Usage limits
     usageLimitPerCustomer: "1", // Required
+    redemptionControlDetails: "", // Required - M, Y, or U
     locationScope: "all", // Hardcoded: online, no location restrictions
 
     // Hidden/hardcoded values (not exposed in UI)
@@ -97,8 +126,14 @@ export default function OfferManagerViewCompact({
   });
 
   // Initialize CopilotKit AI content generation
+  // Find merchant label from ID for AI context
+  const merchantLabel = formData.merchant
+    ? MERCHANTS.find((m) => m.value === formData.merchant)?.label ||
+      formData.merchant
+    : "";
+
   useOfferContentAI({
-    merchantName: formData.merchant?.label || formData.merchant,
+    merchantName: merchantLabel,
     offerTitle: formData.offerName,
     offerType: formData.offerType,
     description: formData.description,
@@ -183,11 +218,9 @@ export default function OfferManagerViewCompact({
                   <div className="flex items-center">
                     <GiftIcon className="h-5 w-5 mr-2 text-primary" />
                     <div>
-                      <h3 className="font-medium">
-                        Create Offer - Express (Compact)
-                      </h3>
+                      <h3 className="font-medium">Create Offer</h3>
                       <p className="text-sm text-muted-foreground">
-                        Quick online offer creation with two-column layout
+                        Build and publish your offer
                       </p>
                     </div>
                   </div>

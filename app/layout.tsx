@@ -42,7 +42,7 @@ export default function RootLayout({
               {children}
             </Suspense>
           </URLSyncProvider>
-          <AIChatBot />
+          {/* <AIChatBot /> */}
         </Providers>
         <Toaster />
         {shouldInjectToolbar && <VercelToolbar />}

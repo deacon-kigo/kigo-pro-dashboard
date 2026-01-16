@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/select";
 import { ReactSelectCreatable } from "@/components/ui/react-select-creatable";
 import { ReactSelectMulti } from "@/components/ui/react-select-multi";
+import { Combobox } from "@/components/ui/combobox";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   InformationCircleIcon,
   TagIcon,
@@ -28,6 +30,30 @@ interface CombinedOfferFormCompactProps {
   formData: any;
   onUpdate: (field: string, value: any) => void;
 }
+
+// Available merchants with IDs
+const MERCHANTS = [
+  { label: "Deacon's Pizza (ID: M001)", value: "M001" },
+  { label: "Tony's Italian Restaurant (ID: M002)", value: "M002" },
+  { label: "Burger Haven (ID: M003)", value: "M003" },
+  { label: "Sushi Palace (ID: M004)", value: "M004" },
+  { label: "Coffee Corner Cafe (ID: M005)", value: "M005" },
+  { label: "The Steakhouse (ID: M006)", value: "M006" },
+  { label: "Thai Spice Kitchen (ID: M007)", value: "M007" },
+  { label: "Pizza Express (ID: M008)", value: "M008" },
+  { label: "Mediterranean Grill (ID: M009)", value: "M009" },
+  { label: "Taco Fiesta (ID: M010)", value: "M010" },
+  { label: "Seafood Shack (ID: M011)", value: "M011" },
+  { label: "Downtown Bakery (ID: M012)", value: "M012" },
+  { label: "Garden Bistro (ID: M013)", value: "M013" },
+  { label: "BBQ Junction (ID: M014)", value: "M014" },
+  { label: "Noodle House (ID: M015)", value: "M015" },
+  { label: "The Sandwich Shop (ID: M016)", value: "M016" },
+  { label: "Ice Cream Parlor (ID: M017)", value: "M017" },
+  { label: "Smoothie Bar (ID: M018)", value: "M018" },
+  { label: "Breakfast Spot (ID: M019)", value: "M019" },
+  { label: "Wine & Dine (ID: M020)", value: "M020" },
+];
 
 // Available offer sources
 const OFFER_SOURCES = [
@@ -83,6 +109,7 @@ export default function CombinedOfferFormCompact({
   const [localOfferName, setLocalOfferName] = useState(
     formData.offerName || formData.shortText || ""
   );
+  const [noExpiration, setNoExpiration] = useState(!formData.endDate);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -144,16 +171,19 @@ export default function CombinedOfferFormCompact({
             <div className="space-y-5">
               <div>
                 <Label htmlFor="merchant">Merchant*</Label>
-                <ReactSelectCreatable
-                  options={OFFER_SOURCES}
-                  value={formData.merchant || null}
+                <Combobox
+                  options={MERCHANTS}
+                  value={formData.merchant || ""}
                   onChange={(value) => onUpdate("merchant", value)}
-                  placeholder="Select existing or create new merchant"
-                  formatCreateLabel={(inputValue) =>
-                    `Create new merchant "${inputValue.toUpperCase().replace(/\s+/g, "_")}"`
-                  }
-                  helperText="Merchant or partner providing this offer"
+                  placeholder="Search by merchant name or ID..."
+                  searchPlaceholder="Type to search merchants..."
+                  emptyText="No merchants found. Try a different search."
+                  searchFirst={true}
+                  maxDisplayItems={10}
                 />
+                <p className="text-sm text-muted-foreground mt-1.5">
+                  Search by merchant name or ID to find and select
+                </p>
               </div>
 
               <div>
@@ -171,19 +201,6 @@ export default function CombinedOfferFormCompact({
               </div>
 
               <div>
-                <Label htmlFor="startDate">Start Date*</Label>
-                <Input
-                  id="startDate"
-                  type="date"
-                  value={formData.startDate}
-                  onChange={(e) => onUpdate("startDate", e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* Right Column */}
-            <div className="space-y-5">
-              <div>
                 <Label htmlFor="offerSource">Offer Source*</Label>
                 <ReactSelectCreatable
                   options={OFFER_SOURCES}
@@ -196,7 +213,10 @@ export default function CombinedOfferFormCompact({
                   helperText="Source of this offer"
                 />
               </div>
+            </div>
 
+            {/* Right Column */}
+            <div className="space-y-5">
               <div>
                 <Label htmlFor="description">Description*</Label>
                 <Textarea
@@ -215,19 +235,50 @@ export default function CombinedOfferFormCompact({
                   characters
                 </p>
               </div>
+            </div>
 
-              <div>
-                <Label htmlFor="endDate">End Date</Label>
-                <Input
-                  id="endDate"
-                  type="date"
-                  value={formData.endDate}
-                  onChange={(e) => onUpdate("endDate", e.target.value)}
-                  min={formData.startDate}
-                />
-                <p className="mt-2 text-muted-foreground text-sm">
-                  Leave blank for no expiration
-                </p>
+            {/* Date Fields - Full Width Row */}
+            <div className="lg:col-span-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                <div>
+                  <Label htmlFor="startDate">Start Date*</Label>
+                  <Input
+                    id="startDate"
+                    type="date"
+                    value={formData.startDate}
+                    onChange={(e) => onUpdate("startDate", e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="endDate">End Date</Label>
+                  <Input
+                    id="endDate"
+                    type="date"
+                    value={noExpiration ? "" : formData.endDate}
+                    onChange={(e) => onUpdate("endDate", e.target.value)}
+                    min={formData.startDate}
+                    disabled={noExpiration}
+                  />
+                  <div className="flex items-center gap-2 mt-2">
+                    <Checkbox
+                      id="noExpiration"
+                      checked={noExpiration}
+                      onCheckedChange={(checked) => {
+                        setNoExpiration(!!checked);
+                        if (checked) {
+                          onUpdate("endDate", "");
+                        }
+                      }}
+                    />
+                    <label
+                      htmlFor="noExpiration"
+                      className="text-sm text-muted-foreground cursor-pointer"
+                    >
+                      No expiration
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -334,6 +385,68 @@ export default function CombinedOfferFormCompact({
                   <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="maxDiscountAmount">Max Discount Amount</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  $
+                </span>
+                <Input
+                  id="maxDiscountAmount"
+                  type="number"
+                  placeholder="50"
+                  value={formData.maxDiscountAmount || ""}
+                  onChange={(e) =>
+                    onUpdate("maxDiscountAmount", e.target.value)
+                  }
+                  onFocus={(e) => {
+                    // Clear "0" on focus for better UX
+                    if (e.target.value === "0") {
+                      onUpdate("maxDiscountAmount", "");
+                    }
+                    // Select all text for easy replacement
+                    e.target.select();
+                  }}
+                  className="pl-7"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+              <p className="text-muted-foreground text-sm mt-2">
+                Maximum discount value if applicable
+              </p>
+            </div>
+
+            <div>
+              <Label htmlFor="discountValue">Discount Value*</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  $
+                </span>
+                <Input
+                  id="discountValue"
+                  type="number"
+                  placeholder="10"
+                  value={formData.discountValue || ""}
+                  onChange={(e) => onUpdate("discountValue", e.target.value)}
+                  onFocus={(e) => {
+                    // Clear "0" on focus for better UX
+                    if (e.target.value === "0") {
+                      onUpdate("discountValue", "");
+                    }
+                    // Select all text for easy replacement
+                    e.target.select();
+                  }}
+                  className="pl-7"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+              <p className="text-muted-foreground text-sm mt-2">
+                The discount amount in dollars for this offer
+              </p>
             </div>
           </div>
         </div>
@@ -501,6 +614,30 @@ export default function CombinedOfferFormCompact({
               <p className="text-muted-foreground text-sm mt-2">
                 Total redemptions across all customers. Leave blank for
                 unlimited.
+              </p>
+            </div>
+
+            <div>
+              <Label htmlFor="redemptionControlDetails">
+                Redemption Control*
+              </Label>
+              <Select
+                value={formData.redemptionControlDetails}
+                onValueChange={(value) =>
+                  onUpdate("redemptionControlDetails", value)
+                }
+              >
+                <SelectTrigger id="redemptionControlDetails">
+                  <SelectValue placeholder="Select redemption control" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="M">Monthly</SelectItem>
+                  <SelectItem value="Y">Yearly</SelectItem>
+                  <SelectItem value="U">Unlimited</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-muted-foreground text-sm mt-2">
+                How frequently customers can redeem this offer
               </p>
             </div>
           </div>
