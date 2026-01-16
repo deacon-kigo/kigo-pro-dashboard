@@ -57,6 +57,7 @@ interface OfferManagerViewCompactProps {
   onCreatingChange?: (isCreating: boolean) => void;
   autoStart?: boolean;
   onBackToDashboard?: () => void;
+  showReviewPanel?: boolean; // P0: false (bare minimum), Future: true (with preview)
 }
 
 // Simplified validation for Express template (combined form)
@@ -82,6 +83,7 @@ export default function OfferManagerViewCompact({
   onCreatingChange,
   autoStart = false,
   onBackToDashboard,
+  showReviewPanel = false, // Default to P0 (bare minimum) - no preview panel
 }: OfferManagerViewCompactProps = {}) {
   const [isFormValid, setIsFormValid] = useState(false);
 
@@ -165,12 +167,17 @@ export default function OfferManagerViewCompact({
   };
 
   // Actual publish handler with API call
-  const handleConfirmPublish = async () => {
+  const handleConfirmPublish = async (shouldPublish: boolean = true) => {
     setIsPublishing(true);
     setPublishError(null);
 
     try {
-      console.log("Publishing Express offer (compact):", formData);
+      console.log(
+        shouldPublish
+          ? "Creating and publishing offer:"
+          : "Creating offer without publishing:",
+        formData
+      );
 
       // TODO: Replace with actual API call
       // const response = await fetch("/api/offers", {
@@ -258,12 +265,14 @@ export default function OfferManagerViewCompact({
           </div>
         </div>
 
-        {/* Review Preview Panel - Right Column */}
-        <div className="w-[400px] flex-shrink-0">
-          <Card className="h-full overflow-hidden shadow-md rounded-r-lg">
-            <ReviewPreviewPanel formData={formData} currentStep="details" />
-          </Card>
-        </div>
+        {/* Review Preview Panel - Right Column (Hidden in P0, shown in future versions) */}
+        {showReviewPanel && (
+          <div className="w-[400px] flex-shrink-0">
+            <Card className="h-full overflow-hidden shadow-md rounded-r-lg">
+              <ReviewPreviewPanel formData={formData} currentStep="details" />
+            </Card>
+          </div>
+        )}
       </div>
 
       {/* Publish Confirmation Modal */}
@@ -306,45 +315,37 @@ export default function OfferManagerViewCompact({
                   </p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <p>
-                    You are about to publish{" "}
-                    <strong>{formData.offerName || "this offer"}</strong> using
-                    the Express template (compact layout).
+                    Ready to create{" "}
+                    <strong>"{formData.offerName || "this offer"}"</strong>?
                   </p>
-                  <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
-                    <p className="text-sm text-blue-900">
-                      <strong>Express Template Settings:</strong>
-                    </p>
-                    <ul className="text-sm text-blue-800 mt-2 space-y-1 list-disc list-inside">
-                      <li>Online redemption only (US)</li>
-                      <li>Single static promo code: {formData.promoCode}</li>
-                      <li>Redirect URL: {formData.externalUrl}</li>
-                    </ul>
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    Are you sure you want to continue?
+                  <p>
+                    Create and publish will make the offer live immediately.
+                    <br />
+                    Create without publishing will save it as inactive for later
+                    review.
                   </p>
                 </div>
               )}
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="mt-6">
+          <DialogFooter className="mt-4 flex flex-col items-center gap-2 sm:justify-between">
             {publishSuccess ? null : publishError ? (
               <>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   onClick={() => {
                     setShowPublishModal(false);
                     setPublishError(null);
                   }}
+                  className="mr-auto"
                 >
                   Cancel
                 </Button>
                 <Button
-                  onClick={handleConfirmPublish}
+                  onClick={() => handleConfirmPublish(true)}
                   disabled={isPublishing}
-                  className="bg-blue-600 hover:bg-blue-700"
                 >
                   {isPublishing ? "Retrying..." : "Try Again"}
                 </Button>
@@ -352,29 +353,42 @@ export default function OfferManagerViewCompact({
             ) : (
               <>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   onClick={() => setShowPublishModal(false)}
                   disabled={isPublishing}
+                  className="mr-auto"
                 >
                   Cancel
                 </Button>
-                <Button
-                  onClick={handleConfirmPublish}
-                  disabled={isPublishing}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  {isPublishing ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Publishing...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircleIcon className="h-4 w-4 mr-2" />
-                      Confirm & Publish
-                    </>
-                  )}
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => handleConfirmPublish(true)}
+                    disabled={isPublishing}
+                  >
+                    {isPublishing ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
+                        Creating...
+                      </>
+                    ) : (
+                      "Create and Publish"
+                    )}
+                  </Button>
+                  <Button
+                    onClick={() => handleConfirmPublish(false)}
+                    disabled={isPublishing}
+                  >
+                    {isPublishing ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Creating...
+                      </>
+                    ) : (
+                      "Create without Publishing"
+                    )}
+                  </Button>
+                </div>
               </>
             )}
           </DialogFooter>
