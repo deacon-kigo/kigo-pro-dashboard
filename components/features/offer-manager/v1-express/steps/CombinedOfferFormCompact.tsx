@@ -175,18 +175,14 @@ export default function CombinedOfferFormCompact({
                   options={MERCHANTS}
                   value={formData.merchant || ""}
                   onChange={(value) => onUpdate("merchant", value)}
-                  placeholder="Search by name or use id:M001"
+                  placeholder="Search merchants..."
                   searchPlaceholder="Type to search merchants..."
                   emptyText="No merchants found. Try a different search."
                   searchFirst={true}
                   maxDisplayItems={10}
                 />
                 <p className="text-sm text-muted-foreground mt-1.5">
-                  Search by name or use{" "}
-                  <code className="bg-muted px-1 py-0.5 rounded text-xs">
-                    id:M001
-                  </code>{" "}
-                  for exact ID lookup
+                  Search by name, or use id: prefix for exact ID match
                 </p>
               </div>
 
