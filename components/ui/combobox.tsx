@@ -89,12 +89,23 @@ export function Combobox({
 
     // Apply search filter if there's a search query
     if (searchQuery.trim()) {
-      const lowerSearchQuery = searchQuery.toLowerCase();
-      result = options.filter(
-        (option) =>
-          option.label.toLowerCase().includes(lowerSearchQuery) ||
-          option.value.toLowerCase().includes(lowerSearchQuery)
-      );
+      const trimmedQuery = searchQuery.trim();
+
+      // Check if user is using the "id:" prefix for strict ID lookup
+      if (trimmedQuery.toLowerCase().startsWith("id:")) {
+        const idQuery = trimmedQuery.substring(3).trim(); // Remove "id:" prefix
+        if (idQuery) {
+          // Strict equality match on value (merchant_id)
+          result = options.filter((option) => option.value === idQuery);
+        }
+      } else {
+        // Default: partial match on label (merchant name) only
+        // This prevents false positives from numbers in merchant names
+        const lowerSearchQuery = trimmedQuery.toLowerCase();
+        result = options.filter((option) =>
+          option.label.toLowerCase().includes(lowerSearchQuery)
+        );
+      }
     }
 
     const totalCount = result.length;
