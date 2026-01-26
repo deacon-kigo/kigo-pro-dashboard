@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useId } from "react";
 import type { StylesConfig } from "react-select";
 import { components } from "react-select";
 import * as CreatableModule from "react-select/creatable";
@@ -54,6 +54,9 @@ export function ReactSelectCreatable({
   isValidNewOption,
   helperText,
 }: ReactSelectCreatableProps) {
+  // Generate stable ID for SSR hydration
+  const instanceId = useId();
+
   // Handle both single and multi-select
   const selectedValue = isMulti
     ? values || []
@@ -216,6 +219,7 @@ export function ReactSelectCreatable({
   return (
     <div className={cn("w-full", className)}>
       <Creatable
+        instanceId={instanceId}
         isMulti={isMulti}
         options={options}
         value={selectedValue}

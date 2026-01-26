@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useId } from "react";
 import Select, { MultiValue, StylesConfig, components } from "react-select";
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
@@ -46,6 +46,9 @@ export function ReactSelectMulti({
   maxDisplayValues = 2,
   width = "100%",
 }: ReactSelectMultiProps) {
+  // Generate stable ID for SSR hydration
+  const instanceId = useId();
+
   // Convert string values to Option objects for react-select
   const selectedValues = options.filter((option) =>
     values.includes(option.value)
@@ -234,6 +237,7 @@ export function ReactSelectMulti({
   return (
     <div className={cn(className)} style={{ width }} ref={containerRef}>
       <Select
+        instanceId={instanceId}
         isMulti
         options={options}
         value={selectedValues}

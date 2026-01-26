@@ -13,6 +13,7 @@ import {
 } from "@/components/atoms/Breadcrumb";
 import OfferManagerViewP0 from "@/components/features/offer-manager/v1-express/OfferManagerViewCompactWithDashboard";
 import OfferManagerViewFuture from "@/components/features/offer-manager/future/OfferManagerView";
+import { OfferManagerViewP0Merchant } from "@/components/features/offer-manager/p0-merchant";
 
 function LoadingFallback() {
   return (
@@ -31,20 +32,28 @@ function OfferManagerContent() {
   const autoStart = searchParams.get("create") === "true";
   const [isCreating, setIsCreating] = useState(autoStart);
 
+  // Version label mapping for breadcrumb
+  const versionLabels: Record<string, string> = {
+    p0: "",
+    "p0.2": " (P0.2 - Merchant Creation)",
+    p1: " (P1)",
+    p2: " (P2)",
+    p3: " (P3)",
+    p4: " (P4)",
+    p5: " (P5)",
+  };
+
   const breadcrumb = (
     <Breadcrumb className="mb-4">
       <BreadcrumbList>
         <BreadcrumbItem>
           {isCreating ? (
-            <BreadcrumbLink href="/offer-manager">Offer Manager</BreadcrumbLink>
+            <BreadcrumbLink href={`/offer-manager?version=${version}`}>
+              Offer Manager{versionLabels[version] || ""}
+            </BreadcrumbLink>
           ) : (
             <BreadcrumbPage>
-              Offer Manager
-              {version === "p1" && " (P1)"}
-              {version === "p2" && " (P2)"}
-              {version === "p3" && " (P3)"}
-              {version === "p4" && " (P4)"}
-              {version === "p5" && " (P5)"}
+              Offer Manager{versionLabels[version] || ""}
             </BreadcrumbPage>
           )}
         </BreadcrumbItem>
@@ -60,18 +69,34 @@ function OfferManagerContent() {
     </Breadcrumb>
   );
 
-  return (
-    <AppLayout customBreadcrumb={breadcrumb}>
-      <div className="pt-0 mt-0">
-        {version === "p5" ? (
-          <OfferManagerViewFuture onCreatingChange={setIsCreating} />
-        ) : (
+  // Render the appropriate view based on version
+  const renderView = () => {
+    switch (version) {
+      case "p0.2":
+        // P0.2: Merchant Creation during Offer Creation
+        return (
+          <OfferManagerViewP0Merchant
+            onCreatingChange={setIsCreating}
+            autoStart={autoStart}
+          />
+        );
+      case "p5":
+      case "future":
+        return <OfferManagerViewFuture onCreatingChange={setIsCreating} />;
+      case "p0":
+      default:
+        return (
           <OfferManagerViewP0
             onCreatingChange={setIsCreating}
             autoStart={autoStart}
           />
-        )}
-      </div>
+        );
+    }
+  };
+
+  return (
+    <AppLayout customBreadcrumb={breadcrumb}>
+      <div className="pt-0 mt-0">{renderView()}</div>
     </AppLayout>
   );
 }
