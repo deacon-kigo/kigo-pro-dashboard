@@ -502,22 +502,20 @@ export default function MerchantHybridSearch({
                       <p className="text-gray-500">No businesses found</p>
                     </div>
                   )}
-
-                {/* Manual entry option */}
-                <div className="p-3 bg-gray-50 border-t">
-                  <button
-                    type="button"
-                    onClick={() => onManualEntry(searchQuery)}
-                    className="w-full text-sm text-gray-600 hover:text-gray-900 flex items-center justify-center gap-2"
-                  >
-                    <PencilIcon className="w-4 h-4" />
-                    Can't find it? Enter details manually
-                  </button>
-                </div>
               </>
             )}
           </div>
         )}
+
+        {/* Manual entry option - Always visible */}
+        <button
+          type="button"
+          onClick={() => onManualEntry(searchQuery)}
+          className="mt-3 w-full py-2 px-3 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-dashed border-gray-300 rounded-lg flex items-center justify-center gap-2 transition-colors"
+        >
+          <PencilIcon className="w-4 h-4" />
+          Can't find it? Enter details manually
+        </button>
       </div>
     </div>
   );
