@@ -404,118 +404,123 @@ export default function MerchantHybridSearch({
 
         {/* Search Results Dropdown */}
         {showResults && searchQuery.length > 0 && (
-          <div className="absolute z-50 w-full mt-2 bg-white border rounded-lg shadow-lg max-h-96 overflow-auto">
-            {isLoadingDetails && (
-              <div className="p-4 text-center">
-                <ArrowPathIcon className="w-6 h-6 animate-spin mx-auto text-primary" />
-                <p className="text-sm text-gray-500 mt-2">
-                  Loading business details...
-                </p>
-              </div>
-            )}
+          <div className="absolute z-50 w-full mt-2 bg-white border rounded-lg shadow-lg flex flex-col max-h-96">
+            {/* Scrollable results area */}
+            <div className="flex-1 overflow-auto">
+              {isLoadingDetails && (
+                <div className="p-4 text-center">
+                  <ArrowPathIcon className="w-6 h-6 animate-spin mx-auto text-primary" />
+                  <p className="text-sm text-gray-500 mt-2">
+                    Loading business details...
+                  </p>
+                </div>
+              )}
 
-            {!isLoadingDetails && (
-              <>
-                {/* API Error */}
-                {apiError && (
-                  <div className="px-3 py-2 bg-red-50 text-red-600 text-sm">
-                    {apiError}
-                  </div>
-                )}
-
-                {/* Existing Merchants */}
-                {existingResults.length > 0 && (
-                  <div>
-                    <div className="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                      In Our System
+              {!isLoadingDetails && (
+                <>
+                  {/* API Error */}
+                  {apiError && (
+                    <div className="px-3 py-2 bg-red-50 text-red-600 text-sm">
+                      {apiError}
                     </div>
-                    {existingResults.map((merchant) => (
+                  )}
+
+                  {/* Existing Merchants */}
+                  {existingResults.length > 0 && (
+                    <div>
+                      <div className="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        In Our System
+                      </div>
+                      {existingResults.map((merchant) => (
+                        <button
+                          key={merchant.id}
+                          type="button"
+                          onClick={() => handleSelectExisting(merchant)}
+                          className="w-full px-3 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b last:border-b-0"
+                        >
+                          <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <BuildingStorefrontIcon className="w-5 h-5 text-green-600" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-gray-900 truncate">
+                              {merchant.name}
+                            </p>
+                            <p className="text-sm text-gray-500 truncate">
+                              {merchant.address}
+                            </p>
+                          </div>
+                          <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+                            Ready
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Google Result (single result from backend) */}
+                  {googleResult && googleResult.name && (
+                    <div>
+                      <div className="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        From Google
+                      </div>
                       <button
-                        key={merchant.id}
                         type="button"
-                        onClick={() => handleSelectExisting(merchant)}
+                        onClick={() => handleSelectGoogle(googleResult)}
                         className="w-full px-3 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b last:border-b-0"
                       >
-                        <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <BuildingStorefrontIcon className="w-5 h-5 text-green-600" />
+                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <MapPinIcon className="w-5 h-5 text-blue-600" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-gray-900 truncate">
-                            {merchant.name}
+                            {googleResult.name}
                           </p>
-                          <p className="text-sm text-gray-500 truncate">
-                            {merchant.address}
-                          </p>
-                        </div>
-                        <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
-                          Ready
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {/* Google Result (single result from backend) */}
-                {googleResult && googleResult.name && (
-                  <div>
-                    <div className="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                      From Google
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleSelectGoogle(googleResult)}
-                      className="w-full px-3 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b last:border-b-0"
-                    >
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <MapPinIcon className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900 truncate">
-                          {googleResult.name}
-                        </p>
-                        {googleResult.business_status && (
-                          <p className="text-sm text-gray-500 truncate">
-                            {googleResult.business_status}
-                          </p>
-                        )}
-                        <div className="flex items-center gap-2 mt-0.5">
-                          {googleResult.rating && (
-                            <span className="text-xs text-gray-500 flex items-center gap-0.5">
-                              <StarIcon className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-                              {googleResult.rating}
-                              {googleResult.user_ratings_total &&
-                                ` (${googleResult.user_ratings_total})`}
-                            </span>
+                          {googleResult.business_status && (
+                            <p className="text-sm text-gray-500 truncate">
+                              {googleResult.business_status}
+                            </p>
                           )}
+                          <div className="flex items-center gap-2 mt-0.5">
+                            {googleResult.rating && (
+                              <span className="text-xs text-gray-500 flex items-center gap-0.5">
+                                <StarIcon className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                                {googleResult.rating}
+                                {googleResult.user_ratings_total &&
+                                  ` (${googleResult.user_ratings_total})`}
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </button>
-                  </div>
-                )}
-
-                {/* No results */}
-                {!isSearching &&
-                  existingResults.length === 0 &&
-                  !googleResult &&
-                  searchQuery.length > 2 && (
-                    <div className="p-4 text-center">
-                      <p className="text-gray-500">No businesses found</p>
+                      </button>
                     </div>
                   )}
-              </>
-            )}
+
+                  {/* No results */}
+                  {!isSearching &&
+                    existingResults.length === 0 &&
+                    !googleResult &&
+                    searchQuery.length > 2 && (
+                      <div className="p-4 text-center">
+                        <p className="text-gray-500">No businesses found</p>
+                      </div>
+                    )}
+                </>
+              )}
+            </div>
+
+            {/* Manual entry option - Sticky at bottom */}
+            <div className="flex-shrink-0 p-3 bg-gray-50 border-t">
+              <button
+                type="button"
+                onClick={() => onManualEntry(searchQuery)}
+                className="w-full text-sm text-gray-600 hover:text-gray-900 flex items-center justify-center gap-2"
+              >
+                <PencilIcon className="w-4 h-4" />
+                Can't find it? Enter details manually
+              </button>
+            </div>
           </div>
         )}
-
-        {/* Manual entry option - Always visible */}
-        <button
-          type="button"
-          onClick={() => onManualEntry(searchQuery)}
-          className="mt-3 w-full py-2 px-3 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-dashed border-gray-300 rounded-lg flex items-center justify-center gap-2 transition-colors"
-        >
-          <PencilIcon className="w-4 h-4" />
-          Can't find it? Enter details manually
-        </button>
       </div>
     </div>
   );
