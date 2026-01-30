@@ -13,7 +13,11 @@ import {
 } from "@/components/atoms/Breadcrumb";
 import OfferManagerViewP0 from "@/components/features/offer-manager/v1-express/OfferManagerViewCompactWithDashboard";
 import OfferManagerViewFuture from "@/components/features/offer-manager/future/OfferManagerView";
-import { OfferManagerViewP0Merchant } from "@/components/features/offer-manager/p0-merchant";
+import {
+  OfferManagerViewP0Merchant,
+  OfferManagerViewP0_4Preview,
+  OfferManagerViewP0_5Wizard,
+} from "@/components/features/offer-manager/p0-merchant";
 
 function LoadingFallback() {
   return (
@@ -36,6 +40,8 @@ function OfferManagerContent() {
   const versionLabels: Record<string, string> = {
     p0: "",
     "p0.2": " (P0.2 - Merchant Creation)",
+    "p0.4": " (P0.4 - Offer Preview)",
+    "p0.5": " (P0.5 - Wizard Flow)",
     p1: " (P1)",
     p2: " (P2)",
     p3: " (P3)",
@@ -80,6 +86,17 @@ function OfferManagerContent() {
             autoStart={autoStart}
           />
         );
+      case "p0.4":
+        // P0.4: Offer Preview Panel
+        return (
+          <OfferManagerViewP0_4Preview
+            onCreatingChange={setIsCreating}
+            autoStart={autoStart}
+          />
+        );
+      case "p0.5":
+        // P0.5: Wizard Flow
+        return <OfferManagerViewP0_5Wizard />;
       case "p5":
       case "future":
         return <OfferManagerViewFuture onCreatingChange={setIsCreating} />;

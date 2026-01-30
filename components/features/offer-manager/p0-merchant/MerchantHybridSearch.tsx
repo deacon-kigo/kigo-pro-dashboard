@@ -316,7 +316,7 @@ export default function MerchantHybridSearch({
                     </span>
                   ))}
                   {categoryLabels.length > 3 && (
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-gray-600">
                       +{categoryLabels.length - 3}
                     </span>
                   )}
@@ -324,11 +324,11 @@ export default function MerchantHybridSearch({
               )}
 
               {/* Row 3: Source + Rating (if available) */}
-              <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
+              <div className="flex items-center gap-2 mt-1 text-xs text-gray-600">
                 {sourceLabel && <span>Source: {sourceLabel}</span>}
                 {selectedMerchant.rating && (
                   <>
-                    {sourceLabel && <span className="text-gray-300">•</span>}
+                    {sourceLabel && <span className="text-gray-400">•</span>}
                     <span className="flex items-center gap-0.5">
                       <StarIcon className="w-3 h-3 text-yellow-500 fill-yellow-500" />
                       {selectedMerchant.rating}
@@ -337,7 +337,7 @@ export default function MerchantHybridSearch({
                 )}
                 {selectedMerchant.address && (
                   <>
-                    <span className="text-gray-300">•</span>
+                    <span className="text-gray-400">•</span>
                     <span className="truncate">{selectedMerchant.address}</span>
                   </>
                 )}
@@ -393,7 +393,7 @@ export default function MerchantHybridSearch({
           )}
         </div>
 
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-gray-600 mt-1">
           Search by name, or use id: prefix for exact ID match
           {process.env.NEXT_PUBLIC_KIGO_CORE_SERVER_URL ? (
             <span className="text-green-600"> • Backend API</span>
@@ -410,7 +410,7 @@ export default function MerchantHybridSearch({
               {isLoadingDetails && (
                 <div className="p-4 text-center">
                   <ArrowPathIcon className="w-6 h-6 animate-spin mx-auto text-primary" />
-                  <p className="text-sm text-gray-500 mt-2">
+                  <p className="text-sm text-gray-600 mt-2">
                     Loading business details...
                   </p>
                 </div>
@@ -428,7 +428,7 @@ export default function MerchantHybridSearch({
                   {/* Existing Merchants */}
                   {existingResults.length > 0 && (
                     <div>
-                      <div className="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      <div className="px-3 py-2 bg-gray-50 text-xs font-semibold text-gray-600 uppercase tracking-wide">
                         In Our System
                       </div>
                       {existingResults.map((merchant) => (
@@ -445,7 +445,7 @@ export default function MerchantHybridSearch({
                             <p className="font-medium text-gray-900 truncate">
                               {merchant.name}
                             </p>
-                            <p className="text-sm text-gray-500 truncate">
+                            <p className="text-sm text-gray-600 truncate">
                               {merchant.address}
                             </p>
                           </div>
@@ -460,7 +460,7 @@ export default function MerchantHybridSearch({
                   {/* Google Result (single result from backend) */}
                   {googleResult && googleResult.name && (
                     <div>
-                      <div className="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      <div className="px-3 py-2 bg-gray-50 text-xs font-semibold text-gray-600 uppercase tracking-wide">
                         From Google
                       </div>
                       <button
@@ -476,13 +476,13 @@ export default function MerchantHybridSearch({
                             {googleResult.name}
                           </p>
                           {googleResult.business_status && (
-                            <p className="text-sm text-gray-500 truncate">
+                            <p className="text-sm text-gray-600 truncate">
                               {googleResult.business_status}
                             </p>
                           )}
                           <div className="flex items-center gap-2 mt-0.5">
                             {googleResult.rating && (
-                              <span className="text-xs text-gray-500 flex items-center gap-0.5">
+                              <span className="text-xs text-gray-600 flex items-center gap-0.5">
                                 <StarIcon className="w-3 h-3 text-yellow-500 fill-yellow-500" />
                                 {googleResult.rating}
                                 {googleResult.user_ratings_total &&
@@ -501,7 +501,7 @@ export default function MerchantHybridSearch({
                     !googleResult &&
                     searchQuery.length > 2 && (
                       <div className="p-4 text-center">
-                        <p className="text-gray-500">No businesses found</p>
+                        <p className="text-gray-600">No businesses found</p>
                       </div>
                     )}
                 </>

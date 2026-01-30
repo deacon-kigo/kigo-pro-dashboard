@@ -260,15 +260,15 @@ export default function MerchantManualEntry({
   };
 
   return (
-    <Card className="p-4 border-2 border-dashed border-gray-300 bg-gray-50/50">
+    <Card className="p-4 border border-gray-200 bg-white">
       {/* Header */}
       <div className="flex items-center gap-3 mb-5 pb-3 border-b">
         <Button variant="ghost" size="sm" onClick={onBack} className="p-1">
           <ArrowLeftIcon className="w-5 h-5" />
         </Button>
         <div>
-          <h3 className="font-medium">Create New Merchant</h3>
-          <p className="text-sm text-muted-foreground">
+          <h3 className="font-medium text-gray-900">Create New Merchant</h3>
+          <p className="text-sm text-gray-600">
             Add merchant details to create your offer
           </p>
         </div>
@@ -276,7 +276,7 @@ export default function MerchantManualEntry({
 
       {/* Quick Category Selection - Compact inline pills */}
       <div className="mb-4">
-        <Label className="text-xs text-muted-foreground mb-1.5 block">
+        <Label className="text-xs font-medium text-gray-600 mb-1.5 block">
           Quick Select
         </Label>
         <div className="flex flex-wrap gap-1.5">
@@ -312,7 +312,7 @@ export default function MerchantManualEntry({
               onChange={(e) => setDbaName(e.target.value)}
               autoFocus
             />
-            <p className="mt-2 text-muted-foreground text-sm">
+            <p className="mt-2 text-gray-600 text-sm">
               The name customers will see
             </p>
           </div>
@@ -353,9 +353,7 @@ export default function MerchantManualEntry({
               placeholder="Select one or more categories..."
               maxDisplayValues={3}
             />
-            <p className="mt-2 text-muted-foreground text-sm">
-              Could be one or more
-            </p>
+            <p className="mt-2 text-gray-600 text-sm">Could be one or more</p>
           </div>
 
           {/* Source - Required */}
@@ -373,9 +371,7 @@ export default function MerchantManualEntry({
                 ))}
               </SelectContent>
             </Select>
-            <p className="mt-2 text-muted-foreground text-sm">
-              MCM, Augeo, etc.
-            </p>
+            <p className="mt-2 text-gray-600 text-sm">MCM, Augeo, etc.</p>
           </div>
         </div>
 
@@ -417,8 +413,8 @@ export default function MerchantManualEntry({
                   onClick={() => fileInputRef.current?.click()}
                   className="w-24 h-24 border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center hover:border-primary hover:bg-primary/5 transition-colors bg-white"
                 >
-                  <PhotoIcon className="w-6 h-6 text-gray-400" />
-                  <span className="text-xs text-gray-500 mt-1">Upload</span>
+                  <PhotoIcon className="w-6 h-6 text-gray-500" />
+                  <span className="text-xs text-gray-600 mt-1">Upload</span>
                 </button>
               )}
               <input
@@ -472,15 +468,15 @@ export default function MerchantManualEntry({
         <button
           type="button"
           onClick={() => setShowOptional(!showOptional)}
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900 transition-colors"
         >
           {showOptional ? (
             <ChevronUpIcon className="w-4 h-4" />
           ) : (
             <ChevronDownIcon className="w-4 h-4" />
           )}
-          Optional Fields
-          <span className="text-xs text-gray-400">
+          <span className="font-medium">Optional Fields</span>
+          <span className="text-xs text-gray-500">
             (Banner, Corp Name, Address, URL, Highlights)
           </span>
         </button>
@@ -515,8 +511,8 @@ export default function MerchantManualEntry({
                     onClick={() => bannerInputRef.current?.click()}
                     className="w-full h-24 border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center hover:border-primary hover:bg-primary/5 transition-colors bg-white"
                   >
-                    <PhotoIcon className="w-6 h-6 text-gray-400" />
-                    <span className="text-xs text-gray-500 mt-1">
+                    <PhotoIcon className="w-6 h-6 text-gray-500" />
+                    <span className="text-xs text-gray-600 mt-1">
                       Upload Banner
                     </span>
                   </button>
@@ -582,7 +578,7 @@ export default function MerchantManualEntry({
 
       {/* Footer */}
       <div className="flex items-center justify-between mt-6 pt-4 border-t">
-        <span className="text-xs text-muted-foreground">
+        <span className="text-xs text-gray-600">
           <span className="text-red-500">*</span> Required fields
         </span>
         <div className="flex items-center gap-2">
