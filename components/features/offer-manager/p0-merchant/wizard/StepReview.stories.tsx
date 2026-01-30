@@ -2,7 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react";
 import StepReview from "./StepReview";
 
 const meta = {
-  title: "Applications/Kigo Pro/Features/Offer Manager/Wizard/Step 4 - Review",
+  title:
+    "Applications/Kigo Pro/Features/Offer Manager/P0.5 Wizard/Step 4 - Review",
   component: StepReview,
   parameters: {
     layout: "padded",
@@ -16,7 +17,13 @@ const meta = {
     docs: {
       description: {
         component: `
-## Step 4: Review & Publish
+## Step 4: Review & Publish (P0.5 Milestone)
+
+Part of the **Intuitive Offer Creation** PRD - P0.5 streamlined 4-step wizard flow:
+1. Select offer type
+2. Select/create merchant
+3. Offer content (details + image + dates + redemption)
+4. **Review & publish** ← This component
 
 A polished review card for the final step of the offer creation wizard. Features:
 
