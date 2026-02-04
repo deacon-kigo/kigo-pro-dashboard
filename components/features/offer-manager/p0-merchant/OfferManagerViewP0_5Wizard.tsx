@@ -148,11 +148,13 @@ export default function OfferManagerViewP0_5Wizard() {
       offerImagePreview: "",
       offerImageAlt: "",
       offerImageSource: "none" as "none" | "merchant" | "custom",
+      offerImageDimensions: null as { width: number; height: number } | null,
       // Image upload - Offer Banner (defaults to merchant banner)
       offerBannerFile: null as File | null,
       offerBannerPreview: "",
       offerBannerAlt: "",
       offerBannerSource: "none" as "none" | "merchant" | "custom",
+      offerBannerDimensions: null as { width: number; height: number } | null,
     };
   });
 

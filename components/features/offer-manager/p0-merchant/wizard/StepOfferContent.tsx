@@ -65,6 +65,29 @@ const AVAILABLE_COMMODITIES = [
  * - Redemption URL & promo code
  */
 
+// Image dimension guidelines
+const IMAGE_GUIDELINES = {
+  offerImage: {
+    recommended: { width: 400, height: 400 },
+    minWidth: 200,
+    minHeight: 200,
+    aspectRatio: "1:1 (square)",
+    description: "Square image for offer cards and circle logo overlay",
+  },
+  offerBanner: {
+    recommended: { width: 1200, height: 400 },
+    minWidth: 600,
+    minHeight: 200,
+    aspectRatio: "3:1 (wide)",
+    description: "Wide banner for offer detail hero section",
+  },
+};
+
+interface ImageDimensions {
+  width: number;
+  height: number;
+}
+
 interface StepOfferContentProps {
   offerType: OfferTypeKey;
   formData: {
@@ -80,11 +103,13 @@ interface StepOfferContentProps {
     offerImagePreview?: string;
     offerImageAlt?: string;
     offerImageSource?: "none" | "merchant" | "custom";
+    offerImageDimensions?: ImageDimensions | null;
     // Offer Banner (defaults to merchant banner)
     offerBannerFile?: File | null;
     offerBannerPreview?: string;
     offerBannerAlt?: string;
     offerBannerSource?: "none" | "merchant" | "custom";
+    offerBannerDimensions?: ImageDimensions | null;
     // Other fields
     termsConditions?: string;
     usageLimitPerCustomer?: string;
@@ -164,12 +189,45 @@ export default function StepOfferContent({
     return true;
   };
 
+  // Helper to get image dimensions from a file
+  const getImageDimensions = (file: File): Promise<ImageDimensions> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        resolve({ width: img.naturalWidth, height: img.naturalHeight });
+        URL.revokeObjectURL(img.src);
+      };
+      img.onerror = () => {
+        resolve({ width: 0, height: 0 });
+      };
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  // Helper to get image dimensions from a URL
+  const getImageDimensionsFromUrl = (
+    url: string
+  ): Promise<ImageDimensions | null> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        resolve({ width: img.naturalWidth, height: img.naturalHeight });
+      };
+      img.onerror = () => {
+        resolve(null);
+      };
+      img.src = url;
+    });
+  };
+
   // === Offer Image Handlers ===
-  const handleImageUpload = (file: File) => {
+  const handleImageUpload = async (file: File) => {
     if (!validateImageFile(file)) return;
+    const dimensions = await getImageDimensions(file);
     onUpdate("offerImageFile", file);
     onUpdate("offerImagePreview", URL.createObjectURL(file));
     onUpdate("offerImageSource", "custom"); // Mark as custom upload
+    onUpdate("offerImageDimensions", dimensions);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -192,15 +250,18 @@ export default function StepOfferContent({
     onUpdate("offerImagePreview", "");
     onUpdate("offerImageAlt", "");
     onUpdate("offerImageSource", "none");
+    onUpdate("offerImageDimensions", null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   // === Offer Banner Handlers ===
-  const handleBannerUpload = (file: File) => {
+  const handleBannerUpload = async (file: File) => {
     if (!validateImageFile(file)) return;
+    const dimensions = await getImageDimensions(file);
     onUpdate("offerBannerFile", file);
     onUpdate("offerBannerPreview", URL.createObjectURL(file));
     onUpdate("offerBannerSource", "custom"); // Mark as custom upload
+    onUpdate("offerBannerDimensions", dimensions);
   };
 
   const handleBannerFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -219,6 +280,7 @@ export default function StepOfferContent({
     onUpdate("offerBannerPreview", "");
     onUpdate("offerBannerAlt", "");
     onUpdate("offerBannerSource", "none");
+    onUpdate("offerBannerDimensions", null);
     if (bannerInputRef.current) bannerInputRef.current.value = "";
   };
 
@@ -365,33 +427,70 @@ export default function StepOfferContent({
                 <p className="text-gray-600 text-sm mb-3">
                   {formData.offerImageSource === "merchant"
                     ? "Defaults to merchant logo. Upload to override."
-                    : "Square image shown in offer cards"}
+                    : IMAGE_GUIDELINES.offerImage.description}
                 </p>
 
                 {formData.offerImagePreview ? (
-                  <div className="relative rounded-lg border-2 border-dashed border-gray-200 overflow-hidden">
-                    <img
-                      src={formData.offerImagePreview}
-                      alt={formData.offerImageAlt || "Offer preview"}
-                      className="w-full h-36 object-cover"
-                    />
-                    <div className="absolute top-2 right-2 flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors"
-                        title="Replace image"
-                      >
-                        <ArrowPathIcon className="w-4 h-4 text-gray-600" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleRemoveImage}
-                        className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors"
-                        title="Remove image"
-                      >
-                        <XMarkIcon className="w-4 h-4 text-gray-600" />
-                      </button>
+                  <div className="space-y-2">
+                    <div className="relative rounded-lg border-2 border-dashed border-gray-200 overflow-hidden">
+                      <img
+                        src={formData.offerImagePreview}
+                        alt={formData.offerImageAlt || "Offer preview"}
+                        className="w-full h-36 object-cover"
+                      />
+                      <div className="absolute top-2 right-2 flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors"
+                          title="Replace image"
+                        >
+                          <ArrowPathIcon className="w-4 h-4 text-gray-600" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleRemoveImage}
+                          className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors"
+                          title="Remove image"
+                        >
+                          <XMarkIcon className="w-4 h-4 text-gray-600" />
+                        </button>
+                      </div>
+                    </div>
+                    {/* Dimension display */}
+                    <div className="flex items-center justify-between text-xs">
+                      {formData.offerImageDimensions ? (
+                        <span
+                          className={cn(
+                            "font-medium",
+                            formData.offerImageDimensions.width >=
+                              IMAGE_GUIDELINES.offerImage.minWidth &&
+                              formData.offerImageDimensions.height >=
+                                IMAGE_GUIDELINES.offerImage.minHeight
+                              ? "text-green-600"
+                              : "text-amber-600"
+                          )}
+                        >
+                          {formData.offerImageDimensions.width} ×{" "}
+                          {formData.offerImageDimensions.height}px
+                          {formData.offerImageDimensions.width <
+                            IMAGE_GUIDELINES.offerImage.minWidth ||
+                          formData.offerImageDimensions.height <
+                            IMAGE_GUIDELINES.offerImage.minHeight
+                            ? " (below minimum)"
+                            : ""}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">
+                          Dimensions unknown
+                        </span>
+                      )}
+                      <span className="text-gray-500">
+                        Recommended:{" "}
+                        {IMAGE_GUIDELINES.offerImage.recommended.width}×
+                        {IMAGE_GUIDELINES.offerImage.recommended.height}px (
+                        {IMAGE_GUIDELINES.offerImage.aspectRatio})
+                      </span>
                     </div>
                   </div>
                 ) : (
@@ -406,7 +505,14 @@ export default function StepOfferContent({
                       Click to upload
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
-                      PNG or JPG (max 5MB)
+                      PNG or JPG •{" "}
+                      {IMAGE_GUIDELINES.offerImage.recommended.width}×
+                      {IMAGE_GUIDELINES.offerImage.recommended.height}px
+                      recommended
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      Min: {IMAGE_GUIDELINES.offerImage.minWidth}×
+                      {IMAGE_GUIDELINES.offerImage.minHeight}px • Max 5MB
                     </p>
                   </div>
                 )}
@@ -438,33 +544,70 @@ export default function StepOfferContent({
                 <p className="text-gray-600 text-sm mb-3">
                   {formData.offerBannerSource === "merchant"
                     ? "Defaults to merchant banner. Upload to override."
-                    : "Wide banner shown in offer detail view"}
+                    : IMAGE_GUIDELINES.offerBanner.description}
                 </p>
 
                 {formData.offerBannerPreview ? (
-                  <div className="relative rounded-lg border-2 border-dashed border-gray-200 overflow-hidden">
-                    <img
-                      src={formData.offerBannerPreview}
-                      alt={formData.offerBannerAlt || "Banner preview"}
-                      className="w-full h-24 object-cover"
-                    />
-                    <div className="absolute top-2 right-2 flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => bannerInputRef.current?.click()}
-                        className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors"
-                        title="Replace banner"
-                      >
-                        <ArrowPathIcon className="w-4 h-4 text-gray-600" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleRemoveBanner}
-                        className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors"
-                        title="Remove banner"
-                      >
-                        <XMarkIcon className="w-4 h-4 text-gray-600" />
-                      </button>
+                  <div className="space-y-2">
+                    <div className="relative rounded-lg border-2 border-dashed border-gray-200 overflow-hidden">
+                      <img
+                        src={formData.offerBannerPreview}
+                        alt={formData.offerBannerAlt || "Banner preview"}
+                        className="w-full h-24 object-cover"
+                      />
+                      <div className="absolute top-2 right-2 flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => bannerInputRef.current?.click()}
+                          className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors"
+                          title="Replace banner"
+                        >
+                          <ArrowPathIcon className="w-4 h-4 text-gray-600" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleRemoveBanner}
+                          className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors"
+                          title="Remove banner"
+                        >
+                          <XMarkIcon className="w-4 h-4 text-gray-600" />
+                        </button>
+                      </div>
+                    </div>
+                    {/* Dimension display */}
+                    <div className="flex items-center justify-between text-xs">
+                      {formData.offerBannerDimensions ? (
+                        <span
+                          className={cn(
+                            "font-medium",
+                            formData.offerBannerDimensions.width >=
+                              IMAGE_GUIDELINES.offerBanner.minWidth &&
+                              formData.offerBannerDimensions.height >=
+                                IMAGE_GUIDELINES.offerBanner.minHeight
+                              ? "text-green-600"
+                              : "text-amber-600"
+                          )}
+                        >
+                          {formData.offerBannerDimensions.width} ×{" "}
+                          {formData.offerBannerDimensions.height}px
+                          {formData.offerBannerDimensions.width <
+                            IMAGE_GUIDELINES.offerBanner.minWidth ||
+                          formData.offerBannerDimensions.height <
+                            IMAGE_GUIDELINES.offerBanner.minHeight
+                            ? " (below minimum)"
+                            : ""}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">
+                          Dimensions unknown
+                        </span>
+                      )}
+                      <span className="text-gray-500">
+                        Recommended:{" "}
+                        {IMAGE_GUIDELINES.offerBanner.recommended.width}×
+                        {IMAGE_GUIDELINES.offerBanner.recommended.height}px (
+                        {IMAGE_GUIDELINES.offerBanner.aspectRatio})
+                      </span>
                     </div>
                   </div>
                 ) : (
@@ -479,7 +622,14 @@ export default function StepOfferContent({
                       Click to upload banner
                     </p>
                     <p className="text-xs text-gray-500">
-                      Recommended: 1200×400px
+                      PNG or JPG •{" "}
+                      {IMAGE_GUIDELINES.offerBanner.recommended.width}×
+                      {IMAGE_GUIDELINES.offerBanner.recommended.height}px
+                      recommended
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      Min: {IMAGE_GUIDELINES.offerBanner.minWidth}×
+                      {IMAGE_GUIDELINES.offerBanner.minHeight}px • Max 5MB
                     </p>
                   </div>
                 )}
