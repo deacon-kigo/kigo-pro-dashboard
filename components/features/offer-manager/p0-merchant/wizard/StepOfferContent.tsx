@@ -5,17 +5,54 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ReactSelectMulti } from "@/components/ui/react-select-multi";
 import { cn } from "@/lib/utils";
 import {
   PhotoIcon,
   XMarkIcon,
   ArrowPathIcon,
+  TagIcon,
 } from "@heroicons/react/24/outline";
 import {
   OFFER_TYPE_CONFIG,
   OfferTypeKey,
   getDefaultDates,
 } from "@/lib/constants/offer-templates";
+
+// Available categories
+const AVAILABLE_CATEGORIES = [
+  { label: "Food & Dining", value: "1" },
+  { label: "Pizza", value: "2" },
+  { label: "Burgers", value: "3" },
+  { label: "Fine Dining", value: "4" },
+  { label: "Fast Food", value: "5" },
+  { label: "Cafe & Bakery", value: "6" },
+  { label: "Retail", value: "7" },
+  { label: "Clothing", value: "8" },
+  { label: "Electronics", value: "9" },
+  { label: "Home Goods", value: "10" },
+  { label: "Entertainment", value: "11" },
+  { label: "Movies", value: "12" },
+  { label: "Sports Events", value: "13" },
+  { label: "Services", value: "14" },
+  { label: "Auto Repair", value: "15" },
+  { label: "Home Services", value: "16" },
+  { label: "Health & Wellness", value: "17" },
+  { label: "Automotive", value: "18" },
+  { label: "Travel", value: "19" },
+];
+
+// Available commodities
+const AVAILABLE_COMMODITIES = [
+  { label: "Entrees", value: "1" },
+  { label: "Appetizers", value: "2" },
+  { label: "Desserts", value: "3" },
+  { label: "Beverages", value: "4" },
+  { label: "Alcohol", value: "5" },
+  { label: "Gift Cards", value: "6" },
+  { label: "Merchandise", value: "7" },
+  { label: "Services", value: "8" },
+];
 
 /**
  * Step 3: Offer Content (Consolidated)
@@ -38,12 +75,27 @@ interface StepOfferContentProps {
     endDate?: string;
     externalUrl?: string;
     promoCode?: string;
+    // Offer Image (defaults to merchant logo)
     offerImageFile?: File | null;
     offerImagePreview?: string;
     offerImageAlt?: string;
+    offerImageSource?: "none" | "merchant" | "custom";
+    // Offer Banner (defaults to merchant banner)
+    offerBannerFile?: File | null;
+    offerBannerPreview?: string;
+    offerBannerAlt?: string;
+    offerBannerSource?: "none" | "merchant" | "custom";
+    // Other fields
     termsConditions?: string;
     usageLimitPerCustomer?: string;
     redemptionRollingPeriod?: string;
+    category_ids?: string[];
+    commodity_ids?: string[];
+    // Auto-fill tracking
+    headlineAutoFilled?: boolean;
+    descriptionAutoFilled?: boolean;
+    categoriesAutoFilled?: boolean;
+    commoditiesAutoFilled?: boolean;
   };
   onUpdate: (field: string, value: any) => void;
 }
@@ -60,6 +112,7 @@ export default function StepOfferContent({
   );
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
 
   // Initialize dates with smart defaults if not set
   useEffect(() => {
@@ -97,36 +150,37 @@ export default function StepOfferContent({
     }, 150);
   };
 
-  // Image upload handlers
-  const handleImageUpload = (file: File) => {
-    // Validate file type
+  // Validate image file (shared helper)
+  const validateImageFile = (file: File): boolean => {
     const validTypes = ["image/png", "image/jpeg", "image/jpg"];
     if (!validTypes.includes(file.type)) {
       alert("Only PNG and JPG files are allowed.");
-      return;
+      return false;
     }
-    // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
       alert("File must be under 5MB.");
-      return;
+      return false;
     }
+    return true;
+  };
+
+  // === Offer Image Handlers ===
+  const handleImageUpload = (file: File) => {
+    if (!validateImageFile(file)) return;
     onUpdate("offerImageFile", file);
     onUpdate("offerImagePreview", URL.createObjectURL(file));
+    onUpdate("offerImageSource", "custom"); // Mark as custom upload
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      handleImageUpload(file);
-    }
+    if (file) handleImageUpload(file);
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
-    if (file) {
-      handleImageUpload(file);
-    }
+    if (file) handleImageUpload(file);
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -137,9 +191,35 @@ export default function StepOfferContent({
     onUpdate("offerImageFile", null);
     onUpdate("offerImagePreview", "");
     onUpdate("offerImageAlt", "");
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    onUpdate("offerImageSource", "none");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  // === Offer Banner Handlers ===
+  const handleBannerUpload = (file: File) => {
+    if (!validateImageFile(file)) return;
+    onUpdate("offerBannerFile", file);
+    onUpdate("offerBannerPreview", URL.createObjectURL(file));
+    onUpdate("offerBannerSource", "custom"); // Mark as custom upload
+  };
+
+  const handleBannerFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleBannerUpload(file);
+  };
+
+  const handleBannerDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleBannerUpload(file);
+  };
+
+  const handleRemoveBanner = () => {
+    onUpdate("offerBannerFile", null);
+    onUpdate("offerBannerPreview", "");
+    onUpdate("offerBannerAlt", "");
+    onUpdate("offerBannerSource", "none");
+    if (bannerInputRef.current) bannerInputRef.current.value = "";
   };
 
   return (
@@ -198,22 +278,47 @@ export default function StepOfferContent({
 
               {/* Headline */}
               <div>
-                <Label htmlFor="offerName">Headline*</Label>
+                <div className="flex items-center justify-between mb-1">
+                  <Label htmlFor="offerName">Headline*</Label>
+                  {formData.headlineAutoFilled && (
+                    <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                      Suggested
+                    </span>
+                  )}
+                </div>
                 <Input
                   id="offerName"
                   placeholder="e.g., '20% Off Your First Order'"
                   value={localOfferName}
-                  onChange={(e) => handleOfferNameChange(e.target.value)}
+                  onChange={(e) => {
+                    handleOfferNameChange(e.target.value);
+                    // Clear auto-fill flag when user edits
+                    if (formData.headlineAutoFilled) {
+                      onUpdate("headlineAutoFilled", false);
+                    }
+                  }}
                   maxLength={60}
                 />
                 <p className="mt-2 text-gray-600 text-sm">
                   {localOfferName.length}/60 characters
+                  {localOfferName.length > 50 && (
+                    <span className="text-amber-600 ml-2">
+                      — may be truncated in cards
+                    </span>
+                  )}
                 </p>
               </div>
 
               {/* Description */}
               <div>
-                <Label htmlFor="description">Description*</Label>
+                <div className="flex items-center justify-between mb-1">
+                  <Label htmlFor="description">Description*</Label>
+                  {formData.descriptionAutoFilled && (
+                    <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                      Suggested
+                    </span>
+                  )}
+                </div>
                 <Textarea
                   id="description"
                   placeholder="Describe what customers get with this offer..."
@@ -221,31 +326,54 @@ export default function StepOfferContent({
                   onChange={(e) => {
                     onUpdate("description", e.target.value);
                     onUpdate("longText", e.target.value);
+                    // Clear auto-fill flag when user edits
+                    if (formData.descriptionAutoFilled) {
+                      onUpdate("descriptionAutoFilled", false);
+                    }
                   }}
                   rows={3}
                   maxLength={250}
                 />
                 <p className="mt-2 text-gray-600 text-sm">
                   {(formData.description || "").length}/250 characters
+                  {(formData.description || "").length > 80 && (
+                    <span className="text-amber-600 ml-2">
+                      — shows "Read more" in detail view
+                    </span>
+                  )}
                 </p>
               </div>
             </div>
 
-            {/* Right Column - Image Upload */}
-            <div className="space-y-5">
+            {/* Right Column - Image Uploads */}
+            <div className="space-y-6">
+              {/* Offer Image (defaults to merchant logo) */}
               <div>
-                <Label>Offer Image</Label>
+                <div className="flex items-center justify-between mb-1">
+                  <Label>Offer Image</Label>
+                  {formData.offerImageSource === "merchant" && (
+                    <span className="text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                      Using merchant logo
+                    </span>
+                  )}
+                  {formData.offerImageSource === "custom" && (
+                    <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                      Custom upload
+                    </span>
+                  )}
+                </div>
                 <p className="text-gray-600 text-sm mb-3">
-                  Upload an image to make your offer stand out
+                  {formData.offerImageSource === "merchant"
+                    ? "Defaults to merchant logo. Upload to override."
+                    : "Square image shown in offer cards"}
                 </p>
 
                 {formData.offerImagePreview ? (
-                  // Image Preview
                   <div className="relative rounded-lg border-2 border-dashed border-gray-200 overflow-hidden">
                     <img
                       src={formData.offerImagePreview}
                       alt={formData.offerImageAlt || "Offer preview"}
-                      className="w-full h-48 object-cover"
+                      className="w-full h-36 object-cover"
                     />
                     <div className="absolute top-2 right-2 flex gap-2">
                       <button
@@ -267,16 +395,15 @@ export default function StepOfferContent({
                     </div>
                   </div>
                 ) : (
-                  // Upload Zone
                   <div
                     onClick={() => fileInputRef.current?.click()}
                     onDrop={handleDrop}
                     onDragOver={handleDragOver}
-                    className="flex flex-col items-center justify-center h-48 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100 hover:border-gray-400 cursor-pointer transition-colors"
+                    className="flex flex-col items-center justify-center h-36 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100 hover:border-gray-400 cursor-pointer transition-colors"
                   >
-                    <PhotoIcon className="w-10 h-10 text-gray-400 mb-3" />
+                    <PhotoIcon className="w-8 h-8 text-gray-400 mb-2" />
                     <p className="text-sm font-medium text-gray-700">
-                      Click to upload or drag and drop
+                      Click to upload
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
                       PNG or JPG (max 5MB)
@@ -291,25 +418,149 @@ export default function StepOfferContent({
                   onChange={handleFileChange}
                   className="hidden"
                 />
+              </div>
 
-                {/* Alt Text */}
-                {formData.offerImagePreview && (
-                  <div className="mt-3">
-                    <Label htmlFor="offerImageAlt" className="text-sm">
-                      Alt text (optional)
-                    </Label>
-                    <Input
-                      id="offerImageAlt"
-                      placeholder="Describe the image for accessibility"
-                      value={formData.offerImageAlt || ""}
-                      onChange={(e) =>
-                        onUpdate("offerImageAlt", e.target.value)
-                      }
-                      className="mt-1"
+              {/* Offer Banner (defaults to merchant banner) */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <Label>Offer Banner</Label>
+                  {formData.offerBannerSource === "merchant" && (
+                    <span className="text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                      Using merchant banner
+                    </span>
+                  )}
+                  {formData.offerBannerSource === "custom" && (
+                    <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                      Custom upload
+                    </span>
+                  )}
+                </div>
+                <p className="text-gray-600 text-sm mb-3">
+                  {formData.offerBannerSource === "merchant"
+                    ? "Defaults to merchant banner. Upload to override."
+                    : "Wide banner shown in offer detail view"}
+                </p>
+
+                {formData.offerBannerPreview ? (
+                  <div className="relative rounded-lg border-2 border-dashed border-gray-200 overflow-hidden">
+                    <img
+                      src={formData.offerBannerPreview}
+                      alt={formData.offerBannerAlt || "Banner preview"}
+                      className="w-full h-24 object-cover"
                     />
+                    <div className="absolute top-2 right-2 flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => bannerInputRef.current?.click()}
+                        className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors"
+                        title="Replace banner"
+                      >
+                        <ArrowPathIcon className="w-4 h-4 text-gray-600" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleRemoveBanner}
+                        className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors"
+                        title="Remove banner"
+                      >
+                        <XMarkIcon className="w-4 h-4 text-gray-600" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => bannerInputRef.current?.click()}
+                    onDrop={handleBannerDrop}
+                    onDragOver={handleDragOver}
+                    className="flex flex-col items-center justify-center h-24 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100 hover:border-gray-400 cursor-pointer transition-colors"
+                  >
+                    <PhotoIcon className="w-6 h-6 text-gray-400 mb-1" />
+                    <p className="text-sm font-medium text-gray-700">
+                      Click to upload banner
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Recommended: 1200×400px
+                    </p>
                   </div>
                 )}
+
+                <input
+                  ref={bannerInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/jpg"
+                  onChange={handleBannerFileChange}
+                  className="hidden"
+                />
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Classification Section */}
+      <div className="rounded-md border">
+        <div className="flex items-center gap-2 px-4 py-3 font-medium border-b bg-muted/30">
+          <TagIcon className="size-4" />
+          <span>Classification</span>
+        </div>
+        <div className="p-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-5">
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <Label htmlFor="categories">Categories</Label>
+                {formData.categoriesAutoFilled && (
+                  <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                    Suggested from merchant
+                  </span>
+                )}
+              </div>
+              <ReactSelectMulti
+                options={AVAILABLE_CATEGORIES}
+                values={formData.category_ids || []}
+                onChange={(values) => {
+                  onUpdate("category_ids", values);
+                  // Clear auto-fill flag when user changes
+                  if (formData.categoriesAutoFilled) {
+                    onUpdate("categoriesAutoFilled", false);
+                  }
+                }}
+                placeholder="Select categories..."
+                maxDisplayValues={3}
+              />
+              <p className="mt-2 text-gray-600 text-sm">
+                {formData.categoriesAutoFilled
+                  ? "Based on merchant type. Edit to customize."
+                  : "Select one or more categories"}
+              </p>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <Label htmlFor="commodities">Commodities Group</Label>
+                {formData.commoditiesAutoFilled && (
+                  <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                    Suggested from merchant
+                  </span>
+                )}
+              </div>
+              <ReactSelectMulti
+                options={AVAILABLE_COMMODITIES}
+                values={formData.commodity_ids || []}
+                onChange={(values) => {
+                  onUpdate("commodity_ids", values);
+                  // Clear auto-fill flag when user changes
+                  if (formData.commoditiesAutoFilled) {
+                    onUpdate("commoditiesAutoFilled", false);
+                  }
+                }}
+                placeholder="Select commodities group..."
+                maxDisplayValues={3}
+              />
+              <p className="mt-2 text-gray-600 text-sm">
+                {formData.commoditiesAutoFilled
+                  ? "Based on merchant type. Edit to customize."
+                  : "Select specific items or services"}
+              </p>
             </div>
           </div>
         </div>

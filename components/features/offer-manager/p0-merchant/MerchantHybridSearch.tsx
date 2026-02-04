@@ -46,18 +46,48 @@ const MERCHANT_CATEGORIES = [
 
 // Mock existing merchants (in production, fetch from API)
 const EXISTING_MERCHANTS = [
-  { id: "M001", name: "Deacon's Pizza", address: "123 Main St, Denver, CO" },
+  {
+    id: "M001",
+    name: "Claire's",
+    address: "123 Main St, Denver, CO",
+    logoPreview: "/mock/claires_logo.jpg.png",
+    bannerPreview: "/mock/cold stone ad horizontal.png",
+    categories: ["shopping", "fashion"],
+    merchantSource: "MCM",
+  },
   {
     id: "M002",
-    name: "Tony's Italian Restaurant",
+    name: "Papa John's",
     address: "456 Oak Ave, Denver, CO",
+    logoPreview: "/mock/Papa Johns image.png",
+    bannerPreview: "/mock/Papa Johns image.png",
+    categories: ["dining"],
+    merchantSource: "MCM",
   },
-  { id: "M003", name: "Burger Haven", address: "789 Elm St, Denver, CO" },
-  { id: "M004", name: "Sushi Palace", address: "321 Pine Rd, Denver, CO" },
+  {
+    id: "M003",
+    name: "Moji Coffee",
+    address: "789 Elm St, Denver, CO",
+    logoPreview: "/mock/moji.png",
+    bannerPreview: "/mock/moji.png",
+    categories: ["dining"],
+    merchantSource: "Augeo",
+  },
+  {
+    id: "M004",
+    name: "Cold Stone Creamery",
+    address: "321 Pine Rd, Denver, CO",
+    logoPreview: "/mock/cold stone ad horizontal.png",
+    bannerPreview: "/mock/cold stone ad horizontal.png",
+    categories: ["dining", "entertainment"],
+    merchantSource: "MCM",
+  },
   {
     id: "M005",
-    name: "Coffee Corner Cafe",
+    name: "Deacon's Pizza",
     address: "654 Maple Dr, Denver, CO",
+    categories: ["dining"],
+    merchantSource: "Other",
   },
 ];
 
@@ -223,6 +253,10 @@ export default function MerchantHybridSearch({
       geolocation: null,
       url: "",
       source: "existing",
+      logoPreview: merchant.logoPreview,
+      bannerPreview: merchant.bannerPreview,
+      categories: merchant.categories,
+      merchantSource: merchant.merchantSource,
     });
     setShowResults(false);
     setSearchQuery("");
@@ -438,8 +472,16 @@ export default function MerchantHybridSearch({
                           onClick={() => handleSelectExisting(merchant)}
                           className="w-full px-3 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b last:border-b-0"
                         >
-                          <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <BuildingStorefrontIcon className="w-5 h-5 text-green-600" />
+                          <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                            {merchant.logoPreview ? (
+                              <img
+                                src={merchant.logoPreview}
+                                alt={merchant.name}
+                                className="w-full h-full object-contain"
+                              />
+                            ) : (
+                              <BuildingStorefrontIcon className="w-5 h-5 text-green-600" />
+                            )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-gray-900 truncate">

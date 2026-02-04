@@ -65,7 +65,12 @@ interface StepReviewProps {
     termsConditions?: string;
     usageLimitPerCustomer?: string;
     redemptionRollingPeriod?: string;
+    // Offer Image
     offerImagePreview?: string;
+    offerImageSource?: "none" | "merchant" | "custom";
+    // Offer Banner
+    offerBannerPreview?: string;
+    offerBannerSource?: "none" | "merchant" | "custom";
   };
   onUpdate: (field: string, value: string) => void;
 }
@@ -355,13 +360,13 @@ export default function StepReview({ formData }: StepReviewProps) {
 
                   {/* Merchant */}
                   <div className="flex items-center gap-3">
-                    {formData.merchantData?.logoUrl ? (
+                    {formData.merchantData?.logoPreview ? (
                       <div
                         className="h-8 w-8 rounded-lg overflow-hidden bg-white flex-shrink-0"
                         style={{ border: `1px solid ${BRAND.skyBlue}` }}
                       >
                         <Image
-                          src={formData.merchantData.logoUrl}
+                          src={formData.merchantData.logoPreview}
                           alt={formData.merchantData.dbaName || "Merchant"}
                           width={32}
                           height={32}

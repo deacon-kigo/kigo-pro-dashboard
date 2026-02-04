@@ -35,6 +35,10 @@ import {
   SMART_DEFAULTS,
   getDefaultDates,
   getTermsTemplate,
+  getOfferCategoriesForMerchant,
+  getCommoditiesForMerchant,
+  getSmartHeadline,
+  getSmartDescription,
 } from "@/lib/constants/offer-templates";
 
 /**
@@ -139,10 +143,16 @@ export default function OfferManagerViewP0_5Wizard() {
       termsConditions: "",
       category_ids: [],
       commodity_ids: [],
-      // Image upload
+      // Image upload - Offer Image (defaults to merchant logo)
       offerImageFile: null as File | null,
       offerImagePreview: "",
       offerImageAlt: "",
+      offerImageSource: "none" as "none" | "merchant" | "custom",
+      // Image upload - Offer Banner (defaults to merchant banner)
+      offerBannerFile: null as File | null,
+      offerBannerPreview: "",
+      offerBannerAlt: "",
+      offerBannerSource: "none" as "none" | "merchant" | "custom",
     };
   });
 
@@ -153,13 +163,97 @@ export default function OfferManagerViewP0_5Wizard() {
   const handleUpdate = (field: string, value: any) => {
     setFormData((prev: any) => ({ ...prev, [field]: value }));
 
-    // Auto-fill terms when merchant is selected
+    // Auto-fill when merchant is selected
     if (field === "merchantData" && value) {
       const merchantData = value as MerchantData;
-      const category = merchantData.categories?.[0] || merchantData.category;
+      const categories = merchantData.categories || [];
+      const category = categories[0] || merchantData.category;
+
+      // Auto-fill terms from merchant category
       if (category && !formData.termsConditions) {
         const terms = getTermsTemplate(category);
         setFormData((prev: any) => ({ ...prev, termsConditions: terms }));
+      }
+
+      // Auto-fill categories from merchant categories (if not already set)
+      if (
+        categories.length > 0 &&
+        (!formData.category_ids || formData.category_ids.length === 0)
+      ) {
+        const suggestedCategories = getOfferCategoriesForMerchant(categories);
+        setFormData((prev: any) => ({
+          ...prev,
+          category_ids: suggestedCategories,
+          categoriesAutoFilled: true, // Track that this was auto-filled
+        }));
+      }
+
+      // Auto-fill commodities from merchant categories (if not already set)
+      if (
+        categories.length > 0 &&
+        (!formData.commodity_ids || formData.commodity_ids.length === 0)
+      ) {
+        const suggestedCommodities = getCommoditiesForMerchant(categories);
+        setFormData((prev: any) => ({
+          ...prev,
+          commodity_ids: suggestedCommodities,
+          commoditiesAutoFilled: true, // Track that this was auto-filled
+        }));
+      }
+
+      // Auto-generate smart headline if not already set
+      if (!formData.offerName && formData.offerType) {
+        const smartHeadline = getSmartHeadline(
+          formData.offerType,
+          merchantData.dbaName
+        );
+        if (smartHeadline) {
+          setFormData((prev: any) => ({
+            ...prev,
+            offerName: smartHeadline,
+            shortText: smartHeadline,
+            headlineAutoFilled: true,
+          }));
+        }
+      }
+
+      // Auto-generate smart description if not already set
+      if (!formData.description && formData.offerType && category) {
+        const smartDescription = getSmartDescription(
+          formData.offerType,
+          category
+        );
+        if (smartDescription) {
+          setFormData((prev: any) => ({
+            ...prev,
+            description: smartDescription,
+            longText: smartDescription,
+            descriptionAutoFilled: true,
+          }));
+        }
+      }
+
+      // Auto-populate Offer Image from merchant logo (if no custom upload)
+      if (merchantData.logoPreview && formData.offerImageSource !== "custom") {
+        setFormData((prev: any) => ({
+          ...prev,
+          offerImagePreview: merchantData.logoPreview,
+          offerImageSource: "merchant",
+          offerImageFile: null, // No file since it's from merchant
+        }));
+      }
+
+      // Auto-populate Offer Banner from merchant banner (if no custom upload)
+      if (
+        merchantData.bannerPreview &&
+        formData.offerBannerSource !== "custom"
+      ) {
+        setFormData((prev: any) => ({
+          ...prev,
+          offerBannerPreview: merchantData.bannerPreview,
+          offerBannerSource: "merchant",
+          offerBannerFile: null, // No file since it's from merchant
+        }));
       }
     }
   };
@@ -168,6 +262,39 @@ export default function OfferManagerViewP0_5Wizard() {
   const handleOfferTypeSelect = (type: OfferTypeKey) => {
     handleUpdate("offerType", type);
     handleUpdate("offerTypeInternal", "clk");
+
+    // If merchant is already selected, generate smart defaults
+    if (formData.merchantData) {
+      const merchantName = formData.merchantData.dbaName;
+      const category =
+        formData.merchantData.categories?.[0] || formData.merchantData.category;
+
+      // Auto-generate smart headline if not already set by user
+      if (!formData.offerName || formData.headlineAutoFilled) {
+        const smartHeadline = getSmartHeadline(type, merchantName);
+        if (smartHeadline) {
+          setFormData((prev: any) => ({
+            ...prev,
+            offerName: smartHeadline,
+            shortText: smartHeadline,
+            headlineAutoFilled: true,
+          }));
+        }
+      }
+
+      // Auto-generate smart description if not already set by user
+      if (!formData.description || formData.descriptionAutoFilled) {
+        const smartDescription = getSmartDescription(type, category);
+        if (smartDescription) {
+          setFormData((prev: any) => ({
+            ...prev,
+            description: smartDescription,
+            longText: smartDescription,
+            descriptionAutoFilled: true,
+          }));
+        }
+      }
+    }
   };
 
   // Handle merchant selection

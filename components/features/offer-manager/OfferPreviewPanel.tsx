@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -10,21 +9,22 @@ import {
 } from "@heroicons/react/24/outline";
 import { cn } from "@/lib/utils";
 
-// Import actual Web SDK components (replicated from mockup-studio)
+// Import SDK components
 import {
   MerchantOfferButton,
-  OfferDetailPreview,
+  OfferDetailPreviewV2,
   MaterialUIProvider,
 } from "./sdk";
 
 /**
- * P0.4 Offer Preview Panel
+ * Offer Preview Panel
  *
  * Displays live preview of how the offer will appear in the marketplace:
- * - Card View: MerchantOfferButton (actual Web SDK component)
- * - Detail View: OfferDetailPreview (actual Web SDK component)
+ * - Card View: MerchantOfferButton (SDK-style offer card)
+ * - Detail View: OfferDetailPreviewV2 (SDK-accurate mobile detail view)
  *
- * Uses replicated Web SDK components for visual accuracy.
+ * Uses ported Web SDK components for visual accuracy matching the
+ * actual Kigo marketplace appearance.
  */
 
 interface OfferPreviewPanelProps {
@@ -34,7 +34,9 @@ interface OfferPreviewPanelProps {
     merchantData?: {
       dbaName?: string;
       corpName?: string;
-      logoUrl?: string;
+      logoUrl?: string; // Legacy field
+      logoPreview?: string | null; // Merchant Logo
+      bannerPreview?: string | null; // Merchant Banner
       address?: string;
       category?: string;
     } | null;
@@ -56,92 +58,38 @@ interface OfferPreviewPanelProps {
     redemptionTypes?: string[];
     promoCode?: string;
     externalUrl?: string;
+
+    // Offer Images (custom uploads that override merchant images)
+    offerImagePreview?: string; // Offer Image
+    offerBannerPreview?: string; // Offer Banner
+    offerImageSource?: "none" | "merchant" | "custom";
+    offerBannerSource?: "none" | "merchant" | "custom";
   };
   className?: string;
-}
-
-// Helper to format discount badge text based on offer type
-function getDiscountBadgeText(
-  offerType: string,
-  discountValue: string,
-  minimumSpend?: string
-): string {
-  const value = parseFloat(discountValue) || 0;
-  const min = parseFloat(minimumSpend || "0") || 0;
-
-  switch (offerType) {
-    case "dollar_off":
-      return `$${value} OFF`;
-    case "bogo":
-      return "BUY 1 GET 1";
-    case "dollar_off_minimum":
-      return min > 0 ? `$${value} OFF $${min}+` : `$${value} OFF`;
-    case "fixed_price":
-      return `$${value.toFixed(2)}`;
-    case "cash_back":
-      return `$${value} BACK`;
-    case "tiered":
-      return min > 0 ? `$${value} OFF $${min}+` : `$${value} OFF`;
-    case "percent_off":
-      return `${value}% OFF`;
-    default:
-      return value > 0 ? `$${value} OFF` : "SAVE";
-  }
-}
-
-// Helper to format date
-function formatDate(dateStr: string): string {
-  if (!dateStr) return "";
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
 }
 
 export function OfferPreviewPanel({
   formData,
   className,
 }: OfferPreviewPanelProps) {
-  // Extract merchant info
+  // Extract merchant info for card view
   const merchantName =
     formData.merchantData?.dbaName ||
     formData.merchantData?.corpName ||
     formData.merchant ||
     "Merchant Name";
-  const merchantLogo = formData.merchantData?.logoUrl;
-
-  // Extract offer info
   const headline = formData.offerName || "Offer headline will appear here...";
-  const description = formData.description || "";
-  const terms = formData.termsConditions || "";
-  const offerType = formData.offerType || "dollar_off";
-  const discountValue = formData.discountValue || "0";
-  const minimumSpend = formData.minimumSpend || formData.maxDiscountAmount;
-  const startDate = formData.startDate;
-  const endDate = formData.endDate;
-  const redemptionMethod = formData.redemptionTypes?.includes("external_url")
-    ? "Online"
-    : "In-Store";
-  const promoCode = formData.promoCode;
 
-  // Format discount badge
-  const discountBadge = getDiscountBadgeText(
-    offerType,
-    discountValue,
-    minimumSpend
-  );
+  // Card view logo follows same fallback as detail view circle:
+  // OfferImage || MerchantLogo || OfferBanner || MerchantBanner
+  const offerImage = formData.offerImagePreview || "";
+  const merchantLogo =
+    formData.merchantData?.logoPreview || formData.merchantData?.logoUrl || "";
+  const offerBanner = formData.offerBannerPreview || "";
+  const merchantBanner = formData.merchantData?.bannerPreview || "";
 
-  // Format validity
-  const validUntil =
-    startDate && endDate
-      ? `${formatDate(startDate)} - ${formatDate(endDate)}`
-      : endDate
-        ? `Valid until ${formatDate(endDate)}`
-        : startDate
-          ? `Starts ${formatDate(startDate)}`
-          : "Valid dates TBD";
+  const cardLogoUrl =
+    offerImage || merchantLogo || offerBanner || merchantBanner || undefined;
 
   return (
     <div className={cn("h-full flex flex-col", className)}>
@@ -179,7 +127,7 @@ export function OfferPreviewPanel({
               <MaterialUIProvider>
                 <MerchantOfferButton
                   id="preview"
-                  logoUrl={merchantLogo}
+                  logoUrl={cardLogoUrl}
                   title={headline}
                   subTitle={merchantName}
                   isFeatured={false}
@@ -205,21 +153,11 @@ export function OfferPreviewPanel({
             <p className="text-sm text-gray-600 mb-3">
               Full offer details when a member clicks to learn more
             </p>
-            <div className="bg-slate-50 rounded-lg border border-slate-200 overflow-hidden">
-              <MaterialUIProvider>
-                <OfferDetailPreview
-                  title={headline}
-                  merchant={merchantName}
-                  discount={discountBadge}
-                  description={description}
-                  terms={terms}
-                  logoUrl={merchantLogo}
-                  primaryColor="#4B55FD"
-                  redemptionMethod={redemptionMethod}
-                  validUntil={validUntil}
-                  promoCode={promoCode}
-                />
-              </MaterialUIProvider>
+            <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+              <OfferDetailPreviewV2
+                formData={formData}
+                primaryColor="#4B55FD"
+              />
             </div>
           </div>
         </div>
