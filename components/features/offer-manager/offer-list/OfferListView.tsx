@@ -2,7 +2,6 @@
 
 import React, { useMemo, memo, useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { WavyBackground } from "@/components/ui/wavy-background";
 import Fuse from "fuse.js";
 import { Button } from "@/components/atoms/Button";
 import { PlusIcon } from "@heroicons/react/24/outline";
@@ -242,15 +241,12 @@ const OfferListView = memo(function OfferListView() {
   return (
     <div className="space-y-6">
       {/* Offer Manager Banner */}
-      <WavyBackground
-        containerClassName="relative overflow-hidden rounded-2xl h-auto min-h-0"
-        className="w-full"
-        colors={["#328FE5", "#77D898", "#5BB8F5", "#A8E6CF", "#328FE5"]}
-        backgroundFill="white"
-        blur={12}
-        speed="slow"
-        waveOpacity={0.3}
-        waveWidth={30}
+      <div
+        className="rounded-2xl"
+        style={{
+          background:
+            "linear-gradient(135deg, #f0f9ff 0%, #e8faf3 50%, #f5f3ff 100%)",
+        }}
       >
         <div className="flex items-center justify-between px-8 py-6">
           <div>
@@ -263,7 +259,7 @@ const OfferListView = memo(function OfferListView() {
           </div>
           <div className="shrink-0">{createOfferButton}</div>
         </div>
-      </WavyBackground>
+      </div>
 
       <OfferListSearchBar
         selectedFilters={selectedFilters}
