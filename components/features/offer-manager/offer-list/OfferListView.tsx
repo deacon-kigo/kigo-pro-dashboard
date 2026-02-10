@@ -11,7 +11,11 @@ import { OfferListTable } from "./OfferListTable";
 import { OfferDeleteDialog } from "./OfferDeleteDialog";
 import { OfferBulkActions } from "./OfferBulkActions";
 import { OfferBulkDeleteDialog } from "./OfferBulkDeleteDialog";
-import { MOCK_OFFERS, OfferListItem } from "./offerListMockData";
+import {
+  MOCK_OFFERS,
+  OfferListItem,
+  semanticSearch,
+} from "./offerListMockData";
 
 const OfferListView = memo(function OfferListView() {
   const router = useRouter();
@@ -110,7 +114,7 @@ const OfferListView = memo(function OfferListView() {
   const filteredOffers = useMemo(() => {
     let results = offers;
 
-    // 1. Fuzzy text search with Fuse.js
+    // 1. Text search: Fuse.js fuzzy + semantic concept expansion
     if (searchQuery.trim()) {
       const fuse = new Fuse(results, {
         keys: [
@@ -122,7 +126,19 @@ const OfferListView = memo(function OfferListView() {
         includeScore: true,
         ignoreLocation: true,
       });
-      results = fuse.search(searchQuery).map((r) => r.item);
+      const fuseResults = fuse.search(searchQuery).map((r) => r.item);
+      const semanticResults = semanticSearch(results, searchTerms);
+
+      // Union: Fuse results first (relevance-ranked), then semantic additions
+      const seen = new Set<string>();
+      const merged: OfferListItem[] = [];
+      for (const item of [...fuseResults, ...semanticResults]) {
+        if (!seen.has(item.id)) {
+          seen.add(item.id);
+          merged.push(item);
+        }
+      }
+      results = merged;
     }
 
     // 2. Structured filters (AND across categories, OR within)
@@ -144,7 +160,7 @@ const OfferListView = memo(function OfferListView() {
     }
 
     return results;
-  }, [offers, searchQuery, merchantIds, offerTypes, statuses]);
+  }, [offers, searchQuery, searchTerms, merchantIds, offerTypes, statuses]);
 
   // Derived selected offers from row selection
   const selectedOffers = useMemo(() => {

@@ -1209,3 +1209,198 @@ export const MOCK_OFFERS: OfferListItem[] = [
     endDate: "2025-12-15",
   },
 ];
+
+// ---------------------------------------------------------------------------
+// Semantic Search — concept-aware expansion layered on top of Fuse.js fuzzy
+// ---------------------------------------------------------------------------
+
+interface SemanticMatch {
+  offerTypes?: OfferType[];
+  merchantIds?: string[];
+  statuses?: OfferStatus[];
+  sortBy?: "redemptions_desc" | "end_date_desc";
+}
+
+const SEMANTIC_CONCEPT_MAP: Record<string, SemanticMatch> = {
+  // ── Offer-type concepts ───────────────────────────────────────────────
+  discount: { offerTypes: ["percentage_savings", "dollars_off"] },
+  savings: { offerTypes: ["percentage_savings", "dollars_off"] },
+  deal: {
+    offerTypes: ["percentage_savings", "dollars_off", "bogo", "price_point"],
+  },
+  deals: {
+    offerTypes: ["percentage_savings", "dollars_off", "bogo", "price_point"],
+  },
+  sale: { offerTypes: ["percentage_savings", "dollars_off"] },
+  coupon: { offerTypes: ["percentage_savings", "dollars_off"] },
+  free: { offerTypes: ["free_with_purchase"] },
+  freebie: { offerTypes: ["free_with_purchase"] },
+  reward: { offerTypes: ["loyalty_points", "cashback", "spend_and_get"] },
+  rewards: { offerTypes: ["loyalty_points", "cashback", "spend_and_get"] },
+  earn: { offerTypes: ["loyalty_points", "cashback", "spend_and_get"] },
+  points: { offerTypes: ["loyalty_points"] },
+  loyalty: { offerTypes: ["loyalty_points"] },
+  cashback: { offerTypes: ["cashback"] },
+  bundle: { offerTypes: ["bogo", "price_point"] },
+  combo: { offerTypes: ["bogo", "price_point"] },
+  bogo: { offerTypes: ["bogo"] },
+
+  // ── Industry / merchant concepts ──────────────────────────────────────
+  food: {
+    merchantIds: [
+      "m1",
+      "m2",
+      "m3",
+      "m4",
+      "m5",
+      "m6",
+      "m7",
+      "m8",
+      "m13",
+      "m16",
+      "m17",
+      "m21",
+    ],
+  },
+  restaurant: {
+    merchantIds: ["m1", "m3", "m4", "m5", "m6", "m13", "m16", "m21"],
+  },
+  dining: { merchantIds: ["m1", "m3", "m4", "m5", "m6", "m13", "m16", "m21"] },
+  pizza: { merchantIds: ["m1"] },
+  coffee: { merchantIds: ["m2"] },
+  burger: { merchantIds: ["m3"] },
+  taco: { merchantIds: ["m4"] },
+  sushi: { merchantIds: ["m5"] },
+  pasta: { merchantIds: ["m6"] },
+  smoothie: { merchantIds: ["m7"] },
+  bakery: { merchantIds: ["m8"] },
+  grocery: { merchantIds: ["m9"] },
+  fitness: { merchantIds: ["m10"] },
+  gym: { merchantIds: ["m10"] },
+  health: { merchantIds: ["m10", "m19"] },
+  wellness: { merchantIds: ["m10", "m19"] },
+  beauty: { merchantIds: ["m18", "m22"] },
+  salon: { merchantIds: ["m18", "m22"] },
+  barber: { merchantIds: ["m18"] },
+  nails: { merchantIds: ["m22"] },
+  auto: { merchantIds: ["m11", "m23"] },
+  car: { merchantIds: ["m11", "m23"] },
+  automotive: { merchantIds: ["m11", "m23"] },
+  tech: { merchantIds: ["m14"] },
+  electronics: { merchantIds: ["m14"] },
+  travel: { merchantIds: ["m24"] },
+  vacation: { merchantIds: ["m24"] },
+  pets: { merchantIds: ["m12"] },
+  pet: { merchantIds: ["m12"] },
+  flowers: { merchantIds: ["m15"] },
+  florist: { merchantIds: ["m15"] },
+  books: { merchantIds: ["m25"] },
+  bookstore: { merchantIds: ["m25"] },
+  clothing: { merchantIds: ["m20"] },
+  apparel: { merchantIds: ["m20"] },
+  fashion: { merchantIds: ["m20"] },
+  pharmacy: { merchantIds: ["m19"] },
+  beer: { merchantIds: ["m17"] },
+  brewery: { merchantIds: ["m17"] },
+  bbq: { merchantIds: ["m21"] },
+  grill: { merchantIds: ["m21"] },
+
+  // ── Status concepts ───────────────────────────────────────────────────
+  active: { statuses: ["published"] },
+  live: { statuses: ["published"] },
+  inactive: { statuses: ["draft", "expired", "archived"] },
+  paused: { statuses: ["draft"] },
+  stopped: { statuses: ["draft", "expired", "archived"] },
+  expired: { statuses: ["expired"] },
+  archived: { statuses: ["archived"] },
+  draft: { statuses: ["draft"] },
+
+  // ── Performance / recency concepts ────────────────────────────────────
+  popular: { sortBy: "redemptions_desc" },
+  top: { sortBy: "redemptions_desc" },
+  best: { sortBy: "redemptions_desc" },
+  trending: { sortBy: "redemptions_desc" },
+  new: { sortBy: "end_date_desc" },
+  recent: { sortBy: "end_date_desc" },
+  latest: { sortBy: "end_date_desc" },
+};
+
+/**
+ * Semantic search: expands natural-language terms into concept-aware matches.
+ * Returns offers matching any recognized concept. Empty array if no hits.
+ */
+export function semanticSearch(
+  offers: OfferListItem[],
+  searchTerms: string[]
+): OfferListItem[] {
+  const query = searchTerms.join(" ").toLowerCase();
+  const words = query.split(/\s+/).filter(Boolean);
+
+  // Collect all matching dimensions
+  const matchedTypes = new Set<OfferType>();
+  const matchedMerchants = new Set<string>();
+  const matchedStatuses = new Set<OfferStatus>();
+  let sortBy: SemanticMatch["sortBy"] | undefined;
+
+  for (const word of words) {
+    // Exact match
+    const exact = SEMANTIC_CONCEPT_MAP[word];
+    if (exact) {
+      exact.offerTypes?.forEach((t) => matchedTypes.add(t));
+      exact.merchantIds?.forEach((m) => matchedMerchants.add(m));
+      exact.statuses?.forEach((s) => matchedStatuses.add(s));
+      if (exact.sortBy) sortBy = exact.sortBy;
+    }
+
+    // Substring match for multi-word concept keys (e.g. "food" in "food deals")
+    for (const [key, match] of Object.entries(SEMANTIC_CONCEPT_MAP)) {
+      if (key !== word && (key.includes(word) || word.includes(key))) {
+        match.offerTypes?.forEach((t) => matchedTypes.add(t));
+        match.merchantIds?.forEach((m) => matchedMerchants.add(m));
+        match.statuses?.forEach((s) => matchedStatuses.add(s));
+        if (match.sortBy && !sortBy) sortBy = match.sortBy;
+      }
+    }
+  }
+
+  // No semantic hits — return empty
+  if (
+    matchedTypes.size === 0 &&
+    matchedMerchants.size === 0 &&
+    matchedStatuses.size === 0 &&
+    !sortBy
+  ) {
+    return [];
+  }
+
+  // Filter with OR logic across matched dimensions
+  let results: OfferListItem[];
+
+  if (
+    matchedTypes.size === 0 &&
+    matchedMerchants.size === 0 &&
+    matchedStatuses.size === 0
+  ) {
+    // Only a sort concept matched — return all offers (will be sorted below)
+    results = [...offers];
+  } else {
+    results = offers.filter((offer) => {
+      if (matchedTypes.size > 0 && matchedTypes.has(offer.offerType))
+        return true;
+      if (matchedMerchants.size > 0 && matchedMerchants.has(offer.merchantId))
+        return true;
+      if (matchedStatuses.size > 0 && matchedStatuses.has(offer.offerStatus))
+        return true;
+      return false;
+    });
+  }
+
+  // Apply sort if a performance/recency concept was matched
+  if (sortBy === "redemptions_desc") {
+    results.sort((a, b) => b.redemptions - a.redemptions);
+  } else if (sortBy === "end_date_desc") {
+    results.sort((a, b) => b.endDate.localeCompare(a.endDate));
+  }
+
+  return results;
+}
