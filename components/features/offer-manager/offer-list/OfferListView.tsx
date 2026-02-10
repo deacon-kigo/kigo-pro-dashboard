@@ -2,7 +2,7 @@
 
 import React, { useMemo, memo, useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+import { WavyBackground } from "@/components/ui/wavy-background";
 import Fuse from "fuse.js";
 import { Button } from "@/components/atoms/Button";
 import { PlusIcon } from "@heroicons/react/24/outline";
@@ -242,45 +242,28 @@ const OfferListView = memo(function OfferListView() {
   return (
     <div className="space-y-6">
       {/* Offer Manager Banner */}
-      <div
-        className="relative overflow-hidden rounded-2xl"
-        style={{
-          background: `
-            radial-gradient(ellipse 120% 80% at 100% 0%, #ccfffe35 0%, transparent 50%),
-            radial-gradient(ellipse 100% 60% at 0% 100%, #c7d2fe25 0%, transparent 45%),
-            radial-gradient(ellipse 80% 50% at 50% 50%, #e0e7ff15 0%, transparent 50%),
-            linear-gradient(145deg, #f0fffe80 0%, white 40%, #e0e7ff30 80%, white 100%)
-          `,
-        }}
+      <WavyBackground
+        containerClassName="relative overflow-hidden rounded-2xl h-auto min-h-0"
+        className="w-full"
+        colors={["#328FE5", "#77D898", "#5BB8F5", "#A8E6CF", "#328FE5"]}
+        backgroundFill="white"
+        blur={12}
+        speed="slow"
+        waveOpacity={0.3}
+        waveWidth={30}
       >
-        {/* Illustration — centered background */}
-        <div className="absolute left-1/2 -translate-x-1/3 top-1/2 -translate-y-1/2 w-[280px] h-[130px] hidden md:block">
-          <Image
-            src="/illustration/offer-page-banner.png"
-            alt=""
-            fill
-            className="object-contain animate-[floatY_4s_ease-in-out_infinite]"
-            priority
-          />
-        </div>
-
-        <div className="relative flex items-center justify-between px-8 py-6 z-10">
-          {/* Left: text content */}
-          <div className="flex items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Offer Management
-              </h1>
-              <p className="text-sm text-gray-500 mt-1">
-                View, search, and manage all offers across merchants.
-              </p>
-            </div>
+        <div className="flex items-center justify-between px-8 py-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Offer Management
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+              View, search, and manage all offers across merchants.
+            </p>
           </div>
-
-          {/* Right: CTA button */}
           <div className="shrink-0">{createOfferButton}</div>
         </div>
-      </div>
+      </WavyBackground>
 
       <OfferListSearchBar
         selectedFilters={selectedFilters}
