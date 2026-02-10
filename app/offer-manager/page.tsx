@@ -18,6 +18,7 @@ import {
   OfferManagerViewP0_4Preview,
   OfferManagerViewP0_5Wizard,
 } from "@/components/features/offer-manager/p0-merchant";
+import OfferListView from "@/components/features/offer-manager/offer-list/OfferListView";
 
 function LoadingFallback() {
   return (
@@ -97,17 +98,15 @@ function OfferManagerContent() {
       case "p0.5":
         // P0.5: Wizard Flow
         return <OfferManagerViewP0_5Wizard />;
+      case "p1":
+        // P1: Offer List Grid
+        return <OfferListView />;
       case "p5":
       case "future":
         return <OfferManagerViewFuture onCreatingChange={setIsCreating} />;
       case "p0":
       default:
-        return (
-          <OfferManagerViewP0
-            onCreatingChange={setIsCreating}
-            autoStart={autoStart}
-          />
-        );
+        return <OfferListView />;
     }
   };
 

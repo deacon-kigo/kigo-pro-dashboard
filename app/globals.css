@@ -523,6 +523,16 @@ body.spotlight-open nav {
   }
 }
 
+@keyframes floatY {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
 @keyframes float-micro {
   0%,
   100% {

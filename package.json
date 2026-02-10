@@ -67,6 +67,7 @@
     "date-fns": "^3.6.0",
     "dicons": "^1.1.7",
     "framer-motion": "^12.23.26",
+    "fuse.js": "^7.1.0",
     "langchain": "^0.3.36",
     "langsmith": "^0.3.87",
     "lucide-react": "^0.545.0",
