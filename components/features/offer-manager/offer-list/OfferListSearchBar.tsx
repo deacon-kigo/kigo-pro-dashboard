@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useId, useMemo, useCallback } from "react";
+import React, { useId, useMemo, useCallback, useRef } from "react";
 import type { StylesConfig, GroupBase, GroupProps } from "react-select";
 import { components } from "react-select";
 import * as AsyncCreatableModule from "react-select/async-creatable";
@@ -21,6 +21,8 @@ import {
   Star,
   ShoppingBag,
   BadgePercent,
+  Loader2,
+  CornerDownLeft,
 } from "lucide-react";
 import { MOCK_MERCHANTS, OFFER_TYPE_LABELS } from "./offerListMockData";
 import { OfferType } from "@/types/offers";
@@ -258,13 +260,43 @@ const CustomGroup = (
   );
 };
 
-// Spotlight-style option row — icon-forward, clean highlight
+// ---------- Keyword highlight helper ----------
+
+function highlightMatch(
+  text: string,
+  query: string,
+  baseColor: string
+): React.ReactNode {
+  if (!query) return text;
+  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  if (idx === -1) return text;
+  return (
+    <>
+      {text.slice(0, idx)}
+      <span
+        style={{
+          fontWeight: 600,
+          color: baseColor,
+          backgroundColor: "rgba(255, 213, 79, 0.25)",
+          borderRadius: "2px",
+          padding: "0 1px",
+        }}
+      >
+        {text.slice(idx, idx + query.length)}
+      </span>
+      {text.slice(idx + query.length)}
+    </>
+  );
+}
+
+// Spotlight-style option row — icon-forward, keyword highlight
 const CustomOption = (props: any) => {
   const { data, isSelected, isFocused, innerRef, innerProps } = props;
   const category = data?.category as FilterTag["category"] | undefined;
   const colors = category ? CATEGORY_COLORS[category] : CATEGORY_COLORS.search;
   const isCreateOption = data?.__isNew__;
   const OptionIcon = data?.value ? getOptionIcon(data.value) : null;
+  const inputValue = (props.selectProps?.inputValue as string) || "";
 
   return (
     <div
@@ -289,19 +321,47 @@ const CustomOption = (props: any) => {
               width: 28,
               height: 28,
               borderRadius: "7px",
-              backgroundColor: "rgba(0,0,0,0.04)",
+              backgroundColor: isFocused
+                ? "rgba(99, 102, 241, 0.08)"
+                : "rgba(0,0,0,0.04)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               flexShrink: 0,
             }}
           >
-            <Search style={{ width: 14, height: 14, color: "#888" }} />
+            <Search
+              style={{
+                width: 14,
+                height: 14,
+                color: isFocused ? "#6366f1" : "#888",
+              }}
+            />
           </span>
           <span
-            style={{ fontSize: "0.8125rem", color: "#555", fontWeight: 400 }}
+            style={{
+              fontSize: "0.8125rem",
+              color: isFocused ? "#4338ca" : "#555",
+              fontWeight: 500,
+              flex: 1,
+            }}
           >
-            {data.label}
+            Search for &ldquo;
+            <span style={{ fontWeight: 600 }}>{inputValue}</span>
+            &rdquo;
+          </span>
+          <span
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "3px",
+              fontSize: "0.6875rem",
+              color: "#aaa",
+              flexShrink: 0,
+            }}
+          >
+            <CornerDownLeft style={{ width: 11, height: 11 }} />
+            enter
           </span>
         </>
       ) : (
@@ -340,7 +400,7 @@ const CustomOption = (props: any) => {
             )}
           </span>
 
-          {/* Label */}
+          {/* Label with keyword highlight */}
           <span
             style={{
               fontSize: "0.8125rem",
@@ -349,7 +409,11 @@ const CustomOption = (props: any) => {
               flex: 1,
             }}
           >
-            {data?.label ?? ""}
+            {highlightMatch(
+              data?.label ?? "",
+              inputValue,
+              isSelected ? colors.text : "#333"
+            )}
           </span>
 
           {/* Checkmark on right */}
@@ -367,6 +431,138 @@ const CustomOption = (props: any) => {
         </>
       )}
     </div>
+  );
+};
+
+const LoadingMessage = (props: any) => (
+  <div
+    style={{
+      padding: "8px 16px",
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+    }}
+  >
+    <Loader2
+      className="h-3.5 w-3.5 animate-spin"
+      style={{ color: "#328FE5" }}
+    />
+    <span style={{ fontSize: "0.8125rem", color: "#717585" }}>
+      Searching merchants...
+    </span>
+  </div>
+);
+
+const LoadingIndicator = () => (
+  <div style={{ padding: "0 8px", display: "flex", alignItems: "center" }}>
+    <Loader2
+      className="h-3.5 w-3.5 animate-spin"
+      style={{ color: "#328FE5" }}
+    />
+  </div>
+);
+
+// ---------- Badge group labels ----------
+
+const CATEGORY_LABELS: Record<FilterTag["category"], string> = {
+  status: "Status",
+  type: "Type",
+  merchant: "Merchant",
+  search: "Search",
+};
+
+const CATEGORY_ORDER: FilterTag["category"][] = [
+  "status",
+  "type",
+  "merchant",
+  "search",
+];
+
+const CustomValueContainer = (props: any) => {
+  const { children, hasValue, ...rest } = props;
+  const childArray = React.Children.toArray(children);
+
+  // When no values selected, pass through unchanged (Placeholder + Input)
+  if (!hasValue) {
+    return (
+      <components.ValueContainer hasValue={hasValue} {...rest}>
+        {children}
+      </components.ValueContainer>
+    );
+  }
+
+  // Separate MultiValue elements (have data.category) from other children (Input, Placeholder)
+  const multiValues: React.ReactNode[] = [];
+  const others: React.ReactNode[] = [];
+  for (const child of childArray) {
+    const data = (child as any)?.props?.data as FilterTag | undefined;
+    if (data?.category) {
+      multiValues.push(child);
+    } else {
+      others.push(child);
+    }
+  }
+
+  // Group multi-value elements by category
+  const grouped: Record<string, React.ReactNode[]> = {};
+  for (const child of multiValues) {
+    const data = (child as any)?.props?.data as FilterTag;
+    const cat = data.category;
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(child);
+  }
+
+  // Render in defined order with inline labels and group spacing
+  const rendered: React.ReactNode[] = [];
+  let groupIndex = 0;
+  for (const cat of CATEGORY_ORDER) {
+    const items = grouped[cat];
+    if (!items || items.length === 0) continue;
+    const colors = CATEGORY_COLORS[cat];
+    const isFirst = groupIndex === 0;
+    // Add a subtle separator between groups
+    if (!isFirst) {
+      rendered.push(
+        <span
+          key={`sep-${cat}`}
+          style={{
+            width: "1px",
+            height: "16px",
+            backgroundColor: "#E4E5E7",
+            marginLeft: "6px",
+            marginRight: "6px",
+            flexShrink: 0,
+          }}
+        />
+      );
+    }
+    rendered.push(
+      <span
+        key={`label-${cat}`}
+        style={{
+          fontSize: "10px",
+          fontWeight: 600,
+          textTransform: "uppercase",
+          letterSpacing: "0.04em",
+          color: colors.text,
+          opacity: 0.7,
+          whiteSpace: "nowrap",
+          marginRight: "2px",
+          lineHeight: "24px",
+        }}
+      >
+        {CATEGORY_LABELS[cat]}
+      </span>
+    );
+    rendered.push(...items);
+    groupIndex++;
+  }
+
+  return (
+    <components.ValueContainer hasValue={hasValue} {...rest}>
+      {rendered}
+      {others}
+    </components.ValueContainer>
   );
 };
 
@@ -393,9 +589,10 @@ const customStyles: StylesConfig<FilterTag, true, GroupBase<FilterTag>> = {
     ...base,
     padding: "2px 4px",
     fontSize: "0.875rem",
-    flexWrap: "wrap",
+    flexWrap: "nowrap",
     gap: "0px",
     alignItems: "center",
+    overflow: "auto",
   }),
   multiValue: (base) => ({
     ...base,
@@ -484,6 +681,8 @@ export function OfferListSearchBar({
   onFiltersChange,
 }: OfferListSearchBarProps) {
   const instanceId = useId();
+  const filtersRef = useRef(selectedFilters);
+  filtersRef.current = selectedFilters;
 
   const selectedValues = useMemo(
     () => new Set(selectedFilters.map((f) => f.value)),
@@ -493,14 +692,14 @@ export function OfferListSearchBar({
   const defaultOptions = useMemo(() => {
     const groups: GroupBase<FilterTag>[] = [];
 
-    const sortedTypes = sortSelectedFirst(typeOptions, selectedValues);
-    if (sortedTypes.length > 0) {
-      groups.push({ label: "Offer Types", options: sortedTypes });
-    }
-
     const sortedStatuses = sortSelectedFirst(statusOptions, selectedValues);
     if (sortedStatuses.length > 0) {
       groups.push({ label: "Statuses", options: sortedStatuses });
+    }
+
+    const sortedTypes = sortSelectedFirst(typeOptions, selectedValues);
+    if (sortedTypes.length > 0) {
+      groups.push({ label: "Offer Types", options: sortedTypes });
     }
 
     return groups;
@@ -511,12 +710,15 @@ export function OfferListSearchBar({
       const groups: GroupBase<FilterTag>[] = [];
       const lower = inputValue.toLowerCase().trim();
 
-      if (lower) {
-        const merchants = await searchMerchants(lower);
-        const sorted = sortSelectedFirst(merchants, selectedValues);
-        if (sorted.length > 0) {
-          groups.push({ label: "Merchants", options: sorted });
-        }
+      const filteredStatuses = statusOptions.filter(
+        (o) => !lower || o.label.toLowerCase().includes(lower)
+      );
+      const sortedStatuses = sortSelectedFirst(
+        filteredStatuses,
+        selectedValues
+      );
+      if (sortedStatuses.length > 0) {
+        groups.push({ label: "Statuses", options: sortedStatuses });
       }
 
       const filteredTypes = typeOptions.filter(
@@ -527,15 +729,12 @@ export function OfferListSearchBar({
         groups.push({ label: "Offer Types", options: sortedTypes });
       }
 
-      const filteredStatuses = statusOptions.filter(
-        (o) => !lower || o.label.toLowerCase().includes(lower)
-      );
-      const sortedStatuses = sortSelectedFirst(
-        filteredStatuses,
-        selectedValues
-      );
-      if (sortedStatuses.length > 0) {
-        groups.push({ label: "Statuses", options: sortedStatuses });
+      if (lower) {
+        const merchants = await searchMerchants(lower);
+        const sorted = sortSelectedFirst(merchants, selectedValues);
+        if (sorted.length > 0) {
+          groups.push({ label: "Merchants", options: sorted });
+        }
       }
 
       return groups;
@@ -559,9 +758,9 @@ export function OfferListSearchBar({
         value: `search:${trimmed}`,
         category: "search",
       };
-      onFiltersChange([...selectedFilters, newTag]);
+      onFiltersChange([...filtersRef.current, newTag]);
     },
-    [selectedFilters, onFiltersChange]
+    [onFiltersChange]
   );
 
   return (
@@ -577,6 +776,7 @@ export function OfferListSearchBar({
         value={selectedFilters}
         onChange={handleChange}
         onCreateOption={handleCreateOption}
+        createOptionPosition="first"
         formatCreateLabel={(input: string) => `Search for "${input}"`}
         isValidNewOption={(inputValue: string) => inputValue.trim().length > 0}
         getOptionValue={(option: FilterTag) => option.value}
@@ -590,8 +790,11 @@ export function OfferListSearchBar({
           MultiValueContainer,
           MultiValueLabel,
           MultiValueRemove,
+          ValueContainer: CustomValueContainer,
           Group: CustomGroup,
           Option: CustomOption,
+          LoadingMessage,
+          LoadingIndicator,
         }}
         closeMenuOnSelect={false}
         isClearable
