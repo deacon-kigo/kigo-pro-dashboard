@@ -97,10 +97,32 @@ const STATUS_STYLE: Record<
     border: "border-slate-200",
     label: "Archived",
   },
+  paused: {
+    icon: Clock,
+    text: "text-amber-700",
+    bg: "bg-amber-50",
+    border: "border-amber-200",
+    label: "Paused",
+  },
+  pending_approval: {
+    icon: FileEdit,
+    text: "text-blue-700",
+    bg: "bg-blue-50",
+    border: "border-blue-200",
+    label: "Pending Approval",
+  },
 };
 
 function StatusBadge({ status }: { status: OfferStatus }) {
   const style = STATUS_STYLE[status];
+  if (!style) {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold border bg-gray-50 text-gray-700 border-gray-200">
+        <FileEdit className="h-3.5 w-3.5" />
+        {status ?? "Unknown"}
+      </span>
+    );
+  }
   const Icon = style.icon;
   return (
     <span
