@@ -15,6 +15,15 @@ import { cn } from "@/lib/utils";
 import { OfferListItem } from "./offerListMockData";
 import { getOfferListColumns, formatDate } from "./offerListColumns";
 
+// Row styling based on offer status
+function getOfferRowClassName(row: unknown): string {
+  const offer = row as OfferListItem;
+  if (offer.offerStatus === "expired" || offer.offerStatus === "archived") {
+    return "opacity-60";
+  }
+  return "";
+}
+
 interface OfferListTableProps {
   data: OfferListItem[];
   className?: string;
@@ -23,10 +32,10 @@ interface OfferListTableProps {
   pageSize?: number;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (value: string) => void;
-  onTogglePublish: (offerId: string) => void;
   onEdit: (offerId: string) => void;
   onDelete: (offer: OfferListItem) => void;
   onRowClick?: (row: OfferListItem) => void;
+  emptyState?: React.ReactNode;
 }
 
 export const OfferListTable = memo(function OfferListTable({
@@ -37,10 +46,10 @@ export const OfferListTable = memo(function OfferListTable({
   pageSize: externalPageSize,
   onPageChange: externalPageChange,
   onPageSizeChange: externalPageSizeChange,
-  onTogglePublish,
   onEdit,
   onDelete,
   onRowClick,
+  emptyState,
 }: OfferListTableProps) {
   const [internalCurrentPage, setInternalCurrentPage] = useState(1);
   const [internalPageSize, setInternalPageSize] = useState(10);
@@ -95,11 +104,10 @@ export const OfferListTable = memo(function OfferListTable({
   const baseColumns = useMemo(
     () =>
       getOfferListColumns({
-        onTogglePublish,
         onEdit,
         onDelete,
       }),
-    [onTogglePublish, onEdit, onDelete]
+    [onEdit, onDelete]
   );
 
   // Columns with search highlighting on offerName
@@ -226,9 +234,19 @@ export const OfferListTable = memo(function OfferListTable({
         disablePagination={false}
         customPagination={customPagination}
         onRowClick={onRowClick as ((row: unknown) => void) | undefined}
+        emptyState={emptyState}
+        getRowClassName={getOfferRowClassName}
+        enableColumnDrag
       />
     ),
-    [columns, currentPageData, className, customPagination, onRowClick]
+    [
+      columns,
+      currentPageData,
+      className,
+      customPagination,
+      onRowClick,
+      emptyState,
+    ]
   );
 
   return <div className={cn("space-y-4", className)}>{tableComponent}</div>;

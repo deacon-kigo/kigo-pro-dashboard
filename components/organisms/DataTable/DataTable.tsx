@@ -2,6 +2,7 @@
 
 import {
   ColumnDef,
+  ColumnOrderState,
   flexRender,
   getCoreRowModel,
   useReactTable,
@@ -18,19 +19,28 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useState, memo, ReactNode, useMemo, useCallback } from "react";
+import { useState, memo, ReactNode, useMemo, useCallback, useRef } from "react";
 import Card from "@/components/atoms/Card/Card";
 import { Button } from "@/components/atoms/Button";
 import { cn } from "@/lib/utils";
 
-// Custom CSS for selected rows
+// Custom CSS for selected rows + column drag styles
 const customTableStyles = `
   [data-state=selected] {
     background-color: rgba(219, 234, 254, 0.5) !important; /* Lighter blue-50 */
   }
-  
+
   [data-state=selected]:hover {
     background-color: rgba(219, 234, 254, 0.7) !important; /* Slightly darker on hover but still light */
+  }
+
+  th[data-dragging="true"] {
+    opacity: 0.5;
+    background-color: #f0f9ff;
+  }
+
+  th[data-drag-over="true"] {
+    box-shadow: inset 2px 0 0 0 #3b82f6;
   }
 `;
 
@@ -45,6 +55,7 @@ export interface DataTableProps<TData, TValue> {
   getRowClassName?: (row: TData) => string;
   onRowClick?: (row: TData) => void;
   emptyState?: ReactNode;
+  enableColumnDrag?: boolean;
 }
 
 /**
@@ -54,6 +65,7 @@ export interface DataTableProps<TData, TValue> {
  * - Pagination
  * - Sorting
  * - Row selection
+ * - Column drag-and-drop reordering (opt-in via enableColumnDrag)
  */
 export const DataTable = memo(function DataTable<TData, TValue>({
   columns,
@@ -66,10 +78,16 @@ export const DataTable = memo(function DataTable<TData, TValue>({
   getRowClassName,
   onRowClick,
   emptyState,
+  enableColumnDrag = false,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
+
+  // Column ordering state for drag-and-drop
+  const [columnOrder, setColumnOrder] = useState<ColumnOrderState>([]);
+  const dragColumnRef = useRef<string | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
 
   // Memoize handlers to prevent recreation on each render
   const handleRowSelectionChange = useCallback(
@@ -105,8 +123,9 @@ export const DataTable = memo(function DataTable<TData, TValue>({
         pageSize,
       },
       rowSelection,
+      ...(enableColumnDrag && columnOrder.length > 0 ? { columnOrder } : {}),
     }),
-    [sorting, pageIndex, pageSize, rowSelection]
+    [sorting, pageIndex, pageSize, rowSelection, enableColumnDrag, columnOrder]
   );
 
   // Create table instance with memoized dependencies
@@ -118,10 +137,70 @@ export const DataTable = memo(function DataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     onSortingChange: handleSortingChange,
     onRowSelectionChange: handleRowSelectionChange,
+    onColumnOrderChange: enableColumnDrag ? setColumnOrder : undefined,
     state: tableState,
     enableRowSelection: true,
     enableMultiSort: false,
   });
+
+  // Column drag handlers
+  const handleDragStart = useCallback(
+    (e: React.DragEvent, columnId: string) => {
+      dragColumnRef.current = columnId;
+      e.dataTransfer.effectAllowed = "move";
+      // Set a transparent drag image
+      const el = e.currentTarget as HTMLElement;
+      el.setAttribute("data-dragging", "true");
+    },
+    []
+  );
+
+  const handleDragOver = useCallback((e: React.DragEvent, columnId: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (dragColumnRef.current && dragColumnRef.current !== columnId) {
+      setDragOverColumn(columnId);
+    }
+  }, []);
+
+  const handleDragLeave = useCallback(() => {
+    setDragOverColumn(null);
+  }, []);
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent, targetColumnId: string) => {
+      e.preventDefault();
+      setDragOverColumn(null);
+
+      const sourceColumnId = dragColumnRef.current;
+      if (!sourceColumnId || sourceColumnId === targetColumnId) return;
+
+      // Get current order (or derive from columns)
+      const currentOrder =
+        columnOrder.length > 0
+          ? [...columnOrder]
+          : table.getAllLeafColumns().map((c) => c.id);
+
+      const sourceIdx = currentOrder.indexOf(sourceColumnId);
+      const targetIdx = currentOrder.indexOf(targetColumnId);
+
+      if (sourceIdx === -1 || targetIdx === -1) return;
+
+      // Move the column
+      currentOrder.splice(sourceIdx, 1);
+      currentOrder.splice(targetIdx, 0, sourceColumnId);
+
+      setColumnOrder(currentOrder);
+    },
+    [columnOrder, table]
+  );
+
+  const handleDragEnd = useCallback((e: React.DragEvent) => {
+    const el = e.currentTarget as HTMLElement;
+    el.removeAttribute("data-dragging");
+    dragColumnRef.current = null;
+    setDragOverColumn(null);
+  }, []);
 
   // Memoize table components to prevent unnecessary re-renders
   const tableHeader = useMemo(
@@ -130,7 +209,33 @@ export const DataTable = memo(function DataTable<TData, TValue>({
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id}>
             {headerGroup.headers.map((header) => (
-              <TableHead key={header.id}>
+              <TableHead
+                key={header.id}
+                draggable={enableColumnDrag}
+                data-dragging={undefined}
+                data-drag-over={
+                  enableColumnDrag && dragOverColumn === header.id
+                    ? "true"
+                    : undefined
+                }
+                onDragStart={
+                  enableColumnDrag
+                    ? (e) => handleDragStart(e, header.id)
+                    : undefined
+                }
+                onDragOver={
+                  enableColumnDrag
+                    ? (e) => handleDragOver(e, header.id)
+                    : undefined
+                }
+                onDragLeave={enableColumnDrag ? handleDragLeave : undefined}
+                onDrop={
+                  enableColumnDrag ? (e) => handleDrop(e, header.id) : undefined
+                }
+                onDragEnd={enableColumnDrag ? handleDragEnd : undefined}
+                className={enableColumnDrag ? "select-none" : undefined}
+                style={enableColumnDrag ? { cursor: "grab" } : undefined}
+              >
                 {header.isPlaceholder
                   ? null
                   : flexRender(
@@ -143,7 +248,16 @@ export const DataTable = memo(function DataTable<TData, TValue>({
         ))}
       </TableHeader>
     ),
-    [table.getHeaderGroups()]
+    [
+      table.getHeaderGroups(),
+      enableColumnDrag,
+      dragOverColumn,
+      handleDragStart,
+      handleDragOver,
+      handleDragLeave,
+      handleDrop,
+      handleDragEnd,
+    ]
   );
 
   const tableBody = useMemo(
@@ -158,7 +272,11 @@ export const DataTable = memo(function DataTable<TData, TValue>({
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
-                className={cn("hover:bg-gray-50", rowClassName)}
+                className={cn(
+                  "hover:bg-gray-50",
+                  rowClassName,
+                  onRowClick && "cursor-pointer"
+                )}
                 onClick={(e) => {
                   // Don't trigger row click if clicking on a button or link
                   const target = e.target as HTMLElement;

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
@@ -29,6 +29,15 @@ import {
   StepReview,
 } from "./wizard";
 import { OfferPreviewPanel } from "../OfferPreviewPanel";
+import {
+  saveDraft,
+  loadDraft,
+  deleteDraft,
+  generateDraftId,
+  createSnapshot,
+  hasChanges,
+} from "./draftUtils";
+import { UnsavedChangesDialog } from "./UnsavedChangesDialog";
 import { MerchantData } from "./MerchantHybridSearch";
 import {
   OfferTypeKey,
@@ -41,16 +50,32 @@ import {
   getSmartDescription,
 } from "@/lib/constants/offer-templates";
 
+// Reverse mapping: backend API offer types → frontend wizard keys
+// Explicit mapping since multiple wizard types can share one backend type
+const API_TO_WIZARD_OFFER_TYPE: Record<string, OfferTypeKey> = {
+  dollars_off: "dollar_off",
+  percentage_savings: "percent_off",
+  bogo: "bogo",
+  price_point: "fixed_price",
+  cashback: "cashback",
+  // Backend-only types that don't have exact wizard matches — map to closest
+  free_with_purchase: "bogo",
+  clickthrough: "dollar_off",
+  loyalty_points: "cashback",
+  spend_and_get: "dollar_off",
+};
+
 /**
- * P0.5 Offer Manager - Streamlined Wizard Flow
+ * P1.1 Offer Manager - Enhanced Wizard Flow
  *
- * Intuitive 4-step offer creation:
- * 1. Select offer type (template starter)
- * 2. Select/create merchant
- * 3. Offer content (details + image + dates + redemption)
- * 4. Review & publish
+ * Supports all 7 offer types with type-specific fields:
+ * - Dollar Off, Percent Off, BOGO, Fixed Price (inherited from P0.5)
+ * - Dollar Off with Minimum (threshold + discount)
+ * - Cash Back (percentage + optional cap)
+ * - Tiered Discount (spend-more-save-more tiers)
  *
- * Includes live preview panel on the right.
+ * 4-step wizard: Type → Merchant → Offer Content → Review
+ * Includes live preview panel, edit/clone modes, and smart auto-fill.
  */
 
 type WizardStep = "type" | "merchant" | "offer" | "review";
@@ -94,7 +119,7 @@ interface WizardProps {
   mode?: "create" | "edit" | "clone";
 }
 
-export default function OfferManagerViewP0_5Wizard({
+export default function OfferManagerViewP1Wizard({
   mode = "create",
 }: WizardProps) {
   const router = useRouter();
@@ -105,6 +130,17 @@ export default function OfferManagerViewP0_5Wizard({
   const [isPublishing, setIsPublishing] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [displayedStep, setDisplayedStep] = useState<WizardStep>("type");
+
+  // Draft save state
+  const [draftId, setDraftId] = useState<string | null>(null);
+  const [isDraftMode, setIsDraftMode] = useState(false);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+  const [draftSaveIndicator, setDraftSaveIndicator] = useState<
+    "idle" | "saving" | "saved"
+  >("idle");
+  const snapshotRef = useRef<string | null>(null);
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Handle step transitions with dissolve effect
   const transitionToStep = useCallback(
@@ -144,6 +180,9 @@ export default function OfferManagerViewP0_5Wizard({
       description: "",
       longText: "",
       discountValue: "",
+      minimumSpend: "",
+      cashbackCap: "",
+      tiers: [{ minSpend: "", discount: "" }],
       externalUrl: "",
       promoCode: "",
       termsConditions: "",
@@ -164,7 +203,7 @@ export default function OfferManagerViewP0_5Wizard({
     };
   });
 
-  // Load initial offer data for edit/clone modes
+  // Load initial offer data for edit/clone modes (with draft resume support)
   useEffect(() => {
     if (mode === "create") return;
 
@@ -175,13 +214,40 @@ export default function OfferManagerViewP0_5Wizard({
       const offer = JSON.parse(stored);
       localStorage.removeItem("editOffer");
 
+      // Check for an existing draft for this offer
+      if (mode === "edit" && offer.id) {
+        const draft = loadDraft(offer.id);
+        if (draft && offer.offerStatus === "draft") {
+          // Resume from saved draft — restore formData, step, and completedSteps
+          setFormData((prev: any) => ({
+            ...prev,
+            ...draft.formData,
+            _editOfferId: offer.id,
+          }));
+          setCurrentStep(draft.currentStep as WizardStep);
+          setDisplayedStep(draft.currentStep as WizardStep);
+          setCompletedSteps(draft.completedSteps);
+          setDraftId(offer.id);
+          setIsDraftMode(true);
+          // Take initial snapshot so auto-save knows the baseline
+          snapshotRef.current = createSnapshot(draft.formData);
+          return; // Skip normal edit flow
+        }
+      }
+
       // Map OfferListItem fields to wizard formData
       const offerName =
         mode === "clone" ? `${offer.offerName} (Copy)` : offer.offerName;
 
+      // Convert backend offer type to wizard type key
+      const rawType = offer.offerType || null;
+      const wizardType = rawType
+        ? API_TO_WIZARD_OFFER_TYPE[rawType] || rawType
+        : null;
+
       setFormData((prev: any) => ({
         ...prev,
-        offerType: offer.offerType || null,
+        offerType: wizardType,
         offerName,
         shortText: offerName,
         description: offer.description || "",
@@ -202,6 +268,11 @@ export default function OfferManagerViewP0_5Wizard({
         _editOfferId: mode === "edit" ? offer.id : undefined,
       }));
 
+      // Track draftId for edit mode so we can save/clean drafts
+      if (mode === "edit" && offer.id) {
+        setDraftId(offer.id);
+      }
+
       // Mark all steps as completed and go to review
       setCompletedSteps(["type", "merchant", "offer"]);
       setCurrentStep("review");
@@ -210,6 +281,45 @@ export default function OfferManagerViewP0_5Wizard({
       // Silently fail if localStorage data is invalid
     }
   }, [mode]);
+
+  // Take initial snapshot when formData first has a meaningful offerType
+  useEffect(() => {
+    if (formData.offerType && !snapshotRef.current) {
+      snapshotRef.current = createSnapshot(formData);
+    }
+  }, [formData.offerType]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-save draft every 30s when there are unsaved changes
+  useEffect(() => {
+    // Don't auto-save on step 1 or before an offer type is selected
+    if (currentStep === "type" || !formData.offerType) return;
+
+    // Clear any existing timer
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+    }
+
+    autoSaveTimerRef.current = setTimeout(() => {
+      if (!hasChanges(formData, snapshotRef.current)) return;
+
+      const id = draftId || generateDraftId();
+      if (!draftId) setDraftId(id);
+
+      setDraftSaveIndicator("saving");
+      saveDraft(id, formData, currentStep, completedSteps);
+      snapshotRef.current = createSnapshot(formData);
+
+      // Flash "saved" for 2 seconds
+      setDraftSaveIndicator("saved");
+      setTimeout(() => setDraftSaveIndicator("idle"), 2000);
+    }, 30_000);
+
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
+    };
+  }, [formData, currentStep, completedSteps, draftId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentStepConfig = STEP_CONFIG.find((s) => s.id === currentStep);
   const currentStepNumber = currentStepConfig?.number || 1;
@@ -369,15 +479,38 @@ export default function OfferManagerViewP0_5Wizard({
         return !!formData.offerType;
       case "merchant":
         return !!(formData.merchant || formData.merchantData);
-      case "offer":
-        return !!(
-          formData.discountValue &&
+      case "offer": {
+        const baseValid =
           formData.offerName?.trim() &&
           formData.description?.trim() &&
           formData.startDate &&
           formData.externalUrl?.trim() &&
-          formData.promoCode?.trim()
-        );
+          formData.promoCode?.trim();
+
+        if (!baseValid) return false;
+
+        // Type-specific validation
+        if (formData.offerType === "tiered_discount") {
+          const tiers = formData.tiers || [];
+          return (
+            tiers.length >= 1 &&
+            tiers.some(
+              (t: { minSpend: string; discount: string }) =>
+                parseFloat(t.minSpend) > 0 && parseFloat(t.discount) > 0
+            )
+          );
+        }
+        if (formData.offerType === "dollar_off_with_min") {
+          return !!(
+            formData.discountValue &&
+            formData.minimumSpend &&
+            parseFloat(formData.minimumSpend) >
+              parseFloat(formData.discountValue)
+          );
+        }
+        // All other types just need discountValue
+        return !!formData.discountValue;
+      }
       case "review":
         return true;
       default:
@@ -406,11 +539,13 @@ export default function OfferManagerViewP0_5Wizard({
     const currentIndex = STEP_CONFIG.findIndex((s) => s.id === currentStep);
     if (currentIndex > 0) {
       const previousStep = STEP_CONFIG[currentIndex - 1].id as WizardStep;
-      // Remove current and future steps from completed when going back
-      const stepsToRemove = STEP_CONFIG.slice(currentIndex).map((s) => s.id);
-      setCompletedSteps((prev) =>
-        prev.filter((stepId) => !stepsToRemove.includes(stepId))
-      );
+      // In edit mode, keep all steps accessible (don't remove from completed)
+      if (mode !== "edit") {
+        const stepsToRemove = STEP_CONFIG.slice(currentIndex).map((s) => s.id);
+        setCompletedSteps((prev) =>
+          prev.filter((stepId) => !stepsToRemove.includes(stepId))
+        );
+      }
       transitionToStep(previousStep);
     }
   };
@@ -418,10 +553,37 @@ export default function OfferManagerViewP0_5Wizard({
   const handleStepClick = (stepId: string) => {
     if (isTransitioning) return;
 
-    // Only allow navigation to completed steps or current step
+    // In edit mode, all steps are always accessible
+    if (mode === "edit") {
+      transitionToStep(stepId as WizardStep);
+      return;
+    }
+
+    // In create mode, only allow completed steps or current step
     if (completedSteps.includes(stepId) || stepId === currentStep) {
       transitionToStep(stepId as WizardStep);
     }
+  };
+
+  const handleSaveDraft = () => {
+    setIsSavingDraft(true);
+    const id = draftId || generateDraftId();
+    if (!draftId) setDraftId(id);
+
+    saveDraft(id, formData, currentStep, completedSteps);
+    snapshotRef.current = createSnapshot(formData);
+
+    toast({
+      title: "Draft Saved",
+      description: `"${formData.offerName || "Untitled offer"}" saved as draft.`,
+    });
+
+    setIsSavingDraft(false);
+
+    // Navigate back to offer list after a brief delay
+    setTimeout(() => {
+      router.push("/offer-manager?version=p1.1");
+    }, 500);
   };
 
   const handlePublish = async () => {
@@ -457,12 +619,14 @@ export default function OfferManagerViewP0_5Wizard({
         variant: "success",
       });
 
-      // Navigate back to list
-      const returnVersion = mode === "create" ? "" : "p1.1";
+      // Clean up draft from localStorage on successful publish
+      if (draftId) {
+        deleteDraft(draftId);
+      }
+
+      // Navigate back to P1.1 list
       setTimeout(() => {
-        router.push(
-          `/offer-manager${returnVersion ? `?version=${returnVersion}` : "?success=created"}`
-        );
+        router.push("/offer-manager?version=p1.1");
       }, 1000);
     } catch (error) {
       console.error("Failed to save offer:", error);
@@ -477,7 +641,31 @@ export default function OfferManagerViewP0_5Wizard({
   };
 
   const handleCancel = () => {
-    router.push("/offer-manager");
+    // On step 2+ with unsaved changes, show confirmation dialog
+    if (
+      currentStep !== "type" &&
+      formData.offerType &&
+      hasChanges(formData, snapshotRef.current)
+    ) {
+      setShowUnsavedDialog(true);
+      return;
+    }
+    router.push("/offer-manager?version=p1.1");
+  };
+
+  // Unsaved changes dialog handlers
+  const handleDiscardChanges = () => {
+    setShowUnsavedDialog(false);
+    router.push("/offer-manager?version=p1.1");
+  };
+
+  const handleSaveDraftAndLeave = () => {
+    setShowUnsavedDialog(false);
+    handleSaveDraft();
+  };
+
+  const handleCancelDialog = () => {
+    setShowUnsavedDialog(false);
   };
 
   // Render current step content (use displayedStep for smooth transitions)
@@ -570,6 +758,25 @@ export default function OfferManagerViewP0_5Wizard({
                       <Badge variant="outline" className="text-xs">
                         Step {currentStepNumber} of {STEP_CONFIG.length}
                       </Badge>
+                      {(isDraftMode || draftId) && currentStep !== "type" && (
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "text-xs transition-colors duration-300",
+                            draftSaveIndicator === "saving"
+                              ? "border-amber-400 text-amber-600 bg-amber-50"
+                              : draftSaveIndicator === "saved"
+                                ? "border-green-400 text-green-600 bg-green-50"
+                                : "border-orange-400 text-orange-600 bg-orange-50"
+                          )}
+                        >
+                          {draftSaveIndicator === "saving"
+                            ? "Saving..."
+                            : draftSaveIndicator === "saved"
+                              ? "Draft saved"
+                              : "Draft"}
+                        </Badge>
+                      )}
                     </div>
                     <p className="text-sm text-muted-foreground">
                       {currentStepConfig?.description}
@@ -587,7 +794,7 @@ export default function OfferManagerViewP0_5Wizard({
                       className="flex items-center gap-1 text-gray-600 hover:text-gray-900"
                     >
                       <ArrowLeftIcon className="h-4 w-4" />
-                      Back to Dashboard
+                      Back to Offers
                     </Button>
                   ) : (
                     <Button
@@ -597,6 +804,18 @@ export default function OfferManagerViewP0_5Wizard({
                       disabled={isTransitioning}
                     >
                       ← Back
+                    </Button>
+                  )}
+
+                  {currentStep !== "type" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleSaveDraft}
+                      disabled={isSavingDraft || isTransitioning}
+                      className="border-dashed"
+                    >
+                      {isSavingDraft ? "Saving..." : "Save as Draft"}
                     </Button>
                   )}
 
@@ -652,8 +871,17 @@ export default function OfferManagerViewP0_5Wizard({
           </div>
         </div>
       </div>
+
+      {/* Unsaved changes confirmation */}
+      <UnsavedChangesDialog
+        isOpen={showUnsavedDialog}
+        onClose={handleCancelDialog}
+        onSaveDraft={handleSaveDraftAndLeave}
+        onDiscard={handleDiscardChanges}
+        isSaving={isSavingDraft}
+      />
     </div>
   );
 }
 
-export { OfferManagerViewP0_5Wizard };
+export { OfferManagerViewP1Wizard };

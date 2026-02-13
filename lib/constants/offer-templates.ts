@@ -69,12 +69,10 @@ export type OfferTypeKey =
   | "dollar_off"
   | "percent_off"
   | "bogo"
-  | "fixed_price";
-// Future types can be added here:
-// | "tiered_discount"
-// | "cashback"
-// | "free_shipping"
-// | "gift_with_purchase"
+  | "fixed_price"
+  | "dollar_off_with_min"
+  | "cashback"
+  | "tiered_discount";
 
 /**
  * Offer Type Configuration
@@ -104,6 +102,19 @@ export interface OfferTypeConfig {
   // Use case guidance
   bestFor: string[];
   example: string;
+
+  // Type-specific form configuration
+  hasMinimumSpend?: boolean;
+  minimumSpendLabel?: string;
+  hasCashbackCap?: boolean;
+  cashbackCapLabel?: string;
+  hasTiers?: boolean;
+  tiersLabel?: string;
+  inputType?: "number" | "text"; // defaults to "number"
+  inputStep?: string; // defaults to "1"
+
+  // Illustration display override (e.g., scale up to trim whitespace on vertical images)
+  illustrationClass?: string;
 
   // Display formatting
   badgeFormat: (value: number, min?: number) => string;
@@ -169,9 +180,70 @@ export const OFFER_TYPE_CONFIG: Record<OfferTypeKey, OfferTypeConfig> = {
     discountLabel: "What price?",
     discountPrefix: "$",
     discountPlaceholder: "19.99",
+    inputStep: "0.01",
     bestFor: ["Featured items", "Bundle deals", "Limited-time specials"],
     example: "Large pizza for $9.99",
     badgeFormat: (value) => `$${value.toFixed(2)}`,
+  },
+  dollar_off_with_min: {
+    key: "dollar_off_with_min",
+    label: "Dollar Off w/ Minimum",
+    shortLabel: "$X OFF $Y+",
+    description: "Save a fixed amount when spending a minimum",
+    category: "discount",
+    tags: ["discount", "savings", "threshold", "minimum"],
+    icon: "$10 OFF $50+",
+    illustration: "/illustration/dollar-off-with-minimum.png",
+    discountLabel: "How much off?",
+    discountPrefix: "$",
+    discountPlaceholder: "10",
+    hasMinimumSpend: true,
+    minimumSpendLabel: "Minimum spend required",
+    bestFor: ["Increasing basket size", "High-value purchases", "Upselling"],
+    example: "$10 off when you spend $50 or more",
+    badgeFormat: (value, min) =>
+      min ? `$${value} OFF $${min}+` : `$${value} OFF`,
+  },
+  cashback: {
+    key: "cashback",
+    label: "Cash Back",
+    shortLabel: "X% BACK",
+    description: "Earn cash back on your purchase",
+    category: "loyalty",
+    tags: ["cashback", "reward", "earnings", "loyalty"],
+    icon: "5% BACK",
+    illustration: "/illustration/cash-back.png",
+    discountLabel: "Cash back percentage",
+    discountSuffix: "%",
+    discountPlaceholder: "5",
+    hasCashbackCap: true,
+    cashbackCapLabel: "Maximum cash back amount",
+    bestFor: ["Loyalty programs", "Repeat customers", "High-spend categories"],
+    example: "Earn 5% cash back on every purchase (up to $25)",
+    badgeFormat: (value) => `${value}% BACK`,
+  },
+  tiered_discount: {
+    key: "tiered_discount",
+    label: "Tiered Discount",
+    shortLabel: "TIERED",
+    description: "Spend more, save more with escalating discounts",
+    category: "discount",
+    tags: ["tiered", "spend-more", "save-more", "escalating"],
+    icon: "TIERED",
+    illustration: "/illustration/tiered-discount.png",
+    illustrationClass: "scale-[1.4] object-cover",
+    discountLabel: "Base discount amount",
+    discountPrefix: "$",
+    discountPlaceholder: "5",
+    hasTiers: true,
+    tiersLabel: "Discount tiers",
+    bestFor: [
+      "Encouraging larger orders",
+      "Category promotions",
+      "Seasonal sales",
+    ],
+    example: "Spend $25 save $5, Spend $50 save $15, Spend $100 save $35",
+    badgeFormat: (value) => `UP TO $${value} OFF`,
   },
 };
 
@@ -330,6 +402,9 @@ export const WIZARD_TO_API_OFFER_TYPE: Record<OfferTypeKey, BackendOfferType> =
     percent_off: "percentage_savings", // Note: Complete rename
     bogo: "bogo", // Match
     fixed_price: "price_point", // Note: Complete rename
+    dollar_off_with_min: "dollars_off", // Same backend type as dollar_off, min is metadata
+    cashback: "cashback", // Match
+    tiered_discount: "dollars_off", // Tiers stored as metadata, base type is dollars_off
   };
 
 /**
@@ -382,7 +457,9 @@ export function toBackendRedemptionMethod(
 export function getSavingsType(
   offerType: OfferTypeKey
 ): "percentage" | "fixed" {
-  return offerType === "percent_off" ? "percentage" : "fixed";
+  return offerType === "percent_off" || offerType === "cashback"
+    ? "percentage"
+    : "fixed";
 }
 
 /**
@@ -531,6 +608,18 @@ export const HEADLINE_TEMPLATES: Record<
     template: "Special: Any Item for $9.99",
     withMerchant: (name) => `${name} Special: $9.99`,
   },
+  dollar_off_with_min: {
+    template: "$10 Off When You Spend $50+",
+    withMerchant: (name) => `$10 Off $50+ at ${name}`,
+  },
+  cashback: {
+    template: "Earn 5% Cash Back",
+    withMerchant: (name) => `5% Cash Back at ${name}`,
+  },
+  tiered_discount: {
+    template: "Spend More, Save More",
+    withMerchant: (name) => `Spend More, Save More at ${name}`,
+  },
 };
 
 /**
@@ -576,6 +665,32 @@ export const DESCRIPTION_TEMPLATES: Record<
     default:
       "Special promotional pricing! Limited time offer while supplies last.",
   },
+  dollar_off_with_min: {
+    dining:
+      "Spend the minimum and save! Valid on dine-in, takeout, and delivery orders. Cannot be combined with other offers.",
+    shopping:
+      "Reach the minimum purchase amount and save instantly! Applies to regular-priced merchandise.",
+    services:
+      "Book services totaling the minimum amount and save! Valid for standard services.",
+    default:
+      "Spend the minimum amount and save! Present this offer at checkout. Exclusions may apply.",
+  },
+  cashback: {
+    dining:
+      "Earn cash back on every meal! Rewards credited to your account after purchase. Valid for dine-in and takeout.",
+    shopping:
+      "Earn cash back on your purchase! Rewards credited after transaction completes. Excludes gift cards.",
+    default:
+      "Earn cash back on your purchase! Rewards credited to your account after the transaction.",
+  },
+  tiered_discount: {
+    dining:
+      "The more you order, the more you save! Tiers apply to pre-tax subtotal. Valid for dine-in and takeout.",
+    shopping:
+      "Spend more and unlock bigger savings! Tiers apply to regular-priced items. Exclusions may apply.",
+    default:
+      "Unlock bigger savings as you spend more! Discount tiers apply automatically at checkout.",
+  },
 };
 
 /**
@@ -597,12 +712,14 @@ export function getSmartHeadline(
   if (discountValue) {
     const value = parseFloat(discountValue);
     if (!isNaN(value) && value > 0) {
-      if (offerType === "dollar_off") {
+      if (offerType === "dollar_off" || offerType === "dollar_off_with_min") {
         headline = headline.replace("$10", `$${value}`);
       } else if (offerType === "percent_off") {
         headline = headline.replace("20%", `${value}%`);
       } else if (offerType === "fixed_price") {
         headline = headline.replace("$9.99", `$${value.toFixed(2)}`);
+      } else if (offerType === "cashback") {
+        headline = headline.replace("5%", `${value}%`);
       }
     }
   }

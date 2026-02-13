@@ -8,10 +8,8 @@ import {
   ChevronDownIcon,
   PencilIcon,
   TrashIcon,
-  DocumentDuplicateIcon,
 } from "@heroicons/react/24/outline";
 import { ArrowUpDown } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import {
   Tooltip,
@@ -47,12 +45,10 @@ export const formatDate = (dateString: string) => {
 const OfferActionDropdown = memo(function OfferActionDropdown({
   offer,
   onEdit,
-  onClone,
   onDelete,
 }: {
   offer: OfferListItem;
   onEdit: () => void;
-  onClone: () => void;
   onDelete: () => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -100,11 +96,6 @@ const OfferActionDropdown = memo(function OfferActionDropdown({
     setIsOpen(false);
   }, [onEdit]);
 
-  const handleCloneClick = useCallback(() => {
-    onClone();
-    setIsOpen(false);
-  }, [onClone]);
-
   const handleDeleteClick = useCallback(() => {
     onDelete();
     setIsOpen(false);
@@ -148,15 +139,6 @@ const OfferActionDropdown = memo(function OfferActionDropdown({
                 Edit Offer
               </button>
 
-              {/* Clone Action */}
-              <button
-                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                onClick={handleCloneClick}
-              >
-                <DocumentDuplicateIcon className="mr-2 h-4 w-4" />
-                Clone Offer
-              </button>
-
               {/* Delete Action */}
               <button
                 className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 flex items-center"
@@ -180,39 +162,15 @@ const OfferActionDropdown = memo(function OfferActionDropdown({
 interface OfferListColumnsOptions {
   onTogglePublish: (offerId: string) => void;
   onEdit: (offerId: string) => void;
-  onClone: (offerId: string) => void;
   onDelete: (offer: OfferListItem) => void;
 }
 
 export function getOfferListColumns({
   onTogglePublish,
   onEdit,
-  onClone,
   onDelete,
 }: OfferListColumnsOptions): ColumnDef<OfferListItem>[] {
   return [
-    {
-      id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
     {
       accessorKey: "offerStatus",
       header: ({ column }) => (
@@ -328,7 +286,6 @@ export function getOfferListColumns({
             <OfferActionDropdown
               offer={row.original}
               onEdit={() => onEdit(row.original.id)}
-              onClone={() => onClone(row.original.id)}
               onDelete={() => onDelete(row.original)}
             />
           </div>

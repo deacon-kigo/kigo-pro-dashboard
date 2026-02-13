@@ -8,7 +8,26 @@
 /**
  * Offer Status Enum
  */
-export type OfferStatus = "draft" | "published" | "archived" | "expired";
+export type OfferStatus =
+  | "draft"
+  | "published"
+  | "archived"
+  | "expired"
+  | "paused"
+  | "pending_approval";
+
+/**
+ * Redemption Type Enum
+ * How the offer is technically delivered/redeemed
+ */
+export type RedemptionType =
+  | "online_code"
+  | "airdrop"
+  | "gift_card"
+  | "card_linked"
+  | "stripe_checkout"
+  | "augeo_fulfillment"
+  | "sms_notification";
 
 /**
  * Offer Type Enum

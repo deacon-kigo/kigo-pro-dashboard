@@ -19,6 +19,8 @@ import {
   OfferManagerViewP0_5Wizard,
 } from "@/components/features/offer-manager/p0-merchant";
 import OfferListView from "@/components/features/offer-manager/offer-list/OfferListView";
+import { OfferListViewP1 } from "@/components/features/offer-manager/offer-list-p1";
+import { OfferManagerViewP1Wizard } from "@/components/features/offer-manager/p1-wizard";
 
 function LoadingFallback() {
   return (
@@ -44,6 +46,7 @@ function OfferManagerContent() {
     "p0.4": " (P0.4 - Offer Preview)",
     "p0.5": " (P0.5 - Wizard Flow)",
     p1: " (P1)",
+    "p1.1": " (P1.1 - Offer Management)",
     p2: " (P2)",
     p3: " (P3)",
     p4: " (P4)",
@@ -95,12 +98,26 @@ function OfferManagerContent() {
             autoStart={autoStart}
           />
         );
-      case "p0.5":
+      case "p0.5": {
         // P0.5: Wizard Flow
-        return <OfferManagerViewP0_5Wizard />;
+        const editParam = searchParams.get("edit");
+        const cloneParam = searchParams.get("clone");
+        const wizardMode = editParam ? "edit" : cloneParam ? "clone" : "create";
+        return <OfferManagerViewP0_5Wizard mode={wizardMode} />;
+      }
       case "p1":
-        // P1: Offer List Grid
-        return <OfferListView />;
+        // P1: Offer List Grid (legacy alias)
+        return <OfferListViewP1 />;
+      case "p1.1": {
+        // P1.1: Offer Management — list + create/edit wizard
+        const p1EditParam = searchParams.get("edit");
+        const p1CreateParam = searchParams.get("create");
+        if (p1CreateParam === "true" || p1EditParam) {
+          const p1WizardMode = p1EditParam ? "edit" : "create";
+          return <OfferManagerViewP1Wizard mode={p1WizardMode} />;
+        }
+        return <OfferListViewP1 />;
+      }
       case "p5":
       case "future":
         return <OfferManagerViewFuture onCreatingChange={setIsCreating} />;

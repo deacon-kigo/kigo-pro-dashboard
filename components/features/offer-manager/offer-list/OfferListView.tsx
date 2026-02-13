@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, memo, useState, useCallback, useEffect } from "react";
+import React, { useMemo, memo, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Fuse from "fuse.js";
 import { Button } from "@/components/atoms/Button";
@@ -8,8 +8,6 @@ import { PlusIcon } from "@heroicons/react/24/outline";
 import { OfferListSearchBar, FilterTag } from "./OfferListSearchBar";
 import { OfferListTable } from "./OfferListTable";
 import { OfferDeleteDialog } from "./OfferDeleteDialog";
-import { OfferBulkActions } from "./OfferBulkActions";
-import { OfferBulkDeleteDialog } from "./OfferBulkDeleteDialog";
 import {
   MOCK_OFFERS,
   OfferListItem,
@@ -25,8 +23,6 @@ const OfferListView = memo(function OfferListView() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [deleteTarget, setDeleteTarget] = useState<OfferListItem | null>(null);
-  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
-  const [showBulkDelete, setShowBulkDelete] = useState(false);
 
   // Parse filters into categories
   const { searchTerms, merchantIds, offerTypes, statuses } = useMemo(() => {
@@ -57,11 +53,6 @@ const OfferListView = memo(function OfferListView() {
   // Derive searchQuery for table highlighting
   const searchQuery = searchTerms.join(" ");
 
-  // Clear selection when filters change
-  useEffect(() => {
-    setRowSelection({});
-  }, [selectedFilters]);
-
   // Handlers
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
@@ -87,10 +78,6 @@ const OfferListView = memo(function OfferListView() {
 
   const handleEdit = useCallback((offerId: string) => {
     console.log("Edit offer:", offerId);
-  }, []);
-
-  const handleClone = useCallback((offerId: string) => {
-    console.log("Clone offer:", offerId);
   }, []);
 
   const handleDelete = useCallback((offer: OfferListItem) => {
@@ -161,69 +148,6 @@ const OfferListView = memo(function OfferListView() {
     return results;
   }, [offers, searchQuery, searchTerms, merchantIds, offerTypes, statuses]);
 
-  // Derived selected offers from row selection
-  const selectedOffers = useMemo(() => {
-    return Object.keys(rowSelection)
-      .filter((key) => rowSelection[key])
-      .map((index) => filteredOffers[parseInt(index)])
-      .filter(Boolean);
-  }, [rowSelection, filteredOffers]);
-
-  // Bulk action handlers
-  const handleBulkPublish = useCallback(() => {
-    const draftIds = new Set(
-      selectedOffers.filter((o) => o.offerStatus === "draft").map((o) => o.id)
-    );
-    setOffers((prev) =>
-      prev.map((offer) =>
-        draftIds.has(offer.id)
-          ? { ...offer, offerStatus: "published" as const }
-          : offer
-      )
-    );
-    setRowSelection({});
-  }, [selectedOffers]);
-
-  const handleBulkUnpublish = useCallback(() => {
-    const publishedIds = new Set(
-      selectedOffers
-        .filter((o) => o.offerStatus === "published")
-        .map((o) => o.id)
-    );
-    setOffers((prev) =>
-      prev.map((offer) =>
-        publishedIds.has(offer.id)
-          ? { ...offer, offerStatus: "draft" as const }
-          : offer
-      )
-    );
-    setRowSelection({});
-  }, [selectedOffers]);
-
-  const handleBulkClone = useCallback(() => {
-    const clones = selectedOffers.map((offer, i) => ({
-      ...offer,
-      id: `OFF-CLONE-${Date.now()}-${i}`,
-      offerName: `${offer.offerName} (Copy)`,
-      offerStatus: "draft" as const,
-      redemptions: 0,
-    }));
-    setOffers((prev) => [...prev, ...clones]);
-    setRowSelection({});
-  }, [selectedOffers]);
-
-  const handleBulkDelete = useCallback(async () => {
-    const idsToDelete = new Set(selectedOffers.map((o) => o.id));
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setOffers((prev) => prev.filter((o) => !idsToDelete.has(o.id)));
-    setRowSelection({});
-  }, [selectedOffers]);
-
-  const handleClearSelection = useCallback(() => {
-    setRowSelection({});
-  }, []);
-
   // Create button
   const createOfferButton = useMemo(
     () => (
@@ -275,20 +199,7 @@ const OfferListView = memo(function OfferListView() {
         onPageSizeChange={handlePageSizeChange}
         onTogglePublish={handleTogglePublish}
         onEdit={handleEdit}
-        onClone={handleClone}
         onDelete={handleDelete}
-        rowSelection={rowSelection}
-        onRowSelectionChange={setRowSelection}
-      />
-
-      <OfferBulkActions
-        selectedCount={selectedOffers.length}
-        selectedOffers={selectedOffers}
-        onBulkPublish={handleBulkPublish}
-        onBulkUnpublish={handleBulkUnpublish}
-        onBulkClone={handleBulkClone}
-        onBulkDelete={() => setShowBulkDelete(true)}
-        onClearSelection={handleClearSelection}
       />
 
       <OfferDeleteDialog
@@ -296,13 +207,6 @@ const OfferListView = memo(function OfferListView() {
         onClose={handleCloseDeleteDialog}
         onConfirmDelete={handleConfirmDelete}
         offer={deleteTarget}
-      />
-
-      <OfferBulkDeleteDialog
-        isOpen={showBulkDelete}
-        onClose={() => setShowBulkDelete(false)}
-        onConfirmDelete={handleBulkDelete}
-        selectedOffers={selectedOffers}
       />
     </div>
   );
