@@ -14,6 +14,7 @@ import {
   TagIcon,
   PlusIcon,
   TrashIcon,
+  ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import {
   OFFER_TYPE_CONFIG,
@@ -85,6 +86,30 @@ const IMAGE_GUIDELINES = {
   },
 };
 
+// Redemption method options
+const REDEMPTION_METHODS = [
+  {
+    key: "online_code",
+    label: "Online (Promo Code)",
+    description: "Customer enters code at checkout",
+  },
+  {
+    key: "in_store",
+    label: "In-Store (Show & Save)",
+    description: "Member shows offer on their phone",
+  },
+  {
+    key: "phone",
+    label: "Phone / Call-In",
+    description: "Member references promo over phone",
+  },
+  {
+    key: "card_linked",
+    label: "Card-Linked (Automatic)",
+    description: "Discount applied to linked card",
+  },
+] as const;
+
 interface ImageDimensions {
   width: number;
   height: number;
@@ -97,6 +122,7 @@ interface DiscountTier {
 
 interface StepOfferContentProps {
   offerType: OfferTypeKey;
+  isPublishedEdit?: boolean;
   formData: {
     discountValue?: string;
     offerName?: string;
@@ -109,6 +135,15 @@ interface StepOfferContentProps {
     minimumSpend?: string;
     cashbackCap?: string;
     tiers?: DiscountTier[];
+    // Free with purchase
+    freeItem?: string;
+    purchaseRequirement?: string;
+    // Clickthrough
+    clickthroughUrl?: string;
+    // CPG Spend & Get
+    spendAmount?: string;
+    rewardValue?: string;
+    qualifyingProducts?: string;
     // Offer Image (defaults to merchant logo)
     offerImageFile?: File | null;
     offerImagePreview?: string;
@@ -121,6 +156,20 @@ interface StepOfferContentProps {
     offerBannerAlt?: string;
     offerBannerSource?: "none" | "merchant" | "custom";
     offerBannerDimensions?: ImageDimensions | null;
+    // Redemption method
+    redemptionMethod?: string;
+    redemptionInstructions?: string;
+    phoneNumber?: string;
+    barcodeValue?: string;
+    cardNetwork?: string;
+    activationInstructions?: string;
+    // Markets
+    markets?: string[];
+    // Code type
+    codeType?: string;
+    codePrefix?: string;
+    barcodeData?: string;
+    qrData?: string;
     // Other fields
     termsConditions?: string;
     usageLimitPerCustomer?: string;
@@ -140,6 +189,7 @@ export default function StepOfferContent({
   offerType,
   formData,
   onUpdate,
+  isPublishedEdit = false,
 }: StepOfferContentProps) {
   const typeConfig = OFFER_TYPE_CONFIG[offerType];
   const [noExpiration, setNoExpiration] = useState(!formData.endDate);
@@ -149,6 +199,13 @@ export default function StepOfferContent({
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
+
+  // Check if start date is in the past (for published edit lock)
+  const startDateInPast =
+    isPublishedEdit &&
+    formData.startDate &&
+    new Date(formData.startDate) <
+      new Date(new Date().toISOString().split("T")[0]);
 
   // Initialize dates with smart defaults if not set
   useEffect(() => {
@@ -489,6 +546,17 @@ export default function StepOfferContent({
                 </div>
               )}
 
+              {/* Published edit warning for discount changes */}
+              {isPublishedEdit && (
+                <div className="flex items-start gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+                  <ExclamationTriangleIcon className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                  <span>
+                    Changing the discount on a live offer will affect all future
+                    redemptions.
+                  </span>
+                </div>
+              )}
+
               {/* Minimum Spend — for dollar_off_with_min */}
               {typeConfig.hasMinimumSpend && (
                 <div>
@@ -554,6 +622,89 @@ export default function StepOfferContent({
                     unlimited)
                   </p>
                 </div>
+              )}
+
+              {/* Free With Purchase fields */}
+              {offerType === "free_with_purchase" && (
+                <div>
+                  <Label htmlFor="purchaseRequirement">
+                    What must they buy?*
+                  </Label>
+                  <Input
+                    id="purchaseRequirement"
+                    placeholder="e.g., Any entree"
+                    value={formData.purchaseRequirement || ""}
+                    onChange={(e) =>
+                      onUpdate("purchaseRequirement", e.target.value)
+                    }
+                  />
+                  <p className="mt-2 text-gray-600 text-sm">
+                    The qualifying purchase to get the free item
+                  </p>
+                </div>
+              )}
+
+              {/* Clickthrough fields */}
+              {offerType === "clickthrough" && (
+                <div>
+                  <Label htmlFor="clickthroughUrl">Clickthrough URL*</Label>
+                  <Input
+                    id="clickthroughUrl"
+                    type="url"
+                    placeholder="https://merchant.com/shop"
+                    value={formData.clickthroughUrl || ""}
+                    onChange={(e) =>
+                      onUpdate("clickthroughUrl", e.target.value)
+                    }
+                  />
+                  <p className="mt-2 text-gray-600 text-sm">
+                    Where the member goes when they click through
+                  </p>
+                </div>
+              )}
+
+              {/* CPG Spend & Get fields */}
+              {offerType === "cpg_spend_and_get" && (
+                <>
+                  <div>
+                    <Label htmlFor="spendAmount">Spend Amount*</Label>
+                    <div className="relative mt-1">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600">
+                        $
+                      </span>
+                      <Input
+                        id="spendAmount"
+                        type="number"
+                        placeholder="25"
+                        value={formData.spendAmount || ""}
+                        onChange={(e) =>
+                          onUpdate("spendAmount", e.target.value)
+                        }
+                        className="pl-7"
+                        min="0"
+                      />
+                    </div>
+                    <p className="mt-2 text-gray-600 text-sm">
+                      How much the customer must spend on qualifying products
+                    </p>
+                  </div>
+                  <div>
+                    <Label htmlFor="qualifyingProducts">
+                      Qualifying Products*
+                    </Label>
+                    <Input
+                      id="qualifyingProducts"
+                      placeholder="e.g., Tide products"
+                      value={formData.qualifyingProducts || ""}
+                      onChange={(e) =>
+                        onUpdate("qualifyingProducts", e.target.value)
+                      }
+                    />
+                    <p className="mt-2 text-gray-600 text-sm">
+                      Which products count toward the spend requirement
+                    </p>
+                  </div>
+                </>
               )}
 
               {/* Headline */}
@@ -934,93 +1085,439 @@ export default function StepOfferContent({
         </div>
       </div>
 
-      {/* Dates & Redemption Section */}
+      {/* Market Selection Section */}
       <div className="rounded-md border">
         <div className="px-4 py-3 font-medium border-b bg-muted/30">
-          Dates & Redemption
+          Markets
         </div>
         <div className="p-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-5">
-            {/* Dates */}
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="startDate">Start Date*</Label>
-                  <Input
-                    id="startDate"
-                    type="date"
-                    value={formData.startDate || ""}
-                    onChange={(e) => onUpdate("startDate", e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="endDate">End Date</Label>
-                  <Input
-                    id="endDate"
-                    type="date"
-                    value={noExpiration ? "" : formData.endDate || ""}
-                    onChange={(e) => onUpdate("endDate", e.target.value)}
-                    min={formData.startDate}
-                    disabled={noExpiration}
-                  />
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="noExpiration"
-                  checked={noExpiration}
-                  onCheckedChange={(checked) => {
-                    setNoExpiration(!!checked);
-                    if (checked) {
-                      onUpdate("endDate", "");
-                    } else {
-                      const defaults = getDefaultDates();
-                      onUpdate("endDate", defaults.endDate);
-                    }
-                  }}
-                />
+          <p className="text-sm text-gray-600 mb-3">
+            Where is this offer available?
+          </p>
+          <div className="flex flex-wrap gap-3">
+            {[
+              { key: "usa", label: "USA", currency: "USD" },
+              { key: "canada", label: "Canada", currency: "CAD" },
+            ].map((market) => {
+              const markets: string[] = formData.markets || ["usa"];
+              const isChecked = markets.includes(market.key);
+              return (
                 <label
-                  htmlFor="noExpiration"
-                  className="text-sm text-gray-600 cursor-pointer"
+                  key={market.key}
+                  className={cn(
+                    "flex items-center gap-2 rounded-lg border-2 px-4 py-2.5 cursor-pointer transition-all",
+                    isChecked
+                      ? "border-primary bg-primary/5"
+                      : "border-gray-200 hover:border-gray-300"
+                  )}
                 >
-                  No expiration date
+                  <Checkbox
+                    checked={isChecked}
+                    onCheckedChange={(checked) => {
+                      const current: string[] = formData.markets || ["usa"];
+                      const updated = checked
+                        ? [...current, market.key]
+                        : current.filter((m: string) => m !== market.key);
+                      // Must have at least one market
+                      if (updated.length > 0) {
+                        onUpdate("markets", updated);
+                      }
+                    }}
+                  />
+                  <span
+                    className={cn(
+                      "text-sm font-medium",
+                      isChecked ? "text-primary" : "text-gray-900"
+                    )}
+                  >
+                    {market.label}
+                  </span>
+                  <span className="text-xs text-gray-400">
+                    ({market.currency})
+                  </span>
                 </label>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Dates Section */}
+      <div className="rounded-md border">
+        <div className="px-4 py-3 font-medium border-b bg-muted/30">Dates</div>
+        <div className="p-4">
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4 max-w-md">
+              <div>
+                <Label htmlFor="startDate">Start Date*</Label>
+                <Input
+                  id="startDate"
+                  type="date"
+                  value={formData.startDate || ""}
+                  onChange={(e) => onUpdate("startDate", e.target.value)}
+                  disabled={!!startDateInPast}
+                  className={startDateInPast ? "opacity-60" : ""}
+                />
+                {startDateInPast && (
+                  <p className="mt-1 text-xs text-gray-500">
+                    Start date cannot be changed (already in the past)
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="endDate">End Date</Label>
+                <Input
+                  id="endDate"
+                  type="date"
+                  value={noExpiration ? "" : formData.endDate || ""}
+                  onChange={(e) => onUpdate("endDate", e.target.value)}
+                  min={formData.startDate}
+                  disabled={noExpiration}
+                />
               </div>
             </div>
-
-            {/* Redemption */}
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="externalUrl">Redemption URL*</Label>
-                <Input
-                  id="externalUrl"
-                  type="url"
-                  placeholder="https://example.com/offer"
-                  value={formData.externalUrl || ""}
-                  onChange={(e) => onUpdate("externalUrl", e.target.value)}
-                />
-                <p className="text-gray-600 text-sm mt-1">
-                  Where customers go to redeem
-                </p>
-              </div>
-
-              <div>
-                <Label htmlFor="promoCode">Promo Code*</Label>
-                <Input
-                  id="promoCode"
-                  placeholder="e.g., SAVE20"
-                  value={formData.promoCode || ""}
-                  onChange={(e) =>
-                    onUpdate("promoCode", e.target.value.toUpperCase())
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="noExpiration"
+                checked={noExpiration}
+                onCheckedChange={(checked) => {
+                  setNoExpiration(!!checked);
+                  if (checked) {
+                    onUpdate("endDate", "");
+                  } else {
+                    const defaults = getDefaultDates();
+                    onUpdate("endDate", defaults.endDate);
                   }
-                  className="font-mono"
-                  maxLength={20}
-                />
-                <p className="text-gray-600 text-sm mt-1">
-                  Code shown to all customers (auto-uppercase)
-                </p>
-              </div>
+                }}
+              />
+              <label
+                htmlFor="noExpiration"
+                className="text-sm text-gray-600 cursor-pointer"
+              >
+                No expiration date
+              </label>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Redemption Method Section */}
+      <div className="rounded-md border">
+        <div className="px-4 py-3 font-medium border-b bg-muted/30">
+          How Will Members Claim This Offer?
+        </div>
+        <div className="p-4 space-y-5">
+          {/* Method Selector */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {REDEMPTION_METHODS.map((method) => {
+              const isSelected =
+                (formData.redemptionMethod || "online_code") === method.key;
+              return (
+                <button
+                  key={method.key}
+                  type="button"
+                  onClick={() => onUpdate("redemptionMethod", method.key)}
+                  className={cn(
+                    "relative rounded-lg border-2 p-3 text-left transition-all",
+                    "hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                    isSelected
+                      ? "border-primary bg-primary/5"
+                      : "border-gray-200 hover:border-gray-300"
+                  )}
+                >
+                  <p
+                    className={cn(
+                      "text-sm font-medium",
+                      isSelected ? "text-primary" : "text-gray-900"
+                    )}
+                  >
+                    {method.label}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {method.description}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Conditional Fields by Method */}
+          <div className="pt-2 space-y-4">
+            {/* Online Code fields */}
+            {(!formData.redemptionMethod ||
+              formData.redemptionMethod === "online_code") && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-4">
+                  <div>
+                    <Label htmlFor="externalUrl">Redemption URL*</Label>
+                    <Input
+                      id="externalUrl"
+                      type="url"
+                      placeholder="https://example.com/offer"
+                      value={formData.externalUrl || ""}
+                      onChange={(e) => onUpdate("externalUrl", e.target.value)}
+                    />
+                    <p className="text-gray-600 text-sm mt-1">
+                      Where customers go to redeem
+                    </p>
+                  </div>
+                  <div>
+                    <Label htmlFor="promoCode">Promo Code*</Label>
+                    <Input
+                      id="promoCode"
+                      placeholder="e.g., SAVE20"
+                      value={formData.promoCode || ""}
+                      onChange={(e) =>
+                        onUpdate("promoCode", e.target.value.toUpperCase())
+                      }
+                      className="font-mono"
+                      maxLength={20}
+                    />
+                    <p className="text-gray-600 text-sm mt-1">
+                      {isPublishedEdit
+                        ? "Changing the promo code on a live offer may affect active users"
+                        : "Code shown to all customers (auto-uppercase)"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Code Type Selector (Gap 7) */}
+                <div className="pt-2 border-t border-gray-100">
+                  <Label className="mb-2 block">Code Type</Label>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                    {[
+                      {
+                        key: "single",
+                        label: "Single Code",
+                        desc: "One code for all",
+                      },
+                      {
+                        key: "unique",
+                        label: "Unique Codes",
+                        desc: "Per-redemption",
+                      },
+                      {
+                        key: "barcode",
+                        label: "Barcode",
+                        desc: "Scannable code",
+                      },
+                      { key: "qr", label: "QR Code", desc: "Scannable QR" },
+                    ].map((ct) => {
+                      const sel = (formData.codeType || "single") === ct.key;
+                      return (
+                        <button
+                          key={ct.key}
+                          type="button"
+                          onClick={() => onUpdate("codeType", ct.key)}
+                          className={cn(
+                            "rounded-lg border p-2 text-left transition-all text-xs",
+                            sel
+                              ? "border-primary bg-primary/5"
+                              : "border-gray-200 hover:border-gray-300"
+                          )}
+                        >
+                          <p
+                            className={cn(
+                              "font-medium",
+                              sel ? "text-primary" : "text-gray-900"
+                            )}
+                          >
+                            {ct.label}
+                          </p>
+                          <p className="text-gray-500">{ct.desc}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Unique Codes placeholder */}
+                  {formData.codeType === "unique" && (
+                    <div className="mt-3 space-y-2">
+                      <Input
+                        placeholder="Code prefix (e.g., SAVE)"
+                        value={formData.codePrefix || ""}
+                        onChange={(e) =>
+                          onUpdate("codePrefix", e.target.value.toUpperCase())
+                        }
+                        className="font-mono max-w-xs"
+                        maxLength={10}
+                      />
+                      <div className="flex items-start gap-2 text-xs text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+                        <span>
+                          Unique codes will be generated per redemption. Enter a
+                          prefix above. Full code generation coming in P2.
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Barcode placeholder */}
+                  {formData.codeType === "barcode" && (
+                    <div className="mt-3 space-y-2">
+                      <Input
+                        placeholder="Barcode value (e.g., 1234567890)"
+                        value={formData.barcodeData || ""}
+                        onChange={(e) =>
+                          onUpdate("barcodeData", e.target.value)
+                        }
+                        className="font-mono max-w-xs"
+                      />
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-32 rounded border border-gray-300 bg-gray-50 flex items-center justify-center">
+                          <span className="text-xs text-gray-400 font-mono">
+                            {formData.barcodeData || "barcode preview"}
+                          </span>
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          Barcode image generation available in P2
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* QR Code placeholder */}
+                  {formData.codeType === "qr" && (
+                    <div className="mt-3 space-y-2">
+                      <Input
+                        placeholder="QR data (URL or code)"
+                        value={formData.qrData || ""}
+                        onChange={(e) => onUpdate("qrData", e.target.value)}
+                        className="max-w-xs"
+                      />
+                      <div className="flex items-center gap-3">
+                        <div className="h-14 w-14 rounded border border-gray-300 bg-gray-50 flex items-center justify-center">
+                          <svg
+                            className="h-8 w-8 text-gray-300"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                          >
+                            <path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm10 0h2v2h-2v-2zm4 0h2v2h-2v-2zm-4 4h2v2h-2v-2zm4 0h2v2h-2v-2zm-2-2h2v2h-2v-2z" />
+                          </svg>
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          QR code generation available in P2
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* In-Store fields */}
+            {formData.redemptionMethod === "in_store" && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-4">
+                <div>
+                  <Label htmlFor="redemptionInstructions">
+                    Redemption Instructions*
+                  </Label>
+                  <Textarea
+                    id="redemptionInstructions"
+                    placeholder="e.g., Show this offer at checkout to receive your discount"
+                    value={formData.redemptionInstructions || ""}
+                    onChange={(e) =>
+                      onUpdate("redemptionInstructions", e.target.value)
+                    }
+                    rows={3}
+                    maxLength={500}
+                  />
+                  <p className="text-gray-600 text-sm mt-1">
+                    Instructions shown to the member at redemption
+                  </p>
+                </div>
+                <div>
+                  <Label htmlFor="barcodeValue">Barcode Value</Label>
+                  <Input
+                    id="barcodeValue"
+                    placeholder="e.g., 1234567890"
+                    value={formData.barcodeValue || ""}
+                    onChange={(e) => onUpdate("barcodeValue", e.target.value)}
+                  />
+                  <p className="text-gray-600 text-sm mt-1">
+                    Optional barcode for in-store scanning
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Phone fields */}
+            {formData.redemptionMethod === "phone" && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-4">
+                <div>
+                  <Label htmlFor="phoneNumber">Phone Number*</Label>
+                  <Input
+                    id="phoneNumber"
+                    type="tel"
+                    placeholder="e.g., (800) 555-0123"
+                    value={formData.phoneNumber || ""}
+                    onChange={(e) => onUpdate("phoneNumber", e.target.value)}
+                  />
+                  <p className="text-gray-600 text-sm mt-1">
+                    Number the member calls to redeem
+                  </p>
+                </div>
+                <div>
+                  <Label htmlFor="redemptionInstructions">
+                    Redemption Instructions*
+                  </Label>
+                  <Textarea
+                    id="redemptionInstructions"
+                    placeholder="e.g., Mention promo code SAVE20 when placing your order"
+                    value={formData.redemptionInstructions || ""}
+                    onChange={(e) =>
+                      onUpdate("redemptionInstructions", e.target.value)
+                    }
+                    rows={3}
+                    maxLength={500}
+                  />
+                  <p className="text-gray-600 text-sm mt-1">
+                    What the member should say or reference
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Card-Linked fields */}
+            {formData.redemptionMethod === "card_linked" && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-4">
+                <div>
+                  <Label htmlFor="cardNetwork">Card Network*</Label>
+                  <select
+                    id="cardNetwork"
+                    value={formData.cardNetwork || ""}
+                    onChange={(e) => onUpdate("cardNetwork", e.target.value)}
+                    className="w-full h-10 px-3 text-sm border rounded-md bg-white"
+                  >
+                    <option value="">Select network...</option>
+                    <option value="visa">Visa</option>
+                    <option value="mastercard">Mastercard</option>
+                    <option value="amex">American Express</option>
+                    <option value="discover">Discover</option>
+                  </select>
+                  <p className="text-gray-600 text-sm mt-1">
+                    Which card network supports this offer
+                  </p>
+                </div>
+                <div>
+                  <Label htmlFor="activationInstructions">
+                    Activation Instructions*
+                  </Label>
+                  <Textarea
+                    id="activationInstructions"
+                    placeholder="e.g., Link your Visa card in the app to automatically receive this discount"
+                    value={formData.activationInstructions || ""}
+                    onChange={(e) =>
+                      onUpdate("activationInstructions", e.target.value)
+                    }
+                    rows={3}
+                    maxLength={500}
+                  />
+                  <p className="text-gray-600 text-sm mt-1">
+                    How the member activates the card-linked offer
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

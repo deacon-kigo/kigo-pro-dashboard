@@ -13,12 +13,17 @@ import {
 } from "@/components/atoms/Select";
 import { cn } from "@/lib/utils";
 import { OfferListItem } from "./offerListMockData";
+import { OfferStatus } from "@/types/offers";
 import { getOfferListColumns, formatDate } from "./offerListColumns";
 
 // Row styling based on offer status
 function getOfferRowClassName(row: unknown): string {
   const offer = row as OfferListItem;
-  if (offer.offerStatus === "expired" || offer.offerStatus === "archived") {
+  if (
+    offer.offerStatus === "expired" ||
+    offer.offerStatus === "archived" ||
+    offer.offerStatus === "paused"
+  ) {
     return "opacity-60";
   }
   return "";
@@ -34,6 +39,7 @@ interface OfferListTableProps {
   onPageSizeChange?: (value: string) => void;
   onEdit: (offerId: string) => void;
   onDelete: (offer: OfferListItem) => void;
+  onStatusChange?: (offerId: string, newStatus: OfferStatus) => void;
   onRowClick?: (row: OfferListItem) => void;
   emptyState?: React.ReactNode;
 }
@@ -48,6 +54,7 @@ export const OfferListTable = memo(function OfferListTable({
   onPageSizeChange: externalPageSizeChange,
   onEdit,
   onDelete,
+  onStatusChange,
   onRowClick,
   emptyState,
 }: OfferListTableProps) {
@@ -106,8 +113,9 @@ export const OfferListTable = memo(function OfferListTable({
       getOfferListColumns({
         onEdit,
         onDelete,
+        onStatusChange,
       }),
-    [onEdit, onDelete]
+    [onEdit, onDelete, onStatusChange]
   );
 
   // Columns with search highlighting on offerName

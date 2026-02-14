@@ -13,6 +13,7 @@ import {
   GlobeAltIcon,
   TicketIcon,
   BanknotesIcon,
+  ClipboardDocumentCheckIcon,
 } from "@heroicons/react/24/outline";
 import { CheckIcon } from "@heroicons/react/24/solid";
 import {
@@ -170,8 +171,30 @@ interface StepReviewProps {
     // Offer Banner
     offerBannerPreview?: string;
     offerBannerSource?: "none" | "merchant" | "custom";
+    // New type fields
+    freeItem?: string;
+    purchaseRequirement?: string;
+    clickthroughUrl?: string;
+    spendAmount?: string;
+    rewardValue?: string;
+    qualifyingProducts?: string;
+    // Markets
+    markets?: string[];
+    // Code type
+    codeType?: string;
+    codePrefix?: string;
+    barcodeData?: string;
+    qrData?: string;
+    // Redemption method
+    redemptionMethod?: string;
+    redemptionInstructions?: string;
+    phoneNumber?: string;
+    barcodeValue?: string;
+    cardNetwork?: string;
+    activationInstructions?: string;
   };
   onUpdate: (field: string, value: string) => void;
+  requiresApproval?: boolean;
 }
 
 function formatDateRange(start: string, end?: string): string {
@@ -194,7 +217,10 @@ function formatDateRange(start: string, end?: string): string {
   return `${startStr} – ${endStr}`;
 }
 
-export default function StepReview({ formData }: StepReviewProps) {
+export default function StepReview({
+  formData,
+  requiresApproval = false,
+}: StepReviewProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
@@ -222,6 +248,28 @@ export default function StepReview({ formData }: StepReviewProps) {
       ? !!formData.minimumSpend && parseFloat(formData.minimumSpend) > 0
       : true;
 
+  // Redemption method-aware validation
+  const method = formData.redemptionMethod || "online_code";
+  const redemptionMethodComplete = (() => {
+    switch (method) {
+      case "online_code":
+        return !!formData.externalUrl?.trim() && !!formData.promoCode?.trim();
+      case "in_store":
+        return !!formData.redemptionInstructions?.trim();
+      case "phone":
+        return (
+          !!formData.phoneNumber?.trim() &&
+          !!formData.redemptionInstructions?.trim()
+        );
+      case "card_linked":
+        return (
+          !!formData.cardNetwork && !!formData.activationInstructions?.trim()
+        );
+      default:
+        return true;
+    }
+  })();
+
   const checks = {
     offerType: !!formData.offerType,
     merchant: !!formData.merchantData,
@@ -231,8 +279,7 @@ export default function StepReview({ formData }: StepReviewProps) {
         ? hasTierData
         : !!formData.discountValue && discountValue > 0 && hasMinSpend,
     startDate: !!formData.startDate,
-    redemptionUrl: !!formData.externalUrl?.trim(),
-    promoCode: !!formData.promoCode?.trim(),
+    redemption: redemptionMethodComplete,
   };
 
   const allPassed = Object.values(checks).every(Boolean);
@@ -241,7 +288,7 @@ export default function StepReview({ formData }: StepReviewProps) {
   const identityComplete =
     checks.headline && checks.merchant && checks.discount;
   const timingComplete = checks.startDate;
-  const redemptionComplete = checks.redemptionUrl && checks.promoCode;
+  const redemptionComplete = checks.redemption;
 
   // Handle mouse move for 3D tilt effect (very subtle - 1.5 deg max)
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
@@ -373,8 +420,8 @@ export default function StepReview({ formData }: StepReviewProps) {
               <div
                 className="flex items-center gap-2 rounded-full px-4 py-2 shadow-lg backdrop-blur-sm"
                 style={{
-                  backgroundColor: theme.blue,
-                  boxShadow: `0 4px 20px ${theme.blue}40`,
+                  backgroundColor: requiresApproval ? "#8941EB" : theme.blue,
+                  boxShadow: `0 4px 20px ${requiresApproval ? "#8941EB" : theme.blue}40`,
                 }}
               >
                 <span className="relative flex h-2 w-2">
@@ -382,7 +429,7 @@ export default function StepReview({ formData }: StepReviewProps) {
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-white" />
                 </span>
                 <span className="text-sm font-semibold text-white">
-                  Ready to Publish
+                  {requiresApproval ? "Ready for Review" : "Ready to Publish"}
                 </span>
               </div>
             ) : (
@@ -579,7 +626,9 @@ export default function StepReview({ formData }: StepReviewProps) {
               {/* Discount Details Section — for types with extra config */}
               {(offerType === "dollar_off_with_min" ||
                 offerType === "cashback" ||
-                offerType === "tiered_discount") && (
+                offerType === "tiered_discount" ||
+                offerType === "free_with_purchase" ||
+                offerType === "cpg_spend_and_get") && (
                 <ReviewSection
                   icon={<BanknotesIcon className="h-5 w-5" />}
                   title="Discount details"
@@ -664,6 +713,54 @@ export default function StepReview({ formData }: StepReviewProps) {
                           ))}
                       </div>
                     )}
+                    {offerType === "free_with_purchase" && (
+                      <div className="grid grid-cols-2 gap-8">
+                        <ReviewField
+                          label="Free Item"
+                          value={formData.discountValue || null}
+                          placeholder="Not set"
+                          theme={theme}
+                        />
+                        <ReviewField
+                          label="Purchase Requirement"
+                          value={formData.purchaseRequirement || null}
+                          placeholder="Not set"
+                          theme={theme}
+                        />
+                      </div>
+                    )}
+                    {offerType === "cpg_spend_and_get" && (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-8">
+                          <ReviewField
+                            label="Spend Amount"
+                            value={
+                              formData.spendAmount
+                                ? `$${formData.spendAmount}`
+                                : null
+                            }
+                            placeholder="Not set"
+                            theme={theme}
+                          />
+                          <ReviewField
+                            label="Reward"
+                            value={
+                              formData.discountValue
+                                ? `$${formData.discountValue} back`
+                                : null
+                            }
+                            placeholder="Not set"
+                            theme={theme}
+                          />
+                        </div>
+                        <ReviewField
+                          label="Qualifying Products"
+                          value={formData.qualifyingProducts || null}
+                          placeholder="Not specified"
+                          theme={theme}
+                        />
+                      </div>
+                    )}
                   </div>
                 </ReviewSection>
               )}
@@ -699,6 +796,27 @@ export default function StepReview({ formData }: StepReviewProps) {
                 </div>
               </ReviewSection>
 
+              {/* Markets Section */}
+              <ReviewSection
+                icon={<GlobeAltIcon className="h-5 w-5" />}
+                title="Where this offer is available"
+                complete={true}
+                theme={theme}
+              >
+                <div className="flex flex-wrap gap-3">
+                  {(formData.markets || ["usa"]).map((m: string) => (
+                    <RulePill
+                      key={m}
+                      label={
+                        m === "usa" ? "USA" : m === "canada" ? "Canada" : m
+                      }
+                      value={m === "usa" ? "USD" : m === "canada" ? "CAD" : ""}
+                      theme={theme}
+                    />
+                  ))}
+                </div>
+              </ReviewSection>
+
               {/* Redemption Section */}
               <ReviewSection
                 icon={<CursorArrowRaysIcon className="h-5 w-5" />}
@@ -708,21 +826,102 @@ export default function StepReview({ formData }: StepReviewProps) {
               >
                 <div className="space-y-5">
                   <ReviewField
-                    label="Redemption URL"
-                    value={formData.externalUrl || null}
+                    label="Redemption Method"
+                    value={
+                      method === "online_code"
+                        ? "Online (Promo Code)"
+                        : method === "in_store"
+                          ? "In-Store (Show & Save)"
+                          : method === "phone"
+                            ? "Phone / Call-In"
+                            : method === "card_linked"
+                              ? "Card-Linked (Automatic)"
+                              : "Online (Promo Code)"
+                    }
                     placeholder="Not set"
-                    icon={<GlobeAltIcon className="h-5 w-5" />}
-                    truncate
                     theme={theme}
                   />
-                  <ReviewField
-                    label="Promo Code"
-                    value={formData.promoCode || null}
-                    placeholder="Not set"
-                    icon={<TicketIcon className="h-5 w-5" />}
-                    mono
-                    theme={theme}
-                  />
+
+                  {/* Method-specific fields */}
+                  {method === "online_code" && (
+                    <>
+                      <ReviewField
+                        label="Redemption URL"
+                        value={formData.externalUrl || null}
+                        placeholder="Not set"
+                        icon={<GlobeAltIcon className="h-5 w-5" />}
+                        truncate
+                        theme={theme}
+                      />
+                      <ReviewField
+                        label="Promo Code"
+                        value={formData.promoCode || null}
+                        placeholder="Not set"
+                        icon={<TicketIcon className="h-5 w-5" />}
+                        mono
+                        theme={theme}
+                      />
+                    </>
+                  )}
+
+                  {method === "in_store" && (
+                    <>
+                      <ReviewField
+                        label="Redemption Instructions"
+                        value={formData.redemptionInstructions || null}
+                        placeholder="Not set"
+                        theme={theme}
+                      />
+                      {formData.barcodeValue && (
+                        <ReviewField
+                          label="Barcode"
+                          value={formData.barcodeValue}
+                          placeholder="None"
+                          mono
+                          theme={theme}
+                        />
+                      )}
+                    </>
+                  )}
+
+                  {method === "phone" && (
+                    <>
+                      <ReviewField
+                        label="Phone Number"
+                        value={formData.phoneNumber || null}
+                        placeholder="Not set"
+                        theme={theme}
+                      />
+                      <ReviewField
+                        label="Redemption Instructions"
+                        value={formData.redemptionInstructions || null}
+                        placeholder="Not set"
+                        theme={theme}
+                      />
+                    </>
+                  )}
+
+                  {method === "card_linked" && (
+                    <>
+                      <ReviewField
+                        label="Card Network"
+                        value={
+                          formData.cardNetwork
+                            ? formData.cardNetwork.charAt(0).toUpperCase() +
+                              formData.cardNetwork.slice(1)
+                            : null
+                        }
+                        placeholder="Not set"
+                        theme={theme}
+                      />
+                      <ReviewField
+                        label="Activation Instructions"
+                        value={formData.activationInstructions || null}
+                        placeholder="Not set"
+                        theme={theme}
+                      />
+                    </>
+                  )}
                 </div>
               </ReviewSection>
 
@@ -777,29 +976,46 @@ export default function StepReview({ formData }: StepReviewProps) {
                     <div
                       className="flex h-14 w-14 items-center justify-center rounded-2xl shadow-xl"
                       style={{
-                        background: `linear-gradient(135deg, ${theme.blue}, ${theme.blueDark})`,
-                        boxShadow: `0 8px 24px ${theme.blue}40`,
+                        background: requiresApproval
+                          ? "linear-gradient(135deg, #8941EB, #6d28d9)"
+                          : `linear-gradient(135deg, ${theme.blue}, ${theme.blueDark})`,
+                        boxShadow: `0 8px 24px ${requiresApproval ? "#8941EB" : theme.blue}40`,
                       }}
                     >
-                      <RocketLaunchIcon className="h-7 w-7 text-white" />
+                      {requiresApproval ? (
+                        <ClipboardDocumentCheckIcon className="h-7 w-7 text-white" />
+                      ) : (
+                        <RocketLaunchIcon className="h-7 w-7 text-white" />
+                      )}
                     </div>
                     <div className="flex-1">
                       <p
                         className="text-lg font-bold flex items-center gap-2"
-                        style={{ color: theme.blueDark }}
+                        style={{
+                          color: requiresApproval ? "#6d28d9" : theme.blueDark,
+                        }}
                       >
-                        Ready for launch
+                        {requiresApproval
+                          ? "Ready for review"
+                          : "Ready for launch"}
                         <SparklesIcon
                           className="h-5 w-5"
-                          style={{ color: theme.blueLight }}
+                          style={{
+                            color: requiresApproval
+                              ? "#a366f0"
+                              : theme.blueLight,
+                          }}
                         />
                       </p>
                       <p
                         className="text-sm mt-0.5"
-                        style={{ color: theme.blue }}
+                        style={{
+                          color: requiresApproval ? "#8941EB" : theme.blue,
+                        }}
                       >
-                        All required fields are complete. Click Publish to make
-                        this offer live.
+                        {requiresApproval
+                          ? "All required fields are complete. Click Submit for Review to send this offer for approval."
+                          : "All required fields are complete. Click Publish to make this offer live."}
                       </p>
                     </div>
                   </>

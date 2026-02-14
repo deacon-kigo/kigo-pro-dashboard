@@ -16,6 +16,8 @@ export const STATUS_LABELS: Record<OfferStatus, string> = {
   draft: "Inactive",
   expired: "Inactive",
   archived: "Inactive",
+  paused: "Inactive",
+  pending_approval: "Inactive",
 };
 
 export const OFFER_TYPE_LABELS: Record<OfferType, string> = {

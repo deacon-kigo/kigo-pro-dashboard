@@ -1,5 +1,19 @@
 import { OfferStatus, OfferType, RedemptionType } from "@/types/offers";
 
+// Weekly snapshot for sparkline trend (most recent last)
+export interface WeeklyMetric {
+  impressions: number;
+  clicks: number;
+  redemptions: number;
+}
+
+export interface OfferPerformance {
+  impressions: number; // P0.7: Total offer views in marketplace
+  clicks: number; // P0.7: Total member clicks on offer card
+  redemptions: number; // P0.7: Total completed redemptions
+  weeklyTrend: WeeklyMetric[]; // Last 8 weeks of data for sparklines
+}
+
 export interface OfferListItem {
   id: string;
   offerName: string;
@@ -8,8 +22,70 @@ export interface OfferListItem {
   offerType: OfferType;
   offerStatus: OfferStatus;
   redemptionType: RedemptionType;
-  redemptions: number;
+  redemptions: number; // Kept for backward compat / sort accessor
+  performance: OfferPerformance; // P0.7 enriched tracking data
   endDate: string; // ISO date string
+}
+
+// ---------------------------------------------------------------------------
+// Performance data generator — produces realistic correlated metrics
+// ---------------------------------------------------------------------------
+function generatePerformance(
+  redemptions: number,
+  status: OfferStatus
+): OfferPerformance {
+  // Drafts and pending have no performance data
+  if (status === "draft" || status === "pending_approval") {
+    return {
+      impressions: 0,
+      clicks: 0,
+      redemptions: 0,
+      weeklyTrend: Array.from({ length: 8 }, () => ({
+        impressions: 0,
+        clicks: 0,
+        redemptions: 0,
+      })),
+    };
+  }
+
+  // Derive impressions and clicks from redemptions using realistic ratios
+  // Typical funnel: impressions → 8-15% CTR → 3-12% conversion
+  const conversionRate = 0.03 + Math.random() * 0.09; // 3-12%
+  const ctr = 0.08 + Math.random() * 0.07; // 8-15%
+  const clicks = Math.round(redemptions / conversionRate);
+  const impressions = Math.round(clicks / ctr);
+
+  // Generate weekly trend with natural variance and growth/decay pattern
+  const weeks = 8;
+  const trend: WeeklyMetric[] = [];
+  const weeklyBase = {
+    impressions: Math.max(1, Math.round(impressions / weeks)),
+    clicks: Math.max(1, Math.round(clicks / weeks)),
+    redemptions: Math.max(0, Math.round(redemptions / weeks)),
+  };
+
+  // Create a growth curve: early weeks lower, recent weeks higher (or decay for expired)
+  const isDecaying = status === "expired" || status === "paused";
+  for (let i = 0; i < weeks; i++) {
+    const progress = i / (weeks - 1); // 0 to 1
+    const curve = isDecaying
+      ? 1.4 - progress * 0.8 // Decay: starts high, drops
+      : 0.5 + progress * 1.0; // Growth: starts low, rises
+    const jitter = 0.7 + Math.random() * 0.6; // 70-130% variance
+    trend.push({
+      impressions: Math.max(
+        0,
+        Math.round(weeklyBase.impressions * curve * jitter)
+      ),
+      clicks: Math.max(0, Math.round(weeklyBase.clicks * curve * jitter)),
+      redemptions: Math.max(
+        0,
+        Math.round(weeklyBase.redemptions * curve * jitter)
+      ),
+    });
+  }
+
+  return { impressions, clicks, redemptions, weeklyTrend: trend };
 }
 
 export const STATUS_LABELS: Record<OfferStatus, string> = {
@@ -71,7 +147,8 @@ export const MOCK_MERCHANTS = [
   { id: "m25", name: "Maple Street Books" },
 ];
 
-export const MOCK_OFFERS: OfferListItem[] = [
+// Raw offer data without performance — enriched below
+const RAW_OFFERS: Omit<OfferListItem, "performance">[] = [
   // --- Pizza Palace (m1) ---
   {
     id: "OFF-001",
@@ -90,9 +167,9 @@ export const MOCK_OFFERS: OfferListItem[] = [
     merchantName: "Pizza Palace",
     merchantId: "m1",
     offerType: "percentage_savings",
-    offerStatus: "published",
+    offerStatus: "pending_approval",
     redemptionType: "online_code",
-    redemptions: 189,
+    redemptions: 0,
     endDate: "2026-07-15",
   },
   {
@@ -354,7 +431,7 @@ export const MOCK_OFFERS: OfferListItem[] = [
     merchantId: "m6",
     offerType: "price_point",
     offerStatus: "published",
-    redemptionType: "card_linked",
+    redemptionType: "sms_notification",
     redemptions: 2100,
     endDate: "2026-08-15",
   },
@@ -456,10 +533,10 @@ export const MOCK_OFFERS: OfferListItem[] = [
     merchantName: "Bakery Bliss",
     merchantId: "m8",
     offerType: "free_with_purchase",
-    offerStatus: "published",
-    redemptionType: "airdrop",
+    offerStatus: "archived",
+    redemptionType: "gift_card",
     redemptions: 1567,
-    endDate: "2026-03-31",
+    endDate: "2025-08-31",
   },
   {
     id: "OFF-016",
@@ -1332,6 +1409,12 @@ export const MOCK_OFFERS: OfferListItem[] = [
     endDate: "2025-12-15",
   },
 ];
+
+// Enrich raw offers with generated performance data (seeded by redemptions)
+export const MOCK_OFFERS: OfferListItem[] = RAW_OFFERS.map((raw) => ({
+  ...raw,
+  performance: generatePerformance(raw.redemptions, raw.offerStatus),
+}));
 
 // ---------------------------------------------------------------------------
 // Semantic Search — concept-aware expansion layered on top of Fuse.js fuzzy

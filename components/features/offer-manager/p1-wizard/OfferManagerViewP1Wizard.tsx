@@ -21,6 +21,8 @@ import {
   DocumentTextIcon,
   CheckCircleIcon,
   ArrowLeftIcon,
+  LockClosedIcon,
+  ClipboardDocumentCheckIcon,
 } from "@heroicons/react/24/outline";
 import {
   StepOfferType,
@@ -58,11 +60,12 @@ const API_TO_WIZARD_OFFER_TYPE: Record<string, OfferTypeKey> = {
   bogo: "bogo",
   price_point: "fixed_price",
   cashback: "cashback",
-  // Backend-only types that don't have exact wizard matches — map to closest
-  free_with_purchase: "bogo",
-  clickthrough: "dollar_off",
+  // New types with direct mappings
+  free_with_purchase: "free_with_purchase",
+  clickthrough: "clickthrough",
+  spend_and_get: "cpg_spend_and_get",
+  // Backend-only types without exact wizard matches
   loyalty_points: "cashback",
-  spend_and_get: "dollar_off",
 };
 
 /**
@@ -183,8 +186,29 @@ export default function OfferManagerViewP1Wizard({
       minimumSpend: "",
       cashbackCap: "",
       tiers: [{ minSpend: "", discount: "" }],
+      // Free with purchase
+      freeItem: "",
+      purchaseRequirement: "",
+      // Clickthrough
+      clickthroughUrl: "",
+      // CPG Spend & Get
+      spendAmount: "",
+      rewardValue: "",
+      qualifyingProducts: "",
+      // Markets
+      markets: ["usa"],
       externalUrl: "",
       promoCode: "",
+      codeType: "single",
+      codePrefix: "",
+      barcodeData: "",
+      qrData: "",
+      redemptionMethod: "online_code",
+      redemptionInstructions: "",
+      phoneNumber: "",
+      barcodeValue: "",
+      cardNetwork: "",
+      activationInstructions: "",
       termsConditions: "",
       category_ids: [],
       commodity_ids: [],
@@ -223,6 +247,7 @@ export default function OfferManagerViewP1Wizard({
             ...prev,
             ...draft.formData,
             _editOfferId: offer.id,
+            _originalStatus: offer.offerStatus,
           }));
           setCurrentStep(draft.currentStep as WizardStep);
           setDisplayedStep(draft.currentStep as WizardStep);
@@ -264,8 +289,9 @@ export default function OfferManagerViewP1Wizard({
           dbaName: offer.merchantName,
           source: "existing" as const,
         },
-        // Store original ID for edit mode
+        // Store original ID and status for edit mode
         _editOfferId: mode === "edit" ? offer.id : undefined,
+        _originalStatus: mode === "edit" ? offer.offerStatus : undefined,
       }));
 
       // Track draftId for edit mode so we can save/clean drafts
@@ -323,6 +349,14 @@ export default function OfferManagerViewP1Wizard({
 
   const currentStepConfig = STEP_CONFIG.find((s) => s.id === currentStep);
   const currentStepNumber = currentStepConfig?.number || 1;
+
+  // Published edit: lock offer type and merchant steps
+  const isPublishedEdit =
+    mode === "edit" && formData._originalStatus === "published";
+
+  // Approval workflow: when true, "Publish" becomes "Submit for Review"
+  // TODO: Replace with actual RBAC permission check
+  const requiresApproval = true;
 
   // Handle form field updates
   const handleUpdate = (field: string, value: any) => {
@@ -480,14 +514,39 @@ export default function OfferManagerViewP1Wizard({
       case "merchant":
         return !!(formData.merchant || formData.merchantData);
       case "offer": {
-        const baseValid =
+        const contentValid =
           formData.offerName?.trim() &&
           formData.description?.trim() &&
           formData.startDate &&
-          formData.externalUrl?.trim() &&
-          formData.promoCode?.trim();
+          formData.markets?.length > 0;
 
-        if (!baseValid) return false;
+        if (!contentValid) return false;
+
+        // Redemption method-specific validation
+        const method = formData.redemptionMethod || "online_code";
+        let redemptionValid = false;
+        switch (method) {
+          case "online_code":
+            redemptionValid =
+              !!formData.externalUrl?.trim() && !!formData.promoCode?.trim();
+            break;
+          case "in_store":
+            redemptionValid = !!formData.redemptionInstructions?.trim();
+            break;
+          case "phone":
+            redemptionValid =
+              !!formData.phoneNumber?.trim() &&
+              !!formData.redemptionInstructions?.trim();
+            break;
+          case "card_linked":
+            redemptionValid =
+              !!formData.cardNetwork &&
+              !!formData.activationInstructions?.trim();
+            break;
+          default:
+            redemptionValid = true;
+        }
+        if (!redemptionValid) return false;
 
         // Type-specific validation
         if (formData.offerType === "tiered_discount") {
@@ -590,12 +649,16 @@ export default function OfferManagerViewP1Wizard({
     setIsPublishing(true);
     try {
       // TODO: Replace with actual API call
+      const isSubmitForReview = requiresApproval && mode === "create";
+
       console.log(
-        mode === "edit"
-          ? "Saving offer:"
-          : mode === "clone"
-            ? "Cloning offer:"
-            : "Publishing offer:",
+        isSubmitForReview
+          ? "Submitting for review:"
+          : mode === "edit"
+            ? "Saving offer:"
+            : mode === "clone"
+              ? "Cloning offer:"
+              : "Publishing offer:",
         formData
       );
 
@@ -603,12 +666,14 @@ export default function OfferManagerViewP1Wizard({
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       const titles: Record<string, string> = {
-        create: "Offer Published!",
+        create: isSubmitForReview ? "Submitted for Review" : "Offer Published!",
         edit: "Offer Updated!",
         clone: "Offer Cloned!",
       };
       const descriptions: Record<string, string> = {
-        create: `"${formData.offerName}" is now live in the marketplace.`,
+        create: isSubmitForReview
+          ? `"${formData.offerName}" has been submitted for review.`
+          : `"${formData.offerName}" is now live in the marketplace.`,
         edit: `"${formData.offerName}" has been updated successfully.`,
         clone: `"${formData.offerName}" has been created as a new draft.`,
       };
@@ -676,6 +741,7 @@ export default function OfferManagerViewP1Wizard({
           <StepOfferType
             selectedType={formData.offerType}
             onSelect={handleOfferTypeSelect}
+            locked={isPublishedEdit}
           />
         );
       case "merchant":
@@ -687,6 +753,7 @@ export default function OfferManagerViewP1Wizard({
               handleUpdate("merchantData", null);
               handleUpdate("merchant", "");
             }}
+            locked={isPublishedEdit}
           />
         );
       case "offer":
@@ -695,10 +762,17 @@ export default function OfferManagerViewP1Wizard({
             offerType={formData.offerType || "dollar_off"}
             formData={formData}
             onUpdate={handleUpdate}
+            isPublishedEdit={isPublishedEdit}
           />
         );
       case "review":
-        return <StepReview formData={formData} onUpdate={handleUpdate} />;
+        return (
+          <StepReview
+            formData={formData}
+            onUpdate={handleUpdate}
+            requiresApproval={requiresApproval}
+          />
+        );
       default:
         return null;
     }
@@ -722,21 +796,34 @@ export default function OfferManagerViewP1Wizard({
               }}
               className="gap-4"
             >
-              {STEP_CONFIG.map((step) => (
-                <StepperItem
-                  key={step.id}
-                  step={step.number}
-                  completed={completedSteps.includes(step.id)}
-                >
-                  <StepperTrigger className="flex flex-col items-center gap-2 w-full">
-                    <StepperIndicator />
-                    <StepperTitle className="text-xs text-center">
-                      {step.label}
-                    </StepperTitle>
-                  </StepperTrigger>
-                  {step.number < STEP_CONFIG.length && <StepperSeparator />}
-                </StepperItem>
-              ))}
+              {STEP_CONFIG.map((step) => {
+                const isLockedStep =
+                  isPublishedEdit &&
+                  (step.id === "type" || step.id === "merchant");
+
+                return (
+                  <StepperItem
+                    key={step.id}
+                    step={step.number}
+                    completed={completedSteps.includes(step.id)}
+                  >
+                    <StepperTrigger className="flex flex-col items-center gap-2 w-full">
+                      <StepperIndicator />
+                      <StepperTitle className="text-xs text-center">
+                        {isLockedStep ? (
+                          <span className="flex items-center gap-0.5 justify-center">
+                            {step.label}
+                            <LockClosedIcon className="h-3 w-3 text-gray-400" />
+                          </span>
+                        ) : (
+                          step.label
+                        )}
+                      </StepperTitle>
+                    </StepperTrigger>
+                    {step.number < STEP_CONFIG.length && <StepperSeparator />}
+                  </StepperItem>
+                );
+              })}
             </Stepper>
           </div>
         </div>
@@ -823,21 +910,34 @@ export default function OfferManagerViewP1Wizard({
                     <Button
                       onClick={handlePublish}
                       disabled={isPublishing || isTransitioning}
-                      className="flex items-center gap-1"
+                      className={cn(
+                        "flex items-center gap-1",
+                        requiresApproval &&
+                          mode === "create" &&
+                          "bg-purple-600 hover:bg-purple-700"
+                      )}
                       size="sm"
                     >
-                      <CheckCircleIcon className="h-4 w-4" />
+                      {requiresApproval && mode === "create" ? (
+                        <ClipboardDocumentCheckIcon className="h-4 w-4" />
+                      ) : (
+                        <CheckCircleIcon className="h-4 w-4" />
+                      )}
                       {isPublishing
                         ? mode === "edit"
                           ? "Saving..."
                           : mode === "clone"
                             ? "Cloning..."
-                            : "Publishing..."
+                            : requiresApproval
+                              ? "Submitting..."
+                              : "Publishing..."
                         : mode === "edit"
                           ? "Save Changes"
                           : mode === "clone"
                             ? "Clone as Draft"
-                            : "Publish Offer"}
+                            : requiresApproval
+                              ? "Submit for Review"
+                              : "Publish Offer"}
                     </Button>
                   ) : (
                     <Button

@@ -72,7 +72,10 @@ export type OfferTypeKey =
   | "fixed_price"
   | "dollar_off_with_min"
   | "cashback"
-  | "tiered_discount";
+  | "tiered_discount"
+  | "free_with_purchase"
+  | "clickthrough"
+  | "cpg_spend_and_get";
 
 /**
  * Offer Type Configuration
@@ -245,6 +248,54 @@ export const OFFER_TYPE_CONFIG: Record<OfferTypeKey, OfferTypeConfig> = {
     example: "Spend $25 save $5, Spend $50 save $15, Spend $100 save $35",
     badgeFormat: (value) => `UP TO $${value} OFF`,
   },
+  free_with_purchase: {
+    key: "free_with_purchase",
+    label: "Free With Purchase",
+    shortLabel: "FREE ITEM",
+    description: "Get a free item when you buy something",
+    category: "bundle",
+    tags: ["bundle", "free", "gift", "purchase"],
+    icon: "FREE",
+    illustration: "/illustration/BOGO.png",
+    discountLabel: "Free item",
+    discountPlaceholder: "Dessert",
+    inputType: "text",
+    bestFor: ["Restaurants", "Retail add-ons", "Customer delight"],
+    example: "Free dessert with any entree",
+    badgeFormat: () => "FREE ITEM",
+  },
+  clickthrough: {
+    key: "clickthrough",
+    label: "Clickthrough Offer",
+    shortLabel: "CLICK",
+    description: "Shop now — click to visit merchant site",
+    category: "promotional",
+    tags: ["promotional", "link", "clickthrough", "online"],
+    icon: "SHOP",
+    illustration: "/illustration/fixed price.png",
+    discountLabel: "Discount value",
+    discountPrefix: "$",
+    discountPlaceholder: "10",
+    bestFor: ["E-commerce", "Affiliate offers", "Brand awareness"],
+    example: "Shop now and save — click to visit merchant site",
+    badgeFormat: (value) => (value > 0 ? `$${value} OFF` : "SHOP NOW"),
+  },
+  cpg_spend_and_get: {
+    key: "cpg_spend_and_get",
+    label: "Spend & Get (CPG)",
+    shortLabel: "SPEND & GET",
+    description: "Spend a set amount on qualifying products, get a reward",
+    category: "loyalty",
+    tags: ["loyalty", "cpg", "spend", "reward", "cashback"],
+    icon: "S&G",
+    illustration: "/illustration/cash-back.png",
+    discountLabel: "Reward value",
+    discountPrefix: "$",
+    discountPlaceholder: "5",
+    bestFor: ["CPG brands", "Grocery products", "Brand loyalty"],
+    example: "Spend $25 on Tide products, get $5 back",
+    badgeFormat: (value) => `GET $${value}`,
+  },
 };
 
 /**
@@ -405,6 +456,9 @@ export const WIZARD_TO_API_OFFER_TYPE: Record<OfferTypeKey, BackendOfferType> =
     dollar_off_with_min: "dollars_off", // Same backend type as dollar_off, min is metadata
     cashback: "cashback", // Match
     tiered_discount: "dollars_off", // Tiers stored as metadata, base type is dollars_off
+    free_with_purchase: "free_with_purchase", // Match
+    clickthrough: "clickthrough", // Match
+    cpg_spend_and_get: "spend_and_get", // Maps to spend_and_get
   };
 
 /**
@@ -620,6 +674,18 @@ export const HEADLINE_TEMPLATES: Record<
     template: "Spend More, Save More",
     withMerchant: (name) => `Spend More, Save More at ${name}`,
   },
+  free_with_purchase: {
+    template: "Free Item With Your Purchase",
+    withMerchant: (name) => `Free Gift at ${name}`,
+  },
+  clickthrough: {
+    template: "Shop Now and Save",
+    withMerchant: (name) => `Shop ${name} and Save`,
+  },
+  cpg_spend_and_get: {
+    template: "Spend $25, Get $5 Back",
+    withMerchant: (name) => `Spend & Get at ${name}`,
+  },
 };
 
 /**
@@ -690,6 +756,22 @@ export const DESCRIPTION_TEMPLATES: Record<
       "Spend more and unlock bigger savings! Tiers apply to regular-priced items. Exclusions may apply.",
     default:
       "Unlock bigger savings as you spend more! Discount tiers apply automatically at checkout.",
+  },
+  free_with_purchase: {
+    dining:
+      "Get a free item with your qualifying purchase! Ask your server for details. One per customer.",
+    shopping:
+      "Receive a complimentary item with your purchase! While supplies last. See store for qualifying items.",
+    default:
+      "Get a free item when you make a qualifying purchase! One per customer. While supplies last.",
+  },
+  clickthrough: {
+    default:
+      "Click through to shop exclusive deals from this merchant. Discount applied automatically or use the provided code.",
+  },
+  cpg_spend_and_get: {
+    default:
+      "Purchase qualifying products to earn your reward! Receipt validation may be required. Reward credited after verification.",
   },
 };
 

@@ -3,7 +3,11 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { CheckIcon, SparklesIcon } from "@heroicons/react/24/solid";
+import {
+  CheckIcon,
+  SparklesIcon,
+  LockClosedIcon,
+} from "@heroicons/react/24/solid";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +31,7 @@ import {
 interface StepOfferTypeProps {
   selectedType: OfferTypeKey | null;
   onSelect: (type: OfferTypeKey) => void;
+  locked?: boolean;
 }
 
 const POPULAR_TYPES: OfferTypeKey[] = ["percent_off", "dollar_off"];
@@ -34,6 +39,7 @@ const POPULAR_TYPES: OfferTypeKey[] = ["percent_off", "dollar_off"];
 export default function StepOfferType({
   selectedType,
   onSelect,
+  locked = false,
 }: StepOfferTypeProps) {
   const [activeCategory, setActiveCategory] = useState<OfferCategory | "all">(
     "all"
@@ -59,6 +65,48 @@ export default function StepOfferType({
       );
     return matchesCategory && matchesSearch;
   });
+
+  // Locked view for published offers being edited
+  if (locked && selectedType) {
+    const lockedConfig = OFFER_TYPE_CONFIG[selectedType];
+    return (
+      <div className="space-y-5">
+        <div className="rounded-xl border-2 border-gray-200 bg-gray-50/50 p-6">
+          <div className="flex items-start gap-5">
+            <div className="relative w-20 h-20 flex-shrink-0 overflow-hidden rounded-lg">
+              <Image
+                src={lockedConfig.illustration}
+                alt={lockedConfig.label}
+                fill
+                className={cn(
+                  "object-contain opacity-60",
+                  lockedConfig.illustrationClass
+                )}
+              />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {lockedConfig.label}
+                </h3>
+                <LockClosedIcon className="h-4 w-4 text-gray-400" />
+              </div>
+              <p className="text-sm text-gray-600">
+                {lockedConfig.description}
+              </p>
+              <div className="mt-3 flex items-start gap-2 text-sm text-gray-500 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+                <LockClosedIcon className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                <span>
+                  Offer type cannot be changed after publishing. Create a new
+                  offer to use a different type.
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">
@@ -109,6 +157,7 @@ export default function StepOfferType({
       {/* Type Grid */}
       {filteredTypes.length > 0 ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Active offer types */}
           {filteredTypes.map((type) => {
             const isSelected = selectedType === type.key;
             const isPopular = POPULAR_TYPES.includes(type.key);
@@ -117,7 +166,7 @@ export default function StepOfferType({
               <button
                 key={type.key}
                 type="button"
-                onClick={() => onSelect(type.key)}
+                onClick={() => onSelect(type.key as OfferTypeKey)}
                 className={cn(
                   "group relative flex flex-col rounded-xl border-2 bg-white p-4 text-left transition-all duration-200",
                   "hover:shadow-md hover:-translate-y-0.5",
@@ -195,6 +244,56 @@ export default function StepOfferType({
               </button>
             );
           })}
+
+          {/* Coming Soon placeholders (Gap 8) */}
+          {activeCategory === "all" && !searchQuery && (
+            <>
+              {[
+                {
+                  label: "Subscription Offers",
+                  description: "Recurring offers with subscription mechanics",
+                  badge: "Coming Q2",
+                },
+                {
+                  label: "Merchant Direct / ampliFI",
+                  description: "Direct merchant-funded redemption",
+                  badge: "Coming Q2",
+                },
+              ].map((placeholder) => (
+                <div
+                  key={placeholder.label}
+                  className="relative flex flex-col rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50 p-4 text-left opacity-60 cursor-not-allowed"
+                >
+                  <Badge className="absolute -top-2 left-3 bg-gray-100 text-gray-500 border-gray-300 text-xs px-2 py-0.5">
+                    {placeholder.badge}
+                  </Badge>
+                  <div className="relative mx-auto h-20 w-20 mb-3 mt-1 rounded-lg bg-gray-100 flex items-center justify-center">
+                    <svg
+                      className="h-8 w-8 text-gray-300"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      />
+                    </svg>
+                  </div>
+                  <div className="text-center">
+                    <h3 className="text-sm font-semibold text-gray-500">
+                      {placeholder.label}
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-400 leading-relaxed">
+                      {placeholder.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
         </div>
       ) : (
         <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-200">

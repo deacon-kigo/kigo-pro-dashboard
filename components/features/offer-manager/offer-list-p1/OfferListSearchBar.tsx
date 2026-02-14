@@ -23,9 +23,25 @@ import {
   BadgePercent,
   Loader2,
   CornerDownLeft,
+  FileEdit,
+  XCircle,
+  PauseCircle,
+  ShieldCheck,
+  Layers,
+  BarChart3,
+  CalendarDays,
+  CreditCard,
+  QrCode,
+  Zap,
+  Package,
+  MessageSquare,
 } from "lucide-react";
-import { MOCK_MERCHANTS, OFFER_TYPE_LABELS } from "./offerListMockData";
-import { OfferType } from "@/types/offers";
+import {
+  MOCK_MERCHANTS,
+  OFFER_TYPE_LABELS,
+  REDEMPTION_TYPE_LABELS,
+} from "./offerListMockData";
+import { OfferType, RedemptionType } from "@/types/offers";
 
 const AsyncCreatable =
   (AsyncCreatableModule as any).default || AsyncCreatableModule;
@@ -34,8 +50,16 @@ const AsyncCreatable =
 
 export interface FilterTag {
   label: string;
-  value: string; // "merchant:m1" | "type:bogo" | "status:published" | "search:free text"
-  category: "merchant" | "type" | "status" | "search";
+  value: string; // "merchant:m1" | "type:bogo" | "status:published" | "search:free text" | "category:discount" | etc.
+  category:
+    | "merchant"
+    | "type"
+    | "status"
+    | "search"
+    | "category"
+    | "performance"
+    | "dateRange"
+    | "redemptionType";
 }
 
 interface OfferListSearchBarProps {
@@ -53,28 +77,35 @@ const CATEGORY_COLORS: Record<
   type: { bg: "#E5D7FA", text: "#8941EB", dot: "#8941EB" },
   status: { bg: "#D1F7DF", text: "#059669", dot: "#77D898" },
   search: { bg: "#F6F5F1", text: "#5A5858", dot: "#5A5858" },
+  category: { bg: "#E0F2F1", text: "#0D9488", dot: "#0D9488" },
+  performance: { bg: "#FFF3E0", text: "#E65100", dot: "#E65100" },
+  dateRange: { bg: "#E8EAF6", text: "#3949AB", dot: "#3949AB" },
+  redemptionType: { bg: "#FCE4EC", text: "#C2185B", dot: "#C2185B" },
 };
 
 const GROUP_CATEGORY_MAP: Record<string, FilterTag["category"]> = {
   Merchants: "merchant",
   "Offer Types": "type",
   Statuses: "status",
+  Categories: "category",
+  Performance: "performance",
+  "Date Range": "dateRange",
+  "Redemption Types": "redemptionType",
 };
 
 // ---------- Option icons ----------
 
-const STATUS_ICONS: Record<
+const OPTION_ICONS: Record<
   string,
   React.ComponentType<{ style?: React.CSSProperties }>
 > = {
+  // Status icons
   "status:published": Globe,
-  "status:inactive": Archive,
-};
-
-const TYPE_ICONS: Record<
-  string,
-  React.ComponentType<{ style?: React.CSSProperties }>
-> = {
+  "status:draft": FileEdit,
+  "status:expired": XCircle,
+  "status:paused": PauseCircle,
+  "status:pending_approval": ShieldCheck,
+  // Type icons
   "type:bogo": Gift,
   "type:percentage_savings": Percent,
   "type:dollars_off": DollarSign,
@@ -84,12 +115,34 @@ const TYPE_ICONS: Record<
   "type:clickthrough": MousePointerClick,
   "type:loyalty_points": Star,
   "type:spend_and_get": ShoppingBag,
+  // Category icons
+  "category:discount": Percent,
+  "category:bundle": Gift,
+  "category:loyalty": Star,
+  "category:promotional": Tag,
+  // Performance icons
+  "performance:high": BarChart3,
+  "performance:medium": BarChart3,
+  "performance:low": BarChart3,
+  // Date range icons
+  "dateRange:this_week": CalendarDays,
+  "dateRange:this_month": CalendarDays,
+  "dateRange:30_days": CalendarDays,
+  "dateRange:no_expiration": CalendarDays,
+  // Redemption type icons
+  "redemptionType:online_code": QrCode,
+  "redemptionType:airdrop": Zap,
+  "redemptionType:gift_card": Gift,
+  "redemptionType:card_linked": CreditCard,
+  "redemptionType:stripe_checkout": ShoppingBag,
+  "redemptionType:augeo_fulfillment": Package,
+  "redemptionType:sms_notification": MessageSquare,
 };
 
 function getOptionIcon(
   value: string
 ): React.ComponentType<{ style?: React.CSSProperties }> | null {
-  return STATUS_ICONS[value] || TYPE_ICONS[value] || null;
+  return OPTION_ICONS[value] || null;
 }
 
 const GROUP_ICONS: Record<
@@ -99,6 +152,10 @@ const GROUP_ICONS: Record<
   Merchants: Store,
   "Offer Types": Tag,
   Statuses: Globe,
+  Categories: Layers,
+  Performance: BarChart3,
+  "Date Range": CalendarDays,
+  "Redemption Types": CreditCard,
 };
 
 // ---------- Static option sets ----------
@@ -115,8 +172,53 @@ const typeOptions: FilterTag[] = (
 
 const statusOptions: FilterTag[] = [
   { label: "Published", value: "status:published", category: "status" },
-  { label: "Inactive", value: "status:inactive", category: "status" },
+  { label: "Draft", value: "status:draft", category: "status" },
+  { label: "Expired", value: "status:expired", category: "status" },
+  { label: "Paused", value: "status:paused", category: "status" },
+  {
+    label: "Pending Approval",
+    value: "status:pending_approval",
+    category: "status",
+  },
 ];
+
+const categoryOptions: FilterTag[] = [
+  { label: "Discounts", value: "category:discount", category: "category" },
+  { label: "Bundles & Combos", value: "category:bundle", category: "category" },
+  { label: "Loyalty Rewards", value: "category:loyalty", category: "category" },
+  { label: "Promotional", value: "category:promotional", category: "category" },
+];
+
+const performanceOptions: FilterTag[] = [
+  { label: "High (100+)", value: "performance:high", category: "performance" },
+  {
+    label: "Medium (10-99)",
+    value: "performance:medium",
+    category: "performance",
+  },
+  { label: "Low (0-9)", value: "performance:low", category: "performance" },
+];
+
+const dateRangeOptions: FilterTag[] = [
+  { label: "This Week", value: "dateRange:this_week", category: "dateRange" },
+  { label: "This Month", value: "dateRange:this_month", category: "dateRange" },
+  { label: "Next 30 Days", value: "dateRange:30_days", category: "dateRange" },
+  {
+    label: "No Expiration",
+    value: "dateRange:no_expiration",
+    category: "dateRange",
+  },
+];
+
+const redemptionTypeOptions: FilterTag[] = (
+  Object.entries(REDEMPTION_TYPE_LABELS) as [RedemptionType, string][]
+)
+  .map(([key, label]) => ({
+    label,
+    value: `redemptionType:${key}`,
+    category: "redemptionType" as const,
+  }))
+  .sort((a, b) => a.label.localeCompare(b.label));
 
 // ---------- Merchant search ----------
 
@@ -469,11 +571,19 @@ const CATEGORY_LABELS: Record<FilterTag["category"], string> = {
   type: "Type",
   merchant: "Merchant",
   search: "Search",
+  category: "Category",
+  performance: "Performance",
+  dateRange: "Date Range",
+  redemptionType: "Redemption",
 };
 
 const CATEGORY_ORDER: FilterTag["category"][] = [
   "status",
   "type",
+  "category",
+  "performance",
+  "dateRange",
+  "redemptionType",
   "merchant",
   "search",
 ];
@@ -702,6 +812,35 @@ export function OfferListSearchBar({
       groups.push({ label: "Offer Types", options: sortedTypes });
     }
 
+    const sortedCategories = sortSelectedFirst(categoryOptions, selectedValues);
+    if (sortedCategories.length > 0) {
+      groups.push({ label: "Categories", options: sortedCategories });
+    }
+
+    const sortedPerformance = sortSelectedFirst(
+      performanceOptions,
+      selectedValues
+    );
+    if (sortedPerformance.length > 0) {
+      groups.push({ label: "Performance", options: sortedPerformance });
+    }
+
+    const sortedDateRange = sortSelectedFirst(dateRangeOptions, selectedValues);
+    if (sortedDateRange.length > 0) {
+      groups.push({ label: "Date Range", options: sortedDateRange });
+    }
+
+    const sortedRedemptionTypes = sortSelectedFirst(
+      redemptionTypeOptions,
+      selectedValues
+    );
+    if (sortedRedemptionTypes.length > 0) {
+      groups.push({
+        label: "Redemption Types",
+        options: sortedRedemptionTypes,
+      });
+    }
+
     return groups;
   }, [selectedValues]);
 
@@ -710,24 +849,22 @@ export function OfferListSearchBar({
       const groups: GroupBase<FilterTag>[] = [];
       const lower = inputValue.toLowerCase().trim();
 
-      const filteredStatuses = statusOptions.filter(
-        (o) => !lower || o.label.toLowerCase().includes(lower)
-      );
-      const sortedStatuses = sortSelectedFirst(
-        filteredStatuses,
-        selectedValues
-      );
-      if (sortedStatuses.length > 0) {
-        groups.push({ label: "Statuses", options: sortedStatuses });
-      }
+      const filterAndPush = (label: string, options: FilterTag[]) => {
+        const filtered = options.filter(
+          (o) => !lower || o.label.toLowerCase().includes(lower)
+        );
+        const sorted = sortSelectedFirst(filtered, selectedValues);
+        if (sorted.length > 0) {
+          groups.push({ label, options: sorted });
+        }
+      };
 
-      const filteredTypes = typeOptions.filter(
-        (o) => !lower || o.label.toLowerCase().includes(lower)
-      );
-      const sortedTypes = sortSelectedFirst(filteredTypes, selectedValues);
-      if (sortedTypes.length > 0) {
-        groups.push({ label: "Offer Types", options: sortedTypes });
-      }
+      filterAndPush("Statuses", statusOptions);
+      filterAndPush("Offer Types", typeOptions);
+      filterAndPush("Categories", categoryOptions);
+      filterAndPush("Performance", performanceOptions);
+      filterAndPush("Date Range", dateRangeOptions);
+      filterAndPush("Redemption Types", redemptionTypeOptions);
 
       if (lower) {
         const merchants = await searchMerchants(lower);

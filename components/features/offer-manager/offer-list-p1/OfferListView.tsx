@@ -19,6 +19,7 @@ import {
   OfferListItem,
   semanticSearch,
 } from "./offerListMockData";
+import { OfferStatus } from "@/types/offers";
 
 const SESSION_KEY = "p1.1-offer-list-state";
 
@@ -195,11 +196,24 @@ const OfferListViewP1 = memo(function OfferListViewP1() {
   }, []);
 
   // Parse filters into categories
-  const { searchTerms, merchantIds, offerTypes, statuses } = useMemo(() => {
+  const {
+    searchTerms,
+    merchantIds,
+    offerTypes,
+    statuses,
+    categories,
+    performanceTiers,
+    dateRanges,
+    redemptionTypes,
+  } = useMemo(() => {
     const searchTerms: string[] = [];
     const merchantIds: string[] = [];
     const offerTypes: string[] = [];
     const statuses: string[] = [];
+    const categories: string[] = [];
+    const performanceTiers: string[] = [];
+    const dateRanges: string[] = [];
+    const redemptionTypes: string[] = [];
     for (const f of selectedFilters) {
       const val = f.value.split(":").slice(1).join(":");
       switch (f.category) {
@@ -215,9 +229,30 @@ const OfferListViewP1 = memo(function OfferListViewP1() {
         case "status":
           statuses.push(val);
           break;
+        case "category":
+          categories.push(val);
+          break;
+        case "performance":
+          performanceTiers.push(val);
+          break;
+        case "dateRange":
+          dateRanges.push(val);
+          break;
+        case "redemptionType":
+          redemptionTypes.push(val);
+          break;
       }
     }
-    return { searchTerms, merchantIds, offerTypes, statuses };
+    return {
+      searchTerms,
+      merchantIds,
+      offerTypes,
+      statuses,
+      categories,
+      performanceTiers,
+      dateRanges,
+      redemptionTypes,
+    };
   }, [selectedFilters]);
 
   // Derive searchQuery for table highlighting
@@ -264,6 +299,17 @@ const OfferListViewP1 = memo(function OfferListViewP1() {
     setDeleteTarget(null);
   }, []);
 
+  const handleStatusChange = useCallback(
+    (offerId: string, newStatus: OfferStatus) => {
+      setOffers((prev) =>
+        prev.map((o) =>
+          o.id === offerId ? { ...o, offerStatus: newStatus } : o
+        )
+      );
+    },
+    []
+  );
+
   // Row-click navigation to offer detail / edit view
   const handleRowClick = useCallback(
     (offer: OfferListItem) => {
@@ -277,6 +323,22 @@ const OfferListViewP1 = memo(function OfferListViewP1() {
       router.push(`/offer-manager?version=p1.1&edit=${offer.id}`);
     },
     [router, selectedFilters, currentPage, pageSize]
+  );
+
+  // Backend type → offer category mapping
+  const BACKEND_TYPE_TO_CATEGORY: Record<string, string> = useMemo(
+    () => ({
+      percentage_savings: "discount",
+      dollars_off: "discount",
+      bogo: "bundle",
+      price_point: "promotional",
+      cashback: "loyalty",
+      free_with_purchase: "bundle",
+      clickthrough: "promotional",
+      loyalty_points: "loyalty",
+      spend_and_get: "promotional",
+    }),
+    []
   );
 
   // Filtered data
@@ -318,17 +380,77 @@ const OfferListViewP1 = memo(function OfferListViewP1() {
       results = results.filter((o) => offerTypes.includes(o.offerType));
     }
     if (statuses.length > 0) {
-      const hasInactive = statuses.includes("inactive");
-      const hasPublished = statuses.includes("published");
+      results = results.filter((o) => statuses.includes(o.offerStatus));
+    }
+    if (categories.length > 0) {
       results = results.filter((o) => {
-        if (hasPublished && o.offerStatus === "published") return true;
-        if (hasInactive && o.offerStatus !== "published") return true;
+        const cat = BACKEND_TYPE_TO_CATEGORY[o.offerType];
+        return cat ? categories.includes(cat) : false;
+      });
+    }
+    if (performanceTiers.length > 0) {
+      results = results.filter((o) => {
+        if (performanceTiers.includes("high") && o.redemptions >= 100)
+          return true;
+        if (
+          performanceTiers.includes("medium") &&
+          o.redemptions >= 10 &&
+          o.redemptions <= 99
+        )
+          return true;
+        if (performanceTiers.includes("low") && o.redemptions <= 9) return true;
         return false;
       });
     }
+    if (dateRanges.length > 0) {
+      results = results.filter((o) => {
+        const daysUntilEnd = Math.ceil(
+          (new Date(o.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+        );
+        const endYear = new Date(o.endDate).getFullYear();
+        if (
+          dateRanges.includes("this_week") &&
+          daysUntilEnd >= 0 &&
+          daysUntilEnd <= 7
+        )
+          return true;
+        if (
+          dateRanges.includes("this_month") &&
+          daysUntilEnd >= 0 &&
+          daysUntilEnd <= 30
+        )
+          return true;
+        if (
+          dateRanges.includes("30_days") &&
+          daysUntilEnd >= 0 &&
+          daysUntilEnd <= 30
+        )
+          return true;
+        if (dateRanges.includes("no_expiration") && endYear >= 2099)
+          return true;
+        return false;
+      });
+    }
+    if (redemptionTypes.length > 0) {
+      results = results.filter((o) =>
+        redemptionTypes.includes(o.redemptionType)
+      );
+    }
 
     return results;
-  }, [offers, searchQuery, searchTerms, merchantIds, offerTypes, statuses]);
+  }, [
+    offers,
+    searchQuery,
+    searchTerms,
+    merchantIds,
+    offerTypes,
+    statuses,
+    categories,
+    performanceTiers,
+    dateRanges,
+    redemptionTypes,
+    BACKEND_TYPE_TO_CATEGORY,
+  ]);
 
   // Default sort: newest first (by endDate descending)
   const sortedOffers = useMemo(() => {
@@ -444,6 +566,7 @@ const OfferListViewP1 = memo(function OfferListViewP1() {
         onPageSizeChange={handlePageSizeChange}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        onStatusChange={handleStatusChange}
         onRowClick={handleRowClick}
         emptyState={tableEmptyState}
       />
