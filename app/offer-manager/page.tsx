@@ -17,6 +17,7 @@ import {
   OfferManagerViewP0Merchant,
   OfferManagerViewP0_4Preview,
   OfferManagerViewP0_5Wizard,
+  OfferManagerViewP0_5Carousel,
 } from "@/components/features/offer-manager/p0-merchant";
 import OfferListView from "@/components/features/offer-manager/offer-list/OfferListView";
 import { OfferListViewP1 } from "@/components/features/offer-manager/offer-list-p1";
@@ -45,6 +46,7 @@ function OfferManagerContent() {
     "p0.2": " (P0.2 - Merchant Creation)",
     "p0.4": " (P0.4 - Offer Preview)",
     "p0.5": " (P0.5 - Wizard Flow)",
+    "p0.6": " (P0.6 - Carousel + Accordion)",
     p1: " (P1)",
     "p1.1": " (P1.1 - Offer Management)",
     p2: " (P2)",
@@ -105,16 +107,32 @@ function OfferManagerContent() {
         const wizardMode = editParam ? "edit" : cloneParam ? "clone" : "create";
         return <OfferManagerViewP0_5Wizard mode={wizardMode} />;
       }
+      case "p0.6": {
+        // P0.6: Carousel + Accordion (E2E single-page)
+        const p06EditParam = searchParams.get("edit");
+        const p06CloneParam = searchParams.get("clone");
+        const p06Mode = p06EditParam
+          ? "edit"
+          : p06CloneParam
+            ? "clone"
+            : "create";
+        return <OfferManagerViewP0_5Carousel mode={p06Mode} />;
+      }
       case "p1":
         // P1: Offer List Grid (legacy alias)
         return <OfferListViewP1 />;
       case "p1.1": {
-        // P1.1: Offer Management — list + create/edit wizard
+        // P1.1: Offer Management — list + P0.6 carousel form for create/edit
         const p1EditParam = searchParams.get("edit");
+        const p1CloneParam = searchParams.get("clone");
         const p1CreateParam = searchParams.get("create");
-        if (p1CreateParam === "true" || p1EditParam) {
-          const p1WizardMode = p1EditParam ? "edit" : "create";
-          return <OfferManagerViewP1Wizard mode={p1WizardMode} />;
+        if (p1CreateParam === "true" || p1EditParam || p1CloneParam) {
+          const p1Mode = p1EditParam
+            ? "edit"
+            : p1CloneParam
+              ? "clone"
+              : "create";
+          return <OfferManagerViewP0_5Carousel mode={p1Mode} />;
         }
         return <OfferListViewP1 />;
       }

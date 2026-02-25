@@ -396,6 +396,39 @@ export function formatDiscountBadge(
   return config.badgeFormat(discountValue, minimumSpend);
 }
 
+// P0 Active Types (available for creation now; others show "Coming Soon")
+export const P0_ACTIVE_TYPES: OfferTypeKey[] = [
+  "dollar_off",
+  "cashback",
+  "bogo",
+  "dollar_off_with_min",
+  "fixed_price",
+  "tiered_discount",
+];
+
+// Auto-assigned redemption method per offer type (no manual selection)
+export const AUTO_REDEMPTION_METHOD: Record<
+  OfferTypeKey,
+  "online" | "in_store"
+> = {
+  dollar_off: "online",
+  percent_off: "online",
+  cashback: "online",
+  bogo: "in_store",
+  dollar_off_with_min: "in_store",
+  fixed_price: "in_store",
+  tiered_discount: "online",
+  free_with_purchase: "in_store",
+  clickthrough: "online",
+  cpg_spend_and_get: "online",
+};
+
+export function getAutoRedemptionMethod(
+  type: OfferTypeKey
+): "online" | "in_store" {
+  return AUTO_REDEMPTION_METHOD[type] || "online";
+}
+
 // Default values for smart form initialization
 export const SMART_DEFAULTS = {
   usageLimitPerCustomer: "1",

@@ -115,7 +115,7 @@ export function OfferPreviewPanel({
           {/* Card View Section */}
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <DevicePhoneMobileIcon className="w-5 h-5 text-emerald-600" />
+              <DevicePhoneMobileIcon className="w-5 h-5 text-muted-foreground" />
               <span className="text-sm font-medium text-gray-900">
                 Card View
               </span>
@@ -145,7 +145,7 @@ export function OfferPreviewPanel({
           {/* Detail View Section */}
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <ComputerDesktopIcon className="w-5 h-5 text-blue-600" />
+              <ComputerDesktopIcon className="w-5 h-5 text-muted-foreground" />
               <span className="text-sm font-medium text-gray-900">
                 Detail View
               </span>
