@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -13,6 +13,11 @@ import {
   OfferTypeKey,
 } from "@/lib/constants/offer-templates";
 import { VALIDATION_RANGES } from "../hooks/useFormValidation";
+
+const DOLLAR_BASED_TYPES: OfferTypeKey[] = [
+  "dollar_off",
+  "dollar_off_with_min",
+];
 
 interface SectionOfferTypeDetailsProps {
   offerType: OfferTypeKey;
@@ -36,6 +41,20 @@ export default function SectionOfferTypeDetails({
 }: SectionOfferTypeDetailsProps) {
   const typeConfig = OFFER_TYPE_CONFIG[offerType];
   const range = VALIDATION_RANGES[offerType];
+  const isDollarBased = DOLLAR_BASED_TYPES.includes(offerType);
+  const manuallyEditedRef = useRef(false);
+
+  // Auto-populate redemptionValue from discountValue for dollar-based types
+  useEffect(() => {
+    if (isDollarBased && !manuallyEditedRef.current && formData.discountValue) {
+      onUpdate("redemptionValue", formData.discountValue);
+    }
+  }, [isDollarBased, formData.discountValue]);
+
+  // Reset manual-edit flag when offer type changes
+  useEffect(() => {
+    manuallyEditedRef.current = false;
+  }, [offerType]);
 
   return (
     <div className="space-y-5">
@@ -224,34 +243,37 @@ export default function SectionOfferTypeDetails({
         </div>
       )}
 
-      {/* Fixed Price: estimated savings (redemptionValue) */}
-      {offerType === "fixed_price" && (
-        <div>
-          <Label htmlFor="redemptionValue">Estimated Savings</Label>
-          <div className="relative mt-1">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600">
-              $
-            </span>
-            <Input
-              id="redemptionValue"
-              type="number"
-              placeholder="10"
-              value={formData.redemptionValue || ""}
-              onChange={(e) => onUpdate("redemptionValue", e.target.value)}
-              onFocus={(e) => {
-                if (e.target.value === "0") onUpdate("redemptionValue", "");
-                e.target.select();
-              }}
-              className="pl-7"
-              min="0"
-              step="0.01"
-            />
-          </div>
-          <p className="mt-1.5 text-gray-600 text-sm">
-            Approximate savings vs. regular price (shown in analytics)
-          </p>
+      {/* Estimated Savings (redemptionValue) — all offer types */}
+      <div>
+        <Label htmlFor="redemptionValue">Estimated Savings</Label>
+        <div className="relative mt-1">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600">
+            $
+          </span>
+          <Input
+            id="redemptionValue"
+            type="number"
+            placeholder={isDollarBased ? "Auto-filled from discount" : "10"}
+            value={formData.redemptionValue || ""}
+            onChange={(e) => {
+              manuallyEditedRef.current = true;
+              onUpdate("redemptionValue", e.target.value);
+            }}
+            onFocus={(e) => {
+              if (e.target.value === "0") onUpdate("redemptionValue", "");
+              e.target.select();
+            }}
+            className="pl-7"
+            min="0"
+            step="0.01"
+          />
         </div>
-      )}
+        <p className="mt-1.5 text-gray-600 text-sm">
+          {isDollarBased
+            ? "Auto-filled from discount amount — edit to override"
+            : "Approximate savings vs. regular price (shown in analytics)"}
+        </p>
+      </div>
 
       {/* Savings indicator */}
       <div className="flex items-center gap-2 bg-muted/50 rounded-md px-3 py-2 text-sm text-gray-700">

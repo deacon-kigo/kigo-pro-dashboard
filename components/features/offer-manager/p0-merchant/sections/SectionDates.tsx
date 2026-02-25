@@ -4,7 +4,10 @@ import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import {
+  ExclamationTriangleIcon,
+  GlobeAltIcon,
+} from "@heroicons/react/24/outline";
 import { cn } from "@/lib/utils";
 import { getDefaultDates } from "@/lib/constants/offer-templates";
 
@@ -67,6 +70,11 @@ export default function SectionDates({
             </p>
           )}
         </div>
+      </div>
+      <div className="flex items-center gap-2 p-2.5 rounded-md bg-muted/50 text-sm">
+        <GlobeAltIcon className="h-4 w-4 text-muted-foreground" />
+        <span className="text-muted-foreground">Market:</span>
+        <span className="font-medium">United States</span>
       </div>
       <div className="flex items-center gap-2">
         <Checkbox
