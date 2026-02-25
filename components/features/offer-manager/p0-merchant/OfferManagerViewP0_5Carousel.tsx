@@ -21,7 +21,6 @@ import {
   DocumentCheckIcon,
   GiftIcon,
 } from "@heroicons/react/24/outline";
-import { CheckCircleIcon } from "@heroicons/react/24/solid";
 import { OfferTypeCarousel, StickyTypeIndicator } from "./carousel";
 import {
   SectionMerchant,
@@ -480,9 +479,7 @@ export default function OfferManagerViewP0_5Carousel({
                   size="sm"
                   onClick={handlePublish}
                   disabled={isPublishing}
-                  className="flex items-center gap-1"
                 >
-                  <CheckCircleIcon className="h-4 w-4" />
                   {isPublishing ? publishingLabel : publishLabel}
                 </Button>
               </div>
