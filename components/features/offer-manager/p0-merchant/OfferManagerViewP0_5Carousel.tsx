@@ -310,6 +310,7 @@ export default function OfferManagerViewP0_5Carousel({
         cashbackCap: "",
         cashbackPercentage: "",
         redemptionValue: "",
+        shortText: "",
       };
 
       const method = getAutoRedemptionMethod(type);

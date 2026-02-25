@@ -403,7 +403,6 @@ export const P0_ACTIVE_TYPES: OfferTypeKey[] = [
   "bogo",
   "dollar_off_with_min",
   "fixed_price",
-  "tiered_discount",
 ];
 
 // Auto-assigned redemption method per offer type (no manual selection)
