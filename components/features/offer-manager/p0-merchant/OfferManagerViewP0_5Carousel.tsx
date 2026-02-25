@@ -49,6 +49,10 @@ import {
   getSmartDescription,
   getAutoRedemptionMethod,
 } from "@/lib/constants/offer-templates";
+import {
+  getCurrentPublisher,
+  isMultiBrandPublisher,
+} from "@/lib/constants/publisher-brands";
 
 /**
  * P0.6 Offer Manager — Carousel + Accordion + Split-Screen Preview
@@ -130,6 +134,8 @@ export default function OfferManagerViewP0_5Carousel({
       descriptionAutoFilled: false,
       categoriesAutoFilled: false,
       commoditiesAutoFilled: false,
+      // Publisher brand
+      publisherBrandTag: null as string | null,
     };
   });
 
@@ -172,6 +178,17 @@ export default function OfferManagerViewP0_5Carousel({
       // Silently fail if localStorage data is invalid
     }
   }, [mode]);
+
+  // Auto-set brand for single-brand publishers
+  useEffect(() => {
+    if (!isMultiBrandPublisher()) {
+      const publisher = getCurrentPublisher();
+      setFormData((prev: any) => ({
+        ...prev,
+        publisherBrandTag: publisher.brands[0].editionTag,
+      }));
+    }
+  }, []);
 
   // Published edit: lock offer type and merchant
   const isPublishedEdit =
@@ -602,8 +619,16 @@ export default function OfferManagerViewP0_5Carousel({
                                   setFormData((prev: any) => ({
                                     ...prev,
                                     merchant: "",
+                                    publisherBrandTag: isMultiBrandPublisher()
+                                      ? null
+                                      : prev.publisherBrandTag,
                                   }));
                                 }}
+                                selectedBrandTag={formData.publisherBrandTag}
+                                onBrandChange={(tag) =>
+                                  handleUpdate("publisherBrandTag", tag)
+                                }
+                                brandPickerDisabled={isPublishedEdit}
                               />
                             )}
                             {section.id === "type-details" &&

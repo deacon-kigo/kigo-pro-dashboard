@@ -3,6 +3,7 @@ import {
   OfferTypeKey,
   getAutoRedemptionMethod,
 } from "@/lib/constants/offer-templates";
+import { isMultiBrandPublisher } from "@/lib/constants/publisher-brands";
 
 export interface SectionStatus {
   id: string;
@@ -33,6 +34,7 @@ export function useSectionCompletion(formData: {
   startDate?: string;
   termsConditions?: string;
   usageLimitPerCustomer?: string;
+  publisherBrandTag?: string | null;
 }): UseSectionCompletionResult {
   return useMemo(() => {
     const offerType = formData.offerType;
@@ -69,7 +71,9 @@ export function useSectionCompletion(formData: {
       {
         id: "merchant",
         label: "Merchant & Brand",
-        complete: !!formData.merchantData,
+        complete:
+          !!formData.merchantData &&
+          (!isMultiBrandPublisher() || !!formData.publisherBrandTag),
       },
       {
         id: "type-details",
@@ -118,6 +122,7 @@ export function useSectionCompletion(formData: {
     };
   }, [
     formData.merchantData,
+    formData.publisherBrandTag,
     formData.offerType,
     formData.discountValue,
     formData.minimumSpend,
