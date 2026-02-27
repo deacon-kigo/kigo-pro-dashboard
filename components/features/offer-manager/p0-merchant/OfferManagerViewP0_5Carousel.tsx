@@ -66,7 +66,7 @@ import {
 const SECTION_CONFIG = [
   { id: "merchant", label: "Merchant & Brand", icon: BuildingStorefrontIcon },
   { id: "type-details", label: "Offer Type Details", icon: CurrencyDollarIcon },
-  { id: "content", label: "Content", icon: DocumentTextIcon },
+  { id: "content", label: "Description", icon: DocumentTextIcon },
   { id: "redemption", label: "Redemption", icon: GlobeAltIcon },
   { id: "classification", label: "Classification", icon: TagIcon },
   { id: "dates", label: "Dates & Duration", icon: CalendarDaysIcon },
@@ -92,6 +92,8 @@ export default function OfferManagerViewP0_5Carousel({
 
   // Track previous firstIncompleteSection for auto-expand
   const prevFirstIncompleteRef = useRef<string | null>(null);
+  // Suppress auto-expand during type selection transition to avoid racing
+  const typeSelectionInFlightRef = useRef(false);
 
   // Form data — same shape as wizard + type-specific fields
   const [formData, setFormData] = useState<any>(() => {
@@ -217,6 +219,10 @@ export default function OfferManagerViewP0_5Carousel({
     const prev = prevFirstIncompleteRef.current;
     prevFirstIncompleteRef.current = firstIncompleteSection;
 
+    // During type-selection transition, let handleOfferTypeSelect control
+    // the section change to avoid a racing double-scroll.
+    if (typeSelectionInFlightRef.current) return;
+
     // On initial mount (prev is null), set based on current state
     if (prev === null) {
       if (!formData.offerType) {
@@ -235,6 +241,8 @@ export default function OfferManagerViewP0_5Carousel({
   }, [firstIncompleteSection, formData.offerType]);
 
   // Scroll into view when openSectionId changes
+  // Delay must exceed the accordion open/close animation (~300ms) so
+  // the target element's offsetTop is measured at its final position.
   useEffect(() => {
     if (!openSectionId || !scrollContainerRef.current) return;
     const timer = setTimeout(() => {
@@ -246,7 +254,7 @@ export default function OfferManagerViewP0_5Carousel({
           formData.offerType && openSectionId !== "offer-type" ? 64 : 16;
         container.scrollTo({ top: elTop - stickyOffset, behavior: "smooth" });
       }
-    }, 100);
+    }, 350);
     return () => clearTimeout(timer);
   }, [openSectionId]);
 
@@ -318,6 +326,9 @@ export default function OfferManagerViewP0_5Carousel({
 
   // Handle offer type selection
   const handleOfferTypeSelect = useCallback((type: OfferTypeKey) => {
+    // Suppress auto-expand while the type-selection transition plays out
+    typeSelectionInFlightRef.current = true;
+
     setFormData((prev: any) => {
       const updates: any = {
         offerType: type,
@@ -360,13 +371,14 @@ export default function OfferManagerViewP0_5Carousel({
       return { ...prev, ...updates };
     });
 
-    // After selection, collapse carousel and open first incomplete section
+    // After selection, collapse carousel and open first incomplete section.
+    // Delay lets the carousel collapse animation finish before we change
+    // sections — prevents the jarring "jump" effect.
     setTimeout(() => {
-      setOpenSectionId((current) => {
-        // Let auto-expand take over — default to merchant if nothing else
-        return "merchant";
-      });
-    }, 300);
+      setOpenSectionId("merchant");
+      // Re-enable auto-expand now that the transition is complete
+      typeSelectionInFlightRef.current = false;
+    }, 450);
   }, []);
 
   // Handle merchant selection

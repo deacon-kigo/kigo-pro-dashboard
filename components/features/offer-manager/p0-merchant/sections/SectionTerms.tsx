@@ -4,11 +4,20 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
+const OFFER_SOURCES = [
+  { label: "MCM (Merchant Commerce Manager)", value: "MCM" },
+  { label: "FMTC (FlexOffers)", value: "FMTC" },
+  { label: "EBG (Enterprise Business Group)", value: "EBG" },
+  { label: "RN (Retail Network)", value: "RN" },
+  { label: "AUGEO (Augeo Platform)", value: "AUGEO" },
+];
+
 interface SectionTermsProps {
   formData: {
     termsConditions?: string;
     usageLimitPerCustomer?: string;
     redemptionRollingPeriod?: string;
+    offerSource?: string;
   };
   onUpdate: (field: string, value: any) => void;
 }
@@ -81,6 +90,29 @@ export default function SectionTerms({
             <option value="single">Never</option>
             <option value="monthly">Monthly</option>
             <option value="yearly">Yearly</option>
+          </select>
+        </div>
+
+        <span className="text-gray-400">|</span>
+
+        <div className="flex items-center gap-2">
+          <Label
+            htmlFor="offerSource"
+            className="text-sm text-gray-700 whitespace-nowrap"
+          >
+            Offer Source:
+          </Label>
+          <select
+            id="offerSource"
+            value={formData.offerSource || "MCM"}
+            onChange={(e) => onUpdate("offerSource", e.target.value)}
+            className="h-8 px-2 text-sm border rounded-md bg-white"
+          >
+            {OFFER_SOURCES.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
+            ))}
           </select>
         </div>
       </div>

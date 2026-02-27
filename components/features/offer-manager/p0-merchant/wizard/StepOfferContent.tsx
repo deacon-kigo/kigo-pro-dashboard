@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import {
   PhotoIcon,
   XMarkIcon,
-  ArrowPathIcon,
+  ArrowUpTrayIcon,
   TagIcon,
 } from "@heroicons/react/24/outline";
 import {
@@ -445,7 +445,7 @@ export default function StepOfferContent({
                           className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors"
                           title="Replace image"
                         >
-                          <ArrowPathIcon className="w-4 h-4 text-gray-600" />
+                          <ArrowUpTrayIcon className="w-4 h-4 text-gray-600" />
                         </button>
                         <button
                           type="button"
@@ -562,7 +562,7 @@ export default function StepOfferContent({
                           className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors"
                           title="Replace banner"
                         >
-                          <ArrowPathIcon className="w-4 h-4 text-gray-600" />
+                          <ArrowUpTrayIcon className="w-4 h-4 text-gray-600" />
                         </button>
                         <button
                           type="button"
