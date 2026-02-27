@@ -601,6 +601,65 @@ export default function DemosPage() {
             </div>
           </div>
 
+          {/* RE/MAX Customer Journey Demo */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+            <div className="p-6">
+              <div className="flex items-center mb-4">
+                <div className="h-12 w-12 bg-red-100 rounded-full overflow-hidden flex items-center justify-center mr-4">
+                  <img
+                    src="/mock/remax_logo.svg"
+                    alt="RE/MAX"
+                    className="h-8 w-8 object-contain"
+                  />
+                </div>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  RE/MAX Customer Journey
+                </h2>
+              </div>
+
+              <p className="text-gray-600 mb-6 h-20">
+                Experience an AI-powered mobile journey for new homebuyers.
+                Follow Jessica through gift selection, move planning with
+                personalized offers, and savings tracking — all powered by
+                RE/MAX Rewards.
+              </p>
+
+              <div className="grid grid-cols-3 gap-2 mb-6">
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <SparklesIcon className="h-5 w-5 text-red-500 mx-auto mb-1" />
+                  <span className="text-xs text-gray-600">AI Chat</span>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <HomeIcon className="h-5 w-5 text-red-500 mx-auto mb-1" />
+                  <span className="text-xs text-gray-600">Homebuyer</span>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-lg text-center">
+                  <CurrencyDollarIcon className="h-5 w-5 text-green-500 mx-auto mb-1" />
+                  <span className="text-xs text-gray-600">Savings</span>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <div className="space-x-1">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    Real Estate
+                  </span>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                    Mobile Journey
+                  </span>
+                </div>
+
+                <Link
+                  href="/remax-demo"
+                  className="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  View Demo
+                  <ArrowRightIcon className="ml-1.5 h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
+
           {/* Optimal Offer Engine Demo */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
             <div className="p-6">
