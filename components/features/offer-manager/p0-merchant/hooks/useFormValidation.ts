@@ -16,7 +16,6 @@ export const VALIDATION_RANGES: Record<
   percent_off: { min: 1, max: 100, label: "1% – 100%" },
   fixed_price: { min: 0.01, max: 10000, label: "$0.01 – $10,000" },
   cashback: { min: 1, max: 100, label: "1% – 100%" },
-  dollar_off_with_min: { min: 1, max: 500, label: "$1 – $500" },
 };
 
 // ============================================================================
@@ -101,23 +100,6 @@ export function computeValidationErrors(
         }
       } else if (validateAll) {
         errors.discountValue = "Discount value is required";
-      }
-    }
-
-    // minimumSpend for dollar_off_with_min
-    if (offerType === "dollar_off_with_min") {
-      const minSpendVal = formData.minimumSpend?.trim() || "";
-      const minSpendNum = parseFloat(minSpendVal);
-      const discountForCross = parseFloat(formData.discountValue || "0");
-
-      if (minSpendVal) {
-        if (isNaN(minSpendNum) || minSpendNum <= 0) {
-          errors.minimumSpend = "Must be a positive number";
-        } else if (discountForCross > 0 && minSpendNum <= discountForCross) {
-          errors.minimumSpend = `Must be greater than the discount amount ($${discountForCross})`;
-        }
-      } else if (validateAll) {
-        errors.minimumSpend = "Minimum spend is required";
       }
     }
 

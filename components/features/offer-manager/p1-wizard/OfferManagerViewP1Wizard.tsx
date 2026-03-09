@@ -548,26 +548,7 @@ export default function OfferManagerViewP1Wizard({
         }
         if (!redemptionValid) return false;
 
-        // Type-specific validation
-        if (formData.offerType === "tiered_discount") {
-          const tiers = formData.tiers || [];
-          return (
-            tiers.length >= 1 &&
-            tiers.some(
-              (t: { minSpend: string; discount: string }) =>
-                parseFloat(t.minSpend) > 0 && parseFloat(t.discount) > 0
-            )
-          );
-        }
-        if (formData.offerType === "dollar_off_with_min") {
-          return !!(
-            formData.discountValue &&
-            formData.minimumSpend &&
-            parseFloat(formData.minimumSpend) >
-              parseFloat(formData.discountValue)
-          );
-        }
-        // All other types just need discountValue
+        // All types just need discountValue
         return !!formData.discountValue;
       }
       case "review":

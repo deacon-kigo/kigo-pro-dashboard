@@ -3,24 +3,16 @@
 import React, { useState } from "react";
 import MerchantHybridSearch, { MerchantData } from "../MerchantHybridSearch";
 import MerchantManualEntry from "../MerchantManualEntry";
-import PublisherBrandPicker from "./PublisherBrandPicker";
-
 interface SectionMerchantProps {
   selectedMerchant: MerchantData | null;
   onSelect: (merchant: MerchantData) => void;
   onClear: () => void;
-  selectedBrandTag?: string | null;
-  onBrandChange?: (editionTag: string) => void;
-  brandPickerDisabled?: boolean;
 }
 
 export default function SectionMerchant({
   selectedMerchant,
   onSelect,
   onClear,
-  selectedBrandTag,
-  onBrandChange,
-  brandPickerDisabled,
 }: SectionMerchantProps) {
   const [showManualEntry, setShowManualEntry] = useState(false);
   const [manualEntrySearchQuery, setManualEntrySearchQuery] = useState("");
@@ -56,14 +48,6 @@ export default function SectionMerchant({
         <p className="text-gray-700 text-sm">
           Search by business name, address, or ID
         </p>
-      )}
-
-      {selectedMerchant && onBrandChange && (
-        <PublisherBrandPicker
-          selectedBrandTag={selectedBrandTag ?? null}
-          onBrandChange={onBrandChange}
-          disabled={brandPickerDisabled}
-        />
       )}
     </div>
   );

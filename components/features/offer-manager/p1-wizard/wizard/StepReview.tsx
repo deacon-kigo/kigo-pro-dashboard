@@ -236,17 +236,8 @@ export default function StepReview({
   const theme = getReviewTheme(formData.offerType);
 
   // Check completion for required fields
-  const hasTierData =
-    offerType === "tiered_discount"
-      ? (formData.tiers || []).some(
-          (t: DiscountTier) =>
-            parseFloat(t.minSpend) > 0 && parseFloat(t.discount) > 0
-        )
-      : true;
-  const hasMinSpend =
-    offerType === "dollar_off_with_min"
-      ? !!formData.minimumSpend && parseFloat(formData.minimumSpend) > 0
-      : true;
+  const hasTierData = true;
+  const hasMinSpend = true;
 
   // Redemption method-aware validation
   const method = formData.redemptionMethod || "online_code";
@@ -274,10 +265,7 @@ export default function StepReview({
     offerType: !!formData.offerType,
     merchant: !!formData.merchantData,
     headline: !!formData.offerName?.trim(),
-    discount:
-      offerType === "tiered_discount"
-        ? hasTierData
-        : !!formData.discountValue && discountValue > 0 && hasMinSpend,
+    discount: !!formData.discountValue && discountValue > 0,
     startDate: !!formData.startDate,
     redemption: redemptionMethodComplete,
   };
@@ -568,20 +556,6 @@ export default function StepReview({
                   </div>
 
                   {/* Type-specific details */}
-                  {offerType === "dollar_off_with_min" &&
-                    formData.minimumSpend && (
-                      <div
-                        className="mt-3 inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm"
-                        style={{
-                          backgroundColor: theme.pastelMuted,
-                          color: theme.blueDark,
-                        }}
-                      >
-                        <span className="font-medium">
-                          Min. spend: ${formData.minimumSpend}
-                        </span>
-                      </div>
-                    )}
                   {offerType === "cashback" && formData.cashbackCap && (
                     <div
                       className="mt-3 inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm"
@@ -595,28 +569,6 @@ export default function StepReview({
                       </span>
                     </div>
                   )}
-                  {offerType === "tiered_discount" &&
-                    formData.tiers &&
-                    formData.tiers.length > 0 && (
-                      <div className="mt-3 space-y-1.5">
-                        {formData.tiers
-                          .filter((t: DiscountTier) => t.minSpend && t.discount)
-                          .map((tier: DiscountTier, i: number) => (
-                            <div
-                              key={i}
-                              className="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm mr-2"
-                              style={{
-                                backgroundColor: theme.pastelMuted,
-                                color: theme.blueDark,
-                              }}
-                            >
-                              <span className="font-medium">
-                                Spend ${tier.minSpend} → Save ${tier.discount}
-                              </span>
-                            </div>
-                          ))}
-                      </div>
-                    )}
                 </div>
               </div>
             </div>
@@ -624,9 +576,7 @@ export default function StepReview({
             {/* ===== DETAILS SECTIONS ===== */}
             <div className="border-t border-gray-100/80">
               {/* Discount Details Section — for types with extra config */}
-              {(offerType === "dollar_off_with_min" ||
-                offerType === "cashback" ||
-                offerType === "tiered_discount" ||
+              {(offerType === "cashback" ||
                 offerType === "free_with_purchase" ||
                 offerType === "cpg_spend_and_get") && (
                 <ReviewSection
@@ -636,30 +586,6 @@ export default function StepReview({
                   theme={theme}
                 >
                   <div className="space-y-4">
-                    {offerType === "dollar_off_with_min" && (
-                      <div className="grid grid-cols-2 gap-8">
-                        <ReviewField
-                          label="Discount"
-                          value={
-                            formData.discountValue
-                              ? `$${formData.discountValue} off`
-                              : null
-                          }
-                          placeholder="Not set"
-                          theme={theme}
-                        />
-                        <ReviewField
-                          label="Minimum Spend"
-                          value={
-                            formData.minimumSpend
-                              ? `$${formData.minimumSpend}`
-                              : null
-                          }
-                          placeholder="Not set"
-                          theme={theme}
-                        />
-                      </div>
-                    )}
                     {offerType === "cashback" && (
                       <div className="grid grid-cols-2 gap-8">
                         <ReviewField
@@ -682,35 +608,6 @@ export default function StepReview({
                           placeholder="No cap (unlimited)"
                           theme={theme}
                         />
-                      </div>
-                    )}
-                    {offerType === "tiered_discount" && formData.tiers && (
-                      <div className="space-y-2">
-                        {formData.tiers
-                          .filter((t: DiscountTier) => t.minSpend && t.discount)
-                          .map((tier: DiscountTier, i: number) => (
-                            <div
-                              key={i}
-                              className="flex items-center gap-3 py-2"
-                            >
-                              <span
-                                className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold"
-                                style={{
-                                  backgroundColor: theme.blueMuted,
-                                  color: theme.blueDark,
-                                }}
-                              >
-                                {i + 1}
-                              </span>
-                              <span className="text-sm font-semibold text-gray-900">
-                                Spend ${tier.minSpend}
-                              </span>
-                              <span className="text-sm text-gray-400">→</span>
-                              <span className="text-sm font-semibold text-gray-900">
-                                Save ${tier.discount}
-                              </span>
-                            </div>
-                          ))}
                       </div>
                     )}
                     {offerType === "free_with_purchase" && (

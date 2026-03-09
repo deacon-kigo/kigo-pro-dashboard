@@ -363,188 +363,53 @@ export default function StepOfferContent({
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-5">
             {/* Left Column */}
             <div className="space-y-5">
-              {/* Tiered Discount UI — replaces standard discount input */}
-              {offerType === "tiered_discount" ? (
-                <div>
-                  <Label>{typeConfig.tiersLabel || "Discount Tiers"}*</Label>
-                  <p className="text-sm text-gray-500 mt-1 mb-3">
-                    Add spend thresholds with escalating discounts
-                  </p>
-                  <div className="space-y-3">
-                    {(formData.tiers || [{ minSpend: "", discount: "" }]).map(
-                      (tier: DiscountTier, index: number) => (
-                        <div
-                          key={index}
-                          className="flex items-center gap-3 p-3 rounded-lg border bg-gray-50/50"
-                        >
-                          <span className="text-xs font-semibold text-gray-400 w-6">
-                            T{index + 1}
-                          </span>
-                          <div className="flex items-center gap-2 flex-1">
-                            <span className="text-sm text-gray-600 whitespace-nowrap">
-                              Spend
-                            </span>
-                            <div className="relative w-28">
-                              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
-                                $
-                              </span>
-                              <Input
-                                type="number"
-                                placeholder="50"
-                                value={tier.minSpend}
-                                onChange={(e) => {
-                                  const newTiers = [
-                                    ...(formData.tiers || [
-                                      { minSpend: "", discount: "" },
-                                    ]),
-                                  ];
-                                  newTiers[index] = {
-                                    ...newTiers[index],
-                                    minSpend: e.target.value,
-                                  };
-                                  onUpdate("tiers", newTiers);
-                                }}
-                                className="pl-6 h-9"
-                                min="0"
-                              />
-                            </div>
-                            <span className="text-sm text-gray-600 whitespace-nowrap">
-                              save
-                            </span>
-                            <div className="relative w-28">
-                              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
-                                $
-                              </span>
-                              <Input
-                                type="number"
-                                placeholder="5"
-                                value={tier.discount}
-                                onChange={(e) => {
-                                  const newTiers = [
-                                    ...(formData.tiers || [
-                                      { minSpend: "", discount: "" },
-                                    ]),
-                                  ];
-                                  newTiers[index] = {
-                                    ...newTiers[index],
-                                    discount: e.target.value,
-                                  };
-                                  onUpdate("tiers", newTiers);
-                                  // Update discountValue to the highest tier for badge display
-                                  const maxDiscount = Math.max(
-                                    ...newTiers.map(
-                                      (t) => parseFloat(t.discount) || 0
-                                    )
-                                  );
-                                  onUpdate(
-                                    "discountValue",
-                                    maxDiscount > 0 ? String(maxDiscount) : ""
-                                  );
-                                }}
-                                className="pl-6 h-9"
-                                min="0"
-                              />
-                            </div>
-                          </div>
-                          {(formData.tiers || []).length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const newTiers = (formData.tiers || []).filter(
-                                  (_: DiscountTier, i: number) => i !== index
-                                );
-                                onUpdate("tiers", newTiers);
-                                const maxDiscount = Math.max(
-                                  ...newTiers.map(
-                                    (t: DiscountTier) =>
-                                      parseFloat(t.discount) || 0
-                                  )
-                                );
-                                onUpdate(
-                                  "discountValue",
-                                  maxDiscount > 0 ? String(maxDiscount) : ""
-                                );
-                              }}
-                              className="p-1.5 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-                            >
-                              <TrashIcon className="h-4 w-4" />
-                            </button>
-                          )}
-                        </div>
-                      )
-                    )}
-                    {(formData.tiers || [{ minSpend: "", discount: "" }])
-                      .length < 5 && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const currentTiers = formData.tiers || [
-                            { minSpend: "", discount: "" },
-                          ];
-                          onUpdate("tiers", [
-                            ...currentTiers,
-                            { minSpend: "", discount: "" },
-                          ]);
-                        }}
-                        className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors px-3 py-2 rounded-md hover:bg-primary/5"
-                      >
-                        <PlusIcon className="h-4 w-4" />
-                        Add tier (max 5)
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                /* Standard Discount Value */
-                <div>
-                  <Label htmlFor="discountValue">
-                    {typeConfig.discountLabel}*
-                  </Label>
-                  <div className="relative mt-1">
-                    {typeConfig.discountPrefix && (
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600">
-                        {typeConfig.discountPrefix}
-                      </span>
-                    )}
-                    <Input
-                      id="discountValue"
-                      type={
-                        typeConfig.inputType ||
-                        (offerType === "bogo" ? "text" : "number")
+              {/* Discount Value */}
+              <div>
+                <Label htmlFor="discountValue">
+                  {typeConfig.discountLabel}*
+                </Label>
+                <div className="relative mt-1">
+                  {typeConfig.discountPrefix && (
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600">
+                      {typeConfig.discountPrefix}
+                    </span>
+                  )}
+                  <Input
+                    id="discountValue"
+                    type={
+                      typeConfig.inputType ||
+                      (offerType === "bogo" ? "text" : "number")
+                    }
+                    placeholder={typeConfig.discountPlaceholder}
+                    value={formData.discountValue || ""}
+                    onChange={(e) => onUpdate("discountValue", e.target.value)}
+                    onFocus={(e) => {
+                      if (e.target.value === "0") {
+                        onUpdate("discountValue", "");
                       }
-                      placeholder={typeConfig.discountPlaceholder}
-                      value={formData.discountValue || ""}
-                      onChange={(e) =>
-                        onUpdate("discountValue", e.target.value)
-                      }
-                      onFocus={(e) => {
-                        if (e.target.value === "0") {
-                          onUpdate("discountValue", "");
-                        }
-                        e.target.select();
-                      }}
-                      className={cn(
-                        typeConfig.discountPrefix && "pl-7",
-                        typeConfig.discountSuffix && "pr-10"
-                      )}
-                      min="0"
-                      step={typeConfig.inputStep || "1"}
-                    />
-                    {typeConfig.discountSuffix && (
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600">
-                        {typeConfig.discountSuffix}
-                      </span>
+                      e.target.select();
+                    }}
+                    className={cn(
+                      typeConfig.discountPrefix && "pl-7",
+                      typeConfig.discountSuffix && "pr-10"
                     )}
-                  </div>
-                  <p className="mt-2 text-gray-600 text-sm">
-                    {offerType === "bogo"
-                      ? 'Describe the item (e.g., "Any entrée")'
-                      : offerType === "cashback"
-                        ? "Percentage of purchase amount returned as cash back"
-                        : "The discount amount for this offer"}
-                  </p>
+                    min="0"
+                    step={typeConfig.inputStep || "1"}
+                  />
+                  {typeConfig.discountSuffix && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600">
+                      {typeConfig.discountSuffix}
+                    </span>
+                  )}
                 </div>
-              )}
+                <p className="mt-2 text-gray-600 text-sm">
+                  {offerType === "bogo"
+                    ? 'Describe the item (e.g., "Any entrée")'
+                    : offerType === "cashback"
+                      ? "Percentage of purchase amount returned as cash back"
+                      : "The discount amount for this offer"}
+                </p>
+              </div>
 
               {/* Published edit warning for discount changes */}
               {isPublishedEdit && (
@@ -554,39 +419,6 @@ export default function StepOfferContent({
                     Changing the discount on a live offer will affect all future
                     redemptions.
                   </span>
-                </div>
-              )}
-
-              {/* Minimum Spend — for dollar_off_with_min */}
-              {typeConfig.hasMinimumSpend && (
-                <div>
-                  <Label htmlFor="minimumSpend">
-                    {typeConfig.minimumSpendLabel || "Minimum Spend"}*
-                  </Label>
-                  <div className="relative mt-1">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600">
-                      $
-                    </span>
-                    <Input
-                      id="minimumSpend"
-                      type="number"
-                      placeholder="50"
-                      value={formData.minimumSpend || ""}
-                      onChange={(e) => onUpdate("minimumSpend", e.target.value)}
-                      onFocus={(e) => {
-                        if (e.target.value === "0") {
-                          onUpdate("minimumSpend", "");
-                        }
-                        e.target.select();
-                      }}
-                      className="pl-7"
-                      min="0"
-                      step="1"
-                    />
-                  </div>
-                  <p className="mt-2 text-gray-600 text-sm">
-                    Customer must spend at least this amount to qualify
-                  </p>
                 </div>
               )}
 

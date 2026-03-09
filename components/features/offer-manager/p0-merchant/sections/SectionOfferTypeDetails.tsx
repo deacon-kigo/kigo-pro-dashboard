@@ -14,10 +14,7 @@ import {
 } from "@/lib/constants/offer-templates";
 import { VALIDATION_RANGES } from "../hooks/useFormValidation";
 
-const DOLLAR_BASED_TYPES: OfferTypeKey[] = [
-  "dollar_off",
-  "dollar_off_with_min",
-];
+const DOLLAR_BASED_TYPES: OfferTypeKey[] = ["dollar_off"];
 
 interface SectionOfferTypeDetailsProps {
   offerType: OfferTypeKey;
@@ -156,48 +153,6 @@ export default function SectionOfferTypeDetails({
               {formData.shortText?.length || 0}/100
             </span>
           </div>
-        </div>
-      )}
-
-      {/* Minimum Spend — for dollar_off_with_min */}
-      {typeConfig.hasMinimumSpend && (
-        <div>
-          <Label htmlFor="minimumSpend">
-            {typeConfig.minimumSpendLabel || "Minimum Spend"}*
-          </Label>
-          <div className="relative mt-1">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600">
-              $
-            </span>
-            <Input
-              id="minimumSpend"
-              type="number"
-              placeholder="50"
-              value={formData.minimumSpend || ""}
-              onChange={(e) => onUpdate("minimumSpend", e.target.value)}
-              onFocus={(e) => {
-                if (e.target.value === "0") onUpdate("minimumSpend", "");
-                e.target.select();
-              }}
-              className={cn(
-                "pl-7",
-                errors.minimumSpend &&
-                  "border-red-300 focus-visible:ring-red-500"
-              )}
-              min="0"
-              step="1"
-            />
-          </div>
-          {errors.minimumSpend ? (
-            <p className="mt-1 text-red-600 text-sm flex items-center gap-1">
-              <ExclamationTriangleIcon className="h-3.5 w-3.5 flex-shrink-0" />
-              {errors.minimumSpend}
-            </p>
-          ) : (
-            <p className="mt-1.5 text-gray-600 text-sm">
-              Customer must spend at least this amount to qualify
-            </p>
-          )}
         </div>
       )}
 

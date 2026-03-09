@@ -3,7 +3,6 @@ import {
   OfferTypeKey,
   getAutoRedemptionMethod,
 } from "@/lib/constants/offer-templates";
-import { isMultiBrandPublisher } from "@/lib/constants/publisher-brands";
 
 export interface SectionStatus {
   id: string;
@@ -34,7 +33,6 @@ export function useSectionCompletion(formData: {
   startDate?: string;
   termsConditions?: string;
   usageLimitPerCustomer?: string;
-  publisherBrandTag?: string | null;
 }): UseSectionCompletionResult {
   return useMemo(() => {
     const offerType = formData.offerType;
@@ -44,13 +42,6 @@ export function useSectionCompletion(formData: {
 
     // Determine if type-specific fields are complete
     let typeDetailsComplete = !!formData.discountValue;
-
-    if (offerType === "dollar_off_with_min") {
-      const discount = parseFloat(formData.discountValue || "0");
-      const minSpend = parseFloat(formData.minimumSpend || "0");
-      typeDetailsComplete =
-        typeDetailsComplete && !!formData.minimumSpend && minSpend > discount;
-    }
 
     if (offerType === "cashback") {
       typeDetailsComplete = typeDetailsComplete && !!formData.discountValue;
@@ -71,9 +62,7 @@ export function useSectionCompletion(formData: {
       {
         id: "merchant",
         label: "Merchant & Brand",
-        complete:
-          !!formData.merchantData &&
-          (!isMultiBrandPublisher() || !!formData.publisherBrandTag),
+        complete: !!formData.merchantData,
       },
       {
         id: "type-details",
@@ -122,7 +111,6 @@ export function useSectionCompletion(formData: {
     };
   }, [
     formData.merchantData,
-    formData.publisherBrandTag,
     formData.offerType,
     formData.discountValue,
     formData.minimumSpend,

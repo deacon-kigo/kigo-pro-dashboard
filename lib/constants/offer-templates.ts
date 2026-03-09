@@ -70,9 +70,7 @@ export type OfferTypeKey =
   | "percent_off"
   | "bogo"
   | "fixed_price"
-  | "dollar_off_with_min"
   | "cashback"
-  | "tiered_discount"
   | "free_with_purchase"
   | "clickthrough"
   | "cpg_spend_and_get";
@@ -188,25 +186,6 @@ export const OFFER_TYPE_CONFIG: Record<OfferTypeKey, OfferTypeConfig> = {
     example: "Large pizza for $9.99",
     badgeFormat: (value) => `$${value.toFixed(2)}`,
   },
-  dollar_off_with_min: {
-    key: "dollar_off_with_min",
-    label: "Dollar Off w/ Minimum",
-    shortLabel: "$X OFF $Y+",
-    description: "Save a fixed amount when spending a minimum",
-    category: "discount",
-    tags: ["discount", "savings", "threshold", "minimum"],
-    icon: "$10 OFF $50+",
-    illustration: "/illustration/dollar-off-with-minimum.png",
-    discountLabel: "How much off?",
-    discountPrefix: "$",
-    discountPlaceholder: "10",
-    hasMinimumSpend: true,
-    minimumSpendLabel: "Minimum spend required",
-    bestFor: ["Increasing basket size", "High-value purchases", "Upselling"],
-    example: "$10 off when you spend $50 or more",
-    badgeFormat: (value, min) =>
-      min ? `$${value} OFF $${min}+` : `$${value} OFF`,
-  },
   cashback: {
     key: "cashback",
     label: "Cash Back",
@@ -224,29 +203,6 @@ export const OFFER_TYPE_CONFIG: Record<OfferTypeKey, OfferTypeConfig> = {
     bestFor: ["Loyalty programs", "Repeat customers", "High-spend categories"],
     example: "Earn 5% cash back on every purchase (up to $25)",
     badgeFormat: (value) => `${value}% BACK`,
-  },
-  tiered_discount: {
-    key: "tiered_discount",
-    label: "Tiered Discount",
-    shortLabel: "TIERED",
-    description: "Spend more, save more with escalating discounts",
-    category: "discount",
-    tags: ["tiered", "spend-more", "save-more", "escalating"],
-    icon: "TIERED",
-    illustration: "/illustration/tiered-discount.png",
-    illustrationClass: "scale-[1.4] object-cover",
-    discountLabel: "Base discount amount",
-    discountPrefix: "$",
-    discountPlaceholder: "5",
-    hasTiers: true,
-    tiersLabel: "Discount tiers",
-    bestFor: [
-      "Encouraging larger orders",
-      "Category promotions",
-      "Seasonal sales",
-    ],
-    example: "Spend $25 save $5, Spend $50 save $15, Spend $100 save $35",
-    badgeFormat: (value) => `UP TO $${value} OFF`,
   },
   free_with_purchase: {
     key: "free_with_purchase",
@@ -401,7 +357,6 @@ export const P0_ACTIVE_TYPES: OfferTypeKey[] = [
   "dollar_off",
   "cashback",
   "bogo",
-  "dollar_off_with_min",
   "fixed_price",
 ];
 
@@ -414,9 +369,7 @@ export const AUTO_REDEMPTION_METHOD: Record<
   percent_off: "online",
   cashback: "online",
   bogo: "in_store",
-  dollar_off_with_min: "in_store",
   fixed_price: "in_store",
-  tiered_discount: "online",
   free_with_purchase: "in_store",
   clickthrough: "online",
   cpg_spend_and_get: "online",
@@ -485,9 +438,7 @@ export const WIZARD_TO_API_OFFER_TYPE: Record<OfferTypeKey, BackendOfferType> =
     percent_off: "percentage_savings", // Note: Complete rename
     bogo: "bogo", // Match
     fixed_price: "price_point", // Note: Complete rename
-    dollar_off_with_min: "dollars_off", // Same backend type as dollar_off, min is metadata
     cashback: "cashback", // Match
-    tiered_discount: "dollars_off", // Tiers stored as metadata, base type is dollars_off
     free_with_purchase: "free_with_purchase", // Match
     clickthrough: "clickthrough", // Match
     cpg_spend_and_get: "spend_and_get", // Maps to spend_and_get
@@ -694,17 +645,9 @@ export const HEADLINE_TEMPLATES: Record<
     template: "Special: Any Item for $9.99",
     withMerchant: (name) => `${name} Special: $9.99`,
   },
-  dollar_off_with_min: {
-    template: "$10 Off When You Spend $50+",
-    withMerchant: (name) => `$10 Off $50+ at ${name}`,
-  },
   cashback: {
     template: "Earn 5% Cash Back",
     withMerchant: (name) => `5% Cash Back at ${name}`,
-  },
-  tiered_discount: {
-    template: "Spend More, Save More",
-    withMerchant: (name) => `Spend More, Save More at ${name}`,
   },
   free_with_purchase: {
     template: "Free Item With Your Purchase",
@@ -763,16 +706,6 @@ export const DESCRIPTION_TEMPLATES: Record<
     default:
       "Special promotional pricing! Limited time offer while supplies last.",
   },
-  dollar_off_with_min: {
-    dining:
-      "Spend the minimum and save! Valid on dine-in, takeout, and delivery orders. Cannot be combined with other offers.",
-    shopping:
-      "Reach the minimum purchase amount and save instantly! Applies to regular-priced merchandise.",
-    services:
-      "Book services totaling the minimum amount and save! Valid for standard services.",
-    default:
-      "Spend the minimum amount and save! Present this offer at checkout. Exclusions may apply.",
-  },
   cashback: {
     dining:
       "Earn cash back on every meal! Rewards credited to your account after purchase. Valid for dine-in and takeout.",
@@ -780,14 +713,6 @@ export const DESCRIPTION_TEMPLATES: Record<
       "Earn cash back on your purchase! Rewards credited after transaction completes. Excludes gift cards.",
     default:
       "Earn cash back on your purchase! Rewards credited to your account after the transaction.",
-  },
-  tiered_discount: {
-    dining:
-      "The more you order, the more you save! Tiers apply to pre-tax subtotal. Valid for dine-in and takeout.",
-    shopping:
-      "Spend more and unlock bigger savings! Tiers apply to regular-priced items. Exclusions may apply.",
-    default:
-      "Unlock bigger savings as you spend more! Discount tiers apply automatically at checkout.",
   },
   free_with_purchase: {
     dining:
@@ -826,7 +751,7 @@ export function getSmartHeadline(
   if (discountValue) {
     const value = parseFloat(discountValue);
     if (!isNaN(value) && value > 0) {
-      if (offerType === "dollar_off" || offerType === "dollar_off_with_min") {
+      if (offerType === "dollar_off") {
         headline = headline.replace("$10", `$${value}`);
       } else if (offerType === "percent_off") {
         headline = headline.replace("20%", `${value}%`);
