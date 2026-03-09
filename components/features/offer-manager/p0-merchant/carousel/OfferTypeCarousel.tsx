@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { CheckIcon } from "@heroicons/react/24/solid";
-import { Badge } from "@/components/ui/badge";
 import {
   OFFER_TYPE_CONFIG,
   P0_ACTIVE_TYPES,
@@ -19,18 +18,13 @@ interface OfferTypeCarouselProps {
   onSelect: (type: OfferTypeKey) => void;
 }
 
-const ALL_TYPES = Object.values(OFFER_TYPE_CONFIG);
-
-// Sort: active types first, then inactive — keeps clear visual grouping
-const ACTIVE_TYPES = ALL_TYPES.filter((t) => P0_ACTIVE_TYPES.includes(t.key));
-const INACTIVE_TYPES = ALL_TYPES.filter(
-  (t) => !P0_ACTIVE_TYPES.includes(t.key)
-);
+// All types in P0_ACTIVE_TYPES order
+const ACTIVE_TYPES = P0_ACTIVE_TYPES.map((key) => OFFER_TYPE_CONFIG[key]);
 
 const CARD_W = 140;
 
-// Simple spring for card transitions
-const cardSpring = { type: "spring" as const, stiffness: 400, damping: 30 };
+// Gentle spring for card transitions
+const cardSpring = { type: "spring" as const, stiffness: 260, damping: 24 };
 
 export default function OfferTypeCarousel({
   selectedType,
@@ -132,7 +126,6 @@ export default function OfferTypeCarousel({
         className="flex items-stretch gap-3 overflow-x-auto px-7 py-3"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        {/* ── Active types ── */}
         {ACTIVE_TYPES.map((config) => (
           <ActiveCard
             key={config.key}
@@ -141,20 +134,6 @@ export default function OfferTypeCarousel({
             hasSelection={!!selectedType}
             onSelect={onSelect}
           />
-        ))}
-
-        {/* ── Divider ── */}
-        <div className="flex-shrink-0 flex flex-col items-center justify-center self-stretch px-1">
-          <div className="w-px flex-1 bg-gray-200" />
-          <span className="text-[9px] text-gray-400 font-medium py-1.5 whitespace-nowrap">
-            COMING SOON
-          </span>
-          <div className="w-px flex-1 bg-gray-200" />
-        </div>
-
-        {/* ── Inactive types ── */}
-        {INACTIVE_TYPES.map((config) => (
-          <InactiveCard key={config.key} config={config} />
         ))}
       </div>
     </div>
@@ -180,11 +159,11 @@ function ActiveCard({
       type="button"
       onClick={() => onSelect(config.key)}
       animate={{
-        scale: isSelected ? 1.06 : 1,
-        y: isSelected ? -2 : 0,
+        scale: isSelected ? 1.03 : 1,
+        y: isSelected ? -1 : 0,
       }}
-      whileHover={{ scale: isSelected ? 1.06 : 1.03, y: -1 }}
-      whileTap={{ scale: 0.97 }}
+      whileHover={{ scale: isSelected ? 1.03 : 1.02, y: -1 }}
+      whileTap={{ scale: 0.98 }}
       transition={cardSpring}
       className={cn(
         "group relative flex-shrink-0 flex flex-col rounded-xl border-2 bg-white text-left transition-shadow duration-200",
@@ -245,13 +224,13 @@ function ActiveCard({
           </p>
         </div>
 
-        {/* Best For — always rendered for uniform height, visibility via opacity */}
+        {/* Best For — visible on hover and selection */}
         <div
           className={cn(
             "mt-2 pt-2 border-t transition-all duration-200",
             isSelected
               ? "opacity-100 border-primary/10"
-              : "opacity-0 border-transparent"
+              : "opacity-0 group-hover:opacity-100 border-transparent group-hover:border-gray-100"
           )}
         >
           <p className="text-[9px] font-semibold text-primary/50 uppercase tracking-wider">
@@ -263,35 +242,5 @@ function ActiveCard({
         </div>
       </div>
     </motion.button>
-  );
-}
-
-/* ────────────────────────────────────────────────────────────
- * Inactive Card — coming soon, no motion needed
- * ──────────────────────────────────────────────────────────── */
-function InactiveCard({ config }: { config: OfferTypeConfig }) {
-  return (
-    <div
-      className="relative flex-shrink-0 flex flex-col rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50 p-3 text-left cursor-not-allowed opacity-50"
-      style={{ width: CARD_W, minWidth: CARD_W }}
-    >
-      {/* Illustration — dimmed */}
-      <div className="relative mx-auto h-14 w-14 mb-2 mt-1 overflow-hidden rounded-lg opacity-40">
-        <Image
-          src={config.illustration}
-          alt={config.label}
-          fill
-          className={cn("object-contain grayscale", config.illustrationClass)}
-        />
-      </div>
-      <div className="text-center">
-        <h3 className="text-xs font-semibold text-gray-400 leading-tight">
-          {config.label}
-        </h3>
-        <p className="mt-0.5 text-[10px] text-gray-400 leading-tight line-clamp-2">
-          {config.description}
-        </p>
-      </div>
-    </div>
   );
 }

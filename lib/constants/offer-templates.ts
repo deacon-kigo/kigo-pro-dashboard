@@ -73,7 +73,10 @@ export type OfferTypeKey =
   | "cashback"
   | "free_with_purchase"
   | "clickthrough"
-  | "cpg_spend_and_get";
+  | "cpg_spend_and_get"
+  | "merchandise"
+  | "digital_gift_card"
+  | "physical_gift_card";
 
 /**
  * Offer Type Configuration
@@ -252,6 +255,54 @@ export const OFFER_TYPE_CONFIG: Record<OfferTypeKey, OfferTypeConfig> = {
     example: "Spend $25 on Tide products, get $5 back",
     badgeFormat: (value) => `GET $${value}`,
   },
+  merchandise: {
+    key: "merchandise",
+    label: "Merchandise",
+    shortLabel: "MERCH",
+    description: "Offer merchandise or branded items",
+    category: "promotional",
+    tags: ["merchandise", "product", "branded"],
+    icon: "MERCH",
+    illustration: "/illustration/merchandise.png",
+    discountLabel: "Item value",
+    discountPrefix: "$",
+    discountPlaceholder: "25",
+    bestFor: ["Branded merchandise", "Product giveaways", "Rewards"],
+    example: "Get a branded t-shirt with your purchase",
+    badgeFormat: (value) => (value > 0 ? `$${value} VALUE` : "MERCHANDISE"),
+  },
+  digital_gift_card: {
+    key: "digital_gift_card",
+    label: "Digital Gift Card",
+    shortLabel: "E-GIFT",
+    description: "Digital gift card delivered electronically",
+    category: "promotional",
+    tags: ["gift-card", "digital", "e-gift", "reward"],
+    icon: "DGC",
+    illustration: "/illustration/digital-giftcard.png",
+    discountLabel: "Card value",
+    discountPrefix: "$",
+    discountPlaceholder: "25",
+    bestFor: ["Rewards programs", "Customer retention", "Corporate gifts"],
+    example: "$25 digital gift card to your favorite store",
+    badgeFormat: (value) => `$${value} GIFT CARD`,
+  },
+  physical_gift_card: {
+    key: "physical_gift_card",
+    label: "Physical Gift Card",
+    shortLabel: "GIFT CARD",
+    description: "Physical gift card shipped to recipient",
+    category: "promotional",
+    tags: ["gift-card", "physical", "mail", "reward"],
+    icon: "PGC",
+    illustration: "/illustration/physical-giftcard.png",
+    discountLabel: "Card value",
+    discountPrefix: "$",
+    discountPlaceholder: "50",
+    bestFor: ["Premium rewards", "Holiday gifts", "VIP customers"],
+    example: "$50 physical gift card mailed to your door",
+    badgeFormat: (value) => `$${value} GIFT CARD`,
+  },
 };
 
 /**
@@ -352,12 +403,19 @@ export function formatDiscountBadge(
   return config.badgeFormat(discountValue, minimumSpend);
 }
 
-// P0 Active Types (available for creation now; others show "Coming Soon")
+// All offer types are active (available for creation)
 export const P0_ACTIVE_TYPES: OfferTypeKey[] = [
   "dollar_off",
-  "cashback",
+  "percent_off",
   "bogo",
   "fixed_price",
+  "cashback",
+  "free_with_purchase",
+  "clickthrough",
+  "cpg_spend_and_get",
+  "merchandise",
+  "digital_gift_card",
+  "physical_gift_card",
 ];
 
 // Auto-assigned redemption method per offer type (no manual selection)
@@ -373,6 +431,9 @@ export const AUTO_REDEMPTION_METHOD: Record<
   free_with_purchase: "in_store",
   clickthrough: "online",
   cpg_spend_and_get: "online",
+  merchandise: "in_store",
+  digital_gift_card: "online",
+  physical_gift_card: "in_store",
 };
 
 export function getAutoRedemptionMethod(
@@ -414,34 +475,38 @@ export function getDefaultDates(): { startDate: string; endDate: string } {
 // ============================================================================
 
 /**
- * Backend Offer Types (from types/offers.ts)
- * Must match kigo-core-server OfferType enum
+ * Backend Offer Types — DB codes
+ * Must match kigo-core-server offer_type column
  */
 export type BackendOfferType =
-  | "bogo"
-  | "percentage_savings"
-  | "dollars_off"
-  | "cashback"
-  | "free_with_purchase"
-  | "price_point"
-  | "clickthrough"
-  | "loyalty_points"
-  | "spend_and_get";
+  | "AMT"
+  | "PCT"
+  | "BOGO"
+  | "SPEC"
+  | "B"
+  | "FREE"
+  | "CLK"
+  | "SG"
+  | "MERC"
+  | "DGC"
+  | "PGC";
 
 /**
- * Map frontend wizard offer types to backend API offer types
- * IMPORTANT: Frontend and backend type names differ!
+ * Map frontend wizard offer types to backend DB codes
  */
 export const WIZARD_TO_API_OFFER_TYPE: Record<OfferTypeKey, BackendOfferType> =
   {
-    dollar_off: "dollars_off", // Note: "dollar" → "dollars"
-    percent_off: "percentage_savings", // Note: Complete rename
-    bogo: "bogo", // Match
-    fixed_price: "price_point", // Note: Complete rename
-    cashback: "cashback", // Match
-    free_with_purchase: "free_with_purchase", // Match
-    clickthrough: "clickthrough", // Match
-    cpg_spend_and_get: "spend_and_get", // Maps to spend_and_get
+    dollar_off: "AMT",
+    percent_off: "PCT",
+    bogo: "BOGO",
+    fixed_price: "SPEC",
+    cashback: "B",
+    free_with_purchase: "FREE",
+    clickthrough: "CLK",
+    cpg_spend_and_get: "SG",
+    merchandise: "MERC",
+    digital_gift_card: "DGC",
+    physical_gift_card: "PGC",
   };
 
 /**
@@ -661,6 +726,18 @@ export const HEADLINE_TEMPLATES: Record<
     template: "Spend $25, Get $5 Back",
     withMerchant: (name) => `Spend & Get at ${name}`,
   },
+  merchandise: {
+    template: "Free Branded Merchandise",
+    withMerchant: (name) => `Free Merch from ${name}`,
+  },
+  digital_gift_card: {
+    template: "$25 Digital Gift Card",
+    withMerchant: (name) => `$25 ${name} E-Gift Card`,
+  },
+  physical_gift_card: {
+    template: "$50 Gift Card by Mail",
+    withMerchant: (name) => `$50 ${name} Gift Card`,
+  },
 };
 
 /**
@@ -729,6 +806,18 @@ export const DESCRIPTION_TEMPLATES: Record<
   cpg_spend_and_get: {
     default:
       "Purchase qualifying products to earn your reward! Receipt validation may be required. Reward credited after verification.",
+  },
+  merchandise: {
+    default:
+      "Receive branded merchandise with your qualifying purchase! While supplies last. One per customer.",
+  },
+  digital_gift_card: {
+    default:
+      "Receive a digital gift card delivered to your email! Card can be used online or in-store. No cash value.",
+  },
+  physical_gift_card: {
+    default:
+      "Receive a physical gift card shipped to your address! Allow 5-7 business days for delivery. No cash value.",
   },
 };
 
