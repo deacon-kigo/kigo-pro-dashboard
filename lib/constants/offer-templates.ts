@@ -403,19 +403,19 @@ export function formatDiscountBadge(
   return config.badgeFormat(discountValue, minimumSpend);
 }
 
-// All offer types are active (available for creation)
+// All offer types are active (available for creation), sorted alphabetically by label
 export const P0_ACTIVE_TYPES: OfferTypeKey[] = [
-  "dollar_off",
-  "percent_off",
-  "bogo",
-  "fixed_price",
-  "cashback",
-  "free_with_purchase",
-  "clickthrough",
-  "cpg_spend_and_get",
-  "merchandise",
-  "digital_gift_card",
-  "physical_gift_card",
+  "bogo", // Buy 1 Get 1
+  "cashback", // Cash Back
+  "clickthrough", // Clickthrough Offer
+  "digital_gift_card", // Digital Gift Card
+  "dollar_off", // Dollar Off
+  "fixed_price", // Fixed Price
+  "free_with_purchase", // Free With Purchase
+  "merchandise", // Merchandise
+  "percent_off", // Percent Off
+  "physical_gift_card", // Physical Gift Card
+  "cpg_spend_and_get", // Spend & Get (CPG)
 ];
 
 // Auto-assigned redemption method per offer type (no manual selection)
