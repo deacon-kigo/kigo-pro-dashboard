@@ -31,13 +31,7 @@ export interface ValidationResult {
   firstSectionWithError: string | null;
 }
 
-const SECTION_ORDER = [
-  "type-details",
-  "content",
-  "redemption",
-  "classification",
-  "dates",
-];
+const SECTION_ORDER = ["offer-details", "redemption", "classification"];
 
 /**
  * Compute validation errors for the form.
@@ -170,16 +164,15 @@ export function computeValidationErrors(
 
   // ── Build section error map ───────────────────────────────────────────
   const sectionFields: Record<string, string[]> = {
-    "type-details": [
+    "offer-details": [
+      "offerName",
+      "description",
       "discountValue",
-      "shortText",
-      "minimumSpend",
-      "cashbackCap",
+      "startDate",
+      "endDate",
     ],
-    content: ["offerName", "description"],
     redemption: ["externalUrl", "promoCode"],
     classification: ["category_ids"],
-    dates: ["startDate", "endDate"],
   };
 
   const sectionHasErrors: Record<string, boolean> = {};

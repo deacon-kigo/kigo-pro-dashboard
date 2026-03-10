@@ -459,7 +459,7 @@ export default function MerchantHybridSearch({
           )}
         </div>
 
-        <p className="text-xs text-gray-600 mt-1">
+        <p className="text-sm text-gray-500 mt-1.5">
           Search by name, or use id: prefix for exact ID match
           {process.env.NEXT_PUBLIC_KIGO_CORE_SERVER_URL ? (
             <span className="text-green-600"> • Backend API</span>

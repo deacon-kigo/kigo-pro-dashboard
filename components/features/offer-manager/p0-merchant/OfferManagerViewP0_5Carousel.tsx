@@ -14,22 +14,17 @@ import { Card } from "@/components/ui/card";
 import {
   BuildingStorefrontIcon,
   CurrencyDollarIcon,
-  DocumentTextIcon,
   GlobeAltIcon,
   TagIcon,
-  CalendarDaysIcon,
-  DocumentCheckIcon,
+  InformationCircleIcon,
   GiftIcon,
 } from "@heroicons/react/24/outline";
 import { OfferTypeCarousel, StickyTypeIndicator } from "./carousel";
 import {
   SectionMerchant,
-  SectionOfferTypeDetails,
-  SectionContent,
+  SectionOfferDetails,
   SectionRedemption,
   SectionClassification,
-  SectionDates,
-  SectionTerms,
 } from "./sections";
 import { useSectionCompletion } from "./hooks/useSectionCompletion";
 import {
@@ -61,12 +56,9 @@ import {
 
 const SECTION_CONFIG = [
   { id: "merchant", label: "Merchant & Brand", icon: BuildingStorefrontIcon },
-  { id: "type-details", label: "Offer Type Details", icon: CurrencyDollarIcon },
-  { id: "content", label: "Description", icon: DocumentTextIcon },
+  { id: "offer-details", label: "Offer Details", icon: InformationCircleIcon },
   { id: "redemption", label: "Redemption", icon: GlobeAltIcon },
   { id: "classification", label: "Classification", icon: TagIcon },
-  { id: "dates", label: "Dates & Duration", icon: CalendarDaysIcon },
-  { id: "terms", label: "Terms & Settings", icon: DocumentCheckIcon },
 ];
 
 interface CarouselProps {
@@ -105,7 +97,9 @@ export default function OfferManagerViewP0_5Carousel({
       shortText: "",
       description: "",
       longText: "",
+      offerSource: "",
       discountValue: "",
+      maxDiscountAmount: "",
       minimumSpend: "",
       cashbackCap: "",
       cashbackPercentage: "",
@@ -113,6 +107,7 @@ export default function OfferManagerViewP0_5Carousel({
       externalUrl: "",
       promoCode: "",
       termsConditions: "",
+      catalogFilterIds: [] as string[],
       category_ids: [] as string[],
       commodity_ids: [] as string[],
       // Image upload - Offer Image
@@ -564,7 +559,7 @@ export default function OfferManagerViewP0_5Carousel({
                   const Icon = section.icon;
                   const isComplete = completionMap.get(section.id) ?? false;
                   const needsType =
-                    section.id !== "merchant" && !formData.offerType;
+                    section.id === "redemption" && !formData.offerType;
 
                   return (
                     <Accordion
@@ -618,17 +613,8 @@ export default function OfferManagerViewP0_5Carousel({
                                 }}
                               />
                             )}
-                            {section.id === "type-details" &&
-                              formData.offerType && (
-                                <SectionOfferTypeDetails
-                                  offerType={formData.offerType}
-                                  formData={formData}
-                                  onUpdate={handleUpdate}
-                                  errors={errors}
-                                />
-                              )}
-                            {section.id === "content" && (
-                              <SectionContent
+                            {section.id === "offer-details" && (
+                              <SectionOfferDetails
                                 formData={formData}
                                 onUpdate={handleUpdate}
                                 errors={errors}
@@ -648,19 +634,6 @@ export default function OfferManagerViewP0_5Carousel({
                                 formData={formData}
                                 onUpdate={handleUpdate}
                                 errors={errors}
-                              />
-                            )}
-                            {section.id === "dates" && (
-                              <SectionDates
-                                formData={formData}
-                                onUpdate={handleUpdate}
-                                errors={errors}
-                              />
-                            )}
-                            {section.id === "terms" && (
-                              <SectionTerms
-                                formData={formData}
-                                onUpdate={handleUpdate}
                               />
                             )}
                           </div>

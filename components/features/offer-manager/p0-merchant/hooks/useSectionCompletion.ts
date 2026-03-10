@@ -21,18 +21,14 @@ interface UseSectionCompletionResult {
 export function useSectionCompletion(formData: {
   merchantData?: any;
   offerType?: OfferTypeKey | null;
-  discountValue?: string;
-  minimumSpend?: string;
-  cashbackPercentage?: string;
-  shortText?: string;
   offerName?: string;
   description?: string;
+  offerSource?: string;
+  startDate?: string;
+  discountValue?: string;
   externalUrl?: string;
   promoCode?: string;
   category_ids?: string[];
-  startDate?: string;
-  termsConditions?: string;
-  usageLimitPerCustomer?: string;
 }): UseSectionCompletionResult {
   return useMemo(() => {
     const offerType = formData.offerType;
@@ -40,16 +36,13 @@ export function useSectionCompletion(formData: {
       ? getAutoRedemptionMethod(offerType)
       : null;
 
-    // Determine if type-specific fields are complete
-    let typeDetailsComplete = !!formData.discountValue;
-
-    if (offerType === "cashback") {
-      typeDetailsComplete = typeDetailsComplete && !!formData.discountValue;
-    }
-
-    if (offerType === "bogo") {
-      typeDetailsComplete = typeDetailsComplete && !!formData.shortText?.trim();
-    }
+    // Offer Details: requires name, description, source, start date, and discount
+    const offerDetailsComplete =
+      !!formData.offerName?.trim() &&
+      !!formData.description?.trim() &&
+      !!formData.offerSource &&
+      !!formData.startDate &&
+      !!formData.discountValue;
 
     // Redemption: online needs URL + promo; in-store is always complete
     let redemptionComplete = true;
@@ -65,15 +58,9 @@ export function useSectionCompletion(formData: {
         complete: !!formData.merchantData,
       },
       {
-        id: "type-details",
-        label: "Offer Type Details",
-        complete: typeDetailsComplete,
-      },
-      {
-        id: "content",
-        label: "Content",
-        complete:
-          !!formData.offerName?.trim() && !!formData.description?.trim(),
+        id: "offer-details",
+        label: "Offer Details",
+        complete: offerDetailsComplete,
       },
       {
         id: "redemption",
@@ -84,16 +71,6 @@ export function useSectionCompletion(formData: {
         id: "classification",
         label: "Classification",
         complete: (formData.category_ids?.length || 0) > 0,
-      },
-      {
-        id: "dates",
-        label: "Dates & Duration",
-        complete: !!formData.startDate,
-      },
-      {
-        id: "terms",
-        label: "Terms & Settings",
-        complete: true, // Smart defaults always present
       },
     ];
 
@@ -112,17 +89,13 @@ export function useSectionCompletion(formData: {
   }, [
     formData.merchantData,
     formData.offerType,
-    formData.discountValue,
-    formData.minimumSpend,
-    formData.cashbackPercentage,
-    formData.shortText,
     formData.offerName,
     formData.description,
+    formData.offerSource,
+    formData.startDate,
+    formData.discountValue,
     formData.externalUrl,
     formData.promoCode,
     formData.category_ids,
-    formData.startDate,
-    formData.termsConditions,
-    formData.usageLimitPerCustomer,
   ]);
 }

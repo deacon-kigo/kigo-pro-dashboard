@@ -43,12 +43,6 @@ export default function SectionMerchant({
           onClearSelection={onClear}
         />
       )}
-
-      {!selectedMerchant && !showManualEntry && (
-        <p className="text-gray-700 text-sm">
-          Search by business name, address, or ID
-        </p>
-      )}
     </div>
   );
 }
