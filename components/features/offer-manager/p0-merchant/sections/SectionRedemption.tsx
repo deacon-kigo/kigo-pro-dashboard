@@ -99,6 +99,34 @@ export default function SectionRedemption({
   const selectedCodeTypes = formData.codeTypes || [];
   const hasMerchant = !!formData.merchantData;
 
+  // Exclusive logic: External Link vs Mobile/Online Print
+  const hasExternalLink = selectedRedemptionTypes.includes("external_link");
+  const hasMobileOrPrint =
+    selectedRedemptionTypes.includes("mobile") ||
+    selectedRedemptionTypes.includes("online_print");
+
+  // Toggle redemption type with exclusive logic
+  const toggleRedemptionType = (value: string) => {
+    if (value === "external_link") {
+      if (hasExternalLink) {
+        // Deselect external link
+        onUpdate("redemptionTypes", []);
+      } else {
+        // Select external link exclusively — clear mobile/online_print
+        onUpdate("redemptionTypes", ["external_link"]);
+      }
+    } else {
+      // Mobile or Online Print
+      const current = selectedRedemptionTypes.filter(
+        (t: string) => t !== "external_link"
+      );
+      const updated = current.includes(value)
+        ? current.filter((v: string) => v !== value)
+        : [...current, value];
+      onUpdate("redemptionTypes", updated);
+    }
+  };
+
   // Toggle a value in an array field
   const toggleArrayValue = (field: string, value: string) => {
     const current: string[] = (formData as any)[field] || [];
@@ -149,32 +177,52 @@ export default function SectionRedemption({
           {REDEMPTION_TYPES.map((type) => {
             const isSelected = selectedRedemptionTypes.includes(type.value);
             const Icon = type.icon;
+            // External Link is disabled when Mobile/Online Print is selected, and vice versa
+            const isDisabled =
+              (type.value === "external_link" && hasMobileOrPrint) ||
+              (type.value !== "external_link" && hasExternalLink);
             return (
               <button
                 key={type.value}
                 type="button"
-                onClick={() => toggleArrayValue("redemptionTypes", type.value)}
+                onClick={() => !isDisabled && toggleRedemptionType(type.value)}
+                disabled={isDisabled}
                 className={cn(
                   "flex flex-col items-start rounded-lg border-2 p-4 text-left transition-all",
-                  "hover:shadow-md",
+                  isDisabled
+                    ? "opacity-50 cursor-not-allowed bg-gray-50"
+                    : "hover:shadow-md cursor-pointer",
                   isSelected ? "border-primary bg-primary/5" : "border-gray-200"
                 )}
               >
                 <Icon
                   className={cn(
                     "h-5 w-5 mb-2",
-                    isSelected ? "text-primary" : "text-gray-400"
+                    isSelected
+                      ? "text-primary"
+                      : isDisabled
+                        ? "text-gray-300"
+                        : "text-gray-400"
                   )}
                 />
                 <span
                   className={cn(
                     "text-sm font-semibold",
-                    isSelected ? "text-gray-900" : "text-gray-700"
+                    isSelected
+                      ? "text-gray-900"
+                      : isDisabled
+                        ? "text-gray-400"
+                        : "text-gray-700"
                   )}
                 >
                   {type.label}
                 </span>
-                <span className="text-xs text-gray-500 mt-0.5">
+                <span
+                  className={cn(
+                    "text-xs mt-0.5",
+                    isDisabled ? "text-gray-300" : "text-gray-500"
+                  )}
+                >
                   {type.description}
                 </span>
               </button>
@@ -242,44 +290,111 @@ export default function SectionRedemption({
 
       {/* Conditional fields based on Code Type selections */}
 
-      {/* Single Code → Static Promo Code */}
-      {selectedCodeTypes.includes("single_code") && (
-        <div>
-          <Label htmlFor="promoCode">Static Promo Code</Label>
-          <Input
-            id="promoCode"
-            placeholder="e.g., SAVE20"
-            value={formData.promoCode || ""}
-            onChange={(e) =>
-              onUpdate("promoCode", e.target.value.toUpperCase())
-            }
-            className={cn(
-              "mt-1 font-mono",
-              errors.promoCode && "border-red-300 focus-visible:ring-red-500"
-            )}
-            maxLength={20}
-          />
-          {errors.promoCode ? (
-            <p className="mt-1 text-red-600 text-sm flex items-center gap-1">
-              <ExclamationTriangleIcon className="h-3.5 w-3.5 flex-shrink-0" />
-              {errors.promoCode}
-            </p>
+      {/* Row: Static Promo Code + Barcode Image — side by side when both selected */}
+      {(selectedCodeTypes.includes("single_code") ||
+        selectedCodeTypes.includes("barcode")) && (
+        <div className="grid grid-cols-2 gap-4">
+          {/* Single Code → Static Promo Code */}
+          {selectedCodeTypes.includes("single_code") ? (
+            <div>
+              <Label htmlFor="promoCode">Static Promo Code</Label>
+              <Input
+                id="promoCode"
+                placeholder="e.g., SAVE20"
+                value={formData.promoCode || ""}
+                onChange={(e) =>
+                  onUpdate("promoCode", e.target.value.toUpperCase())
+                }
+                className={cn(
+                  "mt-1 font-mono w-full",
+                  errors.promoCode &&
+                    "border-red-300 focus-visible:ring-red-500"
+                )}
+                maxLength={20}
+              />
+              {errors.promoCode ? (
+                <p className="mt-1 text-red-600 text-sm flex items-center gap-1">
+                  <ExclamationTriangleIcon className="h-3.5 w-3.5 flex-shrink-0" />
+                  {errors.promoCode}
+                </p>
+              ) : (
+                <p className="mt-1.5 text-gray-500 text-sm">
+                  This single code will be shown to all customers. (3-20 chars,
+                  uppercase)
+                </p>
+              )}
+            </div>
           ) : (
-            <p className="mt-1.5 text-gray-500 text-sm">
-              This single code will be shown to all customers. (3-20 chars,
-              uppercase)
-            </p>
+            <div />
+          )}
+
+          {/* Barcode → Image Upload */}
+          {selectedCodeTypes.includes("barcode") ? (
+            <div>
+              <Label>Barcode Image</Label>
+              <div className="mt-1">
+                {formData.barcodePreview ? (
+                  <div className="relative rounded-lg border-2 border-dashed border-gray-200 overflow-hidden">
+                    <img
+                      src={formData.barcodePreview}
+                      alt="Barcode"
+                      className="w-full h-36 object-contain bg-white"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onUpdate("barcodeFile", null);
+                        onUpdate("barcodePreview", "");
+                        if (barcodeInputRef.current)
+                          barcodeInputRef.current.value = "";
+                      }}
+                      className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow-md hover:bg-gray-50 text-gray-600"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => barcodeInputRef.current?.click()}
+                    className="flex flex-col items-center justify-center h-36 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100 hover:border-gray-400 cursor-pointer transition-colors"
+                  >
+                    <PhotoIcon className="w-8 h-8 text-gray-400 mb-2" />
+                    <p className="text-sm font-medium text-gray-600">
+                      Upload barcode image
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1 text-center">
+                      Image displayed as barcode on voucher
+                    </p>
+                  </div>
+                )}
+                <input
+                  ref={barcodeInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/jpg,image/svg+xml"
+                  onChange={handleBarcodeUpload}
+                  className="hidden"
+                />
+                {uploadError && (
+                  <p className="mt-1 text-red-600 text-sm flex items-center gap-1">
+                    <ExclamationTriangleIcon className="h-3.5 w-3.5 flex-shrink-0" />
+                    {uploadError}
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div />
           )}
         </div>
       )}
 
-      {/* Unique Codes → CSV Upload */}
+      {/* Unique Codes → CSV Upload (full width) */}
       {selectedCodeTypes.includes("unique_codes") && (
         <div>
           <Label htmlFor="uniqueCodesUpload">Upload Unique Codes</Label>
           <div className="mt-1">
             {formData.uniqueCodesFile ? (
-              <div className="flex items-center justify-between rounded-md border border-gray-200 px-3 py-2">
+              <div className="flex items-center justify-between rounded-md border border-gray-200 px-3 py-2 w-full">
                 <span className="text-sm text-gray-700">
                   {formData.uniqueCodesFile.name}
                 </span>
@@ -318,67 +433,7 @@ export default function SectionRedemption({
         </div>
       )}
 
-      {/* Barcode → Image Upload */}
-      {selectedCodeTypes.includes("barcode") && (
-        <div className="grid grid-cols-2 gap-4">
-          {/* Left side kept empty for layout alignment with screenshot */}
-          <div />
-          <div>
-            <Label>Barcode Image</Label>
-            <div className="mt-1">
-              {formData.barcodePreview ? (
-                <div className="relative rounded-lg border-2 border-dashed border-gray-200 overflow-hidden">
-                  <img
-                    src={formData.barcodePreview}
-                    alt="Barcode"
-                    className="w-full h-36 object-contain bg-white"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onUpdate("barcodeFile", null);
-                      onUpdate("barcodePreview", "");
-                      if (barcodeInputRef.current)
-                        barcodeInputRef.current.value = "";
-                    }}
-                    className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow-md hover:bg-gray-50 text-gray-600"
-                  >
-                    ×
-                  </button>
-                </div>
-              ) : (
-                <div
-                  onClick={() => barcodeInputRef.current?.click()}
-                  className="flex flex-col items-center justify-center h-36 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100 hover:border-gray-400 cursor-pointer transition-colors"
-                >
-                  <PhotoIcon className="w-8 h-8 text-gray-400 mb-2" />
-                  <p className="text-sm font-medium text-gray-600">
-                    Upload barcode image
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1 text-center">
-                    Image displayed as barcode on voucher
-                  </p>
-                </div>
-              )}
-              <input
-                ref={barcodeInputRef}
-                type="file"
-                accept="image/png,image/jpeg,image/jpg,image/svg+xml"
-                onChange={handleBarcodeUpload}
-                className="hidden"
-              />
-              {uploadError && (
-                <p className="mt-1 text-red-600 text-sm flex items-center gap-1">
-                  <ExclamationTriangleIcon className="h-3.5 w-3.5 flex-shrink-0" />
-                  {uploadError}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* QR Code → URL Input */}
+      {/* QR Code → URL Input (full width) */}
       {selectedCodeTypes.includes("qr_code") && (
         <div>
           <Label htmlFor="qrCodeUrl">QR Code URL*</Label>
@@ -389,7 +444,7 @@ export default function SectionRedemption({
             value={formData.qrCodeUrl || ""}
             onChange={(e) => onUpdate("qrCodeUrl", e.target.value)}
             className={cn(
-              "mt-1",
+              "mt-1 w-full",
               errors.qrCodeUrl && "border-red-300 focus-visible:ring-red-500"
             )}
           />
@@ -406,7 +461,7 @@ export default function SectionRedemption({
         </div>
       )}
 
-      {/* External Link URL — shown when External Link redemption type is selected */}
+      {/* External Link URL (full width) — shown when External Link redemption type is selected */}
       {selectedRedemptionTypes.includes("external_link") && (
         <div>
           <Label htmlFor="externalUrl">External URL*</Label>
@@ -417,7 +472,7 @@ export default function SectionRedemption({
             value={formData.externalUrl || ""}
             onChange={(e) => onUpdate("externalUrl", e.target.value)}
             className={cn(
-              "mt-1",
+              "mt-1 w-full",
               errors.externalUrl && "border-red-300 focus-visible:ring-red-500"
             )}
           />
