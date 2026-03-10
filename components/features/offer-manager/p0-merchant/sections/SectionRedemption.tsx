@@ -23,32 +23,32 @@ const AVAILABLE_LOCATIONS = [
   { label: "Airport Location - 987 Terminal Dr", value: "loc_6" },
 ];
 
-// Redemption type options
+// Redemption type options — values match kigo-admin-tools constants
 const REDEMPTION_TYPES = [
   {
-    value: "mobile",
+    value: "in_store",
     label: "Mobile",
     description: "Show in mobile app",
     icon: DevicePhoneMobileIcon,
   },
   {
-    value: "online_print",
+    value: "print",
     label: "Online Print",
     description: "Print from website",
     icon: PrinterIcon,
   },
   {
-    value: "external_link",
+    value: "online",
     label: "External Link",
     description: "Redirect to website",
     icon: GlobeAltIcon,
   },
 ];
 
-// Code type options
+// Code type options — values match kigo-admin-tools constants
 const CODE_TYPES = [
   {
-    value: "single_code",
+    value: "static_code",
     label: "Single Code",
     description: "One code for all",
   },
@@ -58,7 +58,7 @@ const CODE_TYPES = [
     description: "Per-redemption",
   },
   {
-    value: "barcode",
+    value: "barcode_image",
     label: "Barcode",
     description: "Upload image",
   },
@@ -100,25 +100,25 @@ export default function SectionRedemption({
   const hasMerchant = !!formData.merchantData;
 
   // Exclusive logic: External Link vs Mobile/Online Print
-  const hasExternalLink = selectedRedemptionTypes.includes("external_link");
+  const hasExternalLink = selectedRedemptionTypes.includes("online");
   const hasMobileOrPrint =
-    selectedRedemptionTypes.includes("mobile") ||
-    selectedRedemptionTypes.includes("online_print");
+    selectedRedemptionTypes.includes("in_store") ||
+    selectedRedemptionTypes.includes("print");
 
   // Toggle redemption type with exclusive logic
   const toggleRedemptionType = (value: string) => {
-    if (value === "external_link") {
+    if (value === "online") {
       if (hasExternalLink) {
         // Deselect external link
         onUpdate("redemptionTypes", []);
       } else {
         // Select external link exclusively — clear mobile/online_print
-        onUpdate("redemptionTypes", ["external_link"]);
+        onUpdate("redemptionTypes", ["online"]);
       }
     } else {
       // Mobile or Online Print
       const current = selectedRedemptionTypes.filter(
-        (t: string) => t !== "external_link"
+        (t: string) => t !== "online"
       );
       const updated = current.includes(value)
         ? current.filter((v: string) => v !== value)
@@ -179,8 +179,8 @@ export default function SectionRedemption({
             const Icon = type.icon;
             // External Link is disabled when Mobile/Online Print is selected, and vice versa
             const isDisabled =
-              (type.value === "external_link" && hasMobileOrPrint) ||
-              (type.value !== "external_link" && hasExternalLink);
+              (type.value === "online" && hasMobileOrPrint) ||
+              (type.value !== "online" && hasExternalLink);
             return (
               <button
                 key={type.value}
@@ -231,9 +231,9 @@ export default function SectionRedemption({
         </div>
       </div>
 
-      {/* Locations */}
+      {/* Locations — required for In-Store/Print, optional for External Link */}
       <div>
-        <Label>Locations*</Label>
+        <Label>Locations{hasMobileOrPrint ? "*" : ""}</Label>
         <div className="mt-1">
           {hasMerchant ? (
             <ReactSelectMulti
@@ -291,11 +291,11 @@ export default function SectionRedemption({
       {/* Conditional fields based on Code Type selections */}
 
       {/* Row: Static Promo Code + Barcode Image — side by side when both selected */}
-      {(selectedCodeTypes.includes("single_code") ||
-        selectedCodeTypes.includes("barcode")) && (
+      {(selectedCodeTypes.includes("static_code") ||
+        selectedCodeTypes.includes("barcode_image")) && (
         <div className="grid grid-cols-2 gap-4">
           {/* Single Code → Static Promo Code */}
-          {selectedCodeTypes.includes("single_code") ? (
+          {selectedCodeTypes.includes("static_code") ? (
             <div>
               <Label htmlFor="promoCode">Static Promo Code</Label>
               <Input
@@ -329,7 +329,7 @@ export default function SectionRedemption({
           )}
 
           {/* Barcode → Image Upload */}
-          {selectedCodeTypes.includes("barcode") ? (
+          {selectedCodeTypes.includes("barcode_image") ? (
             <div>
               <Label>Barcode Image</Label>
               <div className="mt-1">
@@ -462,7 +462,7 @@ export default function SectionRedemption({
       )}
 
       {/* External Link URL (full width) — shown when External Link redemption type is selected */}
-      {selectedRedemptionTypes.includes("external_link") && (
+      {selectedRedemptionTypes.includes("online") && (
         <div>
           <Label htmlFor="externalUrl">External URL*</Label>
           <Input

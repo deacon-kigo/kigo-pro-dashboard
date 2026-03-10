@@ -23,6 +23,7 @@ export function useSectionCompletion(formData: {
   discountValue?: string;
   redemptionTypes?: string[];
   codeTypes?: string[];
+  usageLimitPerCustomer?: string;
   category_ids?: string[];
 }): UseSectionCompletionResult {
   return useMemo(() => {
@@ -56,6 +57,11 @@ export function useSectionCompletion(formData: {
         complete: redemptionComplete,
       },
       {
+        id: "usage-limits",
+        label: "Usage Limits",
+        complete: !!formData.usageLimitPerCustomer,
+      },
+      {
         id: "classification",
         label: "Classification",
         complete: (formData.category_ids?.length || 0) > 0,
@@ -83,6 +89,7 @@ export function useSectionCompletion(formData: {
     formData.discountValue,
     formData.redemptionTypes,
     formData.codeTypes,
+    formData.usageLimitPerCustomer,
     formData.category_ids,
   ]);
 }

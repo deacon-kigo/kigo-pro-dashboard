@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import {
   BuildingStorefrontIcon,
   CurrencyDollarIcon,
@@ -18,6 +19,7 @@ import {
   TagIcon,
   InformationCircleIcon,
   GiftIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
 import { OfferTypeCarousel, StickyTypeIndicator } from "./carousel";
 import {
@@ -25,6 +27,7 @@ import {
   SectionOfferDetails,
   SectionRedemption,
   SectionClassification,
+  SectionUsageLimits,
 } from "./sections";
 import { useSectionCompletion } from "./hooks/useSectionCompletion";
 import {
@@ -56,8 +59,9 @@ import {
 const SECTION_CONFIG = [
   { id: "merchant", label: "Merchant & Brand", icon: BuildingStorefrontIcon },
   { id: "offer-details", label: "Offer Details", icon: InformationCircleIcon },
-  { id: "redemption", label: "Redemption", icon: GlobeAltIcon },
   { id: "classification", label: "Classification", icon: TagIcon },
+  { id: "redemption", label: "Redemption", icon: GlobeAltIcon },
+  { id: "usage-limits", label: "Usage Limits", icon: ChartBarIcon },
 ];
 
 interface CarouselProps {
@@ -76,11 +80,6 @@ export default function OfferManagerViewP0_5Carousel({
     "offer-type"
   );
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  // Track previous firstIncompleteSection for auto-expand
-  const prevFirstIncompleteRef = useRef<string | null>(null);
-  // Suppress auto-expand during type selection transition to avoid racing
-  const typeSelectionInFlightRef = useRef(false);
 
   // Form data — same shape as wizard + type-specific fields
   const [formData, setFormData] = useState<any>(() => {
@@ -112,6 +111,8 @@ export default function OfferManagerViewP0_5Carousel({
       barcodePreview: "",
       qrCodeUrl: "",
       externalUrl: "",
+      usageLimitPerCustomer: "1",
+      redemptionRollingPeriod: "U",
       termsConditions: "",
       catalogFilterIds: [] as string[],
       category_ids: [] as string[],
@@ -191,38 +192,10 @@ export default function OfferManagerViewP0_5Carousel({
 
   // Field-level validation
   const [validateAll, setValidateAll] = useState(false);
-  const { errors, firstSectionWithError } = useFormValidation(
+  const { errors, sectionHasErrors, firstSectionWithError } = useFormValidation(
     formData,
     validateAll
   );
-
-  // Auto-expand: when a section completes, open the next incomplete section
-  useEffect(() => {
-    // Skip if firstIncompleteSection hasn't changed
-    if (prevFirstIncompleteRef.current === firstIncompleteSection) return;
-    const prev = prevFirstIncompleteRef.current;
-    prevFirstIncompleteRef.current = firstIncompleteSection;
-
-    // During type-selection transition, let handleOfferTypeSelect control
-    // the section change to avoid a racing double-scroll.
-    if (typeSelectionInFlightRef.current) return;
-
-    // On initial mount (prev is null), set based on current state
-    if (prev === null) {
-      if (!formData.offerType) {
-        setOpenSectionId("offer-type");
-      } else if (firstIncompleteSection) {
-        setOpenSectionId(firstIncompleteSection);
-      }
-      return;
-    }
-
-    // A section just completed — open the next incomplete section
-    if (firstIncompleteSection) {
-      setOpenSectionId(firstIncompleteSection);
-    }
-    // All complete (firstIncompleteSection → null): keep current section open
-  }, [firstIncompleteSection, formData.offerType]);
 
   // Scroll into view when openSectionId changes
   // Delay must exceed the accordion open/close animation (~300ms) so
@@ -310,9 +283,6 @@ export default function OfferManagerViewP0_5Carousel({
 
   // Handle offer type selection
   const handleOfferTypeSelect = useCallback((type: OfferTypeKey) => {
-    // Suppress auto-expand while the type-selection transition plays out
-    typeSelectionInFlightRef.current = true;
-
     setFormData((prev: any) => {
       const updates: any = {
         offerType: type,
@@ -351,13 +321,11 @@ export default function OfferManagerViewP0_5Carousel({
       return { ...prev, ...updates };
     });
 
-    // After selection, collapse carousel and open first incomplete section.
+    // After selection, collapse carousel and open merchant section.
     // Delay lets the carousel collapse animation finish before we change
     // sections — prevents the jarring "jump" effect.
     setTimeout(() => {
       setOpenSectionId("merchant");
-      // Re-enable auto-expand now that the transition is complete
-      typeSelectionInFlightRef.current = false;
     }, 450);
   }, []);
 
@@ -560,7 +528,7 @@ export default function OfferManagerViewP0_5Carousel({
                 {SECTION_CONFIG.map((section) => {
                   const Icon = section.icon;
                   const isComplete = completionMap.get(section.id) ?? false;
-                  const needsType = false;
+                  const hasErrors = sectionHasErrors[section.id] ?? false;
 
                   return (
                     <Accordion
@@ -569,20 +537,24 @@ export default function OfferManagerViewP0_5Carousel({
                       collapsible
                       value={openSectionId === section.id ? section.id : ""}
                       onValueChange={(val) => setOpenSectionId(val || null)}
-                      className="border rounded-md overflow-hidden"
+                      className={cn(
+                        "border rounded-md overflow-hidden",
+                        hasErrors && "border-red-300"
+                      )}
                       id={`section-${section.id}`}
                     >
                       <AccordionItem value={section.id} className="border-none">
-                        <AccordionTrigger
-                          className="px-4 py-3 text-sm font-medium hover:no-underline"
-                          disabled={needsType}
-                        >
+                        <AccordionTrigger className="px-4 py-3 text-sm font-medium hover:no-underline">
                           <div className="flex flex-1 items-center justify-between mr-2">
                             <div className="flex items-center gap-2">
                               <Icon className="h-4 w-4 text-muted-foreground" />
                               <span>{section.label}</span>
                             </div>
-                            {isComplete ? (
+                            {hasErrors ? (
+                              <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-red-100 text-red-700 border border-red-200">
+                                Has Errors
+                              </span>
+                            ) : isComplete ? (
                               <span
                                 className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold"
                                 style={{
@@ -626,6 +598,12 @@ export default function OfferManagerViewP0_5Carousel({
                                 formData={formData}
                                 onUpdate={handleUpdate}
                                 errors={errors}
+                              />
+                            )}
+                            {section.id === "usage-limits" && (
+                              <SectionUsageLimits
+                                formData={formData}
+                                onUpdate={handleUpdate}
                               />
                             )}
                             {section.id === "classification" && (

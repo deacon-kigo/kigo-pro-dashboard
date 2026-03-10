@@ -1,22 +1,4 @@
 import { useMemo } from "react";
-import {
-  OfferTypeKey,
-  getAutoRedemptionMethod,
-} from "@/lib/constants/offer-templates";
-
-// ============================================================================
-// VALIDATION RANGES — single source of truth for range constraints
-// ============================================================================
-
-export const VALIDATION_RANGES: Record<
-  string,
-  { min: number; max: number; label: string }
-> = {
-  dollar_off: { min: 1, max: 500, label: "$1 – $500" },
-  percent_off: { min: 1, max: 100, label: "1% – 100%" },
-  fixed_price: { min: 0.01, max: 10000, label: "$0.01 – $10,000" },
-  cashback: { min: 1, max: 100, label: "1% – 100%" },
-};
 
 // ============================================================================
 // PURE VALIDATION FUNCTION
@@ -42,11 +24,7 @@ const SECTION_ORDER = ["offer-details", "redemption", "classification"];
  */
 export function computeValidationErrors(
   formData: {
-    offerType?: OfferTypeKey | null;
     discountValue?: string;
-    shortText?: string;
-    minimumSpend?: string;
-    cashbackCap?: string;
     offerName?: string;
     description?: string;
     externalUrl?: string;
@@ -54,62 +32,23 @@ export function computeValidationErrors(
     category_ids?: string[];
     startDate?: string;
     endDate?: string;
+    redemptionTypes?: string[];
   },
   validateAll: boolean
 ): ValidationResult {
   const errors: ValidationErrors = {};
-  const offerType = formData.offerType;
 
-  // ── type-details ──────────────────────────────────────────────────────
-  if (offerType) {
-    const discountVal = formData.discountValue?.trim() || "";
+  // ── offer-details ──────────────────────────────────────────────────────
+  const discountVal = formData.discountValue?.trim() || "";
+  if (discountVal) {
     const discountNum = parseFloat(discountVal);
-
-    if (offerType === "bogo") {
-      // BOGO: discountValue is text (item name)
-      if (discountVal && discountVal.length > 100) {
-        errors.discountValue = "Must be 100 characters or less";
-      } else if (!discountVal && validateAll) {
-        errors.discountValue = "Item description is required";
-      }
-
-      // shortText required for bogo
-      const shortText = formData.shortText?.trim() || "";
-      if (shortText && shortText.length > 100) {
-        errors.shortText = "Must be 100 characters or less";
-      } else if (!shortText && validateAll) {
-        errors.shortText = "Item description is required";
-      }
-    } else {
-      // Numeric discount types
-      const range = VALIDATION_RANGES[offerType];
-
-      if (discountVal) {
-        if (isNaN(discountNum) || discountNum <= 0) {
-          errors.discountValue = "Must be a positive number";
-        } else if (range && discountNum < range.min) {
-          errors.discountValue = `Must be at least ${range.label.split("–")[0].trim()}`;
-        } else if (range && discountNum > range.max) {
-          errors.discountValue = `Must be between ${range.label}`;
-        }
-      } else if (validateAll) {
-        errors.discountValue = "Discount value is required";
-      }
+    if (isNaN(discountNum) || discountNum <= 0) {
+      errors.discountValue = "Must be a positive number";
     }
-
-    // cashbackCap for cashback (optional, but if provided must be > 0)
-    if (offerType === "cashback") {
-      const capVal = formData.cashbackCap?.trim() || "";
-      const capNum = parseFloat(capVal);
-      if (capVal) {
-        if (isNaN(capNum) || capNum <= 0) {
-          errors.cashbackCap = "Must be greater than $0";
-        }
-      }
-    }
+  } else if (validateAll) {
+    errors.discountValue = "Discount value is required";
   }
 
-  // ── content ───────────────────────────────────────────────────────────
   const offerName = formData.offerName?.trim() || "";
   if (offerName && offerName.length > 60) {
     errors.offerName = "Must be 60 characters or less";
@@ -122,31 +61,6 @@ export function computeValidationErrors(
     errors.description = "Must be 250 characters or less";
   } else if (!description && validateAll) {
     errors.description = "Description is required";
-  }
-
-  // ── redemption ────────────────────────────────────────────────────────
-  if (offerType) {
-    const method = getAutoRedemptionMethod(offerType);
-    if (method === "online") {
-      const url = formData.externalUrl?.trim() || "";
-      if (url) {
-        if (!/^https?:\/\//i.test(url)) {
-          errors.externalUrl = "Must start with http:// or https://";
-        }
-      } else if (validateAll) {
-        errors.externalUrl = "Redemption URL is required";
-      }
-
-      const promo = formData.promoCode?.trim() || "";
-      if (!promo && validateAll) {
-        errors.promoCode = "Promo code is required";
-      }
-    }
-  }
-
-  // ── classification ────────────────────────────────────────────────────
-  if ((formData.category_ids?.length || 0) === 0 && validateAll) {
-    errors.category_ids = "At least one category is required";
   }
 
   // ── dates ─────────────────────────────────────────────────────────────
@@ -162,6 +76,25 @@ export function computeValidationErrors(
     errors.endDate = "End date must be on or after start date";
   }
 
+  // ── redemption ────────────────────────────────────────────────────────
+  const hasExternalLink = formData.redemptionTypes?.includes("online");
+
+  if (hasExternalLink) {
+    const url = formData.externalUrl?.trim() || "";
+    if (url) {
+      if (!/^https?:\/\//i.test(url)) {
+        errors.externalUrl = "Must start with http:// or https://";
+      }
+    } else if (validateAll) {
+      errors.externalUrl = "External URL is required";
+    }
+  }
+
+  // ── classification ────────────────────────────────────────────────────
+  if ((formData.category_ids?.length || 0) === 0 && validateAll) {
+    errors.category_ids = "At least one category is required";
+  }
+
   // ── Build section error map ───────────────────────────────────────────
   const sectionFields: Record<string, string[]> = {
     "offer-details": [
@@ -171,7 +104,7 @@ export function computeValidationErrors(
       "startDate",
       "endDate",
     ],
-    redemption: ["externalUrl", "promoCode"],
+    redemption: ["externalUrl"],
     classification: ["category_ids"],
   };
 
@@ -206,11 +139,7 @@ export function useFormValidation(
   return useMemo(
     () => computeValidationErrors(formData, validateAll),
     [
-      formData.offerType,
       formData.discountValue,
-      formData.shortText,
-      formData.minimumSpend,
-      formData.cashbackCap,
       formData.offerName,
       formData.description,
       formData.externalUrl,
@@ -218,6 +147,7 @@ export function useFormValidation(
       formData.category_ids,
       formData.startDate,
       formData.endDate,
+      formData.redemptionTypes,
       validateAll,
     ]
   );
