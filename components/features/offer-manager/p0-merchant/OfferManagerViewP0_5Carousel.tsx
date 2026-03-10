@@ -42,7 +42,6 @@ import {
   getCommoditiesForMerchant,
   getSmartHeadline,
   getSmartDescription,
-  getAutoRedemptionMethod,
 } from "@/lib/constants/offer-templates";
 
 /**
@@ -104,8 +103,15 @@ export default function OfferManagerViewP0_5Carousel({
       cashbackCap: "",
       cashbackPercentage: "",
       redemptionValue: "",
-      externalUrl: "",
+      redemptionTypes: [] as string[],
+      location_ids: [] as string[],
+      codeTypes: [] as string[],
       promoCode: "",
+      uniqueCodesFile: null as File | null,
+      barcodeFile: null as File | null,
+      barcodePreview: "",
+      qrCodeUrl: "",
+      externalUrl: "",
       termsConditions: "",
       catalogFilterIds: [] as string[],
       category_ids: [] as string[],
@@ -318,10 +324,6 @@ export default function OfferManagerViewP0_5Carousel({
         redemptionValue: "",
         shortText: "",
       };
-
-      const method = getAutoRedemptionMethod(type);
-      updates.redemptionTypes =
-        method === "online" ? ["external_url"] : ["show_and_save"];
 
       if (prev.merchantData) {
         const merchantName = prev.merchantData.dbaName;
@@ -558,8 +560,7 @@ export default function OfferManagerViewP0_5Carousel({
                 {SECTION_CONFIG.map((section) => {
                   const Icon = section.icon;
                   const isComplete = completionMap.get(section.id) ?? false;
-                  const needsType =
-                    section.id === "redemption" && !formData.offerType;
+                  const needsType = false;
 
                   return (
                     <Accordion
@@ -620,15 +621,13 @@ export default function OfferManagerViewP0_5Carousel({
                                 errors={errors}
                               />
                             )}
-                            {section.id === "redemption" &&
-                              formData.offerType && (
-                                <SectionRedemption
-                                  offerType={formData.offerType}
-                                  formData={formData}
-                                  onUpdate={handleUpdate}
-                                  errors={errors}
-                                />
-                              )}
+                            {section.id === "redemption" && (
+                              <SectionRedemption
+                                formData={formData}
+                                onUpdate={handleUpdate}
+                                errors={errors}
+                              />
+                            )}
                             {section.id === "classification" && (
                               <SectionClassification
                                 formData={formData}

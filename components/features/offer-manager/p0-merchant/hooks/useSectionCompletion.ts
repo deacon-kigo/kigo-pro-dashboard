@@ -1,8 +1,4 @@
 import { useMemo } from "react";
-import {
-  OfferTypeKey,
-  getAutoRedemptionMethod,
-} from "@/lib/constants/offer-templates";
 
 export interface SectionStatus {
   id: string;
@@ -20,22 +16,16 @@ interface UseSectionCompletionResult {
 
 export function useSectionCompletion(formData: {
   merchantData?: any;
-  offerType?: OfferTypeKey | null;
   offerName?: string;
   description?: string;
   offerSource?: string;
   startDate?: string;
   discountValue?: string;
-  externalUrl?: string;
-  promoCode?: string;
+  redemptionTypes?: string[];
+  codeTypes?: string[];
   category_ids?: string[];
 }): UseSectionCompletionResult {
   return useMemo(() => {
-    const offerType = formData.offerType;
-    const redemptionMethod = offerType
-      ? getAutoRedemptionMethod(offerType)
-      : null;
-
     // Offer Details: requires name, description, source, start date, and discount
     const offerDetailsComplete =
       !!formData.offerName?.trim() &&
@@ -44,12 +34,10 @@ export function useSectionCompletion(formData: {
       !!formData.startDate &&
       !!formData.discountValue;
 
-    // Redemption: online needs URL + promo; in-store is always complete
-    let redemptionComplete = true;
-    if (redemptionMethod === "online") {
-      redemptionComplete =
-        !!formData.externalUrl?.trim() && !!formData.promoCode?.trim();
-    }
+    // Redemption: requires at least one redemption type and one code type
+    const redemptionComplete =
+      (formData.redemptionTypes?.length || 0) > 0 &&
+      (formData.codeTypes?.length || 0) > 0;
 
     const sections: SectionStatus[] = [
       {
@@ -88,14 +76,13 @@ export function useSectionCompletion(formData: {
     };
   }, [
     formData.merchantData,
-    formData.offerType,
     formData.offerName,
     formData.description,
     formData.offerSource,
     formData.startDate,
     formData.discountValue,
-    formData.externalUrl,
-    formData.promoCode,
+    formData.redemptionTypes,
+    formData.codeTypes,
     formData.category_ids,
   ]);
 }
