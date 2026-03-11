@@ -6,9 +6,18 @@ async function proxyRequest(
   request: NextRequest,
   params: Promise<{ path: string[] }>
 ) {
+  if (!KIGO_BASE_URL) {
+    return NextResponse.json(
+      { message: "NEXT_PUBLIC_KIGO_CORE_SERVER_URL is not configured" },
+      { status: 500 }
+    );
+  }
+
   const { path } = await params;
   const targetPath = path.join("/");
   const targetUrl = `${KIGO_BASE_URL}/dashboard/${targetPath}`;
+
+  console.log(`[TMT Proxy] ${request.method} ${targetUrl}`);
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -59,6 +68,7 @@ async function proxyRequest(
     const data = await res.json().catch(() => ({}));
     return NextResponse.json(data, { status: res.status });
   } catch (error: any) {
+    console.error(`[TMT Proxy] Error: ${error.message}`, { targetUrl });
     return NextResponse.json(
       { message: error.message || "Failed to reach Kigo Core Server" },
       { status: 502 }

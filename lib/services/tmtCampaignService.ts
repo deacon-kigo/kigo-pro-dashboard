@@ -123,6 +123,9 @@ class ApiService {
       affiliateSlug,
       isActive,
       endCampaignDate,
+      id: _id,
+      createdAt: _createdAt,
+      updatedAt: _updatedAt,
       ...configuration
     } = config;
 
@@ -172,15 +175,9 @@ class ApiService {
         ? this.decodeConfiguration(response.configuration)
         : response.configuration;
 
+    // Spread configuration FIRST so explicit top-level fields always win
+    // (prevents stale values in config blob from overwriting properly formatted fields)
     return {
-      id: response.id,
-      campaignName: response.campaign_name,
-      googleTagManagerId: response.google_tag_manager_id,
-      affiliateSlug: response.affiliate_slug,
-      isActive: response.is_active,
-      endCampaignDate: this.toDatetimeLocalFormat(response.end_campaign_date),
-      createdAt: response.created_at,
-      updatedAt: response.updated_at,
       ...(configuration as Omit<
         LandingPageConfig,
         | "id"
@@ -192,6 +189,14 @@ class ApiService {
         | "createdAt"
         | "updatedAt"
       >),
+      id: response.id,
+      campaignName: response.campaign_name,
+      googleTagManagerId: response.google_tag_manager_id,
+      affiliateSlug: response.affiliate_slug,
+      isActive: response.is_active,
+      endCampaignDate: this.toDatetimeLocalFormat(response.end_campaign_date),
+      createdAt: response.created_at,
+      updatedAt: response.updated_at,
     };
   }
 
