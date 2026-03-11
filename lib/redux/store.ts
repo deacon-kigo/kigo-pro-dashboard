@@ -17,6 +17,7 @@ import offerManagerReducer from "./slices/offerManagerSlice";
 import merchantManagerReducer from "./slices/merchantManagerSlice";
 import campaignManagerReducer from "./slices/campaignManagerSlice";
 import agentModeReducer from "./slices/agentModeSlice";
+import tmtCampaignReducer from "./slices/tmtCampaignSlice";
 import { useDispatch } from "react-redux";
 import { ActionWithType } from "../../types/redux";
 import aiAssistantMiddleware from "./middleware/ai-assistantMiddleware";
@@ -76,6 +77,7 @@ export function makeStore() {
       merchantManager: merchantManagerReducer,
       campaignManager: campaignManagerReducer,
       agentMode: agentModeReducer,
+      tmtCampaign: tmtCampaignReducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({

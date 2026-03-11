@@ -208,42 +208,45 @@ export const DataTable = memo(function DataTable<TData, TValue>({
       <TableHeader>
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id}>
-            {headerGroup.headers.map((header) => (
-              <TableHead
-                key={header.id}
-                draggable={enableColumnDrag}
-                data-dragging={undefined}
-                data-drag-over={
-                  enableColumnDrag && dragOverColumn === header.id
-                    ? "true"
-                    : undefined
-                }
-                onDragStart={
-                  enableColumnDrag
-                    ? (e) => handleDragStart(e, header.id)
-                    : undefined
-                }
-                onDragOver={
-                  enableColumnDrag
-                    ? (e) => handleDragOver(e, header.id)
-                    : undefined
-                }
-                onDragLeave={enableColumnDrag ? handleDragLeave : undefined}
-                onDrop={
-                  enableColumnDrag ? (e) => handleDrop(e, header.id) : undefined
-                }
-                onDragEnd={enableColumnDrag ? handleDragEnd : undefined}
-                className={enableColumnDrag ? "select-none" : undefined}
-                style={enableColumnDrag ? { cursor: "grab" } : undefined}
-              >
-                {header.isPlaceholder
-                  ? null
-                  : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-              </TableHead>
-            ))}
+            {headerGroup.headers.map((header) => {
+              const isDraggable = enableColumnDrag && header.id !== "actions";
+              return (
+                <TableHead
+                  key={header.id}
+                  draggable={isDraggable}
+                  data-dragging={undefined}
+                  data-drag-over={
+                    isDraggable && dragOverColumn === header.id
+                      ? "true"
+                      : undefined
+                  }
+                  onDragStart={
+                    isDraggable
+                      ? (e) => handleDragStart(e, header.id)
+                      : undefined
+                  }
+                  onDragOver={
+                    isDraggable
+                      ? (e) => handleDragOver(e, header.id)
+                      : undefined
+                  }
+                  onDragLeave={isDraggable ? handleDragLeave : undefined}
+                  onDrop={
+                    isDraggable ? (e) => handleDrop(e, header.id) : undefined
+                  }
+                  onDragEnd={isDraggable ? handleDragEnd : undefined}
+                  className={isDraggable ? "select-none" : undefined}
+                  style={isDraggable ? { cursor: "grab" } : undefined}
+                >
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                </TableHead>
+              );
+            })}
           </TableRow>
         ))}
       </TableHeader>

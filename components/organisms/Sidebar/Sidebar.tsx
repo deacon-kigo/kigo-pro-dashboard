@@ -157,7 +157,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
       // Special case for dashboard - now always campaign-manager
       if (
         (path === "/" ||
-          path.includes("/dashboard") ||
+          path === "/dashboard" ||
           path.includes("/campaign-manager")) &&
         (pathname === "/" ||
           pathname === "/demos/cvs-dashboard" ||
@@ -308,10 +308,10 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
             </li>
             <li className="nav-item px-3 py-1">
               <SidebarLabel
-                href="/campaign-management"
+                href="/promo-campaigns"
                 icon={RectangleGroupIcon}
                 title="Campaigns"
-                isActive={isLinkActive("/campaign-management")}
+                isActive={isLinkActive("/promo-campaigns")}
                 isCollapsed={sidebarCollapsed}
               />
             </li>
@@ -420,10 +420,10 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
             </li>
             <li className="nav-item px-3 py-1">
               <SidebarLabel
-                href="/campaign-management"
+                href="/promo-campaigns"
                 icon={RectangleGroupIcon}
                 title="Campaigns"
-                isActive={isLinkActive("/campaign-management")}
+                isActive={isLinkActive("/promo-campaigns")}
                 isCollapsed={sidebarCollapsed}
               />
             </li>

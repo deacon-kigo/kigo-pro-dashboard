@@ -408,6 +408,12 @@ const SidebarV2 = ({
             },
           ],
         },
+        {
+          id: "promo-campaigns",
+          label: "Promo Campaigns",
+          icon: TicketIcon,
+          href: "/promo-campaigns",
+        },
       ],
     };
 
