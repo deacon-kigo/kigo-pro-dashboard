@@ -25,9 +25,9 @@ export interface RefreshResponse {
 class AuthService {
   private refreshTimer: NodeJS.Timeout | null = null;
 
-  // Login with email and password
+  // Login with email and password (proxied through Next.js API to avoid CORS)
   async login(email: string, password: string): Promise<LoginResponse> {
-    const response = await fetch(`${API_URL}/dashboard/auth/log-in`, {
+    const response = await fetch(`/api/tmt/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -66,16 +66,13 @@ class AuthService {
     }
 
     try {
-      const response = await fetch(
-        `${API_URL}/dashboard/auth/access-tokens/refresh`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ refresh_token: refreshToken }),
-        }
-      );
+      const response = await fetch(`/api/tmt/auth/refresh`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ refresh_token: refreshToken }),
+      });
 
       if (!response.ok) {
         // Refresh token expired or invalid
@@ -106,7 +103,7 @@ class AuthService {
     // Call logout endpoint if we have a refresh token
     if (refreshToken) {
       try {
-        await fetch(`${API_URL}/dashboard/auth/log-out`, {
+        await fetch(`/api/tmt/proxy/auth/log-out`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

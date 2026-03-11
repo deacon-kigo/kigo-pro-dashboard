@@ -69,7 +69,12 @@ class ApiService {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const url = `${this.kigoBaseUrl}${endpoint}`;
+    // In the browser, proxy through Next.js API route to avoid CORS
+    // Endpoint format: /dashboard/tmt-campaigns/... → proxy path: tmt-campaigns/...
+    const url =
+      typeof window !== "undefined" && endpoint.startsWith("/dashboard/")
+        ? `/api/tmt/proxy/${endpoint.slice("/dashboard/".length)}`
+        : `${this.kigoBaseUrl}${endpoint}`;
     const config: RequestInit = {
       ...options,
       headers: {
