@@ -13,6 +13,12 @@ import {
   UserIcon,
   Bars3Icon,
   ArrowRightOnRectangleIcon,
+  MegaphoneIcon,
+  GiftIcon,
+  AdjustmentsHorizontalIcon,
+  ClipboardDocumentCheckIcon,
+  BuildingStorefrontIcon,
+  ChevronDownIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import {
@@ -25,6 +31,21 @@ import { markAllNotificationsAsRead } from "@/lib/redux/slices/userSlice";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/atoms/Button";
 import { Input, SearchSuggestion } from "@/components/atoms/Input";
+import { GlowEffect } from "@/components/effects/GlowEffect";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+interface QuickAction {
+  label: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
 
 export default function Header() {
   // Use Redux hooks directly
@@ -127,59 +148,141 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Get the appropriate action button based on role and client
-  const getActionButton = () => {
-    // Add defensive check for pathname in Storybook/test environments
-    if (pathname && pathname.includes("/create")) return null;
-
-    // Special handling for CVS context - always return null for CVS pages
-    if (isCVSContext) {
-      return null;
-    }
-
+  // Role-based quick actions surfaced through the header dropdown.
+  // The first item in each list is the primary/default action.
+  const getQuickActions = (): {
+    primary: QuickAction;
+    secondary: QuickAction[];
+  } | null => {
     switch (role) {
       case "merchant":
-        return (
-          <Button
-            variant="primary"
-            href="/campaign-manager/ads-create"
-            icon={<PlusIcon className="w-5 h-5" />}
-            glow={{
-              mode: "colorShift",
-              colors: ["#3b82f6", "#8b5cf6", "#ec4899", "#ef4444"],
-              blur: "soft",
-              scale: 0.95,
-              duration: 3,
-            }}
-          >
-            New Campaign
-          </Button>
-        );
+        return {
+          primary: {
+            label: "New Campaign",
+            href: "/campaign-manager/ads-create",
+            icon: MegaphoneIcon,
+          },
+          secondary: [
+            {
+              label: "New Offer",
+              href: "/offer-manager?action=create",
+              icon: GiftIcon,
+            },
+            {
+              label: "New Catalog Filter",
+              href: "/campaigns/product-filters/new",
+              icon: AdjustmentsHorizontalIcon,
+            },
+          ],
+        };
       case "support":
-        return (
-          <Button
-            variant="primary"
-            href="/tickets/create"
-            icon={<TicketIcon className="w-5 h-5" />}
-            glow
-          >
-            New Ticket
-          </Button>
-        );
+        return {
+          primary: {
+            label: "New Ticket",
+            href: "/tickets/create",
+            icon: TicketIcon,
+          },
+          secondary: [
+            {
+              label: "New Manual Review",
+              href: "/manual-review?action=create",
+              icon: ClipboardDocumentCheckIcon,
+            },
+          ],
+        };
       case "admin":
-        return (
-          <Button
-            variant="primary"
-            href="/merchants/create"
-            icon={<PlusCircleIcon className="w-5 h-5" />}
-            glow
-          >
-            Add Merchant
-          </Button>
-        );
+        return {
+          primary: {
+            label: "Add Merchant",
+            href: "/merchants/create",
+            icon: BuildingStorefrontIcon,
+          },
+          secondary: [
+            {
+              label: "New Campaign",
+              href: "/campaign-manager/ads-create",
+              icon: MegaphoneIcon,
+            },
+            {
+              label: "New Offer",
+              href: "/offer-manager?action=create",
+              icon: GiftIcon,
+            },
+            {
+              label: "New Catalog Filter",
+              href: "/campaigns/product-filters/new",
+              icon: AdjustmentsHorizontalIcon,
+            },
+            {
+              label: "New Manual Review",
+              href: "/manual-review?action=create",
+              icon: ClipboardDocumentCheckIcon,
+            },
+          ],
+        };
       default:
         return null;
     }
+  };
+
+  const getActionButton = () => {
+    if (pathname && pathname.includes("/create")) return null;
+    if (isCVSContext) return null;
+
+    const actions = getQuickActions();
+    if (!actions) return null;
+
+    const PrimaryIcon = actions.primary.icon;
+
+    return (
+      <DropdownMenu>
+        <div className="relative inline-flex">
+          <GlowEffect
+            mode="colorShift"
+            colors={["#3b82f6", "#8b5cf6", "#ec4899", "#ef4444"]}
+            blur="soft"
+            scale={0.95}
+            duration={3}
+            className="z-0"
+          />
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className="relative z-10 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm outline outline-1 outline-[#ffffff1a] transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 data-[state=open]:bg-primary/90"
+            >
+              <PrimaryIcon className="w-5 h-5" />
+              {actions.primary.label}
+              <ChevronDownIcon
+                className="w-4 h-4 -mr-1 opacity-80 transition-transform duration-200 data-[state=open]:rotate-180"
+                aria-hidden="true"
+              />
+            </button>
+          </DropdownMenuTrigger>
+        </div>
+        <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuLabel>Quick actions</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link href={actions.primary.href} className="cursor-pointer">
+              <actions.primary.icon className="w-4 h-4 mr-2" />
+              {actions.primary.label}
+            </Link>
+          </DropdownMenuItem>
+          {actions.secondary.length > 0 && <DropdownMenuSeparator />}
+          {actions.secondary.map((action) => {
+            const Icon = action.icon;
+            return (
+              <DropdownMenuItem key={action.href} asChild>
+                <Link href={action.href} className="cursor-pointer">
+                  <Icon className="w-4 h-4 mr-2" />
+                  {action.label}
+                </Link>
+              </DropdownMenuItem>
+            );
+          })}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
   };
 
   // Get search placeholder based on role

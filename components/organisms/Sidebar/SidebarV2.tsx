@@ -7,7 +7,6 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   HomeIcon,
   MegaphoneIcon,
-  ChartBarIcon,
   UserGroupIcon,
   Cog6ToothIcon,
   BellIcon,
@@ -17,12 +16,13 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   TicketIcon,
-  BuildingStorefrontIcon,
   ArrowRightOnRectangleIcon,
   AdjustmentsHorizontalIcon,
   ChatBubbleLeftRightIcon,
   GiftIcon,
-  RectangleGroupIcon,
+  SparklesIcon,
+  LifebuoyIcon,
+  ClipboardDocumentCheckIcon,
 } from "@heroicons/react/24/outline";
 import { useDemoState } from "@/lib/redux/hooks";
 import { toggleSidebar } from "@/lib/redux/slices/uiSlice";
@@ -281,9 +281,9 @@ const SidebarV2 = ({
       ];
     }
 
-    const overviewSection: NavSection = {
-      id: "overview",
-      label: "Overview",
+    const modulesSection: NavSection = {
+      id: "modules",
+      label: "Modules",
       items: [
         {
           id: "dashboard",
@@ -292,277 +292,52 @@ const SidebarV2 = ({
           href: "/campaign-manager",
         },
         {
-          id: "analytics",
-          label: "Analytics",
-          icon: ChartBarIcon,
-          href: "/analytics",
-        },
-      ],
-    };
-
-    const marketingSection: NavSection = {
-      id: "marketing",
-      label: "Marketing & Promotions",
-      collapsible: true,
-      defaultExpanded: true,
-      items: [
-        {
           id: "ad-manager",
           label: "Ad Manager",
           icon: MegaphoneIcon,
           href: "/campaigns",
-          children: [
-            {
-              id: "program-ads",
-              label: "Program Ads",
-              icon: MegaphoneIcon,
-              href: "/campaigns",
-            },
-            {
-              id: "display-ads",
-              label: "Display Ads",
-              icon: MegaphoneIcon,
-              href: "/campaigns/display",
-            },
-            {
-              id: "ad-creation",
-              label: "Ad Creation Wizard",
-              icon: MegaphoneIcon,
-              href: "/campaign-manager/ads-create",
-            },
-            {
-              id: "ad-analytics",
-              label: "Ad Analytics",
-              icon: ChartBarIcon,
-              href: "/campaigns/analytics",
-            },
-          ],
         },
         {
           id: "offer-manager",
           label: "Offer Manager",
           icon: GiftIcon,
           href: "/offer-manager",
-          children: [
-            {
-              id: "active-offers",
-              label: "Active Offers",
-              icon: GiftIcon,
-              href: "/offer-manager",
-            },
-            {
-              id: "create-offer",
-              label: "Create Offer",
-              icon: GiftIcon,
-              href: "/offer-manager?action=create",
-            },
-            {
-              id: "offer-templates",
-              label: "Offer Templates",
-              icon: GiftIcon,
-              href: "/offer-manager/templates",
-            },
-            {
-              id: "redemption-tracking",
-              label: "Redemption Tracking",
-              icon: GiftIcon,
-              href: "/offer-manager/redemptions",
-            },
-            {
-              id: "offer-analytics",
-              label: "Offer Analytics",
-              icon: ChartBarIcon,
-              href: "/offer-manager/analytics",
-            },
-          ],
-        },
-        {
-          id: "campaigns",
-          label: "Campaigns",
-          icon: RectangleGroupIcon,
-          href: "/campaign-management",
-          children: [
-            {
-              id: "active-campaigns",
-              label: "Active Campaigns",
-              icon: RectangleGroupIcon,
-              href: "/campaign-management",
-            },
-            {
-              id: "create-campaign",
-              label: "Create Campaign",
-              icon: RectangleGroupIcon,
-              href: "/campaign-management/create",
-            },
-            {
-              id: "campaign-templates",
-              label: "Campaign Templates",
-              icon: RectangleGroupIcon,
-              href: "/campaign-management/templates",
-            },
-            {
-              id: "campaign-performance",
-              label: "Campaign Performance",
-              icon: ChartBarIcon,
-              href: "/campaign-management/performance",
-            },
-          ],
-        },
-        {
-          id: "promo-campaigns",
-          label: "Promo Campaigns",
-          icon: TicketIcon,
-          href: "/promo-campaigns",
         },
       ],
     };
 
-    const businessOpsSection: NavSection = {
-      id: "business-ops",
-      label: "Business Operations",
-      collapsible: true,
+    const toolsSection: NavSection = {
+      id: "tools",
+      label: "Tools",
       items: [
-        {
-          id: "merchant-manager",
-          label: "Merchant Manager",
-          icon: BuildingStorefrontIcon,
-          href: "/merchants",
-          children: [
-            {
-              id: "merchant-directory",
-              label: "Merchant Directory",
-              icon: BuildingStorefrontIcon,
-              href: "/merchants",
-            },
-            {
-              id: "add-merchant",
-              label: "Add New Merchant",
-              icon: BuildingStorefrontIcon,
-              href: "/merchants/create",
-            },
-            {
-              id: "location-management",
-              label: "Location Management",
-              icon: BuildingStorefrontIcon,
-              href: "/merchants/locations",
-            },
-            {
-              id: "contracts",
-              label: "Contracts & Agreements",
-              icon: BuildingStorefrontIcon,
-              href: "/merchants/contracts",
-            },
-            {
-              id: "onboarding-pipeline",
-              label: "Onboarding Pipeline",
-              icon: BuildingStorefrontIcon,
-              href: "/merchants/onboarding",
-            },
-            {
-              id: "closure-detection",
-              label: "Closure Detection",
-              icon: BuildingStorefrontIcon,
-              href: "/merchants/closures",
-            },
-          ],
-        },
         {
           id: "catalog-filters",
           label: "Catalog Filters",
           icon: AdjustmentsHorizontalIcon,
           href: "/campaigns/product-filters",
         },
-      ],
-    };
-
-    const customerEngagementSection: NavSection = {
-      id: "customer-engagement",
-      label: "Customer Engagement",
-      collapsible: true,
-      items: [
         {
-          id: "customers",
-          label: "Customers",
-          icon: UserGroupIcon,
-          href: "/customers",
-          children: [
-            {
-              id: "customer-directory",
-              label: "Customer Directory",
-              icon: UserGroupIcon,
-              href: "/customers",
-            },
-            {
-              id: "segments",
-              label: "Segments",
-              icon: UserGroupIcon,
-              href: "/customers/segments",
-            },
-            {
-              id: "loyalty-programs",
-              label: "Loyalty Programs",
-              icon: UserGroupIcon,
-              href: "/customers/loyalty",
-            },
-            {
-              id: "customer-insights",
-              label: "Customer Insights",
-              icon: ChartBarIcon,
-              href: "/customers/insights",
-            },
-          ],
+          id: "ai-assistant",
+          label: "AI Assistant",
+          icon: SparklesIcon,
+          href: "/ai-assistant",
         },
         {
-          id: "tokens-rewards",
-          label: "Tokens/Rewards",
-          icon: (props) => (
-            <svg
-              {...props}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1.5}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"
-              />
-            </svg>
-          ),
-          href: "/tokens",
-          children: [
-            {
-              id: "token-management",
-              label: "Token Management",
-              icon: TicketIcon,
-              href: "/tokens",
-            },
-            {
-              id: "token-catalog",
-              label: "Token Catalog",
-              icon: TicketIcon,
-              href: "/tokens/catalog",
-            },
-            {
-              id: "redemption-history",
-              label: "Redemption History",
-              icon: TicketIcon,
-              href: "/tokens/redemptions",
-            },
-          ],
+          id: "support-manager",
+          label: "Support Manager",
+          icon: LifebuoyIcon,
+          href: "/support-manager",
+        },
+        {
+          id: "manual-review",
+          label: "Manual Review",
+          icon: ClipboardDocumentCheckIcon,
+          href: "/manual-review",
         },
       ],
     };
 
-    // Filter sections by role
-    const sections = [overviewSection, marketingSection, businessOpsSection];
-
-    if (role === "admin") {
-      sections.push(customerEngagementSection);
-    }
-
-    return sections;
+    return [modulesSection, toolsSection];
   }, [role, isCVSContextBool]);
 
   // Render navigation item (with or without children)

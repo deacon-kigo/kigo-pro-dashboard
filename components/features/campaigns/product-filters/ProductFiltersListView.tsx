@@ -3,7 +3,6 @@
 import React, { useMemo, memo, useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/atoms/Button";
 import {
-  PlusIcon,
   TrashIcon,
   DocumentDuplicateIcon,
   CalendarIcon,
@@ -15,7 +14,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/atoms/Tabs";
-import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/molecules/PageHeader";
 import { ProductFilterTable, SelectedRows } from "./ProductFilterTable";
 import { ProductFilter, formatDate } from "./productFilterColumns";
@@ -144,7 +142,6 @@ const BulkActions = memo(function BulkActions({
  * Includes a global search box to search across all fields.
  */
 const ProductFiltersListView = memo(function ProductFiltersListView() {
-  const router = useRouter();
   const dispatch = useDispatch();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("active");
@@ -217,11 +214,6 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
     },
     [activeTab]
   );
-
-  // Navigate to the new product filter page with useCallback
-  const handleCreateFilter = useCallback(() => {
-    router.push("/campaigns/product-filters/new");
-  }, [router]);
 
   // Handle search with useCallback
   const handleSearch = useCallback(
@@ -829,17 +821,6 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
     [filters, searchQuery, filterDataBySearch]
   );
 
-  // Memoize UI elements that don't need to be recreated on every render
-  const createFilterButton = useMemo(
-    () => (
-      <Button onClick={handleCreateFilter} className="flex items-center gap-1">
-        <PlusIcon className="h-4 w-4" />
-        Create Filter
-      </Button>
-    ),
-    [handleCreateFilter]
-  );
-
   const emptyStateContent = useMemo(
     () => (
       <div className="bg-white rounded-md border border-gray-200 p-6 flex justify-center items-center text-center overflow-hidden shadow-sm">
@@ -907,7 +888,6 @@ const ProductFiltersListView = memo(function ProductFiltersListView() {
         title="Catalog Filters"
         description="Manage catalog filters to control offer display in the TOP platform."
         emoji="🏷️"
-        actions={createFilterButton}
         variant="aurora"
       />
 

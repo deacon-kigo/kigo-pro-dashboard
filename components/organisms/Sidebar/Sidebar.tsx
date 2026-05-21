@@ -7,7 +7,6 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   HomeIcon,
   MegaphoneIcon,
-  ChartBarIcon,
   UserGroupIcon,
   Cog6ToothIcon,
   BellIcon,
@@ -23,8 +22,44 @@ import {
   ChatBubbleLeftRightIcon,
   SparklesIcon,
   GiftIcon,
-  RectangleGroupIcon,
+  LifebuoyIcon,
+  ClipboardDocumentCheckIcon,
 } from "@heroicons/react/24/outline";
+
+const SectionLabel = ({
+  id,
+  label,
+  isCollapsed,
+  isExpanded,
+  onToggle,
+  className,
+}: {
+  id: string;
+  label: string;
+  isCollapsed: boolean;
+  isExpanded: boolean;
+  onToggle: (id: string) => void;
+  className?: string;
+}) => {
+  if (isCollapsed) return null;
+  return (
+    <button
+      type="button"
+      onClick={() => onToggle(id)}
+      aria-expanded={isExpanded}
+      className={`group flex items-center justify-between w-full px-5 mb-2 ${className ?? ""}`}
+    >
+      <span className="text-xs font-medium text-text-muted uppercase tracking-wider">
+        {label}
+      </span>
+      <ChevronDownIcon
+        className={`w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600 transition-transform duration-200 ${
+          isExpanded ? "" : "-rotate-90"
+        }`}
+      />
+    </button>
+  );
+};
 import { useDemoState } from "@/lib/redux/hooks";
 import {
   toggleSidebar,
@@ -73,6 +108,43 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
   const [signOutDialogOpen, setSignOutDialogOpen] = useState(false);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
+
+  // Expanded/collapsed state per nav section (persisted to localStorage).
+  // Defaults to both groups expanded on first visit.
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("kigoProSidebarExpandedSections");
+      if (saved) {
+        try {
+          return new Set(JSON.parse(saved));
+        } catch {
+          return new Set(["modules", "tools"]);
+        }
+      }
+    }
+    return new Set(["modules", "tools"]);
+  });
+
+  useEffect(() => {
+    if (isHydrated) {
+      localStorage.setItem(
+        "kigoProSidebarExpandedSections",
+        JSON.stringify(Array.from(expandedSections))
+      );
+    }
+  }, [expandedSections, isHydrated]);
+
+  const handleToggleSection = useCallback((sectionId: string) => {
+    setExpandedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(sectionId)) {
+        next.delete(sectionId);
+      } else {
+        next.add(sectionId);
+      }
+      return next;
+    });
+  }, []);
 
   // Get pathname with fallback safely, only run once when needed
   const rawPathname = usePathname();
@@ -274,86 +346,102 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     }
 
     switch (role) {
-      case "merchant":
+      case "merchant": {
+        const showModules = sidebarCollapsed || expandedSections.has("modules");
+        const showTools = sidebarCollapsed || expandedSections.has("tools");
         return (
           <>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href={dashboardUrl}
-                icon={HomeIcon}
-                title="Dashboard"
-                isActive={isLinkActive("/campaign-manager")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/campaigns"
-                icon={MegaphoneIcon}
-                title={
-                  isPublisherDashboard ? "Program Ad Manager" : "Ad Manager"
-                }
-                isActive={isLinkActive("/campaigns")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/offer-manager"
-                icon={GiftIcon}
-                title="Offer Manager"
-                isActive={isLinkActive("/offer-manager")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/promo-campaigns"
-                icon={RectangleGroupIcon}
-                title="Campaigns"
-                isActive={isLinkActive("/promo-campaigns")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-            {/* AI Insights - Hidden from sidebar (demo feature, accessible via direct URL) */}
-            {/* <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/campaign-manager/ai-insights"
-                icon={SparklesIcon}
-                title="AI Insights"
-                isActive={isLinkActive("/campaign-manager/ai-insights")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li> */}
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/campaigns/product-filters"
-                icon={AdjustmentsHorizontalIcon}
-                title="Catalog Filters"
-                isActive={isLinkActive("/campaigns/product-filters")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/analytics"
-                icon={ChartBarIcon}
-                title="Analytics"
-                isActive={isLinkActive("/analytics")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/dashboard/members"
-                icon={UserGroupIcon}
-                title="Members"
-                isActive={isLinkActive("/dashboard/members")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
+            <SectionLabel
+              id="modules"
+              label="Modules"
+              isCollapsed={sidebarCollapsed}
+              isExpanded={expandedSections.has("modules")}
+              onToggle={handleToggleSection}
+            />
+            {showModules && (
+              <>
+                <li className="nav-item px-3 py-1">
+                  <SidebarLabel
+                    href={dashboardUrl}
+                    icon={HomeIcon}
+                    title="Dashboard"
+                    isActive={isLinkActive("/campaign-manager")}
+                    isCollapsed={sidebarCollapsed}
+                  />
+                </li>
+                <li className="nav-item px-3 py-1">
+                  <SidebarLabel
+                    href="/campaigns"
+                    icon={MegaphoneIcon}
+                    title={
+                      isPublisherDashboard ? "Program Ad Manager" : "Ad Manager"
+                    }
+                    isActive={isLinkActive("/campaigns")}
+                    isCollapsed={sidebarCollapsed}
+                  />
+                </li>
+                <li className="nav-item px-3 py-1">
+                  <SidebarLabel
+                    href="/offer-manager"
+                    icon={GiftIcon}
+                    title="Offer Manager"
+                    isActive={isLinkActive("/offer-manager")}
+                    isCollapsed={sidebarCollapsed}
+                  />
+                </li>
+              </>
+            )}
+            <SectionLabel
+              id="tools"
+              label="Tools"
+              isCollapsed={sidebarCollapsed}
+              isExpanded={expandedSections.has("tools")}
+              onToggle={handleToggleSection}
+              className="mt-4"
+            />
+            {showTools && (
+              <>
+                <li className="nav-item px-3 py-1">
+                  <SidebarLabel
+                    href="/campaigns/product-filters"
+                    icon={AdjustmentsHorizontalIcon}
+                    title="Catalog Filters"
+                    isActive={isLinkActive("/campaigns/product-filters")}
+                    isCollapsed={sidebarCollapsed}
+                  />
+                </li>
+                <li className="nav-item px-3 py-1">
+                  <SidebarLabel
+                    href="/ai-assistant"
+                    icon={SparklesIcon}
+                    title="AI Assistant"
+                    isActive={isLinkActive("/ai-assistant")}
+                    isCollapsed={sidebarCollapsed}
+                  />
+                </li>
+                <li className="nav-item px-3 py-1">
+                  <SidebarLabel
+                    href="/support-manager"
+                    icon={LifebuoyIcon}
+                    title="Support Manager"
+                    isActive={isLinkActive("/support-manager")}
+                    isCollapsed={sidebarCollapsed}
+                  />
+                </li>
+                <li className="nav-item px-3 py-1">
+                  <SidebarLabel
+                    href="/manual-review"
+                    icon={ClipboardDocumentCheckIcon}
+                    title="Manual Review"
+                    isActive={isLinkActive("/manual-review")}
+                    isCollapsed={sidebarCollapsed}
+                  />
+                </li>
+              </>
+            )}
           </>
         );
+      }
       case "support":
         return (
           <>
@@ -386,90 +474,114 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
             </li>
           </>
         );
-      case "admin":
+      case "admin": {
+        const showModules = sidebarCollapsed || expandedSections.has("modules");
+        const showTools = sidebarCollapsed || expandedSections.has("tools");
         return (
           <>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href={dashboardUrl}
-                icon={HomeIcon}
-                title="Dashboard"
-                isActive={isLinkActive("/campaign-manager")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/campaigns"
-                icon={MegaphoneIcon}
-                title={
-                  isPublisherDashboard ? "Program Ad Manager" : "Ad Manager"
-                }
-                isActive={isLinkActive("/campaigns")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/offer-manager"
-                icon={GiftIcon}
-                title="Offer Manager"
-                isActive={isLinkActive("/offer-manager")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/promo-campaigns"
-                icon={RectangleGroupIcon}
-                title="Campaigns"
-                isActive={isLinkActive("/promo-campaigns")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-            {/* AI Insights - Hidden from sidebar (demo feature, accessible via direct URL) */}
-            {/* <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/campaign-manager/ai-insights"
-                icon={SparklesIcon}
-                title="AI Insights"
-                isActive={isLinkActive("/campaign-manager/ai-insights")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li> */}
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/campaigns/product-filters"
-                icon={AdjustmentsHorizontalIcon}
-                title="Catalog Filters"
-                isActive={isLinkActive("/campaigns/product-filters")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/merchants"
-                icon={UserGroupIcon}
-                title="Merchants"
-                isActive={isLinkActive("/merchants")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
-            <li className="nav-item px-3 py-1">
-              <SidebarLabel
-                href="/analytics"
-                icon={ChartBarIcon}
-                title="Analytics"
-                isActive={isLinkActive("/analytics")}
-                isCollapsed={sidebarCollapsed}
-              />
-            </li>
+            <SectionLabel
+              id="modules"
+              label="Modules"
+              isCollapsed={sidebarCollapsed}
+              isExpanded={expandedSections.has("modules")}
+              onToggle={handleToggleSection}
+            />
+            {showModules && (
+              <>
+                <li className="nav-item px-3 py-1">
+                  <SidebarLabel
+                    href={dashboardUrl}
+                    icon={HomeIcon}
+                    title="Dashboard"
+                    isActive={isLinkActive("/campaign-manager")}
+                    isCollapsed={sidebarCollapsed}
+                  />
+                </li>
+                <li className="nav-item px-3 py-1">
+                  <SidebarLabel
+                    href="/campaigns"
+                    icon={MegaphoneIcon}
+                    title={
+                      isPublisherDashboard ? "Program Ad Manager" : "Ad Manager"
+                    }
+                    isActive={isLinkActive("/campaigns")}
+                    isCollapsed={sidebarCollapsed}
+                  />
+                </li>
+                <li className="nav-item px-3 py-1">
+                  <SidebarLabel
+                    href="/offer-manager"
+                    icon={GiftIcon}
+                    title="Offer Manager"
+                    isActive={isLinkActive("/offer-manager")}
+                    isCollapsed={sidebarCollapsed}
+                  />
+                </li>
+              </>
+            )}
+            <SectionLabel
+              id="tools"
+              label="Tools"
+              isCollapsed={sidebarCollapsed}
+              isExpanded={expandedSections.has("tools")}
+              onToggle={handleToggleSection}
+              className="mt-4"
+            />
+            {showTools && (
+              <>
+                <li className="nav-item px-3 py-1">
+                  <SidebarLabel
+                    href="/campaigns/product-filters"
+                    icon={AdjustmentsHorizontalIcon}
+                    title="Catalog Filters"
+                    isActive={isLinkActive("/campaigns/product-filters")}
+                    isCollapsed={sidebarCollapsed}
+                  />
+                </li>
+                <li className="nav-item px-3 py-1">
+                  <SidebarLabel
+                    href="/ai-assistant"
+                    icon={SparklesIcon}
+                    title="AI Assistant"
+                    isActive={isLinkActive("/ai-assistant")}
+                    isCollapsed={sidebarCollapsed}
+                  />
+                </li>
+                <li className="nav-item px-3 py-1">
+                  <SidebarLabel
+                    href="/support-manager"
+                    icon={LifebuoyIcon}
+                    title="Support Manager"
+                    isActive={isLinkActive("/support-manager")}
+                    isCollapsed={sidebarCollapsed}
+                  />
+                </li>
+                <li className="nav-item px-3 py-1">
+                  <SidebarLabel
+                    href="/manual-review"
+                    icon={ClipboardDocumentCheckIcon}
+                    title="Manual Review"
+                    isActive={isLinkActive("/manual-review")}
+                    isCollapsed={sidebarCollapsed}
+                  />
+                </li>
+              </>
+            )}
           </>
         );
+      }
       default:
         return null;
     }
-  }, [isCVSContextBool, role, sidebarCollapsed, isLinkActive, pathname]);
+  }, [
+    isCVSContextBool,
+    role,
+    sidebarCollapsed,
+    isLinkActive,
+    pathname,
+    expandedSections,
+    handleToggleSection,
+  ]);
 
   // Memoize the role title
   const roleTitle = useMemo(() => {
@@ -809,11 +921,6 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
 
         {/* Navigation section */}
         <div className="mt-6 mb-6 flex-1 overflow-y-auto overflow-x-hidden">
-          {!sidebarCollapsed && isHydrated && (
-            <p className="text-xs font-medium text-text-muted px-5 uppercase tracking-wider mb-2">
-              {role === "merchant" ? "Business" : "Main"}
-            </p>
-          )}
           <ul className="nav-items w-full">{navigationItems}</ul>
         </div>
 
