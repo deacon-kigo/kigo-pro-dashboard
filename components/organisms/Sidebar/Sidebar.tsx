@@ -47,7 +47,7 @@ const SectionLabel = ({
       type="button"
       onClick={() => onToggle(id)}
       aria-expanded={isExpanded}
-      className={`group flex items-center justify-between w-full px-5 mb-2 ${className ?? ""}`}
+      className={`group flex items-center justify-between w-full pl-5 pr-8 mb-2 ${className ?? ""}`}
     >
       <span className="text-xs font-medium text-text-muted uppercase tracking-wider">
         {label}
