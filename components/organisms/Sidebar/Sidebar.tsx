@@ -371,6 +371,15 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 </li>
                 <li className="nav-item px-3 py-1">
                   <SidebarLabel
+                    href="/merchants"
+                    icon={BuildingStorefrontIcon}
+                    title="Merchant Manager"
+                    isActive={isLinkActive("/merchants")}
+                    isCollapsed={sidebarCollapsed}
+                  />
+                </li>
+                <li className="nav-item px-3 py-1">
+                  <SidebarLabel
                     href="/campaigns"
                     icon={MegaphoneIcon}
                     title={
@@ -494,6 +503,15 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                     icon={HomeIcon}
                     title="Dashboard"
                     isActive={isLinkActive("/campaign-manager")}
+                    isCollapsed={sidebarCollapsed}
+                  />
+                </li>
+                <li className="nav-item px-3 py-1">
+                  <SidebarLabel
+                    href="/merchants"
+                    icon={BuildingStorefrontIcon}
+                    title="Merchant Manager"
+                    isActive={isLinkActive("/merchants")}
                     isCollapsed={sidebarCollapsed}
                   />
                 </li>

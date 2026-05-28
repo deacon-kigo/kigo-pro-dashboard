@@ -19,8 +19,17 @@ import {
   ClipboardDocumentCheckIcon,
   BuildingStorefrontIcon,
   ChevronDownIcon,
+  BoltIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   useAppSelector,
   useAppDispatch,
@@ -31,15 +40,6 @@ import { markAllNotificationsAsRead } from "@/lib/redux/slices/userSlice";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/atoms/Button";
 import { Input, SearchSuggestion } from "@/components/atoms/Input";
-import { GlowEffect } from "@/components/effects/GlowEffect";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface QuickAction {
   label: string;
@@ -232,44 +232,27 @@ export default function Header() {
     const actions = getQuickActions();
     if (!actions) return null;
 
-    const PrimaryIcon = actions.primary.icon;
+    const allActions = [actions.primary, ...actions.secondary];
 
     return (
       <DropdownMenu>
-        <div className="relative inline-flex">
-          <GlowEffect
-            mode="colorShift"
-            colors={["#3b82f6", "#8b5cf6", "#ec4899", "#ef4444"]}
-            blur="soft"
-            scale={0.95}
-            duration={3}
-            className="z-0"
-          />
-          <DropdownMenuTrigger asChild>
-            <button
-              type="button"
-              className="relative z-10 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm outline outline-1 outline-[#ffffff1a] transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 data-[state=open]:bg-primary/90"
-            >
-              <PrimaryIcon className="w-5 h-5" />
-              {actions.primary.label}
-              <ChevronDownIcon
-                className="w-4 h-4 -mr-1 opacity-80 transition-transform duration-200 data-[state=open]:rotate-180"
-                aria-hidden="true"
-              />
-            </button>
-          </DropdownMenuTrigger>
-        </div>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm outline outline-1 outline-[#ffffff1a] transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 data-[state=open]:bg-primary/90"
+          >
+            <BoltIcon className="w-5 h-5" />
+            Quick Action
+            <ChevronDownIcon
+              className="w-4 h-4 -mr-1 opacity-80 transition-transform duration-200 data-[state=open]:rotate-180"
+              aria-hidden="true"
+            />
+          </button>
+        </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuLabel>Quick actions</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem asChild>
-            <Link href={actions.primary.href} className="cursor-pointer">
-              <actions.primary.icon className="w-4 h-4 mr-2" />
-              {actions.primary.label}
-            </Link>
-          </DropdownMenuItem>
-          {actions.secondary.length > 0 && <DropdownMenuSeparator />}
-          {actions.secondary.map((action) => {
+          {allActions.map((action) => {
             const Icon = action.icon;
             return (
               <DropdownMenuItem key={action.href} asChild>
@@ -371,13 +354,13 @@ export default function Header() {
 
         <div className="ml-auto flex items-center gap-4">
           <button
-            className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer ${isDarkMode ? "hover:bg-gray-800/80" : "hover:bg-white/80"}`}
+            className={`relative w-10 h-10 rounded-full flex items-center justify-center cursor-pointer ${isDarkMode ? "hover:bg-gray-800/80" : "hover:bg-white/80"}`}
           >
             <BellIcon
               className={`h-5 w-5 ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}
             />
             {unreadNotificationsCount > 0 && (
-              <span className="absolute top-2 right-2 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center text-xs text-white">
+              <span className="absolute top-1 right-1 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center text-[10px] font-semibold text-white">
                 {unreadNotificationsCount}
               </span>
             )}

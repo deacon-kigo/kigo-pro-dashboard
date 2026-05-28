@@ -5,10 +5,12 @@ import AppLayout from "@/components/templates/AppLayout/AppLayout";
 import {
   Breadcrumb,
   BreadcrumbItem,
+  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
+  BreadcrumbSeparator,
 } from "@/components/atoms/Breadcrumb";
-import MerchantManagerV3 from "@/components/features/merchant-manager/v3/MerchantManagerV3";
+import V2MerchantDashboard from "@/components/features/merchant-manager/v2/V2MerchantDashboard";
 
 function LoadingFallback() {
   return (
@@ -21,24 +23,34 @@ function LoadingFallback() {
   );
 }
 
-export default function MerchantsPage() {
+function V2Content() {
   const breadcrumb = (
     <Breadcrumb className="mb-4">
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbPage>Merchants</BreadcrumbPage>
+          <BreadcrumbLink href="/merchants">Merchants</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbPage>v2</BreadcrumbPage>
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>
   );
 
   return (
+    <AppLayout customBreadcrumb={breadcrumb}>
+      <div className="pt-0 mt-0">
+        <V2MerchantDashboard />
+      </div>
+    </AppLayout>
+  );
+}
+
+export default function MerchantsV2Page() {
+  return (
     <Suspense fallback={<LoadingFallback />}>
-      <AppLayout customBreadcrumb={breadcrumb}>
-        <div className="pt-0 mt-0">
-          <MerchantManagerV3 />
-        </div>
-      </AppLayout>
+      <V2Content />
     </Suspense>
   );
 }

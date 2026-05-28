@@ -1,18 +1,17 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/molecules/dialog";
-import { Input } from "@/components/atoms/Input";
-import { Label } from "@/components/atoms/Label";
-import { Textarea } from "@/components/atoms/Textarea";
-import { Button } from "@/components/atoms/Button";
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -21,13 +20,14 @@ import {
   SelectValue,
 } from "@/components/atoms/Select";
 import {
+  BuildingStorefrontIcon,
   PhotoIcon,
   MapPinIcon,
   GlobeAltIcon,
+  SparklesIcon,
   CheckCircleIcon,
   XMarkIcon,
   ArrowPathIcon,
-  ChevronDownIcon,
 } from "@heroicons/react/24/outline";
 
 declare global {
@@ -36,22 +36,30 @@ declare global {
   }
 }
 
-export interface AddMerchantFormData {
-  // Required
+export interface NewMerchantData {
   name: string;
   category: string;
-  // Optional standard
   source: string;
   contact: string;
   notes: string;
-  // Advanced
+  // Extended fields from offer-manager MerchantCreationInline
   corpName: string;
   dbaName: string;
   logo: File | null;
   logoPreview: string | null;
-  url: string;
   address: string;
   geolocation: { lat: number; lng: number } | null;
+  url: string;
+}
+
+interface PlacePrediction {
+  description: string;
+  place_id: string;
+}
+
+interface UrlSuggestion {
+  title: string;
+  url: string;
 }
 
 const CATEGORIES = [
@@ -68,7 +76,7 @@ const SOURCES = [
   "Direct Partnership",
 ] as const;
 
-const initialFormState: AddMerchantFormData = {
+const initialFormState: NewMerchantData = {
   name: "",
   category: "",
   source: "",
@@ -78,35 +86,26 @@ const initialFormState: AddMerchantFormData = {
   dbaName: "",
   logo: null,
   logoPreview: null,
-  url: "",
   address: "",
   geolocation: null,
+  url: "",
 };
 
-interface PlacePrediction {
-  description: string;
-  place_id: string;
-}
-
-interface UrlSuggestion {
-  title: string;
-  url: string;
-}
-
-interface AddMerchantDialogProps {
+interface V2AddMerchantDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (merchant: AddMerchantFormData) => void;
+  onAdd: (data: NewMerchantData) => void;
 }
 
-export default function AddMerchantDialog({
+export default function V2AddMerchantDialog({
   open,
   onOpenChange,
-  onSave,
-}: AddMerchantDialogProps) {
-  const [form, setForm] = useState<AddMerchantFormData>(initialFormState);
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  onAdd,
+}: V2AddMerchantDialogProps) {
+  const [form, setForm] = useState<NewMerchantData>(initialFormState);
+  const [showMore, setShowMore] = useState(false);
 
+  // Google Places state
   const [addressSuggestions, setAddressSuggestions] = useState<
     PlacePrediction[]
   >([]);
@@ -114,6 +113,7 @@ export default function AddMerchantDialog({
   const [isLoadingAddress, setIsLoadingAddress] = useState(false);
   const [googleLoaded, setGoogleLoaded] = useState(false);
 
+  // URL suggestions state
   const [urlSuggestions, setUrlSuggestions] = useState<UrlSuggestion[]>([]);
   const [showUrlSuggestions, setShowUrlSuggestions] = useState(false);
   const [isLoadingUrl, setIsLoadingUrl] = useState(false);
@@ -124,19 +124,19 @@ export default function AddMerchantDialog({
   const addressDebounceRef = useRef<NodeJS.Timeout | null>(null);
   const urlDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Reset on close
+  // Reset form when dialog closes
   useEffect(() => {
     if (!open) {
       setForm(initialFormState);
-      setShowAdvanced(false);
+      setShowMore(false);
       setAddressSuggestions([]);
       setUrlSuggestions([]);
     }
   }, [open]);
 
-  // Load Google Maps once advanced is opened
+  // Load Google Maps script
   useEffect(() => {
-    if (!open || !showAdvanced) return;
+    if (!open) return;
 
     if (window.google?.maps?.places) {
       setGoogleLoaded(true);
@@ -172,7 +172,7 @@ export default function AddMerchantDialog({
       if (addressDebounceRef.current) clearTimeout(addressDebounceRef.current);
       if (urlDebounceRef.current) clearTimeout(urlDebounceRef.current);
     };
-  }, [open, showAdvanced]);
+  }, [open]);
 
   const initializeGoogleServices = () => {
     if (window.google?.maps?.places) {
@@ -185,24 +185,25 @@ export default function AddMerchantDialog({
     }
   };
 
-  const update = <K extends keyof AddMerchantFormData>(
-    field: K,
-    value: AddMerchantFormData[K]
-  ) => {
+  const update = (field: keyof NewMerchantData, value: any) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const isValid = Boolean(form.name.trim() && form.category);
+  // Validation: name and category are required (matching John's design)
+  const isValid = form.name.trim() && form.category;
 
+  // Logo upload
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-    update("logo", file);
-    const reader = new FileReader();
-    reader.onloadend = () => update("logoPreview", reader.result as string);
-    reader.readAsDataURL(file);
+    if (file) {
+      update("logo", file);
+      const reader = new FileReader();
+      reader.onloadend = () => update("logoPreview", reader.result as string);
+      reader.readAsDataURL(file);
+    }
   };
 
+  // Google Places autocomplete for address
   const handleAddressChange = (value: string) => {
     update("address", value);
     if (addressDebounceRef.current) clearTimeout(addressDebounceRef.current);
@@ -257,6 +258,7 @@ export default function AddMerchantDialog({
     }
   };
 
+  // URL suggestions based on merchant name
   const handleUrlSearch = useCallback((businessName: string) => {
     if (urlDebounceRef.current) clearTimeout(urlDebounceRef.current);
     if (!businessName.trim()) {
@@ -294,45 +296,49 @@ export default function AddMerchantDialog({
 
   const handleSubmit = () => {
     if (isValid) {
-      onSave(form);
+      onAdd(form);
+      onOpenChange(false);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[640px] max-h-[85vh] overflow-hidden flex flex-col gap-0 p-0">
-        <DialogHeader className="border-b border-gray-200 px-6 py-4">
-          <DialogTitle>Add Merchant</DialogTitle>
-          <DialogDescription>
-            Create a new merchant record. Name and category are required.
-          </DialogDescription>
+      <DialogContent className="sm:max-w-[560px] max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+              <BuildingStorefrontIcon className="w-5 h-5 text-primary" />
+            </div>
+            Add New Merchant
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
-          {/* Merchant Name */}
-          <div className="space-y-2">
-            <Label htmlFor="merchant-name">
-              Merchant Name <span className="text-red-600">*</span>
+        <div className="grid gap-4 py-2">
+          {/* Merchant Name — primary field from John's design */}
+          <div>
+            <Label htmlFor="merchant-name" className="text-sm">
+              Merchant Name <span className="text-destructive">*</span>
             </Label>
             <Input
               id="merchant-name"
               placeholder="e.g. Papa John's"
               value={form.name}
               onChange={(e) => update("name", e.target.value)}
+              className="mt-1"
               autoFocus
             />
           </div>
 
-          {/* Category */}
-          <div className="space-y-2">
-            <Label>
-              Category <span className="text-red-600">*</span>
+          {/* Category — from John's design */}
+          <div>
+            <Label className="text-sm">
+              Category <span className="text-destructive">*</span>
             </Label>
             <Select
               value={form.category}
               onValueChange={(v) => update("category", v)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="mt-1">
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
@@ -345,14 +351,14 @@ export default function AddMerchantDialog({
             </Select>
           </div>
 
-          {/* Offer Source */}
-          <div className="space-y-2">
-            <Label>Offer Source</Label>
+          {/* Offer Source — from John's design */}
+          <div>
+            <Label className="text-sm">Offer Source</Label>
             <Select
               value={form.source}
               onValueChange={(v) => update("source", v)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="mt-1">
                 <SelectValue placeholder="Select source" />
               </SelectTrigger>
               <SelectContent>
@@ -365,82 +371,111 @@ export default function AddMerchantDialog({
             </Select>
           </div>
 
-          {/* Account Contact */}
-          <div className="space-y-2">
-            <Label htmlFor="merchant-contact">Account Contact</Label>
+          {/* Account Contact — from John's design */}
+          <div>
+            <Label htmlFor="merchant-contact" className="text-sm">
+              Account Contact
+            </Label>
             <Input
               id="merchant-contact"
               placeholder="Contact name or email"
               value={form.contact}
               onChange={(e) => update("contact", e.target.value)}
+              className="mt-1"
             />
           </div>
 
-          {/* Notes */}
-          <div className="space-y-2">
-            <Label htmlFor="merchant-notes">Notes</Label>
+          {/* Notes — from John's design */}
+          <div>
+            <Label htmlFor="merchant-notes" className="text-sm">
+              Notes
+            </Label>
             <Textarea
               id="merchant-notes"
               placeholder="Any relevant notes about this merchant..."
               value={form.notes}
               onChange={(e) => update("notes", e.target.value)}
+              className="mt-1"
               rows={3}
             />
           </div>
 
-          {/* Advanced Settings toggle */}
+          {/* Expandable section — extended fields from offer-manager MerchantCreationInline */}
           <button
             type="button"
-            onClick={() => setShowAdvanced((s) => !s)}
-            className="mt-2 flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-            aria-expanded={showAdvanced}
-            aria-controls="advanced-settings"
+            onClick={() => setShowMore(!showMore)}
+            className="flex items-center gap-1.5 text-sm text-primary hover:underline w-fit"
           >
-            <ChevronDownIcon
-              className={`h-4 w-4 transition-transform ${showAdvanced ? "rotate-180" : ""}`}
-            />
-            Advanced settings
-            <span className="text-xs font-normal text-gray-500">
-              · logo, corp/DBA name, website, address
-            </span>
+            <SparklesIcon className="w-4 h-4" />
+            {showMore ? "Hide" : "Show"} additional details (logo, address, URL)
           </button>
 
-          {showAdvanced && (
-            <div
-              id="advanced-settings"
-              className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-lg border border-gray-200 bg-gray-50 p-4"
-            >
-              {/* Logo */}
-              <div className="space-y-2 sm:col-span-2">
-                <Label>Logo</Label>
-                <div>
+          {showMore && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-lg border bg-muted/30 animate-in slide-in-from-top-1 duration-200">
+              {/* Corporate Name */}
+              <div>
+                <Label htmlFor="corpName" className="text-sm">
+                  Corporate Name
+                </Label>
+                <Input
+                  id="corpName"
+                  placeholder="e.g., Acme Corporation Inc."
+                  value={form.corpName}
+                  onChange={(e) => update("corpName", e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+
+              {/* DBA Name */}
+              <div>
+                <Label htmlFor="dbaName" className="text-sm">
+                  DBA Name
+                </Label>
+                <Input
+                  id="dbaName"
+                  placeholder="e.g., Acme Pizza"
+                  value={form.dbaName}
+                  onChange={(e) => update("dbaName", e.target.value)}
+                  className="mt-1"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Name customers will see
+                </p>
+              </div>
+
+              {/* Logo Upload */}
+              <div>
+                <Label className="text-sm">Logo</Label>
+                <div className="mt-1">
                   {form.logoPreview ? (
                     <div className="relative inline-block">
                       <img
                         src={form.logoPreview}
                         alt="Logo preview"
-                        className="h-20 w-20 rounded-lg border border-gray-200 object-cover"
+                        className="w-16 h-16 object-cover rounded-lg border"
                       />
-                      <button
-                        type="button"
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="absolute -top-2 -right-2 w-5 h-5 p-0 rounded-full"
                         onClick={() => {
                           update("logo", null);
                           update("logoPreview", null);
                         }}
-                        className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-white shadow hover:bg-red-700"
-                        aria-label="Remove logo"
                       >
-                        <XMarkIcon className="h-3 w-3" />
-                      </button>
+                        <XMarkIcon className="w-3 h-3" />
+                      </Button>
                     </div>
                   ) : (
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex h-20 w-20 flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 transition-colors hover:border-primary hover:bg-primary/5"
+                      className="w-16 h-16 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center hover:border-primary hover:bg-primary/5 transition-colors"
                     >
-                      <PhotoIcon className="h-6 w-6 text-gray-400" />
-                      <span className="mt-1 text-xs text-gray-500">Upload</span>
+                      <PhotoIcon className="w-5 h-5 text-gray-400" />
+                      <span className="text-[10px] text-gray-500 mt-0.5">
+                        Upload
+                      </span>
                     </button>
                   )}
                   <input
@@ -453,35 +488,13 @@ export default function AddMerchantDialog({
                 </div>
               </div>
 
-              {/* Corporate Name */}
-              <div className="space-y-2">
-                <Label htmlFor="corp-name">Corporate Name</Label>
-                <Input
-                  id="corp-name"
-                  placeholder="e.g. Acme Corporation Inc."
-                  value={form.corpName}
-                  onChange={(e) => update("corpName", e.target.value)}
-                />
-              </div>
-
-              {/* DBA Name */}
-              <div className="space-y-2">
-                <Label htmlFor="dba-name">DBA Name</Label>
-                <Input
-                  id="dba-name"
-                  placeholder="e.g. Acme Pizza"
-                  value={form.dbaName}
-                  onChange={(e) => update("dbaName", e.target.value)}
-                />
-              </div>
-
-              {/* Website URL */}
-              <div className="space-y-2 sm:col-span-2 relative">
+              {/* Website URL with suggestions */}
+              <div className="relative">
                 <Label
                   htmlFor="merchant-url"
-                  className="flex items-center gap-1"
+                  className="text-sm flex items-center gap-1"
                 >
-                  <GlobeAltIcon className="h-3.5 w-3.5" />
+                  <GlobeAltIcon className="w-3.5 h-3.5" />
                   Website URL
                 </Label>
                 <Input
@@ -497,26 +510,27 @@ export default function AddMerchantDialog({
                   onBlur={() =>
                     setTimeout(() => setShowUrlSuggestions(false), 200)
                   }
+                  className="mt-1"
                 />
                 {isLoadingUrl && (
-                  <ArrowPathIcon className="absolute right-3 top-[34px] h-4 w-4 animate-spin text-gray-400" />
+                  <ArrowPathIcon className="w-4 h-4 absolute right-3 top-8 animate-spin text-muted-foreground" />
                 )}
                 {showUrlSuggestions && urlSuggestions.length > 0 && (
-                  <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-md border border-gray-200 bg-white shadow-lg">
+                  <div className="absolute z-50 w-full mt-1 bg-white border rounded-md shadow-lg">
                     {urlSuggestions.map((suggestion, index) => (
                       <button
                         key={index}
                         type="button"
-                        className="block w-full px-3 py-2 text-left text-sm hover:bg-gray-50"
+                        className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100"
                         onClick={() => {
                           update("url", suggestion.url);
                           setShowUrlSuggestions(false);
                         }}
                       >
-                        <div className="truncate font-medium text-gray-900">
+                        <div className="font-medium text-gray-900 truncate">
                           {suggestion.title}
                         </div>
-                        <div className="truncate text-xs text-blue-600">
+                        <div className="text-xs text-blue-600 truncate">
                           {suggestion.url}
                         </div>
                       </button>
@@ -525,23 +539,23 @@ export default function AddMerchantDialog({
                 )}
               </div>
 
-              {/* Address */}
-              <div className="space-y-2 sm:col-span-2 relative">
+              {/* Address with Google Places */}
+              <div className="relative sm:col-span-2">
                 <Label
                   htmlFor="merchant-address"
-                  className="flex items-center gap-1"
+                  className="text-sm flex items-center gap-1"
                 >
-                  <MapPinIcon className="h-3.5 w-3.5" />
+                  <MapPinIcon className="w-3.5 h-3.5" />
                   Address
                   {googleLoaded && (
-                    <span className="ml-1 text-xs text-green-600">
+                    <span className="text-xs text-green-600 ml-1">
                       (Google Places)
                     </span>
                   )}
                 </Label>
                 <Input
                   id="merchant-address"
-                  placeholder="Start typing to search…"
+                  placeholder="Start typing to search..."
                   value={form.address}
                   onChange={(e) => handleAddressChange(e.target.value)}
                   onFocus={() =>
@@ -550,20 +564,21 @@ export default function AddMerchantDialog({
                   onBlur={() =>
                     setTimeout(() => setShowAddressSuggestions(false), 200)
                   }
+                  className="mt-1"
                 />
                 {isLoadingAddress && (
-                  <ArrowPathIcon className="absolute right-3 top-[34px] h-4 w-4 animate-spin text-gray-400" />
+                  <ArrowPathIcon className="w-4 h-4 absolute right-3 top-8 animate-spin text-muted-foreground" />
                 )}
                 {showAddressSuggestions && addressSuggestions.length > 0 && (
-                  <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-60 overflow-auto rounded-md border border-gray-200 bg-white shadow-lg">
+                  <div className="absolute z-50 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-auto">
                     {addressSuggestions.map((suggestion) => (
                       <button
                         key={suggestion.place_id}
                         type="button"
-                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-gray-50"
+                        className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
                         onClick={() => handleAddressSelect(suggestion)}
                       >
-                        <MapPinIcon className="h-4 w-4 flex-shrink-0 text-gray-400" />
+                        <MapPinIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
                         <span className="truncate">
                           {suggestion.description}
                         </span>
@@ -572,8 +587,8 @@ export default function AddMerchantDialog({
                   </div>
                 )}
                 {form.geolocation && (
-                  <p className="mt-1 flex items-center gap-1 text-xs text-green-600">
-                    <CheckCircleIcon className="h-3 w-3" />
+                  <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                    <CheckCircleIcon className="w-3 h-3" />
                     Location captured: {form.geolocation.lat.toFixed(4)},{" "}
                     {form.geolocation.lng.toFixed(4)}
                   </p>
@@ -583,22 +598,13 @@ export default function AddMerchantDialog({
           )}
         </div>
 
-        <DialogFooter className="border-t border-gray-200 bg-white px-6 py-4 sm:justify-between">
-          <div className="text-xs text-gray-500">
-            <span className="text-red-600">*</span> Required
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              onClick={handleSubmit}
-              disabled={!isValid}
-            >
-              Add Merchant
-            </Button>
-          </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleSubmit} disabled={!isValid}>
+            Add Merchant
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

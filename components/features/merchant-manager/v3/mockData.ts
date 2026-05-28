@@ -1,4 +1,37 @@
-import type { Merchant } from "./types";
+import type { Campaign, Merchant, Offer, OfferStatus } from "./types";
+
+// ----- Lightweight builders for additional pagination-test merchants -----
+// Keeps the new entries below tight while still hitting list-view fidelity
+// (offer counts, campaign counts, publisher set via offers).
+
+const _mkOffer = (
+  id: string,
+  name: string,
+  status: OfferStatus,
+  publisher: string,
+  offerType: string
+): Offer => ({
+  id,
+  name,
+  status,
+  channel: publisher,
+  publisher,
+  start: "Mar 1, 2026",
+  end: "Jun 30, 2026",
+  type: "Standard",
+  offerType,
+});
+
+const _mkCampaign = (
+  id: string,
+  name: string,
+  publisher = "ampliFI"
+): Campaign => ({
+  id,
+  name,
+  publisher,
+  status: "Active",
+});
 
 /**
  * Mock merchant data ported from
@@ -491,5 +524,752 @@ export const merchants: Merchant[] = [
         revenue: "$9,600",
       },
     ],
+  },
+
+  // ----- Additional merchants (pagination filler). List-view complete; detail
+  // dialog renders with the minimum fields the UI requires. -----
+  {
+    key: "target",
+    name: "Target",
+    id: "MID-10210",
+    category: "Retail",
+    emoji: "🎯",
+    color: "#fee2e2",
+    source: "Augeo",
+    commissionOffers: true,
+    status: "Active",
+    contact: "Linda Cho · lcho@target.com",
+    website: "target.com",
+    offers: [
+      _mkOffer(
+        "OID-71010",
+        "Target Circle 10% Off",
+        "Active",
+        "Verizon Value",
+        "Percentage Off"
+      ),
+      _mkOffer(
+        "OID-71011",
+        "Free Shipping on $35+",
+        "Active",
+        "T-Mobile Perks",
+        "Free Product"
+      ),
+      _mkOffer(
+        "OID-71012",
+        "Holiday Gift Card Bonus",
+        "Expired",
+        "JD Perks",
+        "Money Off"
+      ),
+    ],
+    campaigns: [
+      _mkCampaign("CID-7101", "Welcome Bundle"),
+      _mkCampaign("CID-7102", "Spring Refresh"),
+    ],
+  },
+  {
+    key: "bestbuy",
+    name: "Best Buy",
+    id: "MID-10218",
+    category: "Electronics",
+    emoji: "💻",
+    color: "#dbeafe",
+    source: "EBG",
+    commissionOffers: true,
+    status: "Active",
+    contact: "Ravi Patel · rpatel@bestbuy.com",
+    website: "bestbuy.com",
+    offers: [
+      _mkOffer(
+        "OID-71020",
+        "Geek Squad 6-Month Trial",
+        "Active",
+        "Verizon Value",
+        "Free Product"
+      ),
+      _mkOffer(
+        "OID-71021",
+        "15% Off Laptops",
+        "Active",
+        "Optum Offers",
+        "Percentage Off"
+      ),
+    ],
+    campaigns: [_mkCampaign("CID-7103", "Tech Refresh")],
+  },
+  {
+    key: "costco",
+    name: "Costco",
+    id: "MID-10221",
+    category: "Retail",
+    emoji: "🏬",
+    color: "#fef3c7",
+    source: "Direct",
+    commissionOffers: false,
+    status: "Attention",
+    contact: "Greg Lopez · glopez@costco.com",
+    website: "costco.com",
+    offers: [
+      _mkOffer(
+        "OID-71030",
+        "$20 Off New Membership",
+        "Active",
+        "AT&T Thanks",
+        "Money Off"
+      ),
+    ],
+    campaigns: [],
+  },
+  {
+    key: "walmart",
+    name: "Walmart",
+    id: "MID-10232",
+    category: "Retail",
+    emoji: "🏪",
+    color: "#dbeafe",
+    source: "Augeo",
+    commissionOffers: true,
+    status: "Active",
+    contact: "Aisha Brown · abrown@walmart.com",
+    website: "walmart.com",
+    offers: [
+      _mkOffer(
+        "OID-71040",
+        "Walmart+ 30-Day Trial",
+        "Active",
+        "Verizon Value",
+        "Free Product"
+      ),
+      _mkOffer(
+        "OID-71041",
+        "10% Off Groceries",
+        "Active",
+        "JD Perks",
+        "Percentage Off"
+      ),
+      _mkOffer(
+        "OID-71042",
+        "Free Pickup",
+        "Active",
+        "T-Mobile Perks",
+        "Free Product"
+      ),
+      _mkOffer(
+        "OID-71043",
+        "Back-to-School Sale",
+        "Expired",
+        "Optum Offers",
+        "Percentage Off"
+      ),
+    ],
+    campaigns: [
+      _mkCampaign("CID-7104", "Family Essentials"),
+      _mkCampaign("CID-7105", "Monthly Airdrop Bundle"),
+    ],
+  },
+  {
+    key: "macys",
+    name: "Macy's",
+    id: "MID-10245",
+    category: "Apparel",
+    emoji: "👗",
+    color: "#fce7f3",
+    source: "EBG",
+    commissionOffers: true,
+    status: "Review",
+    contact: "Diana Wu · dwu@macys.com",
+    website: "macys.com",
+    offers: [
+      _mkOffer(
+        "OID-71050",
+        "25% Off Sitewide",
+        "Active",
+        "AT&T Thanks",
+        "Percentage Off"
+      ),
+      _mkOffer(
+        "OID-71051",
+        "Free Beauty Bag",
+        "Expired",
+        "Verizon Value",
+        "Free Product"
+      ),
+    ],
+    campaigns: [_mkCampaign("CID-7106", "Spring Refresh")],
+  },
+  {
+    key: "netflix",
+    name: "Netflix",
+    id: "MID-10256",
+    category: "Entertainment",
+    emoji: "🎞️",
+    color: "#fecaca",
+    source: "Direct",
+    commissionOffers: false,
+    status: "Active",
+    contact: "Tom Hayes · thayes@netflix.com",
+    website: "netflix.com",
+    offers: [
+      _mkOffer(
+        "OID-71060",
+        "Netflix Standard — 1 Month Free",
+        "Active",
+        "T-Mobile Perks",
+        "Free Product"
+      ),
+      _mkOffer(
+        "OID-71061",
+        "Annual Plan 20% Off",
+        "Active",
+        "Verizon Value",
+        "Percentage Off"
+      ),
+    ],
+    campaigns: [_mkCampaign("CID-7107", "Boosted Rewards")],
+  },
+  {
+    key: "spotify",
+    name: "Spotify",
+    id: "MID-10267",
+    category: "Entertainment",
+    emoji: "🎧",
+    color: "#dcfce7",
+    source: "Augeo",
+    commissionOffers: true,
+    status: "Active",
+    contact: "Maya Singh · msingh@spotify.com",
+    website: "spotify.com",
+    offers: [
+      _mkOffer(
+        "OID-71070",
+        "Premium — 3 Months Free",
+        "Active",
+        "Verizon Value",
+        "Free Product"
+      ),
+    ],
+    campaigns: [
+      _mkCampaign("CID-7108", "Welcome Bundle"),
+      _mkCampaign("CID-7109", "Boosted Rewards"),
+    ],
+  },
+  {
+    key: "hulu",
+    name: "Hulu",
+    id: "MID-10271",
+    category: "Entertainment",
+    emoji: "📺",
+    color: "#d1fae5",
+    source: "Direct",
+    commissionOffers: false,
+    status: "Active",
+    contact: "Erika Park · epark@hulu.com",
+    website: "hulu.com",
+    offers: [
+      _mkOffer(
+        "OID-71080",
+        "Hulu + Live TV — $20 Off",
+        "Active",
+        "Optum Offers",
+        "Money Off"
+      ),
+      _mkOffer(
+        "OID-71081",
+        "Hulu Ad-Supported Trial",
+        "Active",
+        "JD Perks",
+        "Free Product"
+      ),
+    ],
+    campaigns: [],
+  },
+  {
+    key: "starbucks",
+    name: "Starbucks",
+    id: "MID-10284",
+    category: "Food & Dining",
+    emoji: "☕",
+    color: "#dcfce7",
+    source: "Augeo",
+    commissionOffers: true,
+    status: "Active",
+    contact: "Jordan Lee · jlee@starbucks.com",
+    website: "starbucks.com",
+    offers: [
+      _mkOffer(
+        "OID-71090",
+        "BOGO Handcrafted Drinks",
+        "Active",
+        "AT&T Thanks",
+        "Free Product"
+      ),
+      _mkOffer(
+        "OID-71091",
+        "Double Stars Tuesdays",
+        "Active",
+        "Verizon Value",
+        "Percentage Off"
+      ),
+      _mkOffer(
+        "OID-71092",
+        "Free Birthday Drink",
+        "Active",
+        "T-Mobile Perks",
+        "Free Product"
+      ),
+    ],
+    campaigns: [_mkCampaign("CID-7110", "Mother's Day Bundle")],
+  },
+  {
+    key: "mcdonalds",
+    name: "McDonald's",
+    id: "MID-10292",
+    category: "Food & Dining",
+    emoji: "🍟",
+    color: "#fef3c7",
+    source: "EBG",
+    commissionOffers: true,
+    status: "Active",
+    contact: "Carlos Mendez · cmendez@mcdonalds.com",
+    website: "mcdonalds.com",
+    offers: [
+      _mkOffer(
+        "OID-71100",
+        "Free Medium Fries with Purchase",
+        "Active",
+        "JD Perks",
+        "Free Product"
+      ),
+      _mkOffer(
+        "OID-71101",
+        "20% Off App Order",
+        "Active",
+        "Optum Offers",
+        "Percentage Off"
+      ),
+    ],
+    campaigns: [_mkCampaign("CID-7111", "Commodity Classics")],
+  },
+  {
+    key: "chickfila",
+    name: "Chick-fil-A",
+    id: "MID-10298",
+    category: "Food & Dining",
+    emoji: "🐔",
+    color: "#fee2e2",
+    source: "Direct",
+    commissionOffers: false,
+    status: "Active",
+    contact: "Beth Carter · bcarter@chick-fil-a.com",
+    website: "chick-fil-a.com",
+    offers: [
+      _mkOffer(
+        "OID-71110",
+        "Free Sandwich with Combo",
+        "Active",
+        "Verizon Value",
+        "Free Product"
+      ),
+    ],
+    campaigns: [_mkCampaign("CID-7112", "Family Essentials")],
+  },
+  {
+    key: "dominos",
+    name: "Domino's",
+    id: "MID-10305",
+    category: "Food & Dining",
+    emoji: "🍕",
+    color: "#fee2e2",
+    source: "Augeo",
+    commissionOffers: true,
+    status: "Attention",
+    contact: "Nina Patel · npatel@dominos.com",
+    website: "dominos.com",
+    offers: [
+      _mkOffer(
+        "OID-71120",
+        "$7.99 Carryout Special",
+        "Active",
+        "T-Mobile Perks",
+        "Special Price"
+      ),
+      _mkOffer(
+        "OID-71121",
+        "50% Off Pizzas Online",
+        "Expired",
+        "Verizon Value",
+        "Percentage Off"
+      ),
+    ],
+    campaigns: [],
+  },
+  {
+    key: "marriott",
+    name: "Marriott Bonvoy",
+    id: "MID-10316",
+    category: "Travel",
+    emoji: "🏨",
+    color: "#e0e7ff",
+    source: "EBG",
+    commissionOffers: true,
+    status: "Active",
+    contact: "Henry Park · hpark@marriott.com",
+    website: "marriott.com",
+    offers: [
+      _mkOffer(
+        "OID-71130",
+        "20% Off Stays",
+        "Active",
+        "AT&T Thanks",
+        "Percentage Off"
+      ),
+      _mkOffer(
+        "OID-71131",
+        "Free 4th Night",
+        "Active",
+        "Verizon Value",
+        "Free Product"
+      ),
+    ],
+    campaigns: [
+      _mkCampaign("CID-7113", "Spring Refresh"),
+      _mkCampaign("CID-7114", "Welcome Bundle"),
+    ],
+  },
+  {
+    key: "hilton",
+    name: "Hilton Honors",
+    id: "MID-10324",
+    category: "Travel",
+    emoji: "🛏️",
+    color: "#e0e7ff",
+    source: "Direct",
+    commissionOffers: true,
+    status: "Active",
+    contact: "Olivia Reyes · oreyes@hilton.com",
+    website: "hilton.com",
+    offers: [
+      _mkOffer(
+        "OID-71140",
+        "Points Bonus — 2x Stays",
+        "Active",
+        "Optum Offers",
+        "Special Price"
+      ),
+    ],
+    campaigns: [_mkCampaign("CID-7115", "Boosted Rewards")],
+  },
+  {
+    key: "delta",
+    name: "Delta Air Lines",
+    id: "MID-10337",
+    category: "Travel",
+    emoji: "✈️",
+    color: "#dbeafe",
+    source: "Augeo",
+    commissionOffers: false,
+    status: "Active",
+    contact: "Frank Ozawa · fozawa@delta.com",
+    website: "delta.com",
+    offers: [
+      _mkOffer(
+        "OID-71150",
+        "SkyMiles Bonus",
+        "Active",
+        "JD Perks",
+        "Special Price"
+      ),
+      _mkOffer(
+        "OID-71151",
+        "Companion Fare",
+        "Active",
+        "Verizon Value",
+        "Money Off"
+      ),
+      _mkOffer(
+        "OID-71152",
+        "Spring Sale",
+        "Expired",
+        "T-Mobile Perks",
+        "Percentage Off"
+      ),
+    ],
+    campaigns: [_mkCampaign("CID-7116", "Spring Refresh")],
+  },
+  {
+    key: "expedia",
+    name: "Expedia",
+    id: "MID-10349",
+    category: "Travel",
+    emoji: "🗺️",
+    color: "#fef3c7",
+    source: "EBG",
+    commissionOffers: true,
+    status: "Review",
+    contact: "Iris Tan · itan@expedia.com",
+    website: "expedia.com",
+    offers: [
+      _mkOffer(
+        "OID-71160",
+        "10% Off Bundle Deals",
+        "Active",
+        "AT&T Thanks",
+        "Percentage Off"
+      ),
+    ],
+    campaigns: [],
+  },
+  {
+    key: "gnc",
+    name: "GNC",
+    id: "MID-10358",
+    category: "Health & Wellness",
+    emoji: "💊",
+    color: "#dcfce7",
+    source: "Augeo",
+    commissionOffers: true,
+    status: "Active",
+    contact: "Sam Doe · sdoe@gnc.com",
+    website: "gnc.com",
+    offers: [
+      _mkOffer(
+        "OID-71170",
+        "Buy 1 Get 1 Vitamins",
+        "Active",
+        "Verizon Value",
+        "Free Product"
+      ),
+      _mkOffer(
+        "OID-71171",
+        "Pro Access Member Discount",
+        "Active",
+        "Optum Offers",
+        "Percentage Off"
+      ),
+    ],
+    campaigns: [_mkCampaign("CID-7117", "Family Essentials")],
+  },
+  {
+    key: "planetfitness",
+    name: "Planet Fitness",
+    id: "MID-10363",
+    category: "Health & Wellness",
+    emoji: "🏋️",
+    color: "#fef3c7",
+    source: "Direct",
+    commissionOffers: false,
+    status: "Active",
+    contact: "Maria Lopez · mlopez@planetfitness.com",
+    website: "planetfitness.com",
+    offers: [
+      _mkOffer(
+        "OID-71180",
+        "$1 Down, $10/mo",
+        "Active",
+        "T-Mobile Perks",
+        "Special Price"
+      ),
+    ],
+    campaigns: [_mkCampaign("CID-7118", "Welcome Bundle")],
+  },
+  {
+    key: "sephora",
+    name: "Sephora",
+    id: "MID-10371",
+    category: "Beauty",
+    emoji: "💄",
+    color: "#fce7f3",
+    source: "EBG",
+    commissionOffers: true,
+    status: "Active",
+    contact: "Yuki Tanaka · ytanaka@sephora.com",
+    website: "sephora.com",
+    offers: [
+      _mkOffer(
+        "OID-71190",
+        "Beauty Insider Free Sample",
+        "Active",
+        "Verizon Value",
+        "Free Product"
+      ),
+      _mkOffer(
+        "OID-71191",
+        "20% Off Rouge Sale",
+        "Active",
+        "JD Perks",
+        "Percentage Off"
+      ),
+    ],
+    campaigns: [
+      _mkCampaign("CID-7119", "Mother's Day Bundle"),
+      _mkCampaign("CID-7120", "Boosted Rewards"),
+    ],
+  },
+  {
+    key: "ulta",
+    name: "Ulta Beauty",
+    id: "MID-10384",
+    category: "Beauty",
+    emoji: "💋",
+    color: "#fce7f3",
+    source: "Augeo",
+    commissionOffers: true,
+    status: "Active",
+    contact: "Priya Shah · pshah@ulta.com",
+    website: "ulta.com",
+    offers: [
+      _mkOffer(
+        "OID-71200",
+        "Ultamate Rewards 2x Points",
+        "Active",
+        "AT&T Thanks",
+        "Special Price"
+      ),
+    ],
+    campaigns: [],
+  },
+  {
+    key: "homedepot",
+    name: "The Home Depot",
+    id: "MID-10395",
+    category: "Home Improvement",
+    emoji: "🔨",
+    color: "#fed7aa",
+    source: "Direct",
+    commissionOffers: true,
+    status: "Active",
+    contact: "Brian Knox · bknox@homedepot.com",
+    website: "homedepot.com",
+    offers: [
+      _mkOffer(
+        "OID-71210",
+        "Pro Xtra Member Discount",
+        "Active",
+        "Optum Offers",
+        "Percentage Off"
+      ),
+      _mkOffer(
+        "OID-71211",
+        "Free Delivery on Appliances",
+        "Active",
+        "Verizon Value",
+        "Free Product"
+      ),
+    ],
+    campaigns: [_mkCampaign("CID-7121", "Spring Refresh")],
+  },
+  {
+    key: "lowes",
+    name: "Lowe's",
+    id: "MID-10402",
+    category: "Home Improvement",
+    emoji: "🔧",
+    color: "#dbeafe",
+    source: "EBG",
+    commissionOffers: false,
+    status: "Attention",
+    contact: "Karen Wells · kwells@lowes.com",
+    website: "lowes.com",
+    offers: [
+      _mkOffer(
+        "OID-71220",
+        "MyLowe's 5% Off",
+        "Active",
+        "JD Perks",
+        "Percentage Off"
+      ),
+    ],
+    campaigns: [_mkCampaign("CID-7122", "Family Essentials")],
+  },
+  {
+    key: "shell",
+    name: "Shell",
+    id: "MID-10416",
+    category: "Gas & Convenience",
+    emoji: "⛽",
+    color: "#fee2e2",
+    source: "Augeo",
+    commissionOffers: false,
+    status: "Active",
+    contact: "Dale Pearson · dpearson@shell.com",
+    website: "shell.com",
+    offers: [
+      _mkOffer(
+        "OID-71230",
+        "Fuel Rewards 10¢/gal Off",
+        "Active",
+        "T-Mobile Perks",
+        "Money Off"
+      ),
+      _mkOffer(
+        "OID-71231",
+        "Shell Go+ Sign-Up Bonus",
+        "Active",
+        "Verizon Value",
+        "Free Product"
+      ),
+    ],
+    campaigns: [],
+  },
+  {
+    key: "att",
+    name: "AT&T",
+    id: "MID-10428",
+    category: "Telecom",
+    emoji: "📱",
+    color: "#dbeafe",
+    source: "Direct",
+    commissionOffers: false,
+    status: "Active",
+    contact: "Naomi Brooks · nbrooks@att.com",
+    website: "att.com",
+    offers: [
+      _mkOffer(
+        "OID-71240",
+        "$200 Off New Line",
+        "Active",
+        "AT&T Thanks",
+        "Money Off"
+      ),
+      _mkOffer(
+        "OID-71241",
+        "Free 5G Activation",
+        "Active",
+        "Verizon Value",
+        "Free Product"
+      ),
+    ],
+    campaigns: [_mkCampaign("CID-7123", "Welcome Bundle")],
+  },
+  {
+    key: "sevenelv",
+    name: "7-Eleven",
+    id: "MID-10434",
+    category: "Gas & Convenience",
+    emoji: "🥤",
+    color: "#fef3c7",
+    source: "EBG",
+    commissionOffers: true,
+    status: "Active",
+    contact: "Will Tang · wtang@7-eleven.com",
+    website: "7-eleven.com",
+    offers: [
+      _mkOffer(
+        "OID-71250",
+        "Free Slurpee Day",
+        "Active",
+        "Optum Offers",
+        "Free Product"
+      ),
+      _mkOffer(
+        "OID-71251",
+        "7Rewards Double Points",
+        "Active",
+        "JD Perks",
+        "Special Price"
+      ),
+    ],
+    campaigns: [_mkCampaign("CID-7124", "Monthly Airdrop Bundle")],
   },
 ];

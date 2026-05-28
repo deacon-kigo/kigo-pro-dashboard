@@ -5,40 +5,54 @@ import AppLayout from "@/components/templates/AppLayout/AppLayout";
 import {
   Breadcrumb,
   BreadcrumbItem,
+  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
+  BreadcrumbSeparator,
 } from "@/components/atoms/Breadcrumb";
-import MerchantManagerV3 from "@/components/features/merchant-manager/v3/MerchantManagerV3";
+import V2CampaignDashboard from "@/components/features/campaign-management/v2/V2CampaignDashboard";
 
 function LoadingFallback() {
   return (
     <div className="flex justify-center items-center h-screen">
       <div className="flex flex-col items-center gap-3">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-brand"></div>
-        <p className="text-text-muted">Loading Merchant Manager...</p>
+        <p className="text-text-muted">Loading Campaign Manager...</p>
       </div>
     </div>
   );
 }
 
-export default function MerchantsPage() {
+function V2Content() {
   const breadcrumb = (
     <Breadcrumb className="mb-4">
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbPage>Merchants</BreadcrumbPage>
+          <BreadcrumbLink href="/campaign-management">
+            Campaign Management
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbPage>v2</BreadcrumbPage>
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>
   );
 
   return (
+    <AppLayout customBreadcrumb={breadcrumb}>
+      <div className="pt-0 mt-0">
+        <V2CampaignDashboard />
+      </div>
+    </AppLayout>
+  );
+}
+
+export default function CampaignManagementV2Page() {
+  return (
     <Suspense fallback={<LoadingFallback />}>
-      <AppLayout customBreadcrumb={breadcrumb}>
-        <div className="pt-0 mt-0">
-          <MerchantManagerV3 />
-        </div>
-      </AppLayout>
+      <V2Content />
     </Suspense>
   );
 }

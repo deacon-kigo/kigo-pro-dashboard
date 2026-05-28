@@ -16,6 +16,7 @@ import {
 } from "@/components/atoms/Tabs";
 import { Badge } from "@/components/atoms/Badge";
 import { Button } from "@/components/atoms/Button";
+import { MerchantLogo } from "./MerchantLogo";
 import type {
   Merchant,
   MerchantStatus,
@@ -135,13 +136,7 @@ export default function MerchantDetailDialog({
         {/* Header */}
         <DialogHeader className="px-6 py-5 border-b border-gray-200 space-y-0">
           <div className="flex items-center gap-3">
-            <div
-              className="flex h-11 w-11 items-center justify-center rounded-md text-xl"
-              style={{ backgroundColor: merchant.color }}
-              aria-hidden="true"
-            >
-              <span>{merchant.emoji}</span>
-            </div>
+            <MerchantLogo merchant={merchant} size={44} />
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <DialogTitle className="text-lg font-semibold text-gray-900">

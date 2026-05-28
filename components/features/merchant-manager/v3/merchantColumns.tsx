@@ -1,44 +1,50 @@
 "use client";
 
-import React, { memo, useState, useRef, useEffect, useCallback } from "react";
+import React from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import {
-  ChevronUpIcon,
-  ChevronDownIcon,
-  EyeIcon,
-  PencilIcon,
-  TrashIcon,
-} from "@heroicons/react/24/outline";
+import { ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import { ArrowUpDown } from "lucide-react";
 import { Badge } from "@/components/atoms/Badge";
 import { Button } from "@/components/atoms/Button";
+import { MerchantLogo } from "./MerchantLogo";
 import type { Merchant } from "./types";
 
 const MAX_BADGES = 3;
+// Em-dash empty-state marker — spec §4 calls for "—" not a "None" badge.
+const EM_DASH = "—";
 
-// Sort icon — mirrors offerListColumns
+// Sort icon — mirrors v2 campaigns / TMT pattern
 const SortIcon = ({ sorted }: { sorted?: "asc" | "desc" | false }) => {
   if (sorted === "asc")
-    return <ChevronUpIcon className="ml-2 h-4 w-4 text-primary" />;
+    return <ChevronUpIcon className="ml-1.5 h-3.5 w-3.5 text-primary" />;
   if (sorted === "desc")
-    return <ChevronDownIcon className="ml-2 h-4 w-4 text-primary" />;
+    return <ChevronDownIcon className="ml-1.5 h-3.5 w-3.5 text-primary" />;
   return (
-    <ArrowUpDown className="ml-2 h-4 w-4 text-muted-foreground opacity-50" />
+    <ArrowUpDown className="ml-1.5 h-3.5 w-3.5 text-muted-foreground opacity-40" />
   );
 };
 
+function EmptyDash() {
+  return <span className="text-sm text-gray-400">{EM_DASH}</span>;
+}
+
+/**
+ * Spec §4: wrap of info-soft Badges, max 3 visible + "+N" overflow chip,
+ * em-dash when empty.
+ */
 function BadgeWrap({ items }: { items: string[] }) {
   if (items.length === 0) {
-    return <span className="text-gray-400">—</span>;
+    return <EmptyDash />;
   }
   const visible = items.slice(0, MAX_BADGES);
   const overflow = items.length - visible.length;
   return (
-    <div className="flex flex-wrap gap-1">
+    <div className="flex flex-wrap items-center gap-1">
       {visible.map((label, idx) => (
         <Badge
           key={`${label}-${idx}`}
           variant="info"
+          size="sm"
           rounded="md"
           className="font-medium"
         >
@@ -46,140 +52,13 @@ function BadgeWrap({ items }: { items: string[] }) {
         </Badge>
       ))}
       {overflow > 0 && (
-        <Badge variant="neutral" rounded="md" className="font-medium">
+        <Badge variant="neutral" size="sm" rounded="md" className="font-medium">
           +{overflow}
         </Badge>
       )}
     </div>
   );
 }
-
-// MerchantActionDropdown — mirrors OfferActionDropdown structure
-const MerchantActionDropdown = memo(function MerchantActionDropdown({
-  onView,
-  onEdit,
-  onDelete,
-}: {
-  onView: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const [dropdownPosition, setDropdownPosition] = useState({
-    top: 0,
-    left: 0,
-  });
-
-  useEffect(() => {
-    if (isOpen && buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      const dropdownWidth = 192;
-      const dropdownHeight = 200;
-      const viewport = {
-        width: window.innerWidth,
-        height: window.innerHeight,
-      };
-      const padding = 16;
-
-      let left = rect.left - 48;
-      if (left + dropdownWidth > viewport.width - padding) {
-        left = rect.right - dropdownWidth;
-      }
-      if (left < padding) {
-        left = padding;
-      }
-
-      let top = rect.bottom + 8;
-      if (top + dropdownHeight > viewport.height - padding) {
-        top = rect.top - dropdownHeight - 8;
-      }
-      if (top < padding) {
-        top = padding;
-      }
-
-      setDropdownPosition({ top, left });
-    }
-  }, [isOpen]);
-
-  const handleViewClick = useCallback(() => {
-    onView();
-    setIsOpen(false);
-  }, [onView]);
-
-  const handleEditClick = useCallback(() => {
-    onEdit();
-    setIsOpen(false);
-  }, [onEdit]);
-
-  const handleDeleteClick = useCallback(() => {
-    onDelete();
-    setIsOpen(false);
-  }, [onDelete]);
-
-  return (
-    <>
-      <Button
-        ref={buttonRef}
-        variant="secondary"
-        className="h-8 px-3 py-1.5 font-medium"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        View Details
-      </Button>
-
-      {isOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-[9998]"
-            onClick={() => setIsOpen(false)}
-          />
-          <div
-            className="fixed w-48 bg-white rounded-md shadow-lg border z-[9999]"
-            style={{
-              top: dropdownPosition.top,
-              left: dropdownPosition.left,
-            }}
-          >
-            <div className="py-1">
-              <div className="px-4 py-2 text-sm font-medium text-gray-700 border-b">
-                Actions
-              </div>
-
-              <button
-                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                onClick={handleViewClick}
-              >
-                <EyeIcon className="mr-2 h-4 w-4" />
-                View Merchant
-              </button>
-
-              <button
-                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                onClick={handleEditClick}
-              >
-                <PencilIcon className="mr-2 h-4 w-4" />
-                Edit Merchant
-              </button>
-
-              <button
-                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 flex items-center"
-                onClick={handleDeleteClick}
-                style={{ color: "#dc2626" }}
-              >
-                <TrashIcon
-                  className="mr-2 h-4 w-4"
-                  style={{ color: "#dc2626" }}
-                />
-                Delete Merchant
-              </button>
-            </div>
-          </div>
-        </>
-      )}
-    </>
-  );
-});
 
 interface MerchantListColumnsOptions {
   onView: (merchant: Merchant) => void;
@@ -189,8 +68,6 @@ interface MerchantListColumnsOptions {
 
 export function getMerchantListColumns({
   onView,
-  onEdit,
-  onDelete,
 }: MerchantListColumnsOptions): ColumnDef<Merchant>[] {
   return [
     {
@@ -209,13 +86,7 @@ export function getMerchantListColumns({
         const m = row.original;
         return (
           <div className="flex items-center gap-3">
-            <div
-              className="flex h-10 w-10 items-center justify-center rounded-md text-lg"
-              style={{ backgroundColor: m.color }}
-              aria-hidden="true"
-            >
-              <span>{m.emoji}</span>
-            </div>
+            <MerchantLogo merchant={m} size={40} />
             <div className="flex flex-col">
               <span className="font-semibold text-gray-900">{m.name}</span>
               <span className="text-xs text-gray-500">
@@ -284,13 +155,25 @@ export function getMerchantListColumns({
           (o) => o.status === "Expired"
         ).length;
         if (offers.length === 0) {
-          return <span className="text-gray-400">—</span>;
+          return <EmptyDash />;
         }
         return (
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm text-gray-900">{activeCount} active</span>
+          <div className="flex flex-wrap items-center gap-1">
+            <Badge
+              variant={activeCount > 0 ? "success" : "neutral"}
+              size="sm"
+              rounded="md"
+              className="font-medium"
+            >
+              {activeCount} active
+            </Badge>
             {expiredCount > 0 && (
-              <Badge variant="error" rounded="md" className="font-medium">
+              <Badge
+                variant="error"
+                size="sm"
+                rounded="md"
+                className="font-medium"
+              >
                 {expiredCount} expired
               </Badge>
             )}
@@ -347,18 +230,24 @@ export function getMerchantListColumns({
     },
     {
       id: "actions",
-      header: () => <div className="text-left font-medium">Actions</div>,
-      cell: ({ row }) => {
-        return (
-          <div className="flex">
-            <MerchantActionDropdown
-              onView={() => onView(row.original)}
-              onEdit={() => onEdit(row.original)}
-              onDelete={() => onDelete(row.original)}
-            />
-          </div>
-        );
-      },
+      header: () => (
+        <span className="font-medium text-foreground">Actions</span>
+      ),
+      cell: ({ row }) => (
+        <div className="flex">
+          <Button
+            variant="secondary"
+            size="sm"
+            className="font-medium"
+            onClick={(e) => {
+              e.stopPropagation();
+              onView(row.original);
+            }}
+          >
+            View Details
+          </Button>
+        </div>
+      ),
       enableSorting: false,
     },
   ];

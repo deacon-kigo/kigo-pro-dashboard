@@ -13,6 +13,7 @@ import {
 } from "@/components/atoms/Select";
 import { cn } from "@/lib/utils";
 import { getMerchantListColumns } from "./merchantColumns";
+import { MerchantLogo } from "./MerchantLogo";
 import type { Merchant } from "./types";
 
 interface MerchantListTableProps {
@@ -107,13 +108,7 @@ export const MerchantListTable = memo(function MerchantListTable({
             const matchEnd = matchStart + lowerQuery.length;
             return (
               <div className="flex items-center gap-3">
-                <div
-                  className="flex h-10 w-10 items-center justify-center rounded-md text-lg"
-                  style={{ backgroundColor: m.color }}
-                  aria-hidden="true"
-                >
-                  <span>{m.emoji}</span>
-                </div>
+                <MerchantLogo merchant={m} size={40} />
                 <div className="flex flex-col">
                   <span className="font-semibold text-gray-900">
                     {value.substring(0, matchStart)}
