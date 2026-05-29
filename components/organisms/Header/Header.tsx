@@ -1,18 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import {
-  MagnifyingGlassIcon,
-  BellIcon,
-  PlusIcon,
-  ShoppingBagIcon,
-  PlusCircleIcon,
   TicketIcon,
-  UserIcon,
-  Bars3Icon,
-  ArrowRightOnRectangleIcon,
   MegaphoneIcon,
   GiftIcon,
   AdjustmentsHorizontalIcon,
@@ -30,16 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  useAppSelector,
-  useAppDispatch,
-  useDemoState,
-} from "@/lib/redux/hooks";
-import { toggleSidebar } from "@/lib/redux/slices/uiSlice";
-import { markAllNotificationsAsRead } from "@/lib/redux/slices/userSlice";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/atoms/Button";
-import { Input, SearchSuggestion } from "@/components/atoms/Input";
+import { useAppSelector, useDemoState } from "@/lib/redux/hooks";
 
 interface QuickAction {
   label: string;
@@ -48,18 +30,15 @@ interface QuickAction {
 }
 
 export default function Header() {
-  // Use Redux hooks directly
-  const dispatch = useAppDispatch();
   const pathname = usePathname() || ""; // Add fallback for Storybook/test environments
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
 
   // Get demo state from Redux using our custom hook
-  const { role, clientId, themeMode, clientName } = useDemoState();
+  const { role, clientId, themeMode } = useDemoState();
 
   // Get UI state from Redux
-  const { isMobileView, sidebarCollapsed, chatOpen, chatWidth } =
-    useAppSelector((state) => state.ui);
+  const { sidebarCollapsed, chatOpen, chatWidth } = useAppSelector(
+    (state) => state.ui
+  );
   const sidebarWidth = sidebarCollapsed ? "70px" : "225px";
 
   // Calculate header positioning accounting for both sidebar and chat
@@ -70,83 +49,9 @@ export default function Header() {
       : `calc(100% - ${sidebarWidth})`,
   };
 
-  // Get user state from Redux
-  const { notifications } = useAppSelector((state) => state.user);
-  const unreadNotificationsCount =
-    notifications?.filter((n) => !n.read).length || 0;
-
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
-
   // Check if we're in the CVS context
   const isCVSContext =
     clientId === "cvs" || (pathname && pathname.includes("cvs-"));
-
-  // Helper function to build demo URLs
-  const buildDemoUrl = (client: string, page: string) => {
-    return `/demos/${client}/${page}`;
-  };
-
-  // Mock search suggestions - role-based
-  const getSearchSuggestions = () => {
-    switch (role) {
-      case "merchant":
-        return [
-          { type: "campaign", text: "Summer Sale Promotion", icon: "🚀" },
-          { type: "analytics", text: "Weekend performance report", icon: "📊" },
-          { type: "recent", text: "Product inventory status", icon: "⏱️" },
-          { type: "product", text: "Discount codes overview", icon: "🏷️" },
-        ];
-      case "support":
-        return [
-          { type: "ticket", text: "Merchant payment issue #1293", icon: "🎫" },
-          { type: "merchant", text: "Acme Corporation", icon: "🏢" },
-          { type: "recent", text: "Onboarding tutorials", icon: "⏱️" },
-          { type: "knowledge", text: "Payment processing guide", icon: "📚" },
-        ];
-      case "admin":
-        return [
-          { type: "merchant", text: "Acme Corporation", icon: "🏢" },
-          { type: "analytics", text: "Platform growth metrics", icon: "📊" },
-          { type: "setting", text: "API configuration", icon: "⚙️" },
-          { type: "user", text: "Support team member", icon: "👤" },
-        ];
-      default:
-        return [
-          { type: "campaign", text: "Summer Sale Promotion", icon: "🚀" },
-          { type: "merchant", text: "Acme Corporation", icon: "🏢" },
-          { type: "analytics", text: "Weekend performance report", icon: "📊" },
-          { type: "recent", text: "ROI analysis", icon: "⏱️" },
-        ];
-    }
-  };
-
-  const searchSuggestions = getSearchSuggestions();
-
-  // Handle search suggestion click
-  const handleSearchSuggestionClick = (suggestion: SearchSuggestion) => {
-    setSearchQuery(suggestion.text);
-    setShowSearchDropdown(false);
-    // Additional logic for handling the search with the suggestion
-  };
-
-  // Handle search all results click
-  const handleSearchAllResults = () => {
-    setShowSearchDropdown(false);
-    // Logic to search all results with current query
-  };
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const searchContainer = document.getElementById("search-container");
-      if (searchContainer && !searchContainer.contains(event.target as Node)) {
-        setShowSearchDropdown(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   // Role-based quick actions surfaced through the header dropdown.
   // The first item in each list is the primary/default action.
@@ -268,47 +173,7 @@ export default function Header() {
     );
   };
 
-  // Get search placeholder based on role
-  const getSearchPlaceholder = () => {
-    switch (role) {
-      case "merchant":
-        return "Search campaigns, products...";
-      case "support":
-        return "Search tickets, merchants...";
-      case "admin":
-        return "Search merchants, users...";
-      default:
-        return "Search...";
-    }
-  };
-
   const isDarkMode = themeMode === "dark";
-
-  const handleToggleSidebar = () => {
-    dispatch(toggleSidebar());
-  };
-
-  const handleToggleNotifications = () => {
-    setNotificationsOpen(!notificationsOpen);
-
-    // Mark all as read when opening
-    if (!notificationsOpen && unreadNotificationsCount > 0) {
-      dispatch(markAllNotificationsAsRead());
-    }
-  };
-
-  const getMobileHeaderTitle = () => {
-    switch (role) {
-      case "merchant":
-        return clientName || "Kigo Dashboard";
-      case "support":
-        return "Kigo Support Portal";
-      case "admin":
-        return "Kigo Admin Portal";
-      default:
-        return "Kigo PRO";
-    }
-  };
 
   return (
     <header
@@ -326,46 +191,7 @@ export default function Header() {
       ></div>
 
       <div className="relative z-10 flex items-center w-full max-w-[1600px] mx-auto">
-        {/* Removing the Support text as requested */}
-
-        <div id="search-container" className="relative  flex-1 max-w-md">
-          <Input
-            variant="search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => setShowSearchDropdown(true)}
-            placeholder={
-              isCVSContext
-                ? "Search tokens, customers, tickets..."
-                : getSearchPlaceholder()
-            }
-            suggestions={searchSuggestions}
-            showSuggestions={showSearchDropdown}
-            onSuggestionClick={handleSearchSuggestionClick}
-            onSearchAllResults={handleSearchAllResults}
-            isDarkMode={isDarkMode}
-            className={
-              isDarkMode
-                ? "border-gray-700 bg-gray-800/80 text-white"
-                : "border-gray-200 bg-white/80 text-gray-900"
-            }
-          />
-        </div>
-
         <div className="ml-auto flex items-center gap-4">
-          <button
-            className={`relative w-10 h-10 rounded-full flex items-center justify-center cursor-pointer ${isDarkMode ? "hover:bg-gray-800/80" : "hover:bg-white/80"}`}
-          >
-            <BellIcon
-              className={`h-5 w-5 ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}
-            />
-            {unreadNotificationsCount > 0 && (
-              <span className="absolute top-1 right-1 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center text-[10px] font-semibold text-white">
-                {unreadNotificationsCount}
-              </span>
-            )}
-          </button>
-
           {getActionButton()}
         </div>
       </div>

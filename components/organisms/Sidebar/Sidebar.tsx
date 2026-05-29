@@ -8,8 +8,6 @@ import {
   HomeIcon,
   MegaphoneIcon,
   UserGroupIcon,
-  Cog6ToothIcon,
-  BellIcon,
   QuestionMarkCircleIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -24,6 +22,7 @@ import {
   GiftIcon,
   LifebuoyIcon,
   ClipboardDocumentCheckIcon,
+  ChevronUpDownIcon,
 } from "@heroicons/react/24/outline";
 
 const SectionLabel = ({
@@ -61,13 +60,9 @@ const SectionLabel = ({
   );
 };
 import { useDemoState } from "@/lib/redux/hooks";
-import {
-  toggleSidebar,
-  setSidebarCollapsed,
-  toggleChat,
-} from "@/lib/redux/slices/uiSlice";
+import { toggleSidebar, setSidebarCollapsed } from "@/lib/redux/slices/uiSlice";
 import { logout } from "@/lib/redux/slices/userSlice";
-import { buildDemoUrl, isPathActive } from "@/lib/utils";
+import { isPathActive } from "@/lib/utils";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
 // Import SidebarLabel component with standard path
@@ -80,8 +75,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/molecules/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/atoms/Button";
 import FeedbackModal from "@/components/features/feedback/FeedbackModal";
 
@@ -732,161 +735,119 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     );
   }, [isHydrated, sidebarCollapsed, isCVSContextBool, clientName]);
 
-  // Memoize settings items to avoid recreating on every render
-  const settingsItems = useMemo(() => {
-    const settingsUrl = isCVSContextBool
-      ? buildDemoUrl("cvs", "settings")
-      : "/settings";
-
-    return (
-      <>
-        <li className="nav-item px-3 py-1">
-          <SidebarLabel
-            href={settingsUrl}
-            icon={Cog6ToothIcon}
-            title="Settings"
-            isActive={isLinkActive(settingsUrl)}
-            isCollapsed={sidebarCollapsed}
-          />
-        </li>
-        <li className="nav-item px-3 py-1">
-          <SidebarLabel
-            href="/notifications"
-            icon={BellIcon}
-            title="Notifications"
-            isActive={isLinkActive("/notifications")}
-            isCollapsed={sidebarCollapsed}
-            hasNotification={true}
-            notificationCount={5}
-          />
-        </li>
-        <li className="nav-item px-3 py-1">
-          <SidebarLabel
-            href="#"
-            icon={ChatBubbleLeftRightIcon}
-            title="Feedback"
-            isActive={false}
-            isCollapsed={sidebarCollapsed}
-            onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-              e.preventDefault();
-              setFeedbackModalOpen(true);
-            }}
-          />
-        </li>
-        {/* <li className="nav-item px-3 py-1">
-          <SidebarLabel
-            href="#"
-            icon={SparklesIcon}
-            title="AI Assistant"
-            isActive={false}
-            isCollapsed={sidebarCollapsed}
-            onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-              e.preventDefault();
-              dispatch(toggleChat());
-            }}
-          />
-        </li> */}
-        <li className="nav-item px-3 py-1">
-          <SidebarLabel
-            href="https://augeoaffinitymarketing.sharepoint.com/:w:/r/sites/Heaps/_layouts/15/Doc.aspx?sourcedoc=%7Bc80d3798-caf2-4ee0-9c36-efafdd44497e%7D&action=edit&wdPreviousSession=32cf0f93-8f07-7682-4ad0-2e9fb5cdd368"
-            icon={QuestionMarkCircleIcon}
-            title="Help & Support"
-            isActive={false}
-            isCollapsed={sidebarCollapsed}
-          />
-        </li>
-        <li className="nav-item px-3 py-1">
-          <Dialog open={signOutDialogOpen} onOpenChange={setSignOutDialogOpen}>
-            <DialogTrigger asChild>
-              <div className="w-full">
-                <SidebarLabel
-                  href="#"
-                  icon={ArrowRightOnRectangleIcon}
-                  title="Sign Out"
-                  isActive={false}
-                  isCollapsed={sidebarCollapsed}
-                  onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                    e.preventDefault();
-                    setSignOutDialogOpen(true);
-                  }}
-                  className="text-red-600 hover:text-red-700"
-                />
-              </div>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Sign Out Confirmation</DialogTitle>
-                <DialogDescription>
-                  Are you sure you want to sign out of your account?
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter className="gap-2 mt-4">
-                <Button
-                  onClick={() => setSignOutDialogOpen(false)}
-                  variant="outline"
-                >
-                  Cancel
-                </Button>
-                <Button onClick={handleSignOut} variant="destructive">
-                  Sign Out
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </li>
-      </>
-    );
-  }, [
-    isCVSContextBool,
-    sidebarCollapsed,
-    isLinkActive,
-    signOutDialogOpen,
-    handleSignOut,
-  ]);
-
-  // User profile info - memoized
-  const userProfileInfo = useMemo(() => {
-    // Check if we're in the publisher dashboard view
+  // User profile dropdown — progressive disclosure for Feedback, Help & Support, Sign Out
+  const userProfileMenu = useMemo(() => {
     const isPublisherDashboard = pathname.includes("/publisher-dashboard");
 
+    const initials = isCVSContextBool
+      ? "SJ"
+      : isPublisherDashboard
+        ? "PU"
+        : role === "merchant"
+          ? "MU"
+          : role === "support"
+            ? "SA"
+            : "AD";
+
+    const displayName = isCVSContextBool
+      ? "Sarah Johnson"
+      : isPublisherDashboard
+        ? "Publisher User"
+        : role === "merchant"
+          ? "Merchant User"
+          : role === "support"
+            ? "Support Agent"
+            : "Admin User";
+
+    const subtitle = isCVSContextBool ? "CVS Agent ID: 2358" : roleTitle;
+
     const avatar = (
-      <div className="w-9 h-9 bg-pastel-purple rounded-full flex items-center justify-center text-indigo-500 font-semibold text-sm shadow-sm">
-        {isCVSContextBool
-          ? "SJ"
-          : isPublisherDashboard
-            ? "PU"
-            : role === "merchant"
-              ? "MU"
-              : role === "support"
-                ? "SA"
-                : "AD"}
+      <div className="w-8 h-8 bg-pastel-purple rounded-lg flex items-center justify-center text-indigo-500 font-semibold text-sm shadow-sm shrink-0">
+        {initials}
       </div>
     );
 
-    if (sidebarCollapsed || !isHydrated) {
-      return avatar;
-    }
+    const collapsed = isHydrated && sidebarCollapsed;
 
     return (
-      <>
-        {avatar}
-        <div className="ml-3 overflow-hidden">
-          <p className="font-semibold text-sm whitespace-nowrap overflow-hidden text-ellipsis">
-            {isCVSContextBool
-              ? "Sarah Johnson"
-              : isPublisherDashboard
-                ? "Publisher User"
-                : role === "merchant"
-                  ? "Merchant User"
-                  : role === "support"
-                    ? "Support Agent"
-                    : "Admin User"}
-          </p>
-          <p className="text-xs text-text-muted">
-            {isCVSContextBool ? "CVS Agent ID: 2358" : roleTitle}
-          </p>
-        </div>
-      </>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            aria-label="Open user menu"
+            className={`flex items-center w-full gap-2 rounded-md hover:bg-gray-50 data-[state=open]:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 transition-colors ${
+              collapsed ? "justify-center p-1" : "px-2 py-1.5"
+            }`}
+          >
+            {avatar}
+            {!collapsed && (
+              <>
+                <div className="flex-1 min-w-0 text-left grid leading-tight">
+                  <span className="truncate font-medium text-sm">
+                    {displayName}
+                  </span>
+                  <span className="truncate text-xs text-text-muted">
+                    {subtitle}
+                  </span>
+                </div>
+                <ChevronUpDownIcon className="w-4 h-4 text-gray-400 shrink-0" />
+              </>
+            )}
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          side="right"
+          align="end"
+          sideOffset={8}
+          className="min-w-56 rounded-lg"
+        >
+          <DropdownMenuLabel className="p-0 font-normal">
+            <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+              {avatar}
+              <div className="flex-1 min-w-0 grid leading-tight">
+                <span className="truncate font-medium">{displayName}</span>
+                <span className="truncate text-xs text-text-muted">
+                  {subtitle}
+                </span>
+              </div>
+            </div>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault();
+                setFeedbackModalOpen(true);
+              }}
+            >
+              <ChatBubbleLeftRightIcon className="w-4 h-4 mr-2" />
+              Feedback
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <a
+                href="https://augeoaffinitymarketing.sharepoint.com/:w:/r/sites/Heaps/_layouts/15/Doc.aspx?sourcedoc=%7Bc80d3798-caf2-4ee0-9c36-efafdd44497e%7D&action=edit&wdPreviousSession=32cf0f93-8f07-7682-4ad0-2e9fb5cdd368"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="cursor-pointer"
+              >
+                <QuestionMarkCircleIcon className="w-4 h-4 mr-2" />
+                Help & Support
+              </a>
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onSelect={(e) => {
+              e.preventDefault();
+              setSignOutDialogOpen(true);
+            }}
+            className="text-red-600 focus:text-red-700 focus:bg-red-50"
+          >
+            <ArrowRightOnRectangleIcon className="w-4 h-4 mr-2" />
+            Sign Out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     );
   }, [
     isCVSContextBool,
@@ -942,25 +903,11 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
           <ul className="nav-items w-full">{navigationItems}</ul>
         </div>
 
-        {/* Settings section */}
-        <div className="mb-4 overflow-x-hidden">
-          {!sidebarCollapsed && isHydrated && (
-            <p className="text-xs font-medium text-text-muted px-5 uppercase tracking-wider mb-2">
-              Settings
-            </p>
-          )}
-          <ul className="nav-items w-full">{settingsItems}</ul>
-        </div>
-
         {/* User profile section */}
         <div
-          className={`mt-auto pt-4 ${isHydrated && sidebarCollapsed ? "px-3" : "px-5"} border-t border-border-light overflow-x-hidden`}
+          className={`mt-auto pt-4 ${isHydrated && sidebarCollapsed ? "px-2" : "px-3"} pb-4 border-t border-border-light overflow-x-hidden`}
         >
-          <div
-            className={`flex items-center ${isHydrated && sidebarCollapsed ? "justify-center" : ""} pb-4`}
-          >
-            {userProfileInfo}
-          </div>
+          {userProfileMenu}
         </div>
       </div>
 
@@ -969,6 +916,29 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         isOpen={feedbackModalOpen}
         onClose={() => setFeedbackModalOpen(false)}
       />
+
+      {/* Sign Out confirmation */}
+      <Dialog open={signOutDialogOpen} onOpenChange={setSignOutDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Sign Out Confirmation</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to sign out of your account?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 mt-4">
+            <Button
+              onClick={() => setSignOutDialogOpen(false)}
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleSignOut} variant="destructive">
+              Sign Out
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </aside>
   );
 };
