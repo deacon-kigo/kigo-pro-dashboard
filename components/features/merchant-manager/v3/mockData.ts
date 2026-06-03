@@ -580,6 +580,8 @@ export const merchants: Merchant[] = [
     status: "published",
     contact: "Linda Cho · lcho@target.com",
     website: "target.com",
+    merchantDetail:
+      "Mass-market retailer offering home goods, apparel, groceries, and Circle loyalty program rewards across in-store and online channels.",
     offers: [
       _mkOffer(
         "OID-71010",
@@ -620,6 +622,8 @@ export const merchants: Merchant[] = [
     status: "published",
     contact: "Ravi Patel · rpatel@bestbuy.com",
     website: "bestbuy.com",
+    merchantDetail:
+      "Consumer electronics and appliance retailer with Geek Squad services, My Best Buy member pricing, and trade-in programs.",
     offers: [
       _mkOffer(
         "OID-71020",
@@ -650,6 +654,8 @@ export const merchants: Merchant[] = [
     status: "published",
     contact: "Greg Lopez · glopez@costco.com",
     website: "costco.com",
+    merchantDetail:
+      "Membership warehouse club with bulk groceries, electronics, optical, pharmacy, and fuel discounts for Gold Star and Executive members.",
     offers: [
       _mkOffer(
         "OID-71030",
@@ -673,6 +679,8 @@ export const merchants: Merchant[] = [
     status: "published",
     contact: "Aisha Brown · abrown@walmart.com",
     website: "walmart.com",
+    merchantDetail:
+      "Largest U.S. retailer offering everyday low prices on groceries, apparel, electronics, and Walmart+ subscription benefits including free delivery.",
     offers: [
       _mkOffer(
         "OID-71040",
@@ -720,6 +728,8 @@ export const merchants: Merchant[] = [
     status: "unpublished",
     contact: "Diana Wu · dwu@macys.com",
     website: "macys.com",
+    merchantDetail:
+      "Department store chain featuring apparel, beauty, home goods, and Star Rewards loyalty tiers with frequent seasonal sales.",
     offers: [
       _mkOffer(
         "OID-71050",
@@ -750,6 +760,8 @@ export const merchants: Merchant[] = [
     status: "published",
     contact: "Tom Hayes · thayes@netflix.com",
     website: "netflix.com",
+    merchantDetail:
+      "Subscription streaming service for movies, original series, documentaries, and games across ad-supported and ad-free tiers.",
     offers: [
       _mkOffer(
         "OID-71060",
@@ -780,6 +792,8 @@ export const merchants: Merchant[] = [
     status: "published",
     contact: "Maya Singh · msingh@spotify.com",
     website: "spotify.com",
+    merchantDetail:
+      "Audio streaming platform offering music, podcasts, and audiobooks with free ad-supported and Premium subscription tiers.",
     offers: [
       _mkOffer(
         "OID-71070",
@@ -806,6 +820,8 @@ export const merchants: Merchant[] = [
     status: "published",
     contact: "Erika Park · epark@hulu.com",
     website: "hulu.com",
+    merchantDetail:
+      "Streaming service with current-season TV, original content, and live TV bundles available standalone or as part of the Disney bundle.",
     offers: [
       _mkOffer(
         "OID-71080",
@@ -836,6 +852,8 @@ export const merchants: Merchant[] = [
     status: "published",
     contact: "Jordan Lee · jlee@starbucks.com",
     website: "starbucks.com",
+    merchantDetail:
+      "Global coffee chain with handcrafted beverages, food, and Starbucks Rewards earning stars on every purchase for free items.",
     offers: [
       _mkOffer(
         "OID-71090",
@@ -873,6 +891,8 @@ export const merchants: Merchant[] = [
     status: "published",
     contact: "Carlos Mendez · cmendez@mcdonalds.com",
     website: "mcdonalds.com",
+    merchantDetail:
+      "Quick-service restaurant chain with burgers, breakfast, McCafé, and MyMcDonald's Rewards points redeemable across the menu.",
     offers: [
       _mkOffer(
         "OID-71100",
@@ -903,6 +923,8 @@ export const merchants: Merchant[] = [
     status: "published",
     contact: "Beth Carter · bcarter@chick-fil-a.com",
     website: "chick-fil-a.com",
+    merchantDetail:
+      "Quick-service chicken specialist with the Chick-fil-A One rewards program offering tier-based perks and member-only menu items.",
     offers: [
       _mkOffer(
         "OID-71110",
@@ -926,6 +948,8 @@ export const merchants: Merchant[] = [
     status: "published",
     contact: "Nina Patel · npatel@dominos.com",
     website: "dominos.com",
+    merchantDetail:
+      "Pizza delivery and carryout chain with online ordering, Piece of the Pie Rewards points, and frequent buy-one-get-one offers.",
     offers: [
       _mkOffer(
         "OID-71120",
@@ -956,6 +980,8 @@ export const merchants: Merchant[] = [
     status: "published",
     contact: "Henry Park · hpark@marriott.com",
     website: "marriott.com",
+    merchantDetail:
+      "Global hotel loyalty program spanning 30+ brands with points-earning stays, elite tiers, and partner redemption options.",
     offers: [
       _mkOffer(
         "OID-71130",
@@ -989,6 +1015,8 @@ export const merchants: Merchant[] = [
     status: "published",
     contact: "Olivia Reyes · oreyes@hilton.com",
     website: "hilton.com",
+    merchantDetail:
+      "Hilton portfolio loyalty program offering points and status across 20+ hotel brands, plus member-only rates and free Wi-Fi.",
     offers: [
       _mkOffer(
         "OID-71140",
@@ -1012,6 +1040,8 @@ export const merchants: Merchant[] = [
     status: "published",
     contact: "Frank Ozawa · fozawa@delta.com",
     website: "delta.com",
+    merchantDetail:
+      "Major U.S. carrier with SkyMiles loyalty program, Medallion elite tiers, and credit card partner earning across domestic and international routes.",
     offers: [
       _mkOffer(
         "OID-71150",
@@ -1049,6 +1079,8 @@ export const merchants: Merchant[] = [
     status: "unpublished",
     contact: "Iris Tan · itan@expedia.com",
     website: "expedia.com",
+    merchantDetail:
+      "Online travel agency with bundled flight, hotel, and car deals, plus the One Key rewards program shared across Expedia, Hotels.com, and Vrbo.",
     offers: [
       _mkOffer(
         "OID-71160",
@@ -1072,6 +1104,8 @@ export const merchants: Merchant[] = [
     status: "published",
     contact: "Sam Doe · sdoe@gnc.com",
     website: "gnc.com",
+    merchantDetail:
+      "Vitamin, supplement, and wellness retailer with myGNC Rewards points and exclusive member pricing on protein, performance, and health products.",
     offers: [
       _mkOffer(
         "OID-71170",
@@ -1102,6 +1136,8 @@ export const merchants: Merchant[] = [
     status: "published",
     contact: "Maria Lopez · mlopez@planetfitness.com",
     website: "planetfitness.com",
+    merchantDetail:
+      "Gym chain with low-cost monthly memberships, Black Card perks, and a judgment-free environment focused on first-time gym-goers.",
     offers: [
       _mkOffer(
         "OID-71180",
@@ -1125,6 +1161,8 @@ export const merchants: Merchant[] = [
     status: "published",
     contact: "Yuki Tanaka · ytanaka@sephora.com",
     website: "sephora.com",
+    merchantDetail:
+      "Beauty retailer carrying prestige skincare, makeup, fragrance, and hair brands with Beauty Insider rewards earning points on every purchase.",
     offers: [
       _mkOffer(
         "OID-71190",
@@ -1158,6 +1196,8 @@ export const merchants: Merchant[] = [
     status: "published",
     contact: "Priya Shah · pshah@ulta.com",
     website: "ulta.com",
+    merchantDetail:
+      "Beauty retailer combining prestige and mass brands with Ultamate Rewards tiers and in-store salon services.",
     offers: [
       _mkOffer(
         "OID-71200",
@@ -1181,6 +1221,8 @@ export const merchants: Merchant[] = [
     status: "published",
     contact: "Brian Knox · bknox@homedepot.com",
     website: "homedepot.com",
+    merchantDetail:
+      "Home improvement retailer for tools, building materials, appliances, and Pro Xtra rewards for contractors and frequent buyers.",
     offers: [
       _mkOffer(
         "OID-71210",
@@ -1211,6 +1253,8 @@ export const merchants: Merchant[] = [
     status: "published",
     contact: "Karen Wells · kwells@lowes.com",
     website: "lowes.com",
+    merchantDetail:
+      "Home improvement chain with appliances, tools, lumber, and MyLowe's Rewards offering points and member-only pricing.",
     offers: [
       _mkOffer(
         "OID-71220",
@@ -1234,6 +1278,8 @@ export const merchants: Merchant[] = [
     status: "published",
     contact: "Dale Pearson · dpearson@shell.com",
     website: "shell.com",
+    merchantDetail:
+      "Global fuel and convenience retailer with Fuel Rewards program offering per-gallon discounts and partner earn opportunities.",
     offers: [
       _mkOffer(
         "OID-71230",
@@ -1264,6 +1310,8 @@ export const merchants: Merchant[] = [
     status: "published",
     contact: "Naomi Brooks · nbrooks@att.com",
     website: "att.com",
+    merchantDetail:
+      "Wireless, fiber internet, and entertainment provider with AT&T Thanks customer perks including ticket presales and partner discounts.",
     offers: [
       _mkOffer(
         "OID-71240",
@@ -1294,6 +1342,8 @@ export const merchants: Merchant[] = [
     status: "published",
     contact: "Will Tang · wtang@7-eleven.com",
     website: "7-eleven.com",
+    merchantDetail:
+      "Convenience store chain with 7Rewards loyalty program offering points on coffee, fuel, snacks, and delivery via 7NOW.",
     offers: [
       _mkOffer(
         "OID-71250",
