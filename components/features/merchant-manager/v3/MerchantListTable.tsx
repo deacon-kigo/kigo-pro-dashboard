@@ -109,18 +109,13 @@ export const MerchantListTable = memo(function MerchantListTable({
             return (
               <div className="flex items-center gap-3">
                 <MerchantLogo merchant={m} size={40} />
-                <div className="flex flex-col">
-                  <span className="font-semibold text-gray-900">
-                    {value.substring(0, matchStart)}
-                    <span className="bg-yellow-200 font-semibold">
-                      {value.substring(matchStart, matchEnd)}
-                    </span>
-                    {value.substring(matchEnd)}
+                <span className="font-semibold text-gray-900">
+                  {value.substring(0, matchStart)}
+                  <span className="bg-yellow-200 font-semibold">
+                    {value.substring(matchStart, matchEnd)}
                   </span>
-                  <span className="text-xs text-gray-500">
-                    {m.source} · {m.category}
-                  </span>
-                </div>
+                  {value.substring(matchEnd)}
+                </span>
               </div>
             );
           },
@@ -201,6 +196,7 @@ export const MerchantListTable = memo(function MerchantListTable({
         disablePagination={false}
         customPagination={customPagination}
         onRowClick={onRowClick as ((row: unknown) => void) | undefined}
+        enableColumnDrag
       />
     ),
     [columns, currentPageData, className, customPagination, onRowClick]

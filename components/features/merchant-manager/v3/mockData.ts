@@ -57,7 +57,7 @@ export const merchants: Merchant[] = [
     color: "#fff3cd",
     source: "Augeo",
     commissionOffers: true,
-    status: "Active",
+    status: "published",
     contact: "Jennifer Walsh · jwalsh@samsclub.com",
     website: "samsclub.com",
     revShare: "8.5%",
@@ -77,7 +77,7 @@ export const merchants: Merchant[] = [
       {
         id: "OID-60000003",
         name: "50% Off Club Membership",
-        status: "Active",
+        status: "published",
         channel: "Verizon Value",
         publisher: "Verizon Value",
         start: "Mar 1, 2026",
@@ -89,7 +89,7 @@ export const merchants: Merchant[] = [
       {
         id: "OID-55202",
         name: "Free Membership Trial",
-        status: "Active",
+        status: "published",
         channel: "JD Perks",
         publisher: "JD Perks",
         start: "Feb 1, 2026",
@@ -101,7 +101,7 @@ export const merchants: Merchant[] = [
       {
         id: "OID-55203",
         name: "10% off Electronics",
-        status: "Planned",
+        status: "draft",
         channel: "Verizon Value",
         publisher: "Verizon Value",
         start: "Apr 1, 2026",
@@ -113,7 +113,7 @@ export const merchants: Merchant[] = [
       {
         id: "OID-55100",
         name: "Holiday Gift Set Promo",
-        status: "Expired",
+        status: "expired",
         channel: "JD Perks",
         publisher: "JD Perks",
         start: "Nov 1, 2025",
@@ -165,7 +165,7 @@ export const merchants: Merchant[] = [
     color: "#ede9fe",
     source: "EBG",
     commissionOffers: false,
-    status: "Attention",
+    status: "published",
     contact: "Mark Torres · mtorres@disney.com",
     website: "disneyplus.com",
     revShare: "12.0%",
@@ -187,7 +187,7 @@ export const merchants: Merchant[] = [
       {
         id: "OID-88100",
         name: "Disney+ Bundle — 1 Month Free",
-        status: "Active",
+        status: "published",
         channel: "Verizon Value",
         publisher: "Verizon Value",
         start: "Mar 1, 2026",
@@ -199,7 +199,7 @@ export const merchants: Merchant[] = [
       {
         id: "OID-88199",
         name: "Disney+ Annual Plan Discount",
-        status: "Active",
+        status: "published",
         channel: "Verizon Value",
         publisher: "Verizon Value",
         start: "Feb 15, 2026",
@@ -211,7 +211,7 @@ export const merchants: Merchant[] = [
       {
         id: "OID-88231",
         name: "Disney+ 3-Month Trial",
-        status: "Expired",
+        status: "expired",
         channel: "Verizon Value",
         publisher: "Verizon Value",
         start: "Nov 15, 2025",
@@ -257,7 +257,7 @@ export const merchants: Merchant[] = [
     color: "#dcfce7",
     source: "Augeo",
     commissionOffers: true,
-    status: "Active",
+    status: "published",
     contact: "Sara Kim · skim@activefit.com",
     website: "activefit.com",
     revShare: "10.0%",
@@ -269,7 +269,7 @@ export const merchants: Merchant[] = [
       {
         id: "OID-62001",
         name: "Free 30-Day Fitness Pass",
-        status: "Active",
+        status: "published",
         channel: "Optum Offers",
         publisher: "Optum Offers",
         start: "Jan 15, 2026",
@@ -312,7 +312,7 @@ export const merchants: Merchant[] = [
     color: "#fee2e2",
     source: "Direct",
     commissionOffers: false,
-    status: "Review",
+    status: "unpublished",
     contact: "Alex Rivera · arivera@papajohns.com",
     website: "papajohns.com",
     revShare: "7.0%",
@@ -359,7 +359,7 @@ export const merchants: Merchant[] = [
       {
         id: "OID-71001",
         name: "20% Off Medium Pizza",
-        status: "Active",
+        status: "published",
         channel: "Verizon Value",
         publisher: "Verizon Value",
         start: "Feb 1, 2026",
@@ -370,7 +370,7 @@ export const merchants: Merchant[] = [
       {
         id: "OID-71002",
         name: "Free Breadsticks with Order",
-        status: "Active",
+        status: "published",
         channel: "Verizon Value",
         publisher: "Verizon Value",
         start: "Mar 1, 2026",
@@ -415,7 +415,7 @@ export const merchants: Merchant[] = [
     color: "#fef3c7",
     source: "Augeo",
     commissionOffers: true,
-    status: "Active",
+    status: "published",
     contact: "Chris Lee · clee@amazon.com",
     website: "amazon.com",
     revShare: "9.0%",
@@ -433,49 +433,89 @@ export const merchants: Merchant[] = [
       { name: "Target", id: "MID-10335" },
     ],
     offers: [
+      // Long-running evergreen — spans 3 years, currently active
+      {
+        id: "OID-95000",
+        name: "Prime Member Cashback Program",
+        status: "published",
+        channel: "Verizon Value",
+        publisher: "Verizon Value",
+        start: "Jan 1, 2024",
+        end: "Dec 31, 2026",
+        type: "Evergreen",
+        offerType: "Cash Back",
+      },
+      // 2024 expired seasonal
+      {
+        id: "OID-95005",
+        name: "Holiday Lightning Deals 2024",
+        status: "expired",
+        channel: "JD Perks",
+        publisher: "JD Perks",
+        start: "Nov 1, 2024",
+        end: "Dec 31, 2024",
+        type: "Seasonal",
+        offerType: "Percentage Off",
+      },
+      // Crosses 2024 → 2025 boundary
+      {
+        id: "OID-95002",
+        name: "Prime Video 3-Month Free Trial",
+        status: "expired",
+        channel: "JD Perks",
+        publisher: "JD Perks",
+        start: "Nov 1, 2024",
+        end: "Feb 28, 2025",
+        type: "Featured",
+        offerType: "Free Product",
+      },
+      // Crosses 2025 → 2026 boundary
+      {
+        id: "OID-95004",
+        name: "Alexa Device Bundle Offer",
+        status: "expired",
+        channel: "Verizon Value",
+        publisher: "Verizon Value",
+        start: "Sep 1, 2025",
+        end: "Apr 30, 2026",
+        type: "Bundle",
+        offerType: "Spend and Get",
+      },
+      // Crosses 2025 → 2026 boundary, ends recently
       {
         id: "OID-95001",
         name: "$15 off First Prime Purchase",
-        status: "Active",
+        status: "expired",
         channel: "Verizon Value",
         publisher: "Verizon Value",
-        start: "Jan 1, 2026",
+        start: "Dec 1, 2025",
         end: "Mar 31, 2026",
         type: "Airdrop",
         offerType: "Cash Back",
       },
-      {
-        id: "OID-95002",
-        name: "Prime Video 3-Month Free Trial",
-        status: "Active",
-        channel: "JD Perks",
-        publisher: "JD Perks",
-        start: "Feb 1, 2026",
-        end: "May 31, 2026",
-        type: "Featured",
-        offerType: "Free Product",
-      },
+      // Crosses 2026 → 2027 boundary, planned future
       {
         id: "OID-95003",
         name: "20% off Amazon Fresh",
-        status: "Active",
+        status: "draft",
         channel: "Optum Offers",
         publisher: "Optum Offers",
-        start: "Mar 1, 2026",
-        end: "Jun 30, 2026",
+        start: "Oct 1, 2026",
+        end: "Jan 31, 2027",
         type: "Airdrop",
         offerType: "Percentage Off",
       },
+      // Pure 2027 — future planned
       {
-        id: "OID-95004",
-        name: "Alexa Device Bundle Offer",
-        status: "Active",
-        channel: "Verizon Value",
-        publisher: "Verizon Value",
-        start: "Mar 15, 2026",
-        end: "Apr 30, 2026",
-        type: "Bundle",
-        offerType: "Spend and Get",
+        id: "OID-95007",
+        name: "Black Friday 2027 Preview",
+        status: "draft",
+        channel: "JD Perks",
+        publisher: "JD Perks",
+        start: "Oct 1, 2027",
+        end: "Dec 1, 2027",
+        type: "Seasonal",
+        offerType: "Percentage Off",
       },
     ],
     campaigns: [
@@ -537,28 +577,28 @@ export const merchants: Merchant[] = [
     color: "#fee2e2",
     source: "Augeo",
     commissionOffers: true,
-    status: "Active",
+    status: "published",
     contact: "Linda Cho · lcho@target.com",
     website: "target.com",
     offers: [
       _mkOffer(
         "OID-71010",
         "Target Circle 10% Off",
-        "Active",
+        "published",
         "Verizon Value",
         "Percentage Off"
       ),
       _mkOffer(
         "OID-71011",
         "Free Shipping on $35+",
-        "Active",
+        "published",
         "T-Mobile Perks",
         "Free Product"
       ),
       _mkOffer(
         "OID-71012",
         "Holiday Gift Card Bonus",
-        "Expired",
+        "expired",
         "JD Perks",
         "Money Off"
       ),
@@ -577,21 +617,21 @@ export const merchants: Merchant[] = [
     color: "#dbeafe",
     source: "EBG",
     commissionOffers: true,
-    status: "Active",
+    status: "published",
     contact: "Ravi Patel · rpatel@bestbuy.com",
     website: "bestbuy.com",
     offers: [
       _mkOffer(
         "OID-71020",
         "Geek Squad 6-Month Trial",
-        "Active",
+        "published",
         "Verizon Value",
         "Free Product"
       ),
       _mkOffer(
         "OID-71021",
         "15% Off Laptops",
-        "Active",
+        "published",
         "Optum Offers",
         "Percentage Off"
       ),
@@ -607,14 +647,14 @@ export const merchants: Merchant[] = [
     color: "#fef3c7",
     source: "Direct",
     commissionOffers: false,
-    status: "Attention",
+    status: "published",
     contact: "Greg Lopez · glopez@costco.com",
     website: "costco.com",
     offers: [
       _mkOffer(
         "OID-71030",
         "$20 Off New Membership",
-        "Active",
+        "published",
         "AT&T Thanks",
         "Money Off"
       ),
@@ -630,35 +670,35 @@ export const merchants: Merchant[] = [
     color: "#dbeafe",
     source: "Augeo",
     commissionOffers: true,
-    status: "Active",
+    status: "published",
     contact: "Aisha Brown · abrown@walmart.com",
     website: "walmart.com",
     offers: [
       _mkOffer(
         "OID-71040",
         "Walmart+ 30-Day Trial",
-        "Active",
+        "published",
         "Verizon Value",
         "Free Product"
       ),
       _mkOffer(
         "OID-71041",
         "10% Off Groceries",
-        "Active",
+        "published",
         "JD Perks",
         "Percentage Off"
       ),
       _mkOffer(
         "OID-71042",
         "Free Pickup",
-        "Active",
+        "published",
         "T-Mobile Perks",
         "Free Product"
       ),
       _mkOffer(
         "OID-71043",
         "Back-to-School Sale",
-        "Expired",
+        "expired",
         "Optum Offers",
         "Percentage Off"
       ),
@@ -677,21 +717,21 @@ export const merchants: Merchant[] = [
     color: "#fce7f3",
     source: "EBG",
     commissionOffers: true,
-    status: "Review",
+    status: "unpublished",
     contact: "Diana Wu · dwu@macys.com",
     website: "macys.com",
     offers: [
       _mkOffer(
         "OID-71050",
         "25% Off Sitewide",
-        "Active",
+        "published",
         "AT&T Thanks",
         "Percentage Off"
       ),
       _mkOffer(
         "OID-71051",
         "Free Beauty Bag",
-        "Expired",
+        "expired",
         "Verizon Value",
         "Free Product"
       ),
@@ -707,21 +747,21 @@ export const merchants: Merchant[] = [
     color: "#fecaca",
     source: "Direct",
     commissionOffers: false,
-    status: "Active",
+    status: "published",
     contact: "Tom Hayes · thayes@netflix.com",
     website: "netflix.com",
     offers: [
       _mkOffer(
         "OID-71060",
         "Netflix Standard — 1 Month Free",
-        "Active",
+        "published",
         "T-Mobile Perks",
         "Free Product"
       ),
       _mkOffer(
         "OID-71061",
         "Annual Plan 20% Off",
-        "Active",
+        "published",
         "Verizon Value",
         "Percentage Off"
       ),
@@ -737,14 +777,14 @@ export const merchants: Merchant[] = [
     color: "#dcfce7",
     source: "Augeo",
     commissionOffers: true,
-    status: "Active",
+    status: "published",
     contact: "Maya Singh · msingh@spotify.com",
     website: "spotify.com",
     offers: [
       _mkOffer(
         "OID-71070",
         "Premium — 3 Months Free",
-        "Active",
+        "published",
         "Verizon Value",
         "Free Product"
       ),
@@ -763,21 +803,21 @@ export const merchants: Merchant[] = [
     color: "#d1fae5",
     source: "Direct",
     commissionOffers: false,
-    status: "Active",
+    status: "published",
     contact: "Erika Park · epark@hulu.com",
     website: "hulu.com",
     offers: [
       _mkOffer(
         "OID-71080",
         "Hulu + Live TV — $20 Off",
-        "Active",
+        "published",
         "Optum Offers",
         "Money Off"
       ),
       _mkOffer(
         "OID-71081",
         "Hulu Ad-Supported Trial",
-        "Active",
+        "published",
         "JD Perks",
         "Free Product"
       ),
@@ -793,28 +833,28 @@ export const merchants: Merchant[] = [
     color: "#dcfce7",
     source: "Augeo",
     commissionOffers: true,
-    status: "Active",
+    status: "published",
     contact: "Jordan Lee · jlee@starbucks.com",
     website: "starbucks.com",
     offers: [
       _mkOffer(
         "OID-71090",
         "BOGO Handcrafted Drinks",
-        "Active",
+        "published",
         "AT&T Thanks",
         "Free Product"
       ),
       _mkOffer(
         "OID-71091",
         "Double Stars Tuesdays",
-        "Active",
+        "published",
         "Verizon Value",
         "Percentage Off"
       ),
       _mkOffer(
         "OID-71092",
         "Free Birthday Drink",
-        "Active",
+        "published",
         "T-Mobile Perks",
         "Free Product"
       ),
@@ -830,21 +870,21 @@ export const merchants: Merchant[] = [
     color: "#fef3c7",
     source: "EBG",
     commissionOffers: true,
-    status: "Active",
+    status: "published",
     contact: "Carlos Mendez · cmendez@mcdonalds.com",
     website: "mcdonalds.com",
     offers: [
       _mkOffer(
         "OID-71100",
         "Free Medium Fries with Purchase",
-        "Active",
+        "published",
         "JD Perks",
         "Free Product"
       ),
       _mkOffer(
         "OID-71101",
         "20% Off App Order",
-        "Active",
+        "published",
         "Optum Offers",
         "Percentage Off"
       ),
@@ -860,14 +900,14 @@ export const merchants: Merchant[] = [
     color: "#fee2e2",
     source: "Direct",
     commissionOffers: false,
-    status: "Active",
+    status: "published",
     contact: "Beth Carter · bcarter@chick-fil-a.com",
     website: "chick-fil-a.com",
     offers: [
       _mkOffer(
         "OID-71110",
         "Free Sandwich with Combo",
-        "Active",
+        "published",
         "Verizon Value",
         "Free Product"
       ),
@@ -883,21 +923,21 @@ export const merchants: Merchant[] = [
     color: "#fee2e2",
     source: "Augeo",
     commissionOffers: true,
-    status: "Attention",
+    status: "published",
     contact: "Nina Patel · npatel@dominos.com",
     website: "dominos.com",
     offers: [
       _mkOffer(
         "OID-71120",
         "$7.99 Carryout Special",
-        "Active",
+        "published",
         "T-Mobile Perks",
         "Special Price"
       ),
       _mkOffer(
         "OID-71121",
         "50% Off Pizzas Online",
-        "Expired",
+        "expired",
         "Verizon Value",
         "Percentage Off"
       ),
@@ -913,21 +953,21 @@ export const merchants: Merchant[] = [
     color: "#e0e7ff",
     source: "EBG",
     commissionOffers: true,
-    status: "Active",
+    status: "published",
     contact: "Henry Park · hpark@marriott.com",
     website: "marriott.com",
     offers: [
       _mkOffer(
         "OID-71130",
         "20% Off Stays",
-        "Active",
+        "published",
         "AT&T Thanks",
         "Percentage Off"
       ),
       _mkOffer(
         "OID-71131",
         "Free 4th Night",
-        "Active",
+        "published",
         "Verizon Value",
         "Free Product"
       ),
@@ -946,14 +986,14 @@ export const merchants: Merchant[] = [
     color: "#e0e7ff",
     source: "Direct",
     commissionOffers: true,
-    status: "Active",
+    status: "published",
     contact: "Olivia Reyes · oreyes@hilton.com",
     website: "hilton.com",
     offers: [
       _mkOffer(
         "OID-71140",
         "Points Bonus — 2x Stays",
-        "Active",
+        "published",
         "Optum Offers",
         "Special Price"
       ),
@@ -969,28 +1009,28 @@ export const merchants: Merchant[] = [
     color: "#dbeafe",
     source: "Augeo",
     commissionOffers: false,
-    status: "Active",
+    status: "published",
     contact: "Frank Ozawa · fozawa@delta.com",
     website: "delta.com",
     offers: [
       _mkOffer(
         "OID-71150",
         "SkyMiles Bonus",
-        "Active",
+        "published",
         "JD Perks",
         "Special Price"
       ),
       _mkOffer(
         "OID-71151",
         "Companion Fare",
-        "Active",
+        "published",
         "Verizon Value",
         "Money Off"
       ),
       _mkOffer(
         "OID-71152",
         "Spring Sale",
-        "Expired",
+        "expired",
         "T-Mobile Perks",
         "Percentage Off"
       ),
@@ -1006,14 +1046,14 @@ export const merchants: Merchant[] = [
     color: "#fef3c7",
     source: "EBG",
     commissionOffers: true,
-    status: "Review",
+    status: "unpublished",
     contact: "Iris Tan · itan@expedia.com",
     website: "expedia.com",
     offers: [
       _mkOffer(
         "OID-71160",
         "10% Off Bundle Deals",
-        "Active",
+        "published",
         "AT&T Thanks",
         "Percentage Off"
       ),
@@ -1029,21 +1069,21 @@ export const merchants: Merchant[] = [
     color: "#dcfce7",
     source: "Augeo",
     commissionOffers: true,
-    status: "Active",
+    status: "published",
     contact: "Sam Doe · sdoe@gnc.com",
     website: "gnc.com",
     offers: [
       _mkOffer(
         "OID-71170",
         "Buy 1 Get 1 Vitamins",
-        "Active",
+        "published",
         "Verizon Value",
         "Free Product"
       ),
       _mkOffer(
         "OID-71171",
         "Pro Access Member Discount",
-        "Active",
+        "published",
         "Optum Offers",
         "Percentage Off"
       ),
@@ -1059,14 +1099,14 @@ export const merchants: Merchant[] = [
     color: "#fef3c7",
     source: "Direct",
     commissionOffers: false,
-    status: "Active",
+    status: "published",
     contact: "Maria Lopez · mlopez@planetfitness.com",
     website: "planetfitness.com",
     offers: [
       _mkOffer(
         "OID-71180",
         "$1 Down, $10/mo",
-        "Active",
+        "published",
         "T-Mobile Perks",
         "Special Price"
       ),
@@ -1082,21 +1122,21 @@ export const merchants: Merchant[] = [
     color: "#fce7f3",
     source: "EBG",
     commissionOffers: true,
-    status: "Active",
+    status: "published",
     contact: "Yuki Tanaka · ytanaka@sephora.com",
     website: "sephora.com",
     offers: [
       _mkOffer(
         "OID-71190",
         "Beauty Insider Free Sample",
-        "Active",
+        "published",
         "Verizon Value",
         "Free Product"
       ),
       _mkOffer(
         "OID-71191",
         "20% Off Rouge Sale",
-        "Active",
+        "published",
         "JD Perks",
         "Percentage Off"
       ),
@@ -1115,14 +1155,14 @@ export const merchants: Merchant[] = [
     color: "#fce7f3",
     source: "Augeo",
     commissionOffers: true,
-    status: "Active",
+    status: "published",
     contact: "Priya Shah · pshah@ulta.com",
     website: "ulta.com",
     offers: [
       _mkOffer(
         "OID-71200",
         "Ultamate Rewards 2x Points",
-        "Active",
+        "published",
         "AT&T Thanks",
         "Special Price"
       ),
@@ -1138,21 +1178,21 @@ export const merchants: Merchant[] = [
     color: "#fed7aa",
     source: "Direct",
     commissionOffers: true,
-    status: "Active",
+    status: "published",
     contact: "Brian Knox · bknox@homedepot.com",
     website: "homedepot.com",
     offers: [
       _mkOffer(
         "OID-71210",
         "Pro Xtra Member Discount",
-        "Active",
+        "published",
         "Optum Offers",
         "Percentage Off"
       ),
       _mkOffer(
         "OID-71211",
         "Free Delivery on Appliances",
-        "Active",
+        "published",
         "Verizon Value",
         "Free Product"
       ),
@@ -1168,14 +1208,14 @@ export const merchants: Merchant[] = [
     color: "#dbeafe",
     source: "EBG",
     commissionOffers: false,
-    status: "Attention",
+    status: "published",
     contact: "Karen Wells · kwells@lowes.com",
     website: "lowes.com",
     offers: [
       _mkOffer(
         "OID-71220",
         "MyLowe's 5% Off",
-        "Active",
+        "published",
         "JD Perks",
         "Percentage Off"
       ),
@@ -1191,21 +1231,21 @@ export const merchants: Merchant[] = [
     color: "#fee2e2",
     source: "Augeo",
     commissionOffers: false,
-    status: "Active",
+    status: "published",
     contact: "Dale Pearson · dpearson@shell.com",
     website: "shell.com",
     offers: [
       _mkOffer(
         "OID-71230",
         "Fuel Rewards 10¢/gal Off",
-        "Active",
+        "published",
         "T-Mobile Perks",
         "Money Off"
       ),
       _mkOffer(
         "OID-71231",
         "Shell Go+ Sign-Up Bonus",
-        "Active",
+        "published",
         "Verizon Value",
         "Free Product"
       ),
@@ -1221,21 +1261,21 @@ export const merchants: Merchant[] = [
     color: "#dbeafe",
     source: "Direct",
     commissionOffers: false,
-    status: "Active",
+    status: "published",
     contact: "Naomi Brooks · nbrooks@att.com",
     website: "att.com",
     offers: [
       _mkOffer(
         "OID-71240",
         "$200 Off New Line",
-        "Active",
+        "published",
         "AT&T Thanks",
         "Money Off"
       ),
       _mkOffer(
         "OID-71241",
         "Free 5G Activation",
-        "Active",
+        "published",
         "Verizon Value",
         "Free Product"
       ),
@@ -1251,21 +1291,21 @@ export const merchants: Merchant[] = [
     color: "#fef3c7",
     source: "EBG",
     commissionOffers: true,
-    status: "Active",
+    status: "published",
     contact: "Will Tang · wtang@7-eleven.com",
     website: "7-eleven.com",
     offers: [
       _mkOffer(
         "OID-71250",
         "Free Slurpee Day",
-        "Active",
+        "published",
         "Optum Offers",
         "Free Product"
       ),
       _mkOffer(
         "OID-71251",
         "7Rewards Double Points",
-        "Active",
+        "published",
         "JD Perks",
         "Special Price"
       ),

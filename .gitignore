@@ -52,3 +52,9 @@ next-env.d.ts
 # LangGraph API
 .langgraph_api
 *.backup
+
+# Claude / agent session artifacts
+.agents/
+.claude/skills/impeccable
+skills-lock.json
+/tmp/

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { PageHeader } from "@/components/molecules/PageHeader";
 import { Button } from "@/components/atoms/Button";
@@ -8,27 +9,20 @@ import { merchants as merchantSeed } from "./mockData";
 import { MerchantListSearchBar, type FilterTag } from "./MerchantListSearchBar";
 import { MerchantListTable } from "./MerchantListTable";
 import type { Merchant } from "./types";
-import AddMerchantDialog, {
-  type AddMerchantFormData,
-} from "./AddMerchantDialog";
-import MerchantDetailDialog from "./MerchantDetailDialog";
 import { useToast } from "@/lib/hooks/use-toast";
 
 const PAGE_SIZE_DEFAULT = 20;
 
 function countActive(merchant: Merchant): number {
-  return merchant.offers.filter((o) => o.status === "Active").length;
+  return merchant.offers.filter((o) => o.status === "published").length;
 }
 
 export default function MerchantManagerV3() {
+  const router = useRouter();
   const [selectedFilters, setSelectedFilters] = useState<FilterTag[]>([]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(PAGE_SIZE_DEFAULT);
-  const [isAddOpen, setIsAddOpen] = useState(false);
-  const [selectedMerchant, setSelectedMerchant] = useState<Merchant | null>(
-    null
-  );
-  const [data, setData] = useState<Merchant[]>(merchantSeed);
+  const [data] = useState<Merchant[]>(merchantSeed);
   const { toast } = useToast();
 
   // Parse selected filters into structured buckets (mirrors OfferListView)
@@ -114,64 +108,35 @@ export default function MerchantManagerV3() {
     setPage(1);
   }, []);
 
-  const handleView = useCallback((m: Merchant) => {
-    setSelectedMerchant(m);
-  }, []);
+  const handleView = useCallback(
+    (m: Merchant) => {
+      router.push(`/merchants/${encodeURIComponent(m.id)}`);
+    },
+    [router]
+  );
 
-  const handleEdit = useCallback((m: Merchant) => {
-    // Edit lives in the same detail dialog footer for now.
-    setSelectedMerchant(m);
-  }, []);
+  const handleEdit = useCallback(
+    (m: Merchant) => {
+      router.push(`/merchants/${encodeURIComponent(m.id)}?tab=edit`);
+    },
+    [router]
+  );
 
-  const handleDelete = useCallback((m: Merchant) => {
-    console.log("[v3] Delete merchant:", m.id, m.name);
-  }, []);
-
-  const handleDetailOpenChange = useCallback((open: boolean) => {
-    if (!open) setSelectedMerchant(null);
-  }, []);
-
-  const handleEditProfile = useCallback(
+  const handleDelete = useCallback(
     (m: Merchant) => {
       toast({
-        title: "Edit Merchant Profile",
-        description: `Editor for ${m.name} (${m.id}) — not yet wired up.`,
+        title: "Delete merchant",
+        description: `${m.name} (${m.id}) — delete flow not yet wired up.`,
       });
     },
     [toast]
-  );
-
-  const handleAddMerchantSave = useCallback(
-    (merchant: AddMerchantFormData) => {
-      const name = merchant.name.trim() || "Unnamed Merchant";
-      const newId = `MID-${90000 + data.length + 1}`;
-      const newMerchant: Merchant = {
-        key: `new-${Date.now()}`,
-        name,
-        id: newId,
-        category: merchant.category || "Retail",
-        emoji: "🏪",
-        color: "#e0f2fe",
-        source: merchant.source || "Direct",
-        commissionOffers: false,
-        offers: [],
-        campaigns: [],
-      };
-      setData((prev) => [newMerchant, ...prev]);
-      setIsAddOpen(false);
-      toast({
-        title: "Merchant added",
-        description: `${newMerchant.name} (${newMerchant.id}) was added.`,
-      });
-    },
-    [data.length, toast]
   );
 
   const headerActions = (
     <Button
       variant="primary"
       icon={<PlusIcon className="h-4 w-4" />}
-      onClick={() => setIsAddOpen(true)}
+      onClick={() => router.push("/merchants/new")}
     >
       Add Merchant
     </Button>
@@ -202,19 +167,7 @@ export default function MerchantManagerV3() {
         onView={handleView}
         onEdit={handleEdit}
         onDelete={handleDelete}
-      />
-
-      <AddMerchantDialog
-        open={isAddOpen}
-        onOpenChange={setIsAddOpen}
-        onSave={handleAddMerchantSave}
-      />
-
-      <MerchantDetailDialog
-        merchant={selectedMerchant}
-        open={selectedMerchant !== null}
-        onOpenChange={handleDetailOpenChange}
-        onEditProfile={handleEditProfile}
+        onRowClick={handleView}
       />
     </div>
   );

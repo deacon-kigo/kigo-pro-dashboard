@@ -19,7 +19,6 @@ import {
   Building2,
   Percent,
   CornerDownLeft,
-  ArrowUpDown,
 } from "lucide-react";
 
 // react-select's default export interop — mirrors OfferListSearchBar
@@ -55,7 +54,6 @@ const CATEGORY_COLORS: Record<
 const GROUP_CATEGORY_MAP: Record<string, FilterTag["category"]> = {
   Categories: "category",
   Commission: "commission",
-  "Sort by": "sort",
 };
 
 // ---------- Option icons ----------
@@ -66,7 +64,6 @@ const GROUP_ICONS: Record<
 > = {
   Categories: Building2,
   Commission: Percent,
-  "Sort by": ArrowUpDown,
 };
 
 function getOptionIcon(
@@ -74,7 +71,6 @@ function getOptionIcon(
 ): React.ComponentType<{ style?: React.CSSProperties }> | null {
   if (value.startsWith("category:")) return Building2;
   if (value.startsWith("commission:")) return Percent;
-  if (value.startsWith("sort:")) return ArrowUpDown;
   return null;
 }
 
@@ -108,12 +104,6 @@ const commissionOptions: FilterTag[] = [
     value: "commission:no",
     category: "commission",
   },
-];
-
-const sortOptions: FilterTag[] = [
-  { label: "Active Offers", value: "sort:active-offers", category: "sort" },
-  { label: "A → Z", value: "sort:a-z", category: "sort" },
-  { label: "Z → A", value: "sort:z-a", category: "sort" },
 ];
 
 function sortSelectedFirst(
@@ -701,11 +691,6 @@ export function MerchantListSearchBar({
       groups.push({ label: "Commission", options: sortedCommission });
     }
 
-    const sortedSorts = sortSelectedFirst(sortOptions, selectedValues);
-    if (sortedSorts.length > 0) {
-      groups.push({ label: "Sort by", options: sortedSorts });
-    }
-
     return groups;
   }, [selectedValues]);
 
@@ -736,14 +721,6 @@ export function MerchantListSearchBar({
         groups.push({ label: "Commission", options: sortedCommission });
       }
 
-      const filteredSorts = sortOptions.filter(
-        (o) => !lower || o.label.toLowerCase().includes(lower)
-      );
-      const sortedSorts = sortSelectedFirst(filteredSorts, selectedValues);
-      if (sortedSorts.length > 0) {
-        groups.push({ label: "Sort by", options: sortedSorts });
-      }
-
       return groups;
     },
     [selectedValues]
@@ -751,26 +728,7 @@ export function MerchantListSearchBar({
 
   const handleChange = useCallback(
     (newValue: readonly FilterTag[] | null) => {
-      const next = newValue ? [...newValue] : [];
-      // Single-active semantics for sort: if a new sort tag was added,
-      // strip any pre-existing sort tags so only the newest one wins.
-      const prevSortValues = new Set(
-        filtersRef.current
-          .filter((f) => f.category === "sort")
-          .map((f) => f.value)
-      );
-      const newSortTags = next.filter(
-        (f) => f.category === "sort" && !prevSortValues.has(f.value)
-      );
-      if (newSortTags.length > 0) {
-        const keepValue = newSortTags[newSortTags.length - 1].value;
-        const filtered = next.filter(
-          (f) => f.category !== "sort" || f.value === keepValue
-        );
-        onFiltersChange(filtered);
-        return;
-      }
-      onFiltersChange(next);
+      onFiltersChange(newValue ? [...newValue] : []);
     },
     [onFiltersChange]
   );
@@ -807,7 +765,7 @@ export function MerchantListSearchBar({
         isValidNewOption={(inputValue: string) => inputValue.trim().length > 0}
         getOptionValue={(option: FilterTag) => option.value}
         getOptionLabel={(option: FilterTag) => option.label}
-        placeholder="Search merchants, categories, commission, or sort..."
+        placeholder="Search merchants, categories, or commission..."
         noOptionsMessage={() => "Press Enter to search merchants..."}
         styles={customStyles}
         components={{

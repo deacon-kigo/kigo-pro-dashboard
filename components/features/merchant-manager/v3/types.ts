@@ -1,6 +1,19 @@
-export type OfferStatus = "Active" | "Planned" | "Expired" | "Review";
+// Mirrors the OfferStatus union in `/types/offers.ts` (kigo-core-server API).
+// Display labels are derived in the view layer — never hardcode capitalized
+// "Active"/"Planned" etc. as offer status values.
+export type OfferStatus =
+  | "draft"
+  | "published"
+  | "archived"
+  | "expired"
+  | "paused"
+  | "pending_approval";
 
-export type MerchantStatus = "Active" | "Attention" | "Review";
+// Mirrors kigo-admin-tools/.../merchants/constants.ts MERCHANT_STATUS_PARAMS.
+// Per the Slack thread w/ Diane/Koua/José: merchants are created `published`
+// by default; ops can `unpublish` (offers hidden from marketplace) or `close`
+// (terminal — out of business / no plan to revive).
+export type MerchantStatus = "published" | "unpublished" | "closed";
 
 export interface Offer {
   id: string;
