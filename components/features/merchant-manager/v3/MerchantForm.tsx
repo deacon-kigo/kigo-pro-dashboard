@@ -32,7 +32,7 @@ import {
   ChevronRightIcon,
   CheckCircleIcon,
 } from "@heroicons/react/24/outline";
-import type { Merchant } from "./types";
+import type { Merchant, MerchantStatus } from "./types";
 
 // Mirrors kigo-admin-tools/.../create-merchant-form/constants.ts
 const MIN_DBA_NAME_LENGTH = 3;
@@ -116,6 +116,12 @@ interface MerchantFormProps {
   onSubmit: (data: MerchantFormData) => void;
   /** Fires whenever the validity changes so a parent can disable a submit button. */
   onValidityChange?: (isValid: boolean) => void;
+  /** Current merchant status (edit mode only). When provided, renders a Status
+   * panel near the top of the form so ops can publish/unpublish/close from
+   * inside the edit flow — per Slack addendum from John K. */
+  status?: MerchantStatus;
+  /** Called when the operator picks a different status (edit mode only). */
+  onStatusChange?: (next: MerchantStatus) => void;
 }
 
 export default function MerchantForm({
@@ -123,6 +129,8 @@ export default function MerchantForm({
   formId,
   onSubmit,
   onValidityChange,
+  status,
+  onStatusChange,
 }: MerchantFormProps) {
   const isEdit = Boolean(initialMerchant);
   const [form, setForm] = useState<MerchantFormData>(() =>
@@ -234,6 +242,72 @@ export default function MerchantForm({
       onSubmit={handleFormSubmit}
       className="p-6 space-y-6 divide-y divide-gray-200"
     >
+      {/* ============================================================ */}
+      {/* Status — edit mode only. Owns publish / unpublish / close per */}
+      {/* Slack addendum: "Unpublish capability in the edit form." */}
+      {/* ============================================================ */}
+      {isEdit && status && onStatusChange && (
+        <div className="pb-6">
+          <Label className="text-sm">Merchant status</Label>
+          <p className="mt-1.5 text-sm font-medium text-gray-600">
+            Controls whether this merchant&apos;s offers appear in the
+            marketplace. Closed is a one-way state — re-enable by creating a new
+            record.
+          </p>
+          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+            {(
+              [
+                {
+                  value: "published" as const,
+                  label: "Active",
+                  description: "Visible in marketplace",
+                },
+                {
+                  value: "unpublished" as const,
+                  label: "Unpublished",
+                  description: "Offers hidden from marketplace",
+                },
+                {
+                  value: "closed" as const,
+                  label: "Closed",
+                  description: "Out of business",
+                },
+              ] satisfies {
+                value: MerchantStatus;
+                label: string;
+                description: string;
+              }[]
+            ).map((opt) => {
+              const isActive = status === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => onStatusChange(opt.value)}
+                  aria-pressed={isActive}
+                  className={`flex flex-col items-start gap-1 rounded-md border p-3 text-left transition-colors ${
+                    isActive
+                      ? "border-primary bg-pastel-blue"
+                      : "border-gray-200 bg-white hover:border-gray-300"
+                  }`}
+                >
+                  <span
+                    className={`text-sm font-semibold ${
+                      isActive ? "text-primary" : "text-gray-900"
+                    }`}
+                  >
+                    {opt.label}
+                  </span>
+                  <span className="text-sm font-medium text-gray-600">
+                    {opt.description}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* ============================================================ */}
       {/* Required Fields */}
       {/* ============================================================ */}

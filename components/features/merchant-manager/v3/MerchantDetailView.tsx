@@ -13,16 +13,6 @@ import {
   TagIcon,
 } from "@heroicons/react/24/outline";
 import { useToast } from "@/lib/hooks/use-toast";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { MerchantLogo } from "./MerchantLogo";
 import MerchantForm, { type MerchantFormData } from "./MerchantForm";
 import { MerchantOffersGantt } from "./MerchantOffersGantt";
@@ -173,21 +163,23 @@ export default function MerchantDetailView({
     setActiveTab("profile");
   };
 
-  const handleStatusChange = (next: string) => {
+  const handleStatusChange = (next: MerchantStatus) => {
     if (next === merchantStatus) return;
-    const status = next as MerchantStatus;
-    setMerchantStatus(status);
+    setMerchantStatus(next);
     toast({
-      title: `Merchant set to ${MERCHANT_STATUS_LABEL[status]}`,
+      title: `Merchant set to ${MERCHANT_STATUS_LABEL[next]}`,
       description:
-        status === "unpublished"
+        next === "unpublished"
           ? "Offers from this merchant will no longer appear in marketplace."
-          : status === "closed"
+          : next === "closed"
             ? "Merchant marked as closed. Re-enable by creating a new record."
             : `${merchant.name} is now visible in marketplace.`,
     });
   };
 
+  // Header actions — view mode just has "Back". Edit mode owns Cancel + Save.
+  // The status control moved into the edit form itself (per Slack addendum
+  // from John K. — unpublish belongs in the edit flow, not as a header dropdown).
   const headerActions =
     activeTab === "edit" ? (
       <div className="flex items-center gap-2">
@@ -208,40 +200,9 @@ export default function MerchantDetailView({
         </Button>
       </div>
     ) : (
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="sm" onClick={handleBackToList}>
-          Back to Merchants
-        </Button>
-        {/* Actions menu — neutral trigger so it can host other merchant-level
-            actions (duplicate, audit, etc.) alongside status changes without
-            re-skinning. The current status is already visible in the
-            identity Badge above; this button is purely "open the menu". */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button size="sm" className="gap-1.5">
-              Actions
-              <ChevronDownIcon className="h-4 w-4" aria-hidden="true" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-64">
-            <DropdownMenuLabel>Status</DropdownMenuLabel>
-            <DropdownMenuRadioGroup
-              value={merchantStatus}
-              onValueChange={handleStatusChange}
-            >
-              <DropdownMenuRadioItem value="published">
-                Active — visible in marketplace
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="unpublished">
-                Unpublish — hide offers from marketplace
-              </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="closed">
-                Close — out of business
-              </DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      <Button variant="ghost" size="sm" onClick={handleBackToList}>
+        Back to Merchants
+      </Button>
     );
 
   return (
@@ -326,6 +287,8 @@ export default function MerchantDetailView({
                   initialMerchant={merchant}
                   onSubmit={handleEditSubmit}
                   onValidityChange={setIsFormValid}
+                  status={merchantStatus}
+                  onStatusChange={handleStatusChange}
                 />
               )}
             </div>

@@ -36,7 +36,15 @@ function logoUrl(domain: string, stage: number): string | null {
     return `https://img.logo.dev/${domain}?token=${LOGO_DEV_TOKEN}&size=${LOGO_FETCH_SIZE}&format=png`;
   }
   if (stage <= 1) {
-    return `https://logo.clearbit.com/${domain}?size=${LOGO_FETCH_SIZE}`;
+    // Google's favicon service — free, no auth, returns the highest-quality
+    // favicon for any domain. Replaces Clearbit (their free Logo API was
+    // discontinued in 2024).
+    return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+  }
+  if (stage <= 2) {
+    // DuckDuckGo as a secondary favicon source — different cache pool, so
+    // domains that 404 on Google often resolve here.
+    return `https://icons.duckduckgo.com/ip3/${domain}.ico`;
   }
   return null;
 }
@@ -44,8 +52,9 @@ function logoUrl(domain: string, stage: number): string | null {
 /**
  * Renders a merchant's brand logo with a layered free fallback:
  *   1. Logo.dev    — primary when NEXT_PUBLIC_LOGO_DEV_TOKEN is set (best res)
- *   2. Clearbit    — no-key fallback
- *   3. Initials    — colored tile, final fallback (never fails)
+ *   2. Google      — free favicon service, no auth, high-res
+ *   3. DuckDuckGo  — secondary favicon source
+ *   4. Initials    — colored tile, final fallback (never fails)
  * Replaces the legacy emoji avatar.
  */
 export function MerchantLogo({
@@ -55,11 +64,14 @@ export function MerchantLogo({
 }: MerchantLogoProps) {
   const domain = getDomain(merchant.website);
   // Stage progresses on each <img> onError until we reach the initials tile.
+  // Skip stage 0 (Logo.dev) if no token is configured.
   const [stage, setStage] = useState(LOGO_DEV_TOKEN ? 0 : 1);
+  // Track whether we've exhausted all remote sources and need the initials.
+  const [exhausted, setExhausted] = useState(false);
 
   const px = `${size}px`;
   const fontSize = Math.max(11, Math.round(size * 0.4));
-  const src = domain ? logoUrl(domain, stage) : null;
+  const src = domain && !exhausted ? logoUrl(domain, stage) : null;
 
   if (!src) {
     return (
@@ -89,7 +101,14 @@ export function MerchantLogo({
       width={size}
       height={size}
       loading="lazy"
-      onError={() => setStage((s) => s + 1)}
+      onError={() => {
+        const next = stage + 1;
+        if (logoUrl(domain!, next) === null) {
+          setExhausted(true);
+        } else {
+          setStage(next);
+        }
+      }}
       className={cn(
         "rounded-md object-contain bg-white border border-gray-100",
         className

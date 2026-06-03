@@ -214,55 +214,11 @@ export function getMerchantListColumns({
         <span className="text-sm text-gray-700">{row.original.category}</span>
       ),
     },
-    {
-      id: "status",
-      // Sort: published first, then unpublished, then closed.
-      accessorFn: (row) => {
-        switch (row.status) {
-          case "published":
-            return 0;
-          case "unpublished":
-            return 1;
-          case "closed":
-            return 2;
-          default:
-            return 3;
-        }
-      },
-      header: ({ column }) => (
-        <button
-          type="button"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="flex w-full items-center justify-start text-left font-medium hover:bg-transparent"
-        >
-          Status
-          <SortIcon sorted={column.getIsSorted()} />
-        </button>
-      ),
-      size: 140,
-      // Read-only badge — activation lives on the merchant detail page's
-      // Actions menu, per Slack thread design decision.
-      cell: ({ row }) => {
-        const status = row.original.status ?? "published";
-        const variant: "success" | "warning" | "error" =
-          status === "published"
-            ? "success"
-            : status === "unpublished"
-              ? "warning"
-              : "error";
-        const label =
-          status === "published"
-            ? "Active"
-            : status === "unpublished"
-              ? "Unpublished"
-              : "Closed";
-        return (
-          <Badge variant={variant} rounded="md" className="font-medium">
-            {label}
-          </Badge>
-        );
-      },
-    },
+    // Status column removed per Slack addendum (John K, 2026-06-03):
+    // "not to include the Merchant Status column. Include that info in
+    // the Profile view, with Unpublish capability in the edit form."
+    // The status is still visible in the merchant detail page (header
+    // badge + Profile Details row).
     {
       id: "offers",
       accessorFn: (row) =>
