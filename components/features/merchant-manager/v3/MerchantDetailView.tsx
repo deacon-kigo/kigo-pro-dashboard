@@ -271,7 +271,7 @@ export default function MerchantDetailView({
             {/* Scrollable content */}
             <div className="flex-1 overflow-auto">
               {activeTab === "profile" && (
-                <ProfileContent merchant={merchant} status={merchantStatus} />
+                <ProfileContent merchant={merchant} />
               )}
 
               {activeTab === "offers" && (
@@ -363,13 +363,7 @@ function OfferTypeCard({
   );
 }
 
-function ProfileContent({
-  merchant,
-  status,
-}: {
-  merchant: Merchant;
-  status: MerchantStatus;
-}) {
+function ProfileContent({ merchant }: { merchant: Merchant }) {
   const publisherChannels = useMemo(
     () => Array.from(new Set(merchant.offers.map((o) => o.channel))),
     [merchant]
@@ -380,15 +374,17 @@ function ProfileContent({
     [merchant]
   );
 
+  const totalOffers = merchant.offers.length;
+
   return (
     <div className="p-6 grid grid-cols-1 gap-x-8 gap-y-6 lg:grid-cols-3">
       {/* Main column — narrative + capabilities */}
-      <div className="space-y-6 lg:col-span-2">
+      <div className="space-y-8 lg:col-span-2">
         {/* About — leads with the merchant story */}
         <section>
           <SectionLabel>About</SectionLabel>
           {merchant.merchantDetail ? (
-            <p className="text-base leading-relaxed text-gray-700">
+            <p className="max-w-prose text-base leading-relaxed text-gray-700">
               {merchant.merchantDetail}
             </p>
           ) : (
@@ -415,25 +411,31 @@ function ProfileContent({
         ) : null}
       </div>
 
-      {/* Sidebar — structured attributes + channels */}
+      {/* Sidebar — only fields not already in the page header */}
       <aside className="space-y-6 lg:col-span-1">
+        {/* Offers at-a-glance — small stat pair */}
+        <section className="grid grid-cols-2 gap-3">
+          <div className="rounded-md border border-gray-200 bg-white p-3">
+            <div className="text-xs font-medium uppercase tracking-wide text-gray-500">
+              Active
+            </div>
+            <div className="mt-1 text-2xl font-semibold tabular-nums text-gray-900">
+              {activeOfferCount}
+            </div>
+          </div>
+          <div className="rounded-md border border-gray-200 bg-white p-3">
+            <div className="text-xs font-medium uppercase tracking-wide text-gray-500">
+              Total Offers
+            </div>
+            <div className="mt-1 text-2xl font-semibold tabular-nums text-gray-900">
+              {totalOffers}
+            </div>
+          </div>
+        </section>
+
         <section>
-          <SectionLabel>Details</SectionLabel>
+          <SectionLabel>Contact</SectionLabel>
           <dl className="divide-y divide-gray-100">
-            <DefinitionRow label="Category" value={merchant.category} />
-            <DefinitionRow label="Source" value={merchant.source} />
-            <DefinitionRow
-              label="Status"
-              value={
-                <Badge
-                  variant={statusBadgeVariant(status)}
-                  className="font-medium"
-                >
-                  {MERCHANT_STATUS_LABEL[status]}
-                </Badge>
-              }
-            />
-            <DefinitionRow label="Active Offers" value={activeOfferCount} />
             <DefinitionRow
               label="Website"
               value={
@@ -452,7 +454,7 @@ function ProfileContent({
               }
             />
             <DefinitionRow
-              label="Contact"
+              label="Primary"
               value={
                 merchant.contact ? (
                   <span>{merchant.contact}</span>
