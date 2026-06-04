@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,46 +8,14 @@ import { Badge } from "@/components/atoms/Badge";
 import {
   IdentificationIcon,
   ListBulletIcon,
-  PencilSquareIcon,
-  TagIcon,
 } from "@heroicons/react/24/outline";
 import { useToast } from "@/lib/hooks/use-toast";
 import { MerchantLogo } from "./MerchantLogo";
-import MerchantForm, { type MerchantFormData } from "./MerchantForm";
+import MerchantFieldList from "./MerchantFieldList";
 import { MerchantOffersGantt } from "./MerchantOffersGantt";
-import {
-  OFFER_TYPE_CONFIG,
-  type OfferTypeKey,
-} from "@/lib/constants/offer-templates";
-import type { Merchant, MerchantStatus, Offer, OfferStatus } from "./types";
+import type { Merchant, MerchantStatus, OfferStatus } from "./types";
 
-// Maps a merchant.supportedOfferTypes label (free-text string) to its
-// OFFER_TYPE_CONFIG key so we can render the same illustration card the offer
-// creation flow uses.
-const OFFER_TYPE_LABEL_TO_KEY: Record<string, OfferTypeKey> = {
-  "Buy One Get One": "bogo",
-  BOGO: "bogo",
-  "Cash Back": "cashback",
-  ClickThru: "clickthrough",
-  Clickthrough: "clickthrough",
-  "Digital Gift Card": "digital_gift_card",
-  "Free Product": "free_with_purchase",
-  "Free With Purchase": "free_with_purchase",
-  Merchandise: "merchandise",
-  "Money Off": "dollar_off",
-  "Dollar Off": "dollar_off",
-  "Percentage Off": "percent_off",
-  "Percent Off": "percent_off",
-  "Physical Gift Card": "physical_gift_card",
-  "Special Price": "fixed_price",
-  "Fixed Price": "fixed_price",
-  "Spend and Get": "cpg_spend_and_get",
-  "Spend & Get": "cpg_spend_and_get",
-};
-
-const EDIT_FORM_ID = "merchant-edit-form";
-
-type DetailTab = "profile" | "offers" | "edit";
+type DetailTab = "profile" | "offers";
 
 const TABS: {
   id: DetailTab;
@@ -57,7 +24,6 @@ const TABS: {
 }[] = [
   { id: "profile", label: "Profile", icon: IdentificationIcon },
   { id: "offers", label: "Offers Timeline", icon: ListBulletIcon },
-  { id: "edit", label: "Edit", icon: PencilSquareIcon },
 ];
 
 // Display labels for the production merchant lifecycle states.
@@ -121,16 +87,19 @@ export default function MerchantDetailView({
 
   // Tab state is driven by ?tab= URL param so deep-links work.
   const tabParam = searchParams.get("tab");
-  const initialTab: DetailTab =
-    tabParam === "offers" || tabParam === "edit" ? tabParam : "profile";
+  const initialTab: DetailTab = tabParam === "offers" ? "offers" : "profile";
   const [activeTab, setActiveTab] = useState<DetailTab>(initialTab);
-  const [isFormValid, setIsFormValid] = useState(false);
-  // Per Slack thread (Diane/Koua): merchants default to "published" on
-  // create. Local state here is just for the prototype — production reads
-  // from the merchant record and writes via API on change.
+  // Local edit overlay — the field list saves each field through this so
+  // the page header (name/category/source/status) stays in sync with the
+  // most-recent edits without a global save round-trip.
+  const [merchantState, setMerchantState] = useState<Merchant>(merchant);
   const [merchantStatus, setMerchantStatus] = useState<MerchantStatus>(
     merchant.status ?? "published"
   );
+
+  const handleMerchantChange = (next: Partial<Merchant>) => {
+    setMerchantState((prev) => ({ ...prev, ...next }));
+  };
 
   // Keep URL in sync with active tab (without scroll jump).
   useEffect(() => {
@@ -149,19 +118,11 @@ export default function MerchantDetailView({
   }, [activeTab, merchant.id]);
 
   const expiredOffers = useMemo(
-    () => merchant.offers.filter((o) => o.status === "expired"),
-    [merchant]
+    () => merchantState.offers.filter((o) => o.status === "expired"),
+    [merchantState]
   );
 
   const handleBackToList = () => router.push("/merchants");
-
-  const handleEditSubmit = (data: MerchantFormData) => {
-    toast({
-      title: "Merchant updated",
-      description: `${data.dbaName} (${merchant.id}) was updated.`,
-    });
-    setActiveTab("profile");
-  };
 
   const handleStatusChange = (next: MerchantStatus) => {
     if (next === merchantStatus) return;
@@ -173,37 +134,17 @@ export default function MerchantDetailView({
           ? "Offers from this merchant will no longer appear in marketplace."
           : next === "closed"
             ? "Merchant marked as closed. Re-enable by creating a new record."
-            : `${merchant.name} is now visible in marketplace.`,
+            : `${merchantState.name} is now visible in marketplace.`,
     });
   };
 
-  // Header actions — view mode just has "Back". Edit mode owns Cancel + Save.
-  // The status control moved into the edit form itself (per Slack addendum
-  // from John K. — unpublish belongs in the edit flow, not as a header dropdown).
-  const headerActions =
-    activeTab === "edit" ? (
-      <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setActiveTab("profile")}
-        >
-          Cancel
-        </Button>
-        <Button
-          form={EDIT_FORM_ID}
-          type="submit"
-          size="sm"
-          disabled={!isFormValid}
-        >
-          Save Changes
-        </Button>
-      </div>
-    ) : (
-      <Button variant="ghost" size="sm" onClick={handleBackToList}>
-        Back to Merchants
-      </Button>
-    );
+  // Per-field inline edit owns its own Save/Cancel buttons, so the header
+  // only carries navigation.
+  const headerActions = (
+    <Button variant="outline" size="sm" onClick={handleBackToList}>
+      Back to Merchants
+    </Button>
+  );
 
   return (
     <div className="overflow-hidden" style={{ height: "calc(100vh - 140px)" }}>
@@ -246,12 +187,14 @@ export default function MerchantDetailView({
             {/* Header bar — merchant identity + contextual actions */}
             <div className="flex items-center justify-between p-3 border-b bg-muted/20 h-[61px] flex-shrink-0">
               <div className="flex items-center gap-3 min-w-0">
-                <MerchantLogo merchant={merchant} size={36} />
+                <MerchantLogo merchant={merchantState} size={36} />
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-medium truncate">{merchant.name}</h3>
+                    <h3 className="font-medium truncate">
+                      {merchantState.name}
+                    </h3>
                     <Badge variant="neutral" rounded="md" className="font-mono">
-                      {merchant.id}
+                      {merchantState.id}
                     </Badge>
                     <Badge
                       variant={statusBadgeVariant(merchantStatus)}
@@ -261,7 +204,7 @@ export default function MerchantDetailView({
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {merchant.category} · {merchant.source}
+                    {merchantState.category} · {merchantState.source}
                   </p>
                 </div>
               </div>
@@ -271,24 +214,25 @@ export default function MerchantDetailView({
             {/* Scrollable content */}
             <div className="flex-1 overflow-auto">
               {activeTab === "profile" && (
-                <ProfileContent merchant={merchant} />
+                <div className="grid grid-cols-1 gap-x-12 p-6 lg:grid-cols-12">
+                  <div className="lg:col-span-8">
+                    <MerchantFieldList
+                      merchant={merchantState}
+                      status={merchantStatus}
+                      onStatusChange={handleStatusChange}
+                      onMerchantChange={handleMerchantChange}
+                    />
+                  </div>
+                  <aside className="mt-8 lg:col-span-4 lg:mt-0">
+                    <SecondaryPanel merchant={merchantState} />
+                  </aside>
+                </div>
               )}
 
               {activeTab === "offers" && (
                 <OffersContent
-                  merchant={merchant}
+                  merchant={merchantState}
                   expiredCount={expiredOffers.length}
-                />
-              )}
-
-              {activeTab === "edit" && (
-                <MerchantForm
-                  formId={EDIT_FORM_ID}
-                  initialMerchant={merchant}
-                  onSubmit={handleEditSubmit}
-                  onValidityChange={setIsFormValid}
-                  status={merchantStatus}
-                  onStatusChange={handleStatusChange}
                 />
               )}
             </div>
@@ -300,191 +244,96 @@ export default function MerchantDetailView({
 }
 
 // ---------------------------------------------------------------------------
-// Profile content
+// Profile tab — right rail. Holds derived data (offer counts, channels,
+// supported types) that doesn't live on the merchant record itself. Sections
+// share the same divide-y hairline rhythm as the field list on the left, so
+// the two columns read as one coherent surface.
 // ---------------------------------------------------------------------------
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <h4 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-700">
-      {children}
-    </h4>
-  );
-}
-
-function DefinitionRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-baseline justify-between gap-4 py-2">
-      <dt className="flex-shrink-0 text-sm font-medium text-gray-600">
-        {label}
-      </dt>
-      <dd className="min-w-0 truncate text-right text-sm font-medium text-gray-900">
-        {value}
-      </dd>
-    </div>
-  );
-}
-
-function OfferTypeCard({
-  label,
-  config,
-}: {
-  label: string;
-  config: (typeof OFFER_TYPE_CONFIG)[OfferTypeKey] | undefined;
-}) {
-  // Falls back to a generic Tag illustration if the merchant's label doesn't
-  // map to a known OFFER_TYPE_CONFIG key.
-  if (!config) {
-    return (
-      <div className="flex flex-col items-center gap-1.5 rounded-md border border-gray-200 bg-white p-2 text-center shadow-sm">
-        <div className="flex h-12 w-12 items-center justify-center rounded bg-gray-50">
-          <TagIcon className="h-6 w-6 text-gray-400" aria-hidden="true" />
-        </div>
-        <div className="text-xs font-semibold text-gray-900">{label}</div>
-      </div>
-    );
-  }
-  return (
-    <div className="flex flex-col items-center gap-1.5 rounded-md border border-gray-200 bg-white p-2 text-center shadow-sm transition-shadow hover:shadow-md">
-      <div className="relative h-12 w-12">
-        <Image
-          src={config.illustration}
-          alt={config.label}
-          fill
-          className="object-contain"
-        />
-      </div>
-      <div className="text-xs font-semibold text-gray-900">{config.label}</div>
-    </div>
-  );
-}
-
-function ProfileContent({ merchant }: { merchant: Merchant }) {
-  const publisherChannels = useMemo(
+function SecondaryPanel({ merchant }: { merchant: Merchant }) {
+  const channels = useMemo(
     () => Array.from(new Set(merchant.offers.map((o) => o.channel))),
     [merchant]
   );
-
-  const activeOfferCount = useMemo(
+  const activeCount = useMemo(
     () => merchant.offers.filter((o) => o.status === "published").length,
     [merchant]
   );
-
-  const totalOffers = merchant.offers.length;
+  const totalCount = merchant.offers.length;
+  const types = merchant.supportedOfferTypes ?? [];
 
   return (
-    <div className="p-6 grid grid-cols-1 gap-x-8 gap-y-6 lg:grid-cols-3">
-      {/* Main column — narrative + capabilities */}
-      <div className="space-y-8 lg:col-span-2">
-        {/* About — leads with the merchant story */}
-        <section>
-          <SectionLabel>About</SectionLabel>
-          {merchant.merchantDetail ? (
-            <p className="max-w-prose text-base leading-relaxed text-gray-700">
-              {merchant.merchantDetail}
-            </p>
-          ) : (
-            <p className="text-sm font-medium italic text-gray-500">
-              No description on file yet.
-            </p>
-          )}
-        </section>
+    <div className="divide-y divide-gray-200">
+      <PanelSection label="Activity">
+        <p className="text-sm text-gray-700">
+          <span className="font-medium tabular-nums text-gray-900">
+            {activeCount}
+          </span>{" "}
+          active
+          <span aria-hidden="true" className="mx-1.5 text-gray-300">
+            ·
+          </span>
+          <span className="font-medium tabular-nums text-gray-900">
+            {totalCount}
+          </span>{" "}
+          total
+        </p>
+      </PanelSection>
 
-        {/* Capabilities — supported offer types via illustration cards */}
-        {merchant.supportedOfferTypes?.length ? (
-          <section>
-            <SectionLabel>Capabilities</SectionLabel>
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-              {merchant.supportedOfferTypes.map((label) => {
-                const key = OFFER_TYPE_LABEL_TO_KEY[label];
-                const config = key ? OFFER_TYPE_CONFIG[key] : undefined;
-                return (
-                  <OfferTypeCard key={label} label={label} config={config} />
-                );
-              })}
-            </div>
-          </section>
-        ) : null}
-      </div>
-
-      {/* Sidebar — only fields not already in the page header */}
-      <aside className="space-y-6 lg:col-span-1">
-        {/* Offers at-a-glance — small stat pair */}
-        <section className="grid grid-cols-2 gap-3">
-          <div className="rounded-md border border-gray-200 bg-white p-3">
-            <div className="text-xs font-medium uppercase tracking-wide text-gray-500">
-              Active
-            </div>
-            <div className="mt-1 text-2xl font-semibold tabular-nums text-gray-900">
-              {activeOfferCount}
-            </div>
+      <PanelSection label="Distribution">
+        {channels.length > 0 ? (
+          <div className="flex flex-wrap gap-1">
+            {channels.map((c) => (
+              <Badge
+                key={c}
+                variant="neutral"
+                rounded="md"
+                className="font-medium"
+              >
+                {c}
+              </Badge>
+            ))}
           </div>
-          <div className="rounded-md border border-gray-200 bg-white p-3">
-            <div className="text-xs font-medium uppercase tracking-wide text-gray-500">
-              Total Offers
-            </div>
-            <div className="mt-1 text-2xl font-semibold tabular-nums text-gray-900">
-              {totalOffers}
-            </div>
-          </div>
-        </section>
-
-        <section>
-          <SectionLabel>Contact</SectionLabel>
-          <dl className="divide-y divide-gray-100">
-            <DefinitionRow
-              label="Website"
-              value={
-                merchant.website ? (
-                  <a
-                    href={`https://${merchant.website}`}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    className="text-primary hover:underline"
-                  >
-                    {merchant.website}
-                  </a>
-                ) : (
-                  <span className="text-gray-500">—</span>
-                )
-              }
-            />
-            <DefinitionRow
-              label="Primary"
-              value={
-                merchant.contact ? (
-                  <span>{merchant.contact}</span>
-                ) : (
-                  <span className="text-gray-500">—</span>
-                )
-              }
-            />
-          </dl>
-        </section>
-
-        {publisherChannels.length > 0 && (
-          <section>
-            <SectionLabel>Distribution Channels</SectionLabel>
-            <div className="flex flex-wrap gap-1">
-              {publisherChannels.map((c) => (
-                <Badge
-                  key={c}
-                  variant="neutral"
-                  rounded="md"
-                  className="font-medium"
-                >
-                  {c}
-                </Badge>
-              ))}
-            </div>
-          </section>
+        ) : (
+          <p className="text-sm text-gray-500">No channels yet.</p>
         )}
-      </aside>
+      </PanelSection>
+
+      <PanelSection label="Capabilities">
+        {types.length > 0 ? (
+          <ul className="space-y-1 text-sm text-gray-700">
+            {types.map((t) => (
+              <li key={t}>{t}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-gray-500">No offer types declared.</p>
+        )}
+      </PanelSection>
     </div>
+  );
+}
+
+// h4 nests under the page-header merchant name (h3). The <section> +
+// aria-labelledby pair gives screen readers a navigable landmark per block,
+// so a user can jump straight to Activity / Distribution / Capabilities.
+function PanelSection({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  const headingId = `merchant-panel-${label.toLowerCase()}`;
+  return (
+    <section aria-labelledby={headingId} className="py-5 first:pt-0 last:pb-0">
+      <h4
+        id={headingId}
+        className="text-sm font-semibold uppercase tracking-wide text-gray-700"
+      >
+        {label}
+      </h4>
+      <div className="mt-2">{children}</div>
+    </section>
   );
 }
 
