@@ -121,6 +121,7 @@
     "three": "^0.183.1",
     "use-stick-to-bottom": "^1.1.1",
     "uuid": "^11.1.0",
+    "xlsx": "^0.18.5",
     "zod": "^4.2.1"
   },
   "devDependencies": {

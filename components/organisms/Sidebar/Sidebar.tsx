@@ -169,6 +169,17 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     return Boolean(isCVSContext || clientId === "cvs");
   }, [isCVSContext, clientId]);
 
+  // John Deere Perks Pro dealer context (Dealer Dan). Detect from the URL as
+  // well as the demo client so the correct nav renders on first paint, before
+  // the persona effect runs (avoids briefly showing the default merchant nav).
+  const isJohnDeereContextBool = useMemo(() => {
+    return (
+      clientId === "johndeere" ||
+      pathname.startsWith("/campaign-manager/john-deere") ||
+      pathname.startsWith("/dashboard/john-deere")
+    );
+  }, [clientId, pathname]);
+
   useEffect(() => {
     // Mark component as hydrated once on first client render
     setIsHydrated(true);
@@ -284,6 +295,32 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
 
     // Check if we're in the publisher dashboard view
     const isPublisherDashboard = pathname.includes("/publisher-dashboard");
+
+    // John Deere dealer (Dealer Dan) navigation — Perks Pro MVP
+    if (isJohnDeereContextBool) {
+      return (
+        <>
+          <li className="nav-item px-3 py-1">
+            <SidebarLabel
+              href="/dashboard/john-deere"
+              icon={HomeIcon}
+              title="Dashboard"
+              isActive={pathname.includes("/dashboard/john-deere")}
+              isCollapsed={sidebarCollapsed}
+            />
+          </li>
+          <li className="nav-item px-3 py-1">
+            <SidebarLabel
+              href="/campaign-manager/john-deere"
+              icon={MegaphoneIcon}
+              title="Campaign Manager"
+              isActive={pathname.includes("/campaign-manager/john-deere")}
+              isCollapsed={sidebarCollapsed}
+            />
+          </li>
+        </>
+      );
+    }
 
     // If in CVS context, show CVS-specific navigation
     if (isCVSContextBool) {
@@ -596,6 +633,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     }
   }, [
     isCVSContextBool,
+    isJohnDeereContextBool,
     role,
     sidebarCollapsed,
     isLinkActive,
@@ -634,10 +672,15 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
 
   // Memoize logo rendering to prevent unnecessary recreation
   const logoElement = useMemo(() => {
+    // Keep the dealer (John Deere) persona inside its own experience instead of
+    // bouncing to the default Kigo dashboard.
+    const homeHref = isJohnDeereContextBool
+      ? "/campaign-manager/john-deere"
+      : "/";
     if (!isHydrated) {
       // Server-side rendering
       return (
-        <Link href="/" className="flex items-center">
+        <Link href={homeHref} className="flex items-center">
           <div className="w-[100px] h-[40px] flex items-center justify-center overflow-hidden">
             <Image
               src="/kigo logo.svg"
@@ -656,7 +699,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     if (sidebarCollapsed) {
       return (
         <Link
-          href="/"
+          href={homeHref}
           className="flex flex-col items-center justify-center w-full overflow-hidden"
         >
           {isCVSContextBool ? (
@@ -695,7 +738,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     }
 
     return (
-      <Link href="/" className="flex items-center">
+      <Link href={homeHref} className="flex items-center">
         {isCVSContextBool ? (
           <div className="flex items-center p-1.5 relative max-w-[180px] overflow-hidden">
             <div className="flex items-center z-10">
@@ -733,33 +776,47 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         )}
       </Link>
     );
-  }, [isHydrated, sidebarCollapsed, isCVSContextBool, clientName]);
+  }, [
+    isHydrated,
+    sidebarCollapsed,
+    isCVSContextBool,
+    isJohnDeereContextBool,
+    clientName,
+  ]);
 
   // User profile dropdown — progressive disclosure for Feedback, Help & Support, Sign Out
   const userProfileMenu = useMemo(() => {
     const isPublisherDashboard = pathname.includes("/publisher-dashboard");
 
-    const initials = isCVSContextBool
-      ? "SJ"
-      : isPublisherDashboard
-        ? "PU"
-        : role === "merchant"
-          ? "MU"
-          : role === "support"
-            ? "SA"
-            : "AD";
+    const initials = isJohnDeereContextBool
+      ? "DD"
+      : isCVSContextBool
+        ? "SJ"
+        : isPublisherDashboard
+          ? "PU"
+          : role === "merchant"
+            ? "MU"
+            : role === "support"
+              ? "SA"
+              : "AD";
 
-    const displayName = isCVSContextBool
-      ? "Sarah Johnson"
-      : isPublisherDashboard
-        ? "Publisher User"
-        : role === "merchant"
-          ? "Merchant User"
-          : role === "support"
-            ? "Support Agent"
-            : "Admin User";
+    const displayName = isJohnDeereContextBool
+      ? "Dealer Dan"
+      : isCVSContextBool
+        ? "Sarah Johnson"
+        : isPublisherDashboard
+          ? "Publisher User"
+          : role === "merchant"
+            ? "Merchant User"
+            : role === "support"
+              ? "Support Agent"
+              : "Admin User";
 
-    const subtitle = isCVSContextBool ? "CVS Agent ID: 2358" : roleTitle;
+    const subtitle = isJohnDeereContextBool
+      ? "Everglades Equipment"
+      : isCVSContextBool
+        ? "CVS Agent ID: 2358"
+        : roleTitle;
 
     const avatar = (
       <div className="w-8 h-8 bg-pastel-purple rounded-lg flex items-center justify-center text-indigo-500 font-semibold text-sm shadow-sm shrink-0">
@@ -851,6 +908,7 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     );
   }, [
     isCVSContextBool,
+    isJohnDeereContextBool,
     role,
     sidebarCollapsed,
     isHydrated,
