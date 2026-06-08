@@ -58,11 +58,21 @@ export default function MerchantManagerV3() {
   const filtered = useMemo<Merchant[]>(() => {
     let results = data;
 
-    // Text search across name + id
+    // Keyword search — OR across stacked terms, OR across searchable fields.
     if (searchTerms.length > 0) {
       const needles = searchTerms.map((t) => t.toLowerCase());
       results = results.filter((m) => {
-        const hay = `${m.name} ${m.id}`.toLowerCase();
+        const hay = [
+          m.name,
+          m.id,
+          m.category,
+          m.source,
+          m.contact ?? "",
+          m.website ?? "",
+          m.merchantDetail ?? "",
+        ]
+          .join(" ")
+          .toLowerCase();
         return needles.some((n) => hay.includes(n));
       });
     }
