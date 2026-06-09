@@ -50,7 +50,7 @@ export default function MerchantProfileDisplay({
   const subGroups = merchant.subGroups ?? [];
 
   return (
-    <div className="mx-auto max-w-4xl divide-y divide-gray-200">
+    <div className="divide-y divide-gray-200">
       <Section
         icon={IdentificationIcon}
         title="Overview"
