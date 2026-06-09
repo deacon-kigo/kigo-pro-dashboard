@@ -21,6 +21,8 @@ type DetailTab = "profile" | "offers" | "edit";
 
 const EDIT_FORM_ID = "merchant-edit-form";
 
+// Sidebar tabs — Profile + Offers Timeline only. Edit mode is entered via
+// the "Edit Merchant" header button (or ?tab=edit deep-link), not the sidebar.
 const TABS: {
   id: DetailTab;
   label: string;
@@ -28,7 +30,6 @@ const TABS: {
 }[] = [
   { id: "profile", label: "Profile", icon: IdentificationIcon },
   { id: "offers", label: "Offers Timeline", icon: ListBulletIcon },
-  { id: "edit", label: "Edit", icon: PencilSquareIcon },
 ];
 
 // Display labels for the production merchant lifecycle states.
@@ -124,8 +125,6 @@ export default function MerchantDetailView({
     [merchantState]
   );
 
-  const handleBackToList = () => router.push("/merchants");
-
   const handleEditSubmit = (data: MerchantFormData) => {
     // Mirror form values back into the merchant record so the Profile view
     // and page header reflect the save. Locations / logo / banner / corpName
@@ -164,9 +163,11 @@ export default function MerchantDetailView({
     });
   };
 
-  // Header actions — view modes carry navigation. Edit mode owns Cancel +
-  // Save Changes targeting the merchant form's submit. The status control
-  // lives inside the edit form per Slack addendum from John K.
+  // Header actions — Profile / Offers show a primary "Edit Merchant" entry
+  // point that swaps the main content for the merchant form. Edit mode owns
+  // Cancel + Save Changes targeting the merchant form's submit. The status
+  // control lives inside the edit form per Slack addendum from John K.
+  // Navigation back to the list lives in the breadcrumb above the card.
   const headerActions =
     activeTab === "edit" ? (
       <div className="flex items-center gap-2">
@@ -187,8 +188,9 @@ export default function MerchantDetailView({
         </Button>
       </div>
     ) : (
-      <Button variant="outline" size="sm" onClick={handleBackToList}>
-        Back to Merchants
+      <Button size="sm" onClick={() => setActiveTab("edit")}>
+        <PencilSquareIcon className="mr-1.5 h-4 w-4" aria-hidden="true" />
+        Edit Merchant
       </Button>
     );
 
@@ -299,10 +301,10 @@ export default function MerchantDetailView({
 }
 
 // ---------------------------------------------------------------------------
-// Profile tab — right rail. Holds derived data (offer counts, channels,
-// supported types) that doesn't live on the merchant record itself. Sections
-// share the same divide-y hairline rhythm as the field list on the left, so
-// the two columns read as one coherent surface.
+// Profile tab — right rail. Surfaces derived marketplace stats (offer counts
+// and distribution channels) that the Profile body doesn't carry directly.
+// Descriptive merchant attributes (Capabilities, Commissionable, Restrictions,
+// Sub-groups) live in the main column via MerchantProfileDisplay.
 // ---------------------------------------------------------------------------
 function SecondaryPanel({ merchant }: { merchant: Merchant }) {
   const channels = useMemo(
@@ -314,7 +316,6 @@ function SecondaryPanel({ merchant }: { merchant: Merchant }) {
     [merchant]
   );
   const totalCount = merchant.offers.length;
-  const types = merchant.supportedOfferTypes ?? [];
 
   return (
     <div className="divide-y divide-gray-200">
@@ -351,26 +352,6 @@ function SecondaryPanel({ merchant }: { merchant: Merchant }) {
         ) : (
           <p className="text-sm text-gray-500">No channels yet.</p>
         )}
-      </PanelSection>
-
-      <PanelSection label="Capabilities">
-        {types.length > 0 ? (
-          <ul className="space-y-1 text-sm text-gray-700">
-            {types.map((t) => (
-              <li key={t}>{t}</li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-gray-500">No offer types declared.</p>
-        )}
-      </PanelSection>
-
-      {/* Legacy commerce flag — matches the Yes/No filter in the list view so
-          operators can confirm an individual merchant's setting from detail. */}
-      <PanelSection label="Commissionable offers">
-        <p className="text-sm text-gray-700">
-          {merchant.commissionOffers ? "Yes" : "No"}
-        </p>
       </PanelSection>
     </div>
   );

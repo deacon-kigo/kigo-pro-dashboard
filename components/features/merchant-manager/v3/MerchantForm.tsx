@@ -39,6 +39,8 @@ const MIN_DBA_NAME_LENGTH = 3;
 const MAX_DBA_NAME_LENGTH = 100;
 const MIN_CORP_NAME_LENGTH = 3;
 const MAX_CORP_NAME_LENGTH = 100;
+const MIN_ADDRESS_LENGTH = 3;
+const MAX_ADDRESS_LENGTH = 100;
 const MAX_HIGHLIGHTS_LENGTH = 2000;
 const FILE_HELPER_TEXT = "JPG or PNG (max file size 2MB)";
 
@@ -58,6 +60,61 @@ const CATEGORY_OPTIONS = [
   { label: "Sports", value: "sports" },
   { label: "Home & Garden", value: "home-garden" },
 ];
+
+// Mirrors kigo-admin-tools/src/constants/us-states.ts
+const US_STATES = [
+  { label: "Alabama", value: "AL" },
+  { label: "Alaska", value: "AK" },
+  { label: "Arizona", value: "AZ" },
+  { label: "Arkansas", value: "AR" },
+  { label: "California", value: "CA" },
+  { label: "Colorado", value: "CO" },
+  { label: "Connecticut", value: "CT" },
+  { label: "Delaware", value: "DE" },
+  { label: "District of Columbia", value: "DC" },
+  { label: "Florida", value: "FL" },
+  { label: "Georgia", value: "GA" },
+  { label: "Hawaii", value: "HI" },
+  { label: "Idaho", value: "ID" },
+  { label: "Illinois", value: "IL" },
+  { label: "Indiana", value: "IN" },
+  { label: "Iowa", value: "IA" },
+  { label: "Kansas", value: "KS" },
+  { label: "Kentucky", value: "KY" },
+  { label: "Louisiana", value: "LA" },
+  { label: "Maine", value: "ME" },
+  { label: "Maryland", value: "MD" },
+  { label: "Massachusetts", value: "MA" },
+  { label: "Michigan", value: "MI" },
+  { label: "Minnesota", value: "MN" },
+  { label: "Mississippi", value: "MS" },
+  { label: "Missouri", value: "MO" },
+  { label: "Montana", value: "MT" },
+  { label: "Nebraska", value: "NE" },
+  { label: "Nevada", value: "NV" },
+  { label: "New Hampshire", value: "NH" },
+  { label: "New Jersey", value: "NJ" },
+  { label: "New Mexico", value: "NM" },
+  { label: "New York", value: "NY" },
+  { label: "North Carolina", value: "NC" },
+  { label: "North Dakota", value: "ND" },
+  { label: "Ohio", value: "OH" },
+  { label: "Oklahoma", value: "OK" },
+  { label: "Oregon", value: "OR" },
+  { label: "Pennsylvania", value: "PA" },
+  { label: "Rhode Island", value: "RI" },
+  { label: "South Carolina", value: "SC" },
+  { label: "South Dakota", value: "SD" },
+  { label: "Tennessee", value: "TN" },
+  { label: "Texas", value: "TX" },
+  { label: "Utah", value: "UT" },
+  { label: "Vermont", value: "VT" },
+  { label: "Virginia", value: "VA" },
+  { label: "Washington", value: "WA" },
+  { label: "West Virginia", value: "WV" },
+  { label: "Wisconsin", value: "WI" },
+  { label: "Wyoming", value: "WY" },
+] as const;
 
 export interface MerchantFormData {
   dbaName: string;
@@ -190,11 +247,15 @@ export default function MerchantForm({
     if (form.locationsTab === "upload") {
       return form.locationsFile === null ? "Upload a locations file." : null;
     }
-    if (form.manualAddress.trim().length === 0) {
+    const addrLen = form.manualAddress.trim().length;
+    if (addrLen === 0) {
       return "Enter a business street address.";
     }
-    if (form.manualState.trim().length === 0) {
-      return "Enter a state.";
+    if (addrLen < MIN_ADDRESS_LENGTH || addrLen > MAX_ADDRESS_LENGTH) {
+      return `Address must be ${MIN_ADDRESS_LENGTH}-${MAX_ADDRESS_LENGTH} characters.`;
+    }
+    if (form.manualState.length === 0) {
+      return "Select a state.";
     }
     return null;
   })();
@@ -657,7 +718,8 @@ export default function MerchantForm({
                     htmlFor="manualAddress"
                     className={
                       showLocationsError &&
-                      form.manualAddress.trim().length === 0
+                      (form.manualAddress.trim().length < MIN_ADDRESS_LENGTH ||
+                        form.manualAddress.trim().length > MAX_ADDRESS_LENGTH)
                         ? "text-destructive"
                         : ""
                     }
@@ -673,55 +735,68 @@ export default function MerchantForm({
                       update("manualAddress", e.target.value);
                     }}
                     onBlur={() => markTouched("locations")}
+                    maxLength={MAX_ADDRESS_LENGTH}
                     aria-invalid={
                       showLocationsError &&
-                      form.manualAddress.trim().length === 0
+                      (form.manualAddress.trim().length < MIN_ADDRESS_LENGTH ||
+                        form.manualAddress.trim().length > MAX_ADDRESS_LENGTH)
                         ? true
                         : undefined
                     }
                     className={`mt-1 ${
                       showLocationsError &&
-                      form.manualAddress.trim().length === 0
+                      (form.manualAddress.trim().length < MIN_ADDRESS_LENGTH ||
+                        form.manualAddress.trim().length > MAX_ADDRESS_LENGTH)
                         ? "border-destructive"
                         : ""
                     }`}
                   />
                   <p className="mt-1.5 text-sm font-medium text-gray-600">
-                    The business street address (3-100 chars)
+                    The business street address ({MIN_ADDRESS_LENGTH}-
+                    {MAX_ADDRESS_LENGTH} chars)
                   </p>
                 </div>
                 <div className="w-1/4">
                   <Label
                     htmlFor="manualState"
                     className={
-                      showLocationsError && form.manualState.trim().length === 0
+                      showLocationsError && form.manualState.length === 0
                         ? "text-destructive"
                         : ""
                     }
                   >
                     State
                   </Label>
-                  <Input
-                    id="manualState"
-                    placeholder="e.g. CA"
+                  <Select
                     value={form.manualState}
-                    onChange={(e) => {
+                    onValueChange={(v) => {
                       markTouched("locations");
-                      update("manualState", e.target.value);
+                      update("manualState", v);
                     }}
-                    onBlur={() => markTouched("locations")}
-                    aria-invalid={
-                      showLocationsError && form.manualState.trim().length === 0
-                        ? true
-                        : undefined
-                    }
-                    className={`mt-1 ${
-                      showLocationsError && form.manualState.trim().length === 0
-                        ? "border-destructive"
-                        : ""
-                    }`}
-                    maxLength={100}
-                  />
+                  >
+                    <SelectTrigger
+                      id="manualState"
+                      aria-invalid={
+                        showLocationsError && form.manualState.length === 0
+                          ? true
+                          : undefined
+                      }
+                      className={`mt-1 ${
+                        showLocationsError && form.manualState.length === 0
+                          ? "border-destructive"
+                          : ""
+                      }`}
+                    >
+                      <SelectValue placeholder="Select state" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {US_STATES.map((s) => (
+                        <SelectItem key={s.value} value={s.value}>
+                          {s.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </TabsContent>
