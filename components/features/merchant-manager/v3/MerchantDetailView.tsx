@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/atoms/Badge";
+import { PageHeader } from "@/components/molecules/PageHeader";
 import {
   IdentificationIcon,
   ListBulletIcon,
@@ -37,19 +37,6 @@ const MERCHANT_STATUS_LABEL: Record<MerchantStatus, string> = {
   published: "Active",
   unpublished: "Unpublished",
   closed: "Closed",
-};
-
-const statusBadgeVariant = (status: MerchantStatus | undefined) => {
-  switch (status) {
-    case "published":
-      return "success" as const;
-    case "unpublished":
-      return "warning" as const;
-    case "closed":
-      return "error" as const;
-    default:
-      return "neutral" as const;
-  }
 };
 
 const offerStatusVariant = (status: OfferStatus) => {
@@ -195,100 +182,86 @@ export default function MerchantDetailView({
     );
 
   return (
-    <div className="overflow-hidden" style={{ height: "calc(100vh - 140px)" }}>
-      <div className="h-full flex">
-        {/* Vertical sidebar — mirrors ad group wizard pattern */}
-        <div className="w-16 flex-shrink-0">
-          <div className="h-full bg-white rounded-l-lg border border-r-0 border-gray-200 shadow-sm">
-            <nav className="p-2 space-y-3">
-              {TABS.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`group relative w-12 h-12 flex items-center justify-center rounded-lg transition-all duration-200 ${
-                      isActive
-                        ? "bg-pastel-blue text-primary font-medium"
-                        : "text-gray-600 hover:bg-pastel-blue hover:text-primary"
-                    }`}
-                    title={tab.label}
-                    aria-current={isActive ? "page" : undefined}
-                  >
-                    <Icon className="h-5 w-5" aria-hidden="true" />
-                    {/* Tooltip on hover */}
-                    <div className="absolute left-16 top-1/2 transform -translate-y-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                      {tab.label}
-                    </div>
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-        </div>
+    <div className="space-y-4">
+      <PageHeader
+        title={merchantState.name}
+        description={`${merchantState.category} · ${merchantState.source} · ${merchantState.id}`}
+        logo={<MerchantLogo merchant={merchantState} size={48} />}
+        actions={headerActions}
+        variant="aurora"
+      />
 
-        {/* Main content */}
-        <div className="flex-1 min-w-0">
-          <Card className="p-0 flex flex-col h-full overflow-hidden shadow-md rounded-l-none border-l-0">
-            {/* Header bar — merchant identity + contextual actions */}
-            <div className="flex items-center justify-between p-3 border-b bg-muted/20 h-[61px] flex-shrink-0">
-              <div className="flex items-center gap-3 min-w-0">
-                <MerchantLogo merchant={merchantState} size={36} />
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-medium truncate">
-                      {merchantState.name}
-                    </h3>
-                    <Badge variant="neutral" rounded="md" className="font-mono">
-                      {merchantState.id}
-                    </Badge>
-                    <Badge
-                      variant={statusBadgeVariant(merchantStatus)}
-                      className="font-medium"
+      <div
+        className="overflow-hidden"
+        style={{ height: "calc(100vh - 260px)" }}
+      >
+        <div className="h-full flex">
+          {/* Vertical sidebar — mirrors ad group wizard pattern */}
+          <div className="w-16 flex-shrink-0">
+            <div className="h-full bg-white rounded-l-lg border border-r-0 border-gray-200 shadow-sm">
+              <nav className="p-2 space-y-3">
+                {TABS.map((tab) => {
+                  const Icon = tab.icon;
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`group relative w-12 h-12 flex items-center justify-center rounded-lg transition-all duration-200 ${
+                        isActive
+                          ? "bg-pastel-blue text-primary font-medium"
+                          : "text-gray-600 hover:bg-pastel-blue hover:text-primary"
+                      }`}
+                      title={tab.label}
+                      aria-current={isActive ? "page" : undefined}
                     >
-                      {MERCHANT_STATUS_LABEL[merchantStatus]}
-                    </Badge>
+                      <Icon className="h-5 w-5" aria-hidden="true" />
+                      {/* Tooltip on hover */}
+                      <div className="absolute left-16 top-1/2 transform -translate-y-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                        {tab.label}
+                      </div>
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
+          </div>
+
+          {/* Main content */}
+          <div className="flex-1 min-w-0">
+            <Card className="p-0 flex flex-col h-full overflow-hidden shadow-md rounded-l-none border-l-0">
+              {/* Scrollable content */}
+              <div className="flex-1 overflow-auto">
+                {activeTab === "profile" && (
+                  <div className="p-6">
+                    <MerchantProfileDisplay
+                      merchant={merchantState}
+                      status={merchantStatus}
+                    />
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    {merchantState.category} · {merchantState.source}
-                  </p>
-                </div>
-              </div>
-              {headerActions}
-            </div>
+                )}
 
-            {/* Scrollable content */}
-            <div className="flex-1 overflow-auto">
-              {activeTab === "profile" && (
-                <div className="p-6">
-                  <MerchantProfileDisplay
+                {activeTab === "offers" && (
+                  <OffersContent
                     merchant={merchantState}
-                    status={merchantStatus}
+                    expiredCount={expiredOffers.length}
                   />
-                </div>
-              )}
+                )}
 
-              {activeTab === "offers" && (
-                <OffersContent
-                  merchant={merchantState}
-                  expiredCount={expiredOffers.length}
-                />
-              )}
-
-              {activeTab === "edit" && (
-                <MerchantForm
-                  formId={EDIT_FORM_ID}
-                  initialMerchant={merchantState}
-                  onSubmit={handleEditSubmit}
-                  onValidityChange={setIsFormValid}
-                  status={merchantStatus}
-                  onStatusChange={handleStatusChange}
-                />
-              )}
-            </div>
-          </Card>
+                {activeTab === "edit" && (
+                  <MerchantForm
+                    formId={EDIT_FORM_ID}
+                    initialMerchant={merchantState}
+                    onSubmit={handleEditSubmit}
+                    onValidityChange={setIsFormValid}
+                    status={merchantStatus}
+                    onStatusChange={handleStatusChange}
+                  />
+                )}
+              </div>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
