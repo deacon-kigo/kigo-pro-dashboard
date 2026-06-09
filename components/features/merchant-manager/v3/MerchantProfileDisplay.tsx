@@ -8,7 +8,10 @@ import {
   DocumentTextIcon,
   NoSymbolIcon,
   RectangleGroupIcon,
+  PhotoIcon,
+  MapPinIcon,
 } from "@heroicons/react/24/outline";
+import { MerchantLogo } from "./MerchantLogo";
 import type { Merchant, MerchantStatus } from "./types";
 
 const STATUS_LABEL: Record<MerchantStatus, string> = {
@@ -63,6 +66,9 @@ export default function MerchantProfileDisplay({
             </Badge>
           </Row>
           <Row label="DBA Name">{merchant.name}</Row>
+          <Row label="Corporation Name">
+            <NotProvided />
+          </Row>
           <Row label="Merchant ID">
             <span className="font-mono text-gray-900">{merchant.id}</span>
           </Row>
@@ -78,14 +84,42 @@ export default function MerchantProfileDisplay({
         </dl>
       </Section>
 
-      {merchant.website && (
-        <Section
-          icon={AtSymbolIcon}
-          title="Contact"
-          description="Where customers find this merchant online."
-        >
-          <dl>
-            <Row label="Website">
+      <Section
+        icon={PhotoIcon}
+        title="Branding"
+        description="Customer-facing imagery used across the marketplace."
+      >
+        <dl>
+          <Row label="Logo">
+            <div className="flex items-center gap-3">
+              <MerchantLogo merchant={merchant} size={40} />
+              <span className="text-gray-500">
+                Auto-detected from {merchant.website || "merchant name"}
+              </span>
+            </div>
+          </Row>
+          <Row label="Banner image">
+            <NotProvided />
+          </Row>
+        </dl>
+      </Section>
+
+      <Section
+        icon={MapPinIcon}
+        title="Locations"
+        description="Physical addresses where offers redeem."
+      >
+        <NotProvided />
+      </Section>
+
+      <Section
+        icon={AtSymbolIcon}
+        title="Contact"
+        description="Where customers find this merchant online."
+      >
+        <dl>
+          <Row label="Website">
+            {merchant.website ? (
               <a
                 href={
                   merchant.website.startsWith("http")
@@ -98,22 +132,26 @@ export default function MerchantProfileDisplay({
               >
                 {merchant.website}
               </a>
-            </Row>
-          </dl>
-        </Section>
-      )}
+            ) : (
+              <NotProvided />
+            )}
+          </Row>
+        </dl>
+      </Section>
 
-      {merchant.merchantDetail && (
-        <Section
-          icon={DocumentTextIcon}
-          title="About"
-          description="Public-facing description shown to ops reviewing this merchant."
-        >
+      <Section
+        icon={DocumentTextIcon}
+        title="About"
+        description="Public-facing description shown to ops reviewing this merchant."
+      >
+        {merchant.merchantDetail ? (
           <p className="max-w-prose text-sm leading-relaxed text-gray-700">
             {merchant.merchantDetail}
           </p>
-        </Section>
-      )}
+        ) : (
+          <NotProvided />
+        )}
+      </Section>
 
       {restrictions.length > 0 && (
         <Section
@@ -239,4 +277,8 @@ function Row({
       <dd className="text-sm font-medium text-gray-900">{children}</dd>
     </div>
   );
+}
+
+function NotProvided() {
+  return <span className="font-normal italic text-gray-400">Not provided</span>;
 }
