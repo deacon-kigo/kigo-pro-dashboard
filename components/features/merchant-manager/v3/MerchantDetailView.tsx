@@ -262,16 +262,11 @@ export default function MerchantDetailView({
             {/* Scrollable content */}
             <div className="flex-1 overflow-auto">
               {activeTab === "profile" && (
-                <div className="grid grid-cols-1 gap-x-12 p-6 lg:grid-cols-12">
-                  <div className="lg:col-span-8">
-                    <MerchantProfileDisplay
-                      merchant={merchantState}
-                      status={merchantStatus}
-                    />
-                  </div>
-                  <aside className="mt-8 lg:col-span-4 lg:mt-0">
-                    <SecondaryPanel merchant={merchantState} />
-                  </aside>
+                <div className="p-6">
+                  <MerchantProfileDisplay
+                    merchant={merchantState}
+                    status={merchantStatus}
+                  />
                 </div>
               )}
 
@@ -297,87 +292,6 @@ export default function MerchantDetailView({
         </div>
       </div>
     </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Profile tab — right rail. Surfaces derived marketplace stats (offer counts
-// and distribution channels) that the Profile body doesn't carry directly.
-// Descriptive merchant attributes (Capabilities, Commissionable, Restrictions,
-// Sub-groups) live in the main column via MerchantProfileDisplay.
-// ---------------------------------------------------------------------------
-function SecondaryPanel({ merchant }: { merchant: Merchant }) {
-  const channels = useMemo(
-    () => Array.from(new Set(merchant.offers.map((o) => o.channel))),
-    [merchant]
-  );
-  const activeCount = useMemo(
-    () => merchant.offers.filter((o) => o.status === "published").length,
-    [merchant]
-  );
-  const totalCount = merchant.offers.length;
-
-  return (
-    <div className="divide-y divide-gray-200">
-      <PanelSection label="Activity">
-        <p className="text-sm text-gray-700">
-          <span className="font-medium tabular-nums text-gray-900">
-            {activeCount}
-          </span>{" "}
-          active
-          <span aria-hidden="true" className="mx-1.5 text-gray-300">
-            ·
-          </span>
-          <span className="font-medium tabular-nums text-gray-900">
-            {totalCount}
-          </span>{" "}
-          total
-        </p>
-      </PanelSection>
-
-      <PanelSection label="Distribution">
-        {channels.length > 0 ? (
-          <div className="flex flex-wrap gap-1">
-            {channels.map((c) => (
-              <Badge
-                key={c}
-                variant="neutral"
-                rounded="md"
-                className="font-medium"
-              >
-                {c}
-              </Badge>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-gray-500">No channels yet.</p>
-        )}
-      </PanelSection>
-    </div>
-  );
-}
-
-// h4 nests under the page-header merchant name (h3). The <section> +
-// aria-labelledby pair gives screen readers a navigable landmark per block,
-// so a user can jump straight to Activity / Distribution / Capabilities.
-function PanelSection({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  const headingId = `merchant-panel-${label.toLowerCase()}`;
-  return (
-    <section aria-labelledby={headingId} className="py-5 first:pt-0 last:pb-0">
-      <h4
-        id={headingId}
-        className="text-sm font-semibold uppercase tracking-wide text-gray-700"
-      >
-        {label}
-      </h4>
-      <div className="mt-2">{children}</div>
-    </section>
   );
 }
 
