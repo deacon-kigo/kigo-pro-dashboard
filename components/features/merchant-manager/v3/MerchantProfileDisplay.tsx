@@ -2,6 +2,13 @@
 
 import React from "react";
 import { Badge } from "@/components/atoms/Badge";
+import {
+  IdentificationIcon,
+  AtSymbolIcon,
+  DocumentTextIcon,
+  NoSymbolIcon,
+  RectangleGroupIcon,
+} from "@heroicons/react/24/outline";
 import type { Merchant, MerchantStatus } from "./types";
 
 const STATUS_LABEL: Record<MerchantStatus, string> = {
@@ -39,157 +46,105 @@ export default function MerchantProfileDisplay({
   merchant,
   status,
 }: MerchantProfileDisplayProps) {
-  const offerTypes = merchant.supportedOfferTypes ?? [];
   const restrictions = merchant.restrictions ?? [];
   const subGroups = merchant.subGroups ?? [];
 
   return (
-    <>
-      {/* Identity — fields that uniquely tag this merchant in the system. */}
-      <dl className="divide-y divide-gray-200">
-        <DisplayRow
-          label="Status"
-          value={
+    <div className="mx-auto max-w-4xl divide-y divide-gray-200">
+      <Section
+        icon={IdentificationIcon}
+        title="Overview"
+        description="Identity and lifecycle of this merchant record."
+      >
+        <dl>
+          <Row label="Status">
             <Badge variant={statusVariant(status)} className="font-medium">
               {STATUS_LABEL[status]}
             </Badge>
-          }
-        />
-        <DisplayRow label="DBA Name" value={merchant.name} />
-        <DisplayRow
-          label="Merchant ID"
-          value={<span className="font-mono text-gray-900">{merchant.id}</span>}
-        />
-        <DisplayRow label="Source" value={merchant.source} />
-        <DisplayRow label="Categories" value={merchant.category} />
-        {merchant.isParent && (
-          <DisplayRow
-            label="Hierarchy"
-            value={
+          </Row>
+          <Row label="DBA Name">{merchant.name}</Row>
+          <Row label="Merchant ID">
+            <span className="font-mono text-gray-900">{merchant.id}</span>
+          </Row>
+          <Row label="Source">{merchant.source}</Row>
+          <Row label="Categories">{merchant.category}</Row>
+          {merchant.isParent && (
+            <Row label="Hierarchy">
               <Badge variant="info" rounded="md" className="font-medium">
                 Parent merchant
               </Badge>
-            }
-          />
-        )}
-      </dl>
+            </Row>
+          )}
+        </dl>
+      </Section>
 
-      {/* Contact — phone/email/website fan-in. */}
-      {(merchant.website || merchant.contact) && (
-        <>
-          <SectionBreak id="merchant-contact" label="Contact" />
-          <dl
-            aria-labelledby="merchant-contact"
-            className="divide-y divide-gray-200 border-t border-gray-200"
-          >
-            {merchant.website && (
-              <DisplayRow
-                label="Website"
-                value={
-                  <a
-                    href={
-                      merchant.website.startsWith("http")
-                        ? merchant.website
-                        : `https://${merchant.website}`
-                    }
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    className="text-primary hover:underline"
-                  >
-                    {merchant.website}
-                  </a>
+      {merchant.website && (
+        <Section
+          icon={AtSymbolIcon}
+          title="Contact"
+          description="Where customers find this merchant online."
+        >
+          <dl>
+            <Row label="Website">
+              <a
+                href={
+                  merchant.website.startsWith("http")
+                    ? merchant.website
+                    : `https://${merchant.website}`
                 }
-              />
-            )}
-            {merchant.contact && (
-              <DisplayRow label="Primary contact" value={merchant.contact} />
-            )}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="text-primary hover:underline"
+              >
+                {merchant.website}
+              </a>
+            </Row>
           </dl>
-        </>
+        </Section>
       )}
 
-      {/* About — narrative description (merchantDetail). */}
       {merchant.merchantDetail && (
-        <>
-          <SectionBreak id="merchant-about" label="About" />
-          <p className="max-w-prose pt-3 text-sm leading-relaxed text-gray-700">
+        <Section
+          icon={DocumentTextIcon}
+          title="About"
+          description="Public-facing description shown to ops reviewing this merchant."
+        >
+          <p className="max-w-prose text-sm leading-relaxed text-gray-700">
             {merchant.merchantDetail}
           </p>
-        </>
+        </Section>
       )}
 
-      {/* Capabilities — what this merchant can offer + commercial terms. */}
-      <SectionBreak id="merchant-capabilities" label="Capabilities" />
-      <dl
-        aria-labelledby="merchant-capabilities"
-        className="divide-y divide-gray-200 border-t border-gray-200"
-      >
-        <DisplayRow
-          label="Supported offer types"
-          value={
-            offerTypes.length > 0 ? (
-              <div className="flex flex-wrap gap-1">
-                {offerTypes.map((t) => (
-                  <Badge
-                    key={t}
-                    variant="neutral"
-                    rounded="md"
-                    className="font-medium"
-                  >
-                    {t}
-                  </Badge>
-                ))}
-              </div>
-            ) : (
-              <NotProvided />
-            )
-          }
-        />
-        <DisplayRow
-          label="Commissionable offers"
-          value={merchant.commissionOffers ? "Yes" : "No"}
-        />
-        {merchant.revShare && (
-          <DisplayRow label="Revenue share" value={merchant.revShare} />
-        )}
-      </dl>
-
-      {/* Restrictions — competitor merchants this one excludes. */}
       {restrictions.length > 0 && (
-        <>
-          <SectionBreak id="merchant-restrictions" label="Restrictions" />
-          <div className="pt-3">
-            <p className="mb-2 text-sm text-gray-600">
-              Offers cannot run alongside the following merchants:
-            </p>
-            <ul className="flex flex-wrap gap-1.5">
-              {restrictions.map((r) => (
-                <li key={r.id}>
-                  <Badge variant="neutral" rounded="md" className="font-medium">
-                    {r.name}
-                    <span className="ml-1.5 font-mono text-gray-500">
-                      {r.id}
-                    </span>
-                  </Badge>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </>
+        <Section
+          icon={NoSymbolIcon}
+          title="Restrictions"
+          description="Offers cannot run alongside the following merchants."
+        >
+          <ul className="flex flex-wrap gap-1.5">
+            {restrictions.map((r) => (
+              <li key={r.id}>
+                <Badge variant="neutral" rounded="md" className="font-medium">
+                  {r.name}
+                  <span className="ml-1.5 font-mono text-gray-500">{r.id}</span>
+                </Badge>
+              </li>
+            ))}
+          </ul>
+        </Section>
       )}
 
-      {/* Sub-groups — regional / franchise breakouts for parent merchants. */}
       {merchant.isParent && subGroups.length > 0 && (
-        <>
-          <SectionBreak id="merchant-subgroups" label="Sub-groups" />
-          <ul
-            aria-labelledby="merchant-subgroups"
-            className="divide-y divide-gray-200 border-t border-gray-200"
-          >
+        <Section
+          icon={RectangleGroupIcon}
+          title="Sub-groups"
+          description="Regional and franchise breakouts owned by this parent."
+        >
+          <ul className="divide-y divide-gray-100 rounded-md border border-gray-200">
             {subGroups.map((sg) => (
               <li
                 key={sg.id}
-                className="flex flex-wrap items-start justify-between gap-3 py-4"
+                className="flex flex-wrap items-start justify-between gap-3 px-4 py-3"
               >
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
@@ -200,7 +155,7 @@ export default function MerchantProfileDisplay({
                       {sg.id}
                     </Badge>
                   </div>
-                  <p className="mt-0.5 text-sm text-gray-600">{sg.contact}</p>
+                  <p className="mt-0.5 text-sm text-gray-500">{sg.contact}</p>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-gray-600">
                   <Badge
@@ -227,40 +182,61 @@ export default function MerchantProfileDisplay({
               </li>
             ))}
           </ul>
-        </>
+        </Section>
       )}
-    </>
-  );
-}
-
-function DisplayRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: React.ReactNode;
-}) {
-  return (
-    <div className="py-5">
-      <dt className="text-sm font-medium text-gray-900">{label}</dt>
-      <dd className="mt-1 text-sm text-gray-600">{value}</dd>
     </div>
   );
 }
 
-function NotProvided() {
-  return <span className="italic text-gray-500">Not provided</span>;
+// Section anchors the eye with an icon + sentence-cased title + helper
+// subtitle. The h3 nests under the page header's merchant name (h3 in the
+// detail card chrome), giving screen readers a clear "section / merchant"
+// path. divide-y on the parent draws the separator so sections never
+// double-up borders.
+function Section({
+  icon: Icon,
+  title,
+  description,
+  children,
+}: {
+  icon: typeof IdentificationIcon;
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
+  const headingId = `merchant-section-${title.toLowerCase().replace(/\s+/g, "-")}`;
+  return (
+    <section aria-labelledby={headingId} className="py-8 first:pt-0 last:pb-0">
+      <header className="mb-5">
+        <div className="flex items-center gap-2">
+          <Icon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+          <h3 id={headingId} className="text-base font-semibold text-gray-900">
+            {title}
+          </h3>
+        </div>
+        {description && (
+          <p className="mt-1 text-sm text-gray-500">{description}</p>
+        )}
+      </header>
+      {children}
+    </section>
+  );
 }
 
-function SectionBreak({ id, label }: { id: string; label: string }) {
+// Row is a definition pair (label : value). The horizontal grid keeps the
+// label quiet and right-aligned next to a prominent value so the eye can
+// scan a column of facts. Stacks on mobile.
+function Row({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="pb-2 pt-8">
-      <h4
-        id={id}
-        className="text-sm font-semibold uppercase tracking-wide text-gray-700"
-      >
-        {label}
-      </h4>
+    <div className="grid grid-cols-1 gap-y-1 py-2.5 sm:grid-cols-[180px_1fr] sm:gap-x-6 sm:gap-y-0">
+      <dt className="text-sm text-gray-500">{label}</dt>
+      <dd className="text-sm font-medium text-gray-900">{children}</dd>
     </div>
   );
 }
