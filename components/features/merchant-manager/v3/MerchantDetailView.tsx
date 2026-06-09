@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/atoms/Badge";
 import { PageHeader } from "@/components/molecules/PageHeader";
 import {
   IdentificationIcon,
@@ -37,6 +38,19 @@ const MERCHANT_STATUS_LABEL: Record<MerchantStatus, string> = {
   published: "Active",
   unpublished: "Unpublished",
   closed: "Closed",
+};
+
+const statusBadgeVariant = (status: MerchantStatus | undefined) => {
+  switch (status) {
+    case "published":
+      return "success" as const;
+    case "unpublished":
+      return "warning" as const;
+    case "closed":
+      return "error" as const;
+    default:
+      return "neutral" as const;
+  }
 };
 
 const offerStatusVariant = (status: OfferStatus) => {
@@ -184,10 +198,9 @@ export default function MerchantDetailView({
   return (
     <div className="space-y-4">
       <PageHeader
-        title={merchantState.name}
-        description={`${merchantState.category} · ${merchantState.source} · ${merchantState.id}`}
-        logo={<MerchantLogo merchant={merchantState} size={48} />}
-        actions={headerActions}
+        title="Merchant Profile"
+        description="View and edit merchant details, branding, locations, and offers."
+        emoji="🏪"
         variant="aurora"
       />
 
@@ -231,6 +244,39 @@ export default function MerchantDetailView({
           {/* Main content */}
           <div className="flex-1 min-w-0">
             <Card className="p-0 flex flex-col h-full overflow-hidden shadow-md rounded-l-none border-l-0">
+              {/* Merchant chrome — identity + contextual actions for this
+                  merchant record. The page-level PageHeader above carries
+                  the page's purpose; this bar carries the specific record. */}
+              <div className="flex items-center justify-between p-3 border-b bg-muted/20 h-[61px] flex-shrink-0">
+                <div className="flex items-center gap-3 min-w-0">
+                  <MerchantLogo merchant={merchantState} size={36} />
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-medium truncate">
+                        {merchantState.name}
+                      </h3>
+                      <Badge
+                        variant="neutral"
+                        rounded="md"
+                        className="font-mono"
+                      >
+                        {merchantState.id}
+                      </Badge>
+                      <Badge
+                        variant={statusBadgeVariant(merchantStatus)}
+                        className="font-medium"
+                      >
+                        {MERCHANT_STATUS_LABEL[merchantStatus]}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {merchantState.category} · {merchantState.source}
+                    </p>
+                  </div>
+                </div>
+                {headerActions}
+              </div>
+
               {/* Scrollable content */}
               <div className="flex-1 overflow-auto">
                 {activeTab === "profile" && (
