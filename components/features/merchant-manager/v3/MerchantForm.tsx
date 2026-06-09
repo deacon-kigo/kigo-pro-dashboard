@@ -136,7 +136,29 @@ export default function MerchantForm({
   const [form, setForm] = useState<MerchantFormData>(() =>
     initialMerchant ? merchantToFormState(initialMerchant) : initialFormState
   );
-  const [urlTouched, setUrlTouched] = useState(false);
+  // Per-field touched map — error UI only shows once a field is touched, so
+  // create mode doesn't flash errors before the user has interacted. Edit
+  // mode starts untouched on prefilled valid data; clearing a field marks it
+  // touched and reveals the error.
+  type TouchKey =
+    | "dbaName"
+    | "logo"
+    | "source"
+    | "categories"
+    | "locations"
+    | "corpName"
+    | "url";
+  const [touched, setTouched] = useState<Record<TouchKey, boolean>>({
+    dbaName: false,
+    logo: false,
+    source: false,
+    categories: false,
+    locations: false,
+    corpName: false,
+    url: false,
+  });
+  const markTouched = (key: TouchKey) =>
+    setTouched((prev) => (prev[key] ? prev : { ...prev, [key]: true }));
 
   const logoInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
@@ -149,35 +171,74 @@ export default function MerchantForm({
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const dbaValid =
-    form.dbaName.trim().length >= MIN_DBA_NAME_LENGTH &&
-    form.dbaName.trim().length <= MAX_DBA_NAME_LENGTH;
-  const sourceValid = form.source.length > 0;
-  const categoriesValid = form.categories.length > 0;
-  const locationsValid =
-    form.locationsTab === "upload"
-      ? form.locationsFile !== null
-      : form.manualAddress.trim().length > 0 &&
-        form.manualState.trim().length > 0;
-  const logoValid = isEdit ? true : form.logo !== null;
-  const urlValid = useMemo(() => {
-    if (!form.url) return true;
+  // ---- Per-field error messages (null = valid) ----
+  // Each is computed from the raw form values; the UI gates display behind
+  // the touched map so untouched fields stay quiet.
+  const dbaNameError = (() => {
+    const len = form.dbaName.trim().length;
+    if (len === 0) return "DBA Name is required.";
+    if (len < MIN_DBA_NAME_LENGTH || len > MAX_DBA_NAME_LENGTH) {
+      return `DBA Name must be ${MIN_DBA_NAME_LENGTH}-${MAX_DBA_NAME_LENGTH} characters.`;
+    }
+    return null;
+  })();
+  const logoError = !isEdit && form.logo === null ? "Logo is required." : null;
+  const sourceError = form.source.length === 0 ? "Source is required." : null;
+  const categoriesError =
+    form.categories.length === 0 ? "Select at least one category." : null;
+  const locationsError = (() => {
+    if (form.locationsTab === "upload") {
+      return form.locationsFile === null ? "Upload a locations file." : null;
+    }
+    if (form.manualAddress.trim().length === 0) {
+      return "Enter a business street address.";
+    }
+    if (form.manualState.trim().length === 0) {
+      return "Enter a state.";
+    }
+    return null;
+  })();
+  const corpNameError = (() => {
+    const trimmed = form.corpName.trim();
+    if (trimmed.length === 0) return null;
+    if (
+      trimmed.length < MIN_CORP_NAME_LENGTH ||
+      trimmed.length > MAX_CORP_NAME_LENGTH
+    ) {
+      return `Corporation Name must be ${MIN_CORP_NAME_LENGTH}-${MAX_CORP_NAME_LENGTH} characters.`;
+    }
+    return null;
+  })();
+  const urlError = useMemo(() => {
+    if (!form.url) return null;
     try {
       const u = new URL(form.url);
-      return u.protocol === "http:" || u.protocol === "https:";
+      if (u.protocol !== "http:" && u.protocol !== "https:") {
+        return "URL must use http:// or https://";
+      }
+      return null;
     } catch {
-      return false;
+      return "URL is invalid. Make sure to follow the format: https://example.com";
     }
   }, [form.url]);
-  const urlError = urlTouched && !urlValid;
+
+  // Gates — visual error UI only renders after the field has been touched.
+  const showDbaError = touched.dbaName && dbaNameError !== null;
+  const showLogoError = touched.logo && logoError !== null;
+  const showSourceError = touched.source && sourceError !== null;
+  const showCategoriesError = touched.categories && categoriesError !== null;
+  const showLocationsError = touched.locations && locationsError !== null;
+  const showCorpNameError = touched.corpName && corpNameError !== null;
+  const showUrlError = touched.url && urlError !== null;
 
   const isValid =
-    dbaValid &&
-    logoValid &&
-    sourceValid &&
-    categoriesValid &&
-    locationsValid &&
-    urlValid;
+    dbaNameError === null &&
+    logoError === null &&
+    sourceError === null &&
+    categoriesError === null &&
+    locationsError === null &&
+    corpNameError === null &&
+    urlError === null;
 
   // Notify parent on validity change (lets parent enable/disable Save button).
   useEffect(() => {
@@ -193,6 +254,7 @@ export default function MerchantForm({
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    markTouched("logo");
     update("logo", file);
     readFileAsDataUrl(file, (url) => update("logoPreview", url));
   };
@@ -208,6 +270,7 @@ export default function MerchantForm({
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = e.target.files?.[0] ?? null;
+    markTouched("locations");
     update("locationsFile", file);
   };
 
@@ -232,7 +295,19 @@ export default function MerchantForm({
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!isValid) return;
+    if (!isValid) {
+      // Reveal all errors so the operator knows what still needs filling.
+      setTouched({
+        dbaName: true,
+        logo: true,
+        source: true,
+        categories: true,
+        locations: true,
+        corpName: true,
+        url: true,
+      });
+      return;
+    }
     onSubmit(form);
   };
 
@@ -314,7 +389,10 @@ export default function MerchantForm({
       <div className="grid grid-cols-1 gap-x-6 gap-y-4 pb-6 lg:grid-cols-2">
         {/* DBA Name */}
         <div>
-          <Label htmlFor="dbaName">
+          <Label
+            htmlFor="dbaName"
+            className={showDbaError ? "text-destructive" : ""}
+          >
             DBA Name (Brand Name)
             <span className="text-destructive">*</span>
           </Label>
@@ -322,19 +400,40 @@ export default function MerchantForm({
             id="dbaName"
             placeholder="Joe's Pizza"
             value={form.dbaName}
-            onChange={(e) => update("dbaName", e.target.value)}
+            onChange={(e) => {
+              markTouched("dbaName");
+              update("dbaName", e.target.value);
+            }}
+            onBlur={() => markTouched("dbaName")}
             maxLength={MAX_DBA_NAME_LENGTH}
-            className="mt-1"
+            aria-invalid={showDbaError || undefined}
+            aria-describedby={showDbaError ? "dbaName-error" : "dbaName-helper"}
+            className={`mt-1 ${showDbaError ? "border-destructive" : ""}`}
           />
-          <p className="mt-1.5 text-sm font-medium text-gray-600">
-            The name customers will see ({MIN_DBA_NAME_LENGTH}-
-            {MAX_DBA_NAME_LENGTH} chars)
-          </p>
+          {showDbaError ? (
+            <p
+              id="dbaName-error"
+              className="mt-1.5 text-sm font-medium text-destructive"
+            >
+              {dbaNameError}
+            </p>
+          ) : (
+            <p
+              id="dbaName-helper"
+              className="mt-1.5 text-sm font-medium text-gray-600"
+            >
+              The name customers will see ({MIN_DBA_NAME_LENGTH}-
+              {MAX_DBA_NAME_LENGTH} chars)
+            </p>
+          )}
         </div>
 
         {/* Logo — spans 2 rows on lg, sits next to DBA + Source */}
         <div className="lg:row-span-2">
-          <Label htmlFor="merchantLogo">
+          <Label
+            htmlFor="merchantLogo"
+            className={showLogoError ? "text-destructive" : ""}
+          >
             Logo<span className="text-destructive">*</span>
           </Label>
           {form.logoPreview ? (
@@ -347,6 +446,7 @@ export default function MerchantForm({
               <button
                 type="button"
                 onClick={() => {
+                  markTouched("logo");
                   update("logo", null);
                   update("logoPreview", null);
                 }}
@@ -361,7 +461,10 @@ export default function MerchantForm({
               type="button"
               onClick={() => logoInputRef.current?.click()}
               aria-label="Upload merchant logo"
-              className="mt-1 flex h-32 w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 transition-colors hover:border-primary hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              aria-invalid={showLogoError || undefined}
+              className={`mt-1 flex h-32 w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed bg-gray-50 transition-colors hover:border-primary hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+                showLogoError ? "border-destructive" : "border-gray-300"
+              }`}
             >
               <PhotoIcon className="h-7 w-7 text-gray-500" aria-hidden="true" />
               <span className="text-sm font-medium text-gray-700">
@@ -380,18 +483,33 @@ export default function MerchantForm({
             onChange={handleLogoUpload}
             className="hidden"
           />
+          {showLogoError && (
+            <p className="mt-1.5 text-sm font-medium text-destructive">
+              {logoError}
+            </p>
+          )}
         </div>
 
         {/* Source */}
         <div>
-          <Label htmlFor="source">
+          <Label
+            htmlFor="source"
+            className={showSourceError ? "text-destructive" : ""}
+          >
             Source<span className="text-destructive">*</span>
           </Label>
           <Select
             value={form.source}
-            onValueChange={(v) => update("source", v)}
+            onValueChange={(v) => {
+              markTouched("source");
+              update("source", v);
+            }}
           >
-            <SelectTrigger id="source" className="mt-1">
+            <SelectTrigger
+              id="source"
+              aria-invalid={showSourceError || undefined}
+              className={`mt-1 ${showSourceError ? "border-destructive" : ""}`}
+            >
               <SelectValue placeholder="Select source" />
             </SelectTrigger>
             <SelectContent>
@@ -402,33 +520,55 @@ export default function MerchantForm({
               ))}
             </SelectContent>
           </Select>
-          <p className="mt-1.5 text-sm font-medium text-gray-600">
-            Where is this merchant from?
-          </p>
+          {showSourceError ? (
+            <p className="mt-1.5 text-sm font-medium text-destructive">
+              {sourceError}
+            </p>
+          ) : (
+            <p className="mt-1.5 text-sm font-medium text-gray-600">
+              Where is this merchant from?
+            </p>
+          )}
         </div>
 
         {/* Categories — full width */}
         <div className="lg:col-span-2">
-          <Label htmlFor="categories">
+          <Label
+            htmlFor="categories"
+            className={showCategoriesError ? "text-destructive" : ""}
+          >
             Categories<span className="text-destructive">*</span>
           </Label>
-          <div className="mt-1">
+          <div
+            className={`mt-1 ${
+              showCategoriesError ? "rounded-md ring-1 ring-destructive" : ""
+            }`}
+          >
             <ReactSelectMulti
               options={CATEGORY_OPTIONS}
               values={form.categories}
-              onChange={(values) => update("categories", values)}
+              onChange={(values) => {
+                markTouched("categories");
+                update("categories", values);
+              }}
               placeholder="Select one or more categories"
             />
           </div>
-          <p className="mt-1.5 text-sm font-medium text-gray-600">
-            Select one or more categories for this merchant
-          </p>
+          {showCategoriesError ? (
+            <p className="mt-1.5 text-sm font-medium text-destructive">
+              {categoriesError}
+            </p>
+          ) : (
+            <p className="mt-1.5 text-sm font-medium text-gray-600">
+              Select one or more categories for this merchant
+            </p>
+          )}
         </div>
 
         {/* Locations — full width */}
         <fieldset className="space-y-3 lg:col-span-2">
           <Label asChild>
-            <legend>
+            <legend className={showLocationsError ? "text-destructive" : ""}>
               Locations<span className="text-destructive">*</span>
             </legend>
           </Label>
@@ -465,7 +605,11 @@ export default function MerchantForm({
               <button
                 type="button"
                 onClick={() => locationsFileInputRef.current?.click()}
-                className="flex min-h-[180px] w-full flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 px-6 py-8 text-center transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                className={`flex min-h-[180px] w-full flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed bg-gray-50 px-6 py-8 text-center transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+                  showLocationsError && form.locationsTab === "upload"
+                    ? "border-destructive"
+                    : "border-gray-300"
+                }`}
               >
                 {form.locationsFile ? (
                   <div className="flex items-center gap-2 text-sm text-gray-700">
@@ -509,32 +653,84 @@ export default function MerchantForm({
             <TabsContent value="manual" className="mt-4 space-y-3">
               <div className="flex gap-2">
                 <div className="grow">
-                  <Label htmlFor="manualAddress">Address</Label>
+                  <Label
+                    htmlFor="manualAddress"
+                    className={
+                      showLocationsError &&
+                      form.manualAddress.trim().length === 0
+                        ? "text-destructive"
+                        : ""
+                    }
+                  >
+                    Address
+                  </Label>
                   <Input
                     id="manualAddress"
                     placeholder="Business street address"
                     value={form.manualAddress}
-                    onChange={(e) => update("manualAddress", e.target.value)}
-                    className="mt-1"
+                    onChange={(e) => {
+                      markTouched("locations");
+                      update("manualAddress", e.target.value);
+                    }}
+                    onBlur={() => markTouched("locations")}
+                    aria-invalid={
+                      showLocationsError &&
+                      form.manualAddress.trim().length === 0
+                        ? true
+                        : undefined
+                    }
+                    className={`mt-1 ${
+                      showLocationsError &&
+                      form.manualAddress.trim().length === 0
+                        ? "border-destructive"
+                        : ""
+                    }`}
                   />
                   <p className="mt-1.5 text-sm font-medium text-gray-600">
                     The business street address (3-100 chars)
                   </p>
                 </div>
                 <div className="w-1/4">
-                  <Label htmlFor="manualState">State</Label>
+                  <Label
+                    htmlFor="manualState"
+                    className={
+                      showLocationsError && form.manualState.trim().length === 0
+                        ? "text-destructive"
+                        : ""
+                    }
+                  >
+                    State
+                  </Label>
                   <Input
                     id="manualState"
                     placeholder="e.g. CA"
                     value={form.manualState}
-                    onChange={(e) => update("manualState", e.target.value)}
-                    className="mt-1"
+                    onChange={(e) => {
+                      markTouched("locations");
+                      update("manualState", e.target.value);
+                    }}
+                    onBlur={() => markTouched("locations")}
+                    aria-invalid={
+                      showLocationsError && form.manualState.trim().length === 0
+                        ? true
+                        : undefined
+                    }
+                    className={`mt-1 ${
+                      showLocationsError && form.manualState.trim().length === 0
+                        ? "border-destructive"
+                        : ""
+                    }`}
                     maxLength={100}
                   />
                 </div>
               </div>
             </TabsContent>
           </Tabs>
+          {showLocationsError && (
+            <p className="mt-1.5 text-sm font-medium text-destructive">
+              {locationsError}
+            </p>
+          )}
         </fieldset>
       </div>
 
@@ -609,25 +805,43 @@ export default function MerchantForm({
 
             {/* Corporation Name */}
             <div>
-              <Label htmlFor="corpName">Corporation Name</Label>
+              <Label
+                htmlFor="corpName"
+                className={showCorpNameError ? "text-destructive" : ""}
+              >
+                Corporation Name
+              </Label>
               <Input
                 id="corpName"
                 placeholder="Legal entity name"
                 value={form.corpName}
-                onChange={(e) => update("corpName", e.target.value)}
+                onChange={(e) => {
+                  markTouched("corpName");
+                  update("corpName", e.target.value);
+                }}
+                onBlur={() => markTouched("corpName")}
                 maxLength={MAX_CORP_NAME_LENGTH}
-                className="mt-1"
+                aria-invalid={showCorpNameError || undefined}
+                className={`mt-1 ${
+                  showCorpNameError ? "border-destructive" : ""
+                }`}
               />
-              <p className="mt-1.5 text-sm font-medium text-gray-600">
-                {MIN_CORP_NAME_LENGTH}-{MAX_CORP_NAME_LENGTH} characters
-              </p>
+              {showCorpNameError ? (
+                <p className="mt-1.5 text-sm font-medium text-destructive">
+                  {corpNameError}
+                </p>
+              ) : (
+                <p className="mt-1.5 text-sm font-medium text-gray-600">
+                  {MIN_CORP_NAME_LENGTH}-{MAX_CORP_NAME_LENGTH} characters
+                </p>
+              )}
             </div>
 
             {/* URL — full width */}
             <div className="lg:col-span-2">
               <Label
                 htmlFor="url"
-                className={urlError ? "text-destructive" : ""}
+                className={showUrlError ? "text-destructive" : ""}
               >
                 URL
               </Label>
@@ -636,14 +850,17 @@ export default function MerchantForm({
                 type="url"
                 placeholder="https://www.example.com"
                 value={form.url}
-                onChange={(e) => update("url", e.target.value)}
-                onBlur={() => setUrlTouched(true)}
-                className={`mt-1 ${urlError ? "border-destructive" : ""}`}
+                onChange={(e) => {
+                  markTouched("url");
+                  update("url", e.target.value);
+                }}
+                onBlur={() => markTouched("url")}
+                aria-invalid={showUrlError || undefined}
+                className={`mt-1 ${showUrlError ? "border-destructive" : ""}`}
               />
-              {urlError && (
-                <p className="mt-1.5 text-sm text-destructive">
-                  URL is invalid. Make sure to follow the format:
-                  https://example.com
+              {showUrlError && (
+                <p className="mt-1.5 text-sm font-medium text-destructive">
+                  {urlError}
                 </p>
               )}
             </div>

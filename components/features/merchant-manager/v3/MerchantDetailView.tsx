@@ -8,14 +8,18 @@ import { Badge } from "@/components/atoms/Badge";
 import {
   IdentificationIcon,
   ListBulletIcon,
+  PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import { useToast } from "@/lib/hooks/use-toast";
 import { MerchantLogo } from "./MerchantLogo";
-import MerchantFieldList from "./MerchantFieldList";
+import MerchantProfileDisplay from "./MerchantProfileDisplay";
+import MerchantForm, { type MerchantFormData } from "./MerchantForm";
 import { MerchantOffersGantt } from "./MerchantOffersGantt";
 import type { Merchant, MerchantStatus, OfferStatus } from "./types";
 
-type DetailTab = "profile" | "offers";
+type DetailTab = "profile" | "offers" | "edit";
+
+const EDIT_FORM_ID = "merchant-edit-form";
 
 const TABS: {
   id: DetailTab;
@@ -24,6 +28,7 @@ const TABS: {
 }[] = [
   { id: "profile", label: "Profile", icon: IdentificationIcon },
   { id: "offers", label: "Offers Timeline", icon: ListBulletIcon },
+  { id: "edit", label: "Edit", icon: PencilSquareIcon },
 ];
 
 // Display labels for the production merchant lifecycle states.
@@ -87,19 +92,16 @@ export default function MerchantDetailView({
 
   // Tab state is driven by ?tab= URL param so deep-links work.
   const tabParam = searchParams.get("tab");
-  const initialTab: DetailTab = tabParam === "offers" ? "offers" : "profile";
+  const initialTab: DetailTab =
+    tabParam === "offers" || tabParam === "edit" ? tabParam : "profile";
   const [activeTab, setActiveTab] = useState<DetailTab>(initialTab);
-  // Local edit overlay — the field list saves each field through this so
-  // the page header (name/category/source/status) stays in sync with the
-  // most-recent edits without a global save round-trip.
+  const [isFormValid, setIsFormValid] = useState(false);
+  // Edit form writes back into this so the page header + Profile view reflect
+  // the most recent save without a global round-trip.
   const [merchantState, setMerchantState] = useState<Merchant>(merchant);
   const [merchantStatus, setMerchantStatus] = useState<MerchantStatus>(
     merchant.status ?? "published"
   );
-
-  const handleMerchantChange = (next: Partial<Merchant>) => {
-    setMerchantState((prev) => ({ ...prev, ...next }));
-  };
 
   // Keep URL in sync with active tab (without scroll jump).
   useEffect(() => {
@@ -124,6 +126,30 @@ export default function MerchantDetailView({
 
   const handleBackToList = () => router.push("/merchants");
 
+  const handleEditSubmit = (data: MerchantFormData) => {
+    // Mirror form values back into the merchant record so the Profile view
+    // and page header reflect the save. Locations / logo / banner / corpName
+    // are prototype-local form fields and aren't part of the Merchant type.
+    const sourceLabel =
+      data.source.charAt(0).toUpperCase() + data.source.slice(1);
+    const categoryLabel = data.categories
+      .map((v) => v.charAt(0).toUpperCase() + v.slice(1).replace(/-/g, " "))
+      .join(", ");
+    setMerchantState((prev) => ({
+      ...prev,
+      name: data.dbaName.trim(),
+      source: sourceLabel,
+      category: categoryLabel || prev.category,
+      website: data.url.trim(),
+      merchantDetail: data.highlights,
+    }));
+    toast({
+      title: "Merchant updated",
+      description: `${data.dbaName} (${merchant.id}) was updated.`,
+    });
+    setActiveTab("profile");
+  };
+
   const handleStatusChange = (next: MerchantStatus) => {
     if (next === merchantStatus) return;
     setMerchantStatus(next);
@@ -138,13 +164,33 @@ export default function MerchantDetailView({
     });
   };
 
-  // Per-field inline edit owns its own Save/Cancel buttons, so the header
-  // only carries navigation.
-  const headerActions = (
-    <Button variant="outline" size="sm" onClick={handleBackToList}>
-      Back to Merchants
-    </Button>
-  );
+  // Header actions — view modes carry navigation. Edit mode owns Cancel +
+  // Save Changes targeting the merchant form's submit. The status control
+  // lives inside the edit form per Slack addendum from John K.
+  const headerActions =
+    activeTab === "edit" ? (
+      <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setActiveTab("profile")}
+        >
+          Cancel
+        </Button>
+        <Button
+          form={EDIT_FORM_ID}
+          type="submit"
+          size="sm"
+          disabled={!isFormValid}
+        >
+          Save Changes
+        </Button>
+      </div>
+    ) : (
+      <Button variant="outline" size="sm" onClick={handleBackToList}>
+        Back to Merchants
+      </Button>
+    );
 
   return (
     <div className="overflow-hidden" style={{ height: "calc(100vh - 140px)" }}>
@@ -216,11 +262,9 @@ export default function MerchantDetailView({
               {activeTab === "profile" && (
                 <div className="grid grid-cols-1 gap-x-12 p-6 lg:grid-cols-12">
                   <div className="lg:col-span-8">
-                    <MerchantFieldList
+                    <MerchantProfileDisplay
                       merchant={merchantState}
                       status={merchantStatus}
-                      onStatusChange={handleStatusChange}
-                      onMerchantChange={handleMerchantChange}
                     />
                   </div>
                   <aside className="mt-8 lg:col-span-4 lg:mt-0">
@@ -233,6 +277,17 @@ export default function MerchantDetailView({
                 <OffersContent
                   merchant={merchantState}
                   expiredCount={expiredOffers.length}
+                />
+              )}
+
+              {activeTab === "edit" && (
+                <MerchantForm
+                  formId={EDIT_FORM_ID}
+                  initialMerchant={merchantState}
+                  onSubmit={handleEditSubmit}
+                  onValidityChange={setIsFormValid}
+                  status={merchantStatus}
+                  onStatusChange={handleStatusChange}
                 />
               )}
             </div>
@@ -308,6 +363,14 @@ function SecondaryPanel({ merchant }: { merchant: Merchant }) {
         ) : (
           <p className="text-sm text-gray-500">No offer types declared.</p>
         )}
+      </PanelSection>
+
+      {/* Legacy commerce flag — matches the Yes/No filter in the list view so
+          operators can confirm an individual merchant's setting from detail. */}
+      <PanelSection label="Commissionable offers">
+        <p className="text-sm text-gray-700">
+          {merchant.commissionOffers ? "Yes" : "No"}
+        </p>
       </PanelSection>
     </div>
   );
