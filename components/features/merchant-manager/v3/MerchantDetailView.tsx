@@ -9,6 +9,7 @@ import {
   ListBulletIcon,
   PencilSquareIcon,
   BuildingStorefrontIcon,
+  ClockIcon,
 } from "@heroicons/react/24/outline";
 import { useToast } from "@/lib/hooks/use-toast";
 import MerchantProfileDisplay from "./MerchantProfileDisplay";
@@ -149,6 +150,36 @@ export default function MerchantDetailView({
     });
   };
 
+  // Chrome bar copy — title + icon + description shift per active tab so
+  // the operator always knows which view they're in. Edit mode mirrors
+  // the CreateMerchantView header; offers mirrors the Gantt context.
+  const chromeHeader = (() => {
+    switch (activeTab) {
+      case "offers":
+        return {
+          icon: ClockIcon,
+          title: "Offers Timeline",
+          description:
+            "Read-only timeline of this merchant's offers across statuses.",
+        };
+      case "edit":
+        return {
+          icon: PencilSquareIcon,
+          title: "Edit Merchant",
+          description: "Update merchant details before saving back.",
+        };
+      case "profile":
+      default:
+        return {
+          icon: BuildingStorefrontIcon,
+          title: "Merchant Profile",
+          description:
+            "View and edit merchant details, branding, locations, and offers.",
+        };
+    }
+  })();
+  const ChromeIcon = chromeHeader.icon;
+
   // Header actions — Profile / Offers show a primary "Edit Merchant" entry
   // point that swaps the main content for the merchant form. Edit mode owns
   // Cancel + Save Changes targeting the merchant form's submit. The status
@@ -229,15 +260,14 @@ export default function MerchantDetailView({
                 breadcrumb above and the Profile Overview rows below. */}
             <div className="flex items-center justify-between p-3 border-b bg-muted/20 h-[61px] flex-shrink-0">
               <div className="flex items-center">
-                <BuildingStorefrontIcon
+                <ChromeIcon
                   className="h-5 w-5 mr-2 text-primary"
                   aria-hidden="true"
                 />
                 <div>
-                  <h3 className="font-medium">Merchant Profile</h3>
+                  <h3 className="font-medium">{chromeHeader.title}</h3>
                   <p className="text-sm text-muted-foreground">
-                    View and edit merchant details, branding, locations, and
-                    offers.
+                    {chromeHeader.description}
                   </p>
                 </div>
               </div>

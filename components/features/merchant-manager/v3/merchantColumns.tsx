@@ -199,20 +199,37 @@ export function getMerchantListColumns({
     },
     {
       accessorKey: "category",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
-        >
-          Category
-          <SortIcon sorted={column.getIsSorted()} />
-        </Button>
+      // Sorting disabled per Jose's feedback (2026-06-10): merchants can
+      // belong to multiple categories, and lexical sort on a list of
+      // labels isn't meaningful to an operator.
+      enableSorting: false,
+      header: () => (
+        <span className="font-medium text-foreground">Categories</span>
       ),
-      size: 160,
-      cell: ({ row }) => (
-        <span className="text-sm text-gray-700">{row.original.category}</span>
-      ),
+      size: 180,
+      cell: ({ row }) => {
+        const value = row.original.category ?? "";
+        const categories = value
+          .split(",")
+          .map((c) => c.trim())
+          .filter(Boolean);
+        if (categories.length === 0) return <EmptyDash />;
+        return (
+          <div className="flex flex-wrap gap-1">
+            {categories.map((c) => (
+              <Badge
+                key={c}
+                variant="neutral"
+                size="sm"
+                rounded="md"
+                className="font-medium"
+              >
+                {c}
+              </Badge>
+            ))}
+          </div>
+        );
+      },
     },
     // Status column removed per Slack addendum (John K, 2026-06-03):
     // "not to include the Merchant Status column. Include that info in
@@ -221,30 +238,29 @@ export function getMerchantListColumns({
     // badge + Profile Details row).
     {
       id: "offers",
-      accessorFn: (row) =>
-        row.offers.filter((o) => o.status === "published").length,
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
-        >
-          Offers
-          <SortIcon sorted={column.getIsSorted()} />
-        </Button>
-      ),
-      size: 180,
+      // Sorting disabled per Jose's feedback (2026-06-10): each row carries
+      // several status counts and no single lexical/numeric axis matches
+      // what an operator would expect from a sort.
+      enableSorting: false,
+      header: () => <span className="font-medium text-foreground">Offers</span>,
+      size: 240,
       cell: ({ row }) => {
         const offers = row.original.offers;
+        if (offers.length === 0) {
+          return <EmptyDash />;
+        }
         const activeCount = offers.filter(
           (o) => o.status === "published"
+        ).length;
+        // "Unpublished" = deliberate human-driven off states. Mirrors the
+        // merchant-level unpublished concept ("offers hidden from
+        // marketplace") at the offer granularity.
+        const unpublishedCount = offers.filter(
+          (o) => o.status === "paused" || o.status === "archived"
         ).length;
         const expiredCount = offers.filter(
           (o) => o.status === "expired"
         ).length;
-        if (offers.length === 0) {
-          return <EmptyDash />;
-        }
         return (
           <div className="flex flex-wrap items-center gap-1">
             <Badge
@@ -255,6 +271,16 @@ export function getMerchantListColumns({
             >
               {activeCount} active
             </Badge>
+            {unpublishedCount > 0 && (
+              <Badge
+                variant="warning"
+                size="sm"
+                rounded="md"
+                className="font-medium"
+              >
+                {unpublishedCount} unpublished
+              </Badge>
+            )}
             {expiredCount > 0 && (
               <Badge
                 variant="error"

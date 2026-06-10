@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { useRouter } from "next/navigation";
 import {
   GanttProvider,
   GanttSidebar,
@@ -16,19 +15,19 @@ import {
   type GanttFeature,
 } from "@/components/kibo-ui/gantt";
 import type { Merchant, Offer, OfferStatus } from "./types";
-import { buildOfferEditPayload, stashOfferForEdit } from "./offerEditPayload";
 
-// Status colors → raw hex (kibo-ui takes inline color strings, not classes).
-// Bright fills for active states, distinct grays for completed states so the
-// bars read against a white timeline backdrop. Tuned for contrast with the
-// dark text we overlay on them.
+// Status fills aligned with the AIA Design System color foundations
+// (uOtplb1iYDdJZQ7wdz7S9n, node 5:11). kibo-ui takes inline hex strings,
+// not classes, so the tokens are inlined here with their DS provenance noted.
+// Two semantic axes: lifecycle severity (success/warning/error) and lifecycle
+// stage (active vs. completed) — the latter handled by tinted neutrals.
 const STATUS_COLOR: Record<OfferStatus, string> = {
-  published: "#77D898", // Kigo green — active
-  draft: "#328FE5", // Kigo blue — scheduled
-  pending_approval: "#FF8717", // Kigo orange — in review
-  paused: "#FBBF24", // amber — temporarily off
-  expired: "#9CA3AF", // gray-400 — completed
-  archived: "#D1D5DB", // gray-300 — terminal
+  published: "#2d9b6f", // color/system/success/default — live in marketplace
+  draft: "#d4d4d8", // color/neutral/300 (proposed) — placeholder, not yet active
+  pending_approval: "#e9a12a", // color/system/warning/default — needs operator review
+  paused: "#fcd34d", // color/amber-300 (proposed) — warning tint, distinguishable from In Review
+  expired: "#a1a1aa", // color/neutral/400 (proposed) — completed, attention via the red callout above the Gantt
+  archived: "#d4d4d8", // color/neutral/300 (proposed) — terminal, fully faded
 };
 
 const OFFER_STATUS_LABEL: Record<OfferStatus, string> = {
@@ -59,23 +58,15 @@ interface MerchantOffersGanttProps {
 }
 
 export function MerchantOffersGantt({ merchant }: MerchantOffersGanttProps) {
-  const router = useRouter();
-
   const features = useMemo(
     () => merchant.offers.map(offerToFeature),
     [merchant.offers]
   );
 
-  const handleOpenOffer = (offerId: string) => {
-    const offer = merchant.offers.find((o) => o.id === offerId);
-    if (!offer) return;
-    stashOfferForEdit(buildOfferEditPayload(offer, merchant));
-    router.push(
-      `/offer-manager?version=p1.1&edit=${encodeURIComponent(offer.id)}`
-    );
-  };
-
   return (
+    // Read-only timeline per Jose's feedback (2026-06-10): no navigation
+    // out to the offer editor from inside the merchant detail page, since
+    // there's no symmetric path back to the in-progress merchant edit.
     <GanttProvider
       range="monthly"
       zoom={100}
@@ -86,12 +77,7 @@ export function MerchantOffersGantt({ merchant }: MerchantOffersGanttProps) {
       <GanttSidebar className="bg-white">
         <GanttSidebarGroup name="Offers">
           {features.map((feature) => (
-            <GanttSidebarItem
-              key={feature.id}
-              feature={feature}
-              onSelectItem={handleOpenOffer}
-              className="cursor-pointer"
-            />
+            <GanttSidebarItem key={feature.id} feature={feature} />
           ))}
         </GanttSidebarGroup>
       </GanttSidebar>
@@ -102,20 +88,17 @@ export function MerchantOffersGantt({ merchant }: MerchantOffersGanttProps) {
             {features.map((feature) => (
               <GanttFeatureRow key={feature.id} features={[feature]}>
                 {(f) => (
-                  <button
-                    type="button"
-                    onClick={() => handleOpenOffer(f.id)}
+                  <div
                     // Negative margins escape kibo-ui's Card padding so the
-                    // colored bar fills the entire card. Card stays as the
-                    // hit target (drag + shadow) underneath.
-                    className="-m-2 flex h-[calc(100%+1rem)] w-[calc(100%+1rem)] items-center rounded-md px-3 transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                    // colored bar fills the entire card.
+                    className="-m-2 flex h-[calc(100%+1rem)] w-[calc(100%+1rem)] items-center rounded-md px-3"
                     style={{ backgroundColor: f.status.color }}
-                    aria-label={`Open ${f.name}`}
+                    aria-label={`${f.name} (${f.status.name})`}
                   >
                     <span className="truncate text-xs font-semibold text-gray-900">
                       {f.name}
                     </span>
-                  </button>
+                  </div>
                 )}
               </GanttFeatureRow>
             ))}
