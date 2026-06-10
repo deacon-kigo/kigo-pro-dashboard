@@ -8,6 +8,7 @@ import {
   IdentificationIcon,
   ListBulletIcon,
   PencilSquareIcon,
+  BuildingStorefrontIcon,
 } from "@heroicons/react/24/outline";
 import { useToast } from "@/lib/hooks/use-toast";
 import MerchantProfileDisplay from "./MerchantProfileDisplay";
@@ -217,19 +218,23 @@ export default function MerchantDetailView({
         {/* Main content */}
         <div className="flex-1 min-w-0">
           <Card className="p-0 flex flex-col h-full overflow-hidden shadow-md rounded-l-none border-l-0">
-            {/* Page header — title + description carry the page's
-                  purpose; merchant identity lives in the breadcrumb above
-                  and the Profile Overview rows below. Actions sit on the
-                  right (Edit Merchant / Cancel + Save Changes). */}
-            <div className="flex items-center justify-between gap-4 p-4 border-b flex-shrink-0">
-              <div className="min-w-0">
-                <h1 className="text-lg font-semibold text-gray-900">
-                  Merchant Profile
-                </h1>
-                <p className="mt-0.5 text-sm text-gray-500">
-                  View and edit merchant details, branding, locations, and
-                  offers.
-                </p>
+            {/* Page header — same shape as the ad-group wizard header
+                (icon + title + muted subtitle + actions). Page identity
+                lives here; merchant-specific identity is in the
+                breadcrumb above and the Profile Overview rows below. */}
+            <div className="flex items-center justify-between p-3 border-b bg-muted/20 h-[61px] flex-shrink-0">
+              <div className="flex items-center">
+                <BuildingStorefrontIcon
+                  className="h-5 w-5 mr-2 text-primary"
+                  aria-hidden="true"
+                />
+                <div>
+                  <h3 className="font-medium">Merchant Profile</h3>
+                  <p className="text-sm text-muted-foreground">
+                    View and edit merchant details, branding, locations, and
+                    offers.
+                  </p>
+                </div>
               </div>
               {headerActions}
             </div>
