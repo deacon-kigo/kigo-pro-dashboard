@@ -193,7 +193,9 @@ export default function MerchantProfileDisplay({
                       {sg.id}
                     </Badge>
                   </div>
-                  <p className="mt-0.5 text-sm text-gray-500">{sg.contact}</p>
+                  <p className="mt-0.5 text-sm text-muted-foreground">
+                    {sg.contact}
+                  </p>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-gray-600">
                   <Badge
@@ -247,13 +249,13 @@ function Section({
     <section aria-labelledby={headingId} className="py-8 first:pt-0 last:pb-0">
       <header className="mb-5">
         <div className="flex items-center gap-2">
-          <Icon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-          <h3 id={headingId} className="text-base font-semibold text-gray-900">
+          <Icon className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+          <h4 id={headingId} className="font-medium text-gray-900">
             {title}
-          </h3>
+          </h4>
         </div>
         {description && (
-          <p className="mt-1 text-sm text-gray-500">{description}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
         )}
       </header>
       {children}
@@ -273,12 +275,16 @@ function Row({
 }) {
   return (
     <div className="grid grid-cols-1 gap-y-1 py-2.5 sm:grid-cols-[180px_1fr] sm:gap-x-6 sm:gap-y-0">
-      <dt className="text-sm text-gray-500">{label}</dt>
+      <dt className="text-sm text-muted-foreground">{label}</dt>
       <dd className="text-sm font-medium text-gray-900">{children}</dd>
     </div>
   );
 }
 
 function NotProvided() {
-  return <span className="font-normal italic text-gray-400">Not provided</span>;
+  return (
+    <span className="font-normal italic text-muted-foreground">
+      Not provided
+    </span>
+  );
 }

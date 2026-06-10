@@ -201,11 +201,16 @@ export default function MerchantDetailView({
                         : "text-gray-600 hover:bg-pastel-blue hover:text-primary"
                     }`}
                     title={tab.label}
+                    aria-label={tab.label}
                     aria-current={isActive ? "page" : undefined}
                   >
                     <Icon className="h-5 w-5" aria-hidden="true" />
-                    {/* Tooltip on hover */}
-                    <div className="absolute left-16 top-1/2 transform -translate-y-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                    {/* Tooltip on hover — purely visual; aria-label above is
+                        the accessible name screen readers announce. */}
+                    <div
+                      aria-hidden="true"
+                      className="absolute left-16 top-1/2 transform -translate-y-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50"
+                    >
                       {tab.label}
                     </div>
                   </button>
