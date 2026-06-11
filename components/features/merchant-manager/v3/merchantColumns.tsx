@@ -53,7 +53,13 @@ const OFFER_STATUS_PILL = {
   },
   expired: {
     icon: XCircleIcon,
-    className: "bg-red-50 text-red-800 border-red-200",
+    // The Kigo Tailwind config (tailwind.config.mjs) overrides `red` with a
+    // single value, stripping the default red.50–red.900 scale. We use the
+    // Kigo brand red tokens (`red-light-50`, `red-dark-10`) instead of the
+    // shadcn `destructive` token — `destructive` is hsl(0 84.2% 60.2%) ≈
+    // #ef4444 which only carries 3.76:1 contrast on white (fails WCAG AA),
+    // while `red-dark-10` (#AB0C1A) lands at 7.5:1 (AAA).
+    className: "bg-red-light-50 text-red-dark-10 border-red",
     label: "Expired",
   },
 } as const;
@@ -160,26 +166,48 @@ const MerchantActionDropdown = memo(function MerchantActionDropdown({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="py-1">
-              {actions.map((action) => {
+              {actions.map((action, index) => {
                 const Icon = action.icon;
+                // Separator before the first destructive item — matches the
+                // kigo-admin-tools DropdownMenuSeparator convention that
+                // visually segregates the dangerous action from neutral ones.
+                const prevDestructive = actions[index - 1]?.destructive;
+                const showSeparator = action.destructive && !prevDestructive;
                 return (
-                  <button
-                    key={action.label}
-                    className={`w-full text-left px-4 py-2 text-sm flex items-center ${
-                      action.destructive
-                        ? "text-red-600 hover:bg-red-50 hover:text-red-700"
-                        : "text-gray-700 hover:bg-gray-100"
-                    }`}
-                    onClick={() => {
-                      action.onClick();
-                      setIsOpen(false);
-                    }}
-                  >
-                    <Icon
-                      className={`mr-2 h-4 w-4 ${action.destructive ? "text-red-600" : ""}`}
-                    />
-                    {action.label}
-                  </button>
+                  <React.Fragment key={action.label}>
+                    {showSeparator && (
+                      <div
+                        className="my-1 h-px bg-gray-100"
+                        aria-hidden="true"
+                      />
+                    )}
+                    <button
+                      className={`w-full text-left px-4 py-2 text-sm font-medium flex items-center ${
+                        action.destructive
+                          ? // Kigo's Tailwind config replaces the default
+                            // `red` scale with a single token, so the
+                            // `text-red-600 / hover:bg-red-50` convention used
+                            // elsewhere silently produces no CSS. We also
+                            // can't lean on `text-destructive` — it's
+                            // hsl(0 84.2% 60.2%) ≈ #ef4444, only 3.76:1 on
+                            // white (fails WCAG AA). `red-dark-10` (#AB0C1A)
+                            // gives 7.5:1 contrast (AAA) and is a Kigo brand
+                            // token.
+                            "text-red-dark-10 hover:bg-red-light-50 hover:text-red-dark-20 focus-visible:bg-red-light-50"
+                          : "text-gray-700 font-normal hover:bg-gray-100"
+                      }`}
+                      onClick={() => {
+                        action.onClick();
+                        setIsOpen(false);
+                      }}
+                    >
+                      <Icon
+                        className={`mr-2 h-4 w-4 ${action.destructive ? "text-red-dark-10" : ""}`}
+                        aria-hidden="true"
+                      />
+                      {action.label}
+                    </button>
+                  </React.Fragment>
                 );
               })}
             </div>
@@ -261,7 +289,12 @@ export function getMerchantListColumns({
           .filter(Boolean);
         if (categories.length === 0) return <EmptyDash />;
         return (
-          <div className="flex flex-wrap gap-1">
+          // max-w caps the flex container so `flex-wrap` actually triggers
+          // when several chips would otherwise lay out on one long row. The
+          // underlying TanStack table is `table-layout: auto` and doesn't
+          // enforce the `size: 200` field — without the cap, the column
+          // grows to fit and chips never wrap.
+          <div className="flex flex-wrap gap-1 max-w-[200px]">
             {categories.map((c) => (
               <Badge
                 key={c}
@@ -290,7 +323,7 @@ export function getMerchantListColumns({
         const catalogs = row.original.catalogs ?? [];
         if (catalogs.length === 0) return <EmptyDash />;
         return (
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1 max-w-[220px]">
             {catalogs.map((c) => (
               <Badge
                 key={c}
@@ -337,7 +370,7 @@ export function getMerchantListColumns({
           (o) => o.status === "expired"
         ).length;
         return (
-          <div className="flex flex-wrap items-center gap-1">
+          <div className="flex flex-wrap items-center gap-1 max-w-[280px]">
             <OfferStatusPill status="active" count={activeCount} />
             {unpublishedCount > 0 && (
               <OfferStatusPill status="unpublished" count={unpublishedCount} />

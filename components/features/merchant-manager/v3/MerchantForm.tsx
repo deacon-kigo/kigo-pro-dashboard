@@ -244,6 +244,12 @@ export default function MerchantForm({
   const categoriesError =
     form.categories.length === 0 ? "Select at least one category." : null;
   const locationsError = (() => {
+    // In edit mode the merchant already has locations on the server — the
+    // form has no way to round-trip them back into `locationsFile` /
+    // `manualAddress` state, so treating "no file uploaded" as an error
+    // would keep the form invalid (and Save disabled) forever. Only enforce
+    // locations once the operator has actively touched the section.
+    if (isEdit && !touched.locations) return null;
     if (form.locationsTab === "upload") {
       return form.locationsFile === null ? "Upload a locations file." : null;
     }
@@ -301,10 +307,39 @@ export default function MerchantForm({
     corpNameError === null &&
     urlError === null;
 
-  // Notify parent on validity change (lets parent enable/disable Save button).
+  // Dirty tracking — in edit mode the Save button should stay disabled until
+  // the operator actually changes something. Without this, the button is
+  // pre-enabled at mount (because the prefilled merchant data is valid) and
+  // a user can "save" without having edited anything. Captured once via a
+  // ref so changes to defaults from re-renders don't reset the baseline.
+  const initialFormRef = useRef<MerchantFormData>(form);
+  const isDirty = useMemo(() => {
+    const a = form;
+    const b = initialFormRef.current;
+    return (
+      a.dbaName !== b.dbaName ||
+      a.logo !== b.logo ||
+      a.source !== b.source ||
+      a.categories.length !== b.categories.length ||
+      a.categories.some((c, i) => c !== b.categories[i]) ||
+      a.locationsTab !== b.locationsTab ||
+      a.locationsFile !== b.locationsFile ||
+      a.manualAddress !== b.manualAddress ||
+      a.manualState !== b.manualState ||
+      a.bannerImage !== b.bannerImage ||
+      a.corpName !== b.corpName ||
+      a.url !== b.url ||
+      a.highlights !== b.highlights
+    );
+  }, [form]);
+
+  // Notify parent — in edit mode require dirty + valid; in create mode just
+  // valid (there's no baseline to be dirty against). Parent uses this to
+  // enable/disable the Save button.
+  const canSubmit = isValid && (!isEdit || isDirty);
   useEffect(() => {
-    onValidityChange?.(isValid);
-  }, [isValid, onValidityChange]);
+    onValidityChange?.(canSubmit);
+  }, [canSubmit, onValidityChange]);
 
   const readFileAsDataUrl = (file: File, onLoad: (dataUrl: string) => void) => {
     const reader = new FileReader();
