@@ -1363,3 +1363,97 @@ export const merchants: Merchant[] = [
     campaigns: [_mkCampaign("CID-7124", "Monthly Airdrop Bundle")],
   },
 ];
+
+// ---------------------------------------------------------------------------
+// Multi-value enrichment — categories + Catalog Filter memberships.
+//
+// In production both relationships are many-to-many: a merchant can be tagged
+// with multiple offer/merchant categories and can match into several Catalog
+// Filter bundles via the include/exclude criteria defined in
+// kigo-admin-tools/.../catalog-filters. We enrich the merchant fixtures here
+// (rather than inline) so the per-merchant declarations stay focused on
+// identity + offers + campaigns.
+// ---------------------------------------------------------------------------
+
+// Catalog names mirror the publisher channels active on this prototype's
+// offers (Verizon Value, JD Perks, Optum Offers, etc.) so the membership a
+// merchant shows matches the offers they're surfacing through.
+const CATALOG_POOL = {
+  jdPerks: "JD Perks",
+  verizon: "Verizon Value",
+  optum: "Optum Offers",
+  amplifi: "ampliFI Marketplace",
+  everglades: "Everglades Rewards",
+  johnDeereLoyalty: "John Deere Loyalty",
+  kigoMarketplace: "Kigo Marketplace",
+} as const;
+
+// Subset of merchants that legitimately span more than one category. Leave
+// single-category merchants untouched so the chip layout still reads as a
+// single tag in the common case.
+const CATEGORY_OVERRIDES: Record<string, string> = {
+  sams: "Retail, Wholesale",
+  amazon: "Retail, Electronics, Entertainment",
+  target: "Retail, Home Goods, Apparel",
+  bestbuy: "Electronics, Appliances",
+  walmart: "Retail, Grocery",
+  costco: "Retail, Wholesale",
+  macys: "Apparel, Beauty, Home Goods",
+  sephora: "Beauty, Wellness",
+  ulta: "Beauty, Wellness",
+  homedepot: "Home Improvement, Garden",
+  lowes: "Home Improvement, Appliances",
+  shell: "Gas & Convenience, Automotive",
+  sevenelv: "Gas & Convenience, Food & Dining",
+  starbucks: "Food & Dining, Beverages",
+  gnc: "Health & Wellness, Supplements",
+  expedia: "Travel, Lodging",
+};
+
+const CATALOG_ASSIGNMENTS: Record<string, string[]> = {
+  sams: [CATALOG_POOL.jdPerks, CATALOG_POOL.verizon, CATALOG_POOL.amplifi],
+  disney: [CATALOG_POOL.verizon, CATALOG_POOL.amplifi],
+  activefit: [CATALOG_POOL.optum, CATALOG_POOL.everglades],
+  papajohns: [CATALOG_POOL.jdPerks, CATALOG_POOL.kigoMarketplace],
+  amazon: [
+    CATALOG_POOL.verizon,
+    CATALOG_POOL.amplifi,
+    CATALOG_POOL.kigoMarketplace,
+  ],
+  target: [CATALOG_POOL.kigoMarketplace, CATALOG_POOL.amplifi],
+  bestbuy: [CATALOG_POOL.verizon, CATALOG_POOL.kigoMarketplace],
+  costco: [CATALOG_POOL.jdPerks, CATALOG_POOL.everglades],
+  walmart: [CATALOG_POOL.kigoMarketplace],
+  macys: [CATALOG_POOL.amplifi, CATALOG_POOL.kigoMarketplace],
+  netflix: [CATALOG_POOL.verizon],
+  spotify: [CATALOG_POOL.verizon, CATALOG_POOL.amplifi],
+  hulu: [CATALOG_POOL.verizon],
+  starbucks: [
+    CATALOG_POOL.jdPerks,
+    CATALOG_POOL.optum,
+    CATALOG_POOL.kigoMarketplace,
+  ],
+  mcdonalds: [CATALOG_POOL.kigoMarketplace, CATALOG_POOL.jdPerks],
+  chickfila: [CATALOG_POOL.kigoMarketplace],
+  dominos: [CATALOG_POOL.jdPerks, CATALOG_POOL.kigoMarketplace],
+  marriott: [CATALOG_POOL.amplifi, CATALOG_POOL.everglades],
+  hilton: [CATALOG_POOL.amplifi, CATALOG_POOL.everglades],
+  delta: [CATALOG_POOL.amplifi],
+  expedia: [CATALOG_POOL.amplifi, CATALOG_POOL.everglades],
+  gnc: [CATALOG_POOL.optum, CATALOG_POOL.kigoMarketplace],
+  planetfitness: [CATALOG_POOL.optum, CATALOG_POOL.everglades],
+  sephora: [CATALOG_POOL.amplifi, CATALOG_POOL.kigoMarketplace],
+  ulta: [CATALOG_POOL.amplifi, CATALOG_POOL.kigoMarketplace],
+  homedepot: [CATALOG_POOL.johnDeereLoyalty, CATALOG_POOL.jdPerks],
+  lowes: [CATALOG_POOL.johnDeereLoyalty, CATALOG_POOL.kigoMarketplace],
+  shell: [CATALOG_POOL.johnDeereLoyalty, CATALOG_POOL.jdPerks],
+  att: [CATALOG_POOL.verizon, CATALOG_POOL.kigoMarketplace],
+  sevenelv: [CATALOG_POOL.kigoMarketplace, CATALOG_POOL.jdPerks],
+};
+
+for (const merchant of merchants) {
+  if (CATEGORY_OVERRIDES[merchant.key]) {
+    merchant.category = CATEGORY_OVERRIDES[merchant.key];
+  }
+  merchant.catalogs = CATALOG_ASSIGNMENTS[merchant.key] ?? [];
+}

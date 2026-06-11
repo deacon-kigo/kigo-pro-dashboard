@@ -79,6 +79,14 @@ export interface Merchant {
   offers: Offer[];
   campaigns: Campaign[];
 
+  /**
+   * Catalog Filter memberships — the named bundles a merchant participates
+   * in (mirrors `catalog-filters` in kigo-admin-tools, where merchants can
+   * be matched into several filters via include/exclude criteria).
+   * Multi-value: sort-disabled in the list view.
+   */
+  catalogs?: string[];
+
   // ---- Optional detail-view fields (used by MerchantDetailDialog) ----
   status?: MerchantStatus;
   contact?: string;

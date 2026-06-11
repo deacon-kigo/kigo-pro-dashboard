@@ -6,8 +6,11 @@ import {
   ChevronUpIcon,
   ChevronDownIcon,
   EyeIcon,
+  EyeSlashIcon,
+  GlobeAltIcon,
   PencilIcon,
   TrashIcon,
+  XCircleIcon,
 } from "@heroicons/react/24/outline";
 import { ArrowUpDown } from "lucide-react";
 import { Badge } from "@/components/atoms/Badge";
@@ -31,6 +34,49 @@ const SortIcon = ({ sorted }: { sorted?: "asc" | "desc" | false }) => {
 
 function EmptyDash() {
   return <span className="text-sm text-gray-400">{EM_DASH}</span>;
+}
+
+// Offer status pill tokens — mirror kigo-admin-tools
+// OFFER_STATUS_ATTRIBUTES (src/app/(protected)/offer-manager/components/
+// constants.ts) so the aggregate counts on a merchant row read with the
+// same color + icon language as the production offer manager table.
+const OFFER_STATUS_PILL = {
+  active: {
+    icon: GlobeAltIcon,
+    className: "bg-emerald-50 text-emerald-800 border-emerald-200",
+    label: "Active",
+  },
+  unpublished: {
+    icon: EyeSlashIcon,
+    className: "bg-amber-50 text-amber-800 border-amber-200",
+    label: "Unpublished",
+  },
+  expired: {
+    icon: XCircleIcon,
+    className: "bg-red-50 text-red-800 border-red-200",
+    label: "Expired",
+  },
+} as const;
+
+function OfferStatusPill({
+  status,
+  count,
+}: {
+  status: keyof typeof OFFER_STATUS_PILL;
+  count: number;
+}) {
+  const { icon: Icon, className, label } = OFFER_STATUS_PILL[status];
+  return (
+    <Badge
+      useClassName
+      size="sm"
+      rounded="md"
+      icon={<Icon className="h-3.5 w-3.5" aria-hidden="true" />}
+      className={`${className} font-medium`}
+    >
+      {count} {label}
+    </Badge>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -206,7 +252,7 @@ export function getMerchantListColumns({
       header: () => (
         <span className="font-medium text-foreground">Categories</span>
       ),
-      size: 180,
+      size: 200,
       cell: ({ row }) => {
         const value = row.original.category ?? "";
         const categories = value
@@ -231,6 +277,35 @@ export function getMerchantListColumns({
         );
       },
     },
+    {
+      id: "catalogs",
+      // Like Categories, this is many-to-many — sorting on a list of names
+      // isn't a meaningful operator action.
+      enableSorting: false,
+      header: () => (
+        <span className="font-medium text-foreground">Catalogs</span>
+      ),
+      size: 220,
+      cell: ({ row }) => {
+        const catalogs = row.original.catalogs ?? [];
+        if (catalogs.length === 0) return <EmptyDash />;
+        return (
+          <div className="flex flex-wrap gap-1">
+            {catalogs.map((c) => (
+              <Badge
+                key={c}
+                useClassName
+                size="sm"
+                rounded="md"
+                className="bg-indigo-50 text-indigo-700 border-indigo-200 font-medium"
+              >
+                {c}
+              </Badge>
+            ))}
+          </div>
+        );
+      },
+    },
     // Status column removed per Slack addendum (John K, 2026-06-03):
     // "not to include the Merchant Status column. Include that info in
     // the Profile view, with Unpublish capability in the edit form."
@@ -243,7 +318,7 @@ export function getMerchantListColumns({
       // what an operator would expect from a sort.
       enableSorting: false,
       header: () => <span className="font-medium text-foreground">Offers</span>,
-      size: 240,
+      size: 280,
       cell: ({ row }) => {
         const offers = row.original.offers;
         if (offers.length === 0) {
@@ -263,33 +338,12 @@ export function getMerchantListColumns({
         ).length;
         return (
           <div className="flex flex-wrap items-center gap-1">
-            <Badge
-              variant={activeCount > 0 ? "success" : "neutral"}
-              size="sm"
-              rounded="md"
-              className="font-medium"
-            >
-              {activeCount} active
-            </Badge>
+            <OfferStatusPill status="active" count={activeCount} />
             {unpublishedCount > 0 && (
-              <Badge
-                variant="warning"
-                size="sm"
-                rounded="md"
-                className="font-medium"
-              >
-                {unpublishedCount} unpublished
-              </Badge>
+              <OfferStatusPill status="unpublished" count={unpublishedCount} />
             )}
             {expiredCount > 0 && (
-              <Badge
-                variant="error"
-                size="sm"
-                rounded="md"
-                className="font-medium"
-              >
-                {expiredCount} expired
-              </Badge>
+              <OfferStatusPill status="expired" count={expiredCount} />
             )}
           </div>
         );
