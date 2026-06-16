@@ -14,7 +14,7 @@ import {
   GanttToday,
   type GanttFeature,
 } from "@/components/kibo-ui/gantt";
-import type { Merchant, Offer, OfferStatus } from "./types";
+import type { Merchant, Offer, OfferStatus } from "../types";
 
 // Status fills aligned with the AIA Design System color foundations
 // (uOtplb1iYDdJZQ7wdz7S9n, node 5:11). kibo-ui takes inline hex strings,

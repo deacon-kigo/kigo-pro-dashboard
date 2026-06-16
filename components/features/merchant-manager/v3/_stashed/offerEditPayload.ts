@@ -1,4 +1,4 @@
-import type { Merchant, Offer } from "./types";
+import type { Merchant, Offer } from "../types";
 
 /**
  * Maps a merchant Offer (this module's shape) into the localStorage payload
