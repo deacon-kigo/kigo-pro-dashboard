@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { PageHeader } from "@/components/molecules/PageHeader";
 import { Button } from "@/components/atoms/Button";
-import { merchants as merchantSeed, CATALOG_NAMES } from "./mockData";
+import { merchants as merchantSeed } from "./mockData";
 import { MerchantListSearchBar, type FilterTag } from "./MerchantListSearchBar";
 import { MerchantListTable } from "./MerchantListTable";
 import {
@@ -172,52 +172,6 @@ export default function MerchantManagerV3() {
     return sorted;
   }, [data, searchTerms, categoryIdSet, catalogNames, offerStatusKeys, sort]);
 
-  // Faceted counts: for each pill in a group, how many merchants would match
-  // if the user picked it now? Computed against the full filter chain MINUS
-  // that group, so picking one offer-status pill doesn't zero out the others.
-  const optionCounts = useMemo(() => {
-    const counts = new Map<string, number>();
-    const EMPTY_CATALOG = new Set<string>();
-    const EMPTY_OFFER_STATUS = new Set<OfferStatusFilterKey>();
-
-    const baseForCatalog = filterMerchants(data, {
-      searchTerms,
-      categoryIdSet,
-      catalogNames: EMPTY_CATALOG,
-      offerStatusKeys,
-    });
-    for (const name of CATALOG_NAMES) {
-      const n = baseForCatalog.reduce(
-        (acc, m) => acc + ((m.catalogs ?? []).includes(name) ? 1 : 0),
-        0
-      );
-      counts.set(`catalog:${name}`, n);
-    }
-
-    const baseForOfferStatus = filterMerchants(data, {
-      searchTerms,
-      categoryIdSet,
-      catalogNames,
-      offerStatusKeys: EMPTY_OFFER_STATUS,
-    });
-    let active = 0;
-    let unpublished = 0;
-    let expired = 0;
-    for (const m of baseForOfferStatus) {
-      if (m.offers.some((o) => o.status === "published")) active++;
-      if (
-        m.offers.some((o) => o.status === "paused" || o.status === "archived")
-      )
-        unpublished++;
-      if (m.offers.some((o) => o.status === "expired")) expired++;
-    }
-    counts.set("offerStatus:active", active);
-    counts.set("offerStatus:unpublished", unpublished);
-    counts.set("offerStatus:expired", expired);
-
-    return counts;
-  }, [data, searchTerms, categoryIdSet, catalogNames, offerStatusKeys]);
-
   const handleFiltersChange = useCallback((filters: FilterTag[]) => {
     setSelectedFilters(filters);
     setPage(1);
@@ -303,7 +257,6 @@ export default function MerchantManagerV3() {
       <MerchantListSearchBar
         selectedFilters={selectedFilters}
         onFiltersChange={handleFiltersChange}
-        optionCounts={optionCounts}
       />
 
       <MerchantListTable

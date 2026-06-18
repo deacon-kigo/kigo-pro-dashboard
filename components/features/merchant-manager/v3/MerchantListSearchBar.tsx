@@ -52,12 +52,6 @@ export type OfferStatusFilterKey = "active" | "expired" | "unpublished";
 export interface MerchantListSearchBarProps {
   selectedFilters: FilterTag[];
   onFiltersChange: (filters: FilterTag[]) => void;
-  /**
-   * Faceted match counts, keyed by `FilterTag.value`. When present, the count
-   * is appended to the option's label in the dropdown so the operator can see
-   * what each pill would add before clicking.
-   */
-  optionCounts?: Map<string, number>;
 }
 
 // ---------- Category colors (Kigo-aligned, mirrored from OfferListSearchBar) ----------
@@ -305,16 +299,6 @@ const CustomOption = (props: any) => {
   const isCreateOption = data?.__isNew__;
   const OptionIcon = data?.value ? getOptionIcon(data.value) : null;
   const inputValue = (props.selectProps?.inputValue as string) || "";
-  // Faceted count forwarded by MerchantListSearchBar via selectProps. Only
-  // surfaced for catalog + offerStatus options (categories use a tree picker
-  // and per-node counts would be misleading without ancestor aggregation).
-  const optionCounts: Map<string, number> | undefined =
-    props.selectProps?.optionCounts;
-  const showCount =
-    !isCreateOption &&
-    (category === "catalog" || category === "offerStatus") &&
-    optionCounts !== undefined;
-  const count = showCount ? (optionCounts.get(data.value) ?? 0) : null;
 
   // Tree-style row for category options (depth + connector line, mirrors
   // kigo-admin-tools CategoryOptionComponent). The anchor() positioning
@@ -528,22 +512,6 @@ const CustomOption = (props: any) => {
               isSelected ? colors.text : "#333"
             )}
           </span>
-
-          {showCount && (
-            <span
-              style={{
-                fontSize: "0.6875rem",
-                color: count === 0 ? "#bbb" : "#888",
-                fontVariantNumeric: "tabular-nums",
-                fontWeight: 500,
-                marginRight: isSelected ? 6 : 0,
-                flexShrink: 0,
-              }}
-              aria-label={`${count} ${count === 1 ? "match" : "matches"}`}
-            >
-              {count}
-            </span>
-          )}
 
           {isSelected && (
             <Check
@@ -781,7 +749,6 @@ const customStyles: StylesConfig<FilterTag, true, GroupBase<FilterTag>> = {
 export function MerchantListSearchBar({
   selectedFilters,
   onFiltersChange,
-  optionCounts,
 }: MerchantListSearchBarProps) {
   const instanceId = useId();
   const filtersRef = useRef(selectedFilters);
@@ -963,10 +930,6 @@ export function MerchantListSearchBar({
         placeholder="Search merchants, categories, catalogs, or offer status..."
         noOptionsMessage={() => "Press Enter to search merchants..."}
         styles={customStyles}
-        // Forwarded into selectProps so CustomOption can display the count.
-        // react-select passes any unknown props through unchanged.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        {...({ optionCounts } as any)}
         components={{
           DropdownIndicator,
           ClearIndicator,
