@@ -11,6 +11,7 @@ import {
 import { useToast } from "@/lib/hooks/use-toast";
 import MerchantProfileDisplay from "./MerchantProfileDisplay";
 import MerchantForm, { type MerchantFormData } from "./MerchantForm";
+import { CATEGORY_BY_ID } from "./category-select";
 import type { Merchant, MerchantStatus } from "./types";
 
 type DetailMode = "view" | "edit";
@@ -61,14 +62,16 @@ export default function MerchantDetailView({
   const handleEditSubmit = (data: MerchantFormData) => {
     const sourceLabel =
       data.source.charAt(0).toUpperCase() + data.source.slice(1);
-    const categoryLabel = data.categories
-      .map((v) => v.charAt(0).toUpperCase() + v.slice(1).replace(/-/g, " "))
+    const categoryLabel = data.categoryIds
+      .map((id) => CATEGORY_BY_ID.get(id)?.categoryName)
+      .filter((s): s is string => Boolean(s))
       .join(", ");
     setMerchantState((prev) => ({
       ...prev,
       name: data.dbaName.trim(),
       source: sourceLabel,
       category: categoryLabel || prev.category,
+      categoryIds: data.categoryIds,
       website: data.url.trim(),
       merchantDetail: data.highlights,
     }));

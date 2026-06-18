@@ -71,7 +71,14 @@ export interface Merchant {
   key: string;
   name: string;
   id: string;
+  /**
+   * Legacy display string. New picker writes to `categoryIds` (taxonomy refs);
+   * `category` is kept for the list-column label fallback until everything
+   * downstream consumes the IDs.
+   */
   category: string;
+  /** Tree-taxonomy category ids — see `category-select/taxonomy.ts`. */
+  categoryIds?: number[];
   emoji: string;
   color: string;
   source: string;

@@ -8,6 +8,10 @@ import { Button } from "@/components/atoms/Button";
 import { merchants as merchantSeed } from "./mockData";
 import { MerchantListSearchBar, type FilterTag } from "./MerchantListSearchBar";
 import { MerchantListTable } from "./MerchantListTable";
+import {
+  getCategoryDescendants,
+  LEGACY_CATEGORY_TO_IDS,
+} from "./category-select/taxonomy";
 import type { Merchant } from "./types";
 import { useToast } from "@/lib/hooks/use-toast";
 
@@ -25,11 +29,13 @@ export default function MerchantManagerV3() {
   const [data] = useState<Merchant[]>(merchantSeed);
   const { toast } = useToast();
 
-  // Parse selected filters into structured buckets (mirrors OfferListView)
-  const { searchTerms, categories, commissionFlags, sort } = useMemo(() => {
+  // Parse selected filters into structured buckets (mirrors OfferListView).
+  // Category pills carry `category:<categoryId>`; we resolve each to its full
+  // descendant set so selecting a parent matches merchants tagged with any
+  // leaf underneath.
+  const { searchTerms, categoryIdSet, sort } = useMemo(() => {
     const searchTerms: string[] = [];
-    const categories: string[] = [];
-    const commissionFlags: string[] = [];
+    const categoryIdSet = new Set<number>();
     let sort: "active-offers" | "a-z" | "z-a" = "active-offers";
     for (const f of selectedFilters) {
       const val = f.value.split(":").slice(1).join(":");
@@ -37,12 +43,15 @@ export default function MerchantManagerV3() {
         case "search":
           searchTerms.push(val);
           break;
-        case "category":
-          categories.push(val);
+        case "category": {
+          const id = Number(val);
+          if (Number.isFinite(id)) {
+            for (const desc of getCategoryDescendants(id)) {
+              categoryIdSet.add(desc);
+            }
+          }
           break;
-        case "commission":
-          commissionFlags.push(val);
-          break;
+        }
         case "sort":
           if (val === "a-z" || val === "z-a" || val === "active-offers") {
             sort = val;
@@ -50,7 +59,7 @@ export default function MerchantManagerV3() {
           break;
       }
     }
-    return { searchTerms, categories, commissionFlags, sort };
+    return { searchTerms, categoryIdSet, sort };
   }, [selectedFilters]);
 
   const searchQuery = searchTerms.join(" ");
@@ -77,18 +86,19 @@ export default function MerchantManagerV3() {
       });
     }
 
-    // Category filter (OR within)
-    if (categories.length > 0) {
-      results = results.filter((m) => categories.includes(m.category));
-    }
-
-    // Commission filter
-    if (commissionFlags.length > 0) {
-      const wantsYes = commissionFlags.includes("yes");
-      const wantsNo = commissionFlags.includes("no");
+    // Category filter (OR within) — resolves each merchant to a set of
+    // categoryIds (explicit `categoryIds` if present, otherwise the legacy
+    // single-string `category` via LEGACY_CATEGORY_TO_IDS) and checks for
+    // intersection with the selected descendant set.
+    if (categoryIdSet.size > 0) {
       results = results.filter((m) => {
-        if (wantsYes && m.commissionOffers) return true;
-        if (wantsNo && !m.commissionOffers) return true;
+        const ids =
+          m.categoryIds && m.categoryIds.length > 0
+            ? m.categoryIds
+            : (LEGACY_CATEGORY_TO_IDS[m.category] ?? []);
+        for (const id of ids) {
+          if (categoryIdSet.has(id)) return true;
+        }
         return false;
       });
     }
@@ -102,7 +112,7 @@ export default function MerchantManagerV3() {
       sorted.sort((a, b) => countActive(b) - countActive(a));
     }
     return sorted;
-  }, [data, searchTerms, categories, commissionFlags, sort]);
+  }, [data, searchTerms, categoryIdSet, sort]);
 
   const handleFiltersChange = useCallback((filters: FilterTag[]) => {
     setSelectedFilters(filters);

@@ -17,9 +17,10 @@ import {
   X,
   Check,
   Building2,
-  Percent,
   CornerDownLeft,
 } from "lucide-react";
+import { MERCHANT_CATEGORIES } from "./category-select/taxonomy";
+import { buildCategoryTreeOptions } from "./category-select/buildCategoryTreeOptions";
 
 // react-select's default export interop — mirrors OfferListSearchBar
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -30,8 +31,13 @@ const AsyncCreatable =
 
 export interface FilterTag {
   label: string;
-  value: string; // "category:Retail" | "commission:yes" | "commission:no" | "search:free text" | "sort:active-offers"
-  category: "category" | "commission" | "search" | "sort";
+  /** "category:<categoryId>" | "search:<free text>" | "sort:<key>" */
+  value: string;
+  category: "category" | "search" | "sort";
+  /** Tree depth (0 = root). Present on category options so the dropdown can indent. */
+  depth?: number;
+  /** Parent categoryId for connector-line rendering. Present on category options. */
+  parentValue?: null | number;
 }
 
 export interface MerchantListSearchBarProps {
@@ -46,14 +52,12 @@ const CATEGORY_COLORS: Record<
   { bg: string; text: string; dot: string }
 > = {
   category: { bg: "#E1F0FF", text: "#328FE5", dot: "#328FE5" },
-  commission: { bg: "#D1F7DF", text: "#059669", dot: "#77D898" },
   search: { bg: "#F6F5F1", text: "#5A5858", dot: "#5A5858" },
   sort: { bg: "#FFE9D9", text: "#C2410C", dot: "#F97316" },
 };
 
 const GROUP_CATEGORY_MAP: Record<string, FilterTag["category"]> = {
   Categories: "category",
-  Commission: "commission",
 };
 
 // ---------- Option icons ----------
@@ -63,61 +67,29 @@ const GROUP_ICONS: Record<
   React.ComponentType<{ style?: React.CSSProperties }>
 > = {
   Categories: Building2,
-  Commission: Percent,
 };
 
 function getOptionIcon(
   value: string
 ): React.ComponentType<{ style?: React.CSSProperties }> | null {
   if (value.startsWith("category:")) return Building2;
-  if (value.startsWith("commission:")) return Percent;
   return null;
 }
 
 // ---------- Static option sets ----------
 
-const CATEGORY_LABELS_LIST = [
-  "Retail",
-  "Entertainment",
-  "Health & Wellness",
-  "Food & Dining",
-  "Travel",
-  "Pets",
-  "Sports",
-  "Home & Garden",
-];
-
-const categoryOptions: FilterTag[] = CATEGORY_LABELS_LIST.map((c) => ({
-  label: c,
-  value: `category:${c}`,
+// Tree-flattened from the taxonomy so the dropdown can indent each row by
+// `depth` and draw connector lines to the parent. Pill values carry the
+// numeric categoryId so the filter consumer can resolve to a descendant set
+// (selecting a parent matches merchants tagged under any leaf).
+const TREE_CATEGORY_OPTIONS = buildCategoryTreeOptions(MERCHANT_CATEGORIES);
+const categoryOptions: FilterTag[] = TREE_CATEGORY_OPTIONS.map((o) => ({
+  label: o.label,
+  value: `category:${o.value}`,
   category: "category" as const,
+  depth: o.depth,
+  parentValue: o.parentValue,
 }));
-
-const commissionOptions: FilterTag[] = [
-  {
-    label: "Includes Commission Offers",
-    value: "commission:yes",
-    category: "commission",
-  },
-  {
-    label: "No Commission Offers",
-    value: "commission:no",
-    category: "commission",
-  },
-];
-
-function sortSelectedFirst(
-  options: FilterTag[],
-  selected: Set<string>
-): FilterTag[] {
-  const sel: FilterTag[] = [];
-  const unsel: FilterTag[] = [];
-  for (const o of options) {
-    if (selected.has(o.value)) sel.push(o);
-    else unsel.push(o);
-  }
-  return [...sel, ...unsel];
-}
 
 // ---------- Custom components (Spotlight-inspired, mirrored from OfferListSearchBar) ----------
 
@@ -272,6 +244,103 @@ const CustomOption = (props: any) => {
   const OptionIcon = data?.value ? getOptionIcon(data.value) : null;
   const inputValue = (props.selectProps?.inputValue as string) || "";
 
+  // Tree-style row for category options (depth + connector line, mirrors
+  // kigo-admin-tools CategoryOptionComponent). The anchor() positioning
+  // works because MenuList sets `position: relative` and this row's outer
+  // wrapper is `position: static`.
+  if (category === "category" && typeof data?.depth === "number") {
+    const valueStr = String(data.value);
+    const parentStr =
+      data.parentValue !== null && data.parentValue !== undefined
+        ? `category:${data.parentValue}`
+        : null;
+    const isAncestorOnly =
+      inputValue.trim() !== "" &&
+      !String(data.label).toLowerCase().includes(inputValue.toLowerCase());
+
+    return (
+      <div
+        ref={innerRef}
+        {...innerProps}
+        style={{
+          padding: "6px 12px",
+          margin: "1px 8px",
+          cursor: "pointer",
+          backgroundColor: isSelected
+            ? colors.bg
+            : isFocused
+              ? "rgba(0, 0, 0, 0.04)"
+              : "transparent",
+          borderRadius: "8px",
+          transition: "background-color 0.1s ease",
+          position: "static",
+        }}
+      >
+        <span
+          style={
+            {
+              alignItems: "center",
+              anchorName: `--cat-${valueStr.replace(/:/g, "-")}`,
+              display: "flex",
+              marginLeft: `${(data.depth * 24).toString()}px`,
+            } as React.CSSProperties
+          }
+        >
+          {parentStr !== null && (
+            <span
+              aria-hidden="true"
+              style={
+                {
+                  borderBottom: "1px solid #d1d5db",
+                  borderBottomLeftRadius: "8px",
+                  borderLeft: "1px solid #d1d5db",
+                  bottom: `anchor(--cat-${valueStr.replace(/:/g, "-")} center)`,
+                  left: `anchor(--cat-${parentStr.replace(/:/g, "-")} left)`,
+                  position: "absolute",
+                  right: `calc(anchor(--cat-${valueStr.replace(/:/g, "-")} left) + 4px)`,
+                  top: `anchor(--cat-${parentStr.replace(/:/g, "-")} bottom)`,
+                } as React.CSSProperties
+              }
+            />
+          )}
+          <span
+            style={{
+              fontSize: "0.8125rem",
+              color: isAncestorOnly
+                ? "#9ca3af"
+                : isSelected
+                  ? colors.text
+                  : "#333",
+              fontWeight: isSelected ? 500 : 400,
+              flex: 1,
+            }}
+            title={String(data.label)}
+          >
+            {isAncestorOnly
+              ? data.label
+              : highlightMatch(
+                  data.label ?? "",
+                  inputValue,
+                  isSelected ? colors.text : "#333"
+                )}
+          </span>
+          {isSelected && (
+            <Check
+              style={{
+                width: 14,
+                height: 14,
+                color: colors.dot,
+                marginLeft: "auto",
+                flexShrink: 0,
+                strokeWidth: 2.5,
+              }}
+            />
+          )}
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div
       ref={innerRef}
@@ -409,17 +478,11 @@ const CustomOption = (props: any) => {
 
 const CATEGORY_DISPLAY_LABELS: Record<FilterTag["category"], string> = {
   category: "Category",
-  commission: "Commission",
   search: "Search",
   sort: "Sort",
 };
 
-const CATEGORY_ORDER: FilterTag["category"][] = [
-  "category",
-  "commission",
-  "search",
-  "sort",
-];
+const CATEGORY_ORDER: FilterTag["category"][] = ["category", "search", "sort"];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CustomValueContainer = (props: any) => {
@@ -567,6 +630,8 @@ const customStyles: StylesConfig<FilterTag, true, GroupBase<FilterTag>> = {
     ...base,
     padding: "6px 0",
     maxHeight: "380px",
+    // Containing block for the option-row connector lines (position: absolute).
+    position: "relative",
   }),
   menuPortal: (base) => ({
     ...base,
@@ -670,60 +735,53 @@ export function MerchantListSearchBar({
     };
   }, []);
 
-  const selectedValues = useMemo(
-    () => new Set(selectedFilters.map((f) => f.value)),
-    [selectedFilters]
-  );
-
   const defaultOptions = useMemo(() => {
     const groups: GroupBase<FilterTag>[] = [];
 
-    const sortedCategories = sortSelectedFirst(categoryOptions, selectedValues);
-    if (sortedCategories.length > 0) {
-      groups.push({ label: "Categories", options: sortedCategories });
-    }
-
-    const sortedCommission = sortSelectedFirst(
-      commissionOptions,
-      selectedValues
-    );
-    if (sortedCommission.length > 0) {
-      groups.push({ label: "Commission", options: sortedCommission });
+    // Categories preserve DFS tree order (no sortSelectedFirst — that would
+    // detach children from their parents and break the indent/connector UX).
+    if (categoryOptions.length > 0) {
+      groups.push({ label: "Categories", options: categoryOptions });
     }
 
     return groups;
-  }, [selectedValues]);
+  }, []);
 
   const loadOptions = useCallback(
     async (inputValue: string): Promise<GroupBase<FilterTag>[]> => {
       const groups: GroupBase<FilterTag>[] = [];
       const lower = inputValue.toLowerCase().trim();
 
-      const filteredCategories = categoryOptions.filter(
-        (o) => !lower || o.label.toLowerCase().includes(lower)
-      );
-      const sortedCategories = sortSelectedFirst(
-        filteredCategories,
-        selectedValues
-      );
-      if (sortedCategories.length > 0) {
-        groups.push({ label: "Categories", options: sortedCategories });
+      // Ancestor-walking filter for the tree (mirrors admin-tools CategorySelect):
+      // any option whose label matches keeps itself AND every ancestor up the
+      // chain so the indent/connector tree shape is preserved. Ancestor-only
+      // rows render gray inside CustomOption.
+      let visibleCategories = categoryOptions;
+      if (lower) {
+        const visible = new Set<string>();
+        for (const opt of categoryOptions) {
+          if (opt.label.toLowerCase().includes(lower)) {
+            visible.add(opt.value);
+            let parent = opt.parentValue ?? null;
+            while (parent !== null) {
+              const parentVal = `category:${parent}`;
+              visible.add(parentVal);
+              const parentOpt = categoryOptions.find(
+                (o) => o.value === parentVal
+              );
+              parent = parentOpt?.parentValue ?? null;
+            }
+          }
+        }
+        visibleCategories = categoryOptions.filter((o) => visible.has(o.value));
       }
-
-      const filteredCommission = commissionOptions.filter(
-        (o) => !lower || o.label.toLowerCase().includes(lower)
-      );
-      const sortedCommission = sortSelectedFirst(
-        filteredCommission,
-        selectedValues
-      );
-      if (sortedCommission.length > 0) {
-        groups.push({ label: "Commission", options: sortedCommission });
+      if (visibleCategories.length > 0) {
+        groups.push({ label: "Categories", options: visibleCategories });
       }
 
       return groups;
     },
-    [selectedValues]
+    []
   );
 
   const handleChange = useCallback(
@@ -765,7 +823,7 @@ export function MerchantListSearchBar({
         isValidNewOption={(inputValue: string) => inputValue.trim().length > 0}
         getOptionValue={(option: FilterTag) => option.value}
         getOptionLabel={(option: FilterTag) => option.label}
-        placeholder="Search merchants, categories, or commission..."
+        placeholder="Search merchants or categories..."
         noOptionsMessage={() => "Press Enter to search merchants..."}
         styles={customStyles}
         components={{

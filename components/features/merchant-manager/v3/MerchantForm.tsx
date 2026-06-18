@@ -18,7 +18,8 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/atoms/Tabs";
-import { ReactSelectMulti } from "@/components/ui/react-select-multi";
+import { CategoryTreeSelect } from "./category-select";
+import { LEGACY_CATEGORY_TO_IDS } from "./category-select/taxonomy";
 import {
   Collapsible,
   CollapsibleContent,
@@ -49,17 +50,6 @@ const SOURCE_OPTIONS = [
   { label: "Entertainment Benefits Group", value: "ebg" },
   { label: "Direct Partnership", value: "direct" },
 ] as const;
-
-const CATEGORY_OPTIONS = [
-  { label: "Retail", value: "retail" },
-  { label: "Entertainment", value: "entertainment" },
-  { label: "Health & Wellness", value: "health-wellness" },
-  { label: "Food & Dining", value: "food-dining" },
-  { label: "Travel", value: "travel" },
-  { label: "Pets", value: "pets" },
-  { label: "Sports", value: "sports" },
-  { label: "Home & Garden", value: "home-garden" },
-];
 
 // Mirrors kigo-admin-tools/src/constants/us-states.ts
 const US_STATES = [
@@ -121,7 +111,11 @@ export interface MerchantFormData {
   logo: File | null;
   logoPreview: string | null;
   source: string;
-  categories: string[];
+  /**
+   * Selected category leaves from the tree taxonomy
+   * (see `category-select/taxonomy.ts`). Replaces the prior string-slug list.
+   */
+  categoryIds: number[];
   locationsTab: "upload" | "manual";
   locationsFile: File | null;
   manualAddress: string;
@@ -138,7 +132,7 @@ const initialFormState: MerchantFormData = {
   logo: null,
   logoPreview: null,
   source: "",
-  categories: [],
+  categoryIds: [],
   locationsTab: "upload",
   locationsFile: null,
   manualAddress: "",
@@ -155,9 +149,10 @@ export function merchantToFormState(m: Merchant): MerchantFormData {
     ...initialFormState,
     dbaName: m.name,
     source: m.source ? m.source.toLowerCase().replace(/\s+/g, "-") : "",
-    categories: m.category
-      ? [m.category.toLowerCase().replace(/\s+/g, "-")]
-      : [],
+    categoryIds:
+      m.categoryIds && m.categoryIds.length > 0
+        ? m.categoryIds
+        : (LEGACY_CATEGORY_TO_IDS[m.category] ?? []),
     corpName: m.name,
     url: m.website ?? "",
     highlights: m.merchantDetail ?? "",
@@ -242,7 +237,7 @@ export default function MerchantForm({
   const logoError = !isEdit && form.logo === null ? "Logo is required." : null;
   const sourceError = form.source.length === 0 ? "Source is required." : null;
   const categoriesError =
-    form.categories.length === 0 ? "Select at least one category." : null;
+    form.categoryIds.length === 0 ? "Select at least one category." : null;
   const locationsError = (() => {
     // In edit mode the merchant already has locations on the server — the
     // form has no way to round-trip them back into `locationsFile` /
@@ -320,8 +315,8 @@ export default function MerchantForm({
       a.dbaName !== b.dbaName ||
       a.logo !== b.logo ||
       a.source !== b.source ||
-      a.categories.length !== b.categories.length ||
-      a.categories.some((c, i) => c !== b.categories[i]) ||
+      a.categoryIds.length !== b.categoryIds.length ||
+      a.categoryIds.some((c, i) => c !== b.categoryIds[i]) ||
       a.locationsTab !== b.locationsTab ||
       a.locationsFile !== b.locationsFile ||
       a.manualAddress !== b.manualAddress ||
@@ -640,14 +635,14 @@ export default function MerchantForm({
               showCategoriesError ? "rounded-md ring-1 ring-destructive" : ""
             }`}
           >
-            <ReactSelectMulti
-              options={CATEGORY_OPTIONS}
-              values={form.categories}
-              onChange={(values) => {
+            <CategoryTreeSelect
+              id="categories"
+              value={form.categoryIds}
+              onChange={(next) => {
                 markTouched("categories");
-                update("categories", values);
+                update("categoryIds", next);
               }}
-              placeholder="Select one or more categories"
+              placeholder="Select categories"
             />
           </div>
           {showCategoriesError ? (
