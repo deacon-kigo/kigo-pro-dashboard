@@ -18,9 +18,12 @@ import {
   Check,
   Building2,
   CornerDownLeft,
+  FolderOpen,
+  Activity,
 } from "lucide-react";
 import { MERCHANT_CATEGORIES } from "./category-select/taxonomy";
 import { buildCategoryTreeOptions } from "./category-select/buildCategoryTreeOptions";
+import { CATALOG_NAMES } from "./mockData";
 
 // react-select's default export interop — mirrors OfferListSearchBar
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -31,14 +34,20 @@ const AsyncCreatable =
 
 export interface FilterTag {
   label: string;
-  /** "category:<categoryId>" | "search:<free text>" | "sort:<key>" */
+  /**
+   * `"category:<id>" | "catalog:<name>" | "offerStatus:<key>"
+   * | "search:<text>" | "sort:<key>"`
+   */
   value: string;
-  category: "category" | "search" | "sort";
+  category: "category" | "catalog" | "offerStatus" | "search" | "sort";
   /** Tree depth (0 = root). Present on category options so the dropdown can indent. */
   depth?: number;
   /** Parent categoryId for connector-line rendering. Present on category options. */
   parentValue?: null | number;
 }
+
+/** Active offer-presence filter keys. Each maps to a predicate in the list filter. */
+export type OfferStatusFilterKey = "active" | "expired" | "unpublished";
 
 export interface MerchantListSearchBarProps {
   selectedFilters: FilterTag[];
@@ -52,12 +61,16 @@ const CATEGORY_COLORS: Record<
   { bg: string; text: string; dot: string }
 > = {
   category: { bg: "#E1F0FF", text: "#328FE5", dot: "#328FE5" },
+  catalog: { bg: "#EEF2FF", text: "#4338CA", dot: "#6366F1" },
+  offerStatus: { bg: "#D1F7DF", text: "#15803D", dot: "#22C55E" },
   search: { bg: "#F6F5F1", text: "#5A5858", dot: "#5A5858" },
   sort: { bg: "#FFE9D9", text: "#C2410C", dot: "#F97316" },
 };
 
 const GROUP_CATEGORY_MAP: Record<string, FilterTag["category"]> = {
   Categories: "category",
+  Catalogs: "catalog",
+  "Offer Status": "offerStatus",
 };
 
 // ---------- Option icons ----------
@@ -67,12 +80,16 @@ const GROUP_ICONS: Record<
   React.ComponentType<{ style?: React.CSSProperties }>
 > = {
   Categories: Building2,
+  Catalogs: FolderOpen,
+  "Offer Status": Activity,
 };
 
 function getOptionIcon(
   value: string
 ): React.ComponentType<{ style?: React.CSSProperties }> | null {
   if (value.startsWith("category:")) return Building2;
+  if (value.startsWith("catalog:")) return FolderOpen;
+  if (value.startsWith("offerStatus:")) return Activity;
   return null;
 }
 
@@ -90,6 +107,45 @@ const categoryOptions: FilterTag[] = TREE_CATEGORY_OPTIONS.map((o) => ({
   depth: o.depth,
   parentValue: o.parentValue,
 }));
+
+const catalogOptions: FilterTag[] = CATALOG_NAMES.map((name) => ({
+  label: name,
+  value: `catalog:${name}`,
+  category: "catalog" as const,
+}));
+
+// Filter pills mirror the three buckets the Offers column actually renders
+// (active / unpublished / expired). Keep them in display order.
+const offerStatusOptions: FilterTag[] = [
+  {
+    label: "Has active offers",
+    value: "offerStatus:active",
+    category: "offerStatus" as const,
+  },
+  {
+    label: "Has unpublished offers",
+    value: "offerStatus:unpublished",
+    category: "offerStatus" as const,
+  },
+  {
+    label: "Has expired offers",
+    value: "offerStatus:expired",
+    category: "offerStatus" as const,
+  },
+];
+
+function sortSelectedFirst(
+  options: FilterTag[],
+  selected: Set<string>
+): FilterTag[] {
+  const sel: FilterTag[] = [];
+  const unsel: FilterTag[] = [];
+  for (const o of options) {
+    if (selected.has(o.value)) sel.push(o);
+    else unsel.push(o);
+  }
+  return [...sel, ...unsel];
+}
 
 // ---------- Custom components (Spotlight-inspired, mirrored from OfferListSearchBar) ----------
 
@@ -478,11 +534,19 @@ const CustomOption = (props: any) => {
 
 const CATEGORY_DISPLAY_LABELS: Record<FilterTag["category"], string> = {
   category: "Category",
+  catalog: "Catalog",
+  offerStatus: "Offer",
   search: "Search",
   sort: "Sort",
 };
 
-const CATEGORY_ORDER: FilterTag["category"][] = ["category", "search", "sort"];
+const CATEGORY_ORDER: FilterTag["category"][] = [
+  "category",
+  "catalog",
+  "offerStatus",
+  "search",
+  "sort",
+];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CustomValueContainer = (props: any) => {
@@ -735,6 +799,11 @@ export function MerchantListSearchBar({
     };
   }, []);
 
+  const selectedValues = useMemo(
+    () => new Set(selectedFilters.map((f) => f.value)),
+    [selectedFilters]
+  );
+
   const defaultOptions = useMemo(() => {
     const groups: GroupBase<FilterTag>[] = [];
 
@@ -744,8 +813,21 @@ export function MerchantListSearchBar({
       groups.push({ label: "Categories", options: categoryOptions });
     }
 
+    const sortedCatalogs = sortSelectedFirst(catalogOptions, selectedValues);
+    if (sortedCatalogs.length > 0) {
+      groups.push({ label: "Catalogs", options: sortedCatalogs });
+    }
+
+    const sortedOfferStatus = sortSelectedFirst(
+      offerStatusOptions,
+      selectedValues
+    );
+    if (sortedOfferStatus.length > 0) {
+      groups.push({ label: "Offer Status", options: sortedOfferStatus });
+    }
+
     return groups;
-  }, []);
+  }, [selectedValues]);
 
   const loadOptions = useCallback(
     async (inputValue: string): Promise<GroupBase<FilterTag>[]> => {
@@ -779,9 +861,31 @@ export function MerchantListSearchBar({
         groups.push({ label: "Categories", options: visibleCategories });
       }
 
+      const filteredCatalogs = catalogOptions.filter(
+        (o) => !lower || o.label.toLowerCase().includes(lower)
+      );
+      const sortedCatalogs = sortSelectedFirst(
+        filteredCatalogs,
+        selectedValues
+      );
+      if (sortedCatalogs.length > 0) {
+        groups.push({ label: "Catalogs", options: sortedCatalogs });
+      }
+
+      const filteredOfferStatus = offerStatusOptions.filter(
+        (o) => !lower || o.label.toLowerCase().includes(lower)
+      );
+      const sortedOfferStatus = sortSelectedFirst(
+        filteredOfferStatus,
+        selectedValues
+      );
+      if (sortedOfferStatus.length > 0) {
+        groups.push({ label: "Offer Status", options: sortedOfferStatus });
+      }
+
       return groups;
     },
-    []
+    [selectedValues]
   );
 
   const handleChange = useCallback(
@@ -823,7 +927,7 @@ export function MerchantListSearchBar({
         isValidNewOption={(inputValue: string) => inputValue.trim().length > 0}
         getOptionValue={(option: FilterTag) => option.value}
         getOptionLabel={(option: FilterTag) => option.label}
-        placeholder="Search merchants or categories..."
+        placeholder="Search merchants, categories, catalogs, or offer status..."
         noOptionsMessage={() => "Press Enter to search merchants..."}
         styles={customStyles}
         components={{

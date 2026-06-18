@@ -33,41 +33,65 @@ export default function MerchantManagerV3() {
   // Category pills carry `category:<categoryId>`; we resolve each to its full
   // descendant set so selecting a parent matches merchants tagged with any
   // leaf underneath.
-  const { searchTerms, categoryIdSet, sort } = useMemo(() => {
-    const searchTerms: string[] = [];
-    const categoryIdSet = new Set<number>();
-    let sort: "active-offers" | "a-z" | "z-a" = "active-offers";
-    for (const f of selectedFilters) {
-      const val = f.value.split(":").slice(1).join(":");
-      switch (f.category) {
-        case "search":
-          searchTerms.push(val);
-          break;
-        case "category": {
-          const id = Number(val);
-          if (Number.isFinite(id)) {
-            for (const desc of getCategoryDescendants(id)) {
-              categoryIdSet.add(desc);
+  const { searchTerms, categoryIdSet, catalogNames, offerStatusKeys, sort } =
+    useMemo(() => {
+      const searchTerms: string[] = [];
+      const categoryIdSet = new Set<number>();
+      const catalogNames = new Set<string>();
+      const offerStatusKeys = new Set<"active" | "expired" | "unpublished">();
+      let sort: "active-offers" | "a-z" | "z-a" = "active-offers";
+      for (const f of selectedFilters) {
+        const val = f.value.split(":").slice(1).join(":");
+        switch (f.category) {
+          case "search":
+            searchTerms.push(val);
+            break;
+          case "category": {
+            const id = Number(val);
+            if (Number.isFinite(id)) {
+              for (const desc of getCategoryDescendants(id)) {
+                categoryIdSet.add(desc);
+              }
             }
+            break;
           }
-          break;
+          case "catalog":
+            catalogNames.add(val);
+            break;
+          case "offerStatus":
+            if (
+              val === "active" ||
+              val === "expired" ||
+              val === "unpublished"
+            ) {
+              offerStatusKeys.add(val);
+            }
+            break;
+          case "sort":
+            if (val === "a-z" || val === "z-a" || val === "active-offers") {
+              sort = val;
+            }
+            break;
         }
-        case "sort":
-          if (val === "a-z" || val === "z-a" || val === "active-offers") {
-            sort = val;
-          }
-          break;
       }
-    }
-    return { searchTerms, categoryIdSet, sort };
-  }, [selectedFilters]);
+      return {
+        searchTerms,
+        categoryIdSet,
+        catalogNames,
+        offerStatusKeys,
+        sort,
+      };
+    }, [selectedFilters]);
 
   const searchQuery = searchTerms.join(" ");
 
   const filtered = useMemo<Merchant[]>(() => {
     let results = data;
 
-    // Keyword search — OR across stacked terms, OR across searchable fields.
+    // Keyword search — OR across stacked terms, scoped to fields the operator
+    // can verify in the table (name / id / categories / catalogs / offer
+    // names). Source / website / contact / detail live only on the detail
+    // page and were dropped from the haystack 2026-06-18.
     if (searchTerms.length > 0) {
       const needles = searchTerms.map((t) => t.toLowerCase());
       results = results.filter((m) => {
@@ -75,10 +99,8 @@ export default function MerchantManagerV3() {
           m.name,
           m.id,
           m.category,
-          m.source,
-          m.contact ?? "",
-          m.website ?? "",
-          m.merchantDetail ?? "",
+          ...(m.catalogs ?? []),
+          ...m.offers.map((o) => o.name),
         ]
           .join(" ")
           .toLowerCase();
@@ -103,6 +125,35 @@ export default function MerchantManagerV3() {
       });
     }
 
+    // Catalog filter — merchant must belong to ANY selected catalog.
+    if (catalogNames.size > 0) {
+      results = results.filter((m) =>
+        (m.catalogs ?? []).some((c) => catalogNames.has(c))
+      );
+    }
+
+    // Offer-status filter — merchant must have at least one offer matching
+    // ANY selected presence key. Mirrors how the Offers column buckets them:
+    //   active       → status === "published"
+    //   unpublished  → status === "paused" || "archived"
+    //   expired      → status === "expired"
+    if (offerStatusKeys.size > 0) {
+      results = results.filter((m) =>
+        m.offers.some((o) => {
+          if (offerStatusKeys.has("active") && o.status === "published")
+            return true;
+          if (
+            offerStatusKeys.has("unpublished") &&
+            (o.status === "paused" || o.status === "archived")
+          )
+            return true;
+          if (offerStatusKeys.has("expired") && o.status === "expired")
+            return true;
+          return false;
+        })
+      );
+    }
+
     const sorted = [...results];
     if (sort === "a-z") {
       sorted.sort((a, b) => a.name.localeCompare(b.name));
@@ -112,7 +163,7 @@ export default function MerchantManagerV3() {
       sorted.sort((a, b) => countActive(b) - countActive(a));
     }
     return sorted;
-  }, [data, searchTerms, categoryIdSet, sort]);
+  }, [data, searchTerms, categoryIdSet, catalogNames, offerStatusKeys, sort]);
 
   const handleFiltersChange = useCallback((filters: FilterTag[]) => {
     setSelectedFilters(filters);

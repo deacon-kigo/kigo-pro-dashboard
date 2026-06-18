@@ -1378,7 +1378,7 @@ export const merchants: Merchant[] = [
 // Catalog names mirror the publisher channels active on this prototype's
 // offers (Verizon Value, JD Perks, Optum Offers, etc.) so the membership a
 // merchant shows matches the offers they're surfacing through.
-const CATALOG_POOL = {
+export const CATALOG_POOL = {
   jdPerks: "JD Perks",
   verizon: "Verizon Value",
   optum: "Optum Offers",
@@ -1387,6 +1387,11 @@ const CATALOG_POOL = {
   johnDeereLoyalty: "John Deere Loyalty",
   kigoMarketplace: "Kigo Marketplace",
 } as const;
+
+// Public-facing catalog name list — alphabetized for filter dropdowns.
+export const CATALOG_NAMES: readonly string[] = Object.values(CATALOG_POOL)
+  .slice()
+  .sort((a, b) => a.localeCompare(b));
 
 // Subset of merchants that legitimately span more than one category. Leave
 // single-category merchants untouched so the chip layout still reads as a
