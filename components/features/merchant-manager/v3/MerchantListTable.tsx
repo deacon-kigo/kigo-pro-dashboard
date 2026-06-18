@@ -16,6 +16,8 @@ import { getMerchantListColumns } from "./merchantColumns";
 import { MerchantLogo } from "./MerchantLogo";
 import type { Merchant } from "./types";
 
+type OfferStatusFilterKey = "active" | "unpublished" | "expired";
+
 interface MerchantListTableProps {
   data: Merchant[];
   className?: string;
@@ -28,6 +30,8 @@ interface MerchantListTableProps {
   onEdit: (merchant: Merchant) => void;
   onDelete: (merchant: Merchant) => void;
   onRowClick?: (row: Merchant) => void;
+  onOfferStatusToggle?: (status: OfferStatusFilterKey) => void;
+  activeOfferStatuses?: Set<OfferStatusFilterKey>;
 }
 
 export const MerchantListTable = memo(function MerchantListTable({
@@ -42,6 +46,8 @@ export const MerchantListTable = memo(function MerchantListTable({
   onEdit,
   onDelete,
   onRowClick,
+  onOfferStatusToggle,
+  activeOfferStatuses,
 }: MerchantListTableProps) {
   const handlePageChange = useCallback(
     (page: number) => {
@@ -75,8 +81,10 @@ export const MerchantListTable = memo(function MerchantListTable({
         onView,
         onEdit,
         onDelete,
+        onOfferStatusToggle,
+        activeOfferStatuses,
       }),
-    [onView, onEdit, onDelete]
+    [onView, onEdit, onDelete, onOfferStatusToggle, activeOfferStatuses]
   );
 
   // Highlight matching search query on the merchant name column

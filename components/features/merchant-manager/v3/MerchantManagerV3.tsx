@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { PageHeader } from "@/components/molecules/PageHeader";
 import { Button } from "@/components/atoms/Button";
-import { merchants as merchantSeed } from "./mockData";
+import { merchants as merchantSeed, CATALOG_NAMES } from "./mockData";
 import { MerchantListSearchBar, type FilterTag } from "./MerchantListSearchBar";
 import { MerchantListTable } from "./MerchantListTable";
 import {
@@ -17,8 +17,124 @@ import { useToast } from "@/lib/hooks/use-toast";
 
 const PAGE_SIZE_DEFAULT = 20;
 
+type OfferStatusFilterKey = "active" | "unpublished" | "expired";
+
+interface ParsedFilters {
+  searchTerms: string[];
+  categoryIdSet: Set<number>;
+  catalogNames: Set<string>;
+  offerStatusKeys: Set<OfferStatusFilterKey>;
+  sort: "active-offers" | "a-z" | "z-a";
+}
+
+function parseFilters(filters: FilterTag[]): ParsedFilters {
+  const searchTerms: string[] = [];
+  const categoryIdSet = new Set<number>();
+  const catalogNames = new Set<string>();
+  const offerStatusKeys = new Set<OfferStatusFilterKey>();
+  let sort: "active-offers" | "a-z" | "z-a" = "active-offers";
+  for (const f of filters) {
+    const val = f.value.split(":").slice(1).join(":");
+    switch (f.category) {
+      case "search":
+        searchTerms.push(val);
+        break;
+      case "category": {
+        const id = Number(val);
+        if (Number.isFinite(id)) {
+          for (const desc of getCategoryDescendants(id)) {
+            categoryIdSet.add(desc);
+          }
+        }
+        break;
+      }
+      case "catalog":
+        catalogNames.add(val);
+        break;
+      case "offerStatus":
+        if (val === "active" || val === "expired" || val === "unpublished") {
+          offerStatusKeys.add(val);
+        }
+        break;
+      case "sort":
+        if (val === "a-z" || val === "z-a" || val === "active-offers") {
+          sort = val;
+        }
+        break;
+    }
+  }
+  return { searchTerms, categoryIdSet, catalogNames, offerStatusKeys, sort };
+}
+
 function countActive(merchant: Merchant): number {
   return merchant.offers.filter((o) => o.status === "published").length;
+}
+
+// Applies the filter chain over `data`. Per-axis bucket can be omitted to
+// support faceted-count computation ("apply everything except offer-status,
+// then count how many merchants would each offer-status pill add").
+function filterMerchants(
+  data: Merchant[],
+  f: Pick<
+    ParsedFilters,
+    "searchTerms" | "categoryIdSet" | "catalogNames" | "offerStatusKeys"
+  >
+): Merchant[] {
+  let results = data;
+
+  if (f.searchTerms.length > 0) {
+    const needles = f.searchTerms.map((t) => t.toLowerCase());
+    results = results.filter((m) => {
+      const hay = [
+        m.name,
+        m.id,
+        m.category,
+        ...(m.catalogs ?? []),
+        ...m.offers.map((o) => o.name),
+      ]
+        .join(" ")
+        .toLowerCase();
+      return needles.some((n) => hay.includes(n));
+    });
+  }
+
+  if (f.categoryIdSet.size > 0) {
+    results = results.filter((m) => {
+      const ids =
+        m.categoryIds && m.categoryIds.length > 0
+          ? m.categoryIds
+          : (LEGACY_CATEGORY_TO_IDS[m.category] ?? []);
+      for (const id of ids) {
+        if (f.categoryIdSet.has(id)) return true;
+      }
+      return false;
+    });
+  }
+
+  if (f.catalogNames.size > 0) {
+    results = results.filter((m) =>
+      (m.catalogs ?? []).some((c) => f.catalogNames.has(c))
+    );
+  }
+
+  if (f.offerStatusKeys.size > 0) {
+    results = results.filter((m) =>
+      m.offers.some((o) => {
+        if (f.offerStatusKeys.has("active") && o.status === "published")
+          return true;
+        if (
+          f.offerStatusKeys.has("unpublished") &&
+          (o.status === "paused" || o.status === "archived")
+        )
+          return true;
+        if (f.offerStatusKeys.has("expired") && o.status === "expired")
+          return true;
+        return false;
+      })
+    );
+  }
+
+  return results;
 }
 
 export default function MerchantManagerV3() {
@@ -29,131 +145,22 @@ export default function MerchantManagerV3() {
   const [data] = useState<Merchant[]>(merchantSeed);
   const { toast } = useToast();
 
-  // Parse selected filters into structured buckets (mirrors OfferListView).
-  // Category pills carry `category:<categoryId>`; we resolve each to its full
-  // descendant set so selecting a parent matches merchants tagged with any
-  // leaf underneath.
+  const parsed = useMemo(
+    () => parseFilters(selectedFilters),
+    [selectedFilters]
+  );
   const { searchTerms, categoryIdSet, catalogNames, offerStatusKeys, sort } =
-    useMemo(() => {
-      const searchTerms: string[] = [];
-      const categoryIdSet = new Set<number>();
-      const catalogNames = new Set<string>();
-      const offerStatusKeys = new Set<"active" | "expired" | "unpublished">();
-      let sort: "active-offers" | "a-z" | "z-a" = "active-offers";
-      for (const f of selectedFilters) {
-        const val = f.value.split(":").slice(1).join(":");
-        switch (f.category) {
-          case "search":
-            searchTerms.push(val);
-            break;
-          case "category": {
-            const id = Number(val);
-            if (Number.isFinite(id)) {
-              for (const desc of getCategoryDescendants(id)) {
-                categoryIdSet.add(desc);
-              }
-            }
-            break;
-          }
-          case "catalog":
-            catalogNames.add(val);
-            break;
-          case "offerStatus":
-            if (
-              val === "active" ||
-              val === "expired" ||
-              val === "unpublished"
-            ) {
-              offerStatusKeys.add(val);
-            }
-            break;
-          case "sort":
-            if (val === "a-z" || val === "z-a" || val === "active-offers") {
-              sort = val;
-            }
-            break;
-        }
-      }
-      return {
-        searchTerms,
-        categoryIdSet,
-        catalogNames,
-        offerStatusKeys,
-        sort,
-      };
-    }, [selectedFilters]);
+    parsed;
 
   const searchQuery = searchTerms.join(" ");
 
   const filtered = useMemo<Merchant[]>(() => {
-    let results = data;
-
-    // Keyword search — OR across stacked terms, scoped to fields the operator
-    // can verify in the table (name / id / categories / catalogs / offer
-    // names). Source / website / contact / detail live only on the detail
-    // page and were dropped from the haystack 2026-06-18.
-    if (searchTerms.length > 0) {
-      const needles = searchTerms.map((t) => t.toLowerCase());
-      results = results.filter((m) => {
-        const hay = [
-          m.name,
-          m.id,
-          m.category,
-          ...(m.catalogs ?? []),
-          ...m.offers.map((o) => o.name),
-        ]
-          .join(" ")
-          .toLowerCase();
-        return needles.some((n) => hay.includes(n));
-      });
-    }
-
-    // Category filter (OR within) — resolves each merchant to a set of
-    // categoryIds (explicit `categoryIds` if present, otherwise the legacy
-    // single-string `category` via LEGACY_CATEGORY_TO_IDS) and checks for
-    // intersection with the selected descendant set.
-    if (categoryIdSet.size > 0) {
-      results = results.filter((m) => {
-        const ids =
-          m.categoryIds && m.categoryIds.length > 0
-            ? m.categoryIds
-            : (LEGACY_CATEGORY_TO_IDS[m.category] ?? []);
-        for (const id of ids) {
-          if (categoryIdSet.has(id)) return true;
-        }
-        return false;
-      });
-    }
-
-    // Catalog filter — merchant must belong to ANY selected catalog.
-    if (catalogNames.size > 0) {
-      results = results.filter((m) =>
-        (m.catalogs ?? []).some((c) => catalogNames.has(c))
-      );
-    }
-
-    // Offer-status filter — merchant must have at least one offer matching
-    // ANY selected presence key. Mirrors how the Offers column buckets them:
-    //   active       → status === "published"
-    //   unpublished  → status === "paused" || "archived"
-    //   expired      → status === "expired"
-    if (offerStatusKeys.size > 0) {
-      results = results.filter((m) =>
-        m.offers.some((o) => {
-          if (offerStatusKeys.has("active") && o.status === "published")
-            return true;
-          if (
-            offerStatusKeys.has("unpublished") &&
-            (o.status === "paused" || o.status === "archived")
-          )
-            return true;
-          if (offerStatusKeys.has("expired") && o.status === "expired")
-            return true;
-          return false;
-        })
-      );
-    }
-
+    const results = filterMerchants(data, {
+      searchTerms,
+      categoryIdSet,
+      catalogNames,
+      offerStatusKeys,
+    });
     const sorted = [...results];
     if (sort === "a-z") {
       sorted.sort((a, b) => a.name.localeCompare(b.name));
@@ -165,10 +172,80 @@ export default function MerchantManagerV3() {
     return sorted;
   }, [data, searchTerms, categoryIdSet, catalogNames, offerStatusKeys, sort]);
 
+  // Faceted counts: for each pill in a group, how many merchants would match
+  // if the user picked it now? Computed against the full filter chain MINUS
+  // that group, so picking one offer-status pill doesn't zero out the others.
+  const optionCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    const EMPTY_CATALOG = new Set<string>();
+    const EMPTY_OFFER_STATUS = new Set<OfferStatusFilterKey>();
+
+    const baseForCatalog = filterMerchants(data, {
+      searchTerms,
+      categoryIdSet,
+      catalogNames: EMPTY_CATALOG,
+      offerStatusKeys,
+    });
+    for (const name of CATALOG_NAMES) {
+      const n = baseForCatalog.reduce(
+        (acc, m) => acc + ((m.catalogs ?? []).includes(name) ? 1 : 0),
+        0
+      );
+      counts.set(`catalog:${name}`, n);
+    }
+
+    const baseForOfferStatus = filterMerchants(data, {
+      searchTerms,
+      categoryIdSet,
+      catalogNames,
+      offerStatusKeys: EMPTY_OFFER_STATUS,
+    });
+    let active = 0;
+    let unpublished = 0;
+    let expired = 0;
+    for (const m of baseForOfferStatus) {
+      if (m.offers.some((o) => o.status === "published")) active++;
+      if (
+        m.offers.some((o) => o.status === "paused" || o.status === "archived")
+      )
+        unpublished++;
+      if (m.offers.some((o) => o.status === "expired")) expired++;
+    }
+    counts.set("offerStatus:active", active);
+    counts.set("offerStatus:unpublished", unpublished);
+    counts.set("offerStatus:expired", expired);
+
+    return counts;
+  }, [data, searchTerms, categoryIdSet, catalogNames, offerStatusKeys]);
+
   const handleFiltersChange = useCallback((filters: FilterTag[]) => {
     setSelectedFilters(filters);
     setPage(1);
   }, []);
+
+  // Toggle from clicking an offer-status pill in the table — add if absent,
+  // remove if already applied. The functional updater avoids stale closure
+  // capture of `selectedFilters` from the surrounding scope.
+  const handleOfferStatusToggle = useCallback(
+    (status: OfferStatusFilterKey) => {
+      const tagValue = `offerStatus:${status}`;
+      setSelectedFilters((prev) => {
+        const existing = prev.findIndex((f) => f.value === tagValue);
+        if (existing >= 0) {
+          return prev.filter((_, i) => i !== existing);
+        }
+        const label =
+          status === "active"
+            ? "Has active offers"
+            : status === "unpublished"
+              ? "Has unpublished offers"
+              : "Has expired offers";
+        return [...prev, { label, value: tagValue, category: "offerStatus" }];
+      });
+      setPage(1);
+    },
+    []
+  );
 
   const handlePageChange = useCallback((p: number) => {
     setPage(p);
@@ -226,6 +303,7 @@ export default function MerchantManagerV3() {
       <MerchantListSearchBar
         selectedFilters={selectedFilters}
         onFiltersChange={handleFiltersChange}
+        optionCounts={optionCounts}
       />
 
       <MerchantListTable
@@ -239,6 +317,8 @@ export default function MerchantManagerV3() {
         onEdit={handleEdit}
         onDelete={handleDelete}
         onRowClick={handleView}
+        onOfferStatusToggle={handleOfferStatusToggle}
+        activeOfferStatuses={offerStatusKeys}
       />
     </div>
   );

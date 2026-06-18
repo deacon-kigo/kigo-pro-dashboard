@@ -64,24 +64,53 @@ const OFFER_STATUS_PILL = {
   },
 } as const;
 
+type OfferStatusKey = keyof typeof OFFER_STATUS_PILL;
+
 function OfferStatusPill({
   status,
   count,
+  onClick,
+  isActiveFilter,
 }: {
-  status: keyof typeof OFFER_STATUS_PILL;
+  status: OfferStatusKey;
   count: number;
+  /** When provided, the pill renders as a button that toggles the filter for `status`. */
+  onClick?: (status: OfferStatusKey) => void;
+  /** Show the pill in its "filter applied" treatment (ring outline). */
+  isActiveFilter?: boolean;
 }) {
   const { icon: Icon, className, label } = OFFER_STATUS_PILL[status];
-  return (
+  const badge = (
     <Badge
       useClassName
       size="sm"
       rounded="md"
       icon={<Icon className="h-3.5 w-3.5" aria-hidden="true" />}
-      className={`${className} font-medium`}
+      className={`${className} font-medium ${
+        isActiveFilter ? "ring-2 ring-current ring-offset-1" : ""
+      }`}
     >
       {count} {label}
     </Badge>
+  );
+
+  if (!onClick) return badge;
+
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        // Row has an onRowClick that navigates to detail — keep the
+        // pill click local to the filter toggle.
+        e.stopPropagation();
+        onClick(status);
+      }}
+      aria-pressed={isActiveFilter ? true : false}
+      aria-label={`${isActiveFilter ? "Remove" : "Add"} "${label}" filter`}
+      className="rounded-md cursor-pointer transition-all hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-1"
+    >
+      {badge}
+    </button>
   );
 }
 
@@ -222,12 +251,18 @@ interface MerchantListColumnsOptions {
   onView: (merchant: Merchant) => void;
   onEdit: (merchant: Merchant) => void;
   onDelete: (merchant: Merchant) => void;
+  /** Click on an Offer-status pill in the cell toggles this filter. */
+  onOfferStatusToggle?: (status: OfferStatusKey) => void;
+  /** Set of active offer-status filters — controls the pill's ring outline. */
+  activeOfferStatuses?: Set<OfferStatusKey>;
 }
 
 export function getMerchantListColumns({
   onView,
   onEdit,
   onDelete,
+  onOfferStatusToggle,
+  activeOfferStatuses,
 }: MerchantListColumnsOptions): ColumnDef<Merchant>[] {
   return [
     {
@@ -371,12 +406,27 @@ export function getMerchantListColumns({
         ).length;
         return (
           <div className="flex flex-wrap items-center gap-1 max-w-[280px]">
-            <OfferStatusPill status="active" count={activeCount} />
+            <OfferStatusPill
+              status="active"
+              count={activeCount}
+              onClick={onOfferStatusToggle}
+              isActiveFilter={activeOfferStatuses?.has("active")}
+            />
             {unpublishedCount > 0 && (
-              <OfferStatusPill status="unpublished" count={unpublishedCount} />
+              <OfferStatusPill
+                status="unpublished"
+                count={unpublishedCount}
+                onClick={onOfferStatusToggle}
+                isActiveFilter={activeOfferStatuses?.has("unpublished")}
+              />
             )}
             {expiredCount > 0 && (
-              <OfferStatusPill status="expired" count={expiredCount} />
+              <OfferStatusPill
+                status="expired"
+                count={expiredCount}
+                onClick={onOfferStatusToggle}
+                isActiveFilter={activeOfferStatuses?.has("expired")}
+              />
             )}
           </div>
         );
