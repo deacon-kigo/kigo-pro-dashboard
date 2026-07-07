@@ -111,6 +111,22 @@ const clientThemes: Record<string, { light: ThemeColors; dark: ThemeColors }> =
         textColor: "#334155",
       },
     },
+    johndeere: {
+      light: {
+        primaryColor: "#367C2B", // John Deere green
+        secondaryColor: "#2A5E22", // Darker green
+        accentColor: "#FFDE00", // John Deere yellow
+        backgroundColor: "#ffffff",
+        textColor: "#1f2937",
+      },
+      dark: {
+        primaryColor: "#4C9A3F", // Lighter JD green for dark mode
+        secondaryColor: "#367C2B",
+        accentColor: "#FFE54C", // Lighter yellow
+        backgroundColor: "#f8fafc",
+        textColor: "#334155",
+      },
+    },
     // Default theme for any other client
     default: {
       light: {
@@ -182,6 +198,9 @@ export const demoSlice = createSlice({
           break;
         case "schwab":
           state.clientName = "Charles Schwab";
+          break;
+        case "johndeere":
+          state.clientName = "John Deere";
           break;
         default:
           state.clientName = action.payload;
@@ -281,6 +300,9 @@ export const demoSlice = createSlice({
               break;
             case "schwab":
               state.clientName = "Charles Schwab";
+              break;
+            case "johndeere":
+              state.clientName = "John Deere";
               break;
             default:
               state.clientName = updates.clientId;
