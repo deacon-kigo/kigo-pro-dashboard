@@ -45,6 +45,12 @@ export default function QrPoster({
   const logoModules = Math.round(n * 0.26);
   const logoOffset = (dim - logoModules) / 2;
 
+  // Caption band (in module units) baked directly into the image so the
+  // expiration date travels with the QR even if only the graphic is printed
+  // or screenshotted without the surrounding page text.
+  const CAP = 8;
+  const totalH = dim + CAP;
+
   // Build the SVG dark-module path once.
   const pathData = useMemo(() => {
     let d = "";
@@ -173,24 +179,25 @@ export default function QrPoster({
       <div className="mt-4 flex flex-col items-center gap-3">
         <div className="rounded-md border border-border-light p-3">
           <svg
-            viewBox={`0 0 ${dim} ${dim}`}
-            width={200}
-            height={200}
+            viewBox={`0 0 ${dim} ${totalH}`}
+            width={220}
+            height={(220 * totalH) / dim}
             role="img"
-            aria-label={`QR code for ${campaignName}`}
+            aria-label={`QR code for ${campaignName}. ${expiresLabel}`}
             xmlns="http://www.w3.org/2000/svg"
-            shapeRendering="crispEdges"
           >
-            <rect width={dim} height={dim} fill="#ffffff" />
-            <path d={pathData} fill="#000000" />
-            {/* Center knockout for the logo */}
-            <rect
-              x={logoOffset - 1}
-              y={logoOffset - 1}
-              width={logoModules + 2}
-              height={logoModules + 2}
-              fill="#ffffff"
-            />
+            <rect width={dim} height={totalH} fill="#ffffff" />
+            <g shapeRendering="crispEdges">
+              <path d={pathData} fill="#000000" />
+              {/* Center knockout for the logo */}
+              <rect
+                x={logoOffset - 1}
+                y={logoOffset - 1}
+                width={logoModules + 2}
+                height={logoModules + 2}
+                fill="#ffffff"
+              />
+            </g>
             <image
               href={logoSrc}
               x={logoOffset}
@@ -199,11 +206,31 @@ export default function QrPoster({
               height={logoModules}
               preserveAspectRatio="xMidYMid meet"
             />
+            {/* Caption baked into the image (expiration travels with the code) */}
+            <text
+              x={dim / 2}
+              y={dim + 3}
+              textAnchor="middle"
+              fontFamily="Inter, Arial, sans-serif"
+              fontSize={2.3}
+              fontWeight={700}
+              fill={JD_GREEN}
+            >
+              Scan to redeem
+            </text>
+            <text
+              x={dim / 2}
+              y={dim + 6.2}
+              textAnchor="middle"
+              fontFamily="Inter, Arial, sans-serif"
+              fontSize={2}
+              fontWeight={600}
+              fill="#111827"
+            >
+              {expiresLabel}
+            </text>
           </svg>
         </div>
-        <p className="text-center text-xs font-medium text-text-dark">
-          Scan to redeem · <span className="text-text-muted">{expiresLabel}</span>
-        </p>
       </div>
 
       <div className="mt-4 flex gap-2">

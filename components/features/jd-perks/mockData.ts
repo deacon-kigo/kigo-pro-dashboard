@@ -67,7 +67,7 @@ export const PREMADE_CAMPAIGNS: PremadeCampaign[] = [
     tagline: "$25 off oil & fluids service kits",
     description:
       "A simple, high-frequency offer that brings customers back for seasonal maintenance. $25 off qualifying oil and fluids purchases.",
-    builtBy: "Kigo",
+    builtBy: "John Deere",
     category: "Oil & Fluids",
     discountType: "amount",
     discountValue: 25,
@@ -123,7 +123,7 @@ export const PREMADE_CAMPAIGNS: PremadeCampaign[] = [
     tagline: "$50 off Gator™ accessories",
     description:
       "Boost attachment and accessory sales on Gator utility vehicles. $50 off accessory purchases over the minimum spend.",
-    builtBy: "Kigo",
+    builtBy: "John Deere",
     category: "Merchandise",
     discountType: "amount",
     discountValue: 50,

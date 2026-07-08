@@ -31,7 +31,7 @@ const CATEGORIES = [
   "Merchandise",
   "Equipment",
 ];
-const BUILDERS = ["All sources", "John Deere", "Kigo"];
+const BUILDERS = ["All sources", "John Deere"];
 
 function CampaignCard({
   campaign,

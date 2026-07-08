@@ -16,9 +16,13 @@ import {
   ArrowDownTrayIcon,
   ArrowTopRightOnSquareIcon,
   ChartBarIcon,
+  EnvelopeIcon,
+  DevicePhoneMobileIcon,
+  ShareIcon,
 } from "@heroicons/react/24/outline";
 import { getCampaignById, DEALER_LOCATIONS } from "./mockData";
 import type { Activation } from "./types";
+import type { ActivationChannel } from "./utils";
 import { CampaignCreative, downloadCreativePng } from "./CampaignCreative";
 import EligiblePartsTable from "./EligiblePartsTable";
 import QrPoster from "./QrPoster";
@@ -31,6 +35,16 @@ import {
   ACTIVATION_CHANNELS,
   todayIso,
 } from "./utils";
+
+const CHANNEL_ICONS: Record<
+  ActivationChannel,
+  React.ComponentType<{ className?: string }>
+> = {
+  email: EnvelopeIcon,
+  sms: DevicePhoneMobileIcon,
+  social: ShareIcon,
+  qr: ArrowTopRightOnSquareIcon,
+};
 
 function DetailRow({
   label,
@@ -406,9 +420,11 @@ export default function CampaignDetailView({
                   </div>
                   {ACTIVATION_CHANNELS.map((ch) => {
                     const url = buildChannelUrl(campaign, ch.id);
+                    const Icon = CHANNEL_ICONS[ch.id];
                     return (
                       <div key={ch.id} className="space-y-1">
-                        <span className="text-xs font-semibold text-text-dark">
+                        <span className="flex items-center gap-1.5 text-xs font-semibold text-text-dark">
+                          {Icon && <Icon className="h-4 w-4 text-text-muted" />}
                           {ch.label}
                         </span>
                         <div className="flex items-center gap-2">
