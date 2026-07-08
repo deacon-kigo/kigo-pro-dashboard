@@ -57,3 +57,58 @@ export function todayIso(): string {
   const dd = String(d.getDate()).padStart(2, "0");
   return `${d.getFullYear()}-${mm}-${dd}`;
 }
+
+/* -------------------------------------------------------------------------- */
+/*  Per-medium activation links + QR payload                                  */
+/* -------------------------------------------------------------------------- */
+
+/** The mediums a dealer can activate a campaign through. */
+export type ActivationChannel = "email" | "sms" | "social" | "qr";
+
+export interface ChannelMeta {
+  id: ActivationChannel;
+  label: string;
+  /** Short helper shown under the link. */
+  hint: string;
+  utmMedium: string;
+}
+
+/** Channels surfaced in the activation UI (QR is rendered separately). */
+export const ACTIVATION_CHANNELS: ChannelMeta[] = [
+  {
+    id: "email",
+    label: "Email",
+    hint: "Paste into your email blast or newsletter CTA.",
+    utmMedium: "email",
+  },
+  {
+    id: "sms",
+    label: "SMS / Text",
+    hint: "Drop into a text-message campaign.",
+    utmMedium: "sms",
+  },
+  {
+    id: "social",
+    label: "Social media",
+    hint: "Use in social posts, bio links, or paid ads.",
+    utmMedium: "social",
+  },
+];
+
+/**
+ * Build a tracked activation deep link for a given medium. Each medium gets its
+ * own link so redemptions can be attributed to the channel that drove them.
+ */
+export function buildChannelUrl(
+  campaign: PremadeCampaign,
+  channel: ActivationChannel
+): string {
+  const base = buildCmsUrl(campaign);
+  const params = new URLSearchParams({
+    ch: channel,
+    utm_source: channel,
+    utm_medium: channel === "qr" ? "print" : channel,
+    utm_campaign: campaign.id,
+  });
+  return `${base}?${params.toString()}`;
+}

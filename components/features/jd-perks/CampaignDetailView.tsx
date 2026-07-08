@@ -18,16 +18,17 @@ import {
   ChartBarIcon,
 } from "@heroicons/react/24/outline";
 import { getCampaignById, DEALER_LOCATIONS } from "./mockData";
-import type { Activation, AudienceSelection } from "./types";
+import type { Activation } from "./types";
 import { CampaignCreative, downloadCreativePng } from "./CampaignCreative";
-import AudienceSection, { defaultAudience } from "./AudienceSection";
 import EligiblePartsTable from "./EligiblePartsTable";
+import QrPoster from "./QrPoster";
 import {
   discountLabel,
   formatCurrency,
   formatDate,
-  formatNumber,
   buildCmsUrl,
+  buildChannelUrl,
+  ACTIVATION_CHANNELS,
   todayIso,
 } from "./utils";
 
@@ -73,16 +74,9 @@ export default function CampaignDetailView({
   const [locationIds, setLocationIds] = useState<string[]>(
     existing?.locationIds || []
   );
-  const [audience, setAudience] = useState<AudienceSelection>(
-    () => existing?.audience || defaultAudience(campaign)
-  );
   const [justActivated, setJustActivated] = useState(false);
 
   const isActive = Boolean(existing) || justActivated;
-
-  const audienceError = !(audience.uploadCount && audience.uploadCount > 0)
-    ? "Upload a customer list to continue."
-    : null;
 
   const dateError = useMemo(() => {
     if (!startDate || !endDate) return "Select both a start and end date.";
@@ -114,6 +108,7 @@ export default function CampaignDetailView({
   }
 
   const cmsUrl = existing?.cmsUrl || buildCmsUrl(campaign);
+  const expirationIso = existing?.endDate || endDate;
 
   const toggleLocation = (id: string) => {
     setLocationIds((prev) =>
@@ -122,13 +117,12 @@ export default function CampaignDetailView({
   };
 
   const handleConfirm = () => {
-    if (dateError || locationError || audienceError) return;
+    if (dateError || locationError) return;
     const activation: Activation = {
       campaignId: campaign.id,
       startDate,
       endDate,
       locationIds: allLocations ? [] : locationIds,
-      audience,
       activatedAt: new Date().toISOString(),
       cmsUrl: buildCmsUrl(campaign),
     };
@@ -142,10 +136,10 @@ export default function CampaignDetailView({
     });
   };
 
-  const handleCopyUrl = async () => {
+  const handleCopy = async (text: string, label: string) => {
     try {
-      await navigator.clipboard.writeText(cmsUrl);
-      toast({ title: "Link copied", description: cmsUrl });
+      await navigator.clipboard.writeText(text);
+      toast({ title: `${label} link copied`, description: text });
     } catch {
       toast({ title: "Copy failed", description: "Copy the link manually." });
     }
@@ -245,17 +239,9 @@ export default function CampaignDetailView({
             </div>
             <p className="mt-3 text-xs text-text-muted">
               Mechanics are set by {campaign.builtBy} and can't be edited. You
-              control the audience, dates, and the locations where it runs.
+              control the dates and the locations where it runs.
             </p>
           </div>
-
-          {/* Audience */}
-          <AudienceSection
-            campaign={campaign}
-            value={audience}
-            onChange={setAudience}
-            readOnly={isActive}
-          />
 
           {/* Eligible parts (set by John Deere) */}
           <EligiblePartsTable campaignId={campaign.id} />
@@ -271,7 +257,9 @@ export default function CampaignDetailView({
                     Activate this campaign
                   </h2>
                   <p className="mt-0.5 text-sm text-text-muted">
-                    Choose when and where it runs, then confirm.
+                    Choose when and where it runs, then confirm. Activation
+                    generates ready-to-share links and a printable QR code — no
+                    customer list required.
                   </p>
                 </div>
 
@@ -348,29 +336,15 @@ export default function CampaignDetailView({
                     </span>
                   </div>
                   <div className="flex justify-between py-0.5">
-                    <span className="text-text-muted">Audience</span>
-                    <span className="font-medium">
-                      {audience.uploadCount
-                        ? `${formatNumber(audience.uploadCount)} customers`
-                        : "Not uploaded"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between py-0.5">
                     <span className="text-text-muted">Where</span>
                     <span className="font-medium">{locationsLabel}</span>
                   </div>
                 </div>
 
-                {audienceError && (
-                  <p className="text-xs text-red-600">{audienceError}</p>
-                )}
-
                 <Button
                   variant="primary"
                   className="w-full"
-                  disabled={Boolean(
-                    dateError || locationError || audienceError
-                  )}
+                  disabled={Boolean(dateError || locationError)}
                   onClick={handleConfirm}
                 >
                   Confirm activation
@@ -419,21 +393,39 @@ export default function CampaignDetailView({
                   Download static image (PNG)
                 </Button>
 
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-text-dark">
-                    Marketing link
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <Input value={cmsUrl} readOnly className="text-xs" />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      icon={<ClipboardIcon className="h-4 w-4" />}
-                      onClick={handleCopyUrl}
-                    >
-                      Copy
-                    </Button>
+                {/* Per-medium activation links */}
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-medium text-text-dark">
+                      Activation links
+                    </label>
+                    <p className="text-xs text-text-muted">
+                      Each medium gets its own tracked link so redemptions are
+                      attributed to the channel that drove them.
+                    </p>
                   </div>
+                  {ACTIVATION_CHANNELS.map((ch) => {
+                    const url = buildChannelUrl(campaign, ch.id);
+                    return (
+                      <div key={ch.id} className="space-y-1">
+                        <span className="text-xs font-semibold text-text-dark">
+                          {ch.label}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <Input value={url} readOnly className="text-xs" />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            icon={<ClipboardIcon className="h-4 w-4" />}
+                            onClick={() => handleCopy(url, ch.label)}
+                          >
+                            Copy
+                          </Button>
+                        </div>
+                        <p className="text-[11px] text-text-muted">{ch.hint}</p>
+                      </div>
+                    );
+                  })}
                   <a
                     href={cmsUrl}
                     target="_blank"
@@ -444,6 +436,13 @@ export default function CampaignDetailView({
                     Preview landing page
                   </a>
                 </div>
+
+                {/* Printable QR code with Deere logo + expiration */}
+                <QrPoster
+                  url={buildChannelUrl(campaign, "qr")}
+                  campaignName={campaign.name}
+                  expirationIso={expirationIso}
+                />
 
                 <Button
                   variant="primary"

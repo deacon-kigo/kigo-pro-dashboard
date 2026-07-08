@@ -86,14 +86,6 @@ export interface PartRow {
   description: string;
 }
 
-/** The audience a dealer targets for an activation (uploaded customer list). */
-export interface AudienceSelection {
-  uploadFileName?: string;
-  uploadCount?: number;
-  /** Number of customers reached (= recognized emails in the uploaded list). */
-  estimatedReach: number;
-}
-
 /**
  * A dealer's activation of a pre-made campaign. Created by the activation flow.
  */
@@ -102,7 +94,6 @@ export interface Activation {
   startDate: string; // ISO
   endDate: string; // ISO
   locationIds: string[]; // empty => all locations
-  audience?: AudienceSelection;
   activatedAt: string; // ISO timestamp
   /** Generated marketing deep link the dealer drops into their CMS. */
   cmsUrl: string;
