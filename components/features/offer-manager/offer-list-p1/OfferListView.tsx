@@ -348,12 +348,12 @@ const OfferListViewP1 = memo(function OfferListViewP1() {
     // 1. Text search: Fuse.js fuzzy + semantic concept expansion
     if (searchQuery.trim()) {
       const fuse = new Fuse(results, {
+        // IDs are matched exactly (substring) below, NOT here: Fuse's fuzzy
+        // scoring matches the shared "OFF-"/"m" prefix across every id, so
+        // keeping id/merchantId as Fuse keys floods results with near matches.
         keys: [
-          { name: "offerName", weight: 0.5 },
-          { name: "merchantName", weight: 0.3 },
-          // KD-868: business users locate offers by Offer ID / Merchant ID.
-          { name: "id", weight: 0.1 },
-          { name: "merchantId", weight: 0.1 },
+          { name: "offerName", weight: 0.6 },
+          { name: "merchantName", weight: 0.4 },
         ],
         threshold: 0.3,
         includeScore: true,
@@ -362,10 +362,25 @@ const OfferListViewP1 = memo(function OfferListViewP1() {
       const fuseResults = fuse.search(searchQuery).map((r) => r.item);
       const semanticResults = semanticSearch(results, searchTerms);
 
-      // Union: Fuse results first (relevance-ranked), then semantic additions
+      // KD-868: guarantee exact/partial Offer ID + Merchant ID matches surface.
+      // Fuse's fuzzy scoring is unreliable for structured id tokens
+      // (e.g. "OID-55202", "m1"), so match them directly by substring.
+      const idMatches = results.filter((o) =>
+        searchTerms.some((t) => {
+          const term = t.trim().toLowerCase();
+          return (
+            term.length > 0 &&
+            (o.id.toLowerCase().includes(term) ||
+              o.merchantId.toLowerCase().includes(term))
+          );
+        })
+      );
+
+      // Union: exact ID matches first, then Fuse (relevance-ranked), then
+      // semantic additions.
       const seen = new Set<string>();
       const merged: OfferListItem[] = [];
-      for (const item of [...fuseResults, ...semanticResults]) {
+      for (const item of [...idMatches, ...fuseResults, ...semanticResults]) {
         if (!seen.has(item.id)) {
           seen.add(item.id);
           merged.push(item);
