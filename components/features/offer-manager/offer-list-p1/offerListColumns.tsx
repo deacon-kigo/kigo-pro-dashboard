@@ -10,6 +10,7 @@ import React, {
 } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/atoms/Button";
+import { Badge } from "@/components/atoms/Badge";
 import {
   ChevronUpIcon,
   ChevronDownIcon,
@@ -1252,6 +1253,27 @@ export function getOfferListColumns({
         );
       },
     },
+    // Offer ID — KD-868: business users locate/edit offers by this identifier.
+    // Monospace neutral Badge matches the ID treatment across the grids.
+    {
+      accessorKey: "id",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent font-medium px-0 text-left justify-start"
+        >
+          Offer ID
+          <SortIcon sorted={column.getIsSorted()} />
+        </Button>
+      ),
+      size: 140,
+      cell: ({ row }) => (
+        <Badge variant="neutral" rounded="md" className="font-mono">
+          {row.original.id}
+        </Badge>
+      ),
+    },
     // Offer type with icon
     {
       accessorKey: "offerType",
@@ -1284,6 +1306,26 @@ export function getOfferListColumns({
       ),
       cell: ({ row }) => (
         <span className="text-gray-600">{row.getValue("merchantName")}</span>
+      ),
+    },
+    // Merchant ID — KD-868's second identifier, monospace neutral Badge.
+    {
+      accessorKey: "merchantId",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent font-medium px-0 text-left justify-start"
+        >
+          Merchant ID
+          <SortIcon sorted={column.getIsSorted()} />
+        </Button>
+      ),
+      size: 140,
+      cell: ({ row }) => (
+        <Badge variant="neutral" rounded="md" className="font-mono">
+          {row.original.merchantId}
+        </Badge>
       ),
     },
     // Performance — sparkline + hover disclosure with full funnel metrics

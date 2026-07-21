@@ -223,6 +223,14 @@ export const OfferListTable = memo(function OfferListTable({
         columns={columns}
         data={currentPageData as unknown[]}
         className={className}
+        // Columns are reorderable via drag; the Actions column stays static
+        // (DataTable hard-excludes "actions" from drag).
+        enableColumnDrag
+        // 8 columns (incl. Offer ID + Merchant ID) — give the table a natural
+        // min width so it scrolls horizontally on narrow viewports instead of
+        // squishing/wrapping. The Table's built-in overflow-auto wrapper
+        // provides the scroll.
+        tableClassName="min-w-[1100px]"
         disablePagination={false}
         customPagination={customPagination}
         onRowClick={onRowClick as ((row: unknown) => void) | undefined}

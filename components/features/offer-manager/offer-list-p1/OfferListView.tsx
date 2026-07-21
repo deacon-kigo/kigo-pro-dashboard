@@ -351,7 +351,9 @@ const OfferListViewP1 = memo(function OfferListViewP1() {
         keys: [
           { name: "offerName", weight: 0.5 },
           { name: "merchantName", weight: 0.3 },
-          { name: "id", weight: 0.2 },
+          // KD-868: business users locate offers by Offer ID / Merchant ID.
+          { name: "id", weight: 0.1 },
+          { name: "merchantId", weight: 0.1 },
         ],
         threshold: 0.3,
         includeScore: true,

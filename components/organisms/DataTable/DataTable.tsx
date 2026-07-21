@@ -56,6 +56,13 @@ export interface DataTableProps<TData, TValue> {
   onRowClick?: (row: TData) => void;
   emptyState?: ReactNode;
   enableColumnDrag?: boolean;
+  /**
+   * Extra classes applied to the inner `<table>` element. Use to set a
+   * `min-w-[...]` so a wide, many-column table scrolls horizontally
+   * (via the Table's built-in `overflow-auto` wrapper) instead of
+   * squishing/wrapping its columns on narrow viewports.
+   */
+  tableClassName?: string;
 }
 
 /**
@@ -79,6 +86,7 @@ export const DataTable = memo(function DataTable<TData, TValue>({
   onRowClick,
   emptyState,
   enableColumnDrag = false,
+  tableClassName,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pageIndex, setPageIndex] = useState(0);
@@ -363,7 +371,7 @@ export const DataTable = memo(function DataTable<TData, TValue>({
       <style>{customTableStyles}</style>
       <Card className="overflow-hidden rounded-lg">
         <div className="p-0">
-          <Table>
+          <Table className={tableClassName}>
             {tableHeader}
             {tableBody}
           </Table>

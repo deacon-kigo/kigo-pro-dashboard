@@ -10,6 +10,7 @@ import {
   TrashIcon,
 } from "@heroicons/react/24/outline";
 import { ArrowUpDown } from "lucide-react";
+import { Badge } from "@/components/atoms/Badge";
 import { Switch } from "@/components/ui/switch";
 import {
   Tooltip,
@@ -226,6 +227,28 @@ export function getOfferListColumns({
       ),
     },
     {
+      // Offer ID — business users locate/edit offers by this identifier
+      // (KD-868). Monospace neutral Badge mirrors the Merchant ID column
+      // in merchantColumns.tsx so IDs read with one consistent language.
+      accessorKey: "id",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
+        >
+          Offer ID
+          <SortIcon sorted={column.getIsSorted()} />
+        </Button>
+      ),
+      size: 140,
+      cell: ({ row }) => (
+        <Badge variant="neutral" rounded="md" className="font-mono">
+          {row.original.id}
+        </Badge>
+      ),
+    },
+    {
       accessorKey: "merchantName",
       header: ({ column }) => (
         <Button
@@ -239,6 +262,27 @@ export function getOfferListColumns({
       ),
       cell: ({ row }) => (
         <div className="text-left">{row.getValue("merchantName")}</div>
+      ),
+    },
+    {
+      // Merchant ID — the second everyday-work identifier from KD-868.
+      // Same treatment as the Merchant ID column in merchantColumns.tsx.
+      accessorKey: "merchantId",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="hover:bg-transparent font-medium px-0 w-full text-left justify-start"
+        >
+          Merchant ID
+          <SortIcon sorted={column.getIsSorted()} />
+        </Button>
+      ),
+      size: 140,
+      cell: ({ row }) => (
+        <Badge variant="neutral" rounded="md" className="font-mono">
+          {row.original.merchantId}
+        </Badge>
       ),
     },
     {
