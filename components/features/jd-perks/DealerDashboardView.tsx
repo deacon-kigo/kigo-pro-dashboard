@@ -185,12 +185,12 @@ export default function DealerDashboardView() {
       XLSX.writeFile(wb, `everglades-perks-report-${today}.xlsx`);
       toast({
         title: "Report exported",
-        description: "Excel file downloaded. This send can be automated.",
+        description: "CSV file downloaded. This send can be automated.",
       });
     } catch {
       toast({
         title: "Export failed",
-        description: "Could not generate the Excel file.",
+        description: "Could not generate the CSV file.",
       });
     }
   };
@@ -210,7 +210,7 @@ export default function DealerDashboardView() {
             icon={<ArrowDownTrayIcon className="h-4 w-4" />}
             onClick={handleExportExcel}
           >
-            Export Excel report
+            Export CSV report
           </Button>
         }
       />
@@ -220,7 +220,7 @@ export default function DealerDashboardView() {
           Campaign performance
         </h2>
         <Badge variant="info" size="sm">
-          Automated weekly Excel delivery enabled
+          Automated weekly CSV delivery enabled
         </Badge>
       </div>
 
@@ -361,7 +361,7 @@ export default function DealerDashboardView() {
       </div>
 
       <p className="text-xs text-text-muted">
-        Reporting shown here can also be delivered as an automated Excel file on
+        Reporting shown here can also be delivered as an automated CSV file on
         a recurring schedule — the same data, emailed to your team.
       </p>
     </div>
