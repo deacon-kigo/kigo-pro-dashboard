@@ -15,17 +15,35 @@ export const DEALER_LOCATIONS: DealerLocation[] = [
   {
     id: "loc-belle-glade",
     name: "Belle Glade",
+    street: "2017 NW 16th St",
     city: "Belle Glade",
     state: "FL",
+    zip: "33430",
   },
-  { id: "loc-okeechobee", name: "Okeechobee", city: "Okeechobee", state: "FL" },
+  {
+    id: "loc-okeechobee",
+    name: "Okeechobee",
+    street: "820 US-98 N",
+    city: "Okeechobee",
+    state: "FL",
+    zip: "34972",
+  },
   {
     id: "loc-fort-pierce",
     name: "Fort Pierce",
+    street: "6150 Orange Ave",
     city: "Fort Pierce",
     state: "FL",
+    zip: "34947",
   },
-  { id: "loc-clewiston", name: "Clewiston", city: "Clewiston", state: "FL" },
+  {
+    id: "loc-clewiston",
+    name: "Clewiston",
+    street: "1100 W Sugarland Hwy",
+    city: "Clewiston",
+    state: "FL",
+    zip: "33440",
+  },
 ];
 
 // ---------------------------------------------------------------------------

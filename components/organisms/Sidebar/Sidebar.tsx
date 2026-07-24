@@ -23,6 +23,7 @@ import {
   LifebuoyIcon,
   ClipboardDocumentCheckIcon,
   ChevronUpDownIcon,
+  ReceiptPercentIcon,
 } from "@heroicons/react/24/outline";
 
 const SectionLabel = ({
@@ -176,7 +177,8 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
     return (
       clientId === "johndeere" ||
       pathname.startsWith("/campaign-manager/john-deere") ||
-      pathname.startsWith("/dashboard/john-deere")
+      pathname.startsWith("/dashboard/john-deere") ||
+      pathname.startsWith("/pdap/john-deere")
     );
   }, [clientId, pathname]);
 
@@ -315,6 +317,15 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
               icon={MegaphoneIcon}
               title="Campaign Manager"
               isActive={pathname.includes("/campaign-manager/john-deere")}
+              isCollapsed={sidebarCollapsed}
+            />
+          </li>
+          <li className="nav-item px-3 py-1">
+            <SidebarLabel
+              href="/pdap/john-deere"
+              icon={ReceiptPercentIcon}
+              title="Perks Admin Portal"
+              isActive={pathname.includes("/pdap/john-deere")}
               isCollapsed={sidebarCollapsed}
             />
           </li>

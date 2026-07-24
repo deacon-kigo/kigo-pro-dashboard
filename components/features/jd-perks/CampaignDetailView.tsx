@@ -319,13 +319,19 @@ export default function CampaignDetailView({
                       {DEALER_LOCATIONS.map((loc) => (
                         <label
                           key={loc.id}
-                          className="flex items-center gap-2 text-sm text-text-dark"
+                          className="flex items-start gap-2 text-sm text-text-dark"
                         >
                           <Checkbox
+                            className="mt-0.5"
                             checked={locationIds.includes(loc.id)}
                             onCheckedChange={() => toggleLocation(loc.id)}
                           />
-                          {loc.name}, {loc.state}
+                          <span className="flex flex-col leading-tight">
+                            <span className="font-medium">{loc.name}</span>
+                            <span className="text-xs text-text-muted">
+                              {loc.street}, {loc.city}, {loc.state} {loc.zip}
+                            </span>
+                          </span>
                         </label>
                       ))}
                     </div>

@@ -42,6 +42,8 @@ export default function DealerShell({ children }: { children: ReactNode }) {
 
     if (pathname.startsWith("/dashboard/john-deere")) {
       crumbs = [{ label: "Dashboard" }];
+    } else if (pathname.startsWith("/pdap/john-deere")) {
+      crumbs = [{ label: "Perks Admin Portal" }];
     } else if (pathname.startsWith("/campaign-manager/john-deere/")) {
       const id = pathname.split("/").filter(Boolean).pop() || "";
       const campaign = getCampaignById(id);

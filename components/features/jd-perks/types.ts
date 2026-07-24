@@ -16,8 +16,11 @@ export type CampaignCategory =
 export interface DealerLocation {
   id: string;
   name: string;
+  /** Street address line, e.g. "2017 NW 16th St". */
+  street: string;
   city: string;
   state: string;
+  zip: string;
 }
 
 /**
