@@ -118,11 +118,9 @@ export default function DealerDashboardView() {
   const openRate = totals.sent ? (totals.opened / totals.sent) * 100 : 0;
   const useRate = totals.sent ? (totals.used / totals.sent) * 100 : 0;
 
-  const handleExportExcel = async () => {
+  const handleExportCsv = () => {
     try {
-      const XLSX = await import("xlsx");
-
-      const summaryAoa = [
+      const summaryAoa: (string | number)[][] = [
         ["Everglades Equipment — John Deere Perks Report"],
         ["Generated", new Date().toLocaleString("en-US")],
         [],
@@ -161,28 +159,26 @@ export default function DealerDashboardView() {
         r.sales,
       ]);
 
-      const wb = XLSX.utils.book_new();
-      const wsSummary = XLSX.utils.aoa_to_sheet(summaryAoa);
-      wsSummary["!cols"] = [{ wch: 22 }, { wch: 28 }];
-      XLSX.utils.book_append_sheet(wb, wsSummary, "Summary");
+      const escapeCell = (value: string | number) => {
+        const str = String(value ?? "");
+        return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+      };
+      const toCsv = (matrix: (string | number)[][]) =>
+        matrix.map((row) => row.map(escapeCell).join(",")).join("\r\n");
 
-      const wsDetail = XLSX.utils.aoa_to_sheet([detailHeader, ...detailRows]);
-      wsDetail["!cols"] = [
-        { wch: 26 },
-        { wch: 12 },
-        { wch: 14 },
-        { wch: 12 },
-        { wch: 12 },
-        { wch: 10 },
-        { wch: 10 },
-        { wch: 10 },
-        { wch: 14 },
-        { wch: 14 },
-      ];
-      XLSX.utils.book_append_sheet(wb, wsDetail, "By Campaign");
+      // One CSV file: summary block, a blank line, then the per-campaign table.
+      const csv = toCsv([...summaryAoa, [], detailHeader, ...detailRows]);
 
       const today = new Date().toISOString().slice(0, 10);
-      XLSX.writeFile(wb, `everglades-perks-report-${today}.xlsx`);
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `everglades-perks-report-${today}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
       toast({
         title: "Report exported",
         description: "CSV file downloaded. This send can be automated.",
@@ -208,7 +204,7 @@ export default function DealerDashboardView() {
           <Button
             variant="primary"
             icon={<ArrowDownTrayIcon className="h-4 w-4" />}
-            onClick={handleExportExcel}
+            onClick={handleExportCsv}
           >
             Export CSV report
           </Button>
