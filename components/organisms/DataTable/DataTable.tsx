@@ -63,6 +63,12 @@ export interface DataTableProps<TData, TValue> {
    * squishing/wrapping its columns on narrow viewports.
    */
   tableClassName?: string;
+  /**
+   * When true, render the table without its own Card chrome (border, shadow,
+   * rounded corners) so it sits flush inside a larger panel. The pagination
+   * footer keeps its top divider. Defaults to false (standalone card).
+   */
+  flush?: boolean;
 }
 
 /**
@@ -87,6 +93,7 @@ export const DataTable = memo(function DataTable<TData, TValue>({
   emptyState,
   enableColumnDrag = false,
   tableClassName,
+  flush = false,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pageIndex, setPageIndex] = useState(0);
@@ -366,22 +373,30 @@ export const DataTable = memo(function DataTable<TData, TValue>({
     ]
   );
 
-  return (
-    <div className={cn("space-y-4", className)}>
-      <style>{customTableStyles}</style>
-      <Card className="overflow-hidden rounded-lg">
-        <div className="p-0">
-          <Table className={tableClassName}>
-            {tableHeader}
-            {tableBody}
-          </Table>
+  const inner = (
+    <>
+      <div className="p-0">
+        <Table className={tableClassName}>
+          {tableHeader}
+          {tableBody}
+        </Table>
+      </div>
+      {!disablePagination && (
+        <div className="flex items-center justify-end p-4 border-t">
+          {customPagination || defaultPagination}
         </div>
-        {!disablePagination && (
-          <div className="flex items-center justify-end p-4 border-t">
-            {customPagination || defaultPagination}
-          </div>
-        )}
-      </Card>
+      )}
+    </>
+  );
+
+  return (
+    <div className={cn(!flush && "space-y-4", className)}>
+      <style>{customTableStyles}</style>
+      {flush ? (
+        inner
+      ) : (
+        <Card className="overflow-hidden rounded-lg">{inner}</Card>
+      )}
     </div>
   );
 });

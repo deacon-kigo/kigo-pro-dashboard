@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   HomeIcon,
   MegaphoneIcon,
+  NewspaperIcon,
   UserGroupIcon,
   QuestionMarkCircleIcon,
   ChevronLeftIcon,
@@ -240,6 +241,14 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
         );
       }
 
+      // Special case for publisher manager - CHECK before general campaign-manager check
+      if (
+        path.includes("/campaign-manager/publisher-manager") &&
+        pathname.includes("/campaign-manager/publisher-manager")
+      ) {
+        return true;
+      }
+
       // Special case for dashboard - now always campaign-manager
       if (
         (path === "/" ||
@@ -256,7 +265,8 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
           pathname.includes("/campaign-manager/ai-create") ||
           pathname.includes("/campaign-manager/campaign-create") ||
           pathname.includes("/campaign-manager/ai-insights") ||
-          pathname.includes("/campaign-manager/analytics")
+          pathname.includes("/campaign-manager/analytics") ||
+          pathname.includes("/campaign-manager/publisher-manager")
         ) {
           return false;
         }
@@ -420,6 +430,17 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                 </li>
                 <li className="nav-item px-3 py-1">
                   <SidebarLabel
+                    href="/campaign-manager/publisher-manager"
+                    icon={NewspaperIcon}
+                    title="Publisher Manager"
+                    isActive={isLinkActive(
+                      "/campaign-manager/publisher-manager"
+                    )}
+                    isCollapsed={sidebarCollapsed}
+                  />
+                </li>
+                <li className="nav-item px-3 py-1">
+                  <SidebarLabel
                     href="/campaigns"
                     icon={MegaphoneIcon}
                     title={
@@ -552,6 +573,17 @@ const Sidebar = ({ role = "merchant", isCVSContext = false }: SidebarProps) => {
                     icon={BuildingStorefrontIcon}
                     title="Merchant Manager"
                     isActive={isLinkActive("/merchants")}
+                    isCollapsed={sidebarCollapsed}
+                  />
+                </li>
+                <li className="nav-item px-3 py-1">
+                  <SidebarLabel
+                    href="/campaign-manager/publisher-manager"
+                    icon={NewspaperIcon}
+                    title="Publisher Manager"
+                    isActive={isLinkActive(
+                      "/campaign-manager/publisher-manager"
+                    )}
                     isCollapsed={sidebarCollapsed}
                   />
                 </li>
