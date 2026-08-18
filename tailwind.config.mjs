@@ -42,12 +42,44 @@ export default {
         "border-light": "#E4E5E7",
         "red-light-50": "#FEECED",
         "red-light-10": "#C63469",
-        red: "#DC1021",
+        // Brand red keeps its flat value via DEFAULT (`bg-red`, `text-red`) while
+        // the numbered scale is restored — defining `red` as a bare string wiped
+        // Tailwind's built-in scale, silently killing `bg-red-100`/`text-red-800`
+        // and every `Badge variant="error"` across the app.
+        red: {
+          DEFAULT: "#DC1021",
+          50: "#FEF2F2",
+          100: "#FEE2E2",
+          200: "#FECACA",
+          300: "#FCA5A5",
+          400: "#F87171",
+          500: "#EF4444",
+          600: "#DC2626",
+          700: "#B91C1C",
+          800: "#991B1B",
+          900: "#7F1D1D",
+          950: "#450A0A",
+        },
         "red-dark-10": "#AB0C1A",
         "red-dark-20": "#8E0916",
         coral: "#FF4F5E",
         orange: "#FF8717",
-        blue: "#328FE5",
+        // Same fix for blue — see the note on `red` above. This is what made
+        // `Badge variant="info"` render with no fill.
+        blue: {
+          DEFAULT: "#328FE5",
+          50: "#EFF6FF",
+          100: "#DBEAFE",
+          200: "#BFDBFE",
+          300: "#93C5FD",
+          400: "#60A5FA",
+          500: "#3B82F6",
+          600: "#2563EB",
+          700: "#1D4ED8",
+          800: "#1E40AF",
+          900: "#1E3A8A",
+          950: "#172554",
+        },
         "blue-light-35": "#E6E7FF",
         "blue-50": "#EFF6FF",
         "sky-blue": "#CCFFFE",
