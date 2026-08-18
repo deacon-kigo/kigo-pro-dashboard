@@ -2,15 +2,15 @@
 
 /**
  * @file Publisher Manager (DES-876) — Catalog Filters tab
- * @description Lists a publisher's catalog filters in a facet-filtered, paginated
- * DataTable and visualizes the inclusion allow-list funnel as a compact strip.
- * Uses PublisherFilterBar for faceted filtering (offer type, status, free text).
- * Sits in a card container; derivation footer inside the card.
+ * @description Renders a publisher's already-filtered catalog filters as a
+ * paginated DataTable, plus the inclusion allow-list funnel as a compact strip.
+ * Faceted filtering lives in the shared toolbar row owned by PublisherManagerView,
+ * so this component receives `filters` pre-filtered and only owns pagination.
  */
 
 import { useEffect, useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { ChevronRight, Copy, MoreHorizontal, Plus } from "lucide-react";
+import { ChevronRight, Copy, MoreHorizontal } from "lucide-react";
 
 import { DataTable } from "@/components/organisms/DataTable/DataTable";
 import { Button } from "@/components/atoms/Button";
@@ -32,8 +32,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
-import { PublisherFilterBar, type FacetOption } from "./PublisherFilterBar";
-import { parseFilters, type FilterTag } from "./filterLogic";
 import type { CatalogDerivation, CatalogFilter } from "./types";
 
 // Status pill treatments mapped to the Badge atom's semantic variants.
@@ -177,63 +175,30 @@ const catalogFilterColumns: ColumnDef<CatalogFilter>[] = [
 export function CatalogFiltersTab({
   filters,
   derivation,
-  offerTypeOptions,
 }: {
+  /** Already filtered by the shared toolbar in PublisherManagerView. */
   filters: CatalogFilter[];
   derivation: CatalogDerivation;
-  offerTypeOptions: FacetOption[];
 }) {
-  const [selectedFilters, setSelectedFilters] = useState<FilterTag[]>([]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
 
-  const statusOptions: FacetOption[] = [
-    { label: "Active", value: "Active" },
-    { label: "Inactive", value: "Inactive" },
-    { label: "Draft", value: "Draft" },
-  ];
-
-  // Reset to page 1 whenever active filters change.
+  // Reset to page 1 whenever the filtered set changes.
   useEffect(() => {
     setPage(1);
-  }, [selectedFilters]);
+  }, [filters]);
 
-  // Parse the filter bar selections into typed buckets then apply to data.
-  const filtered = useMemo(() => {
-    const { offerTypeIds, statuses, searchTerms } =
-      parseFilters(selectedFilters);
-    let result = filters;
-
-    if (offerTypeIds.size > 0) {
-      result = result.filter((f) =>
-        f.offerTypeIds.some((id) => offerTypeIds.has(id))
-      );
-    }
-    if (statuses.size > 0) {
-      result = result.filter((f) => statuses.has(f.status));
-    }
-    for (const term of searchTerms) {
-      result = result.filter(
-        (f) =>
-          f.name.toLowerCase().includes(term) ||
-          f.description.toLowerCase().includes(term)
-      );
-    }
-
-    return result;
-  }, [filters, selectedFilters]);
-
-  const total = filtered.length;
+  const total = filters.length;
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
   const currentPage = Math.min(page, pageCount);
 
   const pageData = useMemo(
     () =>
-      filtered.slice(
+      filters.slice(
         (currentPage - 1) * pageSize,
         (currentPage - 1) * pageSize + pageSize
       ),
-    [filtered, currentPage, pageSize]
+    [filters, currentPage, pageSize]
   );
 
   const start = total === 0 ? 0 : (currentPage - 1) * pageSize + 1;
@@ -270,7 +235,7 @@ export function CatalogFiltersTab({
       <div className="flex items-center gap-4 text-sm text-text-muted">
         <span>
           {total === 0
-            ? "No filters"
+            ? "No matching filters"
             : `Showing ${start}–${end} of ${total} items`}
         </span>
         <span className="flex items-center gap-2">
@@ -304,23 +269,7 @@ export function CatalogFiltersTab({
 
   return (
     <div>
-      {/* A) Toolbar — filter bar + create, flush under the tab header */}
-      <div className="flex items-start gap-3 border-b border-border-light px-4 py-3">
-        <div className="flex-1">
-          <PublisherFilterBar
-            offerTypeOptions={offerTypeOptions}
-            statusOptions={statusOptions}
-            selectedFilters={selectedFilters}
-            onFiltersChange={setSelectedFilters}
-            placeholder="Filter catalog filters by offer type, status, or search…"
-          />
-        </div>
-        <Button variant="primary" icon={<Plus className="h-4 w-4" />}>
-          Create Filter
-        </Button>
-      </div>
-
-      {/* B + C) Table + pagination (flush) */}
+      {/* Table + pagination (flush) — the toolbar lives in the shared row above */}
       <DataTable
         flush
         columns={
