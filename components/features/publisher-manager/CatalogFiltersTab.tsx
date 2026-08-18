@@ -269,6 +269,12 @@ export function CatalogFiltersTab({
 
   return (
     <div>
+      {/* Purpose line from the DES-876 spec. Kept to a single slim row so the
+          unified toolbar above stays one band. */}
+      <p className="border-b border-border-light px-4 py-2 text-sm font-medium text-gray-600">
+        Manage Catalog Filters to control offer display in any Kigo Product
+      </p>
+
       {/* Table + pagination (flush) — the toolbar lives in the shared row above */}
       <DataTable
         flush

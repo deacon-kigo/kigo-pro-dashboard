@@ -54,9 +54,15 @@ export function OfferTypeManagePopover({
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80">
         <div className="mb-2">
-          <p className="text-sm font-semibold text-gray-900">
-            Supported offer types
-          </p>
+          <div className="flex items-baseline justify-between gap-2">
+            <p className="text-sm font-semibold text-gray-900">
+              Supported offer types
+            </p>
+            {/* Live enabled counter per the DES-876 spec. */}
+            <p className="text-sm font-medium text-gray-600">
+              {supportedIds.length}/{allOfferTypes.length} enabled
+            </p>
+          </div>
           <p className="text-sm font-medium text-gray-600">
             Enable the offer types this publisher supports.
           </p>
