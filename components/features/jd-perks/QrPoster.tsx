@@ -15,40 +15,35 @@ interface QrPosterProps {
   url: string;
   /** Campaign name shown on the printable poster. */
   campaignName: string;
+  /** Offer headline, e.g. "$50 off Gator™ accessories". */
+  offerTitle: string;
   /** Promotion expiration (ISO date) baked into the printable output. */
   expirationIso: string;
-  /** Same-origin John Deere logo overlaid in the QR center. */
-  logoSrc?: string;
 }
 
 const JD_GREEN = "#367C2B";
 const QUIET = 4; // modules of quiet zone
 
 /**
- * A scannable QR code for a campaign activation with the John Deere logo in the
- * center and the promotion's expiration date, rendered so a dealer can print it
- * for in-store signage, counters, or flyers. Uses QUARTILE error correction so
- * the center logo overlay does not stop the code from scanning.
+ * A scannable QR code for a campaign activation, captioned with the offer
+ * headline and expiration date, rendered so a dealer can print it for in-store
+ * signage, counters, or flyers.
  */
 export default function QrPoster({
   url,
   campaignName,
+  offerTitle,
   expirationIso,
-  logoSrc = "/logos/john-deere.svg",
 }: QrPosterProps) {
   const modules = useMemo(() => computeQrModules(url), [url]);
   const n = modules.length;
   const dim = n + QUIET * 2; // in modules, including quiet zone
   const expiresLabel = `Offer expires ${formatDate(expirationIso)}`;
 
-  // Center logo footprint (in modules). QUARTILE ECC tolerates ~25% loss.
-  const logoModules = Math.round(n * 0.26);
-  const logoOffset = (dim - logoModules) / 2;
-
-  // Caption band (in module units) baked directly into the image so the
-  // expiration date travels with the QR even if only the graphic is printed
+  // Caption band (in module units) baked directly into the image so the offer
+  // and expiration date travel with the QR even if only the graphic is printed
   // or screenshotted without the surrounding page text.
-  const CAP = 8;
+  const CAP = 12;
   const totalH = dim + CAP;
 
   // Build the SVG dark-module path once.
@@ -69,7 +64,7 @@ export default function QrPoster({
     const px = Math.max(6, Math.floor(720 / dim)); // module size in px
     const qrPx = dim * px;
     const pad = px * 2;
-    const footer = px * 12;
+    const footer = px * 15;
     const W = qrPx + pad * 2;
     const H = qrPx + pad + footer;
 
@@ -93,36 +88,6 @@ export default function QrPoster({
       }
     }
 
-    // Center white knockout + logo
-    const boxPx = logoModules * px;
-    const boxX = pad + logoOffset * px;
-    const boxY = pad + logoOffset * px;
-    const knockPad = px;
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(
-      boxX - knockPad,
-      boxY - knockPad,
-      boxPx + knockPad * 2,
-      boxPx + knockPad * 2
-    );
-
-    await new Promise<void>((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        const ar = img.width / img.height || 1;
-        let lw = boxPx;
-        let lh = boxPx / ar;
-        if (lh > boxPx) {
-          lh = boxPx;
-          lw = boxPx * ar;
-        }
-        ctx.drawImage(img, boxX + (boxPx - lw) / 2, boxY + (boxPx - lh) / 2, lw, lh);
-        resolve();
-      };
-      img.onerror = () => resolve(); // still export QR even if logo fails
-      img.src = logoSrc;
-    });
-
     // Footer text
     const cx = W / 2;
     ctx.textAlign = "center";
@@ -130,11 +95,14 @@ export default function QrPoster({
     ctx.font = `700 ${px * 3.2}px Inter, Arial, sans-serif`;
     ctx.fillText("Scan to redeem", cx, qrPx + pad + px * 4.5);
     ctx.fillStyle = "#111827";
-    ctx.font = `600 ${px * 2.4}px Inter, Arial, sans-serif`;
-    ctx.fillText(campaignName, cx, qrPx + pad + px * 8);
+    ctx.font = `700 ${px * 2.6}px Inter, Arial, sans-serif`;
+    ctx.fillText(offerTitle, cx, qrPx + pad + px * 8.2);
+    ctx.fillStyle = "#374151";
+    ctx.font = `500 ${px * 2.1}px Inter, Arial, sans-serif`;
+    ctx.fillText(campaignName, cx, qrPx + pad + px * 11.2);
     ctx.fillStyle = "#6b7280";
     ctx.font = `500 ${px * 2}px Inter, Arial, sans-serif`;
-    ctx.fillText(expiresLabel, cx, qrPx + pad + px * 11);
+    ctx.fillText(expiresLabel, cx, qrPx + pad + px * 14);
 
     return canvas;
   };
@@ -172,8 +140,8 @@ export default function QrPoster({
         <QrCodeIcon className="h-4 w-4" /> Printable QR code
       </h3>
       <p className="mt-0.5 text-xs text-text-muted">
-        Print for in-store signage, counters, and flyers. Includes the John
-        Deere logo and the offer expiration date.
+        Print for in-store signage, counters, and flyers. Includes the offer and
+        its expiration date.
       </p>
 
       <div className="mt-4 flex flex-col items-center gap-3">
@@ -183,33 +151,17 @@ export default function QrPoster({
             width={220}
             height={(220 * totalH) / dim}
             role="img"
-            aria-label={`QR code for ${campaignName}. ${expiresLabel}`}
+            aria-label={`QR code for ${campaignName}. ${offerTitle}. ${expiresLabel}`}
             xmlns="http://www.w3.org/2000/svg"
           >
             <rect width={dim} height={totalH} fill="#ffffff" />
             <g shapeRendering="crispEdges">
               <path d={pathData} fill="#000000" />
-              {/* Center knockout for the logo */}
-              <rect
-                x={logoOffset - 1}
-                y={logoOffset - 1}
-                width={logoModules + 2}
-                height={logoModules + 2}
-                fill="#ffffff"
-              />
             </g>
-            <image
-              href={logoSrc}
-              x={logoOffset}
-              y={logoOffset}
-              width={logoModules}
-              height={logoModules}
-              preserveAspectRatio="xMidYMid meet"
-            />
-            {/* Caption baked into the image (expiration travels with the code) */}
+            {/* Caption baked into the image (offer + expiration travel with the code) */}
             <text
               x={dim / 2}
-              y={dim + 3}
+              y={dim + 2.8}
               textAnchor="middle"
               fontFamily="Inter, Arial, sans-serif"
               fontSize={2.3}
@@ -220,12 +172,34 @@ export default function QrPoster({
             </text>
             <text
               x={dim / 2}
-              y={dim + 6.2}
+              y={dim + 6}
               textAnchor="middle"
               fontFamily="Inter, Arial, sans-serif"
-              fontSize={2}
-              fontWeight={600}
+              fontSize={2.1}
+              fontWeight={700}
               fill="#111827"
+            >
+              {offerTitle}
+            </text>
+            <text
+              x={dim / 2}
+              y={dim + 8.8}
+              textAnchor="middle"
+              fontFamily="Inter, Arial, sans-serif"
+              fontSize={1.8}
+              fontWeight={500}
+              fill="#374151"
+            >
+              {campaignName}
+            </text>
+            <text
+              x={dim / 2}
+              y={dim + 11.4}
+              textAnchor="middle"
+              fontFamily="Inter, Arial, sans-serif"
+              fontSize={1.8}
+              fontWeight={500}
+              fill="#6b7280"
             >
               {expiresLabel}
             </text>

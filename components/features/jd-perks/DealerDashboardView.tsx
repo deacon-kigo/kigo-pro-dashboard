@@ -293,7 +293,7 @@ export default function DealerDashboardView() {
             <thead>
               <tr className="border-b border-border-light bg-bg-light text-left text-xs uppercase tracking-wide text-text-muted">
                 <th className="px-4 py-3 font-medium">Campaign</th>
-                <th className="px-4 py-3 font-medium">Window</th>
+                <th className="px-4 py-3 font-medium">Active Dates</th>
                 <th className="px-4 py-3 text-right font-medium">Sent</th>
                 <th className="px-4 py-3 text-right font-medium">Opened</th>
                 <th className="px-4 py-3 text-right font-medium">Used</th>

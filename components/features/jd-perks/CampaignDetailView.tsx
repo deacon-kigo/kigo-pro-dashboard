@@ -103,6 +103,16 @@ export default function CampaignDetailView({
       ? "Select at least one location, or choose all."
       : null;
 
+  const usingSuggestedDates =
+    startDate === campaign?.suggestedStart &&
+    endDate === campaign?.suggestedEnd;
+
+  const useSuggestedDates = () => {
+    if (!campaign) return;
+    setStartDate(campaign.suggestedStart);
+    setEndDate(campaign.suggestedEnd);
+  };
+
   if (!campaign) {
     return (
       <div className="space-y-4">
@@ -175,6 +185,27 @@ export default function CampaignDetailView({
       ? `${locationIds.length} location${locationIds.length > 1 ? "s" : ""}`
       : "None selected";
 
+  // Post-activation status copy. A campaign whose start date hasn't arrived yet
+  // is scheduled rather than live, so say so instead of claiming it's running.
+  const activeStart = existing?.startDate || startDate;
+  const activeEnd = existing?.endDate || endDate;
+  const today = todayIso();
+  const status =
+    activeStart > today
+      ? {
+          heading: "This campaign is ready",
+          detail: `This campaign will run ${formatDate(activeStart)} through ${formatDate(activeEnd)}.`,
+        }
+      : activeEnd < today
+        ? {
+            heading: "This campaign has ended",
+            detail: `It ran ${formatDate(activeStart)} through ${formatDate(activeEnd)}.`,
+          }
+        : {
+            heading: "This campaign is active",
+            detail: `Running now through ${formatDate(activeEnd)}.`,
+          };
+
   return (
     <div className="space-y-5">
       <Button
@@ -244,12 +275,6 @@ export default function CampaignDetailView({
                     : "Uncapped"
                 }
               />
-              <DetailRow
-                label="Suggested window"
-                value={`${formatDate(campaign.suggestedStart)} – ${formatDate(
-                  campaign.suggestedEnd
-                )}`}
-              />
             </div>
             <p className="mt-3 text-xs text-text-muted">
               Mechanics are set by {campaign.builtBy} and can't be edited. You
@@ -279,9 +304,25 @@ export default function CampaignDetailView({
 
                 {/* Dates */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-text-dark">
-                    Campaign dates
-                  </label>
+                  <div>
+                    <label className="text-sm font-medium text-text-dark">
+                      Campaign dates
+                    </label>
+                    <p className="mt-0.5 text-xs text-text-muted">
+                      {campaign.builtBy} suggests{" "}
+                      {formatDate(campaign.suggestedStart)} –{" "}
+                      {formatDate(campaign.suggestedEnd)}.
+                      {!usingSuggestedDates && (
+                        <button
+                          type="button"
+                          onClick={useSuggestedDates}
+                          className="ml-1 font-medium text-primary hover:underline"
+                        >
+                          Use these dates
+                        </button>
+                      )}
+                    </p>
+                  </div>
                   <div className="flex items-center gap-2">
                     <Input
                       type="date"
@@ -372,16 +413,17 @@ export default function CampaignDetailView({
               </>
             ) : (
               <>
-                <div className="flex items-center gap-2 rounded-md bg-pastel-green p-3">
-                  <CheckCircleIcon className="h-5 w-5 text-green-700" />
+                <div className="flex items-start gap-2 rounded-md bg-pastel-green p-3">
+                  <CheckCircleIcon className="mt-0.5 h-5 w-5 shrink-0 text-green-700" />
                   <div>
-                    <p className="text-sm font-semibold text-green-800">
-                      Campaign is active
+                    <p className="text-sm font-bold text-green-800">
+                      {status.heading}
                     </p>
-                    <p className="text-xs text-green-700">
-                      {formatDate(existing?.startDate || startDate)} –{" "}
-                      {formatDate(existing?.endDate || endDate)} ·{" "}
-                      {locationsLabel}
+                    <p className="mt-0.5 text-xs text-green-700">
+                      {status.detail}
+                    </p>
+                    <p className="mt-0.5 text-xs text-green-700">
+                      Redeemable at {locationsLabel.toLowerCase()}.
                     </p>
                   </div>
                 </div>
@@ -459,10 +501,11 @@ export default function CampaignDetailView({
                   </a>
                 </div>
 
-                {/* Printable QR code with Deere logo + expiration */}
+                {/* Printable QR code with the offer + expiration */}
                 <QrPoster
                   url={buildChannelUrl(campaign, "qr")}
                   campaignName={campaign.name}
+                  offerTitle={campaign.tagline}
                   expirationIso={expirationIso}
                 />
 
