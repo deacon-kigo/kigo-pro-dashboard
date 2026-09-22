@@ -34,24 +34,40 @@ export interface PerkConstraints {
   maxDiscount: number | null;
 }
 
-export interface MonthlyPerfPoint {
-  month: string;
-  sent: number;
-  used: number;
-  sales: number;
+/**
+ * Activation-link clicks split by the medium that drove them. Campaigns reach
+ * customers by link rather than by a customer list, so clicks — not sends —
+ * are the top of the funnel.
+ */
+export interface ChannelClicks {
+  email: number;
+  sms: number;
+  social: number;
+  qr: number;
 }
 
 /**
- * Post-launch performance for an activated campaign. The five MVP metrics
- * plus a small monthly series for charting.
+ * Post-launch performance for an activated campaign: the funnel
+ * (clicks → delivered → activated → applied) plus the money it moved.
  */
 export interface CampaignPerformance {
-  sent: number;
-  opened: number;
-  used: number;
+  clicks: ChannelClicks;
+  /** Tokens delivered into the customer's hub after a link click. */
+  tokensDelivered: number;
+  /** Tokens the customer activated into their wallet. */
+  tokensActivated: number;
+  /** Tokens redeemed at the counter through PDAP. */
+  tokensApplied: number;
   discount: number; // total $ discount given
   sales: number; // total $ sales attributed
-  monthly: MonthlyPerfPoint[];
+}
+
+/** Dealer-level account activity, independent of any single campaign. */
+export interface DealerUserMetrics {
+  /** Distinct accounts that logged in. */
+  uniqueAccounts: number;
+  /** Accounts with more than one session. */
+  returningAccounts: number;
 }
 
 /**

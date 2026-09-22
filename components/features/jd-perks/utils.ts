@@ -32,6 +32,19 @@ export function formatNumber(value: number): string {
   return value.toLocaleString("en-US");
 }
 
+/** Platform transaction fee charged on attributed sales. */
+export const TRANSACTION_FEE_RATE = 0.025;
+
+/** Transaction fee in dollars for a given attributed sales total. */
+export function transactionFee(sales: number): number {
+  return sales * TRANSACTION_FEE_RATE;
+}
+
+/** Percentage of `part` out of `whole`, safe when `whole` is 0. */
+export function pct(part: number, whole: number): number {
+  return whole ? (part / whole) * 100 : 0;
+}
+
 export function formatDate(iso: string): string {
   if (!iso) return "—";
   // Parse as a local date (avoid TZ shifting for date-only strings).

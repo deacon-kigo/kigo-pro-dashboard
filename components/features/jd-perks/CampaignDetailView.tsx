@@ -92,11 +92,22 @@ export default function CampaignDetailView({
 
   const isActive = Boolean(existing) || justActivated;
 
+  // The publisher's window is a hard boundary — the dealer picks dates inside
+  // it, they can't run the offer outside the dates John Deere set.
   const dateError = useMemo(() => {
     if (!startDate || !endDate) return "Select both a start and end date.";
     if (endDate < startDate) return "End date must be after the start date.";
+    if (!campaign) return null;
+    if (
+      startDate < campaign.suggestedStart ||
+      endDate > campaign.suggestedEnd
+    ) {
+      return `Dates must fall between ${formatDate(
+        campaign.suggestedStart
+      )} and ${formatDate(campaign.suggestedEnd)}.`;
+    }
     return null;
-  }, [startDate, endDate]);
+  }, [startDate, endDate, campaign]);
 
   const locationError =
     !allLocations && locationIds.length === 0
@@ -309,8 +320,8 @@ export default function CampaignDetailView({
                       Campaign dates
                     </label>
                     <p className="mt-0.5 text-xs text-text-muted">
-                      {campaign.builtBy} suggests{" "}
-                      {formatDate(campaign.suggestedStart)} –{" "}
+                      Must fall within {campaign.builtBy}&rsquo;s Eligibility
+                      Window: {formatDate(campaign.suggestedStart)} –{" "}
                       {formatDate(campaign.suggestedEnd)}.
                       {!usingSuggestedDates && (
                         <button
@@ -318,7 +329,7 @@ export default function CampaignDetailView({
                           onClick={useSuggestedDates}
                           className="ml-1 font-medium text-primary hover:underline"
                         >
-                          Use these dates
+                          Use full window
                         </button>
                       )}
                     </p>
@@ -327,6 +338,8 @@ export default function CampaignDetailView({
                     <Input
                       type="date"
                       value={startDate}
+                      min={campaign.suggestedStart}
+                      max={endDate || campaign.suggestedEnd}
                       onChange={(e) => setStartDate(e.target.value)}
                       aria-label="Start date"
                     />
@@ -334,6 +347,8 @@ export default function CampaignDetailView({
                     <Input
                       type="date"
                       value={endDate}
+                      min={startDate || campaign.suggestedStart}
+                      max={campaign.suggestedEnd}
                       onChange={(e) => setEndDate(e.target.value)}
                       aria-label="End date"
                     />

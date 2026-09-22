@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/molecules/PageHeader";
 import { Button } from "@/components/atoms/Button";
@@ -8,12 +8,18 @@ import { Badge } from "@/components/atoms/Badge";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useToast } from "@/lib/hooks/use-toast";
 import {
-  PaperAirplaneIcon,
-  EnvelopeOpenIcon,
-  TicketIcon,
+  UserGroupIcon,
+  ArrowPathIcon,
+  CursorArrowRaysIcon,
+  InboxArrowDownIcon,
+  CheckBadgeIcon,
   ReceiptPercentIcon,
   BanknotesIcon,
   ArrowDownTrayIcon,
+  EnvelopeIcon,
+  DevicePhoneMobileIcon,
+  ShareIcon,
+  QrCodeIcon,
 } from "@heroicons/react/24/outline";
 import {
   ResponsiveContainer,
@@ -23,21 +29,33 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
 } from "recharts";
-import { getCampaignById, DEALER } from "./mockData";
+import { getCampaignById, DEALER, DEALER_USER_METRICS } from "./mockData";
 import type { PremadeCampaign } from "./types";
-import { formatCurrency, formatNumber, formatDate } from "./utils";
+import {
+  formatCurrency,
+  formatNumber,
+  formatDate,
+  transactionFee,
+  TRANSACTION_FEE_RATE,
+  pct,
+} from "./utils";
 
 interface ActiveRow {
   campaign: PremadeCampaign;
   startDate: string;
   endDate: string;
-  sent: number;
-  opened: number;
-  used: number;
+  clicks: number;
+  email: number;
+  sms: number;
+  social: number;
+  qr: number;
+  delivered: number;
+  activated: number;
+  applied: number;
   discount: number;
   sales: number;
+  fee: number;
 }
 
 function MetricCard({
@@ -63,6 +81,42 @@ function MetricCard({
   );
 }
 
+/** One stage of the click-to-redemption funnel. */
+function FunnelStage({
+  label,
+  value,
+  icon,
+  conversion,
+  width,
+}: {
+  label: string;
+  value: number;
+  icon: React.ReactNode;
+  conversion?: string;
+  width: number;
+}) {
+  return (
+    <div className="flex-1">
+      <div className="flex items-center gap-1.5 text-xs font-medium text-text-muted">
+        <span className="text-primary">{icon}</span>
+        {label}
+      </div>
+      <p className="mt-1 text-xl font-bold text-text-dark">
+        {formatNumber(value)}
+      </p>
+      <div className="mt-1.5 h-1.5 w-full rounded-full bg-bg-light">
+        <div
+          className="h-1.5 rounded-full bg-[#367C2B]"
+          style={{ width: `${Math.max(width, 2)}%` }}
+        />
+      </div>
+      <p className="mt-1 text-[11px] text-text-muted">
+        {conversion ?? "Top of funnel"}
+      </p>
+    </div>
+  );
+}
+
 export default function DealerDashboardView() {
   const router = useRouter();
   const { toast } = useToast();
@@ -74,15 +128,23 @@ export default function DealerDashboardView() {
         const campaign = getCampaignById(a.campaignId);
         if (!campaign) return null;
         const p = campaign.performance;
+        const clicks =
+          p.clicks.email + p.clicks.sms + p.clicks.social + p.clicks.qr;
         return {
           campaign,
           startDate: a.startDate,
           endDate: a.endDate,
-          sent: p.sent,
-          opened: p.opened,
-          used: p.used,
+          clicks,
+          email: p.clicks.email,
+          sms: p.clicks.sms,
+          social: p.clicks.social,
+          qr: p.clicks.qr,
+          delivered: p.tokensDelivered,
+          activated: p.tokensActivated,
+          applied: p.tokensApplied,
           discount: p.discount,
           sales: p.sales,
+          fee: transactionFee(p.sales),
         } as ActiveRow;
       })
       .filter((r): r is ActiveRow => r !== null)
@@ -92,31 +154,111 @@ export default function DealerDashboardView() {
   const totals = useMemo(() => {
     return rows.reduce(
       (acc, r) => ({
-        sent: acc.sent + r.sent,
-        opened: acc.opened + r.opened,
-        used: acc.used + r.used,
+        clicks: acc.clicks + r.clicks,
+        email: acc.email + r.email,
+        sms: acc.sms + r.sms,
+        social: acc.social + r.social,
+        qr: acc.qr + r.qr,
+        delivered: acc.delivered + r.delivered,
+        activated: acc.activated + r.activated,
+        applied: acc.applied + r.applied,
         discount: acc.discount + r.discount,
         sales: acc.sales + r.sales,
+        fee: acc.fee + r.fee,
       }),
-      { sent: 0, opened: 0, used: 0, discount: 0, sales: 0 }
+      {
+        clicks: 0,
+        email: 0,
+        sms: 0,
+        social: 0,
+        qr: 0,
+        delivered: 0,
+        activated: 0,
+        applied: 0,
+        discount: 0,
+        sales: 0,
+        fee: 0,
+      }
     );
   }, [rows]);
 
+  // The funnel, channel split and financials below scope to whichever campaign
+  // is selected; "all" rolls every active campaign together.
+  const [selectedId, setSelectedId] = useState<string>("all");
+
+  const view = useMemo(() => {
+    if (selectedId === "all") return totals;
+    const r = rows.find((x) => x.campaign.id === selectedId);
+    if (!r) return totals;
+    return {
+      clicks: r.clicks,
+      email: r.email,
+      sms: r.sms,
+      social: r.social,
+      qr: r.qr,
+      delivered: r.delivered,
+      activated: r.activated,
+      applied: r.applied,
+      discount: r.discount,
+      sales: r.sales,
+      fee: r.fee,
+    };
+  }, [selectedId, rows, totals]);
+
+  const selectedLabel =
+    selectedId === "all"
+      ? `All campaigns (${rows.length})`
+      : (rows.find((r) => r.campaign.id === selectedId)?.campaign.name ??
+        "All campaigns");
+
+  // Attributed sales returned for every dollar discounted. Ranks campaigns by
+  // how hard the discount worked, which is the "run it again?" question.
   const chartData = useMemo(
     () =>
-      rows.map((r) => ({
-        name:
-          r.campaign.name.length > 16
-            ? r.campaign.name.slice(0, 15) + "…"
-            : r.campaign.name,
-        Sales: r.sales,
-        Discount: r.discount,
-      })),
+      rows
+        .map((r) => ({
+          name: r.campaign.name,
+          efficiency: r.discount ? r.sales / r.discount : 0,
+          sales: r.sales,
+          discount: r.discount,
+        }))
+        .sort((a, b) => a.efficiency - b.efficiency),
     [rows]
   );
 
-  const openRate = totals.sent ? (totals.opened / totals.sent) * 100 : 0;
-  const useRate = totals.sent ? (totals.used / totals.sent) * 100 : 0;
+  const avgEfficiency = useMemo(() => {
+    const d = rows.reduce((acc, r) => acc + r.discount, 0);
+    const s = rows.reduce((acc, r) => acc + r.sales, 0);
+    return d ? s / d : 0;
+  }, [rows]);
+
+  const channels = [
+    {
+      label: "Social media",
+      value: view.social,
+      icon: <ShareIcon className="h-4 w-4" />,
+    },
+    {
+      label: "Email",
+      value: view.email,
+      icon: <EnvelopeIcon className="h-4 w-4" />,
+    },
+    {
+      label: "Text / SMS",
+      value: view.sms,
+      icon: <DevicePhoneMobileIcon className="h-4 w-4" />,
+    },
+    {
+      label: "QR code",
+      value: view.qr,
+      icon: <QrCodeIcon className="h-4 w-4" />,
+    },
+  ];
+
+  const returningRate = pct(
+    DEALER_USER_METRICS.returningAccounts,
+    DEALER_USER_METRICS.uniqueAccounts
+  );
 
   const handleExportCsv = () => {
     try {
@@ -124,14 +266,31 @@ export default function DealerDashboardView() {
         ["Everglades Equipment — John Deere Perks Report"],
         ["Generated", new Date().toLocaleString("en-US")],
         [],
-        ["Metric", "Value"],
-        ["Messages sent", totals.sent],
-        ["Opened", totals.opened],
-        ["Redemptions (used)", totals.used],
+        ["User metrics", "Value"],
+        ["Unique accounts", DEALER_USER_METRICS.uniqueAccounts],
+        [
+          "Returning accounts (>1 session)",
+          DEALER_USER_METRICS.returningAccounts,
+        ],
+        ["Returning rate (%)", Number(returningRate.toFixed(1))],
+        [],
+        ["Campaign funnel", "Value"],
+        ["Activation link clicks", totals.clicks],
+        ["— Social media", totals.social],
+        ["— Email", totals.email],
+        ["— Text / SMS", totals.sms],
+        ["— QR code", totals.qr],
+        ["Tokens delivered to hub", totals.delivered],
+        ["Tokens activated", totals.activated],
+        ["Tokens applied (PDAP)", totals.applied],
+        [],
+        ["Financials", "Value"],
+        ["Total sales ($)", totals.sales],
         ["Total discount ($)", totals.discount],
-        ["Attributed sales ($)", totals.sales],
-        ["Open rate (%)", Number(openRate.toFixed(1))],
-        ["Redemption rate (%)", Number(useRate.toFixed(1))],
+        [
+          `Transaction fee ($, ${TRANSACTION_FEE_RATE * 100}% of sales)`,
+          Number(totals.fee.toFixed(2)),
+        ],
       ];
 
       const detailHeader = [
@@ -140,11 +299,17 @@ export default function DealerDashboardView() {
         "Category",
         "Start",
         "End",
-        "Sent",
-        "Opened",
-        "Used",
+        "Clicks",
+        "Clicks — social",
+        "Clicks — email",
+        "Clicks — SMS",
+        "Clicks — QR",
+        "Tokens delivered",
+        "Tokens activated",
+        "Tokens applied",
         "Discount ($)",
         "Sales ($)",
+        "Transaction fee ($)",
       ];
       const detailRows = rows.map((r) => [
         r.campaign.name,
@@ -152,11 +317,17 @@ export default function DealerDashboardView() {
         r.campaign.category,
         r.startDate,
         r.endDate,
-        r.sent,
-        r.opened,
-        r.used,
+        r.clicks,
+        r.social,
+        r.email,
+        r.sms,
+        r.qr,
+        r.delivered,
+        r.activated,
+        r.applied,
         r.discount,
         r.sales,
+        Number(r.fee.toFixed(2)),
       ]);
 
       const escapeCell = (value: string | number) => {
@@ -166,7 +337,6 @@ export default function DealerDashboardView() {
       const toCsv = (matrix: (string | number)[][]) =>
         matrix.map((row) => row.map(escapeCell).join(",")).join("\r\n");
 
-      // One CSV file: summary block, a blank line, then the per-campaign table.
       const csv = toCsv([...summaryAoa, [], detailHeader, ...detailRows]);
 
       const today = new Date().toISOString().slice(0, 10);
@@ -211,82 +381,223 @@ export default function DealerDashboardView() {
         }
       />
 
+      {/* -------------------------------------------------- User metrics */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-text-dark">
-          Campaign performance
-        </h2>
+        <h2 className="text-lg font-semibold text-text-dark">Users</h2>
         <Badge variant="info" size="sm">
           Automated weekly CSV delivery enabled
         </Badge>
       </div>
 
-      {/* Five MVP metrics */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <MetricCard
-          label="Sent"
-          value={formatNumber(totals.sent)}
-          icon={<PaperAirplaneIcon className="h-5 w-5" />}
+          label="Unique accounts"
+          value={formatNumber(DEALER_USER_METRICS.uniqueAccounts)}
+          sub="Distinct accounts that logged in"
+          icon={<UserGroupIcon className="h-5 w-5" />}
         />
         <MetricCard
-          label="Opened"
-          value={formatNumber(totals.opened)}
-          sub={`${openRate.toFixed(1)}% open rate`}
-          icon={<EnvelopeOpenIcon className="h-5 w-5" />}
-        />
-        <MetricCard
-          label="Used"
-          value={formatNumber(totals.used)}
-          sub={`${useRate.toFixed(1)}% redemption`}
-          icon={<TicketIcon className="h-5 w-5" />}
-        />
-        <MetricCard
-          label="Discount given"
-          value={formatCurrency(totals.discount)}
-          icon={<ReceiptPercentIcon className="h-5 w-5" />}
-        />
-        <MetricCard
-          label="Attributed sales"
-          value={formatCurrency(totals.sales)}
-          icon={<BanknotesIcon className="h-5 w-5" />}
+          label="Returning accounts"
+          value={formatNumber(DEALER_USER_METRICS.returningAccounts)}
+          sub={`${returningRate.toFixed(1)}% returned for more than one session`}
+          icon={<ArrowPathIcon className="h-5 w-5" />}
         />
       </div>
 
-      {/* Chart */}
+      {/* -------------------------------------------------- Funnel */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold text-text-dark">
+          Campaign performance
+        </h2>
+        <div className="flex items-center gap-2">
+          <label htmlFor="campaign-scope" className="text-sm text-text-muted">
+            Campaign
+          </label>
+          <select
+            id="campaign-scope"
+            value={selectedId}
+            onChange={(e) => setSelectedId(e.target.value)}
+            disabled={rows.length === 0}
+            className="rounded-md border border-border-light bg-white px-3 py-1.5 text-sm font-medium text-text-dark shadow-sm focus:border-primary focus:outline-none disabled:opacity-50"
+          >
+            <option value="all">All campaigns ({rows.length})</option>
+            {rows.map((r) => (
+              <option key={r.campaign.id} value={r.campaign.id}>
+                {r.campaign.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       <div className="rounded-lg border border-border-light bg-white p-5 shadow-sm">
         <h3 className="mb-4 text-sm font-semibold text-text-dark">
-          Sales vs. discount by campaign
+          Funnel · {selectedLabel}
         </h3>
+        {rows.length === 0 ? (
+          <p className="py-8 text-center text-sm text-text-muted">
+            Activate a campaign to start seeing results.
+          </p>
+        ) : (
+          <div className="flex flex-col gap-6 sm:flex-row">
+            <FunnelStage
+              label="Link clicks"
+              value={view.clicks}
+              icon={<CursorArrowRaysIcon className="h-4 w-4" />}
+              width={100}
+            />
+            <FunnelStage
+              label="Delivered to hub"
+              value={view.delivered}
+              icon={<InboxArrowDownIcon className="h-4 w-4" />}
+              conversion={`${pct(view.delivered, view.clicks).toFixed(0)}% of clicks`}
+              width={pct(view.delivered, view.clicks)}
+            />
+            <FunnelStage
+              label="Activated"
+              value={view.activated}
+              icon={<CheckBadgeIcon className="h-4 w-4" />}
+              conversion={`${pct(view.activated, view.delivered).toFixed(0)}% of delivered`}
+              width={pct(view.activated, view.clicks)}
+            />
+            <FunnelStage
+              label="Applied (PDAP)"
+              value={view.applied}
+              icon={<ReceiptPercentIcon className="h-4 w-4" />}
+              conversion={`${pct(view.applied, view.activated).toFixed(0)}% of activated`}
+              width={pct(view.applied, view.clicks)}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* -------------------------------------------------- Clicks by channel */}
+      <div className="rounded-lg border border-border-light bg-white p-5 shadow-sm">
+        <h3 className="mb-4 text-sm font-semibold text-text-dark">
+          Activation link clicks by type · {selectedLabel}
+        </h3>
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {channels.map((c) => (
+            <div key={c.label}>
+              <div className="flex items-center gap-1.5 text-xs text-text-muted">
+                <span className="text-primary">{c.icon}</span>
+                {c.label}
+              </div>
+              <p className="mt-1 text-xl font-bold text-text-dark">
+                {formatNumber(c.value)}
+              </p>
+              <p className="text-[11px] text-text-muted">
+                {pct(c.value, view.clicks).toFixed(0)}% of clicks
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* -------------------------------------------------- Financials */}
+      <h2 className="text-lg font-semibold text-text-dark">
+        Financials · {selectedLabel}
+      </h2>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <MetricCard
+          label="Total sales"
+          value={formatCurrency(view.sales)}
+          icon={<BanknotesIcon className="h-5 w-5" />}
+        />
+        <MetricCard
+          label="Total discount"
+          value={formatCurrency(view.discount)}
+          icon={<ReceiptPercentIcon className="h-5 w-5" />}
+        />
+        <MetricCard
+          label="Transaction fee"
+          value={formatCurrency(view.fee)}
+          sub={`${TRANSACTION_FEE_RATE * 100}% of total sales`}
+          icon={<ReceiptPercentIcon className="h-5 w-5" />}
+        />
+      </div>
+
+      {/* -------------------------------------------------- Chart */}
+      <div className="rounded-lg border border-border-light bg-white p-5 shadow-sm">
+        <div className="mb-1 flex flex-wrap items-baseline justify-between gap-2">
+          <h3 className="text-sm font-semibold text-text-dark">
+            Discount efficiency by campaign
+          </h3>
+          {rows.length > 0 && (
+            <span className="text-xs text-text-muted">
+              Average across all campaigns:{" "}
+              <span className="font-semibold text-text-dark">
+                ${avgEfficiency.toFixed(2)}
+              </span>{" "}
+              per $1
+            </span>
+          )}
+        </div>
+        <p className="mb-4 text-xs text-text-muted">
+          Attributed sales returned for every $1 given away in discount. Higher
+          bars earned more revenue per dollar of margin spent.
+        </p>
         {chartData.length === 0 ? (
           <p className="py-12 text-center text-sm text-text-muted">
             No active campaigns yet.
           </p>
         ) : (
-          <div style={{ width: "100%", height: 320 }}>
+          <div
+            style={{
+              width: "100%",
+              height: Math.max(200, chartData.length * 56),
+            }}
+          >
             <ResponsiveContainer>
               <BarChart
+                layout="vertical"
                 data={chartData}
-                margin={{ top: 8, right: 16, left: 8, bottom: 8 }}
+                margin={{ top: 8, right: 56, left: 8, bottom: 8 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#E4E5E7" />
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                <YAxis
+                <CartesianGrid
+                  horizontal={false}
+                  strokeDasharray="3 3"
+                  stroke="#E4E5E7"
+                />
+                <XAxis
+                  type="number"
                   tick={{ fontSize: 12 }}
-                  tickFormatter={(v) => `$${(v / 1000).toLocaleString()}k`}
+                  tickFormatter={(v) => `$${v}`}
+                />
+                <YAxis
+                  type="category"
+                  dataKey="name"
+                  width={170}
+                  tick={{ fontSize: 12 }}
                 />
                 <Tooltip
-                  formatter={(v: number) => formatCurrency(v)}
                   cursor={{ fill: "rgba(54,124,43,0.06)" }}
+                  formatter={(v: number, _n, item) => [
+                    `$${v.toFixed(2)} back per $1 · ${formatCurrency(
+                      item.payload.sales
+                    )} sales on ${formatCurrency(item.payload.discount)} discount`,
+                    "Efficiency",
+                  ]}
                 />
-                <Legend />
-                <Bar dataKey="Sales" fill="#367C2B" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Discount" fill="#FFAE34" radius={[4, 4, 0, 0]} />
+                <Bar
+                  dataKey="efficiency"
+                  fill="#367C2B"
+                  radius={[0, 4, 4, 0]}
+                  label={{
+                    position: "right",
+                    fontSize: 12,
+                    fill: "#4B5563",
+                    formatter: (v: number) => `$${v.toFixed(2)}`,
+                  }}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
         )}
       </div>
 
-      {/* Per-campaign table */}
+      {/* -------------------------------------------------- Per-campaign table */}
       <div className="overflow-hidden rounded-lg border border-border-light bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -294,18 +605,22 @@ export default function DealerDashboardView() {
               <tr className="border-b border-border-light bg-bg-light text-left text-xs uppercase tracking-wide text-text-muted">
                 <th className="px-4 py-3 font-medium">Campaign</th>
                 <th className="px-4 py-3 font-medium">Active Dates</th>
-                <th className="px-4 py-3 text-right font-medium">Sent</th>
-                <th className="px-4 py-3 text-right font-medium">Opened</th>
-                <th className="px-4 py-3 text-right font-medium">Used</th>
+                <th className="px-4 py-3 text-right font-medium">Clicks</th>
+                <th className="px-4 py-3 text-right font-medium">Delivered</th>
+                <th className="px-4 py-3 text-right font-medium">Activated</th>
+                <th className="px-4 py-3 text-right font-medium">
+                  Applied (PDAP)
+                </th>
                 <th className="px-4 py-3 text-right font-medium">Discount</th>
                 <th className="px-4 py-3 text-right font-medium">Sales</th>
+                <th className="px-4 py-3 text-right font-medium">Fee</th>
               </tr>
             </thead>
             <tbody>
               {rows.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={9}
                     className="px-4 py-8 text-center text-text-muted"
                   >
                     Activate a campaign to start seeing results.
@@ -334,19 +649,25 @@ export default function DealerDashboardView() {
                       {formatDate(r.startDate)} – {formatDate(r.endDate)}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      {formatNumber(r.sent)}
+                      {formatNumber(r.clicks)}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      {formatNumber(r.opened)}
+                      {formatNumber(r.delivered)}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      {formatNumber(r.used)}
+                      {formatNumber(r.activated)}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      {formatNumber(r.applied)}
                     </td>
                     <td className="px-4 py-3 text-right">
                       {formatCurrency(r.discount)}
                     </td>
                     <td className="px-4 py-3 text-right font-medium text-text-dark">
                       {formatCurrency(r.sales)}
+                    </td>
+                    <td className="px-4 py-3 text-right text-text-muted">
+                      {formatCurrency(r.fee)}
                     </td>
                   </tr>
                 ))
@@ -357,8 +678,8 @@ export default function DealerDashboardView() {
       </div>
 
       <p className="text-xs text-text-muted">
-        Reporting shown here can also be delivered as an automated CSV file on
-        a recurring schedule — the same data, emailed to your team.
+        Reporting shown here can also be delivered as an automated CSV file on a
+        recurring schedule — the same data, emailed to your team.
       </p>
     </div>
   );

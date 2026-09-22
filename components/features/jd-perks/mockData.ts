@@ -1,4 +1,9 @@
-import type { PremadeCampaign, DealerLocation, Activation } from "./types";
+import type {
+  PremadeCampaign,
+  DealerLocation,
+  Activation,
+  DealerUserMetrics,
+} from "./types";
 
 // ---------------------------------------------------------------------------
 // Dealer context — "Dealer Dan" at Everglades Equipment (a John Deere dealer)
@@ -66,17 +71,12 @@ export const PREMADE_CAMPAIGNS: PremadeCampaign[] = [
     suggestedEnd: "2026-08-15",
     accent: "#367C2B",
     performance: {
-      sent: 12400,
-      opened: 6820,
-      used: 1190,
+      clicks: { email: 1140, sms: 640, social: 980, qr: 360 },
+      tokensDelivered: 2340,
+      tokensActivated: 1580,
+      tokensApplied: 1190,
       discount: 84300,
       sales: 612400,
-      monthly: [
-        { month: "Mar", sent: 0, used: 0, sales: 0 },
-        { month: "Apr", sent: 4100, used: 310, sales: 168000 },
-        { month: "May", sent: 4300, used: 430, sales: 221400 },
-        { month: "Jun", sent: 4000, used: 450, sales: 223000 },
-      ],
     },
   },
   {
@@ -94,17 +94,12 @@ export const PREMADE_CAMPAIGNS: PremadeCampaign[] = [
     suggestedEnd: "2026-09-10",
     accent: "#FFAE34",
     performance: {
-      sent: 9800,
-      opened: 5390,
-      used: 1640,
+      clicks: { email: 1520, sms: 880, social: 1010, qr: 450 },
+      tokensDelivered: 2980,
+      tokensActivated: 2120,
+      tokensApplied: 1640,
       discount: 41000,
       sales: 268000,
-      monthly: [
-        { month: "Mar", sent: 2300, used: 360, sales: 58000 },
-        { month: "Apr", sent: 2500, used: 410, sales: 67000 },
-        { month: "May", sent: 2500, used: 430, sales: 71000 },
-        { month: "Jun", sent: 2500, used: 440, sales: 72000 },
-      ],
     },
   },
   {
@@ -122,17 +117,12 @@ export const PREMADE_CAMPAIGNS: PremadeCampaign[] = [
     suggestedEnd: "2026-07-31",
     accent: "#367C2B",
     performance: {
-      sent: 7600,
-      opened: 4180,
-      used: 880,
+      clicks: { email: 760, sms: 470, social: 620, qr: 290 },
+      tokensDelivered: 1620,
+      tokensActivated: 1150,
+      tokensApplied: 880,
       discount: 19400,
       sales: 143000,
-      monthly: [
-        { month: "Mar", sent: 1800, used: 190, sales: 31000 },
-        { month: "Apr", sent: 1900, used: 220, sales: 36000 },
-        { month: "May", sent: 1950, used: 230, sales: 38000 },
-        { month: "Jun", sent: 1950, used: 240, sales: 38000 },
-      ],
     },
   },
   {
@@ -150,17 +140,12 @@ export const PREMADE_CAMPAIGNS: PremadeCampaign[] = [
     suggestedEnd: "2026-09-30",
     accent: "#FFDE00",
     performance: {
-      sent: 5400,
-      opened: 2700,
-      used: 420,
+      clicks: { email: 310, sms: 210, social: 420, qr: 140 },
+      tokensDelivered: 810,
+      tokensActivated: 560,
+      tokensApplied: 420,
       discount: 21000,
       sales: 156000,
-      monthly: [
-        { month: "Mar", sent: 0, used: 0, sales: 0 },
-        { month: "Apr", sent: 0, used: 0, sales: 0 },
-        { month: "May", sent: 2700, used: 200, sales: 74000 },
-        { month: "Jun", sent: 2700, used: 220, sales: 82000 },
-      ],
     },
   },
   {
@@ -178,17 +163,12 @@ export const PREMADE_CAMPAIGNS: PremadeCampaign[] = [
     suggestedEnd: "2026-08-31",
     accent: "#367C2B",
     performance: {
-      sent: 3200,
-      opened: 2080,
-      used: 240,
+      clicks: { email: 280, sms: 120, social: 170, qr: 70 },
+      tokensDelivered: 470,
+      tokensActivated: 320,
+      tokensApplied: 240,
       discount: 96000,
       sales: 1240000,
-      monthly: [
-        { month: "Mar", sent: 0, used: 0, sales: 0 },
-        { month: "Apr", sent: 0, used: 0, sales: 0 },
-        { month: "May", sent: 1600, used: 110, sales: 560000 },
-        { month: "Jun", sent: 1600, used: 130, sales: 680000 },
-      ],
     },
   },
   {
@@ -206,20 +186,21 @@ export const PREMADE_CAMPAIGNS: PremadeCampaign[] = [
     suggestedEnd: "2026-12-31",
     accent: "#FFAE34",
     performance: {
-      sent: 4600,
-      opened: 2530,
-      used: 510,
+      clicks: { email: 430, sms: 250, social: 520, qr: 160 },
+      tokensDelivered: 1020,
+      tokensActivated: 690,
+      tokensApplied: 510,
       discount: 51000,
       sales: 389000,
-      monthly: [
-        { month: "Mar", sent: 1100, used: 120, sales: 88000 },
-        { month: "Apr", sent: 1150, used: 130, sales: 98000 },
-        { month: "May", sent: 1170, used: 130, sales: 101000 },
-        { month: "Jun", sent: 1180, used: 130, sales: 102000 },
-      ],
     },
   },
 ];
+
+// Dealer-level login activity shown at the top of the reporting dashboard.
+export const DEALER_USER_METRICS: DealerUserMetrics = {
+  uniqueAccounts: 3840,
+  returningAccounts: 1460,
+};
 
 export function getCampaignById(id: string): PremadeCampaign | undefined {
   return PREMADE_CAMPAIGNS.find((c) => c.id === id);
