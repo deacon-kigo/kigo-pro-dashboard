@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 
 import { Provider as TooltipProvider } from "@radix-ui/react-tooltip";
 
@@ -85,6 +85,7 @@ const DisputeReview = ({
   const pending = outcome === "pending";
   const approved = outcome === "approved";
   const [eventsOpen, setEventsOpen] = useState(!pending);
+  const [stuck, setStuck] = useState(false);
   const [approveOpen, setApproveOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [reason, setReason] = useState<string | null>(null);
@@ -148,6 +149,7 @@ const DisputeReview = ({
         backLabel="Back to disputes"
         compactActions={pending ? decisionActions("sm") : undefined}
         id={record.invoice}
+        onStuckChange={setStuck}
         meta={[
           `${record.dealership} · ${record.city}`,
           waitingLabel(record.date, record.time),
@@ -168,6 +170,7 @@ const DisputeReview = ({
             ? "xl:grid-cols-[240px_minmax(0,1fr)_minmax(400px,460px)]"
             : "xl:grid-cols-[56px_minmax(0,1fr)_minmax(400px,460px)]"
         )}
+        style={{ "--sticky-top": stuck ? "64px" : "0px" } as CSSProperties}
       >
         <ActivityRail
           events={activity}
@@ -177,7 +180,7 @@ const DisputeReview = ({
 
         <ScanViewer
           caption="invoice photo"
-          className="h-[calc(100vh-21rem)] min-h-[440px] xl:sticky xl:top-[88px]"
+          className="h-[calc(100vh-21rem)] min-h-[440px] xl:sticky xl:top-[var(--sticky-top)] transition-[top] duration-200"
           document={record.document}
           thumbnails={false}
         />

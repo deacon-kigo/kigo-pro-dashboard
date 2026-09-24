@@ -19,8 +19,12 @@ interface ActivityRailProps {
 const ActivityRail = ({ events, onOpenChange, open }: ActivityRailProps) => {
   if (open) {
     return (
-      <Card className="self-start xl:sticky xl:top-[88px]" roundness="lg">
+      <Card
+        className="flex flex-col overflow-hidden h-[calc(100vh-21rem)] min-h-[440px] xl:sticky xl:top-[var(--sticky-top)] transition-[top] duration-200"
+        roundness="lg"
+      >
         <Section
+          className="flex min-h-0 flex-1 flex-col"
           action={
             <Button
               aria-expanded
@@ -37,7 +41,9 @@ const ActivityRail = ({ events, onOpenChange, open }: ActivityRailProps) => {
           icon={History}
           title="Activity"
         >
-          <Timeline compact events={events} />
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <Timeline compact events={events} />
+          </div>
         </Section>
       </Card>
     );
@@ -45,21 +51,20 @@ const ActivityRail = ({ events, onOpenChange, open }: ActivityRailProps) => {
 
   return (
     <Card
-      className="w-14 self-start py-2 xl:sticky xl:top-[88px]"
+      className="w-14 overflow-hidden py-2 h-[calc(100vh-21rem)] min-h-[440px] xl:sticky xl:top-[var(--sticky-top)] transition-[top] duration-200"
       roundness="lg"
     >
-      <div className="flex justify-center">
+      <div className="flex h-11 items-center justify-center">
         <Tooltip content="Show activity" side="right">
-          <Button
+          <button
             aria-expanded={false}
             aria-label="Show activity"
-            color="secondary"
+            className="flex size-7 items-center justify-center rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary [&_svg]:size-4"
             onClick={() => onOpenChange(true)}
-            size="icon"
-            variant="ghost"
+            type="button"
           >
             <History />
-          </Button>
+          </button>
         </Tooltip>
       </div>
 

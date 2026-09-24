@@ -777,11 +777,11 @@ export const EVENT_KIND: Record<EventKind, { tone: Tone; icon: LucideIcon }> = {
   disputed: { icon: MessageSquare, tone: "info" },
   edited: { icon: Pencil, tone: "neutral" },
   flagged: { icon: Flag, tone: "warning" },
-  queued: { icon: Clock, tone: "warning" },
+  queued: { icon: Clock, tone: "info" },
   redeemed: { icon: Ticket, tone: "neutral" },
   rejected: { icon: CircleX, tone: "destructive" },
   submitted: { icon: Upload, tone: "neutral" },
-  validated: { icon: ShieldCheck, tone: "neutral" },
+  validated: { icon: ShieldCheck, tone: "success" },
 };
 
 export interface Fact {
@@ -792,6 +792,13 @@ export interface Fact {
   emphasis?: boolean;
   /* Warning line under the value, e.g. a scan-vs-dealer discrepancy. */
   note?: string;
+  /* Shown on hover, e.g. the submitter's email. */
+  hint?: string;
+}
+
+export interface FactGroup {
+  title: string;
+  facts: Fact[];
 }
 
 const FLAG_FACT: Record<InvoiceFlag["kind"], { label: string; value: string }> =
@@ -850,18 +857,28 @@ export const scanFacts = (
   };
 };
 
-export const reviewSignals = (row: InvoiceRow, decided: boolean): Fact[] => {
+const RESULT_VALUE: Record<InvoiceFlag["kind"], string> = {
+  duplicate: "Failed · duplicate invoice",
+  low_confidence: "Flagged · low confidence",
+  passed: "All checks passed",
+};
+
+/* Every check carries its own outcome colour so a reviewer sees pass and fail
+   side by side. Once decided the status pill owns the outcome and the checks
+   fall back to plain reference data; a duplicate still reads as a failure. */
+export const reviewFacts = (row: InvoiceRow, decided: boolean): FactGroup[] => {
   const band = fraudBand(row.fraud);
   const below = row.flag.confidence < CONFIDENCE_THRESHOLD;
-  const signals: Fact[] = [
+  const validation: Fact[] = [
+    {
+      label: "Result",
+      tone: FLAG_LABEL[row.flag.kind].tone,
+      value: RESULT_VALUE[row.flag.kind],
+    },
     {
       label: "Confidence",
       mono: true,
-      tone: below
-        ? "warning"
-        : row.flag.kind === "passed"
-          ? "success"
-          : undefined,
+      tone: below ? "warning" : "success",
       value: `${row.flag.confidence}% · ${CONFIDENCE_THRESHOLD}% required`,
     },
     ...(row.flag.kind === "duplicate"
@@ -877,19 +894,24 @@ export const reviewSignals = (row: InvoiceRow, decided: boolean): Fact[] => {
     {
       label: "Fraud score",
       mono: true,
-      tone: band.tone,
+      tone: band.tone ?? "success",
       value: `${row.fraud} · ${band.word}`,
     },
+  ];
+  const claim: Fact[] = [
+    { label: "Dealership", value: `${row.dealership} · ${row.city}` },
+    { label: "Submitted", value: `${formatSubmitted(row.date)} · ${row.time}` },
+    { hint: row.email, label: "Submitter", value: row.submitter },
     { label: "Promotion", value: "20% off fluids & filters" },
   ];
-
-  /* Once decided the status pill carries the outcome, so the signals drop to
-     plain reference data — except a duplicate, which still reads as a failure. */
-  if (!decided) return signals;
-  return signals.map((signal) => ({
-    ...signal,
-    tone: signal.label === "Duplicate of" ? signal.tone : undefined,
-  }));
+  const settle = (fact: Fact): Fact =>
+    decided && fact.label !== "Duplicate of"
+      ? { ...fact, tone: undefined }
+      : fact;
+  return [
+    { facts: validation.map(settle), title: "Validation" },
+    { facts: claim, title: "Claim" },
+  ];
 };
 
 export const activitySummary = (

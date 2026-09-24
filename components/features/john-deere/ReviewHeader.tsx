@@ -8,7 +8,9 @@ import { Button } from "@/components/prod/button";
 import { Card } from "@/components/prod/card";
 import { cn } from "@/components/prod/utils/cn";
 
-import { type Fact } from "./data";
+import { Tooltip } from "@/components/prod/tooltip";
+
+import { type FactGroup } from "./data";
 import { JOHN_DEERE } from "./partner";
 import { StatusPill } from "./StatusPill";
 import { TONE, type Tone } from "./tone";
@@ -19,9 +21,10 @@ interface ReviewHeaderProps {
   backLabel: string;
   compactActions?: ReactNode;
   id: string;
-  meta: ReactNode[];
+  groups?: FactGroup[];
+  meta?: ReactNode[];
+  onStuckChange?: (stuck: boolean) => void;
   progress?: string;
-  signals?: Fact[];
   status: { label: string; tone: Tone };
   summary: ReactNode;
 }
@@ -31,10 +34,11 @@ const ReviewHeader = ({
   backHref,
   backLabel,
   compactActions,
+  groups,
   id,
   meta,
+  onStuckChange,
   progress,
-  signals,
   status,
   summary,
 }: ReviewHeaderProps) => {
@@ -45,12 +49,21 @@ const ReviewHeader = ({
     const node = sentinel.current;
     if (!node) return;
     const observer = new IntersectionObserver(
-      ([entry]) => setStuck(!entry.isIntersecting),
-      { root: node.closest("main"), threshold: 0 }
+      ([entry]) => {
+        setStuck(!entry.isIntersecting);
+        onStuckChange?.(!entry.isIntersecting);
+      },
+      /* Only leaving through the top counts; a tall page must not arm the bar
+         while the sentinel is still below the fold. */
+      {
+        root: node.closest("main"),
+        rootMargin: "0px 0px 100% 0px",
+        threshold: 0,
+      }
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, []);
+  }, [onStuckChange]);
 
   return (
     <>
@@ -98,8 +111,6 @@ const ReviewHeader = ({
         </div>
       </div>
 
-      <div aria-hidden className="h-px" ref={sentinel} />
-
       <Card
         className="mb-4 overflow-hidden px-6 py-5"
         roundness="lg"
@@ -121,18 +132,20 @@ const ReviewHeader = ({
                   <StatusPill color={status.tone}>{status.label}</StatusPill>
                   {summary}
                 </span>
-                <span className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
-                  {meta.map((item, index) => (
-                    <Fragment key={index}>
-                      {index > 0 && (
-                        <span aria-hidden className="text-gray-300">
-                          ·
-                        </span>
-                      )}
-                      {item}
-                    </Fragment>
-                  ))}
-                </span>
+                {meta && (
+                  <span className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
+                    {meta.map((item, index) => (
+                      <Fragment key={index}>
+                        {index > 0 && (
+                          <span aria-hidden className="text-gray-300">
+                            ·
+                          </span>
+                        )}
+                        {item}
+                      </Fragment>
+                    ))}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -145,25 +158,59 @@ const ReviewHeader = ({
             </div>
           )}
         </div>
-        {signals && signals.length > 0 && (
-          <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 border-t border-gray-100 pt-3">
-            {signals.map((fact) => (
-              <div className="flex flex-col" key={fact.label}>
-                <dt className="text-sm text-gray-500">{fact.label}</dt>
-                <dd
-                  className={cn(
-                    "text-base font-medium text-gray-900",
-                    fact.mono && "font-mono",
-                    fact.tone && TONE[fact.tone].text
-                  )}
-                >
-                  {fact.value}
-                </dd>
-              </div>
+        {groups && (
+          <div className="mt-4 flex flex-col gap-4 border-t border-gray-100 pt-4 lg:flex-row lg:gap-0">
+            {groups.map((group, index) => (
+              <section
+                className={cn(
+                  "min-w-0",
+                  index > 0 && "lg:ml-8 lg:border-l lg:border-gray-100 lg:pl-8"
+                )}
+                key={group.title}
+              >
+                <h2 className="text-sm font-semibold tracking-wide text-gray-500 uppercase">
+                  {group.title}
+                </h2>
+                <dl className="mt-2 flex flex-wrap gap-x-6 gap-y-2">
+                  {group.facts.map((fact) => (
+                    <div className="flex flex-col" key={fact.label}>
+                      <dt className="text-sm text-gray-500">{fact.label}</dt>
+                      <dd
+                        className={cn(
+                          "flex items-center gap-1.5 text-base font-medium text-gray-900",
+                          fact.mono && "font-mono",
+                          fact.tone && TONE[fact.tone].text
+                        )}
+                      >
+                        {fact.tone && (
+                          <span
+                            aria-hidden
+                            className={cn(
+                              "size-1.5 shrink-0 rounded-full",
+                              TONE[fact.tone].dot
+                            )}
+                          />
+                        )}
+                        {fact.hint ? (
+                          <Tooltip content={fact.hint}>
+                            <span className="cursor-default underline decoration-gray-300 decoration-dotted underline-offset-2">
+                              {fact.value}
+                            </span>
+                          </Tooltip>
+                        ) : (
+                          fact.value
+                        )}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
             ))}
-          </dl>
+          </div>
         )}
       </Card>
+
+      <div aria-hidden className="h-px" ref={sentinel} />
     </>
   );
 };

@@ -24,7 +24,7 @@ const Section = ({
   title,
 }: SectionProps) => (
   <section className={cn("px-5 py-4", className)}>
-    <div className="flex items-start gap-3">
+    <div className="flex shrink-0 items-start gap-3">
       <span
         aria-hidden
         className="flex size-7 shrink-0 items-center justify-center rounded-md bg-gray-100 text-gray-600 [&_svg]:size-4"
@@ -53,7 +53,7 @@ const Section = ({
         <div className="ml-auto flex shrink-0 items-center gap-2">{action}</div>
       )}
     </div>
-    <div className="mt-3">{children}</div>
+    <div className="mt-3 min-h-0 flex-1">{children}</div>
   </section>
 );
 

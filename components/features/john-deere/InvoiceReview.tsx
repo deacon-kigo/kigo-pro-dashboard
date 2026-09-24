@@ -1,6 +1,6 @@
 "use client";
 
-import type { KeyboardEvent } from "react";
+import type { CSSProperties, KeyboardEvent } from "react";
 
 import { useEffect, useMemo, useState } from "react";
 
@@ -32,14 +32,12 @@ import { Section } from "./Section";
 import {
   INVOICES,
   INVOICE_REASONS,
-  formatSubmitted,
   invoiceActivity,
   invoiceDecision,
   invoiceFields,
   money,
   plural,
-  reviewSignals,
-  scanFacts,
+  reviewFacts,
   waitingLabel,
   type Fact,
   type InvoiceDecision,
@@ -146,6 +144,7 @@ const InvoiceReview = ({
   const [outcome, setOutcome] = useState(decision);
   const pending = outcome === "pending";
   const [eventsOpen, setEventsOpen] = useState(!pending);
+  const [stuck, setStuck] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [approveOpen, setApproveOpen] = useState(false);
   const [reason, setReason] = useState<string | null>(null);
@@ -189,7 +188,6 @@ const InvoiceReview = ({
   );
   const checklist = useChecklist(seeds);
   const { allDone, done, fields, total } = checklist;
-  const scan = scanFacts(record);
   const activity = useMemo(
     () => invoiceActivity(outcome, record),
     [outcome, record]
@@ -233,8 +231,6 @@ const InvoiceReview = ({
       }
     },
   });
-
-  const flagTone = scan.flag.tone ? TONE[scan.flag.tone] : TONE.neutral;
 
   const approveRows: InvoiceField[] = [
     ...fieldList,
@@ -302,37 +298,16 @@ const InvoiceReview = ({
         backLabel="Back to invoices"
         compactActions={pending ? decisionActions("sm") : undefined}
         id={record.invoice}
-        meta={[
-          `${record.dealership} · ${record.city}`,
-          `Submitted ${formatSubmitted(record.date)} · ${record.time}`,
-          ...(pending ? [waitingLabel(record.date, record.time)] : []),
-          <Tooltip content={record.email} key="submitter">
-            <span className="cursor-default underline decoration-dotted underline-offset-2">
-              {record.submitter}
-            </span>
-          </Tooltip>,
-        ]}
+        onStuckChange={setStuck}
+        groups={reviewFacts(record, !pending)}
         progress={pending ? progress : undefined}
-        signals={reviewSignals(record, !pending)}
         status={{ label: CHIP[outcome].label, tone: CHIP[outcome].tone }}
         summary={
           pending ? (
-            <span className={cn("flex items-center gap-2", flagTone.text)}>
-              <span
-                aria-hidden
-                className={cn("size-2 shrink-0 rounded-full", flagTone.dot)}
-              />
-              {scan.flag.label} · {scan.flag.value}
+            <span className="text-sm text-gray-600">
+              {waitingLabel(record.date, record.time)}
             </span>
-          ) : (
-            <span className="flex items-center gap-2 text-gray-600">
-              <span
-                aria-hidden
-                className="size-2 shrink-0 rounded-full bg-gray-300"
-              />
-              {scan.flag.label} · {scan.flag.value}
-            </span>
-          )
+          ) : null
         }
       />
 
@@ -343,6 +318,7 @@ const InvoiceReview = ({
             ? "xl:grid-cols-[240px_minmax(0,1fr)_minmax(400px,460px)]"
             : "xl:grid-cols-[56px_minmax(0,1fr)_minmax(400px,460px)]"
         )}
+        style={{ "--sticky-top": stuck ? "64px" : "0px" } as CSSProperties}
       >
         <ActivityRail
           events={activity}
@@ -352,7 +328,7 @@ const InvoiceReview = ({
 
         <ScanViewer
           caption="invoice scan"
-          className="h-[calc(100vh-21rem)] min-h-[440px] xl:sticky xl:top-[88px]"
+          className="h-[calc(100vh-21rem)] min-h-[440px] xl:sticky xl:top-[var(--sticky-top)] transition-[top] duration-200"
           document={record.document}
           thumbnails={false}
         />
