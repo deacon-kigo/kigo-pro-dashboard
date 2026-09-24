@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, type CSSProperties } from "react";
 
 import { Provider as TooltipProvider } from "@radix-ui/react-tooltip";
 
-import { ArrowLeftRight, Receipt } from "lucide-react";
+import { ArrowLeftRight } from "lucide-react";
 
 import { Button } from "@/components/prod/button";
 import { Card } from "@/components/prod/card";
@@ -23,7 +23,6 @@ import { toast } from "@/components/prod/hooks/use-toast";
 
 import { ActivityRail } from "./ActivityRail";
 import { Crumb } from "./Crumb";
-import { FactList } from "./FactList";
 import { ResultBanner } from "./ResultBanner";
 import { ReviewHeader } from "./ReviewHeader";
 import { ScanViewer } from "./ScanViewer";
@@ -32,11 +31,10 @@ import {
   DISPUTES,
   DISPUTE_REASONS,
   disputeActivity,
-  formatSubmitted,
+  disputeFacts,
   plural,
   waitingLabel,
   type DisputeStatus,
-  type Fact,
 } from "./data";
 import { readDecisions, saveDispute } from "./decisions";
 import { type Tone } from "./tone";
@@ -113,17 +111,6 @@ const DisputeReview = ({
     [outcome, record]
   );
 
-  const claimFacts: Fact[] = [
-    { label: "Promotion", value: record.promotion },
-    { label: "Promo code", mono: true, value: "ABC123" },
-    {
-      label: "Submitted",
-      value: `${formatSubmitted(record.date)} · ${record.time}`,
-    },
-    { label: "Submitter", value: `${record.submitter} · ${record.email}` },
-    { label: "Dealership", value: `${record.dealership} · ${record.city}` },
-  ];
-
   const decisionActions = (size: "default" | "sm") => (
     <>
       <Button
@@ -150,16 +137,14 @@ const DisputeReview = ({
         compactActions={pending ? decisionActions("sm") : undefined}
         id={record.invoice}
         onStuckChange={setStuck}
-        meta={[
-          `${record.dealership} · ${record.city}`,
-          waitingLabel(record.date, record.time),
-        ]}
+        groups={disputeFacts(record)}
         status={{ label: CHIP[outcome].label, tone: CHIP[outcome].tone }}
         summary={
-          <span className="text-gray-700">
-            Dispute · {record.promotion} ·{" "}
-            {plural(record.changes.length, "requested change")}
-          </span>
+          pending ? (
+            <span className="text-sm text-gray-600">
+              {waitingLabel(record.date, record.time)}
+            </span>
+          ) : null
         }
       />
 
@@ -186,12 +171,6 @@ const DisputeReview = ({
         />
 
         <div className="flex flex-col gap-6 self-start">
-          <Card roundness="lg">
-            <Section icon={Receipt} title="Claim">
-              <FactList facts={claimFacts} />
-            </Section>
-          </Card>
-
           <Card roundness="lg">
             <Section
               count={plural(record.changes.length, "change")}

@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 
 import {
+  ArrowLeftRight,
   Check,
   CircleCheck,
   CircleX,
@@ -913,6 +914,31 @@ export const reviewFacts = (row: InvoiceRow, decided: boolean): FactGroup[] => {
       : fact;
   return [
     { facts: validation.map(settle), icon: ShieldCheck, title: "Validation" },
+    { facts: claim, icon: Receipt, title: "Claim" },
+  ];
+};
+
+export const disputeFacts = (row: DisputeRow): FactGroup[] => {
+  const dispute: Fact[] = [
+    {
+      label: "Request",
+      tone: "info",
+      value: plural(row.changes.length, "requested change"),
+    },
+    {
+      label: "Fields",
+      value: row.changes.map((change) => change.label).join(", "),
+    },
+  ];
+  const claim: Fact[] = [
+    { label: "Dealership", value: `${row.dealership} · ${row.city}` },
+    { label: "Submitted", value: `${formatSubmitted(row.date)} · ${row.time}` },
+    { hint: row.email, label: "Submitter", value: row.submitter },
+    { label: "Promotion", value: row.promotion },
+    { label: "Promo code", mono: true, value: "ABC123" },
+  ];
+  return [
+    { facts: dispute, icon: ArrowLeftRight, title: "Dispute" },
     { facts: claim, icon: Receipt, title: "Claim" },
   ];
 };
