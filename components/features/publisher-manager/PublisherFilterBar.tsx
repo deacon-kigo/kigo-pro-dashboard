@@ -35,8 +35,11 @@ const CATEGORY_LABELS: Record<FilterCategory, string> = {
   search: "Search",
 };
 
+const LabelContext = React.createContext(CATEGORY_LABELS);
+
 const GROUP_CATEGORY_MAP: Record<string, FilterCategory> = {
   "Offer Types": "offerType",
+  Sort: "offerType",
   Status: "status",
 };
 
@@ -53,6 +56,8 @@ interface PublisherFilterBarProps {
   selectedFilters: FilterTag[];
   onFiltersChange: (filters: FilterTag[]) => void;
   placeholder?: string;
+  statusGroupLabel?: string;
+  offerTypeGroupLabel?: string;
 }
 
 function sortSelectedFirst(
@@ -280,6 +285,7 @@ const CustomOption = (props: any) => {
 };
 
 const CustomValueContainer = (props: any) => {
+  const labels = React.useContext(LabelContext);
   const { children, hasValue, ...rest } = props;
   const childArray = React.Children.toArray(children);
 
@@ -340,7 +346,7 @@ const CustomValueContainer = (props: any) => {
           lineHeight: "24px",
         }}
       >
-        {CATEGORY_LABELS[cat]}
+        {labels[cat]}
       </span>
     );
     rendered.push(...items);
@@ -398,10 +404,15 @@ const customStyles: StylesConfig<FilterTag, true, GroupBase<FilterTag>> = {
       "0 4px 24px -4px rgba(0,0,0,0.12), 0 2px 8px -2px rgba(0,0,0,0.08)",
     border: "1px solid #E4E5E7",
     borderRadius: "0.625rem",
-    overflow: "hidden",
+    overflow: "visible",
     marginTop: "6px",
   }),
-  menuList: (base) => ({ ...base, padding: "6px 0", maxHeight: "360px" }),
+  menuList: (base) => ({
+    ...base,
+    padding: "6px 0",
+    maxHeight: "min(480px, 70vh)",
+    overflowY: "auto",
+  }),
   menuPortal: (base) => ({ ...base, zIndex: 9999 }),
   option: () => ({}),
   placeholder: (base) => ({
@@ -442,6 +453,8 @@ export function PublisherFilterBar({
   selectedFilters,
   onFiltersChange,
   placeholder = "Filter by offer type, status, or search…",
+  statusGroupLabel = "Status",
+  offerTypeGroupLabel = "Offer Types",
 }: PublisherFilterBarProps) {
   const instanceId = useId();
   const filtersRef = useRef(selectedFilters);
@@ -481,11 +494,17 @@ export function PublisherFilterBar({
         const sorted = sortSelectedFirst(filtered, selectedValues);
         if (sorted.length > 0) groups.push({ label, options: sorted });
       };
-      push("Status", statusTags);
-      push("Offer Types", offerTypeTags);
+      push(statusGroupLabel, statusTags);
+      push(offerTypeGroupLabel, offerTypeTags);
       return groups;
     },
-    [statusTags, offerTypeTags, selectedValues]
+    [
+      statusTags,
+      offerTypeTags,
+      selectedValues,
+      statusGroupLabel,
+      offerTypeGroupLabel,
+    ]
   );
 
   const defaultOptions = useMemo(() => buildGroups(""), [buildGroups]);
@@ -516,46 +535,59 @@ export function PublisherFilterBar({
     [onFiltersChange]
   );
 
+  const labels = useMemo(
+    () => ({
+      ...CATEGORY_LABELS,
+      offerType: offerTypeGroupLabel,
+      status: statusGroupLabel,
+    }),
+    [offerTypeGroupLabel, statusGroupLabel]
+  );
+
   return (
-    <div className="relative">
-      <Search className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-gray-400" />
-      <AsyncCreatable<FilterTag, true, GroupBase<FilterTag>>
-        instanceId={instanceId}
-        isMulti
-        hideSelectedOptions={false}
-        cacheOptions={false}
-        defaultOptions={defaultOptions}
-        loadOptions={loadOptions}
-        value={selectedFilters}
-        onChange={handleChange}
-        onCreateOption={handleCreateOption}
-        createOptionPosition="first"
-        formatCreateLabel={(input: string) => `Search for "${input}"`}
-        isValidNewOption={(inputValue: string) => inputValue.trim().length > 0}
-        getOptionValue={(option: FilterTag) => option.value}
-        getOptionLabel={(option: FilterTag) => option.label}
-        placeholder={placeholder}
-        noOptionsMessage={() => "No matching filters"}
-        styles={customStyles}
-        components={{
-          DropdownIndicator,
-          ClearIndicator,
-          MultiValueContainer,
-          MultiValueLabel,
-          MultiValueRemove,
-          ValueContainer: CustomValueContainer,
-          Group: CustomGroup,
-          Option: CustomOption,
-        }}
-        closeMenuOnSelect={false}
-        isClearable
-        menuPortalTarget={
-          typeof document !== "undefined" ? document.body : undefined
-        }
-        menuPosition="fixed"
-        menuPlacement="auto"
-      />
-    </div>
+    <LabelContext.Provider value={labels}>
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <AsyncCreatable<FilterTag, true, GroupBase<FilterTag>>
+          instanceId={instanceId}
+          isMulti
+          hideSelectedOptions={false}
+          cacheOptions={false}
+          defaultOptions={defaultOptions}
+          loadOptions={loadOptions}
+          value={selectedFilters}
+          onChange={handleChange}
+          onCreateOption={handleCreateOption}
+          createOptionPosition="first"
+          formatCreateLabel={(input: string) => `Search for "${input}"`}
+          isValidNewOption={(inputValue: string) =>
+            inputValue.trim().length > 0
+          }
+          getOptionValue={(option: FilterTag) => option.value}
+          getOptionLabel={(option: FilterTag) => option.label}
+          placeholder={placeholder}
+          noOptionsMessage={() => "No matching filters"}
+          styles={customStyles}
+          components={{
+            DropdownIndicator,
+            ClearIndicator,
+            MultiValueContainer,
+            MultiValueLabel,
+            MultiValueRemove,
+            ValueContainer: CustomValueContainer,
+            Group: CustomGroup,
+            Option: CustomOption,
+          }}
+          closeMenuOnSelect={false}
+          isClearable
+          menuPortalTarget={
+            typeof document !== "undefined" ? document.body : undefined
+          }
+          menuPosition="fixed"
+          menuPlacement="auto"
+        />
+      </div>
+    </LabelContext.Provider>
   );
 }
 

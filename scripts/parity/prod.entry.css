@@ -1,0 +1,8 @@
+/*
+ * Compiled by scripts/parity/build-css.mjs with production's Tailwind 4 engine.
+ * The production stylesheet is imported verbatim from the SOURCE clone; the
+ * @source lines only add the ported copies and the /pro pages as class sources.
+ */
+@import "../../../kigo-admin-tools/src/app/globals.css";
+@source '../../components/prod';
+@source '../../app/(pro)';

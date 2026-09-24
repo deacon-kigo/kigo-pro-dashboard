@@ -6,6 +6,9 @@ export default {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./remotion/**/*.{js,ts,jsx,tsx}",
+    // /pro is styled by production's own Tailwind 4 build (app/(pro)/prod.css).
+    "!./components/prod/**",
+    "!./app/(pro)/**",
   ],
   safelist: [
     // Journey card icon colors

@@ -4,3 +4,10 @@
 # Temporarily skip TypeScript check
 # tsc --noEmit
 npx --no-install lint-staged
+
+# Production-parity fences: a commit that touches the ported production copies
+# or the /pro pages must still match SOURCE and stay inside the import boundary.
+if git diff --cached --name-only | grep -qE '^(components/prod/|app/\(pro\)/|scripts/parity/)'; then
+  npm run --silent parity:check
+  npm run --silent parity:lint
+fi

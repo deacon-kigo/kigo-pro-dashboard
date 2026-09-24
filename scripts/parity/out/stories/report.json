@@ -1,0 +1,92 @@
+[
+  {
+    "unit": "search-bar",
+    "id": "components-search-bar--default",
+    "mismatched": 24,
+    "total": 1296000,
+    "sizeMismatch": false,
+    "baseErrors": [],
+    "targetErrors": []
+  },
+  {
+    "unit": "search-bar",
+    "id": "components-search-bar--custom-placeholder",
+    "mismatched": 0,
+    "total": 1296000,
+    "sizeMismatch": false,
+    "baseErrors": [],
+    "targetErrors": []
+  },
+  {
+    "unit": "search-bar",
+    "id": "components-search-bar--with-existing-query",
+    "mismatched": 0,
+    "total": 1296000,
+    "sizeMismatch": false,
+    "baseErrors": [],
+    "targetErrors": []
+  },
+  {
+    "unit": "search-bar",
+    "id": "components-search-bar--disabled",
+    "mismatched": 0,
+    "total": 1296000,
+    "sizeMismatch": false,
+    "baseErrors": [],
+    "targetErrors": []
+  },
+  {
+    "unit": "data-table",
+    "id": "components-data-table--default",
+    "mismatched": 66,
+    "total": 1296000,
+    "sizeMismatch": false,
+    "baseErrors": [],
+    "targetErrors": []
+  },
+  {
+    "unit": "data-table",
+    "id": "components-data-table--without-pagination",
+    "mismatched": 0,
+    "total": 1296000,
+    "sizeMismatch": false,
+    "baseErrors": [],
+    "targetErrors": []
+  },
+  {
+    "unit": "data-table",
+    "id": "components-data-table--empty",
+    "mismatched": 66,
+    "total": 1296000,
+    "sizeMismatch": false,
+    "baseErrors": [],
+    "targetErrors": []
+  },
+  {
+    "unit": "data-table",
+    "id": "components-data-table--custom-empty-message",
+    "mismatched": 66,
+    "total": 1296000,
+    "sizeMismatch": false,
+    "baseErrors": [],
+    "targetErrors": []
+  },
+  {
+    "unit": "header",
+    "id": "app-protected-components-header--admin",
+    "mismatched": 7816,
+    "total": 1296000,
+    "sizeMismatch": false,
+    "baseErrors": [],
+    "targetErrors": []
+  },
+  {
+    "unit": "shell",
+    "id": "app-protected-components-app-shell--support-manager",
+    "mismatched": 7810,
+    "total": 1296000,
+    "sizeMismatch": false,
+    "baseErrors": [],
+    "targetErrors": []
+  }
+]
