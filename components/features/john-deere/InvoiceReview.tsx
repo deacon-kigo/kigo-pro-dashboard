@@ -2,7 +2,7 @@
 
 import type { KeyboardEvent } from "react";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Provider as TooltipProvider } from "@radix-ui/react-tooltip";
 import { History, ListChecks, Receipt } from "lucide-react";
@@ -37,6 +37,7 @@ import {
   activitySummary,
   formatSubmitted,
   invoiceActivity,
+  invoiceDecision,
   invoiceFields,
   money,
   plural,
@@ -44,8 +45,9 @@ import {
   waitingLabel,
   type Fact,
   type InvoiceDecision,
+  type InvoiceField,
 } from "./data";
-import { saveInvoice } from "./decisions";
+import { readDecisions, saveInvoice } from "./decisions";
 import { TONE, type Tone } from "./tone";
 import { useChecklist } from "./useChecklist";
 
@@ -124,6 +126,11 @@ const DEALER_LABELS: Record<(typeof DEALER_PARTS)[number], string> = {
 const itemsSummary = (lines: Line[]) =>
   `${plural(lines.length, "item")} · ${money(lines)} eligible`;
 
+const scanNote = (field: InvoiceField) =>
+  field.dealerEdited && field.scanned
+    ? `Scan read ${field.scanned} · dealer entered ${field.value}`
+    : undefined;
+
 const InvoiceReview = ({
   decision,
   invoiceId,
@@ -151,6 +158,13 @@ const InvoiceReview = ({
   const [dealer, setDealer] = useState(() =>
     parseDealer(record.extracted.dealer)
   );
+
+  /* A decision taken earlier in the session wins over the URL's ?decision=.
+     Read after mount so the server and client render the same first pass. */
+  useEffect(() => {
+    const stored = readDecisions().invoices[record.invoice];
+    if (stored) setOutcome(invoiceDecision(stored));
+  }, [record.invoice]);
 
   const dealerText = [
     dealer.line1,
@@ -198,6 +212,7 @@ const InvoiceReview = ({
     ...fieldList.map((field) => ({
       label: field.label,
       mono: field.mono,
+      note: scanNote(field),
       value: fields[field.key]?.value ?? field.value,
     })),
     { label: "Line items", value: itemsSummary(lines) },
@@ -234,10 +249,19 @@ const InvoiceReview = ({
 
   const flagTone = scan.flag.tone ? TONE[scan.flag.tone] : TONE.neutral;
 
-  const allRows = [
-    ...fieldList.map((field) => ({ key: field.key, label: field.label })),
-    { key: "items", label: "Line items" },
+  const approveRows: InvoiceField[] = [
+    ...fieldList,
+    {
+      hint: "",
+      key: "items",
+      label: "Line items",
+      value: itemsSummary(lines),
+    },
   ];
+  const allRows = approveRows.map((field) => ({
+    key: field.key,
+    label: field.label,
+  }));
   const guardedKeys = fieldList
     .filter((field) => field.dealerEdited && field.scanned)
     .map((field) => field.key);
@@ -442,20 +466,12 @@ const InvoiceReview = ({
                             />
                           )
                         }
-                        display={
-                          field.dealerEdited && field.scanned
-                            ? `Scan read ${field.scanned} · dealer entered ${field.value}`
-                            : undefined
-                        }
+                        display={scanNote(field)}
                         hint={field.hint}
                         key={field.key}
                         label={field.label}
                         mono={field.mono}
-                        note={
-                          field.dealerEdited && field.scanned
-                            ? `Scan read ${field.scanned} · dealer entered ${field.value}`
-                            : undefined
-                        }
+                        note={scanNote(field)}
                         onCancel={() => checklist.cancel(field.key)}
                         onConfirm={() => checklist.confirm(field.key)}
                         onEdit={() => startEdit(field.key, state.value)}
@@ -543,6 +559,7 @@ const InvoiceReview = ({
         onConfirm={() => {
           saveInvoice(record.invoice, "man_rejected");
           setOutcome("rejected");
+          setEventsOpen(true);
           setRejectOpen(false);
         }}
         onCustomChange={setCustom}
@@ -562,10 +579,11 @@ const InvoiceReview = ({
 
       <ApproveInvoiceDialog
         fields={fields}
-        rows={fieldList}
+        rows={approveRows}
         onConfirm={() => {
           saveInvoice(record.invoice, "man_approved");
           setOutcome("approved");
+          setEventsOpen(true);
           setApproveOpen(false);
         }}
         onOpenChange={setApproveOpen}

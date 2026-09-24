@@ -790,6 +790,8 @@ export interface Fact {
   mono?: boolean;
   tone?: Tone;
   emphasis?: boolean;
+  /* Warning line under the value, e.g. a scan-vs-dealer discrepancy. */
+  note?: string;
 }
 
 const FLAG_FACT: Record<InvoiceFlag["kind"], { label: string; value: string }> =

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { ArrowLeftRight, History, Receipt } from "lucide-react";
 
@@ -39,7 +39,7 @@ import {
   type DisputeStatus,
   type Fact,
 } from "./data";
-import { saveDispute } from "./decisions";
+import { readDecisions, saveDispute } from "./decisions";
 import { TONE, type Tone } from "./tone";
 
 const CANONICAL = DISPUTES[0];
@@ -88,6 +88,13 @@ const DisputeReview = ({
   const [reason, setReason] = useState<string | null>(null);
   const [custom, setCustom] = useState("");
   const [note, setNote] = useState("");
+
+  /* A decision taken earlier in the session wins over the URL's ?decision=.
+     Read after mount so the server and client render the same first pass. */
+  useEffect(() => {
+    const stored = readDecisions().disputes[record.invoice];
+    if (stored) setOutcome(stored);
+  }, [record.invoice]);
 
   const closeReject = (next: boolean) => {
     setRejectOpen(next);
@@ -332,6 +339,7 @@ const DisputeReview = ({
               onClick={() => {
                 saveDispute(record.invoice, "approved");
                 setOutcome("approved");
+                setEventsOpen(true);
                 setApproveOpen(false);
               }}
             >
@@ -415,6 +423,7 @@ const DisputeReview = ({
               onClick={() => {
                 saveDispute(record.invoice, "rejected");
                 setOutcome("rejected");
+                setEventsOpen(true);
                 setRejectOpen(false);
               }}
             >
