@@ -164,7 +164,7 @@ const ReviewHeader = ({
             {groups.map((group, index) => (
               <Section
                 className={cn(
-                  "min-w-0 p-0",
+                  "min-w-0 p-0 lg:flex-1",
                   index > 0 && "lg:ml-8 lg:border-l lg:border-gray-100 lg:pl-8"
                 )}
                 icon={group.icon}
@@ -193,9 +193,12 @@ const ReviewHeader = ({
                         )}
                         {fact.hint ? (
                           <Tooltip content={fact.hint}>
-                            <span className="cursor-default underline decoration-gray-300 decoration-dotted underline-offset-2">
+                            <button
+                              className="cursor-default rounded-sm underline decoration-gray-300 decoration-dotted underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                              type="button"
+                            >
                               {fact.value}
-                            </span>
+                            </button>
                           </Tooltip>
                         ) : (
                           fact.value

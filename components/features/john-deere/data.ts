@@ -769,7 +769,8 @@ export interface ReviewEvent {
   title: string;
   detail?: string;
   actor: string;
-  at: string;
+  date: string;
+  time: string;
 }
 
 export const EVENT_KIND: Record<EventKind, { tone: Tone; icon: LucideIcon }> = {
@@ -946,13 +947,18 @@ export const activitySummary = (
 
 const SYSTEM = "Automated validation";
 const REVIEWER = "Maya Ruiz";
+const SYSTEM_ACTORS = new Set([SYSTEM, "Support queue"]);
+
+export const actorKind = (actor: string): "person" | "system" =>
+  SYSTEM_ACTORS.has(actor) ? "system" : "person";
 
 const submittedEvent = (
   row: { submitter: string; date: string; time: string },
   title: string
 ): ReviewEvent => ({
   actor: row.submitter,
-  at: `${formatSubmitted(row.date)} · ${row.time}`,
+  date: formatSubmitted(row.date),
+  time: row.time,
   id: "submitted",
   kind: "submitted",
   title,
@@ -965,7 +971,8 @@ export const invoiceActivity = (
   const submitted = submittedEvent(record, "Invoice submitted");
   const flagged: ReviewEvent = {
     actor: SYSTEM,
-    at: "Sep 16, 2026 · 09:43 AM",
+    date: "Sep 16, 2026",
+    time: "09:43 AM",
     detail: `Confidence ${record.flag.confidence}% falls below the ${CONFIDENCE_THRESHOLD}% threshold`,
     id: "flagged",
     kind: "flagged",
@@ -978,7 +985,8 @@ export const invoiceActivity = (
     return [
       {
         actor: REVIEWER,
-        at: "Sep 16, 2026 · 10:18 AM",
+        date: "Sep 16, 2026",
+        time: "10:18 AM",
         detail: "Sent for reimbursement",
         id: "approved",
         kind: "approved",
@@ -986,7 +994,8 @@ export const invoiceActivity = (
       },
       {
         actor: REVIEWER,
-        at: "Sep 16, 2026 · 10:15 AM",
+        date: "Sep 16, 2026",
+        time: "10:15 AM",
         detail:
           "Dealer edit of $1,240.00 accepted over the scan read of $1,318.40",
         id: "confirmed",
@@ -995,7 +1004,8 @@ export const invoiceActivity = (
       },
       {
         actor: REVIEWER,
-        at: "Sep 16, 2026 · 10:12 AM",
+        date: "Sep 16, 2026",
+        time: "10:12 AM",
         detail: "Promo code ABC123 entered by hand",
         id: "edited",
         kind: "edited",
@@ -1009,7 +1019,8 @@ export const invoiceActivity = (
     return [
       {
         actor: REVIEWER,
-        at: "Sep 16, 2026 · 10:26 AM",
+        date: "Sep 16, 2026",
+        time: "10:26 AM",
         detail: "Items do not qualify for this promotion",
         id: "rejected",
         kind: "rejected",
@@ -1017,7 +1028,8 @@ export const invoiceActivity = (
       },
       {
         actor: REVIEWER,
-        at: "Sep 16, 2026 · 10:22 AM",
+        date: "Sep 16, 2026",
+        time: "10:22 AM",
         detail: "Two of four items are attachments, not fluids or filters",
         id: "confirmed",
         kind: "confirmed",
@@ -1031,7 +1043,8 @@ export const invoiceActivity = (
     return [
       {
         actor: SYSTEM,
-        at: "Sep 16, 2026 · 09:43 AM",
+        date: "Sep 16, 2026",
+        time: "09:43 AM",
         detail: "Sent for reimbursement without manual review",
         id: "approved",
         kind: "approved",
@@ -1039,7 +1052,8 @@ export const invoiceActivity = (
       },
       {
         actor: SYSTEM,
-        at: "Sep 16, 2026 · 09:43 AM",
+        date: "Sep 16, 2026",
+        time: "09:43 AM",
         detail: `Confidence ${record.flag.confidence}% · fraud score ${record.fraud}`,
         id: "validated",
         kind: "validated",
@@ -1052,7 +1066,8 @@ export const invoiceActivity = (
     return [
       {
         actor: SYSTEM,
-        at: "Sep 16, 2026 · 09:43 AM",
+        date: "Sep 16, 2026",
+        time: "09:43 AM",
         detail: "Duplicate of a previously submitted invoice",
         id: "rejected",
         kind: "rejected",
@@ -1060,7 +1075,8 @@ export const invoiceActivity = (
       },
       {
         actor: SYSTEM,
-        at: "Sep 16, 2026 · 09:43 AM",
+        date: "Sep 16, 2026",
+        time: "09:43 AM",
         detail: original
           ? `Matches ${duplicateOf}, submitted ${formatSubmitted(original.date)}`
           : `Matches ${duplicateOf}`,
@@ -1074,7 +1090,8 @@ export const invoiceActivity = (
   return [
     {
       actor: "Support queue",
-      at: "Sep 16, 2026 · 09:43 AM",
+      date: "Sep 16, 2026",
+      time: "09:43 AM",
       id: "queued",
       kind: "queued",
       title: "Awaiting support review",
@@ -1082,7 +1099,8 @@ export const invoiceActivity = (
     flagged,
     {
       actor: SYSTEM,
-      at: "Sep 16, 2026 · 09:43 AM",
+      date: "Sep 16, 2026",
+      time: "09:43 AM",
       detail: "Extraction engine v2.4",
       id: "validated",
       kind: "validated",
@@ -1098,7 +1116,8 @@ export const disputeActivity = (
 ): ReviewEvent[] => {
   const redeemed: ReviewEvent = {
     actor: record.submitter,
-    at: "Sep 12, 2026 · 02:41 PM",
+    date: "Sep 12, 2026",
+    time: "02:41 PM",
     detail: "Promo code ABC123 applied in PDAP",
     id: "redeemed",
     kind: "redeemed",
@@ -1114,7 +1133,8 @@ export const disputeActivity = (
     return [
       {
         actor: REVIEWER,
-        at: "Sep 16, 2026 · 11:02 AM",
+        date: "Sep 16, 2026",
+        time: "11:02 AM",
         detail: "PDAP entry updated with the requested values",
         id: "approved",
         kind: "approved",
@@ -1128,7 +1148,8 @@ export const disputeActivity = (
     return [
       {
         actor: REVIEWER,
-        at: "Sep 16, 2026 · 11:02 AM",
+        date: "Sep 16, 2026",
+        time: "11:02 AM",
         detail: "PDAP entry left unchanged",
         id: "rejected",
         kind: "rejected",
@@ -1141,7 +1162,8 @@ export const disputeActivity = (
   return [
     {
       actor: "Support queue",
-      at: "Sep 16, 2026 · 10:24 AM",
+      date: "Sep 16, 2026",
+      time: "10:24 AM",
       detail: "Waiting on a reviewer to compare the photo with the entry",
       id: "queued",
       kind: "queued",

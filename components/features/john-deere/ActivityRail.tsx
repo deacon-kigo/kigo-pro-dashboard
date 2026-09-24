@@ -7,7 +7,7 @@ import { Card } from "@/components/prod/card";
 import { Tooltip } from "@/components/prod/tooltip";
 
 import { Section } from "./Section";
-import { EventIcon, Timeline } from "./Timeline";
+import { EventActor, EventIcon, EventTime, Timeline } from "./Timeline";
 import { type ReviewEvent } from "./data";
 
 interface ActivityRailProps {
@@ -42,7 +42,7 @@ const ActivityRail = ({ events, onOpenChange, open }: ActivityRailProps) => {
           title="Activity"
         >
           <div className="min-h-0 flex-1 overflow-y-auto">
-            <Timeline compact events={events} />
+            <Timeline events={events} />
           </div>
         </Section>
       </Card>
@@ -89,8 +89,11 @@ const ActivityRail = ({ events, onOpenChange, open }: ActivityRailProps) => {
               content={
                 <>
                   <p className="font-medium">{event.title}</p>
-                  <p className="text-gray-400">
-                    {event.actor} · {event.at}
+                  <p className="mt-0.5 flex items-center gap-2 text-gray-400">
+                    <EventActor actor={event.actor} />
+                    <span>
+                      {event.date} at <EventTime event={event} />
+                    </span>
                   </p>
                   {event.detail && <p className="mt-1">{event.detail}</p>}
                 </>

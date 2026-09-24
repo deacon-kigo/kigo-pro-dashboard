@@ -355,7 +355,14 @@ const InvoiceReview = ({
                 icon={ListChecks}
                 title="Checklist"
               >
-                <div className="h-1 rounded-full bg-gray-100">
+                <div
+                  aria-label="Fields confirmed"
+                  aria-valuemax={total}
+                  aria-valuemin={0}
+                  aria-valuenow={done}
+                  className="h-1 rounded-full bg-gray-100"
+                  role="progressbar"
+                >
                   <div
                     className="bg-primary h-1 rounded-full transition-[width] duration-200"
                     style={{ width: `${Math.round((done / total) * 100)}%` }}
