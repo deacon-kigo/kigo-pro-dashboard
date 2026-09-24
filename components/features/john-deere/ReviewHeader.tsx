@@ -1,0 +1,152 @@
+"use client";
+
+import { useEffect, useRef, useState, type ReactNode } from "react";
+
+import { ArrowLeft } from "lucide-react";
+
+import { Button } from "@/components/prod/button";
+import { Card } from "@/components/prod/card";
+import { cn } from "@/components/prod/utils/cn";
+
+import { JOHN_DEERE } from "./partner";
+import { StatusPill } from "./StatusPill";
+import { type Tone } from "./tone";
+
+interface ReviewHeaderProps {
+  actions?: ReactNode;
+  backHref: string;
+  backLabel: string;
+  compactActions?: ReactNode;
+  id: string;
+  meta: string[];
+  progress?: string;
+  status: { label: string; tone: Tone };
+  summary: ReactNode;
+}
+
+const ReviewHeader = ({
+  actions,
+  backHref,
+  backLabel,
+  compactActions,
+  id,
+  meta,
+  progress,
+  status,
+  summary,
+}: ReviewHeaderProps) => {
+  const [stuck, setStuck] = useState(false);
+  const sentinel = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const node = sentinel.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setStuck(!entry.isIntersecting),
+      { root: node.closest("main"), threshold: 0 }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <>
+      <div aria-hidden={!stuck} className="sticky -top-6 z-20 -mx-6 h-0">
+        <div
+          className={cn(
+            "absolute inset-x-0 top-0 flex h-20 items-center gap-3 border-b border-gray-200 bg-white px-6 pt-6 transition-[opacity,transform] duration-200",
+            stuck
+              ? "translate-y-0 opacity-100 shadow-md"
+              : "pointer-events-none -translate-y-0.5 opacity-0"
+          )}
+        >
+          {stuck && (
+            <>
+              <Button
+                aria-label={backLabel}
+                color="secondary"
+                href={backHref}
+                size="icon"
+                variant="ghost"
+              >
+                <ArrowLeft />
+              </Button>
+              <span className="font-mono text-base font-semibold text-gray-900">
+                {id}
+              </span>
+              <StatusPill color={status.tone}>{status.label}</StatusPill>
+              {progress && (
+                <span className="ml-auto text-sm text-gray-600">
+                  {progress}
+                </span>
+              )}
+              {compactActions && (
+                <div
+                  className={cn(
+                    "flex items-center gap-2",
+                    !progress && "ml-auto"
+                  )}
+                >
+                  {compactActions}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      <Button
+        className="px-0"
+        color="secondary"
+        href={backHref}
+        icon={<ArrowLeft />}
+        size="sm"
+        variant="link"
+      >
+        {backLabel}
+      </Button>
+
+      <div aria-hidden className="h-px" ref={sentinel} />
+
+      <Card
+        className="mb-4 overflow-hidden px-6 py-5"
+        roundness="lg"
+        style={{ borderTop: `3px solid ${JOHN_DEERE.green}` }}
+      >
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <img
+              alt={JOHN_DEERE.name}
+              className="h-8 w-auto shrink-0"
+              src="/logos/john-deere.svg"
+            />
+            <div>
+              <h1 className="font-mono text-2xl font-semibold text-gray-900">
+                {id}
+              </h1>
+              <div className="mt-1 flex flex-col gap-1.5">
+                <span className="flex flex-wrap items-center gap-2.5">
+                  <StatusPill color={status.tone}>{status.label}</StatusPill>
+                  {summary}
+                </span>
+                <span className="block text-sm text-gray-600">
+                  {meta.join(" · ")}
+                </span>
+              </div>
+            </div>
+          </div>
+          {(progress || actions) && (
+            <div className="flex flex-col items-end gap-2">
+              {progress && <p className="text-sm text-gray-600">{progress}</p>}
+              {actions && (
+                <div className="flex items-center gap-3">{actions}</div>
+              )}
+            </div>
+          )}
+        </div>
+      </Card>
+    </>
+  );
+};
+
+export { ReviewHeader };
