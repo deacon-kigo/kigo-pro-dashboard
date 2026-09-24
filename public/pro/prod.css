@@ -533,6 +533,9 @@
 .pro-root .top-3 {
   top: calc(var(--spacing) * 3);
 }
+.pro-root .top-3\.5 {
+  top: calc(var(--spacing) * 3.5);
+}
 .pro-root .top-3\/4 {
   top: calc(3 / 4 * 100%);
 }
@@ -793,6 +796,9 @@
 }
 .pro-root .left-\[8\%\] {
   left: 8%;
+}
+.pro-root .left-\[9px\] {
+  left: 9px;
 }
 .pro-root .left-\[20\%\] {
   left: 20%;
@@ -1595,6 +1601,9 @@
 .pro-root .h-\[calc\(100vh-18rem\)\] {
   height: calc(100vh - 18rem);
 }
+.pro-root .h-\[calc\(100vh-21rem\)\] {
+  height: calc(100vh - 21rem);
+}
 .pro-root .h-\[calc\(100vh-120px\)\] {
   height: calc(100vh - 120px);
 }
@@ -1703,6 +1712,9 @@
 .pro-root .max-h-\[92vh\] {
   max-height: 92vh;
 }
+.pro-root .max-h-\[260px\] {
+  max-height: 260px;
+}
 .pro-root .max-h-\[300px\] {
   max-height: 300px;
 }
@@ -1745,11 +1757,17 @@
 .pro-root .min-h-5 {
   min-height: calc(var(--spacing) * 5);
 }
+.pro-root .min-h-8 {
+  min-height: calc(var(--spacing) * 8);
+}
 .pro-root .min-h-9 {
   min-height: calc(var(--spacing) * 9);
 }
 .pro-root .min-h-10 {
   min-height: calc(var(--spacing) * 10);
+}
+.pro-root .min-h-11 {
+  min-height: calc(var(--spacing) * 11);
 }
 .pro-root .min-h-12 {
   min-height: calc(var(--spacing) * 12);
@@ -1795,6 +1813,9 @@
 }
 .pro-root .min-h-\[400px\] {
   min-height: 400px;
+}
+.pro-root .min-h-\[440px\] {
+  min-height: 440px;
 }
 .pro-root .min-h-\[500px\] {
   min-height: 500px;
@@ -2246,6 +2267,9 @@
 .pro-root .min-w-\[90px\] {
   min-width: 90px;
 }
+.pro-root .min-w-\[130px\] {
+  min-width: 130px;
+}
 .pro-root .min-w-\[150px\] {
   min-width: 150px;
 }
@@ -2650,6 +2674,12 @@
 .pro-root .grid-cols-\[8rem_minmax\(0\,1fr\)_1\.5rem\] {
   grid-template-columns: 8rem minmax(0, 1fr) 1.5rem;
 }
+.pro-root .grid-cols-\[9rem_minmax\(0\,1fr\)\] {
+  grid-template-columns: 9rem minmax(0, 1fr);
+}
+.pro-root .grid-cols-\[minmax\(0\,1fr\)_auto\] {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
 .pro-root .flex-col {
   flex-direction: column;
 }
@@ -2889,6 +2919,9 @@
     margin-block-start: calc(50px * var(--tw-space-y-reverse));
     margin-block-end: calc(50px * calc(1 - var(--tw-space-y-reverse)));
   }
+}
+.pro-root .gap-x-1\.5 {
+  column-gap: calc(var(--spacing) * 1.5);
 }
 .pro-root .gap-x-2\.5 {
   column-gap: calc(var(--spacing) * 2.5);
@@ -6840,6 +6873,9 @@
 .pro-root .px-3 {
   padding-inline: calc(var(--spacing) * 3);
 }
+.pro-root .px-3\.5 {
+  padding-inline: calc(var(--spacing) * 3.5);
+}
 .pro-root .px-4 {
   padding-inline: calc(var(--spacing) * 4);
 }
@@ -8482,6 +8518,14 @@
 }
 .pro-root .transition-\[color\] {
   transition-property: color;
+  transition-timing-function: var(
+    --tw-ease,
+    var(--default-transition-timing-function)
+  );
+  transition-duration: var(--tw-duration, var(--default-transition-duration));
+}
+.pro-root .transition-\[opacity\,transform\] {
+  transition-property: opacity, transform;
   transition-timing-function: var(
     --tw-ease,
     var(--default-transition-timing-function)
@@ -12092,6 +12136,11 @@
     outline-color: #4b55fd;
   }
 }
+.pro-root .focus-visible\:outline-primary {
+  &:focus-visible {
+    outline-color: hsl(var(--primary));
+  }
+}
 .pro-root .focus-visible\:outline-none {
   &:focus-visible {
     --tw-outline-style: none;
@@ -12279,6 +12328,16 @@
     cursor: not-allowed;
   }
 }
+.pro-root .disabled\:bg-gray-50 {
+  &:disabled {
+    background-color: var(--color-gray-50);
+  }
+}
+.pro-root .disabled\:text-gray-500 {
+  &:disabled {
+    color: #717585;
+  }
+}
 .pro-root .disabled\:text-muted-foreground\/50 {
   &:disabled {
     color: hsl(var(--muted-foreground));
@@ -12387,6 +12446,11 @@
         transparent
       );
     }
+  }
+}
+.pro-root .has-\[\:focus-visible\]\:border-primary {
+  &:has(*:is(:focus-visible)) {
+    border-color: hsl(var(--primary));
   }
 }
 .pro-root .has-\[\[data-slot\=input-group-control\]\:focus-visible\]\:ring-1 {
@@ -13783,6 +13847,11 @@
     top: calc(var(--spacing) * 24);
   }
 }
+.pro-root .xl\:top-\[88px\] {
+  @media (width >= 1025px) {
+    top: 88px;
+  }
+}
 .pro-root .xl\:col-span-1 {
   @media (width >= 1025px) {
     grid-column: span 1 / span 1;
@@ -13811,6 +13880,11 @@
 .pro-root .xl\:grid-cols-5 {
   @media (width >= 1025px) {
     grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+.pro-root .xl\:grid-cols-\[240px_minmax\(0\,1fr\)_minmax\(380px\,420px\)\] {
+  @media (width >= 1025px) {
+    grid-template-columns: 240px minmax(0, 1fr) minmax(380px, 420px);
   }
 }
 .pro-root .xl\:grid-cols-\[minmax\(0\,3fr\)_minmax\(24rem\,2fr\)\] {

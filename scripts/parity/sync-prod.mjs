@@ -86,6 +86,11 @@ const UNITS = [
     stories: "src/components/loader/loader.stories.tsx",
   },
   {
+    id: "toast",
+    entries: ["src/components/toast"],
+    stories: "src/components/toast/toast.stories.tsx",
+  },
+  {
     id: "page-header",
     entries: ["src/app/(protected)/components/page-header"],
     stories:
@@ -314,10 +319,13 @@ const applyContextProvider = (src) => {
 
 /*
  * Type-only edits for React 18's @types/react. React 19 types `ref` as
- * `RefObject<T | null>`; React 18's DOM elements accept `Ref<T>`. Runtime is untouched.
+ * `RefObject<T | null>`; React 18's DOM elements accept `Ref<T>`. Both the
+ * `React.`-qualified and the bare (named type import) spellings are narrowed;
+ * the bare one keeps its imported name so the file's react import still holds.
+ * Runtime is untouched.
  */
 const applyReact18RefTypes = (src) => {
-  const marker = /React\.(?:RefObject|Ref)</g;
+  const marker = /(?:React\.)?\b(RefObject|Ref)</g;
   let out = "";
   let cursor = 0;
   let m;
@@ -345,10 +353,11 @@ const applyReact18RefTypes = (src) => {
     }
     const kept = members.filter((member) => member !== "null");
     out += src.slice(cursor, m.index);
+    const name = m[0].startsWith("React.") ? "React.Ref" : m[1];
     out +=
       kept.length === members.length
         ? src.slice(m.index, i)
-        : `React.Ref<${kept.join(" | ")}>`;
+        : `${name}<${kept.join(" | ")}>`;
     cursor = i;
     marker.lastIndex = i;
   }

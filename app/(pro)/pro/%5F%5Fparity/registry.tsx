@@ -13,11 +13,12 @@ import * as stories8 from "@/components/prod/dialog/dialog.stories";
 import * as stories9 from "@/components/prod/tabs/tabs.stories";
 import * as stories10 from "@/components/prod/skeleton/skeleton.stories";
 import * as stories11 from "@/components/prod/loader/loader.stories";
-import * as stories12 from "@/components/prod/page-header/page-header.stories";
-import * as stories13 from "@/components/prod/breadcrumbs/breadcrumbs.stories";
-import * as stories14 from "@/components/prod/header/header.stories";
-import * as stories15 from "@/components/prod/sidebar/sidebar.stories";
-import * as stories17 from "@/components/prod/shell/app-shell.stories";
+import * as stories12 from "@/components/prod/toast/toast.stories";
+import * as stories13 from "@/components/prod/page-header/page-header.stories";
+import * as stories14 from "@/components/prod/breadcrumbs/breadcrumbs.stories";
+import * as stories15 from "@/components/prod/header/header.stories";
+import * as stories16 from "@/components/prod/sidebar/sidebar.stories";
+import * as stories18 from "@/components/prod/shell/app-shell.stories";
 
 const registry: Record<string, ParityStory> = {
   "components-badge--default": {
@@ -327,77 +328,129 @@ const registry: Record<string, ParityStory> = {
     meta: stories11.default,
     story: stories11.AllSizes,
   },
-  "app-protected-components-page-header--default": {
+  "components-toast--default": {
     meta: stories12.default,
     story: stories12.Default,
   },
-  "app-protected-components-page-header--with-actions": {
+  "components-toast--with-description": {
     meta: stories12.default,
-    story: stories12.WithActions,
+    story: stories12.WithDescription,
   },
-  "app-protected-components-page-header--with-custom-emoji": {
+  "components-toast--with-action": {
     meta: stories12.default,
-    story: stories12.WithCustomEmoji,
+    story: stories12.WithAction,
   },
-  "app-protected-components-page-header--with-custom-gradient": {
+  "components-toast--with-description-and-action": {
     meta: stories12.default,
-    story: stories12.WithCustomGradient,
+    story: stories12.WithDescriptionAndAction,
   },
-  "app-protected-components-page-header--aurora-variant": {
+  "components-toast--destructive": {
     meta: stories12.default,
-    story: stories12.AuroraVariant,
+    story: stories12.Destructive,
   },
-  "app-protected-components-page-header--all-variants": {
+  "components-toast--destructive-with-action": {
+    meta: stories12.default,
+    story: stories12.DestructiveWithAction,
+  },
+  "components-toast--success": {
+    meta: stories12.default,
+    story: stories12.Success,
+  },
+  "components-toast--success-with-action": {
+    meta: stories12.default,
+    story: stories12.SuccessWithAction,
+  },
+  "components-toast--warning": {
+    meta: stories12.default,
+    story: stories12.Warning,
+  },
+  "components-toast--warning-with-action": {
+    meta: stories12.default,
+    story: stories12.WarningWithAction,
+  },
+  "components-toast--multiple-toasts": {
+    meta: stories12.default,
+    story: stories12.MultipleToasts,
+  },
+  "components-toast--custom-duration": {
+    meta: stories12.default,
+    story: stories12.CustomDuration,
+  },
+  "components-toast--all-variants": {
     meta: stories12.default,
     story: stories12.AllVariants,
   },
-  "app-protected-components-breadcrumbs--dashboard": {
+  "app-protected-components-page-header--default": {
     meta: stories13.default,
-    story: stories13.Dashboard,
+    story: stories13.Default,
+  },
+  "app-protected-components-page-header--with-actions": {
+    meta: stories13.default,
+    story: stories13.WithActions,
+  },
+  "app-protected-components-page-header--with-custom-emoji": {
+    meta: stories13.default,
+    story: stories13.WithCustomEmoji,
+  },
+  "app-protected-components-page-header--with-custom-gradient": {
+    meta: stories13.default,
+    story: stories13.WithCustomGradient,
+  },
+  "app-protected-components-page-header--aurora-variant": {
+    meta: stories13.default,
+    story: stories13.AuroraVariant,
+  },
+  "app-protected-components-page-header--all-variants": {
+    meta: stories13.default,
+    story: stories13.AllVariants,
+  },
+  "app-protected-components-breadcrumbs--dashboard": {
+    meta: stories14.default,
+    story: stories14.Dashboard,
   },
   "app-protected-components-breadcrumbs--single-level": {
-    meta: stories13.default,
-    story: stories13.SingleLevel,
+    meta: stories14.default,
+    story: stories14.SingleLevel,
   },
   "app-protected-components-breadcrumbs--two-levels": {
-    meta: stories13.default,
-    story: stories13.TwoLevels,
+    meta: stories14.default,
+    story: stories14.TwoLevels,
   },
   "app-protected-components-breadcrumbs--three-levels": {
-    meta: stories13.default,
-    story: stories13.ThreeLevels,
+    meta: stories14.default,
+    story: stories14.ThreeLevels,
   },
   "app-protected-components-breadcrumbs--with-non-navigable-wrapper": {
-    meta: stories13.default,
-    story: stories13.WithNonNavigableWrapper,
+    meta: stories14.default,
+    story: stories14.WithNonNavigableWrapper,
   },
   "app-protected-components-header--admin": {
-    meta: stories14.default,
-    story: stories14.Admin,
+    meta: stories15.default,
+    story: stories15.Admin,
   },
   "app-protected-components-sidebar--admin-expanded": {
-    meta: stories15.default,
-    story: stories15.AdminExpanded,
+    meta: stories16.default,
+    story: stories16.AdminExpanded,
   },
   "app-protected-components-sidebar--admin-collapsed": {
-    meta: stories15.default,
-    story: stories15.AdminCollapsed,
+    meta: stories16.default,
+    story: stories16.AdminCollapsed,
   },
   "app-protected-components-sidebar--modules-group-collapsed": {
-    meta: stories15.default,
-    story: stories15.ModulesGroupCollapsed,
+    meta: stories16.default,
+    story: stories16.ModulesGroupCollapsed,
   },
   "app-protected-components-sidebar--tools-group-collapsed": {
-    meta: stories15.default,
-    story: stories15.ToolsGroupCollapsed,
+    meta: stories16.default,
+    story: stories16.ToolsGroupCollapsed,
   },
   "app-protected-components-sidebar--all-groups-collapsed": {
-    meta: stories15.default,
-    story: stories15.AllGroupsCollapsed,
+    meta: stories16.default,
+    story: stories16.AllGroupsCollapsed,
   },
   "app-protected-components-app-shell--support-manager": {
-    meta: stories17.default,
-    story: stories17.SupportManager,
+    meta: stories18.default,
+    story: stories18.SupportManager,
   },
 };
 

@@ -17,6 +17,9 @@ import {
 } from "@/components/prod/collapsible";
 import { Tooltip } from "@/components/prod/tooltip";
 import { cn } from "@/components/prod/utils/cn";
+import { toProHref } from "@/components/prod/_runtime/link";
+import { useRouter } from "@/components/prod/_runtime/navigation";
+import { toast } from "@/components/prod/hooks/use-toast";
 
 import { ChecklistRow, ROW_INPUT, type RowStatus } from "./ChecklistRow";
 import { Crumb } from "./Crumb";
@@ -52,6 +55,8 @@ import { TONE, type Tone } from "./tone";
 import { useChecklist } from "./useChecklist";
 
 const CANONICAL = INVOICES[0];
+
+const QUEUE_HREF = toProHref("/john-deere") as string;
 
 const CHIP: Record<InvoiceDecision, { label: string; tone: Tone }> = {
   approved: { label: "Manually approved", tone: "success" },
@@ -142,6 +147,7 @@ const InvoiceReview = ({
     ...CANONICAL,
     invoice: invoiceId,
   };
+  const router = useRouter();
   const [outcome, setOutcome] = useState(decision);
   const pending = outcome === "pending";
   const [eventsOpen, setEventsOpen] = useState(!pending);
@@ -561,6 +567,12 @@ const InvoiceReview = ({
           setOutcome("rejected");
           setEventsOpen(true);
           setRejectOpen(false);
+          toast({
+            description: reason === "Other" ? custom.trim() : (reason ?? ""),
+            title: `${record.invoice} rejected`,
+            variant: "destructive",
+          });
+          router.push(QUEUE_HREF);
         }}
         onCustomChange={setCustom}
         onNoteChange={setNote}
@@ -585,6 +597,13 @@ const InvoiceReview = ({
           setOutcome("approved");
           setEventsOpen(true);
           setApproveOpen(false);
+          toast({
+            description:
+              "Sent for reimbursement. The dealer has been notified.",
+            title: `${record.invoice} approved`,
+            variant: "success",
+          });
+          router.push(QUEUE_HREF);
         }}
         onOpenChange={setApproveOpen}
         open={approveOpen}

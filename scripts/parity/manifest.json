@@ -552,6 +552,87 @@
       ]
     },
     {
+      "id": "toast",
+      "declared": true,
+      "storyIds": [
+        "components-toast--default",
+        "components-toast--with-description",
+        "components-toast--with-action",
+        "components-toast--with-description-and-action",
+        "components-toast--destructive",
+        "components-toast--destructive-with-action",
+        "components-toast--success",
+        "components-toast--success-with-action",
+        "components-toast--warning",
+        "components-toast--warning-with-action",
+        "components-toast--multiple-toasts",
+        "components-toast--custom-duration",
+        "components-toast--all-variants"
+      ],
+      "files": [
+        {
+          "sourcePath": "src/components/toast/atoms/index.ts",
+          "targetPath": "components/prod/toast/atoms/index.ts",
+          "sourceSha256": "d2cec6181839bddcd8eff7b2cdea0156975e22c117313c0ae745beffd059391a",
+          "transforms": []
+        },
+        {
+          "sourcePath": "src/components/toast/atoms/toast-action/index.tsx",
+          "targetPath": "components/prod/toast/atoms/toast-action/index.tsx",
+          "sourceSha256": "a035ce73442a09a813d312faa1a49192d1b260956e30b616f8c0f65749a13bbc",
+          "transforms": ["import-rewrite", "react18-ref-types"]
+        },
+        {
+          "sourcePath": "src/components/toast/atoms/toast-close/index.tsx",
+          "targetPath": "components/prod/toast/atoms/toast-close/index.tsx",
+          "sourceSha256": "3dc2eb7b46723bdfdbfc4f068853a902c38bfaf4e845e82a904b73766370eda6",
+          "transforms": ["import-rewrite", "react18-ref-types"]
+        },
+        {
+          "sourcePath": "src/components/toast/atoms/toast-description/index.tsx",
+          "targetPath": "components/prod/toast/atoms/toast-description/index.tsx",
+          "sourceSha256": "a2ee259a93b9d082c280b1ca59393e98e4fa3b51ca6eb354f0f9997bb171e452",
+          "transforms": ["import-rewrite", "react18-ref-types"]
+        },
+        {
+          "sourcePath": "src/components/toast/atoms/toast-title/index.tsx",
+          "targetPath": "components/prod/toast/atoms/toast-title/index.tsx",
+          "sourceSha256": "748cd791846420b031913b7425a81cebc38babb930c84a825055dcb143333242",
+          "transforms": ["import-rewrite", "react18-ref-types"]
+        },
+        {
+          "sourcePath": "src/components/toast/atoms/toast-viewport/index.tsx",
+          "targetPath": "components/prod/toast/atoms/toast-viewport/index.tsx",
+          "sourceSha256": "287b99280e83b7d775a01a494017c03602b6f76c863741a65a15810458afff66",
+          "transforms": ["import-rewrite", "react18-ref-types"]
+        },
+        {
+          "sourcePath": "src/components/toast/atoms/toast/index.tsx",
+          "targetPath": "components/prod/toast/atoms/toast/index.tsx",
+          "sourceSha256": "3b6e44a183c1e5694edf6b571cd12f245909d379381bf0c2a3a70020750316d7",
+          "transforms": ["import-rewrite", "react18-ref-types"]
+        },
+        {
+          "sourcePath": "src/components/toast/atoms/toaster/index.tsx",
+          "targetPath": "components/prod/toast/atoms/toaster/index.tsx",
+          "sourceSha256": "bafe13d84beb1262a2cdd96ab67136220d264eead49e6a5c8d406674cf536185",
+          "transforms": ["import-rewrite"]
+        },
+        {
+          "sourcePath": "src/components/toast/index.ts",
+          "targetPath": "components/prod/toast/index.ts",
+          "sourceSha256": "87149c7ed2caacd88855b589fd1014795f5456ad9b04f2bfe36cdf7373fa58d5",
+          "transforms": []
+        },
+        {
+          "sourcePath": "src/components/toast/toast.stories.tsx",
+          "targetPath": "components/prod/toast/toast.stories.tsx",
+          "sourceSha256": "5a96458d688e551e9e93282e61c951e24870a9a64a25e2e22742697f864ba7cd",
+          "transforms": ["import-rewrite"]
+        }
+      ]
+    },
+    {
       "id": "page-header",
       "declared": true,
       "storyIds": [

@@ -20,6 +20,9 @@ import {
   DialogTitle,
 } from "@/components/prod/dialog";
 import { cn } from "@/components/prod/utils/cn";
+import { toProHref } from "@/components/prod/_runtime/link";
+import { useRouter } from "@/components/prod/_runtime/navigation";
+import { toast } from "@/components/prod/hooks/use-toast";
 
 import { Crumb } from "./Crumb";
 import { FactList } from "./FactList";
@@ -43,6 +46,8 @@ import { readDecisions, saveDispute } from "./decisions";
 import { TONE, type Tone } from "./tone";
 
 const CANONICAL = DISPUTES[0];
+
+const QUEUE_HREF = toProHref("/john-deere?tab=disputes") as string;
 
 const CHIP: Record<DisputeStatus, { label: string; tone: Tone }> = {
   approved: { label: "Approved", tone: "success" },
@@ -79,6 +84,7 @@ const DisputeReview = ({
     ...CANONICAL,
     invoice: invoiceId,
   };
+  const router = useRouter();
   const [outcome, setOutcome] = useState(decision);
   const pending = outcome === "pending";
   const approved = outcome === "approved";
@@ -341,6 +347,13 @@ const DisputeReview = ({
                 setOutcome("approved");
                 setEventsOpen(true);
                 setApproveOpen(false);
+                toast({
+                  description:
+                    "PDAP entry updated. The dealer has been notified.",
+                  title: `Dispute ${record.invoice} approved`,
+                  variant: "success",
+                });
+                router.push(QUEUE_HREF);
               }}
             >
               Approve and update entry
@@ -425,6 +438,13 @@ const DisputeReview = ({
                 setOutcome("rejected");
                 setEventsOpen(true);
                 setRejectOpen(false);
+                toast({
+                  description:
+                    reason === "Other" ? custom.trim() : (reason ?? ""),
+                  title: `Dispute ${record.invoice} rejected`,
+                  variant: "destructive",
+                });
+                router.push(QUEUE_HREF);
               }}
             >
               Reject dispute
