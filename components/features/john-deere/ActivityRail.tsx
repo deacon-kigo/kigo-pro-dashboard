@@ -51,7 +51,7 @@ const ActivityRail = ({ events, onOpenChange, open }: ActivityRailProps) => {
 
   return (
     <Card
-      className="flex overflow-hidden py-2 max-xl:items-center max-xl:gap-2 max-xl:px-2 xl:w-14 xl:flex-col xl:h-[calc(100vh-21rem)] xl:min-h-[440px] xl:sticky xl:top-[var(--sticky-top)] transition-[top] duration-200"
+      className="flex overflow-hidden py-2 max-xl:items-center max-xl:gap-2 px-2 xl:w-14 xl:flex-col xl:h-[calc(100vh-21rem)] xl:min-h-[440px] xl:sticky xl:top-[var(--sticky-top)] transition-[top] duration-200"
       roundness="lg"
     >
       <div className="flex items-center justify-center xl:h-11">
@@ -77,7 +77,7 @@ const ActivityRail = ({ events, onOpenChange, open }: ActivityRailProps) => {
 
       <ol className="flex max-xl:items-center max-xl:gap-1 xl:flex-col">
         {events.map((event, index) => (
-          <li className="relative flex justify-center xl:py-2" key={event.id}>
+          <li className="relative flex justify-center py-2" key={event.id}>
             {index < events.length - 1 && (
               <span
                 aria-hidden
