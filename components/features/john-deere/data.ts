@@ -8,6 +8,7 @@ import {
   Flag,
   MessageSquare,
   Pencil,
+  Receipt,
   ShieldCheck,
   Ticket,
   Upload,
@@ -797,6 +798,7 @@ export interface Fact {
 }
 
 export interface FactGroup {
+  icon: LucideIcon;
   title: string;
   facts: Fact[];
 }
@@ -909,8 +911,8 @@ export const reviewFacts = (row: InvoiceRow, decided: boolean): FactGroup[] => {
       ? { ...fact, tone: undefined }
       : fact;
   return [
-    { facts: validation.map(settle), title: "Validation" },
-    { facts: claim, title: "Claim" },
+    { facts: validation.map(settle), icon: ShieldCheck, title: "Validation" },
+    { facts: claim, icon: Receipt, title: "Claim" },
   ];
 };
 

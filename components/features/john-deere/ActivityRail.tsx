@@ -1,6 +1,6 @@
 "use client";
 
-import { History, PanelLeftClose } from "lucide-react";
+import { History, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
 import { Button } from "@/components/prod/button";
 import { Card } from "@/components/prod/card";
@@ -20,7 +20,7 @@ const ActivityRail = ({ events, onOpenChange, open }: ActivityRailProps) => {
   if (open) {
     return (
       <Card
-        className="flex flex-col overflow-hidden h-[calc(100vh-21rem)] min-h-[440px] xl:sticky xl:top-[var(--sticky-top)] transition-[top] duration-200"
+        className="flex flex-col overflow-hidden xl:h-[calc(100vh-21rem)] xl:min-h-[440px] xl:sticky xl:top-[var(--sticky-top)] transition-[top] duration-200"
         roundness="lg"
       >
         <Section
@@ -51,32 +51,37 @@ const ActivityRail = ({ events, onOpenChange, open }: ActivityRailProps) => {
 
   return (
     <Card
-      className="w-14 overflow-hidden py-2 h-[calc(100vh-21rem)] min-h-[440px] xl:sticky xl:top-[var(--sticky-top)] transition-[top] duration-200"
+      className="flex overflow-hidden py-2 max-xl:items-center max-xl:gap-2 max-xl:px-2 xl:w-14 xl:flex-col xl:h-[calc(100vh-21rem)] xl:min-h-[440px] xl:sticky xl:top-[var(--sticky-top)] transition-[top] duration-200"
       roundness="lg"
     >
-      <div className="flex h-11 items-center justify-center">
+      <div className="flex items-center justify-center xl:h-11">
         <Tooltip content="Show activity" side="right">
-          <button
+          <Button
             aria-expanded={false}
             aria-label="Show activity"
-            className="flex size-7 items-center justify-center rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary [&_svg]:size-4"
+            color="secondary"
             onClick={() => onOpenChange(true)}
-            type="button"
+            size="icon"
+            variant="ghost"
           >
-            <History />
-          </button>
+            <PanelLeftOpen />
+          </Button>
         </Tooltip>
       </div>
 
-      <div aria-hidden className="mx-3 my-2 border-t border-gray-100" />
+      <div aria-hidden className="h-6 border-l border-gray-100 xl:hidden" />
+      <div
+        aria-hidden
+        className="mx-3 my-2 border-t border-gray-100 max-xl:hidden"
+      />
 
-      <ol className="flex flex-col">
+      <ol className="flex max-xl:items-center max-xl:gap-1 xl:flex-col">
         {events.map((event, index) => (
-          <li className="relative flex justify-center py-2" key={event.id}>
+          <li className="relative flex justify-center xl:py-2" key={event.id}>
             {index < events.length - 1 && (
               <span
                 aria-hidden
-                className="absolute top-7 bottom-0 left-1/2 w-px -translate-x-1/2 bg-gray-200"
+                className="absolute top-7 bottom-0 left-1/2 w-px -translate-x-1/2 bg-gray-200 max-xl:hidden"
               />
             )}
             <Tooltip

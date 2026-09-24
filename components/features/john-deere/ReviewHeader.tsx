@@ -11,6 +11,7 @@ import { cn } from "@/components/prod/utils/cn";
 import { Tooltip } from "@/components/prod/tooltip";
 
 import { type FactGroup } from "./data";
+import { Section } from "./Section";
 import { JOHN_DEERE } from "./partner";
 import { StatusPill } from "./StatusPill";
 import { TONE, type Tone } from "./tone";
@@ -161,17 +162,16 @@ const ReviewHeader = ({
         {groups && (
           <div className="mt-4 flex flex-col gap-4 border-t border-gray-100 pt-4 lg:flex-row lg:gap-0">
             {groups.map((group, index) => (
-              <section
+              <Section
                 className={cn(
-                  "min-w-0",
+                  "min-w-0 p-0",
                   index > 0 && "lg:ml-8 lg:border-l lg:border-gray-100 lg:pl-8"
                 )}
+                icon={group.icon}
                 key={group.title}
+                title={group.title}
               >
-                <h2 className="text-sm font-semibold tracking-wide text-gray-500 uppercase">
-                  {group.title}
-                </h2>
-                <dl className="mt-2 flex flex-wrap gap-x-6 gap-y-2">
+                <dl className="flex flex-wrap gap-x-6 gap-y-2">
                   {group.facts.map((fact) => (
                     <div className="flex flex-col" key={fact.label}>
                       <dt className="text-sm text-gray-500">{fact.label}</dt>
@@ -204,7 +204,7 @@ const ReviewHeader = ({
                     </div>
                   ))}
                 </dl>
-              </section>
+              </Section>
             ))}
           </div>
         )}
