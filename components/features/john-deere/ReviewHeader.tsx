@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { ArrowLeft } from "lucide-react";
 
@@ -8,9 +8,10 @@ import { Button } from "@/components/prod/button";
 import { Card } from "@/components/prod/card";
 import { cn } from "@/components/prod/utils/cn";
 
+import { type Fact } from "./data";
 import { JOHN_DEERE } from "./partner";
 import { StatusPill } from "./StatusPill";
-import { type Tone } from "./tone";
+import { TONE, type Tone } from "./tone";
 
 interface ReviewHeaderProps {
   actions?: ReactNode;
@@ -18,8 +19,9 @@ interface ReviewHeaderProps {
   backLabel: string;
   compactActions?: ReactNode;
   id: string;
-  meta: string[];
+  meta: ReactNode[];
   progress?: string;
+  signals?: Fact[];
   status: { label: string; tone: Tone };
   summary: ReactNode;
 }
@@ -32,6 +34,7 @@ const ReviewHeader = ({
   id,
   meta,
   progress,
+  signals,
   status,
   summary,
 }: ReviewHeaderProps) => {
@@ -95,17 +98,6 @@ const ReviewHeader = ({
         </div>
       </div>
 
-      <Button
-        className="px-0"
-        color="secondary"
-        href={backHref}
-        icon={<ArrowLeft />}
-        size="sm"
-        variant="link"
-      >
-        {backLabel}
-      </Button>
-
       <div aria-hidden className="h-px" ref={sentinel} />
 
       <Card
@@ -129,8 +121,17 @@ const ReviewHeader = ({
                   <StatusPill color={status.tone}>{status.label}</StatusPill>
                   {summary}
                 </span>
-                <span className="block text-sm text-gray-600">
-                  {meta.join(" · ")}
+                <span className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
+                  {meta.map((item, index) => (
+                    <Fragment key={index}>
+                      {index > 0 && (
+                        <span aria-hidden className="text-gray-300">
+                          ·
+                        </span>
+                      )}
+                      {item}
+                    </Fragment>
+                  ))}
                 </span>
               </div>
             </div>
@@ -144,6 +145,24 @@ const ReviewHeader = ({
             </div>
           )}
         </div>
+        {signals && signals.length > 0 && (
+          <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 border-t border-gray-100 pt-3">
+            {signals.map((fact) => (
+              <div className="flex flex-col" key={fact.label}>
+                <dt className="text-sm text-gray-500">{fact.label}</dt>
+                <dd
+                  className={cn(
+                    "text-base font-medium text-gray-900",
+                    fact.mono && "font-mono",
+                    fact.tone && TONE[fact.tone].text
+                  )}
+                >
+                  {fact.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )}
       </Card>
     </>
   );

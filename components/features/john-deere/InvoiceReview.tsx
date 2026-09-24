@@ -5,22 +5,18 @@ import type { KeyboardEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 
 import { Provider as TooltipProvider } from "@radix-ui/react-tooltip";
-import { History, ListChecks, Receipt } from "lucide-react";
+import { ListChecks } from "lucide-react";
 
 import { Badge } from "@/components/prod/badge";
 import { Button } from "@/components/prod/button";
 import { Card } from "@/components/prod/card";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/prod/collapsible";
 import { Tooltip } from "@/components/prod/tooltip";
 import { cn } from "@/components/prod/utils/cn";
 import { toProHref } from "@/components/prod/_runtime/link";
 import { useRouter } from "@/components/prod/_runtime/navigation";
 import { toast } from "@/components/prod/hooks/use-toast";
 
+import { ActivityRail } from "./ActivityRail";
 import { ChecklistRow, ROW_INPUT, type RowStatus } from "./ChecklistRow";
 import { Crumb } from "./Crumb";
 import { FactList } from "./FactList";
@@ -33,17 +29,16 @@ import { ResultBanner } from "./ResultBanner";
 import { ReviewHeader } from "./ReviewHeader";
 import { ScanViewer } from "./ScanViewer";
 import { Section } from "./Section";
-import { Timeline } from "./Timeline";
 import {
   INVOICES,
   INVOICE_REASONS,
-  activitySummary,
   formatSubmitted,
   invoiceActivity,
   invoiceDecision,
   invoiceFields,
   money,
   plural,
+  reviewSignals,
   scanFacts,
   waitingLabel,
   type Fact,
@@ -199,20 +194,6 @@ const InvoiceReview = ({
     () => invoiceActivity(outcome, record),
     [outcome, record]
   );
-  const summary = activitySummary(record);
-
-  const claimFacts: Fact[] = [
-    scan.confidence,
-    scan.fraud,
-    ...(scan.duplicate ? [scan.duplicate] : []),
-    { label: "Promotion", value: "20% off fluids & filters" },
-    {
-      label: "Submitted",
-      value: `${formatSubmitted(record.date)} · ${record.time}`,
-    },
-    { label: "Submitter", value: `${record.submitter} · ${record.email}` },
-    { label: "Dealership", value: `${record.dealership} · ${record.city}` },
-  ];
 
   const recordedFacts: Fact[] = [
     ...fieldList.map((field) => ({
@@ -323,55 +304,51 @@ const InvoiceReview = ({
         id={record.invoice}
         meta={[
           `${record.dealership} · ${record.city}`,
-          waitingLabel(record.date, record.time),
+          `Submitted ${formatSubmitted(record.date)} · ${record.time}`,
+          ...(pending ? [waitingLabel(record.date, record.time)] : []),
+          <Tooltip content={record.email} key="submitter">
+            <span className="cursor-default underline decoration-dotted underline-offset-2">
+              {record.submitter}
+            </span>
+          </Tooltip>,
         ]}
         progress={pending ? progress : undefined}
+        signals={reviewSignals(record, !pending)}
         status={{ label: CHIP[outcome].label, tone: CHIP[outcome].tone }}
         summary={
-          <span className={cn("flex items-center gap-2", flagTone.text)}>
-            <span
-              aria-hidden
-              className={cn("size-2 shrink-0 rounded-full", flagTone.dot)}
-            />
-            {scan.flag.label} · {scan.flag.value}
-          </span>
+          pending ? (
+            <span className={cn("flex items-center gap-2", flagTone.text)}>
+              <span
+                aria-hidden
+                className={cn("size-2 shrink-0 rounded-full", flagTone.dot)}
+              />
+              {scan.flag.label} · {scan.flag.value}
+            </span>
+          ) : (
+            <span className="flex items-center gap-2 text-gray-600">
+              <span
+                aria-hidden
+                className="size-2 shrink-0 rounded-full bg-gray-300"
+              />
+              {scan.flag.label} · {scan.flag.value}
+            </span>
+          )
         }
       />
 
-      <div className="grid gap-6 xl:grid-cols-[240px_minmax(0,1fr)_minmax(380px,420px)]">
-        <Card className="self-start" roundness="lg">
-          <Section icon={History} title="Activity">
-            {pending && (
-              <p className="flex items-start gap-2 text-base text-gray-900">
-                <span
-                  aria-hidden
-                  className={cn(
-                    "mt-2 size-1.5 shrink-0 rounded-full",
-                    TONE[summary.tone].dot
-                  )}
-                />
-                <span className="min-w-0">{summary.text}</span>
-              </p>
-            )}
-            <Collapsible onOpenChange={setEventsOpen} open={eventsOpen}>
-              <CollapsibleTrigger asChild>
-                <Button
-                  className="px-0"
-                  color="secondary"
-                  size="sm"
-                  variant="link"
-                >
-                  {eventsOpen
-                    ? "Hide events"
-                    : `Show ${plural(activity.length, "event")}`}
-                </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <Timeline compact events={activity} />
-              </CollapsibleContent>
-            </Collapsible>
-          </Section>
-        </Card>
+      <div
+        className={cn(
+          "grid gap-6 transition-[grid-template-columns] duration-200",
+          eventsOpen
+            ? "xl:grid-cols-[240px_minmax(0,1fr)_minmax(400px,460px)]"
+            : "xl:grid-cols-[56px_minmax(0,1fr)_minmax(400px,460px)]"
+        )}
+      >
+        <ActivityRail
+          events={activity}
+          onOpenChange={setEventsOpen}
+          open={eventsOpen}
+        />
 
         <ScanViewer
           caption="invoice scan"
@@ -381,12 +358,6 @@ const InvoiceReview = ({
         />
 
         <div className="flex flex-col gap-6 self-start">
-          <Card roundness="lg">
-            <Section icon={Receipt} title="Claim">
-              <FactList facts={claimFacts} />
-            </Section>
-          </Card>
-
           <Card roundness="lg">
             {pending ? (
               <Section

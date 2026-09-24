@@ -2,15 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import { ArrowLeftRight, History, Receipt } from "lucide-react";
+import { Provider as TooltipProvider } from "@radix-ui/react-tooltip";
+
+import { ArrowLeftRight, Receipt } from "lucide-react";
 
 import { Button } from "@/components/prod/button";
 import { Card } from "@/components/prod/card";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/prod/collapsible";
 import {
   Dialog,
   DialogContent,
@@ -24,17 +21,16 @@ import { toProHref } from "@/components/prod/_runtime/link";
 import { useRouter } from "@/components/prod/_runtime/navigation";
 import { toast } from "@/components/prod/hooks/use-toast";
 
+import { ActivityRail } from "./ActivityRail";
 import { Crumb } from "./Crumb";
 import { FactList } from "./FactList";
 import { ResultBanner } from "./ResultBanner";
 import { ReviewHeader } from "./ReviewHeader";
 import { ScanViewer } from "./ScanViewer";
 import { Section } from "./Section";
-import { Timeline } from "./Timeline";
 import {
   DISPUTES,
   DISPUTE_REASONS,
-  activitySummary,
   disputeActivity,
   formatSubmitted,
   plural,
@@ -43,7 +39,7 @@ import {
   type Fact,
 } from "./data";
 import { readDecisions, saveDispute } from "./decisions";
-import { TONE, type Tone } from "./tone";
+import { type Tone } from "./tone";
 
 const CANONICAL = DISPUTES[0];
 
@@ -115,7 +111,6 @@ const DisputeReview = ({
     () => disputeActivity(outcome, record),
     [outcome, record]
   );
-  const summary = activitySummary(record);
 
   const claimFacts: Fact[] = [
     { label: "Promotion", value: record.promotion },
@@ -145,7 +140,7 @@ const DisputeReview = ({
   );
 
   return (
-    <>
+    <TooltipProvider delayDuration={200}>
       <Crumb label={record.invoice} segment={invoiceId} />
       <ReviewHeader
         actions={pending ? decisionActions("default") : undefined}
@@ -166,40 +161,19 @@ const DisputeReview = ({
         }
       />
 
-      <div className="grid gap-6 xl:grid-cols-[240px_minmax(0,1fr)_minmax(380px,420px)]">
-        <Card className="self-start" roundness="lg">
-          <Section icon={History} title="Activity">
-            {pending && (
-              <p className="flex items-start gap-2 text-base text-gray-900">
-                <span
-                  aria-hidden
-                  className={cn(
-                    "mt-2 size-1.5 shrink-0 rounded-full",
-                    TONE[summary.tone].dot
-                  )}
-                />
-                <span className="min-w-0">{summary.text}</span>
-              </p>
-            )}
-            <Collapsible onOpenChange={setEventsOpen} open={eventsOpen}>
-              <CollapsibleTrigger asChild>
-                <Button
-                  className="px-0"
-                  color="secondary"
-                  size="sm"
-                  variant="link"
-                >
-                  {eventsOpen
-                    ? "Hide events"
-                    : `Show ${plural(activity.length, "event")}`}
-                </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <Timeline compact events={activity} />
-              </CollapsibleContent>
-            </Collapsible>
-          </Section>
-        </Card>
+      <div
+        className={cn(
+          "grid gap-6 transition-[grid-template-columns] duration-200",
+          eventsOpen
+            ? "xl:grid-cols-[240px_minmax(0,1fr)_minmax(400px,460px)]"
+            : "xl:grid-cols-[56px_minmax(0,1fr)_minmax(400px,460px)]"
+        )}
+      >
+        <ActivityRail
+          events={activity}
+          onOpenChange={setEventsOpen}
+          open={eventsOpen}
+        />
 
         <ScanViewer
           caption="invoice photo"
@@ -452,7 +426,7 @@ const DisputeReview = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </TooltipProvider>
   );
 };
 

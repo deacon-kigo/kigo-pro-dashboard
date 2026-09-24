@@ -850,6 +850,48 @@ export const scanFacts = (
   };
 };
 
+export const reviewSignals = (row: InvoiceRow, decided: boolean): Fact[] => {
+  const band = fraudBand(row.fraud);
+  const below = row.flag.confidence < CONFIDENCE_THRESHOLD;
+  const signals: Fact[] = [
+    {
+      label: "Confidence",
+      mono: true,
+      tone: below
+        ? "warning"
+        : row.flag.kind === "passed"
+          ? "success"
+          : undefined,
+      value: `${row.flag.confidence}% · ${CONFIDENCE_THRESHOLD}% required`,
+    },
+    ...(row.flag.kind === "duplicate"
+      ? [
+          {
+            label: "Duplicate of",
+            mono: true,
+            tone: "destructive" as const,
+            value: row.flag.of,
+          },
+        ]
+      : []),
+    {
+      label: "Fraud score",
+      mono: true,
+      tone: band.tone,
+      value: `${row.fraud} · ${band.word}`,
+    },
+    { label: "Promotion", value: "20% off fluids & filters" },
+  ];
+
+  /* Once decided the status pill carries the outcome, so the signals drop to
+     plain reference data — except a duplicate, which still reads as a failure. */
+  if (!decided) return signals;
+  return signals.map((signal) => ({
+    ...signal,
+    tone: signal.label === "Duplicate of" ? signal.tone : undefined,
+  }));
+};
+
 export const activitySummary = (
   row: InvoiceRow | DisputeRow
 ): { text: string; tone: Tone } => {
