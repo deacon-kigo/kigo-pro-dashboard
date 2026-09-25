@@ -129,12 +129,20 @@ const scanNote = (field: InvoiceField) =>
     ? `Scan read ${field.scanned} · dealer entered ${field.value}`
     : undefined;
 
+type ReviewDialog = "approve" | "reject";
+
 const InvoiceReview = ({
   decision,
+  dialog,
   invoiceId,
+  verify = false,
 }: {
   decision: InvoiceDecision;
+  dialog?: ReviewDialog;
   invoiceId: string;
+  /* Deep-link helpers for the walkthrough canvas: open with a dialog up, or
+     with every field already confirmed. */
+  verify?: boolean;
 }) => {
   const record = INVOICES.find((row) => row.invoice === invoiceId) ?? {
     ...CANONICAL,
@@ -145,8 +153,8 @@ const InvoiceReview = ({
   const pending = outcome === "pending";
   const [eventsOpen, setEventsOpen] = useState(!pending);
   const [stuck, setStuck] = useState(false);
-  const [rejectOpen, setRejectOpen] = useState(false);
-  const [approveOpen, setApproveOpen] = useState(false);
+  const [rejectOpen, setRejectOpen] = useState(dialog === "reject");
+  const [approveOpen, setApproveOpen] = useState(dialog === "approve");
   const [reason, setReason] = useState<string | null>(null);
   const [custom, setCustom] = useState("");
   const [note, setNote] = useState("");
@@ -188,6 +196,12 @@ const InvoiceReview = ({
   );
   const checklist = useChecklist(seeds);
   const { allDone, done, fields, total } = checklist;
+  const { confirmAll, save } = checklist;
+  useEffect(() => {
+    if (!verify) return;
+    save("promo", "ABC123");
+    confirmAll();
+  }, [verify, save, confirmAll]);
   const activity = useMemo(
     () => invoiceActivity(outcome, record),
     [outcome, record]

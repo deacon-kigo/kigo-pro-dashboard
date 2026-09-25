@@ -14,12 +14,25 @@ export default async function InvoicePage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ decision?: string }>;
+  searchParams: Promise<{
+    decision?: string;
+    dialog?: string;
+    verify?: string;
+  }>;
 }) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const decision =
     DECISIONS.find((item) => item === query.decision) ?? "pending";
+  const dialog =
+    query.dialog === "approve" || query.dialog === "reject"
+      ? query.dialog
+      : undefined;
   return (
-    <InvoiceReview decision={decision} invoiceId={decodeURIComponent(id)} />
+    <InvoiceReview
+      decision={decision}
+      dialog={dialog}
+      invoiceId={decodeURIComponent(id)}
+      verify={query.verify === "all"}
+    />
   );
 }

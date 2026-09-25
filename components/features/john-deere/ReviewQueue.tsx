@@ -108,8 +108,10 @@ const Stat = ({
 );
 
 const ReviewQueue = ({
+  initialStatus = "pending",
   initialTab = "invoices",
 }: {
+  initialStatus?: "pending" | "all";
   initialTab?: "invoices" | "disputes";
 }) => {
   const router = useRouter();
@@ -120,8 +122,12 @@ const ReviewQueue = ({
     disputes: {},
     invoices: {},
   });
-  const [filters, setFilters] = useState<FilterTag[]>([INVOICE_PENDING_TAG]);
-  const [dFilters, setDFilters] = useState<FilterTag[]>([DISPUTE_PENDING_TAG]);
+  const [filters, setFilters] = useState<FilterTag[]>(
+    initialStatus === "all" ? [] : [INVOICE_PENDING_TAG]
+  );
+  const [dFilters, setDFilters] = useState<FilterTag[]>(
+    initialStatus === "all" ? [] : [DISPUTE_PENDING_TAG]
+  );
 
   useEffect(() => {
     const sync = () => setOverrides(readDecisions());

@@ -69,9 +69,11 @@ const BANNER: Record<
 
 const DisputeReview = ({
   decision,
+  dialog,
   invoiceId,
 }: {
   decision: DisputeStatus;
+  dialog?: "approve" | "reject";
   invoiceId: string;
 }) => {
   const record = DISPUTES.find((row) => row.invoice === invoiceId) ?? {
@@ -84,8 +86,8 @@ const DisputeReview = ({
   const approved = outcome === "approved";
   const [eventsOpen, setEventsOpen] = useState(!pending);
   const [stuck, setStuck] = useState(false);
-  const [approveOpen, setApproveOpen] = useState(false);
-  const [rejectOpen, setRejectOpen] = useState(false);
+  const [approveOpen, setApproveOpen] = useState(dialog === "approve");
+  const [rejectOpen, setRejectOpen] = useState(dialog === "reject");
   const [reason, setReason] = useState<string | null>(null);
   const [custom, setCustom] = useState("");
   const [note, setNote] = useState("");
