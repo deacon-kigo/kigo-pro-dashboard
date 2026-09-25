@@ -10,8 +10,13 @@ interface Decisions {
 
 const empty = (): Decisions => ({ invoices: {}, disputes: {} });
 
+/* Inside a sandboxed frame (Open Design, Claude) Web Storage throws, so the
+   page session falls back to this module-level copy. */
+let cache: Decisions | null = null;
+
 const readDecisions = (): Decisions => {
   if (typeof window === "undefined") return empty();
+  if (cache) return cache;
   try {
     const raw = sessionStorage.getItem(KEY);
     if (!raw) return empty();
@@ -23,7 +28,12 @@ const readDecisions = (): Decisions => {
 };
 
 const write = (next: Decisions) => {
-  sessionStorage.setItem(KEY, JSON.stringify(next));
+  cache = next;
+  try {
+    sessionStorage.setItem(KEY, JSON.stringify(next));
+  } catch {
+    /* storage unavailable; the in-memory copy carries the session */
+  }
   window.dispatchEvent(new Event(EVENT));
 };
 
