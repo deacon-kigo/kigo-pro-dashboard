@@ -110,12 +110,16 @@ interface ApproveInvoiceDialogProps {
   fields: Record<string, FieldState>;
   rows: InvoiceField[];
   total: number;
+  note: string;
+  onNoteChange: (note: string) => void;
   onConfirm: () => void;
 }
 
 const ApproveInvoiceDialog = ({
   fields,
+  note,
   onConfirm,
+  onNoteChange,
   onOpenChange,
   open,
   rows,
@@ -166,6 +170,16 @@ const ApproveInvoiceDialog = ({
           </span>
         </div>
       </div>
+      <label className="text-base">
+        Reviewer note (internal, optional)
+        <textarea
+          className="mt-1 w-full rounded-md border border-gray-300 p-3 text-base"
+          onChange={(event) => onNoteChange(event.target.value)}
+          placeholder="Add any additional detail about this decision for internal reference"
+          rows={3}
+          value={note}
+        />
+      </label>
       <DialogFooter>
         <Button color="secondary" onClick={() => onOpenChange(false)}>
           Cancel

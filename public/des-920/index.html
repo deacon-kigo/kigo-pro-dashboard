@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DES-920 Review Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --ground: #f5f7f3;
+    --panel: #ffffff;
+    --ink: #17201a;
+    --muted: #5b665f;
+    --line: #dde3dc;
+    --line-strong: #c3ccc2;
+    --accent: #367c2b;
+    --accent-ink: #ffffff;
+    --accent-soft: #e6f1e2;
+    --warn: #b45309;
+    --sans: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #121612;
+      --panel: #1a201b;
+      --ink: #e7ece6;
+      --muted: #9aa59c;
+      --line: #2a322b;
+      --line-strong: #3b463c;
+      --accent: #6cc257;
+      --accent-ink: #0f1a0d;
+      --accent-soft: #1f2e1b;
+      --warn: #f2a33a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #121612;
+    --panel: #1a201b;
+    --ink: #e7ece6;
+    --muted: #9aa59c;
+    --line: #2a322b;
+    --line-strong: #3b463c;
+    --accent: #6cc257;
+    --accent-ink: #0f1a0d;
+    --accent-soft: #1f2e1b;
+    --warn: #f2a33a;
+  }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.45;
+    display: flex;
+    flex-direction: column;
+  }
+  * { box-sizing: border-box; }
+  .top {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-block: 12px;
+    padding-inline: 20px;
+    border-bottom: 1px solid var(--line);
+    background: var(--panel);
+  }
+  .top h1 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+  .top .ticket {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    padding: 2px 8px;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+  }
+  .top .spacer { flex: 1; }
+  .top a.open {
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 6px 12px;
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .top a.open:hover { border-color: var(--accent); color: var(--accent); }
+  .top a.open:focus-visible, .state:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .layout {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 264px minmax(0, 1fr);
+    gap: 0;
+    min-height: 0;
+  }
+  nav {
+    border-right: 1px solid var(--line);
+    padding-block: 16px;
+    padding-inline: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    overflow-y: auto;
+  }
+  nav h2 {
+    margin: 0 0 6px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .group { display: flex; flex-direction: column; gap: 2px; }
+  .state {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--ink);
+    text-align: left;
+    padding: 8px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font: inherit;
+    display: grid;
+    grid-template-columns: 8px 1fr;
+    column-gap: 10px;
+    align-items: baseline;
+  }
+  .state:hover { background: var(--accent-soft); }
+  .state[aria-current="true"] { background: var(--accent-soft); }
+  .state .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--line-strong);
+    align-self: center;
+  }
+  .state[aria-current="true"] .dot { background: var(--accent); }
+  .state .name { font-weight: 500; }
+  .state .id {
+    grid-column: 2;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .state .look {
+    grid-column: 2;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .stage {
+    padding-block: 16px;
+    padding-inline: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+  }
+  .stage-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .stage-head .title { font-weight: 600; font-size: 15px; }
+  .stage-head .url {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    overflow-wrap: anywhere;
+  }
+  .frame-box {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: 1440 / 900;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--panel);
+  }
+  .frame-box iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 1440px;
+    height: 900px;
+    border: 0;
+    transform-origin: 0 0;
+    background: #fff;
+  }
+  .hint {
+    font-size: 12px;
+    color: var(--muted);
+    max-width: 70ch;
+  }
+  .hint b { color: var(--ink); font-weight: 500; }
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+    nav { border-right: 0; border-bottom: 1px solid var(--line); }
+    .top .ticket { display: none; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .state { transition: background 120ms ease; }
+  }
+</style>
+</head><body>
+
+<header class="top">
+  <h1>DES-920 Review Prototype</h1>
+  <span class="ticket">John Deere support · Kigo Pro</span>
+  <span class="spacer"></span>
+  <a class="open" id="open-tab" href="https://kigo-pro-dashboard.vercel.app/pro/john-deere" target="_blank" rel="noopener">Open this state in a new tab</a>
+</header>
+
+<div class="layout">
+  <nav aria-label="Prototype states">
+    <div>
+      <h2>Queue</h2>
+      <div class="group" data-group></div>
+    </div>
+    <div>
+      <h2>Invoice review</h2>
+      <div class="group" data-group></div>
+    </div>
+    <div>
+      <h2>Dispute review</h2>
+      <div class="group" data-group></div>
+    </div>
+  </nav>
+
+  <main class="stage">
+    <div class="stage-head">
+      <span class="title" id="stage-title"></span>
+      <span class="url" id="stage-url"></span>
+    </div>
+    <div class="frame-box" id="frame-box">
+      <iframe id="frame" title="Live prototype" loading="eager" referrerpolicy="no-referrer"></iframe>
+    </div>
+    <p class="hint" id="stage-hint"></p>
+    <p class="hint">Every frame is the live prototype, not a picture. Confirm rows, approve or reject, and expand the activity rail inside it. Decisions you make persist for this browser session and are reflected back in the queue.</p>
+  </main>
+</div>
+
+<script>
+  var BASE = "";
+  var STATES = [
+    { group: 0, key: "queue-invoices", name: "Invoices, pending", id: "4 in queue",
+      path: "/pro/john-deere",
+      hint: "<b>Look for:</b> the Flag column carries the reason each invoice is here. The stat tiles are live filters." },
+    { group: 0, key: "queue-disputes", name: "Disputes, open", id: "3 open",
+      path: "/pro/john-deere?tab=disputes",
+      hint: "<b>Look for:</b> each dispute shows what the dealer entered and what they ask to change it to, inline." },
+    { group: 1, key: "inv-pending", name: "Pending, low confidence", id: "JD-INV-104821",
+      path: "/pro/john-deere/invoices/JD-INV-104821",
+      hint: "<b>Look for:</b> Validation and Claim in the header, each check coloured by its own outcome. The activity rail is collapsed; hover an icon for the event. The checklist gates Approve until all six fields are confirmed." },
+    { group: 1, key: "inv-approved", name: "Manually approved", id: "JD-INV-104821",
+      path: "/pro/john-deere/invoices/JD-INV-104821?decision=approved",
+      hint: "<b>Look for:</b> the activity rail opens by default with the reviewer's events, checks drop to grey, and the checklist becomes the validated record." },
+    { group: 1, key: "inv-rejected", name: "Manually rejected", id: "JD-INV-104821",
+      path: "/pro/john-deere/invoices/JD-INV-104821?decision=rejected",
+      hint: "<b>Look for:</b> the external reason the dealer sees and the internal reviewer note kept apart." },
+    { group: 1, key: "inv-auto-rejected", name: "Auto-rejected, duplicate", id: "JD-INV-104790",
+      path: "/pro/john-deere/invoices/JD-INV-104790?decision=auto_rejected",
+      hint: "<b>Look for:</b> Duplicate of stays red after the decision. Fraud score and confidence read as plain reference." },
+    { group: 2, key: "dis-pending", name: "Pending dispute", id: "JD-INV-104612",
+      path: "/pro/john-deere/disputes/JD-INV-104612",
+      hint: "<b>Look for:</b> Dispute and Claim in the header, and the requested changes as before and after columns with the dealer's reason beneath." },
+    { group: 2, key: "dis-approved", name: "Dispute approved", id: "JD-INV-104612",
+      path: "/pro/john-deere/disputes/JD-INV-104612?decision=approved",
+      hint: "<b>Look for:</b> the applied correction and the reviewer's events in the activity rail." }
+  ];
+
+  var groups = document.querySelectorAll("[data-group]");
+  var frame = document.getElementById("frame");
+  var box = document.getElementById("frame-box");
+  var openTab = document.getElementById("open-tab");
+  var stageTitle = document.getElementById("stage-title");
+  var stageUrl = document.getElementById("stage-url");
+  var stageHint = document.getElementById("stage-hint");
+  var buttons = {};
+
+  STATES.forEach(function (state) {
+    var button = document.createElement("button");
+    button.className = "state";
+    button.type = "button";
+    button.id = "state-" + state.key;
+    button.innerHTML =
+      '<span class="dot" aria-hidden="true"></span>' +
+      '<span class="name"></span>' +
+      '<span class="id"></span>';
+    button.querySelector(".name").textContent = state.name;
+    button.querySelector(".id").textContent = state.id;
+    button.addEventListener("click", function () { show(state.key); });
+    groups[state.group].appendChild(button);
+    buttons[state.key] = button;
+  });
+
+  function show(key) {
+    var state = STATES.find(function (s) { return s.key === key; }) || STATES[0];
+    Object.keys(buttons).forEach(function (k) {
+      buttons[k].setAttribute("aria-current", k === state.key ? "true" : "false");
+    });
+    var url = BASE + state.path;
+    if (frame.getAttribute("src") !== url) frame.setAttribute("src", url);
+    openTab.href = url;
+    stageTitle.textContent = state.name;
+    stageUrl.textContent = state.path;
+    stageHint.innerHTML = state.hint;
+    try { localStorage.setItem("des920.state", state.key); } catch (e) {}
+  }
+
+  function fit() {
+    var scale = box.clientWidth / 1440;
+    frame.style.transform = "scale(" + scale + ")";
+  }
+  if ("ResizeObserver" in window) new ResizeObserver(fit).observe(box);
+  window.addEventListener("resize", fit);
+  fit();
+
+  var initial = null;
+  try { initial = localStorage.getItem("des920.state"); } catch (e) {}
+  show(initial || STATES[0].key);
+</script>
+</body></html>

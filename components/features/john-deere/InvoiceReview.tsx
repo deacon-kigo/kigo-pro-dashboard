@@ -500,10 +500,10 @@ const InvoiceReview = ({
                       Reviewer note (internal)
                     </p>
                     <p className="mt-1 text-base text-gray-700">
-                      {outcome === "approved"
-                        ? "The dealer's edited discount of $1,240.00 reconciles with the eligible line items. Confirmed the promo code with the dealership by phone."
-                        : note.trim() ||
-                          "Two of the four line items are attachments, not fluids or filters. Eligible spend falls below the promotion minimum."}
+                      {note.trim() ||
+                        (outcome === "approved"
+                          ? "The dealer's edited discount of $1,240.00 reconciles with the eligible line items. Confirmed the promo code with the dealership by phone."
+                          : "Two of the four line items are attachments, not fluids or filters. Eligible spend falls below the promotion minimum.")}
                     </p>
                   </div>
                 )}
@@ -559,7 +559,12 @@ const InvoiceReview = ({
           });
           router.push(QUEUE_HREF);
         }}
-        onOpenChange={setApproveOpen}
+        note={note}
+        onNoteChange={setNote}
+        onOpenChange={(next) => {
+          setApproveOpen(next);
+          if (!next) setNote("");
+        }}
         open={approveOpen}
         total={total}
       />

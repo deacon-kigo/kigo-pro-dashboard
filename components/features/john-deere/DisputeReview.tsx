@@ -258,7 +258,13 @@ const DisputeReview = ({
         </div>
       </div>
 
-      <Dialog onOpenChange={setApproveOpen} open={approveOpen}>
+      <Dialog
+        onOpenChange={(next) => {
+          setApproveOpen(next);
+          if (!next) setNote("");
+        }}
+        open={approveOpen}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Approve dispute</DialogTitle>
@@ -293,6 +299,16 @@ const DisputeReview = ({
               </div>
             ))}
           </div>
+          <label className="text-base">
+            Reviewer note (internal, optional)
+            <textarea
+              className="mt-1 w-full rounded-md border border-gray-300 p-3 text-base"
+              onChange={(event) => setNote(event.target.value)}
+              placeholder="Add any additional detail about this decision for internal reference"
+              rows={3}
+              value={note}
+            />
+          </label>
           <DialogFooter>
             <Button color="secondary" onClick={() => setApproveOpen(false)}>
               Cancel
