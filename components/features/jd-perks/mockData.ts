@@ -67,8 +67,8 @@ export const PREMADE_CAMPAIGNS: PremadeCampaign[] = [
     discountType: "percent",
     discountValue: 10,
     constraints: { minSpend: 250, maxDiscount: 2500 },
-    suggestedStart: "2026-06-15",
-    suggestedEnd: "2026-08-15",
+    suggestedStart: "2027-03-01",
+    suggestedEnd: "2027-05-31",
     accent: "#367C2B",
     performance: {
       clicks: { email: 1140, sms: 640, social: 980, qr: 360 },
@@ -211,6 +211,16 @@ export function getCampaignById(id: string): PremadeCampaign | undefined {
 // ---------------------------------------------------------------------------
 
 export const SEED_ACTIVATIONS: Record<string, Activation> = {
+  // Committed for next spring — activated, but the window hasn't opened, so
+  // this one reports as "queued" with no performance data yet.
+  "spring-parts-savings": {
+    campaignId: "spring-parts-savings",
+    startDate: "2027-03-01",
+    endDate: "2027-05-31",
+    locationIds: [],
+    activatedAt: "2026-09-18T14:00:00.000Z",
+    cmsUrl: "https://deere.deals/everglades/spring-parts-savings",
+  },
   "oil-fluids-refresh": {
     campaignId: "oil-fluids-refresh",
     startDate: "2026-03-01",

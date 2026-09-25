@@ -45,6 +45,31 @@ export function pct(part: number, whole: number): number {
   return whole ? (part / whole) * 100 : 0;
 }
 
+/**
+ * Where a campaign sits relative to today. "queued" means the dealer has
+ * activated it but the window hasn't opened yet — so it's committed, just not
+ * running, and won't have performance data.
+ */
+export type ActivationStatus = "active" | "queued" | "ended" | "available";
+
+export function activationStatus(activation?: {
+  startDate: string;
+  endDate: string;
+}): ActivationStatus {
+  if (!activation) return "available";
+  const t = todayIso();
+  if (activation.startDate > t) return "queued";
+  if (activation.endDate < t) return "ended";
+  return "active";
+}
+
+export const STATUS_LABEL: Record<ActivationStatus, string> = {
+  active: "Active",
+  queued: "Queued",
+  ended: "Ended",
+  available: "Available",
+};
+
 export function formatDate(iso: string): string {
   if (!iso) return "—";
   // Parse as a local date (avoid TZ shifting for date-only strings).

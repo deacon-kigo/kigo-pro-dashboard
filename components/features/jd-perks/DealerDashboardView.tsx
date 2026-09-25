@@ -39,10 +39,24 @@ import {
   transactionFee,
   TRANSACTION_FEE_RATE,
   pct,
+  activationStatus,
+  STATUS_LABEL,
 } from "./utils";
+import type { ActivationStatus } from "./utils";
+import { Checkbox } from "@/components/ui/checkbox";
+
+const STATUS_PILL: Record<ActivationStatus, string> = {
+  active: "bg-green-100 text-green-800",
+  queued: "bg-amber-100 text-amber-800",
+  ended: "bg-gray-100 text-gray-700",
+  available: "bg-gray-100 text-gray-700",
+};
+
+type TableScope = "all" | "active" | "past";
 
 interface ActiveRow {
   campaign: PremadeCampaign;
+  status: ActivationStatus;
   startDate: string;
   endDate: string;
   clicks: number;
@@ -127,32 +141,78 @@ export default function DealerDashboardView() {
       .map((a) => {
         const campaign = getCampaignById(a.campaignId);
         if (!campaign) return null;
+        const status = activationStatus(a);
         const p = campaign.performance;
-        const clicks =
-          p.clicks.email + p.clicks.sms + p.clicks.social + p.clicks.qr;
+        // A queued campaign hasn't run yet, so it has nothing to report.
+        const z = status === "queued";
+        const clicks = z
+          ? 0
+          : p.clicks.email + p.clicks.sms + p.clicks.social + p.clicks.qr;
         return {
           campaign,
+          status,
           startDate: a.startDate,
           endDate: a.endDate,
           clicks,
-          email: p.clicks.email,
-          sms: p.clicks.sms,
-          social: p.clicks.social,
-          qr: p.clicks.qr,
-          delivered: p.tokensDelivered,
-          activated: p.tokensActivated,
-          applied: p.tokensApplied,
-          discount: p.discount,
-          sales: p.sales,
-          fee: transactionFee(p.sales),
+          email: z ? 0 : p.clicks.email,
+          sms: z ? 0 : p.clicks.sms,
+          social: z ? 0 : p.clicks.social,
+          qr: z ? 0 : p.clicks.qr,
+          delivered: z ? 0 : p.tokensDelivered,
+          activated: z ? 0 : p.tokensActivated,
+          applied: z ? 0 : p.tokensApplied,
+          discount: z ? 0 : p.discount,
+          sales: z ? 0 : p.sales,
+          fee: z ? 0 : transactionFee(p.sales),
         } as ActiveRow;
       })
       .filter((r): r is ActiveRow => r !== null)
       .sort((a, b) => b.sales - a.sales);
   }, [activations]);
 
-  const totals = useMemo(() => {
-    return rows.reduce(
+  // Scope of the table: everything, only what's running now, or only what has
+  // finished. Queued campaigns show under "all" — they're committed but have
+  // no data yet.
+  const [scope, setScope] = useState<TableScope>("all");
+
+  const visibleRows = useMemo(() => {
+    if (scope === "active") return rows.filter((r) => r.status === "active");
+    if (scope === "past") return rows.filter((r) => r.status === "ended");
+    return rows;
+  }, [rows, scope]);
+
+  // null means "nothing explicitly picked" → treat every visible row as chosen.
+  const [selectedIds, setSelectedIds] = useState<string[] | null>(null);
+
+  const isSelected = (id: string) =>
+    selectedIds === null ? true : selectedIds.includes(id);
+
+  const selectedRows = useMemo(
+    () => visibleRows.filter((r) => isSelected(r.campaign.id)),
+    [visibleRows, selectedIds]
+  );
+
+  const toggleRow = (id: string) => {
+    const base =
+      selectedIds === null
+        ? visibleRows.map((r) => r.campaign.id)
+        : selectedIds;
+    setSelectedIds(
+      base.includes(id) ? base.filter((x) => x !== id) : [...base, id]
+    );
+  };
+
+  const allVisibleSelected =
+    visibleRows.length > 0 &&
+    visibleRows.every((r) => isSelected(r.campaign.id));
+
+  const toggleAll = () =>
+    setSelectedIds(
+      allVisibleSelected ? [] : visibleRows.map((r) => r.campaign.id)
+    );
+
+  const aggregate = (list: ActiveRow[]) =>
+    list.reduce(
       (acc, r) => ({
         clicks: acc.clicks + r.clicks,
         email: acc.email + r.email,
@@ -180,57 +240,42 @@ export default function DealerDashboardView() {
         fee: 0,
       }
     );
-  }, [rows]);
 
-  // The funnel, channel split and financials below scope to whichever campaign
-  // is selected; "all" rolls every active campaign together.
-  const [selectedId, setSelectedId] = useState<string>("all");
+  const totals = useMemo(() => aggregate(rows), [rows]);
 
-  const view = useMemo(() => {
-    if (selectedId === "all") return totals;
-    const r = rows.find((x) => x.campaign.id === selectedId);
-    if (!r) return totals;
-    return {
-      clicks: r.clicks,
-      email: r.email,
-      sms: r.sms,
-      social: r.social,
-      qr: r.qr,
-      delivered: r.delivered,
-      activated: r.activated,
-      applied: r.applied,
-      discount: r.discount,
-      sales: r.sales,
-      fee: r.fee,
-    };
-  }, [selectedId, rows, totals]);
+  // Everything in "Campaign performance" reflects the rows ticked in the table.
+  const view = useMemo(() => aggregate(selectedRows), [selectedRows]);
 
   const selectedLabel =
-    selectedId === "all"
-      ? `All campaigns (${rows.length})`
-      : (rows.find((r) => r.campaign.id === selectedId)?.campaign.name ??
-        "All campaigns");
+    selectedRows.length === 0
+      ? "No campaigns selected"
+      : selectedRows.length === rows.length
+        ? `All campaigns (${rows.length})`
+        : selectedRows.length === 1
+          ? selectedRows[0].campaign.name
+          : `${selectedRows.length} campaigns selected`;
 
   // Attributed sales returned for every dollar discounted. Ranks campaigns by
   // how hard the discount worked, which is the "run it again?" question.
   const chartData = useMemo(
     () =>
-      rows
+      visibleRows
+        .filter((r) => r.discount > 0)
         .map((r) => ({
           name: r.campaign.name,
-          efficiency: r.discount ? r.sales / r.discount : 0,
+          efficiency: r.sales / r.discount,
           sales: r.sales,
           discount: r.discount,
         }))
         .sort((a, b) => a.efficiency - b.efficiency),
-    [rows]
+    [visibleRows]
   );
 
   const avgEfficiency = useMemo(() => {
-    const d = rows.reduce((acc, r) => acc + r.discount, 0);
-    const s = rows.reduce((acc, r) => acc + r.sales, 0);
+    const d = visibleRows.reduce((acc, r) => acc + r.discount, 0);
+    const s = visibleRows.reduce((acc, r) => acc + r.sales, 0);
     return d ? s / d : 0;
-  }, [rows]);
+  }, [visibleRows]);
 
   const channels = [
     {
@@ -409,26 +454,26 @@ export default function DealerDashboardView() {
         <h2 className="text-lg font-semibold text-text-dark">
           Campaign performance
         </h2>
-        <div className="flex items-center gap-2">
-          <label htmlFor="campaign-scope" className="text-sm text-text-muted">
-            Campaign
-          </label>
-          <select
-            id="campaign-scope"
-            value={selectedId}
-            onChange={(e) => setSelectedId(e.target.value)}
-            disabled={rows.length === 0}
-            className="rounded-md border border-border-light bg-white px-3 py-1.5 text-sm font-medium text-text-dark shadow-sm focus:border-primary focus:outline-none disabled:opacity-50"
-          >
-            <option value="all">All campaigns ({rows.length})</option>
-            {rows.map((r) => (
-              <option key={r.campaign.id} value={r.campaign.id}>
-                {r.campaign.name}
-              </option>
-            ))}
-          </select>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-text-muted">
+            Showing{" "}
+            <span className="font-medium text-text-dark">{selectedLabel}</span>
+          </span>
+          {selectedIds !== null && (
+            <button
+              type="button"
+              onClick={() => setSelectedIds(null)}
+              className="text-sm font-medium text-primary hover:underline"
+            >
+              Reset
+            </button>
+          )}
         </div>
       </div>
+
+      <p className="-mt-3 text-xs text-text-muted">
+        Tick campaigns in the table below to combine their results here.
+      </p>
 
       <div className="rounded-lg border border-border-light bg-white p-5 shadow-sm">
         <h3 className="mb-4 text-sm font-semibold text-text-dark">
@@ -599,11 +644,45 @@ export default function DealerDashboardView() {
 
       {/* -------------------------------------------------- Per-campaign table */}
       <div className="overflow-hidden rounded-lg border border-border-light bg-white shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-light px-4 py-3">
+          <h3 className="text-sm font-semibold text-text-dark">
+            Campaigns
+            <span className="ml-2 font-normal text-text-muted">
+              {selectedRows.length} of {visibleRows.length} selected
+            </span>
+          </h3>
+          <div className="flex items-center gap-2">
+            <label htmlFor="table-scope" className="text-sm text-text-muted">
+              Show
+            </label>
+            <select
+              id="table-scope"
+              value={scope}
+              onChange={(e) => {
+                setScope(e.target.value as TableScope);
+                setSelectedIds(null);
+              }}
+              className="rounded-md border border-border-light bg-white px-3 py-1.5 text-sm font-medium text-text-dark shadow-sm focus:border-primary focus:outline-none"
+            >
+              <option value="all">All campaigns</option>
+              <option value="active">Active campaigns</option>
+              <option value="past">Past campaigns</option>
+            </select>
+          </div>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border-light bg-bg-light text-left text-xs uppercase tracking-wide text-text-muted">
+                <th className="w-10 px-4 py-3">
+                  <Checkbox
+                    checked={allVisibleSelected}
+                    onCheckedChange={toggleAll}
+                    aria-label="Select all campaigns"
+                  />
+                </th>
                 <th className="px-4 py-3 font-medium">Campaign</th>
+                <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium">Active Dates</th>
                 <th className="px-4 py-3 text-right font-medium">Clicks</th>
                 <th className="px-4 py-3 text-right font-medium">Delivered</th>
@@ -617,33 +696,54 @@ export default function DealerDashboardView() {
               </tr>
             </thead>
             <tbody>
-              {rows.length === 0 ? (
+              {visibleRows.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={9}
+                    colSpan={11}
                     className="px-4 py-8 text-center text-text-muted"
                   >
-                    Activate a campaign to start seeing results.
+                    {rows.length === 0
+                      ? "Activate a campaign to start seeing results."
+                      : "No campaigns match this filter."}
                   </td>
                 </tr>
               ) : (
-                rows.map((r) => (
+                visibleRows.map((r) => (
                   <tr
                     key={r.campaign.id}
-                    className="cursor-pointer border-b border-border-light last:border-0 hover:bg-bg-light"
-                    onClick={() =>
-                      router.push(
-                        `/campaign-manager/john-deere/${r.campaign.id}`
-                      )
-                    }
+                    className="border-b border-border-light last:border-0 hover:bg-bg-light"
                   >
-                    <td className="px-4 py-3">
+                    <td
+                      className="px-4 py-3"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Checkbox
+                        checked={isSelected(r.campaign.id)}
+                        onCheckedChange={() => toggleRow(r.campaign.id)}
+                        aria-label={`Include ${r.campaign.name}`}
+                      />
+                    </td>
+                    <td
+                      className="cursor-pointer px-4 py-3"
+                      onClick={() =>
+                        router.push(
+                          `/campaign-manager/john-deere/${r.campaign.id}`
+                        )
+                      }
+                    >
                       <div className="font-medium text-text-dark">
                         {r.campaign.name}
                       </div>
                       <div className="text-xs text-text-muted">
                         Built by {r.campaign.builtBy} · {r.campaign.category}
                       </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_PILL[r.status]}`}
+                      >
+                        {STATUS_LABEL[r.status]}
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-text-muted">
                       {formatDate(r.startDate)} – {formatDate(r.endDate)}
