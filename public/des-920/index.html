@@ -1,334 +1,532 @@
-<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>DES-920 Review Prototype</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DES-920 Review Canvas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
   :root {
-    --ground: #f5f7f3;
+    --ground: #eef1ec;
+    --grid: #e2e7e0;
     --panel: #ffffff;
     --ink: #17201a;
     --muted: #5b665f;
-    --line: #dde3dc;
-    --line-strong: #c3ccc2;
+    --line: #d5dcd3;
+    --line-strong: #b7c1b5;
     --accent: #367c2b;
     --accent-ink: #ffffff;
     --accent-soft: #e6f1e2;
-    --warn: #b45309;
+    --note: #fff7d6;
+    --note-ink: #5a4a12;
     --sans: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
     --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --ground: #121612;
-      --panel: #1a201b;
+      --ground: #111512;
+      --grid: #181d19;
+      --panel: #1b211c;
       --ink: #e7ece6;
       --muted: #9aa59c;
-      --line: #2a322b;
-      --line-strong: #3b463c;
+      --line: #2b332c;
+      --line-strong: #3f4a40;
       --accent: #6cc257;
       --accent-ink: #0f1a0d;
       --accent-soft: #1f2e1b;
-      --warn: #f2a33a;
+      --note: #3a3418;
+      --note-ink: #f1e6b1;
     }
   }
   :root[data-theme="dark"] {
-    --ground: #121612;
-    --panel: #1a201b;
+    --ground: #111512;
+    --grid: #181d19;
+    --panel: #1b211c;
     --ink: #e7ece6;
     --muted: #9aa59c;
-    --line: #2a322b;
-    --line-strong: #3b463c;
+    --line: #2b332c;
+    --line-strong: #3f4a40;
     --accent: #6cc257;
     --accent-ink: #0f1a0d;
     --accent-soft: #1f2e1b;
-    --warn: #f2a33a;
+    --note: #3a3418;
+    --note-ink: #f1e6b1;
   }
   html, body { height: 100%; }
+  * { box-sizing: border-box; }
   body {
     margin: 0;
     background: var(--ground);
     color: var(--ink);
     font-family: var(--sans);
     font-size: 14px;
-    line-height: 1.45;
+    line-height: 1.4;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
   }
-  * { box-sizing: border-box; }
   .top {
-    position: sticky;
-    top: env(safe-area-inset-top, 0px);
-    z-index: 2;
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding-block: 12px;
-    padding-inline: 20px;
+    gap: 12px;
+    padding-block: 10px;
+    padding-inline: 16px;
     border-bottom: 1px solid var(--line);
     background: var(--panel);
-  }
-  .top h1 {
-    margin: 0;
-    font-size: 15px;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-  }
-  .top .ticket {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--muted);
-    padding: 2px 8px;
-    border: 1px solid var(--line-strong);
-    border-radius: 999px;
-  }
-  .top .spacer { flex: 1; }
-  .top a.open {
-    color: var(--ink);
-    text-decoration: none;
-    font-weight: 500;
-    padding: 6px 12px;
-    border: 1px solid var(--line-strong);
-    border-radius: 6px;
-    white-space: nowrap;
-  }
-  .top a.open:hover { border-color: var(--accent); color: var(--accent); }
-  .top a.open:focus-visible, .state:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-  .layout {
-    flex: 1;
-    display: grid;
-    grid-template-columns: 264px minmax(0, 1fr);
-    gap: 0;
-    min-height: 0;
-  }
-  nav {
-    border-right: 1px solid var(--line);
-    padding-block: 16px;
-    padding-inline: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    overflow-y: auto;
-  }
-  nav h2 {
-    margin: 0 0 6px 8px;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-  .group { display: flex; flex-direction: column; gap: 2px; }
-  .state {
-    appearance: none;
-    border: 0;
-    background: transparent;
-    color: var(--ink);
-    text-align: left;
-    padding: 8px 8px;
-    border-radius: 6px;
-    cursor: pointer;
-    font: inherit;
-    display: grid;
-    grid-template-columns: 8px 1fr;
-    column-gap: 10px;
-    align-items: baseline;
-  }
-  .state:hover { background: var(--accent-soft); }
-  .state[aria-current="true"] { background: var(--accent-soft); }
-  .state .dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--line-strong);
-    align-self: center;
-  }
-  .state[aria-current="true"] .dot { background: var(--accent); }
-  .state .name { font-weight: 500; }
-  .state .id {
-    grid-column: 2;
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--muted);
-  }
-  .state .look {
-    grid-column: 2;
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-  .stage {
-    padding-block: 16px;
-    padding-inline: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    min-width: 0;
-  }
-  .stage-head {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
+    padding-top: calc(10px + env(safe-area-inset-top, 0px));
     flex-wrap: wrap;
   }
-  .stage-head .title { font-weight: 600; font-size: 15px; }
-  .stage-head .url {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--muted);
-    overflow-wrap: anywhere;
-  }
-  .frame-box {
-    position: relative;
-    width: 100%;
-    max-width: 100%;
-    aspect-ratio: 1440 / 900;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    overflow: hidden;
+  .top h1 { margin: 0; font-size: 15px; font-weight: 600; }
+  .top .sub { color: var(--muted); font-size: 12px; }
+  .top .spacer { flex: 1; }
+  .top .hint { color: var(--muted); font-size: 12px; }
+  .zoom { display: flex; align-items: center; gap: 4px; }
+  .zoom button, .top a.link {
+    appearance: none;
+    font: inherit;
+    color: var(--ink);
     background: var(--panel);
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    padding: 5px 10px;
+    cursor: pointer;
+    text-decoration: none;
+    min-width: 32px;
   }
-  .frame-box iframe {
+  .zoom button:hover, .top a.link:hover { border-color: var(--accent); color: var(--accent); }
+  .zoom button:focus-visible, .top a.link:focus-visible, .frame a:focus-visible, .node:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+  .zoom .pct { font-family: var(--mono); font-size: 12px; color: var(--muted); min-width: 44px; text-align: center; }
+  .viewport {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    cursor: grab;
+    background-color: var(--ground);
+    background-image: radial-gradient(var(--grid) 1px, transparent 1px);
+    background-size: 24px 24px;
+    touch-action: none;
+  }
+  .viewport.dragging { cursor: grabbing; }
+  .board {
     position: absolute;
     top: 0; left: 0;
-    width: 1440px;
-    height: 900px;
+    transform-origin: 0 0;
+    width: 4100px;
+    height: 3420px;
+  }
+  .board > svg.wires {
+    position: absolute; top: 0; left: 0;
+    width: 4100px; height: 3420px;
+    pointer-events: none;
+    overflow: visible;
+  }
+  .wires path { fill: none; stroke: var(--accent); stroke-width: 2; }
+  .wires path.alt { stroke-dasharray: 8 8; }
+  .wires text { font-family: var(--sans); font-size: 13px; fill: var(--ink); }
+  .wires rect.label { fill: var(--ground); stroke: var(--line); }
+  .title1 {
+    position: absolute;
+    margin: 0;
+    font-size: 56px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    color: var(--ink);
+  }
+  .title2 {
+    position: absolute;
+    margin: 0;
+    font-size: 30px;
+    font-weight: 600;
+    white-space: nowrap;
+    color: var(--ink);
+  }
+  .frame {
+    position: absolute;
+    width: 720px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(20, 30, 20, 0.08);
+    display: flex;
+    flex-direction: column;
+  }
+  .frame header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+    cursor: grab;
+  }
+  .frame header .name { font-weight: 600; }
+  .frame header .id { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .frame header .spacer { flex: 1; }
+  .frame header a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 12px;
+    padding: 2px 6px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+  }
+  .frame header a:hover { color: var(--accent); border-color: var(--accent); }
+  .stage {
+    position: relative;
+    width: 720px;
+    height: 450px;
+    overflow: hidden;
+    background: #f7f8f7;
+    border-radius: 0 0 10px 10px;
+  }
+  .stage iframe {
+    position: absolute; top: 0; left: 0;
+    width: 1440px; height: 900px;
     border: 0;
+    transform: scale(0.5);
     transform-origin: 0 0;
     background: #fff;
   }
-  .hint {
-    font-size: 12px;
-    color: var(--muted);
-    max-width: 70ch;
+  .stage .placeholder {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted); font-size: 13px;
   }
-  .hint b { color: var(--ink); font-weight: 500; }
-  @media (max-width: 860px) {
-    .layout { grid-template-columns: 1fr; }
-    nav { border-right: 0; border-bottom: 1px solid var(--line); }
-    .top .ticket { display: none; }
+  .note {
+    position: absolute;
+    width: 360px;
+    padding: 14px 16px;
+    background: var(--note);
+    color: var(--note-ink);
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.45;
+    box-shadow: 0 4px 14px rgba(20, 30, 20, 0.08);
+  }
+  .map {
+    position: absolute;
+    left: 0; top: 130px;
+    width: 4100px; height: 560px;
+  }
+  .map svg { width: 4100px; height: 560px; overflow: visible; }
+  .map path { fill: none; stroke: var(--accent); stroke-width: 2; }
+  .map path.alt { stroke-dasharray: 8 8; }
+  .map text { font-family: var(--sans); font-size: 13px; fill: var(--ink); }
+  .node { cursor: pointer; }
+  .node rect { fill: var(--panel); stroke: var(--line-strong); rx: 8; }
+  .node:hover rect { stroke: var(--accent); }
+  .node text { font-family: var(--sans); font-size: 15px; font-weight: 500; fill: var(--ink); }
+  .node text.sub { font-size: 12px; font-weight: 400; fill: var(--muted); }
+  .node.decision rect { stroke: var(--accent); }
+  .lane { font-family: var(--sans); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; fill: var(--muted); }
+  @media (max-width: 700px) {
+    .top .hint { display: none; }
   }
   @media (prefers-reduced-motion: no-preference) {
-    .state { transition: background 120ms ease; }
+    .board { transition: transform 120ms ease-out; }
+    .board.live { transition: none; }
   }
 </style>
 </head><body>
 
 <header class="top">
-  <h1>DES-920 Review Prototype</h1>
-  <span class="ticket">John Deere support · Kigo Pro</span>
+  <h1>DES-920 Review Canvas</h1>
+  <span class="sub">John Deere invoice and dispute review · every frame is the live prototype</span>
   <span class="spacer"></span>
-  <a class="open" id="open-tab" href="https://kigo-pro-dashboard.vercel.app/pro/john-deere" target="_blank" rel="noopener">Open this state in a new tab</a>
+  <span class="hint">Drag to pan · ⌘/Ctrl + wheel to zoom · frames are live</span>
+  <div class="zoom" role="group" aria-label="Zoom">
+    <button type="button" id="zoom-out" aria-label="Zoom out">−</button>
+    <span class="pct" id="zoom-pct">100%</span>
+    <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
+    <button type="button" id="zoom-fit">Fit</button>
+  </div>
+  <a class="link" id="open-app" href="https://kigo-pro-dashboard.vercel.app/pro/john-deere" target="_blank" rel="noopener">Open prototype ↗</a>
 </header>
 
-<div class="layout">
-  <nav aria-label="Prototype states">
-    <div>
-      <h2>Queue</h2>
-      <div class="group" data-group></div>
-    </div>
-    <div>
-      <h2>Invoice review</h2>
-      <div class="group" data-group></div>
-    </div>
-    <div>
-      <h2>Dispute review</h2>
-      <div class="group" data-group></div>
-    </div>
-  </nav>
-
-  <main class="stage">
-    <div class="stage-head">
-      <span class="title" id="stage-title"></span>
-      <span class="url" id="stage-url"></span>
-    </div>
-    <div class="frame-box" id="frame-box">
-      <iframe id="frame" title="Live prototype" loading="eager" referrerpolicy="no-referrer"></iframe>
-    </div>
-    <p class="hint" id="stage-hint"></p>
-    <p class="hint">Every frame is the live prototype, not a picture. Confirm rows, approve or reject, and expand the activity rail inside it. Decisions you make persist for this browser session and are reflected back in the queue.</p>
-  </main>
+<div class="viewport" id="viewport">
+  <div class="board" id="board">
+    <svg class="wires" id="wires" aria-hidden="true">
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)" stroke="none"></path>
+        </marker>
+      </defs>
+    </svg>
+    <h2 class="title1" style="left:0; top:0;">DES-920 · John Deere invoice and dispute review</h2>
+    <div class="map" id="map"></div>
+  </div>
 </div>
 
 <script>
   var BASE = "";
-  var STATES = [
-    { group: 0, key: "queue-invoices", name: "Invoices, pending", id: "4 in queue",
-      path: "/pro/john-deere",
-      hint: "<b>Look for:</b> the Flag column carries the reason each invoice is here. The stat tiles are live filters." },
-    { group: 0, key: "queue-disputes", name: "Disputes, open", id: "3 open",
-      path: "/pro/john-deere?tab=disputes",
-      hint: "<b>Look for:</b> each dispute shows what the dealer entered and what they ask to change it to, inline." },
-    { group: 1, key: "inv-pending", name: "Pending, low confidence", id: "JD-INV-104821",
-      path: "/pro/john-deere/invoices/JD-INV-104821",
-      hint: "<b>Look for:</b> Validation and Claim in the header, each check coloured by its own outcome. The activity rail is collapsed; hover an icon for the event. The checklist gates Approve until all six fields are confirmed." },
-    { group: 1, key: "inv-approved", name: "Manually approved", id: "JD-INV-104821",
-      path: "/pro/john-deere/invoices/JD-INV-104821?decision=approved",
-      hint: "<b>Look for:</b> the activity rail opens by default with the reviewer's events, checks drop to grey, and the checklist becomes the validated record." },
-    { group: 1, key: "inv-rejected", name: "Manually rejected", id: "JD-INV-104821",
-      path: "/pro/john-deere/invoices/JD-INV-104821?decision=rejected",
-      hint: "<b>Look for:</b> the external reason the dealer sees and the internal reviewer note kept apart." },
-    { group: 1, key: "inv-auto-rejected", name: "Auto-rejected, duplicate", id: "JD-INV-104790",
-      path: "/pro/john-deere/invoices/JD-INV-104790?decision=auto_rejected",
-      hint: "<b>Look for:</b> Duplicate of stays red after the decision. Fraud score and confidence read as plain reference." },
-    { group: 2, key: "dis-pending", name: "Pending dispute", id: "JD-INV-104612",
-      path: "/pro/john-deere/disputes/JD-INV-104612",
-      hint: "<b>Look for:</b> Dispute and Claim in the header, and the requested changes as before and after columns with the dealer's reason beneath." },
-    { group: 2, key: "dis-approved", name: "Dispute approved", id: "JD-INV-104612",
-      path: "/pro/john-deere/disputes/JD-INV-104612?decision=approved",
-      hint: "<b>Look for:</b> the applied correction and the reviewer's events in the activity rail." }
+  var FW = 720, FH = 450, HEAD = 37, GAPX = 80, ROW = 640;
+  var ROWS = [
+    { y: 780,  title: "Queue" },
+    { y: 780 + ROW, title: "Invoice review — happy path" },
+    { y: 780 + ROW * 2, title: "Invoice review — sad path and automated outcomes" },
+    { y: 780 + ROW * 3, title: "Dispute review" }
+  ];
+  var FRAMES = [
+    { key: "S01", row: 0, col: 0, name: "Queue · pending invoices", id: "4 pending", path: "/pro/john-deere" },
+    { key: "S02", row: 0, col: 1, name: "Queue · pending disputes", id: "3 open", path: "/pro/john-deere?tab=disputes" },
+    { key: "S03", row: 0, col: 2, name: "Queue · all invoices", id: "12 total", path: "/pro/john-deere?status=all" },
+
+    { key: "S04", row: 1, col: 0, name: "Invoice review · pending", id: "JD-INV-104821", path: "/pro/john-deere/invoices/JD-INV-104821" },
+    { key: "S05", row: 1, col: 1, name: "Invoice review · verified", id: "JD-INV-104821", path: "/pro/john-deere/invoices/JD-INV-104821?verify=all" },
+    { key: "S07", row: 1, col: 2, name: "Approve dialog", id: "JD-INV-104821", path: "/pro/john-deere/invoices/JD-INV-104821?verify=all&dialog=approve" },
+    { key: "S08", row: 1, col: 3, name: "Invoice · manually approved", id: "JD-INV-104821", path: "/pro/john-deere/invoices/JD-INV-104821?decision=approved" },
+
+    { key: "S06", row: 2, col: 0, name: "Reject dialog", id: "JD-INV-104821", path: "/pro/john-deere/invoices/JD-INV-104821?dialog=reject" },
+    { key: "S09", row: 2, col: 1, name: "Invoice · manually rejected", id: "JD-INV-104821", path: "/pro/john-deere/invoices/JD-INV-104821?decision=rejected" },
+    { key: "S10", row: 2, col: 2, name: "Invoice · auto-approved", id: "JD-INV-104799", path: "/pro/john-deere/invoices/JD-INV-104799?decision=auto_approved" },
+    { key: "S11", row: 2, col: 3, name: "Invoice · auto-rejected", id: "JD-INV-104790", path: "/pro/john-deere/invoices/JD-INV-104790?decision=auto_rejected" },
+    { key: "S12", row: 2, col: 4, name: "Invoice review · PDF document", id: "JD-INV-104818", path: "/pro/john-deere/invoices/JD-INV-104818" },
+
+    { key: "S14", row: 3, col: 0, name: "Dispute review · pending", id: "JD-INV-104612", path: "/pro/john-deere/disputes/JD-INV-104612" },
+    { key: "S15", row: 3, col: 1, name: "Dispute approve dialog", id: "JD-INV-104612", path: "/pro/john-deere/disputes/JD-INV-104612?dialog=approve" },
+    { key: "S16", row: 3, col: 2, name: "Dispute · approved", id: "JD-INV-104612", path: "/pro/john-deere/disputes/JD-INV-104612?decision=approved" },
+    { key: "S17", row: 3, col: 3, name: "Dispute · rejected", id: "JD-INV-104612", path: "/pro/john-deere/disputes/JD-INV-104612?decision=rejected" }
+  ];
+  var WIRES = [
+    { from: "S01", to: "S04", label: "Review", alt: true },
+    { from: "S04", to: "S05", label: "Confirm 4 unchanged fields, add promo code" },
+    { from: "S05", to: "S07", label: "Approve invoice" },
+    { from: "S07", to: "S08", label: "Approve and send" },
+    { from: "S04", to: "S06", label: "Reject invoice", alt: true },
+    { from: "S06", to: "S09", label: "Reject with reason" },
+    { from: "S10", to: "S11", label: "Automated outcomes: no actions", alt: true },
+    { from: "S02", to: "S14", label: "Review", alt: true },
+    { from: "S14", to: "S15", label: "Approve dispute" },
+    { from: "S15", to: "S16", label: "Approve and update entry" },
+    { from: "S16", to: "S17", label: "Reject with reason", alt: true }
+  ];
+  var NOTES = [
+    { x: 3200, y: 820, text: "Reviewer jobs: decide, read the source, know the claim, check values, see the trail. Header = decide + validation + claim. Viewer = source. Checklist = values. Activity rail = trail, collapsed until needed." },
+    { x: 3200, y: 1000, text: "Decisions persist in sessionStorage for the browser session, so the queue stats and rows change after approve or reject. Reset with sessionStorage.removeItem('kigo-jd-review') inside any frame." },
+    { x: 3200, y: 1460, text: "Confirm all skips the dealer-edited discount and the empty promo code. The scan discrepancy stays on the row until a human confirms it. Approve stays disabled until all six are confirmed; both approve dialogs take an optional internal note." },
+    { x: 3200, y: 3420 - 600, text: "Even rows show the PNG dealer invoice, odd rows the 3-page PDF. Each row's extracted values match its document, so checking values against the scan is a real comparison." }
   ];
 
-  var groups = document.querySelectorAll("[data-group]");
-  var frame = document.getElementById("frame");
-  var box = document.getElementById("frame-box");
-  var openTab = document.getElementById("open-tab");
-  var stageTitle = document.getElementById("stage-title");
-  var stageUrl = document.getElementById("stage-url");
-  var stageHint = document.getElementById("stage-hint");
-  var buttons = {};
+  var board = document.getElementById("board");
+  var viewport = document.getElementById("viewport");
+  var wires = document.getElementById("wires");
+  var byKey = {};
 
-  STATES.forEach(function (state) {
-    var button = document.createElement("button");
-    button.className = "state";
-    button.type = "button";
-    button.id = "state-" + state.key;
-    button.innerHTML =
-      '<span class="dot" aria-hidden="true"></span>' +
-      '<span class="name"></span>' +
-      '<span class="id"></span>';
-    button.querySelector(".name").textContent = state.name;
-    button.querySelector(".id").textContent = state.id;
-    button.addEventListener("click", function () { show(state.key); });
-    groups[state.group].appendChild(button);
-    buttons[state.key] = button;
+  function frameRect(f) {
+    return { x: f.col * (FW + GAPX), y: ROWS[f.row].y + 70, w: FW, h: FH + HEAD };
+  }
+
+  ROWS.forEach(function (row) {
+    var h = document.createElement("h3");
+    h.className = "title2";
+    h.style.left = "0px";
+    h.style.top = row.y + "px";
+    h.textContent = row.title;
+    board.appendChild(h);
   });
 
-  function show(key) {
-    var state = STATES.find(function (s) { return s.key === key; }) || STATES[0];
-    Object.keys(buttons).forEach(function (k) {
-      buttons[k].setAttribute("aria-current", k === state.key ? "true" : "false");
-    });
-    var url = BASE + state.path;
-    if (frame.getAttribute("src") !== url) frame.setAttribute("src", url);
-    openTab.href = url;
-    stageTitle.textContent = state.name;
-    stageUrl.textContent = state.path;
-    stageHint.innerHTML = state.hint;
-    try { localStorage.setItem("des920.state", state.key); } catch (e) {}
+  FRAMES.forEach(function (f) {
+    var r = frameRect(f);
+    byKey[f.key] = f;
+    var el = document.createElement("section");
+    el.className = "frame";
+    el.id = "frame-" + f.key;
+    el.style.left = r.x + "px";
+    el.style.top = r.y + "px";
+    el.innerHTML =
+      '<header><span class="name"></span><span class="id"></span><span class="spacer"></span>' +
+      '<a target="_blank" rel="noopener">Open ↗</a></header>' +
+      '<div class="stage"><div class="placeholder">Loading live screen…</div>' +
+      '<iframe title="" loading="eager" referrerpolicy="no-referrer"></iframe></div>';
+    el.querySelector(".name").textContent = f.name;
+    el.querySelector(".id").textContent = f.id;
+    var a = el.querySelector("a");
+    a.href = BASE + f.path;
+    var iframe = el.querySelector("iframe");
+    iframe.title = f.name;
+    iframe.dataset.src = BASE + f.path;
+    board.appendChild(el);
+    f.el = el;
+  });
+
+  NOTES.forEach(function (n) {
+    var el = document.createElement("div");
+    el.className = "note";
+    el.style.left = n.x + "px";
+    el.style.top = n.y + "px";
+    el.textContent = n.text;
+    board.appendChild(el);
+  });
+
+  function svgEl(tag, attrs) {
+    var el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    Object.keys(attrs).forEach(function (k) { el.setAttribute(k, attrs[k]); });
+    return el;
   }
 
+  WIRES.forEach(function (w) {
+    var a = frameRect(byKey[w.from]), b = frameRect(byKey[w.to]);
+    var d, lx, ly;
+    if (a.y === b.y) {
+      var y = a.y + a.h / 2;
+      d = "M" + (a.x + a.w) + " " + y + " L" + b.x + " " + y;
+      lx = (a.x + a.w + b.x) / 2; ly = y - 14;
+    } else {
+      var x = a.x + a.w / 2;
+      d = "M" + x + " " + (a.y + a.h) + " L" + x + " " + b.y;
+      lx = x; ly = (a.y + a.h + b.y) / 2;
+    }
+    var path = svgEl("path", { d: d, "marker-end": "url(#arrow)", class: w.alt ? "alt" : "" });
+    wires.appendChild(path);
+    var text = svgEl("text", { x: lx, y: ly, "text-anchor": "middle", "dominant-baseline": "middle" });
+    text.textContent = w.label;
+    wires.appendChild(text);
+    var bb = text.getBBox();
+    var rect = svgEl("rect", { x: bb.x - 8, y: bb.y - 4, width: bb.width + 16, height: bb.height + 8, rx: 4, class: "label" });
+    wires.insertBefore(rect, text);
+  });
+
+  var MAP = [
+    { key: "S01", lane: 0, col: 0, name: "Queue", sub: "pending invoices" },
+    { key: "S04", lane: 0, col: 1, name: "Review invoice", sub: "scan, header, checklist" },
+    { key: "S05", lane: 0, col: 2, name: "Confirm fields", sub: "6 of 6 verified" },
+    { key: "S07", lane: 0, col: 3, name: "Approve", sub: "dialog, optional note", decision: true },
+    { key: "S08", lane: 0, col: 4, name: "Approved", sub: "sent for reimbursement" },
+    { key: "S06", lane: 1, col: 3, name: "Reject", sub: "reason + note", decision: true },
+    { key: "S09", lane: 1, col: 4, name: "Rejected", sub: "dealer notified" },
+    { key: "S10", lane: 1, col: 1, name: "Auto-approved", sub: "at scan time" },
+    { key: "S11", lane: 1, col: 2, name: "Auto-rejected", sub: "duplicate" },
+    { key: "S02", lane: 2, col: 0, name: "Queue", sub: "open disputes" },
+    { key: "S14", lane: 2, col: 1, name: "Review dispute", sub: "before and after" },
+    { key: "S15", lane: 2, col: 3, name: "Approve", sub: "dialog, optional note", decision: true },
+    { key: "S16", lane: 2, col: 4, name: "Approved", sub: "PDAP entry updated" },
+    { key: "S17", lane: 3, col: 4, name: "Rejected", sub: "dealer notified" }
+  ];
+  var MAP_WIRES = [
+    ["S01", "S04", "Review"], ["S04", "S05", "Confirm"], ["S05", "S07", "Approve invoice"], ["S07", "S08", "Approve and send"],
+    ["S05", "S06", "Reject invoice", true], ["S06", "S09", "Reject with reason"],
+    ["S01", "S10", "no manual review", true], ["S10", "S11", "", true],
+    ["S02", "S14", "Review"], ["S14", "S15", "Approve dispute"], ["S15", "S16", "Update entry"],
+    ["S14", "S17", "Reject dispute", true]
+  ];
+  var NW = 260, NH = 64, NGX = 120, NGY = 60;
+  var map = document.getElementById("map");
+  var msvg = svgEl("svg", { viewBox: "0 0 4100 560" });
+  var lanes = ["Invoice · happy path", "Invoice · sad path and automated", "Dispute", ""];
+  lanes.forEach(function (name, i) {
+    if (!name) return;
+    var t = svgEl("text", { x: 0, y: i * (NH + NGY) + 14, class: "lane" });
+    t.textContent = name;
+    msvg.appendChild(t);
+  });
+  var nodeRect = function (n) { return { x: 40 + n.col * (NW + NGX), y: 30 + n.lane * (NH + NGY), w: NW, h: NH }; };
+  var mapByKey = {};
+  MAP.forEach(function (n) { mapByKey[n.key] = n; });
+  MAP_WIRES.forEach(function (w) {
+    var a = nodeRect(mapByKey[w[0]]), b = nodeRect(mapByKey[w[1]]);
+    var d;
+    if (a.y === b.y) d = "M" + (a.x + a.w) + " " + (a.y + a.h / 2) + " L" + b.x + " " + (b.y + b.h / 2);
+    else if (a.x === b.x) d = "M" + (a.x + a.w / 2) + " " + (a.y + a.h) + " L" + (b.x + b.w / 2) + " " + b.y;
+    else {
+      var midx = a.x + a.w + NGX / 2;
+      d = "M" + (a.x + a.w) + " " + (a.y + a.h / 2) + " L" + midx + " " + (a.y + a.h / 2) + " L" + midx + " " + (b.y + b.h / 2) + " L" + b.x + " " + (b.y + b.h / 2);
+    }
+    msvg.appendChild(svgEl("path", { d: d, "marker-end": "url(#arrow)", class: w[3] ? "alt" : "" }));
+    if (w[2]) {
+      var t = svgEl("text", { x: a.y === b.y ? (a.x + a.w + b.x) / 2 : a.x + a.w + NGX / 2 + 8, y: a.y === b.y ? a.y + a.h / 2 - 12 : (a.y + b.y + b.h) / 2, "text-anchor": a.y === b.y ? "middle" : "start", "dominant-baseline": "middle" });
+      t.textContent = w[2];
+      msvg.appendChild(t);
+    }
+  });
+  MAP.forEach(function (n) {
+    var r = nodeRect(n);
+    var g = svgEl("g", { class: "node" + (n.decision ? " decision" : ""), tabindex: 0, role: "button" });
+    g.setAttribute("aria-label", "Go to " + n.name + " frame");
+    g.appendChild(svgEl("rect", { x: r.x, y: r.y, width: r.w, height: r.h }));
+    var t1 = svgEl("text", { x: r.x + 16, y: r.y + 26 }); t1.textContent = n.name;
+    var t2 = svgEl("text", { x: r.x + 16, y: r.y + 46, class: "sub" }); t2.textContent = n.sub;
+    g.appendChild(t1); g.appendChild(t2);
+    var go = function () { focusFrame(n.key); };
+    g.addEventListener("click", go);
+    g.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
+    msvg.appendChild(g);
+  });
+  map.appendChild(msvg);
+
+  var view = { x: 0, y: 0, k: 1 };
+  var pct = document.getElementById("zoom-pct");
+  function apply() {
+    board.style.transform = "translate(" + view.x + "px," + view.y + "px) scale(" + view.k + ")";
+    pct.textContent = Math.round(view.k * 100) + "%";
+  }
+  function zoomAt(factor, cx, cy) {
+    var k = Math.min(2, Math.max(0.12, view.k * factor));
+    var ratio = k / view.k;
+    view.x = cx - (cx - view.x) * ratio;
+    view.y = cy - (cy - view.y) * ratio;
+    view.k = k;
+    apply();
+  }
   function fit() {
-    var scale = box.clientWidth / 1440;
-    frame.style.transform = "scale(" + scale + ")";
+    var vw = viewport.clientWidth, vh = viewport.clientHeight;
+    view.k = Math.max(0.12, Math.min((vw - 48) / 4100, (vh - 48) / 3420, 1));
+    view.x = 24; view.y = 24;
+    apply();
   }
-  if ("ResizeObserver" in window) new ResizeObserver(fit).observe(box);
-  window.addEventListener("resize", fit);
-  fit();
+  function focusFrame(key) {
+    var f = byKey[key]; if (!f) return;
+    var r = frameRect(f);
+    var vw = viewport.clientWidth, vh = viewport.clientHeight;
+    view.k = Math.min(1, (vw - 80) / r.w, (vh - 80) / r.h);
+    view.x = (vw - r.w * view.k) / 2 - r.x * view.k;
+    view.y = (vh - r.h * view.k) / 2 - r.y * view.k;
+    apply();
+  }
+  document.getElementById("zoom-in").addEventListener("click", function () { zoomAt(1.2, viewport.clientWidth / 2, viewport.clientHeight / 2); });
+  document.getElementById("zoom-out").addEventListener("click", function () { zoomAt(1 / 1.2, viewport.clientWidth / 2, viewport.clientHeight / 2); });
+  document.getElementById("zoom-fit").addEventListener("click", fit);
 
-  var initial = null;
-  try { initial = localStorage.getItem("des920.state"); } catch (e) {}
-  show(initial || STATES[0].key);
+  viewport.addEventListener("wheel", function (e) {
+    if (e.target.closest && e.target.closest("iframe")) return;
+    e.preventDefault();
+    var rect = viewport.getBoundingClientRect();
+    if (e.ctrlKey || e.metaKey) zoomAt(Math.exp(-e.deltaY * 0.01), e.clientX - rect.left, e.clientY - rect.top);
+    else { view.x -= e.deltaX; view.y -= e.deltaY; board.classList.add("live"); apply(); }
+  }, { passive: false });
+
+  var drag = null;
+  viewport.addEventListener("pointerdown", function (e) {
+    if (e.target.closest("iframe") || e.target.closest("a") || e.target.closest(".node")) return;
+    drag = { x: e.clientX - view.x, y: e.clientY - view.y };
+    viewport.classList.add("dragging");
+    board.classList.add("live");
+    viewport.setPointerCapture(e.pointerId);
+  });
+  viewport.addEventListener("pointermove", function (e) {
+    if (!drag) return;
+    view.x = e.clientX - drag.x; view.y = e.clientY - drag.y; apply();
+  });
+  var endDrag = function () { drag = null; viewport.classList.remove("dragging"); };
+  viewport.addEventListener("pointerup", endDrag);
+  viewport.addEventListener("pointercancel", endDrag);
+  window.addEventListener("resize", function () { /* keep position; user refits */ });
+
+  /* Frames load when they come into view, so sixteen live screens do not all boot at once. */
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting) return;
+      var iframe = entry.target.querySelector("iframe");
+      if (iframe && !iframe.src) {
+        iframe.src = iframe.dataset.src;
+        iframe.addEventListener("load", function () {
+          var ph = entry.target.querySelector(".placeholder"); if (ph) ph.remove();
+        });
+      }
+      io.unobserve(entry.target);
+    });
+  }, { root: viewport, rootMargin: "300px" });
+  FRAMES.forEach(function (f) { io.observe(f.el); });
+
+  fit();
 </script>
 </body></html>
