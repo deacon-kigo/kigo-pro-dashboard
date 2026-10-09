@@ -39,7 +39,6 @@ import {
   money,
   plural,
   reviewFacts,
-  waitingLabel,
   type Fact,
   type InvoiceDecision,
   type InvoiceField,
@@ -323,13 +322,6 @@ const InvoiceReview = ({
         groups={reviewFacts(record, !pending)}
         progress={pending ? progress : undefined}
         status={{ label: CHIP[outcome].label, tone: CHIP[outcome].tone }}
-        summary={
-          pending ? (
-            <span className="text-sm text-gray-600">
-              {waitingLabel(record.date, record.time)}
-            </span>
-          ) : null
-        }
       />
 
       <div

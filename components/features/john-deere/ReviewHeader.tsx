@@ -25,7 +25,6 @@ interface ReviewHeaderProps {
   onStuckChange?: (stuck: boolean) => void;
   progress?: string;
   status: { label: string; tone: Tone };
-  summary: ReactNode;
 }
 
 const ReviewHeader = ({
@@ -39,7 +38,6 @@ const ReviewHeader = ({
   onStuckChange,
   progress,
   status,
-  summary,
 }: ReviewHeaderProps) => {
   const [stuck, setStuck] = useState(false);
   const sentinel = useRef<HTMLDivElement>(null);
@@ -129,7 +127,6 @@ const ReviewHeader = ({
               <div className="mt-1 flex flex-col gap-1.5">
                 <span className="flex flex-wrap items-center gap-2.5">
                   <StatusPill color={status.tone}>{status.label}</StatusPill>
-                  {summary}
                 </span>
                 {meta && (
                   <span className="flex flex-wrap items-center gap-2 text-sm text-gray-600">

@@ -660,7 +660,7 @@ export const invoiceFields = (extracted: ExtractedFields): InvoiceField[] => [
     label: "Sale amount",
     value: extracted.sale,
     mono: true,
-    hint: "Invoice total before the promotion discount.",
+    hint: "This should be the sum of the pre-taxed amounts.",
   },
   {
     key: "discount",
@@ -735,19 +735,6 @@ export const formatSubmitted = (date: string) => {
   const [year, month, day] = date.split("-").map(Number);
   if (!year || !month || !day) return date;
   return `${MONTHS[month - 1]} ${day}, ${year}`;
-};
-
-export const waitingLabel = (
-  date: string,
-  time: string,
-  now = new Date()
-): string => {
-  const [year, month, day] = date.split("-").map(Number);
-  if (!year || !month || !day) return time;
-  const submitted = Date.UTC(year, month - 1, day);
-  const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
-  const days = Math.round((today - submitted) / 86_400_000);
-  return days <= 0 ? "today" : `${days}d in queue`;
 };
 
 export const plural = (count: number, noun: string) =>

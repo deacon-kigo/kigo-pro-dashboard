@@ -34,7 +34,6 @@ import {
   disputeActivity,
   disputeFacts,
   plural,
-  waitingLabel,
   type DisputeStatus,
 } from "./data";
 import { readDecisions, saveDispute } from "./decisions";
@@ -144,13 +143,6 @@ const DisputeReview = ({
         onStuckChange={setStuck}
         groups={disputeFacts(record)}
         status={{ label: CHIP[outcome].label, tone: CHIP[outcome].tone }}
-        summary={
-          pending ? (
-            <span className="text-sm text-gray-600">
-              {waitingLabel(record.date, record.time)}
-            </span>
-          ) : null
-        }
       />
 
       <div
