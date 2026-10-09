@@ -25,8 +25,9 @@ import {
   type InvoiceStatus,
 } from "./data";
 import { disputeColumns, invoiceColumns } from "./columns";
+import { Crumb } from "./Crumb";
 import { EVENT, readDecisions } from "./decisions";
-import { JOHN_DEERE } from "./partner";
+import { JOHN_DEERE, MODULE_LABEL } from "./partner";
 
 interface Overrides {
   invoices: Record<string, InvoiceStatus>;
@@ -215,6 +216,7 @@ const ReviewQueue = ({
 
   return (
     <div>
+      <Crumb label={MODULE_LABEL} segment="john-deere" />
       <Card
         className="mb-4 overflow-hidden px-6 py-5"
         roundness="lg"
@@ -229,7 +231,7 @@ const ReviewQueue = ({
             />
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">
-                John Deere support
+                {MODULE_LABEL}
               </h1>
               <p className="mt-1 text-base text-gray-600">
                 Dealer-submitted invoices and disputes for the John Deere
@@ -264,12 +266,8 @@ const ReviewQueue = ({
         value={tab}
       >
         <TabsList className="w-[280px]">
-          <TabsTrigger value="invoices">
-            Invoices · {INVOICES.length}
-          </TabsTrigger>
-          <TabsTrigger value="disputes">
-            Disputes · {DISPUTES.length}
-          </TabsTrigger>
+          <TabsTrigger value="invoices">Invoices</TabsTrigger>
+          <TabsTrigger value="disputes">Disputes</TabsTrigger>
         </TabsList>
       </Tabs>
 

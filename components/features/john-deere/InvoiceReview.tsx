@@ -25,6 +25,7 @@ import {
   RejectInvoiceDialog,
 } from "./InvoiceDecisionDialogs";
 import { LineItemsEditor, type Line } from "./LineItemsEditor";
+import { MODULE_LABEL } from "./partner";
 import { ResultBanner } from "./ResultBanner";
 import { ReviewHeader } from "./ReviewHeader";
 import { ScanViewer } from "./ScanViewer";
@@ -268,6 +269,11 @@ const InvoiceReview = ({
   );
   const remaining = allRows.filter((row) => rowStatus(row.key) !== "verified");
   const onlyLeft = remaining.length === 1 ? remaining[0] : undefined;
+  /* Every unconfirmed row already has a value, so confirming them all leaves
+     nothing blocking approval. */
+  const approvable =
+    remaining.length > 0 &&
+    remaining.every((row) => rowStatus(row.key) === "unverified");
 
   const progress = allDone
     ? "Ready to approve"
@@ -305,6 +311,7 @@ const InvoiceReview = ({
 
   return (
     <TooltipProvider delayDuration={200}>
+      <Crumb label={MODULE_LABEL} segment="john-deere" />
       <Crumb label={record.invoice} segment={invoiceId} />
       <ReviewHeader
         actions={pending ? decisionActions("default") : undefined}
@@ -329,8 +336,8 @@ const InvoiceReview = ({
         className={cn(
           "grid gap-6 transition-[grid-template-columns] duration-200",
           eventsOpen
-            ? "xl:grid-cols-[240px_minmax(0,1fr)_minmax(400px,460px)]"
-            : "xl:grid-cols-[56px_minmax(0,1fr)_minmax(400px,460px)]"
+            ? "xl:grid-cols-[240px_minmax(400px,460px)_minmax(0,1fr)]"
+            : "xl:grid-cols-[56px_minmax(400px,460px)_minmax(0,1fr)]"
         )}
         style={{ "--sticky-top": stuck ? "64px" : "0px" } as CSSProperties}
       >
@@ -340,19 +347,26 @@ const InvoiceReview = ({
           open={eventsOpen}
         />
 
-        <ScanViewer
-          caption="invoice scan"
-          className="h-[calc(100vh-21rem)] min-h-[440px] xl:sticky xl:top-[var(--sticky-top)] transition-[top] duration-200"
-          document={record.document}
-          thumbnails={false}
-        />
-
         <div className="flex flex-col gap-6 self-start">
           <Card roundness="lg">
             {pending ? (
               <Section
                 action={
-                  eligible.length > 0 ? (
+                  approvable ? (
+                    <Tooltip content="Confirms every remaining field, including dealer edits, then opens the approval summary.">
+                      <Button
+                        color="secondary"
+                        onClick={() => {
+                          checklist.confirmAll();
+                          setApproveOpen(true);
+                        }}
+                        size="sm"
+                        variant="outline"
+                      >
+                        Confirm all and approve
+                      </Button>
+                    </Tooltip>
+                  ) : eligible.length > 0 ? (
                     <Tooltip content="Skips fields the dealer edited and fields with no value.">
                       <Button
                         color="secondary"
@@ -525,6 +539,13 @@ const InvoiceReview = ({
             )}
           </Card>
         </div>
+
+        <ScanViewer
+          caption="invoice scan"
+          className="h-[calc(100vh-21rem)] min-h-[440px] xl:sticky xl:top-[var(--sticky-top)] transition-[top] duration-200"
+          document={record.document}
+          thumbnails={false}
+        />
       </div>
 
       <RejectInvoiceDialog

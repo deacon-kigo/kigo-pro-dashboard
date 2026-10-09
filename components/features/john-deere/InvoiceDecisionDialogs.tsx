@@ -73,7 +73,7 @@ const RejectInvoiceDialog = ({
         <textarea
           className="w-full rounded-md border border-gray-300 p-3 text-base"
           onChange={(event) => onCustomChange(event.target.value)}
-          placeholder="Describe why this invoice was rejected"
+          placeholder="Explain why — the dealer will see this message."
           rows={3}
           value={custom}
         />

@@ -11,15 +11,12 @@ import { Button } from "@/components/prod/button";
 import { cn } from "@/components/prod/utils/cn";
 
 import {
-  CONFIDENCE_THRESHOLD,
   DISPUTE_STATUS,
-  FLAG_LABEL,
   INVOICE_STATUS,
+  REVIEW_REASON,
   formatSubmitted,
   invoiceDecision,
-  waitingLabel,
   type DisputeRow,
-  type InvoiceFlag,
   type InvoiceRow,
 } from "./data";
 import { StatusPill } from "./StatusPill";
@@ -57,12 +54,6 @@ const sortableHeader = (label: string) => {
   return Header;
 };
 
-const flagSubline = (flag: InvoiceFlag) => {
-  if (flag.kind === "duplicate") return `Matches ${flag.of}`;
-  if (flag.kind === "passed") return `${flag.confidence}%`;
-  return `${flag.confidence}% · needs ${CONFIDENCE_THRESHOLD}%`;
-};
-
 const invoiceColumns: ColumnDef<InvoiceRow>[] = [
   {
     accessorKey: "status",
@@ -83,11 +74,13 @@ const invoiceColumns: ColumnDef<InvoiceRow>[] = [
     ),
   },
   {
-    id: "flag",
-    accessorFn: (row) => row.flag.confidence,
-    header: sortableHeader("Flag"),
+    id: "reason",
+    accessorFn: (row) =>
+      row.reason ? REVIEW_REASON[row.reason.kind].label : "",
+    header: sortableHeader("Reason"),
     cell: ({ row }) => {
-      const { flag } = row.original;
+      const { reason } = row.original;
+      if (!reason) return <span className="text-gray-500">—</span>;
       return (
         <div>
           <div className="flex flex-wrap items-center gap-2 text-base whitespace-nowrap">
@@ -95,13 +88,13 @@ const invoiceColumns: ColumnDef<InvoiceRow>[] = [
               aria-hidden
               className={cn(
                 "size-1.5 shrink-0 rounded-full",
-                TONE[FLAG_LABEL[flag.kind].tone].dot
+                TONE[REVIEW_REASON[reason.kind].tone].dot
               )}
             />
             <span className="font-medium text-gray-900">
-              {FLAG_LABEL[flag.kind].label}
+              {REVIEW_REASON[reason.kind].label}
             </span>
-            {row.original.dealerEdited && (
+            {row.original.dealerEdited && reason.kind !== "dealer_edit" && (
               <Badge
                 className="text-sm"
                 color="neutral"
@@ -112,9 +105,11 @@ const invoiceColumns: ColumnDef<InvoiceRow>[] = [
               </Badge>
             )}
           </div>
-          <div className="mt-0.5 text-sm text-gray-600">
-            {flagSubline(flag)}
-          </div>
+          {reason.kind === "invalid_invoice" && reason.duplicateOf && (
+            <div className="mt-0.5 text-sm text-gray-600">
+              Matches {reason.duplicateOf}
+            </div>
+          )}
         </div>
       );
     },
@@ -151,11 +146,7 @@ const invoiceColumns: ColumnDef<InvoiceRow>[] = [
         <div className="text-base text-gray-900">
           {formatSubmitted(row.original.date)}
         </div>
-        <div className="text-sm text-gray-600">
-          {row.original.status === "pending"
-            ? waitingLabel(row.original.date, row.original.time)
-            : row.original.time}
-        </div>
+        <div className="text-sm text-gray-600">{row.original.time}</div>
       </div>
     ),
   },
@@ -265,11 +256,7 @@ const disputeColumns: ColumnDef<DisputeRow>[] = [
         <div className="text-base text-gray-900">
           {formatSubmitted(row.original.date)}
         </div>
-        <div className="text-sm text-gray-600">
-          {row.original.status === "pending"
-            ? waitingLabel(row.original.date, row.original.time)
-            : row.original.time}
-        </div>
+        <div className="text-sm text-gray-600">{row.original.time}</div>
       </div>
     ),
   },

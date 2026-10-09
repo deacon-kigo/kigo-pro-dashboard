@@ -8,8 +8,6 @@ import { Button } from "@/components/prod/button";
 import { Card } from "@/components/prod/card";
 import { cn } from "@/components/prod/utils/cn";
 
-import { Tooltip } from "@/components/prod/tooltip";
-
 import { type FactGroup } from "./data";
 import { Section } from "./Section";
 import { JOHN_DEERE } from "./partner";
@@ -191,18 +189,7 @@ const ReviewHeader = ({
                             )}
                           />
                         )}
-                        {fact.hint ? (
-                          <Tooltip content={fact.hint}>
-                            <button
-                              className="cursor-default rounded-sm underline decoration-gray-300 decoration-dotted underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                              type="button"
-                            >
-                              {fact.value}
-                            </button>
-                          </Tooltip>
-                        ) : (
-                          fact.value
-                        )}
+                        {fact.value}
                       </dd>
                     </div>
                   ))}

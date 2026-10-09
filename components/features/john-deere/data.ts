@@ -33,23 +33,56 @@ export type InvoiceDecision =
 
 export type DisputeStatus = "pending" | "approved" | "rejected";
 
-export const CONFIDENCE_THRESHOLD = 85;
+/* Why automated validation sent the invoice to manual review. A duplicate is
+   an invalid invoice that also names the invoice it repeats. */
+export type ReviewReason =
+  | {
+      kind:
+        | "low_confidence"
+        | "dealer_edit"
+        | "missing_fields"
+        | "poor_image"
+        | "unknown_error";
+    }
+  | { kind: "invalid_invoice"; duplicateOf?: string };
 
-export type InvoiceFlag =
-  | { kind: "low_confidence"; confidence: number }
-  | { kind: "duplicate"; of: string; confidence: number }
-  | { kind: "passed"; confidence: number };
-
-export const FLAG_LABEL: Record<
-  InvoiceFlag["kind"],
-  { label: string; tone: Tone }
+export const REVIEW_REASON: Record<
+  ReviewReason["kind"],
+  { label: string; tone: Tone; detail: string }
 > = {
-  duplicate: { label: "Duplicate invoice", tone: "destructive" },
-  low_confidence: { label: "Low confidence", tone: "warning" },
-  passed: { label: "Checks passed", tone: "success" },
+  dealer_edit: {
+    detail: "The dealer changed a scanned value before submitting",
+    label: "Dealer edit",
+    tone: "info",
+  },
+  invalid_invoice: {
+    detail: "The document failed invoice validation",
+    label: "Invalid invoice",
+    tone: "destructive",
+  },
+  low_confidence: {
+    detail: "Extraction confidence fell below the auto-approve threshold",
+    label: "Low confidence",
+    tone: "warning",
+  },
+  missing_fields: {
+    detail: "Required values could not be read from the scan",
+    label: "Missing fields",
+    tone: "warning",
+  },
+  poor_image: {
+    detail: "The scan is too blurry or dark to read reliably",
+    label: "Poor image quality",
+    tone: "warning",
+  },
+  unknown_error: {
+    detail: "Automated validation could not complete",
+    label: "Unknown error",
+    tone: "neutral",
+  },
 };
 
-export type DisputeField = "invoice" | "discount" | "promo" | "saleDate";
+export type DisputeField = "invoice" | "discount";
 
 export interface DisputeChange {
   field: DisputeField;
@@ -89,7 +122,8 @@ export interface InvoiceRow {
   email: string;
   date: string;
   time: string;
-  flag: InvoiceFlag;
+  /* Null only for auto-approved invoices, which never reach manual review. */
+  reason: ReviewReason | null;
   fraud: number;
   dealerEdited: boolean;
   document: ReviewDocument;
@@ -215,7 +249,7 @@ const INVOICE_ROWS: Omit<InvoiceRow, "document" | "extracted">[] = [
     email: "dwhitfield@prairiestateeq.com",
     date: "2026-09-16",
     time: "09:42 AM",
-    flag: { kind: "low_confidence", confidence: 72 },
+    reason: { kind: "dealer_edit" },
     fraud: 18,
     dealerEdited: true,
   },
@@ -228,7 +262,7 @@ const INVOICE_ROWS: Omit<InvoiceRow, "document" | "extracted">[] = [
     email: "lortega@cedarridgeag.com",
     date: "2026-09-16",
     time: "08:15 AM",
-    flag: { kind: "low_confidence", confidence: 66 },
+    reason: { kind: "low_confidence" },
     fraud: 12,
     dealerEdited: false,
   },
@@ -241,7 +275,7 @@ const INVOICE_ROWS: Omit<InvoiceRow, "document" | "extracted">[] = [
     email: "ekolb@northlandtractor.com",
     date: "2026-09-15",
     time: "04:37 PM",
-    flag: { kind: "low_confidence", confidence: 79 },
+    reason: { kind: "poor_image" },
     fraud: 9,
     dealerEdited: false,
   },
@@ -254,7 +288,7 @@ const INVOICE_ROWS: Omit<InvoiceRow, "document" | "extracted">[] = [
     email: "rmendel@heartlandmach.com",
     date: "2026-09-15",
     time: "11:08 AM",
-    flag: { kind: "passed", confidence: 96 },
+    reason: null,
     fraud: 7,
     dealerEdited: false,
   },
@@ -267,7 +301,7 @@ const INVOICE_ROWS: Omit<InvoiceRow, "document" | "extracted">[] = [
     email: "praman@valleyturf.com",
     date: "2026-09-14",
     time: "02:54 PM",
-    flag: { kind: "duplicate", of: "JD-INV-104733", confidence: 94 },
+    reason: { kind: "invalid_invoice", duplicateOf: "JD-INV-104733" },
     fraud: 81,
     dealerEdited: false,
   },
@@ -280,7 +314,7 @@ const INVOICE_ROWS: Omit<InvoiceRow, "document" | "extracted">[] = [
     email: "talvarez@bluestemeq.com",
     date: "2026-09-14",
     time: "10:21 AM",
-    flag: { kind: "low_confidence", confidence: 71 },
+    reason: { kind: "low_confidence" },
     fraud: 15,
     dealerEdited: true,
   },
@@ -293,7 +327,7 @@ const INVOICE_ROWS: Omit<InvoiceRow, "document" | "extracted">[] = [
     email: "glin@summitfarm.com",
     date: "2026-09-13",
     time: "03:19 PM",
-    flag: { kind: "low_confidence", confidence: 61 },
+    reason: { kind: "missing_fields" },
     fraud: 22,
     dealerEdited: false,
   },
@@ -306,7 +340,7 @@ const INVOICE_ROWS: Omit<InvoiceRow, "document" | "extracted">[] = [
     email: "mboyd@deltaag.com",
     date: "2026-09-12",
     time: "01:46 PM",
-    flag: { kind: "passed", confidence: 93 },
+    reason: null,
     fraud: 5,
     dealerEdited: false,
   },
@@ -319,7 +353,7 @@ const INVOICE_ROWS: Omit<InvoiceRow, "document" | "extracted">[] = [
     email: "sduarte@ridgelineoutdoor.com",
     date: "2026-09-12",
     time: "09:03 AM",
-    flag: { kind: "low_confidence", confidence: 68 },
+    reason: { kind: "unknown_error" },
     fraud: 25,
     dealerEdited: false,
   },
@@ -332,7 +366,7 @@ const INVOICE_ROWS: Omit<InvoiceRow, "document" | "extracted">[] = [
     email: "hmeyers@coppercreektractor.com",
     date: "2026-09-11",
     time: "05:28 PM",
-    flag: { kind: "duplicate", of: "JD-INV-104728", confidence: 92 },
+    reason: { kind: "invalid_invoice", duplicateOf: "JD-INV-104728" },
     fraud: 76,
     dealerEdited: false,
   },
@@ -345,7 +379,7 @@ const INVOICE_ROWS: Omit<InvoiceRow, "document" | "extracted">[] = [
     email: "npetrov@greatlakespower.com",
     date: "2026-09-10",
     time: "12:11 PM",
-    flag: { kind: "passed", confidence: 97 },
+    reason: null,
     fraud: 6,
     dealerEdited: false,
   },
@@ -358,7 +392,7 @@ const INVOICE_ROWS: Omit<InvoiceRow, "document" | "extracted">[] = [
     email: "evargas@riograndeeq.com",
     date: "2026-09-10",
     time: "08:57 AM",
-    flag: { kind: "low_confidence", confidence: 74 },
+    reason: { kind: "poor_image" },
     fraud: 11,
     dealerEdited: false,
   },
@@ -373,7 +407,10 @@ export const INVOICES: InvoiceRow[] = INVOICE_ROWS.map((row, index) => {
       ? pdfExtracted()
       : pngExtracted(
           row.dealerEdited,
-          row.invoice === "JD-INV-104821" ? "" : "ABC123"
+          row.reason?.kind === "dealer_edit" ||
+            row.reason?.kind === "missing_fields"
+            ? ""
+            : "ABC123"
         ),
   };
 });
@@ -447,13 +484,6 @@ const DISPUTE_ROWS: Omit<DisputeRow, "document">[] = [
         to: "JD-INV-104593",
         mono: true,
       },
-      {
-        field: "saleDate",
-        label: "Sale date",
-        from: "Sep 2, 2026",
-        to: "Sep 4, 2026",
-        mono: false,
-      },
     ],
     explanation:
       "I keyed the wrong invoice at redemption — the tractor was written up two days later on JD-INV-104593.",
@@ -470,13 +500,6 @@ const DISPUTE_ROWS: Omit<DisputeRow, "document">[] = [
     time: "11:52 AM",
     changes: [
       {
-        field: "promo",
-        label: "Promo code",
-        from: "BLADE15",
-        to: "BLADES15",
-        mono: true,
-      },
-      {
         field: "discount",
         label: "Discount amount",
         from: "$84.00",
@@ -485,7 +508,7 @@ const DISPUTE_ROWS: Omit<DisputeRow, "document">[] = [
       },
     ],
     explanation:
-      "The customer handed us BLADES15, and 15% of the blade lines comes to $126.00 rather than the $84.00 that went in.",
+      "One set of blades was left off when I entered the discount. 15% of all the blade lines comes to $126.00 rather than the $84.00 that went in.",
   },
   {
     status: "approved",
@@ -499,15 +522,15 @@ const DISPUTE_ROWS: Omit<DisputeRow, "document">[] = [
     time: "09:07 AM",
     changes: [
       {
-        field: "saleDate",
-        label: "Sale date",
-        from: "Aug 29, 2026",
-        to: "Sep 1, 2026",
-        mono: false,
+        field: "invoice",
+        label: "Invoice number",
+        from: "JD-INV-104477",
+        to: "JD-INV-104480",
+        mono: true,
       },
     ],
     explanation:
-      "I redeemed against the work-order date by mistake; the parts were actually billed on Sep 1.",
+      "I redeemed against the work-order number by mistake; the parts were actually billed on invoice JD-INV-104480.",
   },
   {
     status: "rejected",
@@ -565,13 +588,6 @@ const DISPUTE_ROWS: Omit<DisputeRow, "document">[] = [
     time: "08:46 AM",
     changes: [
       {
-        field: "promo",
-        label: "Promo code",
-        from: "GATOR250",
-        to: "GATOR500",
-        mono: true,
-      },
-      {
         field: "discount",
         label: "Discount amount",
         from: "$250.00",
@@ -580,7 +596,7 @@ const DISPUTE_ROWS: Omit<DisputeRow, "document">[] = [
       },
     ],
     explanation:
-      "The customer took two gator packages, so this should have gone in under GATOR500 for a $500.00 discount.",
+      "The customer took two gator accessory packages, so the discount should be $500.00 rather than $250.00.",
   },
 ];
 
@@ -795,8 +811,6 @@ export interface Fact {
   emphasis?: boolean;
   /* Warning line under the value, e.g. a scan-vs-dealer discrepancy. */
   note?: string;
-  /* Shown on hover, e.g. the submitter's email. */
-  hint?: string;
 }
 
 export interface FactGroup {
@@ -805,93 +819,38 @@ export interface FactGroup {
   facts: Fact[];
 }
 
-const FLAG_FACT: Record<InvoiceFlag["kind"], { label: string; value: string }> =
-  {
-    duplicate: { label: "Failed check", value: "Duplicate invoice number" },
-    low_confidence: {
-      label: "Flagged for manual review",
-      value: "Low confidence score",
-    },
-    passed: { label: "Scan result", value: "All checks passed" },
-  };
-
 const fraudBand = (score: number): { word: string; tone?: Tone } => {
   if (score >= 70) return { tone: "destructive", word: "high" };
   if (score >= 40) return { tone: "warning", word: "medium" };
   return { word: "low" };
 };
 
-export const scanFacts = (
-  row: InvoiceRow
-): { flag: Fact; confidence: Fact; fraud: Fact; duplicate?: Fact } => {
-  const band = fraudBand(row.fraud);
-  const below = row.flag.confidence < CONFIDENCE_THRESHOLD;
-  return {
-    confidence: {
-      label: "Confidence",
-      mono: true,
-      tone: below
-        ? "warning"
-        : row.flag.kind === "passed"
-          ? "success"
-          : undefined,
-      value: `${row.flag.confidence}% of ${CONFIDENCE_THRESHOLD}% required`,
-    },
-    flag: {
-      label: FLAG_FACT[row.flag.kind].label,
-      tone: FLAG_LABEL[row.flag.kind].tone,
-      value: FLAG_FACT[row.flag.kind].value,
-    },
-    fraud: {
-      label: "Fraud score",
-      mono: true,
-      tone: band.tone,
-      value: `${row.fraud} ${band.word}`,
-    },
-    ...(row.flag.kind === "duplicate"
-      ? {
-          duplicate: {
-            label: "Duplicate of",
-            mono: true,
-            tone: "destructive" as const,
-            value: row.flag.of,
-          },
-        }
-      : {}),
-  };
-};
-
-const RESULT_VALUE: Record<InvoiceFlag["kind"], string> = {
-  duplicate: "Failed · duplicate invoice",
-  low_confidence: "Flagged · low confidence",
-  passed: "All checks passed",
-};
+const submitterFact = (row: { submitter: string; email: string }): Fact => ({
+  label: "Submitter",
+  value: `${row.submitter} · ${row.email}`,
+});
 
 /* Every check carries its own outcome colour so a reviewer sees pass and fail
    side by side. Once decided the status pill owns the outcome and the checks
    fall back to plain reference data; a duplicate still reads as a failure. */
 export const reviewFacts = (row: InvoiceRow, decided: boolean): FactGroup[] => {
   const band = fraudBand(row.fraud);
-  const below = row.flag.confidence < CONFIDENCE_THRESHOLD;
-  const validation: Fact[] = [
-    {
-      label: "Result",
-      tone: FLAG_LABEL[row.flag.kind].tone,
-      value: RESULT_VALUE[row.flag.kind],
-    },
-    {
-      label: "Confidence",
-      mono: true,
-      tone: below ? "warning" : "success",
-      value: `${row.flag.confidence}% · ${CONFIDENCE_THRESHOLD}% required`,
-    },
-    ...(row.flag.kind === "duplicate"
+  const { reason } = row;
+  const scan: Fact[] = [
+    reason
+      ? {
+          label: "Review reason",
+          tone: REVIEW_REASON[reason.kind].tone,
+          value: REVIEW_REASON[reason.kind].label,
+        }
+      : { label: "Result", tone: "success", value: "All checks passed" },
+    ...(reason?.kind === "invalid_invoice" && reason.duplicateOf
       ? [
           {
             label: "Duplicate of",
             mono: true,
             tone: "destructive" as const,
-            value: row.flag.of,
+            value: reason.duplicateOf,
           },
         ]
       : []),
@@ -905,7 +864,7 @@ export const reviewFacts = (row: InvoiceRow, decided: boolean): FactGroup[] => {
   const claim: Fact[] = [
     { label: "Dealership", value: `${row.dealership} · ${row.city}` },
     { label: "Submitted", value: `${formatSubmitted(row.date)} · ${row.time}` },
-    { hint: row.email, label: "Submitter", value: row.submitter },
+    submitterFact(row),
     { label: "Promotion", value: "20% off fluids & filters" },
   ];
   const settle = (fact: Fact): Fact =>
@@ -913,8 +872,8 @@ export const reviewFacts = (row: InvoiceRow, decided: boolean): FactGroup[] => {
       ? { ...fact, tone: undefined }
       : fact;
   return [
-    { facts: validation.map(settle), icon: ShieldCheck, title: "Validation" },
-    { facts: claim, icon: Receipt, title: "Claim" },
+    { facts: claim, icon: Receipt, title: "Claim information" },
+    { facts: scan.map(settle), icon: ShieldCheck, title: "Scan results" },
   ];
 };
 
@@ -933,42 +892,14 @@ export const disputeFacts = (row: DisputeRow): FactGroup[] => {
   const claim: Fact[] = [
     { label: "Dealership", value: `${row.dealership} · ${row.city}` },
     { label: "Submitted", value: `${formatSubmitted(row.date)} · ${row.time}` },
-    { hint: row.email, label: "Submitter", value: row.submitter },
+    submitterFact(row),
     { label: "Promotion", value: row.promotion },
     { label: "Promo code", mono: true, value: "ABC123" },
   ];
   return [
     { facts: dispute, icon: ArrowLeftRight, title: "Dispute" },
-    { facts: claim, icon: Receipt, title: "Claim" },
+    { facts: claim, icon: Receipt, title: "Claim information" },
   ];
-};
-
-export const activitySummary = (
-  row: InvoiceRow | DisputeRow
-): { text: string; tone: Tone } => {
-  const waiting = waitingLabel(row.date, row.time);
-  if (!("flag" in row)) {
-    return {
-      text: `Dispute submitted · ${plural(row.changes.length, "requested change")} · ${waiting}`,
-      tone: "info",
-    };
-  }
-  if (row.flag.kind === "duplicate") {
-    return {
-      text: `Duplicate of ${row.flag.of} · ${waiting}`,
-      tone: FLAG_LABEL.duplicate.tone,
-    };
-  }
-  if (row.flag.kind === "passed") {
-    return {
-      text: `Checks passed · ${row.flag.confidence}%`,
-      tone: FLAG_LABEL.passed.tone,
-    };
-  }
-  return {
-    text: `Flagged · ${row.flag.confidence}% under ${CONFIDENCE_THRESHOLD}% · ${waiting}`,
-    tone: FLAG_LABEL.low_confidence.tone,
-  };
 };
 
 const SYSTEM = "Automated validation";
@@ -999,12 +930,17 @@ export const invoiceActivity = (
     actor: SYSTEM,
     date: "Sep 16, 2026",
     time: "09:43 AM",
-    detail: `Confidence ${record.flag.confidence}% falls below the ${CONFIDENCE_THRESHOLD}% threshold`,
+    detail: record.reason
+      ? REVIEW_REASON[record.reason.kind].detail
+      : undefined,
     id: "flagged",
     kind: "flagged",
     title: "Flagged for manual review",
   };
-  const duplicateOf = record.flag.kind === "duplicate" ? record.flag.of : "";
+  const duplicateOf =
+    record.reason?.kind === "invalid_invoice"
+      ? (record.reason.duplicateOf ?? "")
+      : "";
   const original = INVOICES.find((row) => row.invoice === duplicateOf);
 
   if (outcome === "approved") {
@@ -1080,7 +1016,7 @@ export const invoiceActivity = (
         actor: SYSTEM,
         date: "Sep 16, 2026",
         time: "09:43 AM",
-        detail: `Confidence ${record.flag.confidence}% · fraud score ${record.fraud}`,
+        detail: `All checks passed · fraud score ${record.fraud}`,
         id: "validated",
         kind: "validated",
         title: "Automated validation passed",
@@ -1161,7 +1097,7 @@ export const disputeActivity = (
         actor: REVIEWER,
         date: "Sep 16, 2026",
         time: "11:02 AM",
-        detail: "PDAP entry updated with the requested values",
+        detail: "Requested changes sent for reconciliation",
         id: "approved",
         kind: "approved",
         title: "Dispute approved",
@@ -1176,7 +1112,7 @@ export const disputeActivity = (
         actor: REVIEWER,
         date: "Sep 16, 2026",
         time: "11:02 AM",
-        detail: "PDAP entry left unchanged",
+        detail: "Original values remain unchanged",
         id: "rejected",
         kind: "rejected",
         title: "Dispute rejected",

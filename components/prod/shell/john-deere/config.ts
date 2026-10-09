@@ -10,7 +10,7 @@ const moduleConfig = {
   navOrder: 7,
   navSection: "business",
   roles: ["admin"],
-  title: "John Deere",
+  title: "John Deere Support",
 } satisfies ModuleConfig;
 
 export { moduleConfig };

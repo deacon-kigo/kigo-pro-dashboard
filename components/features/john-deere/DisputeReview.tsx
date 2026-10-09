@@ -23,6 +23,7 @@ import { toast } from "@/components/prod/hooks/use-toast";
 
 import { ActivityRail } from "./ActivityRail";
 import { Crumb } from "./Crumb";
+import { MODULE_LABEL } from "./partner";
 import { ResultBanner } from "./ResultBanner";
 import { ReviewHeader } from "./ReviewHeader";
 import { ScanViewer } from "./ScanViewer";
@@ -55,14 +56,15 @@ const BANNER: Record<
 > = {
   approved: {
     detail:
-      "Invoice number and discount amount were replaced with the requested values.",
-    title: "Dispute approved and the PDAP entry updated",
+      "The requested changes have been approved and sent for reconciliation.",
+    title: "Dispute approved",
     tone: "success",
   },
   pending: { detail: "", title: "", tone: "warning" },
   rejected: {
-    detail: "The requested values were not applied.",
-    title: "Dispute rejected and the PDAP entry left unchanged",
+    detail:
+      "The requested changes have been rejected and the original values remain unchanged.",
+    title: "Dispute rejected",
     tone: "destructive",
   },
 };
@@ -131,6 +133,7 @@ const DisputeReview = ({
 
   return (
     <TooltipProvider delayDuration={200}>
+      <Crumb label={MODULE_LABEL} segment="john-deere" />
       <Crumb label={record.invoice} segment={invoiceId} />
       <ReviewHeader
         actions={pending ? decisionActions("default") : undefined}
@@ -271,7 +274,7 @@ const DisputeReview = ({
           <DialogHeader>
             <DialogTitle>Approve dispute</DialogTitle>
             <DialogDescription>
-              The PDAP entry is updated with the requested values and the dealer
+              The requested changes are sent for reconciliation and the dealer
               is notified.
             </DialogDescription>
           </DialogHeader>
@@ -323,14 +326,14 @@ const DisputeReview = ({
                 setApproveOpen(false);
                 toast({
                   description:
-                    "PDAP entry updated. The dealer has been notified.",
+                    "Requested changes sent for reconciliation. The dealer has been notified.",
                   title: `Dispute ${record.invoice} approved`,
                   variant: "success",
                 });
                 router.push(QUEUE_HREF);
               }}
             >
-              Approve and update entry
+              Approve and send for reconciliation
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -385,7 +388,7 @@ const DisputeReview = ({
             <textarea
               className="w-full rounded-md border border-gray-300 p-3 text-base"
               onChange={(event) => setCustom(event.target.value)}
-              placeholder="Describe why this dispute was rejected"
+              placeholder="Explain why — the dealer will see this message."
               rows={3}
               value={custom}
             />
