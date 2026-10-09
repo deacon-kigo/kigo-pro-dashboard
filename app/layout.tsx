@@ -5,7 +5,7 @@ import "./globals.css";
 import { Providers } from "@/lib/providers";
 import URLSyncProvider from "@/lib/providers/URLSyncProvider";
 import { Toaster } from "@/components/molecules/Toaster";
-import { VercelToolbar } from "@vercel/toolbar/next";
+import { ReviewToolbar } from "@/components/ReviewToolbar";
 import { AIChatBot } from "@/components/chat/ai-chatbot";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -20,8 +20,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const shouldInjectToolbar = process.env.NODE_ENV === "development";
-
   return (
     <html lang="en">
       <body className={inter.className}>
@@ -45,7 +43,7 @@ export default function RootLayout({
           {/* <AIChatBot /> */}
         </Providers>
         <Toaster />
-        {shouldInjectToolbar && <VercelToolbar />}
+        <ReviewToolbar />
       </body>
     </html>
   );
