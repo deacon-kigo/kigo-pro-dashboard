@@ -529,4 +529,19 @@
 
   fit();
 </script>
+<script>
+  /* Vercel toolbar for comments on the canvas itself. */
+  fetch("/api/review-toolbar")
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (!d.deploymentId) return;
+      var s = document.createElement("script");
+      s.id = "vercel-toolbar";
+      s.src = "https://vercel.live/_next-live/feedback/feedback.js";
+      s.dataset.deploymentId = d.deploymentId;
+      s.dataset.explicitOptIn = "true";
+      document.body.appendChild(s);
+    })
+    .catch(function () {});
+</script>
 </body></html>
