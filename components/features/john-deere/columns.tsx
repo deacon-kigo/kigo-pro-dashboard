@@ -20,7 +20,6 @@ import {
   type InvoiceRow,
 } from "./data";
 import { StatusPill } from "./StatusPill";
-import { TONE } from "./tone";
 
 const SortIcon = ({ sorted }: { sorted: false | "asc" | "desc" }) => {
   if (sorted === "asc")
@@ -84,13 +83,6 @@ const invoiceColumns: ColumnDef<InvoiceRow>[] = [
       return (
         <div>
           <div className="flex flex-wrap items-center gap-2 text-base whitespace-nowrap">
-            <span
-              aria-hidden
-              className={cn(
-                "size-1.5 shrink-0 rounded-full",
-                TONE[REVIEW_REASON[reason.kind].tone].dot
-              )}
-            />
             <span className="font-medium text-gray-900">
               {REVIEW_REASON[reason.kind].label}
             </span>
@@ -146,7 +138,6 @@ const invoiceColumns: ColumnDef<InvoiceRow>[] = [
         <div className="text-base text-gray-900">
           {formatSubmitted(row.original.date)}
         </div>
-        <div className="text-sm text-gray-600">{row.original.time}</div>
       </div>
     ),
   },
@@ -256,7 +247,6 @@ const disputeColumns: ColumnDef<DisputeRow>[] = [
         <div className="text-base text-gray-900">
           {formatSubmitted(row.original.date)}
         </div>
-        <div className="text-sm text-gray-600">{row.original.time}</div>
       </div>
     ),
   },

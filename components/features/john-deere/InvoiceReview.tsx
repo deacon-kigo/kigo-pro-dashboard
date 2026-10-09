@@ -336,8 +336,8 @@ const InvoiceReview = ({
         className={cn(
           "grid gap-6 transition-[grid-template-columns] duration-200",
           eventsOpen
-            ? "xl:grid-cols-[240px_minmax(400px,460px)_minmax(0,1fr)]"
-            : "xl:grid-cols-[56px_minmax(400px,460px)_minmax(0,1fr)]"
+            ? "xl:grid-cols-[240px_minmax(0,1fr)_minmax(400px,460px)]"
+            : "xl:grid-cols-[56px_minmax(0,1fr)_minmax(400px,460px)]"
         )}
         style={{ "--sticky-top": stuck ? "64px" : "0px" } as CSSProperties}
       >
@@ -345,6 +345,13 @@ const InvoiceReview = ({
           events={activity}
           onOpenChange={setEventsOpen}
           open={eventsOpen}
+        />
+
+        <ScanViewer
+          caption="invoice scan"
+          className="h-[calc(100vh-21rem)] min-h-[440px] xl:sticky xl:top-[var(--sticky-top)] transition-[top] duration-200"
+          document={record.document}
+          thumbnails={false}
         />
 
         <div className="flex flex-col gap-6 self-start">
@@ -539,13 +546,6 @@ const InvoiceReview = ({
             )}
           </Card>
         </div>
-
-        <ScanViewer
-          caption="invoice scan"
-          className="h-[calc(100vh-21rem)] min-h-[440px] xl:sticky xl:top-[var(--sticky-top)] transition-[top] duration-200"
-          document={record.document}
-          thumbnails={false}
-        />
       </div>
 
       <RejectInvoiceDialog

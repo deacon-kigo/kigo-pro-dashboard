@@ -301,7 +301,7 @@
     { from: "S16", to: "S17", label: "Reject with reason", alt: true }
   ];
   var NOTES = [
-    { x: 3200, y: 820, text: "Reviewer jobs: decide, read the source, know the claim, check values, see the trail. Header = decide + claim information + scan results (why it needs review, fraud score). Checklist = values, left. Viewer = source, right, beside the values it proves. Activity rail = trail, collapsed until needed." },
+    { x: 3200, y: 820, text: "Reviewer jobs: decide, read the source, know the claim, check values, see the trail. Header = decide + claim information + scan results (why it needs review, fraud score). Viewer = source, left. Checklist = values, right. Activity rail = trail, collapsed until needed." },
     { x: 3200, y: 1000, text: "Decisions persist in sessionStorage for the browser session, so the queue stats and rows change after approve or reject. Reset with sessionStorage.removeItem('kigo-jd-review') inside any frame." },
     { x: 3200, y: 1460, text: "While a required value is missing (here the empty promo code), Confirm skips the dealer-edited discount and the empty field, and Approve stays disabled. Once every value is present the button reads Confirm all and approve: it confirms the rest, dealer edit included, and opens the approve dialog. Both approve dialogs take an optional internal note." },
     { x: 3200, y: 3420 - 600, text: "Even rows show the PNG dealer invoice, odd rows the 3-page PDF. Each row's extracted values match its document, so checking values against the scan is a real comparison." }

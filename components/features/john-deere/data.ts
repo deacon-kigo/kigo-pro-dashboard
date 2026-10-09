@@ -48,37 +48,31 @@ export type ReviewReason =
 
 export const REVIEW_REASON: Record<
   ReviewReason["kind"],
-  { label: string; tone: Tone; detail: string }
+  { label: string; detail: string }
 > = {
   dealer_edit: {
     detail: "The dealer changed a scanned value before submitting",
     label: "Dealer edit",
-    tone: "info",
   },
   invalid_invoice: {
     detail: "The document failed invoice validation",
     label: "Invalid invoice",
-    tone: "destructive",
   },
   low_confidence: {
     detail: "Extraction confidence fell below the auto-approve threshold",
     label: "Low confidence",
-    tone: "warning",
   },
   missing_fields: {
     detail: "Required values could not be read from the scan",
     label: "Missing fields",
-    tone: "warning",
   },
   poor_image: {
     detail: "The scan is too blurry or dark to read reliably",
     label: "Poor image quality",
-    tone: "warning",
   },
   unknown_error: {
     detail: "Automated validation could not complete",
     label: "Unknown error",
-    tone: "neutral",
   },
 };
 
@@ -838,11 +832,7 @@ export const reviewFacts = (row: InvoiceRow, decided: boolean): FactGroup[] => {
   const { reason } = row;
   const scan: Fact[] = [
     reason
-      ? {
-          label: "Review reason",
-          tone: REVIEW_REASON[reason.kind].tone,
-          value: REVIEW_REASON[reason.kind].label,
-        }
+      ? { label: "Review reason", value: REVIEW_REASON[reason.kind].label }
       : { label: "Result", tone: "success", value: "All checks passed" },
     ...(reason?.kind === "invalid_invoice" && reason.duplicateOf
       ? [
@@ -897,8 +887,8 @@ export const disputeFacts = (row: DisputeRow): FactGroup[] => {
     { label: "Promo code", mono: true, value: "ABC123" },
   ];
   return [
-    { facts: dispute, icon: ArrowLeftRight, title: "Dispute" },
     { facts: claim, icon: Receipt, title: "Claim information" },
+    { facts: dispute, icon: ArrowLeftRight, title: "Dispute" },
   ];
 };
 
