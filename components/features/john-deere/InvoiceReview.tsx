@@ -19,6 +19,7 @@ import { toast } from "@/components/prod/hooks/use-toast";
 import { ActivityRail } from "./ActivityRail";
 import { ChecklistRow, ROW_INPUT, type RowStatus } from "./ChecklistRow";
 import { Crumb } from "./Crumb";
+import { DealerLocationPicker } from "./DealerLocationPicker";
 import { FactList } from "./FactList";
 import {
   ApproveInvoiceDialog,
@@ -31,10 +32,12 @@ import { ReviewHeader } from "./ReviewHeader";
 import { ScanViewer } from "./ScanViewer";
 import { Section } from "./Section";
 import {
+  DEALER_LOCATIONS,
   INVOICES,
   INVOICE_REASONS,
   invoiceActivity,
   invoiceDecision,
+  dealerLocationText,
   invoiceFields,
   money,
   plural,
@@ -86,41 +89,6 @@ const BANNER: Record<
   },
 };
 
-const CITY_LINE = /^(.*),\s*([A-Z]{2})\s+(\d{5}(?:-\d{4})?)$/;
-
-const parseDealer = (text: string) => {
-  const lines = text.split("\n").filter((line) => line.trim());
-  const phone = lines.find((line) => /^\(\d{3}\)/.test(line)) ?? "";
-  const cityLine = lines.find((line) => CITY_LINE.test(line)) ?? "";
-  const [, city = "", state = "", zip = ""] = CITY_LINE.exec(cityLine) ?? [];
-  const street = lines.filter((line) => line !== phone && line !== cityLine);
-  return {
-    city,
-    line1: street[0] ?? "",
-    line2: street[1] ?? "",
-    phone,
-    state,
-    zip,
-  };
-};
-
-const DEALER_PARTS = [
-  "line1",
-  "line2",
-  "city",
-  "state",
-  "zip",
-  "phone",
-] as const;
-const DEALER_LABELS: Record<(typeof DEALER_PARTS)[number], string> = {
-  city: "City",
-  line1: "Street address",
-  line2: "Suite or unit",
-  phone: "Phone",
-  state: "State",
-  zip: "ZIP",
-};
-
 const itemsSummary = (lines: Line[]) =>
   `${plural(lines.length, "item")} · ${money(lines)} eligible`;
 
@@ -134,14 +102,16 @@ type ReviewDialog = "approve" | "reject";
 const InvoiceReview = ({
   decision,
   dialog,
+  editDealer = false,
   invoiceId,
   verify = false,
 }: {
   decision: InvoiceDecision;
   dialog?: ReviewDialog;
+  editDealer?: boolean;
   invoiceId: string;
-  /* Deep-link helpers for the walkthrough canvas: open with a dialog up, or
-     with every field already confirmed. */
+  /* Deep-link helpers for the walkthrough canvas: open with a dialog up, with
+     the dealer location picker open, or with every field already confirmed. */
   verify?: boolean;
 }) => {
   const record = INVOICES.find((row) => row.invoice === invoiceId) ?? {
@@ -163,8 +133,11 @@ const InvoiceReview = ({
     record.extracted.lines.map((line) => ({ ...line }))
   );
   const [linesSnapshot, setLinesSnapshot] = useState<Line[]>(lines);
-  const [dealer, setDealer] = useState(() =>
-    parseDealer(record.extracted.dealer)
+  const [dealerId, setDealerId] = useState(
+    () =>
+      DEALER_LOCATIONS.find(
+        (location) => dealerLocationText(location) === record.extracted.dealer
+      )?.id ?? null
   );
 
   /* A decision taken earlier in the session wins over the URL's ?decision=.
@@ -174,14 +147,10 @@ const InvoiceReview = ({
     if (stored) setOutcome(invoiceDecision(stored));
   }, [record.invoice]);
 
-  const dealerText = [
-    dealer.line1,
-    dealer.line2,
-    `${dealer.city}, ${dealer.state} ${dealer.zip}`,
-    dealer.phone,
-  ]
-    .filter((part) => part.trim())
-    .join("\n");
+  const dealerLocation = DEALER_LOCATIONS.find(
+    (location) => location.id === dealerId
+  );
+  const dealerText = dealerLocation ? dealerLocationText(dealerLocation) : "";
 
   const fieldList = useMemo(
     () => invoiceFields(record.extracted),
@@ -196,7 +165,10 @@ const InvoiceReview = ({
   );
   const checklist = useChecklist(seeds);
   const { allDone, done, fields, total } = checklist;
-  const { confirmAll, save } = checklist;
+  const { confirmAll, edit, save } = checklist;
+  useEffect(() => {
+    if (editDealer) edit("dealer");
+  }, [editDealer, edit]);
   useEffect(() => {
     if (!verify) return;
     save("promo", "ABC123");
@@ -416,28 +388,12 @@ const InvoiceReview = ({
                         }
                         editor={
                           field.key === "dealer" ? (
-                            <div className="flex flex-wrap gap-2">
-                              {DEALER_PARTS.map((part, index) => (
-                                <label
-                                  className="flex min-w-[130px] flex-1 flex-col text-sm text-gray-500"
-                                  key={part}
-                                >
-                                  {DEALER_LABELS[part]}
-                                  <input
-                                    autoFocus={index === 0}
-                                    className={cn("mt-1", ROW_INPUT)}
-                                    onChange={(event) =>
-                                      setDealer((current) => ({
-                                        ...current,
-                                        [part]: event.target.value,
-                                      }))
-                                    }
-                                    value={dealer[part]}
-                                    {...fieldKeys(field.key)}
-                                  />
-                                </label>
-                              ))}
-                            </div>
+                            <DealerLocationPicker
+                              locations={DEALER_LOCATIONS}
+                              onChange={setDealerId}
+                              onSubmit={() => saveField(field.key)}
+                              value={dealerId}
+                            />
                           ) : (
                             <input
                               autoFocus

@@ -17,6 +17,7 @@ export default async function InvoicePage({
   searchParams: Promise<{
     decision?: string;
     dialog?: string;
+    edit?: string;
     verify?: string;
   }>;
 }) {
@@ -31,6 +32,7 @@ export default async function InvoicePage({
     <InvoiceReview
       decision={decision}
       dialog={dialog}
+      editDealer={query.edit === "dealer"}
       invoiceId={decodeURIComponent(id)}
       verify={query.verify === "all"}
     />

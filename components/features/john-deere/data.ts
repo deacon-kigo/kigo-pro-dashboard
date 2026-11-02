@@ -157,7 +157,7 @@ const pngExtracted = (
   dealerEdited: boolean,
   promo: string
 ): ExtractedFields => ({
-  dealer: "South Plains Implement, Ltd.\n105 Avenue D\nAbernathy, TX 79311",
+  dealer: "South Plains Implement, Ltd.\n105 Avenue D, Abernathy, TX 79311",
   discount: dealerEdited ? "$400.00" : "$432.00",
   discountScanned: "$432.00",
   invoice: "2027",
@@ -174,7 +174,7 @@ const pngExtracted = (
 });
 
 const pdfExtracted = (): ExtractedFields => ({
-  dealer: "United Ag & Turf\n25 6 1/2 Station Road\nGoshen, NY 10924",
+  dealer: "United Ag & Turf\n25 6 1/2 Station Road, Goshen, NY 10924",
   discount: "$55.00",
   discountScanned: "$61.27",
   invoice: "KCJYLD52SY",
@@ -629,6 +629,50 @@ export const openDisputes = DISPUTES.filter(
   (row) => row.status === "pending"
 ).length;
 
+export interface DealerLocation {
+  id: string;
+  name: string;
+  address: string;
+}
+
+/* Stand-in for the dealer location table; production has thousands of rows
+   and searches server-side. */
+export const DEALER_LOCATIONS: DealerLocation[] = [
+  ["South Plains Implement, Ltd.", "105 Avenue D, Abernathy, TX 79311"],
+  ["South Plains Implement, Ltd.", "1101 E Broadway St, Brownfield, TX 79316"],
+  ["South Plains Implement, Ltd.", "4110 E Loop 289, Lubbock, TX 79404"],
+  ["South Plains Implement, Ltd.", "2002 W 6th St, Plainview, TX 79072"],
+  ["United Ag & Turf", "25 6 1/2 Station Road, Goshen, NY 10924"],
+  ["United Ag & Turf", "3060 State Route 207, Campbell Hall, NY 10916"],
+  ["United Ag & Turf", "455 Hudson Ave, Albany, NY 12203"],
+  ["Pape Machinery, Inc.", "4125 Highway 99 North, Eugene, OR 97402"],
+  ["Pape Machinery, Inc.", "2850 Hwy 99 E, Tangent, OR 97389"],
+  ["Pape Machinery, Inc.", "1550 Industrial Way SW, Albany, OR 97322-4125"],
+  ["Pape Machinery, Inc.", "2215 N Pacific Hwy, Woodburn, OR 97071"],
+  ["Prairie State Equipment", "1830 N Main St, Bloomington, IL 61701"],
+  ["Prairie State Equipment", "2400 W Jefferson St, Springfield, IL 62702"],
+  ["Cedar Ridge Ag Supply", "910 Collins Rd NE, Cedar Rapids, IA 52402"],
+  ["Northland Tractor", "4700 Main Ave, Fargo, ND 58103"],
+  ["Northland Tractor", "1220 S Broadway, Minot, ND 58701"],
+  ["Heartland Machinery", "3301 Cornhusker Hwy, Lincoln, NE 68504"],
+  ["Valley Turf & Power", "1745 E Shields Ave, Fresno, CA 93704"],
+  ["Blue Stem Equipment", "2525 N Hillside St, Wichita, KS 67219"],
+  ["Summit Farm Center", "6600 W Overland Rd, Boise, ID 83709"],
+  ["Summit Farm Center", "1020 Caldwell Blvd, Nampa, ID 83651"],
+  ["Delta Ag Solutions", "800 Hwy 82 W, Greenwood, MS 38930"],
+  ["Ridgeline Outdoor", "5150 S Valley View Blvd, Las Vegas, NV 89118"],
+  ["Copper Creek Tractor", "2140 W Main St, Bozeman, MT 59718"],
+  ["Great Lakes Power", "3950 28th St SE, Grand Rapids, MI 49512"],
+  ["Rio Grande Equipment", "4500 Pan American Fwy NE, Albuquerque, NM 87107"],
+].map(([name, address], index) => ({
+  address,
+  id: `loc-${String(index + 1).padStart(4, "0")}`,
+  name,
+}));
+
+export const dealerLocationText = (location: DealerLocation) =>
+  `${location.name}\n${location.address}`;
+
 export interface InvoiceField {
   key: string;
   label: string;
@@ -643,7 +687,7 @@ export interface InvoiceField {
 export const invoiceFields = (extracted: ExtractedFields): InvoiceField[] => [
   {
     key: "dealer",
-    label: "Dealer address + phone",
+    label: "Dealer location",
     value: extracted.dealer,
     tall: true,
     hint: "Used to look up the dealer group number.",

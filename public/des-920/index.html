@@ -240,7 +240,7 @@
     <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
     <button type="button" id="zoom-fit">Fit</button>
   </div>
-  <a class="link" id="open-app" href="https://kigo-pro-dashboard.vercel.app/pro/john-deere" target="_blank" rel="noopener">Open prototype ↗</a>
+  <a class="link" id="open-app" href="https://kigo-pro-dashboard-kigo-7cf31b7c.vercel.app/pro/john-deere" target="_blank" rel="noopener">Open prototype ↗</a>
 </header>
 
 <div class="viewport" id="viewport">
@@ -272,9 +272,10 @@
     { key: "S03", row: 0, col: 2, name: "Queue · all invoices", id: "12 total", path: "/pro/john-deere?status=all" },
 
     { key: "S04", row: 1, col: 0, name: "Invoice review · pending", id: "JD-INV-104821", path: "/pro/john-deere/invoices/JD-INV-104821" },
-    { key: "S05", row: 1, col: 1, name: "Invoice review · verified", id: "JD-INV-104821", path: "/pro/john-deere/invoices/JD-INV-104821?verify=all" },
-    { key: "S07", row: 1, col: 2, name: "Approve dialog", id: "JD-INV-104821", path: "/pro/john-deere/invoices/JD-INV-104821?verify=all&dialog=approve" },
-    { key: "S08", row: 1, col: 3, name: "Invoice · manually approved", id: "JD-INV-104821", path: "/pro/john-deere/invoices/JD-INV-104821?decision=approved" },
+    { key: "S04b", row: 1, col: 1, name: "Dealer location search", id: "JD-INV-104821", path: "/pro/john-deere/invoices/JD-INV-104821?edit=dealer" },
+    { key: "S05", row: 1, col: 2, name: "Invoice review · verified", id: "JD-INV-104821", path: "/pro/john-deere/invoices/JD-INV-104821?verify=all" },
+    { key: "S07", row: 1, col: 3, name: "Approve dialog", id: "JD-INV-104821", path: "/pro/john-deere/invoices/JD-INV-104821?verify=all&dialog=approve" },
+    { key: "S08", row: 1, col: 4, name: "Invoice · manually approved", id: "JD-INV-104821", path: "/pro/john-deere/invoices/JD-INV-104821?decision=approved" },
 
     { key: "S06", row: 2, col: 0, name: "Reject dialog", id: "JD-INV-104821", path: "/pro/john-deere/invoices/JD-INV-104821?dialog=reject" },
     { key: "S09", row: 2, col: 1, name: "Invoice · manually rejected", id: "JD-INV-104821", path: "/pro/john-deere/invoices/JD-INV-104821?decision=rejected" },
@@ -289,7 +290,8 @@
   ];
   var WIRES = [
     { from: "S01", to: "S04", label: "Review", alt: true },
-    { from: "S04", to: "S05", label: "Confirm 4 unchanged fields, add promo code" },
+    { from: "S04", to: "S04b", label: "Edit dealer location" },
+    { from: "S04b", to: "S05", label: "Confirm 4 unchanged fields, add promo code" },
     { from: "S05", to: "S07", label: "Approve invoice" },
     { from: "S07", to: "S08", label: "Approve and send" },
     { from: "S04", to: "S06", label: "Reject invoice", alt: true },
@@ -303,7 +305,7 @@
   var NOTES = [
     { x: 3200, y: 820, text: "Reviewer jobs: decide, read the source, know the claim, check values, see the trail. Header = decide + claim information + scan results (why it needs review, fraud score). Viewer = source, left. Checklist = values, right. Activity rail = trail, collapsed until needed." },
     { x: 3200, y: 1000, text: "Decisions persist in sessionStorage for the browser session, so the queue stats and rows change after approve or reject. Reset with sessionStorage.removeItem('kigo-jd-review') inside any frame." },
-    { x: 3200, y: 1460, text: "While a required value is missing (here the empty promo code), Confirm skips the dealer-edited discount and the empty field, and Approve stays disabled. Once every value is present the button reads Confirm all and approve: it confirms the rest, dealer edit included, and opens the approve dialog. Both approve dialogs take an optional internal note." },
+    { x: 4000, y: 1460, text: "While a required value is missing (here the empty promo code), Confirm skips the dealer-edited discount and the empty field, and Approve stays disabled. Once every value is present the button reads Confirm all and approve: it confirms the rest, dealer edit included, and opens the approve dialog. Both approve dialogs take an optional internal note." },
     { x: 3200, y: 3420 - 600, text: "Even rows show the PNG dealer invoice, odd rows the 3-page PDF. Each row's extracted values match its document, so checking values against the scan is a real comparison." }
   ];
 
